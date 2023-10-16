@@ -1,8 +1,10 @@
-import { createPromiseMachine } from "../dev/monolithic/createPromiseMachineFromConfig";
+import { expect, it, describe } from "vitest";
+import { createPromiseMachine } from "../src/promise";
+import { delay, delayed } from "../src/delay";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const trigger = jest.fn(() => "resolved data");
+    const trigger = delayed(1, "Resolved Data");
     const machine = createPromiseMachine(trigger);
 
     const initialState = machine.getState();
@@ -21,10 +23,10 @@ describe("createPromiseMachine", () => {
   });
 
   it("should transition to Rejected state on error", async () => {
-    const trigger = jest.fn(() => {
+    const machine = createPromiseMachine(async () => {
+      await delay(1);
       throw new Error("custom error");
     });
-    const machine = createPromiseMachine(trigger);
 
     const initialState = machine.getState();
     expect(initialState.state).toBe("Idle");
