@@ -1,11 +1,11 @@
 import { onLifecycle } from "../src/lifecycle";
-import { createMachine } from "../src/machine";
+import { defineMachine } from "../src/machine";
 import { onTransition } from "../src/on-transition";
 import { createPromiseMachine } from "../src/promise";
 import { createStates } from "../src/states";
 
 // usage
-const machine = createMachine(
+const machine = defineMachine(
   createStates({
     Heating() {},
     Boiling() {},
@@ -53,7 +53,7 @@ onLifecycle(machine, {
 
 const somePromiseMachine = createPromiseMachine<(x: number) => Promise<any>>();
 onLifecycle(somePromiseMachine, {
-  IDLE: {
+  Idle: {
     execute: {
       after: (event) =>
         fetch("/something")

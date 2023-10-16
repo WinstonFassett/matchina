@@ -1,14 +1,14 @@
-import { createMachine } from "../src/machine";
+import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/promise";
 import { createStates as states } from "../src/states";
 import { delayed } from "../src/delay";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
 const machine = (statesConfig: any, transitionsConfig: any) => ({
-  machine: createMachine(statesConfig, transitionsConfig),
+  machine: defineMachine(statesConfig, transitionsConfig),
 });
 
-const rootMachine = createMachine(
+const rootMachine = defineMachine(
   states({
     Idle: undefined,
     First: promise(delayed(1000, "First Result")),

@@ -1,5 +1,5 @@
 import { createStates } from "../src/states";
-import { createMachine } from "../src/machine";
+import { defineMachine } from "../src/machine";
 import { createEffects, runEffectsOnUpdate } from "../src/effects";
 
 const myEffects = createEffects({
@@ -14,11 +14,11 @@ const states = createStates({
   Done: () => ({ effects: [myEffects.Notify("all done!")] }),
 });
 
-const machine = createMachine(states, {
+const machine = defineMachine(states, {
   Idle: { next: "Pending" },
   Pending: { next: "Done" },
   Done: {},
-});
+}).create(states.Idle());
 
 runEffectsOnUpdate(machine as any, {
   Notify: console.log,

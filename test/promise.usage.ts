@@ -8,17 +8,17 @@ const machine = createPromiseMachine((x: number) =>
 );
 
 // strongly-typed params on every thing below
-machine.states.REJECTED(new Error("error"));
+machine.states.Rejected(new Error("error"));
 
 type X = Expand<typeof machine.events>;
 const x: X = {} as X;
 machine.events.reject(new Error("error"));
-machine.states.PENDING(1000);
+machine.states.Pending(1000);
 machine.events.execute(1000);
 
-machine.transitions.IDLE.execute(1000); // should require number
-machine.transitions.PENDING.resolve(""); // should require string
-machine.transitions.PENDING.reject(new Error("error")); // this should require error
+machine.transitions.Idle.execute(1000); // should require number
+machine.transitions.Pending.resolve(""); // should require string
+machine.transitions.Pending.reject(new Error("error")); // this should require error
 
 machine.send("execute", 123);
 
@@ -28,8 +28,8 @@ machine.event.match({
   _: () => {},
 });
 
-machine.states.REJECTED(new Error("error")).match({
-  REJECTED(error) {
+machine.states.Rejected(new Error("error")).match({
+  Rejected(error) {
     console.log(error);
   },
   _() {},

@@ -176,13 +176,83 @@ export type AnyMachineFromStateCreatorsAndTransitionsConfig<
   Event
 >;
 
-export function createMachine<
+type MachineDefinition<
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
+> = {
+  create: MachineCreator<States, Transitions>
+  states: States,
+  transitions: Transitions
+}
+
+
+type MachineCreator<
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
+> = (initialState: ReturnType<States[keyof States]>) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>
+
+export function defineMachine<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
 >(
-  states: States,
-  transitions: Transitions,
-): MachineFromStateCreatorsAndTransitionsConfig<States, Transitions> {
-  console.log({ states, transitions });
-  throw new Error("not implemented yet");
+  states: States,  
+  transitions: Transitions, 
+): MachineDefinition<States, Transitions> {  
+  return {
+    states,
+    transitions,
+    create: (initialState) => {
+      let currentState: ReturnType<States[keyof States]> = initialState
+  
+      console.log({ currentState, states, transitions });
+      // throw new Error("not implemented yet");
+      const x: MachineFromStateCreatorsAndTransitionsConfig<States, Transitions> = {
+        states,
+        getState: () => currentState,
+        transitions: undefined as any,
+        event: undefined as any,
+        events: undefined as any,
+        send: function (
+          event: TransitionEventKeys<Transitions>,
+          ...args: any[]
+        ): void {
+          // throw new Error("Function not implemented.");
+        },
+        transition: function (
+          event: MachineEvent<
+            States,
+            Transitions,
+            ExtractedEventKeys<Transitions, States>
+          >,
+        ): MachineEvent<
+          States,
+          Transitions,
+          ExtractedEventKeys<Transitions, States>
+        > {
+          // throw new Error("Function not implemented.");
+          return event;
+        },
+        update: function (
+          updater: (
+            event: MachineEvent<
+              States,
+              Transitions,
+              ExtractedEventKeys<Transitions, States>
+            >,
+          ) => MachineEvent<
+            States,
+            Transitions,
+            ExtractedEventKeys<Transitions, States>
+          >,
+        ): void {
+          // throw new Error("Function not implemented.");
+        },
+        config: {
+          states,
+          transitions,
+        },
+      };
+      return x
+    }
+  }
 }
