@@ -1,7 +1,7 @@
 import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/promise";
 import { createStates as states } from "../src/states";
-import { delayed } from "../src/delay";
+import { delayer } from "../src/delay";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
 const machine = (statesConfig: any, transitionsConfig: any) => ({
@@ -11,12 +11,12 @@ const machine = (statesConfig: any, transitionsConfig: any) => ({
 const rootMachine = defineMachine(
   states({
     Idle: undefined,
-    First: promise(delayed(1000, "First Result")),
+    First: promise(delayer(1000, "First Result")),
     Second: machine(
       states({
         Idle: undefined,
-        Executing: promise(delayed(2000, "Second Result")),
-        Nested: promise(delayed(1500, "Nested Result")),
+        Executing: promise(delayer(2000, "Second Result")),
+        Nested: promise(delayer(1500, "Nested Result")),
       }),
       {
         Idle: { start: "Executing" },

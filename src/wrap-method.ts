@@ -13,6 +13,7 @@ export function wrapMethod<S, K extends keyof S>(
   const originalMethod = subject[name] as unknown as Method<any[], any>;
   const boundOriginal = originalMethod.bind(subject);
   subject[name] = function (...args: any[]) {
+    console.log('call', name, args)
     return fn.call(subject, boundOriginal, ...args);
   } as any;
   return () => {

@@ -1,11 +1,13 @@
 import { expect, it, describe } from "vitest";
 import { createPromiseMachine } from "../src/promise";
-import { delay, delayed } from "../src/delay";
+import { delay, delayer } from "../src/delay";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const trigger = delayed(1, "Resolved Data");
-    const machine = createPromiseMachine(trigger);
+    
+    const machine = createPromiseMachine(
+      delayer(1, "Resolved Data")
+    );
 
     const initialState = machine.getState();
     expect(initialState.state).toBe("Idle");
@@ -15,15 +17,16 @@ describe("createPromiseMachine", () => {
     expect(pendingState.state).toBe("Pending");
 
     // Use setTimeout with a very short delay to wait for asynchronous operations to complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 2));
 
     const resolvedState = machine.getState();
     expect(resolvedState.state).toBe("Resolved");
-    expect(resolvedState.data).toBe("resolved data");
+    expect(resolvedState.data).toBe("Resolved Data");
   });
 
   it("should transition to Rejected state on error", async () => {
     const machine = createPromiseMachine(async () => {
+      console.log('execute')
       await delay(1);
       throw new Error("custom error");
     });
@@ -31,12 +34,12 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.state).toBe("Idle");
 
-    await machine.events.execute();
+    machine.events.execute();
     const pendingState = machine.getState();
     expect(pendingState.state).toBe("Pending");
 
     // Use setTimeout with a very short delay to wait for asynchronous operations to complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await delay(2);
 
     const rejectedState = machine.getState();
     expect(rejectedState.state).toBe("Rejected");

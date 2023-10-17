@@ -204,55 +204,94 @@ export function defineMachine<
     create: (initialState) => {
       let currentState: ReturnType<States[keyof States]> = initialState
   
-      console.log({ currentState, states, transitions });
+      // console.log({ currentState, states, transitions });
       // throw new Error("not implemented yet");
-      const x: MachineFromStateCreatorsAndTransitionsConfig<States, Transitions> = {
+      function createSender(eventKey: string) {
+        return (...params: any[]) => machine.send(eventKey, params);
+      }
+      const transitioners: any = {};
+      const events: any = {};
+      // for (const eventKey in transitions) {
+      //   console.log({ eventKey })
+      //   events[eventKey] ||= createSender(eventKey);
+      // }
+      for (const stateKey in states) {
+        const transitionKey = stateKey as keyof typeof transitions
+        const stateTransitions = transitions[transitionKey];
+        transitioners[transitionKey] = {};
+        if (stateTransitions) {
+          for (const eventKey in stateTransitions) {
+            // if (typeof stateConfig[eventKey] === 'string') {
+            //   stateConfig.on[eventKey] = { target: stateConfig.on[eventKey] };
+            // }
+            const sender = createSender(eventKey);
+            transitioners[transitionKey][eventKey] = sender;
+            events[eventKey] ||= sender;
+          }
+        }
+      }
+
+      const machine: MachineFromStateCreatorsAndTransitionsConfig<States, Transitions> = {
         states,
         getState: () => currentState,
-        transitions: undefined as any,
         event: undefined as any,
-        events: undefined as any,
-        send: function (
-          event: TransitionEventKeys<Transitions>,
-          ...args: any[]
-        ): void {
-          // throw new Error("Function not implemented.");
+        events,
+        transitions: transitioners,
+        send: (type, params) => {
+          // console.log('send', { type, params })
+          return machine.update((context) => {
+            // console.log('transitioning...', { machine })
+            return machine.transition({
+              ...context,
+              from: currentState,
+              // fromKey: currentState.state,
+              event: type,
+              params,
+            });
+          });
         },
-        transition: function (
-          event: MachineEvent<
-            States,
-            Transitions,
-            ExtractedEventKeys<Transitions, States>
-          >,
-        ): MachineEvent<
-          States,
-          Transitions,
-          ExtractedEventKeys<Transitions, States>
-        > {
-          // throw new Error("Function not implemented.");
-          return event;
+        transition: (context) => {
+          const { from, event, params } = context;
+          // console.log('transition!', event)
+          const currentStateConfig = transitions[from!.state as keyof typeof states];
+    
+          if (!currentStateConfig) return context;
+          const transitionConfig = currentStateConfig[event as keyof typeof currentStateConfig];
+    
+          if (!transitionConfig) return context;
+    
+          // const { target, guard } = transitionConfig;
+    
+          // if (guard && !guard(context as any)) return context;
+    
+          const toKey = transitionConfig as keyof typeof states;
+          const to = states[toKey](...(params || []));
+          console.log({toKey, to})
+          return {
+            ...context,
+            // toKey,
+            to: to as any,
+          };
+          
         },
-        update: function (
-          updater: (
-            event: MachineEvent<
-              States,
-              Transitions,
-              ExtractedEventKeys<Transitions, States>
-            >,
-          ) => MachineEvent<
-            States,
-            Transitions,
-            ExtractedEventKeys<Transitions, States>
-          >,
-        ): void {
-          // throw new Error("Function not implemented.");
+        update: (updater) => {
+          const context = updater({
+            ...machine.event,            
+            to: undefined as any,
+          });
+        
+          // console.log('res', context)
+          if (context.to) {
+            machine.event = context;
+            currentState = context.to;
+          }
         },
         config: {
           states,
           transitions,
         },
       };
-      return x
+      return machine
     }
   }
 }
