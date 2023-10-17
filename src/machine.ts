@@ -266,7 +266,7 @@ export function defineMachine<
     
           const toKey = transitionConfig as keyof typeof states;
           const to = states[toKey](...(params || []));
-          console.log({toKey, to})
+          // console.log({toKey, to})
           return {
             ...context,
             // toKey,
