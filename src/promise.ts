@@ -2,7 +2,7 @@ import { defineMachine } from "./machine";
 import { onTransition } from "./on-transition";
 import { createStates } from "./states";
 
-export function createPromiseMachine<T,A, E extends Error = Error>(
+export function createPromiseMachine<T, A, E extends Error = Error>(
   makePromise?: (...args: A[]) => Promise<T>,
 ) {
   const states = createStates({
@@ -21,7 +21,7 @@ export function createPromiseMachine<T,A, E extends Error = Error>(
     Rejected: { execute: "Pending" },
   });
   // console.log('creating promise machine')
-  const machine = Machine.create(Machine.states.Idle())
+  const machine = Machine.create(Machine.states.Idle());
   if (makePromise) {
     // console.log('listing for execute')
     onTransition(machine, (t, ev) => {

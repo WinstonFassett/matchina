@@ -4,10 +4,7 @@ import { delay, delayer } from "../src/delay";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    
-    const machine = createPromiseMachine(
-      delayer(1, "Resolved Data")
-    );
+    const machine = createPromiseMachine(delayer(1, "Resolved Data"));
 
     const initialState = machine.getState();
     expect(initialState.state).toBe("Idle");

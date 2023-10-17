@@ -180,30 +180,31 @@ type MachineDefinition<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
 > = {
-  create: MachineCreator<States, Transitions>
-  states: States,
-  transitions: Transitions
-}
-
+  create: MachineCreator<States, Transitions>;
+  states: States;
+  transitions: Transitions;
+};
 
 type MachineCreator<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
-> = (initialState: ReturnType<States[keyof States]>) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>
+> = (
+  initialState: ReturnType<States[keyof States]>,
+) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>;
 
 export function defineMachine<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
 >(
-  states: States,  
-  transitions: Transitions, 
-): MachineDefinition<States, Transitions> {  
+  states: States,
+  transitions: Transitions,
+): MachineDefinition<States, Transitions> {
   return {
     states,
     transitions,
     create: (initialState) => {
-      let currentState: ReturnType<States[keyof States]> = initialState
-  
+      let currentState: ReturnType<States[keyof States]> = initialState;
+
       // console.log({ currentState, states, transitions });
       // throw new Error("not implemented yet");
       function createSender(eventKey: string) {
@@ -216,7 +217,7 @@ export function defineMachine<
       //   events[eventKey] ||= createSender(eventKey);
       // }
       for (const stateKey in states) {
-        const transitionKey = stateKey as keyof typeof transitions
+        const transitionKey = stateKey as keyof typeof transitions;
         const stateTransitions = transitions[transitionKey];
         transitioners[transitionKey] = {};
         if (stateTransitions) {
@@ -231,7 +232,10 @@ export function defineMachine<
         }
       }
 
-      const machine: MachineFromStateCreatorsAndTransitionsConfig<States, Transitions> = {
+      const machine: MachineFromStateCreatorsAndTransitionsConfig<
+        States,
+        Transitions
+      > = {
         states,
         getState: () => currentState,
         event: undefined as any,
@@ -253,17 +257,23 @@ export function defineMachine<
         transition: (context) => {
           const { from, event, params } = context;
           // console.log('transition!', event)
-          const currentStateConfig = transitions[from!.state as keyof typeof states];
-    
-          if (!currentStateConfig) return context;
-          const transitionConfig = currentStateConfig[event as keyof typeof currentStateConfig];
-    
-          if (!transitionConfig) return context;
-    
+          const currentStateConfig =
+            transitions[from!.state as keyof typeof states];
+
+          if (!currentStateConfig) {
+            return context;
+          }
+          const transitionConfig =
+            currentStateConfig[event as keyof typeof currentStateConfig];
+
+          if (!transitionConfig) {
+            return context;
+          }
+
           // const { target, guard } = transitionConfig;
-    
+
           // if (guard && !guard(context as any)) return context;
-    
+
           const toKey = transitionConfig as keyof typeof states;
           const to = states[toKey](...(params || []));
           // console.log({toKey, to})
@@ -272,14 +282,13 @@ export function defineMachine<
             // toKey,
             to: to as any,
           };
-          
         },
         update: (updater) => {
           const context = updater({
-            ...machine.event,            
+            ...machine.event,
             to: undefined as any,
           });
-        
+
           // console.log('res', context)
           if (context.to) {
             machine.event = context;
@@ -291,7 +300,7 @@ export function defineMachine<
           transitions,
         },
       };
-      return machine
-    }
-  }
+      return machine;
+    },
+  };
 }

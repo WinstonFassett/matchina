@@ -5,7 +5,7 @@ import { createPromiseMachine } from "../src/promise";
 import { createStates } from "../src/states";
 
 // usage
-const machine = defineMachine(
+const Machine = defineMachine(
   createStates({
     Heating() {},
     Boiling() {},
@@ -17,7 +17,7 @@ const machine = defineMachine(
     Boiling: {},
   },
 );
-
+const machine = Machine.create(Machine.states.Heating());
 function guard(ev: typeof machine.event) {
   return ev.match({
     change: () => {
@@ -51,7 +51,7 @@ onLifecycle(machine, {
   Boiling: {},
 });
 
-const somePromiseMachine = createPromiseMachine<(x: number) => Promise<any>>();
+const somePromiseMachine = createPromiseMachine<any, number>();
 onLifecycle(somePromiseMachine, {
   Idle: {
     execute: {
