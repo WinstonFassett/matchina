@@ -18,7 +18,7 @@ const Machine = defineMachine(
   },
 );
 const machine = Machine.create(Machine.states.Heating());
-function guard(ev: typeof machine.event) {
+function guard(ev: typeof machine.getLast) {
   return ev.match({
     change: () => {
       return true;

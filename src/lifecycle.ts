@@ -2,7 +2,7 @@ import {
   MachineEvent,
   MachineFromStateCreatorsAndTransitionsConfig,
   StateTransitionsConfig,
-} from "./machine";
+} from "./machine-types";
 import { onTransition } from "./on-transition";
 import { StateCreators } from "./states";
 import { TransitionEvent } from "./types";

@@ -24,15 +24,14 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
   const machine = Machine.create(Machine.states.Idle());
   if (makePromise) {
     // console.log('listing for execute')
-    onTransition(machine, (t, ev) => {
-      // console.log('onTransition', {t, ev})
-      if (ev.event === "execute") {
+    onTransition(machine, (t, ev, params) => {
+      if (ev === "execute") {
         // console.log('promising')
-        makePromise(...(ev.params as any))
+        makePromise(...(params as any))
           .then(machine.events.resolve)
           .catch(machine.events.reject);
       }
-      return t(ev);
+      return t(ev, params);
     });
   }
   return machine;

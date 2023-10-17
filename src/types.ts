@@ -20,11 +20,11 @@ export interface AnyMachine<
     State
   >,
 > {
-  event: Event;
   getState: () => State;
   send: (event: EventKey, data?: any) => void;
-  update: (updater: (event: Event) => Event) => void;
-  transition: (event: Event) => Event;
+  transition: (event: EventKey, data?: any) => Event | undefined;
+  update: (updater: (event: Event) => Event) => void;  
+  getLast: () => Event;
 }
 
 export type TUnionToIntersection<T> = (
