@@ -23,7 +23,7 @@ export interface AnyMachine<
   getState: () => State;
   send: (event: EventKey, data?: any) => void;
   transition: (event: EventKey, data?: any) => Event | undefined;
-  update: (updater: (event: Event) => Event) => void;  
+  update: (updater: (event: Event) => Event) => void;
   getLast: () => Event;
 }
 

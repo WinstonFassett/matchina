@@ -17,27 +17,33 @@ export function defineMachine<
   states: States,
   transitions: Transitions,
 ): MachineDefinition<States, Transitions> {
-  type State = ReturnType<States[keyof States]>
-  type Event = MachineEvent<States,Transitions>
+  type State = ReturnType<States[keyof States]>;
+  type Event = MachineEvent<States, Transitions>;
 
   function createEvent({
-    event, params, from, to 
+    event,
+    params,
+    from,
+    to,
   }: {
-    event: Event['event'],
-    params: Event['params'],
-    from: State,
-    to: State
-  }){
+    event: Event["event"];
+    params: Event["params"];
+    from: State;
+    to: State;
+  }) {
     return {
-      event, params, from, to
-    } as Event
+      event,
+      params,
+      from,
+      to,
+    } as Event;
   }
   return {
     states,
     transitions,
     create: (initialState) => {
       let currentState: ReturnType<States[keyof States]> = initialState;
-      let lastEvent: any
+      let lastEvent: any;
       const createSender =
         (eventKey: string) =>
         (...params: any[]) =>
@@ -67,7 +73,7 @@ export function defineMachine<
         events,
         transitions: transitioners,
         send: (type, params) => {
-          const next = machine.transition(type, params)
+          const next = machine.transition(type, params);
           if (next) {
             return machine.update(() => next);
           }
@@ -77,8 +83,8 @@ export function defineMachine<
           if (!toKey) {
             return lastEvent;
           }
-          const to = states[toKey as any](...(params || []));
-          return createEvent({            
+          const to = states[toKey as any](...params);
+          return createEvent({
             from: lastEvent.to,
             event: type,
             params,

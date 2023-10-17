@@ -45,11 +45,31 @@ describe("machine instance", () => {
     expect(machine.config.states).toBe(states);
     expect(machine.config.transitions).toBe(transitions);
   });
+  it("states can match", () => {
+    expect(
+      Machine.states.Initial().match({
+        Initial: () => 100,
+        _: () => 0,
+      }),
+    ).toBe(100);
+
+    expect(
+      Machine.states.Initial().match({
+        _: () => 1,
+      }),
+    ).toBe(1);
+
+    expect(() =>
+      Machine.states.Initial().match({
+        InvalidKey: () => 1,
+      } as any),
+    ).toThrow();
+  });
   describe("update()", () => {
     describe("updater", () => {
       it("receives current event as context", () => {
         machine.update((context) => {
-          const { getLast: event } = machine;
+          const event = machine.getLast();
           expect(context.from).toEqual(event.from);
           return context;
         });
@@ -68,8 +88,8 @@ describe("machine instance", () => {
   });
   describe("transition", () => {
     it("ignores invalid transitions", () => {
-      const res = machine.transition('InvalidEvent' as any, {})
-      expect(res).toBe(machine.getLast())
+      const res = machine.transition("InvalidEvent" as any, {});
+      expect(res).toBe(machine.getLast());
     });
   });
   describe("send", () => {

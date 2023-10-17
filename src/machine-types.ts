@@ -145,8 +145,11 @@ export interface MachineFromStateCreatorsAndTransitionsConfig<
   transitions: StateTransitioners<States, TransitionConfig>;
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event;
-  send: SendFunction<TransitionConfig>;  
-  transition: (event: TransitionEventKeys<TransitionConfig>, data?: any) => Event | undefined;
+  send: SendFunction<TransitionConfig>;
+  transition: (
+    event: TransitionEventKeys<TransitionConfig>,
+    data?: any,
+  ) => Event | undefined;
   update: (updater: (event: Event) => Event) => void;
 }
 

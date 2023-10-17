@@ -4,6 +4,7 @@ import {
   StateTransitionsConfig,
 } from "./machine-types";
 import { onTransition } from "./on-transition";
+import { onUpdate } from "./on-update";
 import { StateCreators } from "./states";
 import { TransitionEvent } from "./types";
 
@@ -26,27 +27,6 @@ export type TransitionHookMapping<StateTransitions, T> = {
   };
 };
 
-export function transitionMiddleware<T extends TransitionEvent<any, any, any>>(
-  mapping: TransitionHookMapping<any, T>,
-) {
-  return (context: T, next: (context: T) => T) => {
-    const { event, from } = context;
-    const anyMapping = mapping as any;
-    const extensions = (anyMapping["*"]?.[event as any] ??
-      anyMapping[from?.state ?? ""]?.[
-        event as any
-      ]) as TransitionHookExtensions<T>;
-    if (extensions) {
-      const { before, after, enter, leave } = extensions;
-      leave?.(context);
-      before?.(context);
-      enter?.(context);
-      context = next(context);
-      after?.(context);
-    }
-    return context;
-  };
-}
 export default {};
 
 export function onLifecycle<
@@ -64,10 +44,25 @@ export function onLifecycle<
   >,
   config: TransitionHookMapping<TransitionConfig, Event>,
 ) {
-  const middleware = transitionMiddleware<Event>(config);
+  return onUpdate(machine, (commit, updater) => {
+    commit((context) => {
+      const { event, from } = context;
+      const anyMapping = config as any;
+      const extensions = (anyMapping["*"]?.[event as any] ??
+        anyMapping[from?.state ?? ""]?.[
+          event as any
+        ]) as TransitionHookExtensions<Event>;
+      if (extensions) {
+        const { before, after, enter, leave } = extensions;
+        leave?.(context);
+        before?.(context);
+        enter?.(context);
+        context = updater(context);
+        after?.(context);
+      }
+      return context;
+    });
 
-  return onTransition(machine, (t, ev) => {
-    return middleware(ev, (ret: any) => t(ret ?? ev));
-    return t(ev);
+    // return t(ev);
   });
 }
