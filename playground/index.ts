@@ -1,3 +1,3 @@
-import { test } from "../src/index1";
+import './nested.usage'
 
-console.log(test());
+console.log('done!!!');

@@ -4,15 +4,15 @@ import { createStates as states } from "../src/states";
 import { delayer } from "../src/delay";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
-const machine = (statesConfig: any, transitionsConfig: any) => ({
+const submachine = (statesConfig: any, transitionsConfig: any) => ({
   machine: defineMachine(statesConfig, transitionsConfig),
 });
 
-const rootMachine = defineMachine(
+const Machine = defineMachine(
   states({
     Idle: undefined,
     First: promise(delayer(1000, "First Result")),
-    Second: machine(
+    Second: submachine(
       states({
         Idle: undefined,
         Executing: promise(delayer(2000, "Second Result")),
@@ -33,3 +33,10 @@ const rootMachine = defineMachine(
     Done: {},
   },
 );
+const rootMachine = Machine.create(Machine.states.Idle())
+
+const log = () => console.log({ rootMachine, last: rootMachine.getLast() })
+log()
+rootMachine.events.start()
+log()
+
