@@ -93,7 +93,11 @@ export function unionize<
         const data = value(...args);
         return new UnionMemberImpl(tag, data, tagKey);
       };
-    } else if (value === undefined) {
+    }
+    else if (typeof value === "object") {
+      createObj[tag] = () => new UnionMemberImpl(tag, value, tagKey);
+    } 
+    else if (value === undefined) {
       createObj[tag] = () => new UnionMemberImpl(tag, {}, tagKey);
     }
   }
