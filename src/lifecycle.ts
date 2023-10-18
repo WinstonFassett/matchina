@@ -53,7 +53,8 @@ export function onLifecycle<
         event as any
       ]) as TransitionHookExtensions<Event>;
     if (extensions) {
-      const { before, after, enter, leave } = extensions;
+      const { guard, before, after, enter, leave } = extensions;
+      if (guard && !guard(context)) return context
       leave?.(context);
       const updatedContext = updater(context);
       before?.(updatedContext);

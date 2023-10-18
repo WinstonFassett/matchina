@@ -1,10 +1,8 @@
 import { onLifecycle } from "../src/lifecycle";
 import { defineMachine } from "../src/machine";
-import { onTransition } from "../src/on-transition";
 import { createPromiseMachine } from "../src/promise";
 import { createStates } from "../src/states";
 
-// usage
 const Machine = defineMachine(
   createStates({
     Heating() {},
@@ -18,21 +16,6 @@ const Machine = defineMachine(
   },
 );
 const machine = Machine.create(Machine.states.Heating());
-function guard(ev: typeof machine.getLast) {
-  return ev.match({
-    change: () => {
-      return true;
-    },
-    _: () => true,
-  });
-}
-
-onTransition(machine, (transition, ev) => {
-  if (!guard(ev)) {
-    return;
-  }
-  return transition(ev) as any;
-});
 
 onLifecycle(machine, {
   Heating: {

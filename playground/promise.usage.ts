@@ -22,8 +22,7 @@ machine.transitions.Pending.reject(new Error("error")); // this should require e
 
 machine.send("execute", 123);
 
-// TODO
-machine.event.match({
+machine.getLast().match({
   reject: (error: Error) => console.log({ error }),
   _: () => {},
 });

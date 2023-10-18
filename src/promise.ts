@@ -20,13 +20,10 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
     Resolved: { execute: "Pending" },
     Rejected: { execute: "Pending" },
   });
-  // console.log('creating promise machine')
   const machine = Machine.create(Machine.states.Idle());
   if (makePromise) {
-    // console.log('listing for execute')
     onTransition(machine, (t, ev, params) => {
       if (ev === "execute") {
-        // console.log('promising')
         makePromise(...(params as any))
           .then(machine.events.resolve)
           .catch(machine.events.reject);
