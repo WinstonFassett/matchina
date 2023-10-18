@@ -34,6 +34,7 @@ machine.states.Rejected(new Error("error")).match({
   _() {},
 });
 
-machine.getState().match({
-  _: () => {},
+const it = machine.getState().match({
+  _: () => ({ kablamo: false }),
 });
+it.kablamo = true
