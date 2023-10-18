@@ -1,3 +1,3 @@
-import './nested.usage'
+import './promise.usage'
 
 console.log('done!!!');
