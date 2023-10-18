@@ -35,6 +35,21 @@ export type Matchers<U extends UnionDataFactory> =
   | ExhaustiveMatchers<U>
   | Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<U>;
 
+
+export type UnionMember<
+  U extends UnionDataFactory,
+  TagKey extends string = "tag",
+  K extends keyof UnionData<U> = keyof UnionData<U>,
+  D extends UnionData<U>[K] = UnionData<U>[K],
+> = {
+  data: D;
+  match<M extends Matchers<U>>(casesObj: M):
+    // any
+    M[keyof M]  extends (...args: any) => infer R ? R : never
+} & {  
+  [tagKey: string]: string;
+}
+
 export class UnionMemberImpl<
   U extends UnionDataFactory,
   TagKey extends string = "tag",
@@ -66,7 +81,7 @@ export class UnionMemberImpl<
 export type UnionConfigMember<
   U extends UnionDataFactory,
   TagKey extends string = "tag",
-> = UnionMemberImpl<U, TagKey> & { [K in TagKey]: string };
+> = UnionMember<U, TagKey> & { [K in TagKey]: string };
 
 export type UnionFactory<
   U extends UnionDataFactory,
@@ -75,7 +90,7 @@ export type UnionFactory<
   [Property in keyof U]: Funcify<U[Property]> extends (...args: any[]) => any
     ? (
         ...args: Parameters<Funcify<U[Property]>>
-      ) => UnionConfigMember<U, TagKey>
+      ) => UnionMember<U, TagKey, Property>
     : never;
 };
 
