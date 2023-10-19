@@ -6,6 +6,6 @@ types
 .DS_Store
 .eslintcache
 *.log*
-*.conf*
+*.conf
 *.env*
 bun.lockb
