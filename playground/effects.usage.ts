@@ -21,8 +21,18 @@ const machine = defineMachine(states, {
 }).create(states.Idle());
 
 runEffectsOnUpdate(machine as any, {
-  Notify: console.log,
+  Notify: m => console.log('NOTIFY', m),
   _: (ev: any) => {
-    console.log("unhandled", ev);
+    console.log("stub");
   },
 });
+
+
+const checkState = () => console.log({ state: machine.getState().state, effects: machine.getState().data.effects.map(({effect}) => effect) })
+checkState()
+machine.events.next()
+checkState()
+machine.events.next()
+checkState()
+machine.events.next()
+checkState()

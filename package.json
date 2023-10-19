@@ -22,8 +22,8 @@
   "scripts": {
     "build": "unbuild",
     "dev": "vitest dev",
-    "play": "jiti playground",
-    "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"jiti playground\"",
+    "play": "shx ls ./playground | xargs -I {} jiti ./playground/{}",
+    "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"jiti playground/effects.usage.ts\"",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
     "prepack": "pnpm run build",
@@ -40,9 +40,10 @@
     "eslint-config-unjs": "^0.2.1",
     "jiti": "^1.20.0",
     "prettier": "^3.0.3",
+    "shx": "^0.3.4",
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0",
     "vitest": "^0.34.6"
   },
-  "packageManager": "pnpm@8.6.12"  
+  "packageManager": "pnpm@8.6.12"
 }

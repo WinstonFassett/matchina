@@ -5,7 +5,7 @@ import {
   UnionDataFactory,
   UnionConfigMember,
 } from "./unionize";
-import { AnyMachine } from "./types";
+import { AnEventKey, AnyMachine, TransitionEvent } from "./types";
 
 export type Effect = UnionConfigMember<any, "effect">;
 
@@ -16,14 +16,15 @@ export function runEffectsOnUpdate(
   machine: AnyMachine,
   matchers: Matchers<any>,
 ) {
-  onUpdate(machine, (origUpdate, transition) => {
-    let event: any;
-    origUpdate((ev) => {
-      event = transition(ev);
-      return event;
+  onUpdate(machine, (commit, updater) => {
+    commit((ev) => {
+      const initial = ev
+      const updated = updater(ev);
+      if (initial.to !== updated.to) {
+        handleEffects(updated.to.data.effects, matchers);
+      }
+      return updated;
     });
-    handleEffects(event.to.effects, matchers);
-    return event;
   });
 }
 function handleEffects(effects: undefined | Effect[], matchers: Matchers<any>) {
