@@ -45,6 +45,4 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
     done: undefined as undefined | Promise<void>
   });
   return promiseMachine
-
-
 }

@@ -86,7 +86,7 @@ export function onLifecycle<
       const stateEventHooks = stateHooks?.on
       const currentEventHooks = stateEventHooks?.[event] ?? stateEventHooks?.['*']
       const { handle, guard, before, after } = currentEventHooks || {};      
-      if (guard && !guard(updated as any)) return current
+      if (guard && !guard(updated as any)) { return current }
       const handled = (handle?.(updated as any) as typeof updated ?? updated)
       stateHooks?.leave?.(handled)
       before?.(handled as any);

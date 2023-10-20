@@ -7,8 +7,8 @@ import { createStates } from "../src/states";
 const Machine = defineMachine(
   createStates({
     Idle() {},
-    Heating(to: number) { return {to} },
-    Boiling(at: string) { return { at }},
+    Heating(to: number) { return { to } },
+    Boiling(at: string) { return { at } },
   }),
   {
     Idle: {
@@ -21,13 +21,13 @@ const Machine = defineMachine(
   },
 );
 const machine = Machine.create(Machine.states.Idle());
-let temp = 50
+const temp = 50
 
 onLifecycle(machine, {
   Idle: {
     on: {
       start: {
-        guard: (event) =>{   
+        guard: (event) => {   
           console.log('guard', event)
           const e = event.event
           const [a] = event.params
@@ -39,9 +39,7 @@ onLifecycle(machine, {
           //   },
           // })
         },
-        before(ev) {
-          
-        },
+        before(ev) {},
       },
     }
   },
@@ -68,13 +66,13 @@ async function promiseLifecycleUsage () {
     Idle: {
       on: {
         execute: {
-          guard ({ event, params, from: { state: from }, to: { state: to }}) {
+          guard ({ event, params, from: { state: from }, to: { state: to } }) {
             console.log(`${from} wants to ${event} to ${to} with params ${params.join(', ')}`)
             const accept = params[0] > 1
             console.log('GUARD accept?', accept)
             return accept            
           },
-          before ({ params: [amount]}) {
+          before ({ params: [amount] }) {
             console.log('executing', amount)
           },
           after: (event) => 
@@ -83,7 +81,7 @@ async function promiseLifecycleUsage () {
               .catch(somePromiseMachine.events.reject),
         },
       },
-      leave: ({ event, from: { state: from }, to: { state: to }}) => {
+      leave: ({ event, from: { state: from }, to: { state: to } }) => {
         console.log(`leaving ${from} to ${event} to ${to}`)
       }
     },

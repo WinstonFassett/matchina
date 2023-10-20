@@ -98,10 +98,10 @@ describe("machine instance", () => {
   describe("events", () => {
     it("invoke send", () => {});
   });  
-  it('events can match', () =>{
+  it('events can match', () => {
     machine.events.done(true)      
     const mustBeOk = machine.getLast().match({
-      done: (ok) => {console.log('ok?', ok); return 'ok' as const}
+      done: (ok) => { console.log('ok?', ok); return 'ok' as const }
     })
   })
 });

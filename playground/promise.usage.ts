@@ -3,7 +3,6 @@ import { createPromiseMachine } from "../src/promise";
 import { delay } from "../src/delay";
 
 async function promiseUsage () {
-
   const machine = createPromiseMachine(async (x: number) => {
     console.log('sleeping for', x)
     await delay(x)
@@ -27,7 +26,7 @@ async function promiseUsage () {
   // TODO: add this to promise
   const reset = () => {
     console.log('resetting')
-    machine.update(c => ({...c, to: machine.states.Idle() }))
+    machine.update(c => ({ ...c, to: machine.states.Idle() }))
   }
   checkState()
   machine.events.execute(1000);

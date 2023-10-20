@@ -28,7 +28,7 @@ runEffectsOnUpdate(machine as any, {
 });
 
 
-const checkState = () => console.log({ state: machine.getState().state, effects: machine.getState().data.effects.map(({effect}) => effect) })
+const checkState = () => console.log({ state: machine.getState().state, effects: machine.getState().data.effects.map(({ effect }) => effect) })
 checkState()
 machine.events.next()
 checkState()
