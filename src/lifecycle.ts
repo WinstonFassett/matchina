@@ -8,7 +8,6 @@ import { onTransition } from "./on-transition";
 import { onUpdate } from "./on-update";
 import { StateCreators } from "./states";
 import { TransitionEvent } from "./types";
-import { Expand } from "./utility-types";
 
 export const LifecycleSymbol = Symbol("lifecycle");
 
@@ -42,7 +41,7 @@ TransitionConfig extends StateTransitionsConfig<States>,
             Event, // should constrain params
             ReturnType<States[StateKey]>,
             ReturnType<States[TransitionConfig[StateKey][Event]]>,
-            Expand< Parameters<States[TransitionConfig[StateKey][Event]]>>
+            Parameters<States[TransitionConfig[StateKey][Event]]>
           >
         >
       )

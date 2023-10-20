@@ -40,10 +40,10 @@ export type StateTransitioners<States extends StateCreators<any>, Transitions> =
 type FlattenTransitions<Transitions> = {
   [StateKey in keyof Transitions]: Transitions[StateKey];
 }[keyof Transitions];
+
 type TransitionEventKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
-// type ExtractedEventKeys<Transitions> = TransitionEventKeys<Transitions>;
 
 type ExtractedEventKeys<
 States extends StateCreators<any>,
@@ -101,48 +101,33 @@ export type MachineEvent<
     To
   > & {
   params: Params;
-  match: (matchers: EventMatchers<States, Transitions>) => any;
+  match: <M extends EventMatchers<States, Transitions>>(cases: M) => 
+    M[keyof M] extends (...args: any) => infer R ? R : never;
 }>
-type MachineEventDataFactory<
+
+type TransitionEventMatchers<
   States extends StateCreators<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
 > = {
-  [EventKey in TransitionEventKeys<TransitionsConfig>]: (...args: any[]) => any;
-};
-type ExhaustiveEventMatchers<
-  States extends StateCreators<any>,
-  TransitionsConfig extends StateTransitionsConfig<States>,
-> = {
-  [EventKey in keyof MachineEventDataFactory<
-    States,
-    TransitionsConfig
-  >]: MachineEventDataFactory<
-    States,
-    TransitionsConfig
-  >[EventKey] extends undefined
-    ? () => any
-    : (
-        ...params: Parameters<
-          MachineEventDataFactory<States, TransitionsConfig>[EventKey]
-        >
-      ) => any;
-};
-type MatchEvent_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<
-  States extends StateCreators<any>,
-  TransitionsConfig extends StateTransitionsConfig<States>,
-> = Partial<ExhaustiveEventMatchers<States, TransitionsConfig>> & {
-  _: (data: any) => any;
+  [StateKey in keyof TransitionsConfig]?: 
+    {
+      [EventKey in keyof TransitionsConfig[StateKey]]: 
+        TransitionsConfig[StateKey][EventKey] extends keyof States ?
+      (
+        ...args: Parameters<States[TransitionsConfig[StateKey][EventKey]]>
+      ) => any
+      : (...args: any[]) => any;
+    }
+  
+}[keyof TransitionsConfig] & {
+  _?: (...args:any[]) => any
 };
 
-export type EventMatchers<
-  States extends StateCreators<any>,
-  TransitionsConfig extends StateTransitionsConfig<States>,
-> =
-  | ExhaustiveEventMatchers<States, TransitionsConfig>
-  | MatchEvent_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<
-      States,
-      TransitionsConfig
-    >;
+type EventMatchers<
+States extends StateCreators<any>,
+TransitionsConfig extends StateTransitionsConfig<States>,
+> = TransitionEventMatchers<States, TransitionsConfig>
+    
 type MachineEvents<Transitions> = TUnionToIntersection<
   FlattenTransitions<Transitions>
 >;

@@ -36,6 +36,14 @@ export function defineMachine<
       params,
       from,
       to,
+      match(cases) {
+        const handler = (cases as any)[event];
+        if (handler) {
+          return handler(...params);
+        } else if (cases._) {
+          return cases._(...params);
+        }
+      }
     } as Event;
   }
   return {
