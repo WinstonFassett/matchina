@@ -25,30 +25,35 @@ let temp = 50
 
 onLifecycle(machine, {
   Idle: {
-    start: {
-      guard: (event) =>{   
-        const e = event.event
-        const [a] = event.params
-        event.to.data.to         
-        return true
-        // event.from.match({
-        //   _() {
-        //     return true;
-        //   },
-        // })
+    on: {
+      start: {
+        guard: (event) =>{   
+          console.log('guard', event)
+          const e = event.event
+          const [a] = event.params
+          event.to.data.to         
+          return true
+          // event.from.match({
+          //   _() {
+          //     return true;
+          //   },
+          // })
+        },
+        before(ev) {
+          
+        },
       },
-      before(ev) {
-        
-      },
-    },
+    }
   },
   Heating: {
-    change: {
-      guard (event) {
-        const { to } = event.from.data
-        const { at } = event.to.data
-        const b = event.params
-        return true
+    on: {
+      change: {
+        guard (event) {
+          const { to } = event.from.data
+          const { at } = event.to.data
+          const b = event.params
+          return true
+        }
       }
     }
   },
@@ -61,16 +66,32 @@ async function promiseLifecycleUsage () {
   let done
   onLifecycle(somePromiseMachine, {
     Idle: {
-      execute: {
-        after: (event) => 
-          done = delay(event.params[0])
-            .then(somePromiseMachine.events.resolve)
-            .catch(somePromiseMachine.events.reject),
+      on: {
+        execute: {
+          guard ({ event, params, from: { state: from }, to: { state: to }}) {
+            console.log(`${from} wants to ${event} to ${to} with params ${params.join(', ')}`)
+            const accept = params[0] > 1
+            console.log('GUARD accept?', accept)
+            return accept            
+          },
+          before ({ params: [amount]}) {
+            console.log('executing', amount)
+          },
+          after: (event) => 
+            done = delay(event.params[0])
+              .then(somePromiseMachine.events.resolve)
+              .catch(somePromiseMachine.events.reject),
+        },
       },
+      leave: ({ event, from: { state: from }, to: { state: to }}) => {
+        console.log(`leaving ${from} to ${event} to ${to}`)
+      }
     },
   });
   console.log(somePromiseMachine.getState().state)
-  console.log('execute')
+  console.log('execute 1')
+  somePromiseMachine.events.execute(1);
+  console.log('execute 1000')
   somePromiseMachine.events.execute(1000);
   console.log(somePromiseMachine.getState().state)
   await done

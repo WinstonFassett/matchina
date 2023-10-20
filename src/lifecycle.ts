@@ -12,14 +12,23 @@ import { TransitionEvent } from "./types";
 export const LifecycleSymbol = Symbol("lifecycle");
 
 
-type TransitionHookExtensions2<TIn, TOut>
+type TransitionHookExtensions<T>
  = {
-  guard?: (context: TOut) => boolean;
-  // leave?: (context: TIn) => any;
-  before?: (context: TOut) => any;
-  // enter?: (context: TOut) => any;
-  handle?: (context: TOut) => TOut;
-  after?: (context: TOut) => any;
+  guard?: (change: T) => boolean;
+  before?: (change: T) => any;
+  handle?: (change: T) => T;
+  after?: (change: T) => any;
+};
+
+type StateHookExtensions<
+  States extends StateCreators<any>,
+  TransitionConfig extends StateTransitionsConfig<States>,
+  TLeave extends ReturnType<States[keyof States]>, 
+  TEnter extends ReturnType<States[keyof States]>,
+>
+ = {
+  leave?: (change: MachineEvent<States, TransitionConfig, any, TLeave, TEnter>) => any;
+  enter?: (change: TEnter) => any;
 };
 
 
@@ -27,32 +36,27 @@ export type TransitionHookMapping2<
 States extends StateCreators<any>,
 TransitionConfig extends StateTransitionsConfig<States>,
 > = {
-  [StateKey in keyof TransitionConfig & keyof States]?: {
-    [Event in keyof TransitionConfig[StateKey]]?: 
-    TransitionConfig[StateKey][Event] extends keyof States
-      ? (
-        TransitionHookExtensions2<
-          MachineEvent<States,TransitionConfig, any, 
-            any,
-            ReturnType<States[keyof States]>
-          >,
-          MachineEvent<
-            States, TransitionConfig, 
-            Event, // should constrain params
-            ReturnType<States[StateKey]>,
-            ReturnType<States[TransitionConfig[StateKey][Event]]>,
-            Parameters<States[TransitionConfig[StateKey][Event]]>
+  [StateKey in keyof TransitionConfig]?: {
+    on?: {
+      [Event in keyof TransitionConfig[StateKey]]?: 
+      TransitionConfig[StateKey][Event] extends keyof States
+        ? (
+          TransitionHookExtensions<
+            MachineEvent<
+              States, TransitionConfig, 
+              Event, // should constrain params
+              ReturnType<States[StateKey]>,
+              ReturnType<States[TransitionConfig[StateKey][Event]]>,
+              Parameters<States[TransitionConfig[StateKey][Event]]>
+            >
           >
-        >
-      )
-      : never
-  }
-  //  & {
-  //   "*"?: TransitionHookExtensions2<
-  //     MachineEvent<States,TransitionConfig>,
-  //     MachineEvent<States,TransitionConfig>
-  //   >;
-  // };
+        )
+        : never      
+    } 
+  } & StateHookExtensions<States, TransitionConfig, ReturnType<States[StateKey]>, any>
+   & {
+    "*"?: TransitionHookExtensions<MachineEvent<States,TransitionConfig>>;
+  };
 };
 
 
@@ -78,21 +82,18 @@ export function onLifecycle<
       const updated = updater(current)
       const { to: currentState } = current;
       const { event, to: nextState } = updated
-      const anyMapping = config as any;
-      const extensions = (anyMapping["*"]?.[event as any] ??
-        anyMapping[currentState?.state ?? ""]?.[
-          event as any
-        ]) as TransitionHookExtensions2<Event, Event>;
-      if (extensions) {
-        const { guard, before, after } = extensions;
-        if (guard && !guard(current)) return current
-        // leave?.(current);        
-        before?.(updated);
-        // enter?.(updated);
-        commit(() => updated);
-        after?.(updated);
-      }
-      return updated;
+      const stateHooks = config[currentState.state as keyof typeof config] ?? config['*' as keyof typeof config]
+      const stateEventHooks = stateHooks?.on
+      const currentEventHooks = stateEventHooks?.[event] ?? stateEventHooks?.['*']
+      const { handle, guard, before, after } = currentEventHooks || {};      
+      if (guard && !guard(updated as any)) return current
+      const handled = (handle?.(updated as any) as typeof updated ?? updated)
+      stateHooks?.leave?.(handled)
+      before?.(handled as any);
+      stateHooks?.enter?.(handled)
+      commit(() => handled);
+      after?.(handled as any);
+      return handled;
     })
   });
 }
