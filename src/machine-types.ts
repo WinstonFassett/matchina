@@ -58,37 +58,6 @@ type ExtractedEventKeys<
   >]: keyof StateTransitioners<States, Transitions>[StateKey];
 }[keyof StateTransitioners<States, Transitions>];
 
-export type TransitionExitState<
-  States extends StateCreators<any>,
-  Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<States, Transitions>,
-> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
-  States,
-  Transitions
->];
-
-export type ExtractedEventParameters<
-  States extends StateCreators<any>,
-  Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<States, Transitions>,
-> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
-  States,
-  Transitions
->][EventKey] extends (...args: infer P) => any
-  ? P
-  : never;
-
-type ExtractedEventExit<
-  Transitions extends StateTransitionsConfig<any>,
-  States extends StateCreators<any>,
-  EventKey extends ExtractedEventKeys<States, Transitions>,
-> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
-  States,
-  Transitions
->][EventKey] extends (...args: any) => infer R
-  ? R
-  : never;
-
 export type MachineEvent<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
@@ -196,3 +165,37 @@ type MachineCreator<
 > = (
   initialState: ReturnType<States[keyof States]>,
 ) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>;
+
+// #region util-types, unused/unteste lol
+
+export type TransitionExitState<
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
+> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  States,
+  Transitions
+>];
+
+export type ExtractedEventParameters<
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
+  EventKey extends ExtractedEventKeys<States, Transitions>,
+> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  States,
+  Transitions
+>][EventKey] extends (...args: infer P) => any
+  ? P
+  : never;
+
+export type ExtractedEventExit<
+  Transitions extends StateTransitionsConfig<any>,
+  States extends StateCreators<any>,
+  EventKey extends ExtractedEventKeys<States, Transitions>,
+> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  States,
+  Transitions
+>][EventKey] extends (...args: any) => infer R
+  ? R
+  : never;
+
+// #endregion

@@ -22,7 +22,7 @@ const machine = defineMachine(states, {
 
 runEffectsOnUpdate(machine as any, {
   Notify: m => console.log('NOTIFY', m),
-  _: (ev: any) => {
+  _: () => {
     console.log("stub");
   },
 });

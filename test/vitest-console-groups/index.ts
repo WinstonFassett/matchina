@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, it } from "vitest";
+import { afterEach, beforeEach } from "vitest";
 import { BufferedConsole } from "./buffered-console";
 
 const origConsole = console;

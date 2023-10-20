@@ -4,7 +4,7 @@ import { createStates } from "./states";
 
 export function createPromiseMachine<T, A, E extends Error = Error>(
   makePromise?: (...args: A[]) => Promise<T>,
-  ) {
+) {
   const states = createStates({
     Idle: undefined,
     Pending: (...params: A[]) => params,
@@ -20,7 +20,7 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
     Resolved: { execute: "Pending" },
     Rejected: { execute: "Pending" },
   });
-  const initialState = Machine.states.Idle()
+  const initialState = Machine.states.Idle();
   const machine = Machine.create(initialState);
   if (makePromise) {
     const _makePromise = makePromise;

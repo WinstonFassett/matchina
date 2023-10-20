@@ -5,7 +5,6 @@ import { createPromiseMachine } from "../src/promise";
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it
   const machine = createPromiseMachine<number, number>();
-  let done
   const removeLifecycle = onLifecycle(machine, {
     Idle: {
       on: {

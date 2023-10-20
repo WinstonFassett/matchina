@@ -11,12 +11,12 @@ type MachineState = LeafState & {
 
 type StateType = LeafState | MachineState;
 
-function isLeafState(state: StateType): state is LeafState {
+export function isLeafState(state: StateType): state is LeafState {
   return !("machine" in state);
 }
 type StateTuple = [string, ...any[]];
 
-function constructState(states: any, path: StateTuple[]): StateType {
+export function constructState(states: any, path: StateTuple[]): StateType {
   let currentStateContext = states;
   let rootState: StateType | undefined;
   let parentState: StateType | undefined;
@@ -43,5 +43,5 @@ function constructState(states: any, path: StateTuple[]): StateType {
     }
   }
 
-  return rootState!;
+  return rootState as StateType;
 }

@@ -75,7 +75,7 @@ export function onLifecycle<
     commit((current) => {
       const updated = updater(current);
       const { to: currentState } = current;
-      const { event, to: nextState } = updated;
+      const { event } = updated;
       const stateHooks =
         config[currentState.state as keyof typeof config] ??
         config["*" as keyof typeof config];

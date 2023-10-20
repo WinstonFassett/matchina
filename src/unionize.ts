@@ -50,7 +50,7 @@ export type UnionMember<
     ): // any
     M[keyof M] extends (...args: any) => infer R ? R : never;
   } & {
-    [tagKey: string]: string;
+    [K in TagKey]: string;
   }
 >;
 

@@ -1,6 +1,5 @@
-import { Expand } from "../src/utility-types";
-import { createPromiseMachine } from "../src/promise";
 import { delay } from "../src/delay";
+import { createPromiseMachine } from "../src/promise";
 
 async function promiseUsage () {
   const machine = createPromiseMachine(async (x: number) => {
@@ -8,9 +7,6 @@ async function promiseUsage () {
     await delay(x)
     return `slept for ${x}ms`
   });
-  
-  type X = Expand<typeof machine.events>;
-  const x: X = {} as X;
   
   const it = machine.getState().match({
     Rejected: () => ({ kablamo: false }),

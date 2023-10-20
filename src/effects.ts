@@ -1,11 +1,11 @@
 import { onUpdate } from "./on-update";
+import { AnyMachine } from "./types";
 import {
-  unionize,
   Matchers,
-  UnionDataFactory,
   UnionConfigMember,
+  UnionDataFactory,
+  unionize,
 } from "./unionize";
-import { AnEventKey, AnyMachine, TransitionEvent } from "./types";
 
 export type Effect = UnionConfigMember<any, "effect">;
 

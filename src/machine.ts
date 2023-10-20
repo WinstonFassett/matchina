@@ -1,12 +1,10 @@
-import { Expand } from "./utility-types";
-import { StateCreators } from "./states";
-import { UnionDataFactory } from "./unionize";
 import {
-  StateTransitionsConfig,
   MachineDefinition,
-  MachineFromStateCreatorsAndTransitionsConfig,
   MachineEvent,
+  MachineFromStateCreatorsAndTransitionsConfig,
+  StateTransitionsConfig,
 } from "./machine-types";
+import { StateCreators } from "./states";
 
 const INITIALIZE = "__init";
 

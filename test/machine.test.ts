@@ -1,8 +1,8 @@
-import { expect, it, describe, beforeEach } from "vitest";
-import { UnionizedStates, createStates } from "../src/states";
+import { beforeEach, describe, expect, it } from "vitest";
 import { defineMachine } from "../src/machine";
-import { UnionFactory } from "../src/unionize";
 import { MachineDefinition } from "../src/machine-types";
+import { createStates } from "../src/states";
+import { UnionFactory } from "../src/unionize";
 
 describe("defineMachine", () => {
   it("exposes its states and transitions", () => {
@@ -109,5 +109,6 @@ describe("machine instance", () => {
         return "ok" as const;
       },
     });
+    console.log({ mustBeOk });
   });
 });
