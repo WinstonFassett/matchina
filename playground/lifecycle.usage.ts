@@ -1,63 +1,6 @@
 import { delay } from "../src/delay";
 import { onLifecycle } from "../src/lifecycle";
-import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/promise";
-import { createStates } from "../src/states";
-
-const Machine = defineMachine(
-  createStates({
-    Idle() {},
-    Heating(to: number) { return { to } },
-    Boiling(at: string) { return { at } },
-  }),
-  {
-    Idle: {
-      start: 'Heating'
-    },
-    Heating: {
-      change: "Boiling",
-    },
-    Boiling: {},
-  },
-);
-const machine = Machine.create(Machine.states.Idle());
-const temp = 50
-
-onLifecycle(machine, {
-  Idle: {
-    on: {
-      start: {
-        guard: (event) => {   
-          console.log('guard', event)
-          const e = event.event
-          const [a] = event.params
-          event.to.data.to         
-          return true
-          // event.from.match({
-          //   _() {
-          //     return true;
-          //   },
-          // })
-        },
-        before(ev) {},
-      },
-    }
-  },
-  Heating: {
-    on: {
-      change: {
-        guard (event) {
-          const { to } = event.from.data
-          const { at } = event.to.data
-          const b = event.params
-          return true
-        }
-      }
-    }
-  },
-});
-
-
 
 async function promiseLifecycleUsage () {
   const somePromiseMachine = createPromiseMachine<any, number>();
@@ -75,10 +18,13 @@ async function promiseLifecycleUsage () {
           before ({ params: [amount] }) {
             console.log('executing', amount)
           },
-          after: (event) => 
-            done = delay(event.params[0])
+          handle: (event) => {
+            somePromiseMachine.promise = delay(event.params[0])
+            somePromiseMachine.done = somePromiseMachine.promise
               .then(somePromiseMachine.events.resolve)
-              .catch(somePromiseMachine.events.reject),
+              .catch(somePromiseMachine.events.reject)            
+            return event
+          }
         },
       },
       leave: ({ event, from: { state: from }, to: { state: to } }) => {
@@ -96,4 +42,4 @@ async function promiseLifecycleUsage () {
   console.log(somePromiseMachine.getState().state)
 }
 
-promiseLifecycleUsage()
+await promiseLifecycleUsage()

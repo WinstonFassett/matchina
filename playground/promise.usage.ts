@@ -65,4 +65,4 @@ async function promiseUsage () {
   checkState()
 }
 
-promiseUsage()
+await promiseUsage()
