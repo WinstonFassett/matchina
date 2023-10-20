@@ -23,7 +23,7 @@
     "build": "unbuild",
     "dev": "vitest dev",
     "play": "shx ls ./playground | xargs -I {} jiti ./playground/{}",
-    "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"jiti playground/promise.usage.ts\"",
+    "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"jiti playground/lifecycle.usage.ts\"",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
     "prepack": "pnpm run build",

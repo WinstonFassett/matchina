@@ -45,23 +45,25 @@ export function onLifecycle<
   config: TransitionHookMapping<TransitionConfig, Event>,
 ) {
   return onUpdate(machine, (commit, updater) => {
-    const context = machine.getLast();
-    const { event, from } = context;
-    const anyMapping = config as any;
-    const extensions = (anyMapping["*"]?.[event as any] ??
-      anyMapping[from?.state ?? ""]?.[
-        event as any
-      ]) as TransitionHookExtensions<Event>;
-    if (extensions) {
-      const { guard, before, after, enter, leave } = extensions;
-      if (guard && !guard(context)) return context
-      leave?.(context);
-      const updatedContext = updater(context);
-      before?.(updatedContext);
-      enter?.(updatedContext);
-      commit(() => updatedContext);
-      after?.(updatedContext);
-    }
-    return context;
+    commit(current => {
+      const updated = updater(current)
+      const { to: currentState } = current;
+      const { event, to: nextState } = updated
+      const anyMapping = config as any;
+      const extensions = (anyMapping["*"]?.[event as any] ??
+        anyMapping[currentState?.state ?? ""]?.[
+          event as any
+        ]) as TransitionHookExtensions<Event>;
+      if (extensions) {
+        const { guard, before, after, enter, leave } = extensions;
+        if (guard && !guard(current)) return current
+        leave?.(current);        
+        before?.(updated);
+        enter?.(updated);
+        commit(() => updated);
+        after?.(updated);
+      }
+      return updated;
+    })
   });
 }
