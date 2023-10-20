@@ -110,5 +110,11 @@ describe("machine instance", () => {
       },
     });
     console.log({ mustBeOk });
+    const mustBeThing = machine.getLast().match({
+      _: () => {
+        return "thing" as const;
+      },
+    });
+    console.log({ mustBeThing });
   });
 });

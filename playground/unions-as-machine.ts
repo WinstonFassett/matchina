@@ -1,7 +1,8 @@
-import { UnionFactoryMember, unionizer } from "../src/unionize";
+import { UnionDataFactory, UnionFactoryMember, unionize } from "../src/unionize";
 
-const createStates = unionizer('state')
-const createEvents = unionizer('type')
+export const createStates = <T extends UnionDataFactory>(config: T) => unionize(config, "state");
+export const createEvents = <T extends UnionDataFactory>(config: T) => unionize(config, "type");
+
 
 // Define States
 const states = createStates({
