@@ -1,3 +1,5 @@
+import { Expand } from "./utility-types";
+
 export type UnionDataFactoryMember =
   | ((...args: any[]) => any)
   | undefined
@@ -41,14 +43,14 @@ export type UnionMember<
   TagKey extends string = "tag",
   K extends keyof UnionData<U> = keyof UnionData<U>,
   D extends UnionData<U>[K] = UnionData<U>[K],
-> = {
+> = Expand<{
   data: D;
   match<M extends Matchers<U>>(casesObj: M):
     // any
     M[keyof M]  extends (...args: any) => infer R ? R : never
 } & {  
   [tagKey: string]: string;
-}
+}>
 
 export class UnionMemberImpl<
   U extends UnionDataFactory,
