@@ -1,3 +1,4 @@
+import { delay } from "../src/delay";
 import { onLifecycle } from "../src/lifecycle";
 import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/promise";
@@ -5,44 +6,75 @@ import { createStates } from "../src/states";
 
 const Machine = defineMachine(
   createStates({
-    Heating() {},
-    Boiling() {},
+    Idle() {},
+    Heating(to: number) { return {to} },
+    Boiling(at: string) { return { at }},
   }),
   {
+    Idle: {
+      start: 'Heating'
+    },
     Heating: {
       change: "Boiling",
     },
     Boiling: {},
   },
 );
-const machine = Machine.create(Machine.states.Heating());
+const machine = Machine.create(Machine.states.Idle());
+let temp = 50
 
 onLifecycle(machine, {
-  Heating: {
-    change: {
-      guard: (event) =>
-        event.from.match({
-          _() {
-            return true;
-          },
-        }),
+  Idle: {
+    start: {
+      guard: (event) =>{   
+        const e = event.event
+        const [a] = event.params
+        event.to.data.to         
+        return true
+        // event.from.match({
+        //   _() {
+        //     return true;
+        //   },
+        // })
+      },
       before(ev) {
-        ev.to.match({ Heating() {}, _() {} });
+        
       },
     },
   },
-  Boiling: {},
-});
-
-const somePromiseMachine = createPromiseMachine<any, number>();
-onLifecycle(somePromiseMachine, {
-  Idle: {
-    execute: {
-      after: (event) =>
-        fetch("/something")
-          .then(somePromiseMachine.events.resolve)
-          .catch(somePromiseMachine.events.reject),
-    },
+  Heating: {
+    change: {
+      guard (event) {
+        const { to } = event.from.data
+        const { at } = event.to.data
+        const b = event.params
+        return true
+      }
+    }
   },
 });
-somePromiseMachine.events.execute(123);
+
+
+
+async function promiseLifecycleUsage () {
+  const somePromiseMachine = createPromiseMachine<any, number>();
+  let done
+  onLifecycle(somePromiseMachine, {
+    Idle: {
+      execute: {
+        after: (event) => 
+          done = delay(event.params[0])
+            .then(somePromiseMachine.events.resolve)
+            .catch(somePromiseMachine.events.reject),
+      },
+    },
+  });
+  console.log(somePromiseMachine.getState().state)
+  console.log('execute')
+  somePromiseMachine.events.execute(1000);
+  console.log(somePromiseMachine.getState().state)
+  await done
+  console.log(somePromiseMachine.getState().state)
+}
+
+promiseLifecycleUsage()

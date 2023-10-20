@@ -5,6 +5,7 @@ import {
   AnyMachine,
   AnEventKey,
 } from "./types";
+import { Expand } from "./utility-types";
 
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
@@ -21,7 +22,7 @@ export type StateTransitionsConfig<States extends StateCreators<any>> = {
     [EventKey: AnEventKey]: ConfigStateTransitionExit<States>;
   };
 };
-type StateTransitioners<States extends StateCreators<any>, Transitions> = {
+export type StateTransitioners<States extends StateCreators<any>, Transitions> = {
   [StateKey in keyof Transitions & keyof States]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (...args: Parameters<States[Transitions[StateKey][EventKey]]>) => void
@@ -43,19 +44,31 @@ type TransitionEventKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
 // type ExtractedEventKeys<Transitions> = TransitionEventKeys<Transitions>;
+
 type ExtractedEventKeys<
-  Transitions extends StateTransitionsConfig<any>,
-  States extends StateCreators<any>,
+States extends StateCreators<any>,
+Transitions extends StateTransitionsConfig<States>,
 > = {
   [StateKey in keyof StateTransitioners<
     States,
     Transitions
   >]: keyof StateTransitioners<States, Transitions>[StateKey];
 }[keyof StateTransitioners<States, Transitions>];
-type ExtractedEventParameters<
-  Transitions extends StateTransitionsConfig<any>,
+
+export type TransitionExitState<
   States extends StateCreators<any>,
-  EventKey extends ExtractedEventKeys<Transitions, States>,
+  Transitions extends StateTransitionsConfig<States>,
+  EventKey extends ExtractedEventKeys<States, Transitions>
+>
+ = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  States,
+  Transitions
+>]
+
+export type ExtractedEventParameters<
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
+  EventKey extends ExtractedEventKeys<States, Transitions>,
 > = StateTransitioners<States, Transitions>[keyof StateTransitioners<
   States,
   Transitions
@@ -63,21 +76,33 @@ type ExtractedEventParameters<
   ? P
   : never;
 
-export interface MachineEvent<
+type ExtractedEventExit<
+  Transitions extends StateTransitionsConfig<any>,
+  States extends StateCreators<any>,
+  EventKey extends ExtractedEventKeys<States, Transitions>,
+> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  States,
+  Transitions
+>][EventKey] extends (...args: any) => infer R
+  ? R
+  : never;  
+
+export type MachineEvent<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<Transitions, States> = ExtractedEventKeys<
-    Transitions,
-    States
-  >,
-> extends TransitionEvent<
+  EventKey extends ExtractedEventKeys<States, Transitions> = ExtractedEventKeys<States, Transitions>,
+  From extends ReturnType<States[keyof States]> = ReturnType<States[keyof States]>,
+  To extends ReturnType<States[keyof States]> = ReturnType<States[keyof States]>,
+  Params extends any = any
+  // TO should use event key plus transition
+> = Expand<TransitionEvent<
     EventKey,
-    ReturnType<States[keyof States]>,
-    ReturnType<States[keyof States]>
-  > {
-  params: ExtractedEventParameters<Transitions, States, EventKey>;
+    From,
+    To
+  > & {
+  params: Params;
   match: (matchers: EventMatchers<States, Transitions>) => any;
-}
+}>
 type MachineEventDataFactory<
   States extends StateCreators<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
