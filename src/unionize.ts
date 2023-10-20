@@ -37,20 +37,22 @@ export type Matchers<U extends UnionDataFactory> =
   | ExhaustiveMatchers<U>
   | Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<U>;
 
-
 export type UnionMember<
   U extends UnionDataFactory,
   TagKey extends string = "tag",
   K extends keyof UnionData<U> = keyof UnionData<U>,
   D extends UnionData<U>[K] = UnionData<U>[K],
-> = Expand<{
-  data: D;
-  match<M extends Matchers<U>>(casesObj: M):
-    // any
-    M[keyof M]  extends (...args: any) => infer R ? R : never
-} & {  
-  [tagKey: string]: string;
-}>
+> = Expand<
+  {
+    data: D;
+    match<M extends Matchers<U>>(
+      casesObj: M,
+    ): // any
+    M[keyof M] extends (...args: any) => infer R ? R : never;
+  } & {
+    [tagKey: string]: string;
+  }
+>;
 
 export class UnionMemberImpl<
   U extends UnionDataFactory,
@@ -110,11 +112,9 @@ export function unionize<
         const data = value(...args);
         return new UnionMemberImpl(tag, data, tagKey);
       };
-    }
-    else if (typeof value === "object") {
+    } else if (typeof value === "object") {
       createObj[tag] = () => new UnionMemberImpl(tag, value, tagKey);
-    } 
-    else if (value === undefined) {
+    } else if (value === undefined) {
       createObj[tag] = () => new UnionMemberImpl(tag, {}, tagKey);
     }
   }

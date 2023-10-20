@@ -43,7 +43,7 @@ export function defineMachine<
         } else if (cases._) {
           return cases._(...params);
         }
-      }
+      },
     } as Event;
   }
   return {

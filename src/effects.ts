@@ -18,7 +18,7 @@ export function runEffectsOnUpdate(
 ) {
   onUpdate(machine, (commit, updater) => {
     commit((ev) => {
-      const initial = ev
+      const initial = ev;
       const updated = updater(ev);
       if (initial.to !== updated.to) {
         handleEffects(updated.to.data.effects, matchers);

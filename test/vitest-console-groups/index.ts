@@ -1,19 +1,24 @@
-import { beforeEach, afterEach, it } from 'vitest';
-import { BufferedLog } from './BufferedLog';
+import { beforeEach, afterEach, it } from "vitest";
+import { BufferedConsole } from "./buffered-console";
 
 const origConsole = console;
 
-beforeEach(async (context) => {
+function setGlobalConsole(aConsole: typeof console) {
+  // eslint-disable-next-line no-global-assign
+  console = aConsole;
+}
+
+beforeEach((context) => {
   const { task } = context;
-  const interval = (context.task as any)?.options?.debounceInterval || 500;
-  const logger = new BufferedLog({
+  const interval = (task as any)?.options?.debounceInterval || 500;
+  const bufferedConsole = new BufferedConsole({
     debounce: interval,
-  });
-  (context as any).console = logger;
-  console = logger as any;
+  }) as unknown as typeof console;
+  (context as any).console = bufferedConsole;
+  setGlobalConsole(bufferedConsole);
 });
 
 afterEach((context) => {
-  ((context as any).console as BufferedLog).flush();
-  console = origConsole;
+  ((context as any).console as BufferedConsole).flush();
+  setGlobalConsole(origConsole);
 });

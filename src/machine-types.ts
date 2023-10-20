@@ -22,7 +22,10 @@ export type StateTransitionsConfig<States extends StateCreators<any>> = {
     [EventKey: AnEventKey]: ConfigStateTransitionExit<States>;
   };
 };
-export type StateTransitioners<States extends StateCreators<any>, Transitions> = {
+export type StateTransitioners<
+  States extends StateCreators<any>,
+  Transitions,
+> = {
   [StateKey in keyof Transitions & keyof States]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (...args: Parameters<States[Transitions[StateKey][EventKey]]>) => void
@@ -46,8 +49,8 @@ type TransitionEventKeys<T> = {
 }[keyof T];
 
 type ExtractedEventKeys<
-States extends StateCreators<any>,
-Transitions extends StateTransitionsConfig<States>,
+  States extends StateCreators<any>,
+  Transitions extends StateTransitionsConfig<States>,
 > = {
   [StateKey in keyof StateTransitioners<
     States,
@@ -58,12 +61,11 @@ Transitions extends StateTransitionsConfig<States>,
 export type TransitionExitState<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<States, Transitions>
->
- = StateTransitioners<States, Transitions>[keyof StateTransitioners<
+  EventKey extends ExtractedEventKeys<States, Transitions>,
+> = StateTransitioners<States, Transitions>[keyof StateTransitioners<
   States,
   Transitions
->]
+>];
 
 export type ExtractedEventParameters<
   States extends StateCreators<any>,
@@ -85,49 +87,52 @@ type ExtractedEventExit<
   Transitions
 >][EventKey] extends (...args: any) => infer R
   ? R
-  : never;  
+  : never;
 
 export type MachineEvent<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<States, Transitions> = ExtractedEventKeys<States, Transitions>,
-  From extends ReturnType<States[keyof States]> = ReturnType<States[keyof States]>,
-  To extends ReturnType<States[keyof States]> = ReturnType<States[keyof States]>,
-  Params extends any = any
+  EventKey extends ExtractedEventKeys<States, Transitions> = ExtractedEventKeys<
+    States,
+    Transitions
+  >,
+  From extends ReturnType<States[keyof States]> = ReturnType<
+    States[keyof States]
+  >,
+  To extends ReturnType<States[keyof States]> = ReturnType<
+    States[keyof States]
+  >,
+  Params = any,
   // TO should use event key plus transition
-> = Expand<TransitionEvent<
-    EventKey,
-    From,
-    To
-  > & {
-  params: Params;
-  match: <M extends EventMatchers<States, Transitions>>(cases: M) => 
-    M[keyof M] extends (...args: any) => infer R ? R : never;
-}>
+> = Expand<
+  TransitionEvent<EventKey, From, To> & {
+    params: Params;
+    match: <M extends EventMatchers<States, Transitions>>(
+      cases: M,
+    ) => M[keyof M] extends (...args: any) => infer R ? R : never;
+  }
+>;
 
 type TransitionEventMatchers<
   States extends StateCreators<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
 > = {
-  [StateKey in keyof TransitionsConfig]?: 
-    {
-      [EventKey in keyof TransitionsConfig[StateKey]]: 
-        TransitionsConfig[StateKey][EventKey] extends keyof States ?
-      (
-        ...args: Parameters<States[TransitionsConfig[StateKey][EventKey]]>
-      ) => any
+  [StateKey in keyof TransitionsConfig]?: {
+    [EventKey in keyof TransitionsConfig[StateKey]]: TransitionsConfig[StateKey][EventKey] extends keyof States
+      ? (
+          ...args: Parameters<States[TransitionsConfig[StateKey][EventKey]]>
+        ) => any
       : (...args: any[]) => any;
-    }
-  
+  };
 }[keyof TransitionsConfig] & {
-  _?: (...args:any[]) => any
+  _?: (...args: any[]) => any;
 };
 
 type EventMatchers<
-States extends StateCreators<any>,
-TransitionsConfig extends StateTransitionsConfig<States>,
-> = TransitionEventMatchers<States, TransitionsConfig>
-    
+  States extends StateCreators<any>,
+  TransitionsConfig extends StateTransitionsConfig<States>,
+> = TransitionEventMatchers<States, TransitionsConfig>;
+
 type MachineEvents<Transitions> = TUnionToIntersection<
   FlattenTransitions<Transitions>
 >;

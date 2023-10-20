@@ -18,7 +18,7 @@ describe("machine instance", () => {
   let states: UnionFactory<
     {
       Initial: undefined;
-      Done: (ok: boolean) => ({ ok });
+      Done: (ok: boolean) => { ok };
     },
     "state"
   >;
@@ -29,7 +29,10 @@ describe("machine instance", () => {
   let Machine: MachineDefinition<typeof states, typeof transitions>;
   let machine: ReturnType<(typeof Machine)["create"]>;
   beforeEach(() => {
-    states = createStates({ Initial: undefined, Done: (ok: boolean) => ({ ok }) });
+    states = createStates({
+      Initial: undefined,
+      Done: (ok: boolean) => ({ ok }),
+    });
     Machine = defineMachine(states, transitions);
     machine = Machine.create(states.Initial());
   });
@@ -97,11 +100,14 @@ describe("machine instance", () => {
   });
   describe("events", () => {
     it("invoke send", () => {});
-  });  
-  it('events can match', () => {
-    machine.events.done(true)      
+  });
+  it("events can match", () => {
+    machine.events.done(true);
     const mustBeOk = machine.getLast().match({
-      done: (ok) => { console.log('ok?', ok); return 'ok' as const }
-    })
-  })
+      done: (ok) => {
+        console.log("ok?", ok);
+        return "ok" as const;
+      },
+    });
+  });
 });

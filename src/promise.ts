@@ -23,7 +23,7 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
   const initialState = Machine.states.Idle()
   const machine = Machine.create(initialState);
   if (makePromise) {
-    const _makePromise = makePromise
+    const _makePromise = makePromise;
     function execute(params: any[]) {
       const promise = _makePromise(...params);
       promiseMachine.promise = promise;
@@ -32,17 +32,17 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
         .catch(machine.events.reject);
     }
     onUpdate(machine, (commit, updater) => {
-      const after = updater(machine.getLast())
-      after.to.match({ 
-        Pending: execute, 
-        _(){}
-      })
-      commit(() => after)      
-    })
+      const after = updater(machine.getLast());
+      after.to.match({
+        Pending: execute,
+        _() {},
+      });
+      commit(() => after);
+    });
   }
   const promiseMachine = Object.assign(machine, {
     promise: undefined as undefined | Promise<T>,
-    done: undefined as undefined | Promise<void>
+    done: undefined as undefined | Promise<void>,
   });
-  return promiseMachine
+  return promiseMachine;
 }
