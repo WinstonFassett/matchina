@@ -17,7 +17,7 @@ describe("defineMachine", () => {
 describe("machine instance", () => {
   let states: UnionFactory<
     {
-      Initial: undefined;
+      Initial: { name: "initial" };
       Done: (ok: boolean) => { ok };
     },
     "state"
@@ -30,7 +30,7 @@ describe("machine instance", () => {
   let machine: ReturnType<(typeof Machine)["create"]>;
   beforeEach(() => {
     states = createStates({
-      Initial: undefined,
+      Initial: { name: "initial" },
       Done: (ok: boolean) => ({ ok }),
     });
     Machine = defineMachine(states, transitions);
