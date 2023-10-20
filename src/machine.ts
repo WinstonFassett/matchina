@@ -106,18 +106,21 @@ export function defineMachine<
             currentState = event.to;
           }
         },
+        reset: () => initialize(),
         config: {
           states,
           transitions,
         },
       };
-      machine.update((context) => {
-        return {
-          ...context,
-          event: INITIALIZE,
-          to: currentState,
-        };
-      });
+      const initialize = () =>
+        machine.update((context) => {
+          return {
+            ...context,
+            event: INITIALIZE,
+            to: initialState,
+          };
+        });
+      initialize();
       return machine;
     },
   };

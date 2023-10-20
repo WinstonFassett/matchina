@@ -1,15 +1,10 @@
 import {
-  ExtractedEventParameters,
   MachineEvent,
   MachineFromStateCreatorsAndTransitionsConfig,
   StateTransitionsConfig,
 } from "./machine-types";
-import { onTransition } from "./on-transition";
 import { onUpdate } from "./on-update";
 import { StateCreators } from "./states";
-import { TransitionEvent } from "./types";
-
-export const LifecycleSymbol = Symbol("lifecycle");
 
 type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;

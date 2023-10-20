@@ -166,6 +166,7 @@ export interface MachineFromStateCreatorsAndTransitionsConfig<
     data?: any,
   ) => Event | undefined;
   update: (updater: (event: Event) => Event) => void;
+  reset(): void;
 }
 
 export type AnyMachineFromStateCreatorsAndTransitionsConfig<

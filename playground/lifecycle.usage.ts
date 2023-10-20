@@ -1,11 +1,12 @@
-import { delay } from "../src/delay";
+import { delayed } from "../src/delay";
 import { onLifecycle } from "../src/lifecycle";
 import { createPromiseMachine } from "../src/promise";
 
 async function promiseLifecycleUsage () {
-  const somePromiseMachine = createPromiseMachine<any, number>();
+  // promise machine WITHOUT a promise to drive it
+  const machine = createPromiseMachine<number, number>();
   let done
-  onLifecycle(somePromiseMachine, {
+  const removeLifecycle = onLifecycle(machine, {
     Idle: {
       on: {
         execute: {
@@ -19,10 +20,11 @@ async function promiseLifecycleUsage () {
             console.log('executing', amount)
           },
           handle: (event) => {
-            somePromiseMachine.promise = delay(event.params[0])
-            somePromiseMachine.done = somePromiseMachine.promise
-              .then(somePromiseMachine.events.resolve)
-              .catch(somePromiseMachine.events.reject)            
+            const num = event.params[0]
+            machine.promise = delayed(num, num)
+            machine.done = machine.promise
+              .then(machine.events.resolve)
+              .catch(machine.events.reject)            
             return event
           }
         },
@@ -32,14 +34,28 @@ async function promiseLifecycleUsage () {
       }
     },
   });
-  console.log(somePromiseMachine.getState().state)
+  const checkState = () => console.log(machine.getState().state)
   console.log('execute 1')
-  somePromiseMachine.events.execute(1);
+  machine.events.execute(1);
   console.log('execute 1000')
-  somePromiseMachine.events.execute(1000);
-  console.log(somePromiseMachine.getState().state)
-  await done
-  console.log(somePromiseMachine.getState().state)
+  machine.events.execute(1000);
+  checkState()
+  await machine.done
+  checkState()
+
+  console.log('removing lifecycle')
+  removeLifecycle()
+  machine.reset()
+  console.log('resetting')
+  checkState()
+
+  // without lifecycle, there is no delay implementation
+  machine.events.execute(1000)
+  // state is pending
+  checkState()
+  // synchronously resolve
+  machine.events.resolve(1)
+  checkState()
 }
 
 await promiseLifecycleUsage()
