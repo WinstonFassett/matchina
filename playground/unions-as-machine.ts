@@ -1,36 +1,45 @@
-import { unionize } from "../src/unionize";
+import { UnionFactoryMember, unionizer } from "../src/unionize";
 
-const states = unionize(
-  {
-    Idle: () => ({}),
-    Done: (x: number) => ({ result: x }),
-  },
-  "state",
-);
+const createStates = unionizer('state')
+const createEvents = unionizer('type')
 
-const events = unionize(
-  {
-    execute: (x: number) => x,
-  },
-  "event",
-);
+// Define States
+const states = createStates({
+  Idle: () => ({}),
+  Done: (x: number) => ({ result: x }),
+});
+type State = UnionFactoryMember<typeof states>
 
-const transitions = {
-  Idle: { execute: "Done" },
-};
+// Define Events
+const events = createEvents({
+  execute: (x: number) => x,
+});
+type Event = UnionFactoryMember<typeof events>
 
-function transition<States extends typeof states, Events extends typeof events>(
-  state: ReturnType<(typeof states)[keyof typeof states]>,
-  event: ReturnType<(typeof events)[keyof typeof events]>,
-) {
-  state.match({
-    Idle() {
-      return event.match({
-        execute(x) {
-          return states.Done(x);
-        },
-      });
-    },
-    _() {},
-  });
+// Define state-event transitions
+const transition = (state: State, event: Event) => state.match({
+  Idle: () => event.match({
+    execute: (x) => states.Done(x)
+  }),    
+  Done: () => state,
+});
+
+// Implement state machine
+function createMachine (initialState: State) {
+  let currentState = initialState
+  return {
+    getState: () => currentState,
+    send (event: Event) {
+      currentState = transition(currentState, event)
+    }
+  }
 }
+
+// Usage
+const machine = createMachine(states.Idle())
+const checkState = () => console.log(machine.getState())
+checkState()
+machine.send(events.execute(123))
+checkState()
+machine.send(events.execute(456))
+checkState()

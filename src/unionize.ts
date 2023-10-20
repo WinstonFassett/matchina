@@ -98,6 +98,11 @@ export type UnionFactory<
     : never;
 };
 
+export type UnionFactoryMember<
+  F extends UnionFactory<any, any>,
+  K extends keyof F = keyof F,
+> = ReturnType<F[K]>;
+
 export function unionize<
   U extends UnionDataFactory,
   TagKey extends string = "tag",
@@ -120,4 +125,11 @@ export function unionize<
   }
 
   return createObj;
+}
+
+export function unionizer<
+  U extends UnionDataFactory,
+  TagKey extends string = "tag",
+>(tag: TagKey) {
+  return (config: U) => unionize(config, tag);
 }
