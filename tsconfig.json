@@ -6,5 +6,5 @@
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["src", "test/effects.test.ts", "test/lifecycle.usage.ts", "test/nested.usage.ts", "test/promise.test.ts", "test/promise.usage.ts", "test/tea.example.test.ts", "test/unions-as-machine.ts"]
+  "include": ["src"]
 }
