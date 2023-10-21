@@ -1,29 +1,42 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createEffects, runEffectsOnUpdate } from "../src/effects";
-import { createStates } from "../src/states";
 import { defineMachine } from "../src/machine";
+import { createStates } from "../src/states";
 
 const effectsConfig = {
-  LoadRemote: undefined,
-  SaveRemote: undefined,
   Notify: (msg: string) => ({ msg }),
 } as const;
 
 const makeEffects = () => createEffects(effectsConfig);
-type Effects = ReturnType<typeof makeEffects>;
+// type Effects = ReturnType<typeof makeEffects>;
 const makeStates = (effects = makeEffects()) => {
   return createStates({
-    Idle: () => ({ effects: [effects.LoadRemote()] }),
-    Pending: () => ({ effects: [effects.SaveRemote()] }),
-    Done: () => ({ effects: [effects.Notify("all done!")] }),
+    Idle: undefined,
+    Pending: { effects: undefined },
+    Done: () => ({ effects: [effects.Notify(`Done at ${Date.now()}`)] }),
   });
 };
+// type State = UnionFactoryMember<ReturnType<typeof makeStates>>;
+
 const makeMachine = (states = makeStates()) =>
   defineMachine(states, {
     Idle: { next: "Pending" },
     Pending: { next: "Done" },
     Done: {},
   }).create(states.Idle());
+
+function makeMachineWithEffects() {
+  const machine = makeMachine();
+  runEffectsOnUpdate(
+    machine,
+    (state) => {
+      // console.log("state", state);
+      return (state.data as any)?.effects;
+    },
+    effectHandlers,
+  );
+  return machine;
+}
 
 const effectHandlers = {
   Notify: (m: unknown) => console.log("NOTIFY", m), // fix unknown
@@ -40,14 +53,17 @@ describe("createEffects", () => {
 });
 
 describe("runEffectsOnUpdate", () => {
-  beforeEach(() => {
-    const machine = makeMachine();
-    runEffectsOnUpdate<Effects>(machine, effectHandlers);
+  it("should handle effects when the state changes", () => {
+    const machine = makeMachineWithEffects();
+    machine.events.next();
+    // console.log(machine.getState());
+    machine.events.next();
+    // console.log(machine.getState());
+    // expect(states.Notify).toHaveBeenCalled();
   });
-  it("should handle effects when the state changes", () => {});
 
   it("should not handle effects when the state does not change", () => {
-    const machine = makeMachine();
+    const machine = makeMachineWithEffects();
     machine.events.next();
     // expect(states.Notify).not.toHaveBeenCalled();
   });

@@ -69,10 +69,7 @@ export function defineMachine<
           }
         }
       }
-      const machine: StateMachine<
-        States,
-        Transitions
-      > = {
+      const machine: StateMachine<States, Transitions> = {
         states,
         getState: () => currentState,
         getLast: () => lastEvent,

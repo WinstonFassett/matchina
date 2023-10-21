@@ -62,11 +62,7 @@ export function onLifecycle<
     TransitionConfig
   >,
 >(
-  machine: StateMachine<
-    States,
-    TransitionConfig,
-    Event
-  >,
+  machine: StateMachine<States, TransitionConfig, Event>,
   config: TransitionHookMapping2<States, TransitionConfig>,
 ) {
   return onUpdate(machine, (commit, updater) => {
@@ -84,7 +80,7 @@ export function onLifecycle<
       const handled = handle
         ? (handle(updated as any) as typeof updated) ?? current
         : updated;
-      console.log({ handled });
+      // console.log({ handled });
       if (handled === current) {
         console.log("HANDLER REJECTED");
         return handled;

@@ -140,10 +140,7 @@ export interface StateMachine<
   transitions: StateTransitioners<States, TransitionConfig>;
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event;
-  send: (
-    event: FlattenMemberKeys<TransitionConfig>,
-    ...args: any[]
-  ) => void;
+  send: (event: FlattenMemberKeys<TransitionConfig>, ...args: any[]) => void;
   transition: (
     event: FlattenMemberKeys<TransitionConfig>,
     data?: any,

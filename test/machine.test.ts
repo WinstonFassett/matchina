@@ -18,7 +18,7 @@ describe("machine instance", () => {
   let states: UnionFactory<
     {
       Initial: { name: "initial" };
-      Done: (ok: boolean) => { ok };
+      Done: (ok: boolean) => { ok: boolean };
     },
     "state"
   >;
