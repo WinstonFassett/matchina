@@ -36,7 +36,7 @@ type AdvancedFunctionStateTarget<
   ...args: any[]
 ) => (
   event: EventKey,
-  def: MachineDefinition<States, any>,
+  machine: StateMachine<States, any>,
 ) => ReturnType<States[keyof States]>;
 type ConfigStateTransitionExit<States extends StatesFactory<any>> =
   | SimpleStateTarget<keyof States>

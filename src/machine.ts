@@ -95,7 +95,7 @@ export function defineMachine<
             const targetStateOrFunc = targetFuncOrString(...params);
             targetState =
               typeof targetStateOrFunc === "function"
-                ? targetStateOrFunc(type, machine.def)
+                ? targetStateOrFunc(type, machine)
                 : targetStateOrFunc;
           } else {
             targetState = states[targetFuncOrString as keyof typeof states](
