@@ -87,6 +87,9 @@ export function onLifecycle<
         return current;
       }
       const handled = (handle?.(updated as any) as typeof updated) ?? updated;
+      if (handled === current || handled.to.state === currentState.state) {
+        return handled;
+      }
       stateHooks?.leave?.(handled);
       before?.(handled as any);
       stateHooks?.enter?.(handled);
