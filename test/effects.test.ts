@@ -8,7 +8,7 @@ const effectsConfig = {
 } as const;
 
 const makeEffects = () => createEffects(effectsConfig);
-// type Effects = ReturnType<typeof makeEffects>;
+
 const makeStates = (effects = makeEffects()) => {
   return createStates({
     Idle: undefined,
@@ -25,26 +25,6 @@ const makeMachine = (states = makeStates()) =>
     Done: {},
   }).create(states.Idle());
 
-function makeMachineWithEffects() {
-  const machine = makeMachine();
-  runEffectsOnUpdate(
-    machine,
-    (state) => {
-      // console.log("state", state);
-      return (state.data as any)?.effects;
-    },
-    effectHandlers,
-  );
-  return machine;
-}
-
-const effectHandlers = {
-  Notify: (m: unknown) => console.log("NOTIFY", m), // fix unknown
-  _: () => {
-    console.log("stub");
-  },
-} as const;
-
 describe("createEffects", () => {
   it("should create an effects union with the correct members", () => {
     const effects = makeEffects();
@@ -54,17 +34,39 @@ describe("createEffects", () => {
 
 describe("runEffectsOnUpdate", () => {
   it("should handle effects when the state changes", () => {
-    const machine = makeMachineWithEffects();
+    let didNotify = false;
+    const machine = makeMachine();
+    runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
+      Notify: (m) => {
+        didNotify = true;
+        // console.log("NOTIFY", m)
+      },
+    });
     machine.events.next();
+    expect(didNotify).toBe(false);
     // console.log(machine.getState());
     machine.events.next();
     // console.log(machine.getState());
+    expect(didNotify).toBe(true);
     // expect(states.Notify).toHaveBeenCalled();
   });
 
-  it("should not handle effects when the state does not change", () => {
-    const machine = makeMachineWithEffects();
+  it("should not invoke effects when the state does not change", () => {
+    let didNotify = false;
+    const machine = makeMachine();
+    runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
+      Notify: (m) => {
+        didNotify = true;
+        // console.log("NOTIFY", m)
+      },
+    });
+    expect(didNotify).toBe(false);
     machine.events.next();
-    // expect(states.Notify).not.toHaveBeenCalled();
+    machine.events.next();
+    expect(didNotify).toBe(true);
+    didNotify = false;
+    machine.events.next();
+    // console.log(machine.getState());
+    expect(didNotify).toBe(false);
   });
 });
