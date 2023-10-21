@@ -9,7 +9,7 @@ import { StateCreators } from "./states";
 type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;
   before?: (change: T) => any;
-  handle?: (change: T) => T;
+  handle?: (change: T) => T | undefined;
   after?: (change: T) => any;
 };
 
@@ -49,7 +49,7 @@ export type TransitionHookMapping2<
     TransitionConfig,
     ReturnType<States[StateKey]>,
     any
-  > 
+  >;
 };
 
 export default {};
@@ -74,21 +74,22 @@ export function onLifecycle<
       const updated = updater(current);
       const { to: currentState } = current;
       const { event } = updated;
-      const fromStateHooks =
-        config[currentState.state as keyof typeof config]
+      const fromStateHooks = config[currentState.state as keyof typeof config];
       const fromStateEventHooks = fromStateHooks?.on;
-      const currentEventHooks = fromStateEventHooks?.[event]
+      const currentEventHooks = fromStateEventHooks?.[event];
       const { handle, guard, before, after } = currentEventHooks || {};
       if (guard && !guard(updated as any)) {
         return current;
       }
-      const handled = (handle?.(updated as any) as typeof updated) ?? updated;
+      const handled = handle
+        ? (handle(updated as any) as typeof updated) ?? current
+        : updated;
+
       if (handled === current || handled.to.state === currentState.state) {
         return handled;
       }
-      const { to } = handled
-      const toStateHooks =
-        config[to.state as keyof typeof config]    
+      const { to } = handled;
+      const toStateHooks = config[to.state as keyof typeof config];
 
       fromStateHooks?.leave?.(handled);
       before?.(handled as any);
