@@ -1,53 +1,48 @@
 import { Expand } from "./types";
 
-export type UnionDataFactoryMember =
-  | ((...args: any[]) => any)
-  | undefined
-  | any;
-
-export type UnionConfig = {
-  [key: string | number | symbol]: UnionDataFactoryMember;
+export type MatchboxConfig = {
+  [key: string | number | symbol]: BoxSpec;
 };
 
-// // Transform UnionDataConfigWithCreate to UnionDataFactory
-// export type UnionDataFactoryFromConfig = {
-//   [K in keyof UnionDataConfigWithCreate]: UnionDataConfigWithCreate[K]['create'];
-// };
+export type BoxSpec = ((...args: any[]) => any) | undefined | any;
 
-type Funcify<T> = T extends (...args: any[]) => any
-  ? T
-  : T extends undefined
+type BoxSpecToFunction<B extends BoxSpec> = B extends (...args: any[]) => any
+  ? B
+  : B extends undefined
   ? () => object
-  : () => T;
+  : () => B;
 
-export type UnionData<U extends UnionConfig> = {
-  [Property in keyof U]: Funcify<U[Property]> extends (...args: any) => infer R
+export type MatchboxConfigValues<Config extends MatchboxConfig> = {
+  [Property in keyof Config]: BoxSpecToFunction<Config[Property]> extends (
+    ...args: any
+  ) => infer R
     ? R
     : never;
 };
 
-export type ExhaustiveMatchers<U extends UnionConfig> = {
-  [Property in keyof UnionData<U>]: UnionData<U>[Property] extends undefined
+export type ExhaustiveMatchers<Config extends MatchboxConfig> = {
+  [Property in keyof MatchboxConfigValues<Config>]: MatchboxConfigValues<Config>[Property] extends undefined
     ? () => any
-    : (data: UnionData<U>[Property]) => any;
+    : (data: MatchboxConfigValues<Config>[Property]) => any;
 };
-type Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<
-  U extends UnionConfig,
-> = Partial<ExhaustiveMatchers<U>> & { _: (data: any) => any };
+type UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<
+  Config extends MatchboxConfig,
+> = Partial<ExhaustiveMatchers<Config>> & { _: (data: any) => any };
 
-export type Matchers<U extends UnionConfig> =
-  | ExhaustiveMatchers<U>
-  | Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<U>;
+export type Matchers<Config extends MatchboxConfig> =
+  | ExhaustiveMatchers<Config>
+  | UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<Config>;
 
-export type UnionMember<
-  U extends UnionConfig,
+export type MatchboxMemberImpl<
+  Config extends MatchboxConfig,
   TagKey extends string = "tag",
-  K extends keyof UnionData<U> = keyof UnionData<U>,
-  D extends UnionData<U>[K] = UnionData<U>[K],
+  K extends
+    keyof MatchboxConfigValues<Config> = keyof MatchboxConfigValues<Config>,
+  D extends MatchboxConfigValues<Config>[K] = MatchboxConfigValues<Config>[K],
 > = Expand<
   {
     data: D;
-    match<M extends Matchers<U>>(
+    match<M extends Matchers<Config>>(
       casesObj: M,
     ): // any
     M[keyof M] extends (...args: any) => infer R ? R : never;
@@ -56,7 +51,7 @@ export type UnionMember<
   }
 >;
 
-class UnionMemberImpl<U extends UnionConfig, TagKey extends string = "tag"> {
+class BoxImpl<Config extends MatchboxConfig, TagKey extends string = "tag"> {
   data: any;
   [tagKey: string]: any;
 
@@ -68,9 +63,8 @@ class UnionMemberImpl<U extends UnionConfig, TagKey extends string = "tag"> {
     Object.assign(this, { [tagKey]: tag, tagKey }, { data });
   }
 
-  match(casesObj: Matchers<U>): any {
+  match(casesObj: Matchers<Config>): any {
     const handler = (casesObj as any)[this.tag];
-
     if (handler) {
       return handler(this.data);
     } else if (casesObj._) {
@@ -81,34 +75,40 @@ class UnionMemberImpl<U extends UnionConfig, TagKey extends string = "tag"> {
   }
 }
 
-export type UnionConfigMember<
-  U extends UnionConfig,
+export type MatchboxConfigMember<
+  Config extends MatchboxConfig,
   TagKey extends string = "tag",
-> = UnionMember<U, TagKey> & { [K in TagKey]: string };
+> = MatchboxMemberImpl<Config, TagKey> & { [K in TagKey]: string };
 
-export type UnionFactory<
-  U extends UnionConfig,
+export type MatchboxFactory<
+  Config extends MatchboxConfig,
   TagKey extends string = "tag",
 > = {
-  [Property in keyof U]: Funcify<U[Property]> extends (...args: any[]) => any
+  [Property in keyof Config]: BoxSpecToFunction<Config[Property]> extends (
+    ...args: any[]
+  ) => any
     ? (
-        ...args: Parameters<Funcify<U[Property]>>
-      ) => UnionMember<U, TagKey, Property>
+        ...args: Parameters<BoxSpecToFunction<Config[Property]>>
+      ) => MatchboxMemberImpl<Config, TagKey, Property>
     : never;
 };
-export type UnionFactoryData<U extends UnionFactory<any, any>> = {
-  [Property in keyof U]: ReturnType<U[Property]>;
+
+export type MatchboxFactoryValues<Config extends MatchboxFactory<any, any>> = {
+  [Property in keyof Config]: ReturnType<Config[Property]>;
 };
 
-export type UnionFactoryMember<
-  F extends UnionFactory<any, any>,
+export type MatchboxFactoryMember<
+  F extends MatchboxFactory<any, any>,
   K extends keyof F = keyof F,
 > = ReturnType<F[K]>;
 
-export function unionize<U extends UnionConfig, TagKey extends string = "tag">(
-  config: U,
+export function matchbox<
+  Config extends MatchboxConfig,
+  TagKey extends string = "tag",
+>(
+  config: Config,
   tagKey: TagKey = "tag" as TagKey,
-): UnionFactory<U, TagKey> {
+): MatchboxFactory<Config, TagKey> {
   const createObj: any = {};
 
   for (const tag of Object.keys(config)) {
@@ -117,12 +117,12 @@ export function unionize<U extends UnionConfig, TagKey extends string = "tag">(
     if (typeof value === "function") {
       createObj[tag] = (...args: any) => {
         const data = value(...args);
-        return new UnionMemberImpl(tag, data, tagKey);
+        return new BoxImpl(tag, data, tagKey);
       };
     } else if (typeof value === "object") {
-      createObj[tag] = () => new UnionMemberImpl(tag, value, tagKey);
+      createObj[tag] = () => new BoxImpl(tag, value, tagKey);
     } else if (value === undefined) {
-      createObj[tag] = () => new UnionMemberImpl(tag, {}, tagKey);
+      createObj[tag] = () => new BoxImpl(tag, {}, tagKey);
     }
   }
 

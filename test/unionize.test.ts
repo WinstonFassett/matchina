@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { unionize } from "../src/unionize";
+import { matchbox } from "../src/unionize";
 
 describe("unionize", () => {
   it("should create a union object with correct keys", () => {
@@ -9,7 +9,7 @@ describe("unionize", () => {
       C: (data: string) => ({ data }),
     } as const;
 
-    const union = unionize(config);
+    const union = matchbox(config);
 
     expect(Object.keys(union)).toEqual(["A", "B", "C"]);
   });
@@ -21,7 +21,7 @@ describe("unionize", () => {
       C: (data: string) => ({ data }),
     } as const;
 
-    const union = unionize(config);
+    const union = matchbox(config);
 
     const a = union.A();
     expect(a.tag).toBe("A");

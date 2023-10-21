@@ -1,11 +1,9 @@
-import { unionize, UnionConfig, UnionFactory } from "./unionize";
+import { matchbox, MatchboxConfig, MatchboxFactory } from "./unionize";
 
-export type StatesFactory<StatesConfig extends UnionConfig> = UnionFactory<
-  StatesConfig,
-  "state"
->;
-export function createStates<StatesConfig extends UnionConfig>(
+export type StatesFactory<StatesConfig extends MatchboxConfig> =
+  MatchboxFactory<StatesConfig, "state">;
+export function createStates<StatesConfig extends MatchboxConfig>(
   config: StatesConfig,
 ) {
-  return unionize(config, "state");
+  return matchbox(config, "state");
 }

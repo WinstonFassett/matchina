@@ -2,29 +2,29 @@ import { StateMachine, StateTransitionsConfig } from "../types";
 import { StatesFactory } from "../states";
 import {
   Matchers,
-  UnionConfigMember,
-  UnionConfig,
-  UnionFactory,
-  UnionFactoryData,
-  unionize,
+  MatchboxConfigMember,
+  MatchboxConfig,
+  MatchboxFactory,
+  MatchboxFactoryValues,
+  matchbox,
 } from "../unionize";
 import { onUpdate } from "./on-update";
 
-export type Effect = UnionConfigMember<any, "effect">;
+export type Effect = MatchboxConfigMember<any, "effect">;
 
-export function createEffects(config: UnionConfig) {
-  return unionize(config, "effect");
+export function createEffects(config: MatchboxConfig) {
+  return matchbox(config, "effect");
 }
 export function runEffectsOnUpdate<
   StateFactory extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<StateFactory>,
-  EffectFactory extends UnionFactory<any, "effect">,
+  EffectFactory extends MatchboxFactory<any, "effect">,
 >(
   machine: StateMachine<StateFactory, TransitionConfig>,
   getEffects: (
     state: ReturnType<StateFactory[keyof StateFactory]>,
   ) => Effect[] | undefined,
-  matchers: Matchers<UnionFactoryData<EffectFactory>>,
+  matchers: Matchers<MatchboxFactoryValues<EffectFactory>>,
 ) {
   return onUpdate(machine, (commit, updater) => {
     commit((ev) => {

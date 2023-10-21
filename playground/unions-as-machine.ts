@@ -1,20 +1,20 @@
-import { UnionConfig, UnionFactoryMember, unionize } from "../src/unionize";
+import { MatchboxConfig, MatchboxFactoryMember, matchbox } from "../src/unionize";
 
-export const createStates = <T extends UnionConfig>(config: T) => unionize(config, "state");
-export const createEvents = <T extends UnionConfig>(config: T) => unionize(config, "type");
+export const createStates = <T extends MatchboxConfig>(config: T) => matchbox(config, "state");
+export const createEvents = <T extends MatchboxConfig>(config: T) => matchbox(config, "type");
 
 // Define States
 const states = createStates({
   Idle: () => ({}),
   Done: (x: number) => ({ result: x }),
 });
-type State = UnionFactoryMember<typeof states>
+type State = MatchboxFactoryMember<typeof states>
 
 // Define Events
 const events = createEvents({
   execute: (x: number) => x,
 });
-type Event = UnionFactoryMember<typeof events>
+type Event = MatchboxFactoryMember<typeof events>
 
 // Define state-event transitions
 const transition = (state: State, event: Event) => state.match({
