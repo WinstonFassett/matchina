@@ -49,9 +49,7 @@ export type TransitionHookMapping2<
     TransitionConfig,
     ReturnType<States[StateKey]>,
     any
-  > & {
-      "*"?: TransitionHookExtensions<MachineEvent<States, TransitionConfig>>;
-    };
+  > 
 };
 
 export default {};
@@ -76,12 +74,10 @@ export function onLifecycle<
       const updated = updater(current);
       const { to: currentState } = current;
       const { event } = updated;
-      const stateHooks =
-        config[currentState.state as keyof typeof config] ??
-        config["*" as keyof typeof config];
-      const stateEventHooks = stateHooks?.on;
-      const currentEventHooks =
-        stateEventHooks?.[event] ?? stateEventHooks?.["*"];
+      const fromStateHooks =
+        config[currentState.state as keyof typeof config]
+      const fromStateEventHooks = fromStateHooks?.on;
+      const currentEventHooks = fromStateEventHooks?.[event]
       const { handle, guard, before, after } = currentEventHooks || {};
       if (guard && !guard(updated as any)) {
         return current;
@@ -90,9 +86,13 @@ export function onLifecycle<
       if (handled === current || handled.to.state === currentState.state) {
         return handled;
       }
-      stateHooks?.leave?.(handled);
+      const { to } = handled
+      const toStateHooks =
+        config[to.state as keyof typeof config]    
+
+      fromStateHooks?.leave?.(handled);
       before?.(handled as any);
-      stateHooks?.enter?.(handled);
+      toStateHooks?.enter?.(handled);
       commit(() => handled);
       after?.(handled as any);
       return handled;
