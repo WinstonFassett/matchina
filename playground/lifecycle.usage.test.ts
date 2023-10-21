@@ -91,10 +91,13 @@ describe("createPromiseMachine", () => {
         }
       },
       Pending: {
+        enter: () => {
+          console.log('enter pending')
+        },
         on: {
           '*': {
             before: () => {
-              console.log('something while pending')
+              console.log('something before pending')
             }
           }
         }
