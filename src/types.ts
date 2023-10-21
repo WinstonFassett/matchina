@@ -1,8 +1,8 @@
 import { StatesFactory } from "./states";
 
 // #region General Machine Types
-export type AStateKey = string | number | symbol;
-export type AnEventKey = string | number | symbol;
+export type AnyStateKey = string | number | symbol;
+export type AnyEventKey = string | number | symbol;
 export interface TransitionEvent<Event, From, To> {
   event: Event;
   from: From;
@@ -10,7 +10,7 @@ export interface TransitionEvent<Event, From, To> {
 }
 export interface AnyMachine<
   State = any,
-  EventKey extends AnEventKey = AnEventKey,
+  EventKey extends AnyEventKey = AnyEventKey,
   Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
     EventKey,
     State,
@@ -27,18 +27,18 @@ export interface AnyMachine<
 
 // #region Transition Config Types
 type SimpleStateTarget<T> = T;
-type FunctionStateTarget<State> = (...args: any[]) => State;
-type AdvancedFunctionStateTarget<State> = (
-  ...args: any[]
-) => (event: any) => State;
+// type FunctionStateTarget<State> = (...args: any[]) => State;
+// type AdvancedFunctionStateTarget<State> = (
+//   ...args: any[]
+// ) => (event: any) => State;
 type ConfigStateTransitionExit<States extends StatesFactory<any>> =
-  | SimpleStateTarget<keyof States>
-  | AdvancedFunctionStateTarget<ReturnType<States[keyof States]>>
-  | FunctionStateTarget<ReturnType<States[keyof States]>>;
+  SimpleStateTarget<keyof States>;
+// | AdvancedFunctionStateTarget<ReturnType<States[keyof States]>>
+// | FunctionStateTarget<ReturnType<States[keyof States]>>;
 
 export type StateTransitionsConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
-    [EventKey: AnEventKey]: ConfigStateTransitionExit<States>;
+    [EventKey: AnyEventKey]: ConfigStateTransitionExit<States>;
   };
 };
 // #endregion
@@ -165,7 +165,6 @@ type MachineCreator<
 // #endregion
 
 // #region Utility Types
-
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 export type TUnionToIntersection<T> = (
