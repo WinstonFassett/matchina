@@ -7,17 +7,17 @@ describe("createPromiseMachine", () => {
     const machine = createPromiseMachine(delayer(1, "Resolved Data"));
 
     const initialState = machine.getState();
-    expect(initialState.state).toBe("Idle");
+    expect(initialState.name).toBe("Idle");
 
     machine.events.execute();
     const pendingState = machine.getState();
-    expect(pendingState.state).toBe("Pending");
+    expect(pendingState.name).toBe("Pending");
 
     // Use setTimeout with a very short delay to wait for asynchronous operations to complete
     await new Promise((resolve) => setTimeout(resolve, 2));
 
     const resolvedState = machine.getState();
-    expect(resolvedState.state).toBe("Resolved");
+    expect(resolvedState.name).toBe("Resolved");
     expect(resolvedState.data).toBe("Resolved Data");
   });
 
@@ -29,17 +29,17 @@ describe("createPromiseMachine", () => {
     });
 
     const initialState = machine.getState();
-    expect(initialState.state).toBe("Idle");
+    expect(initialState.name).toBe("Idle");
 
     machine.events.execute();
     const pendingState = machine.getState();
-    expect(pendingState.state).toBe("Pending");
+    expect(pendingState.name).toBe("Pending");
 
     // Use setTimeout with a very short delay to wait for asynchronous operations to complete
     await delay(2);
 
     const rejectedState = machine.getState();
-    expect(rejectedState.state).toBe("Rejected");
+    expect(rejectedState.name).toBe("Rejected");
     // expect((rejectedState.data as any).message).toBe("custom error");
   });
 });

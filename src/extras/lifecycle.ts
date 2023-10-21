@@ -66,7 +66,7 @@ export function onLifecycle<
       const updated = updater(current);
       const { to: currentState } = current;
       const { type: event } = updated;
-      const fromStateHooks = config[currentState.state as keyof typeof config];
+      const fromStateHooks = config[currentState.name as keyof typeof config];
       const fromStateEventHooks = fromStateHooks?.on;
       const currentEventHooks = fromStateEventHooks?.[event];
       const { handle, guard, before, after } = currentEventHooks || {};
@@ -82,7 +82,7 @@ export function onLifecycle<
         return handled;
       }
       const { to } = handled;
-      const toStateHooks = config[to.state as keyof typeof config];
+      const toStateHooks = config[to.name as keyof typeof config];
 
       fromStateHooks?.leave?.(handled as any); // todo: remove need for any
       before?.(handled as any);

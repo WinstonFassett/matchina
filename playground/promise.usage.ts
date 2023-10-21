@@ -17,7 +17,7 @@ async function promiseUsage () {
   const checkState = () => console.log(machine.getState().match({  
     Resolved: res => `DONE: ${res}`,
     Rejected: err => `Error! ${err}`,
-    _: () => `Not yet: ${machine.getState().state}`
+    _: () => `Not yet: ${machine.getState().name}`
   }));
   // TODO: add this to promise
   const reset = () => {
@@ -45,7 +45,7 @@ async function promiseUsage () {
   if (machine.done === donePromise && state === beforeDoneState) {
     console.log('changed', state.data)
   } else {
-    console.log(`state changed from ${beforeDoneState.state} to ${state.state}`)
+    console.log(`state changed from ${beforeDoneState.name} to ${state.name}`)
   }
   
 

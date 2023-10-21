@@ -18,7 +18,7 @@ describe("onLifecycle usage", () => {
     // Create machine WITHOUT a promise to drive it
     const machine = createPromiseMachine<number, number>();
     const expectState = (state: string) =>
-      expect(machine.getState().state).toBe(state);
+      expect(machine.getState().name).toBe(state);
     const expectStateData = () => {
       return expect(machine.getState().data);
     };
@@ -32,8 +32,8 @@ describe("onLifecycle usage", () => {
             guard({
               type: event,
               params,
-              from: { state: from },
-              to: { state: to },
+              from: { name: from },
+              to: { name: to },
             }) {
               console.log(
                 `${from} wants to ${event} to ${to} with params ${params.join(
@@ -71,7 +71,7 @@ describe("onLifecycle usage", () => {
             },
           },
         },
-        leave: ({ type: event, from: { state: from }, to: { state: to } }) => {
+        leave: ({ type: event, from: { name: from }, to: { name: to } }) => {
           didLeaveIdle ||= ++count;
           console.log(`leaving ${from} to ${event} to ${to}`);
         },
