@@ -1,4 +1,4 @@
-import { MatchboxConfig, MatchboxFactoryMember, matchboxFactory } from "../src/matchbox-factory";
+import { MatchboxConfig, MatchboxFromFactory, matchboxFactory } from "../src/matchbox-factory";
 
 export const createStates = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "state");
 export const createEvents = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "type");
@@ -8,13 +8,13 @@ const states = createStates({
   Idle: () => ({}),
   Done: (x: number) => ({ result: x }),
 });
-type State = MatchboxFactoryMember<typeof states>
+type State = MatchboxFromFactory<typeof states>
 
 // Define Events
 const events = createEvents({
   execute: (x: number) => x,
 });
-type Event = MatchboxFactoryMember<typeof events>
+type Event = MatchboxFromFactory<typeof events>
 
 // Define state-event transitions
 const transition = (state: State, event: Event) => state.match({

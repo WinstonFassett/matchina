@@ -76,7 +76,7 @@ class MatchboxImpl<Config extends MatchboxConfig, TagKey extends string = "tag">
   }
 }
 
-export type MatchboxConfigMember<
+export type MatchboxFromConfig<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
 > = Matchbox<Config, TagKey> & { [K in TagKey]: string };
@@ -98,7 +98,7 @@ export type MatchboxFactoryValues<Config extends MatchboxFactory<any, any>> = {
   [Property in keyof Config]: ReturnType<Config[Property]>;
 };
 
-export type MatchboxFactoryMember<
+export type MatchboxFromFactory<
   F extends MatchboxFactory<any, any>,
   K extends keyof F = keyof F,
 > = ReturnType<F[K]>;

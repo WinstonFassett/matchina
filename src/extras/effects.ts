@@ -2,7 +2,7 @@ import { StateMachine, StateTransitionsConfig } from "../types";
 import { StatesFactory } from "../states";
 import {
   Matchers,
-  MatchboxConfigMember,
+  MatchboxFromConfig,
   MatchboxConfig,
   MatchboxFactory,
   MatchboxFactoryValues,
@@ -10,7 +10,7 @@ import {
 } from "../matchbox-factory";
 import { onUpdate } from "./on-update";
 
-export type Effect = MatchboxConfigMember<any, "effect">;
+export type Effect = MatchboxFromConfig<any, "effect">;
 
 export function createEffects(config: MatchboxConfig) {
   return matchboxFactory(config, "effect");
