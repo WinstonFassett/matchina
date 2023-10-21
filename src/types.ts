@@ -3,8 +3,8 @@ import { StatesFactory } from "./states";
 // #region General Machine Types
 export type AnyStateKey = string | number | symbol;
 export type AnyEventKey = string | number | symbol;
-export interface TransitionEvent<Event, From, To> {
-  event: Event;
+export interface TransitionEvent<Type, From, To> {
+  type: Type;
   from: From;
   to: To;
 }

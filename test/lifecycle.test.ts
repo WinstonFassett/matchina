@@ -29,7 +29,12 @@ describe("onLifecycle usage", () => {
       Idle: {
         on: {
           execute: {
-            guard({ event, params, from: { state: from }, to: { state: to } }) {
+            guard({
+              type: event,
+              params,
+              from: { state: from },
+              to: { state: to },
+            }) {
               console.log(
                 `${from} wants to ${event} to ${to} with params ${params.join(
                   ", ",
@@ -66,7 +71,7 @@ describe("onLifecycle usage", () => {
             },
           },
         },
-        leave: ({ event, from: { state: from }, to: { state: to } }) => {
+        leave: ({ type: event, from: { state: from }, to: { state: to } }) => {
           didLeaveIdle ||= ++count;
           console.log(`leaving ${from} to ${event} to ${to}`);
         },

@@ -19,23 +19,23 @@ export function defineMachine<
   type Event = MachineEvent<States, Transitions>;
 
   function createEvent({
-    event,
+    type,
     params,
     from,
     to,
   }: {
-    event: Event["event"];
+    type: Event["type"];
     params: Event["params"];
     from: State;
     to: State;
   }) {
     return {
-      event,
+      type,
       params,
       from,
       to,
       match(cases) {
-        const handler = (cases as any)[event];
+        const handler = (cases as any)[type];
         if (handler) {
           return handler(...params);
         } else if (cases._) {
@@ -106,7 +106,7 @@ export function defineMachine<
 
           return createEvent({
             from: lastEvent.to,
-            event: type,
+            type,
             params,
             to: targetState,
           });
@@ -128,7 +128,7 @@ export function defineMachine<
         machine.update((context) => {
           return {
             ...context,
-            event: INITIALIZE_EVENT,
+            type: INITIALIZE_EVENT,
             to: initialState,
           };
         });

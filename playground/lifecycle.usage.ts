@@ -9,7 +9,7 @@ async function promiseLifecycleUsage () {
     Idle: {
       on: {
         execute: {
-          guard ({ event, params, from: { state: from }, to: { state: to } }) {
+          guard ({ type: event, params, from: { state: from }, to: { state: to } }) {
             console.log(`${from} wants to ${event} to ${to} with params ${params.join(', ')}`)
             const accept = params[0] > 1
             console.log('GUARD accept?', accept)
@@ -28,7 +28,7 @@ async function promiseLifecycleUsage () {
           }
         },
       },
-      leave: ({ event, from: { state: from }, to: { state: to } }) => {
+      leave: ({ type: event, from: { state: from }, to: { state: to } }) => {
         console.log(`leaving ${from} to ${event} to ${to}`)
       }
     },

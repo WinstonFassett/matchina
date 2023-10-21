@@ -65,7 +65,7 @@ export function onLifecycle<
     commit((current) => {
       const updated = updater(current);
       const { to: currentState } = current;
-      const { event } = updated;
+      const { type: event } = updated;
       const fromStateHooks = config[currentState.state as keyof typeof config];
       const fromStateEventHooks = fromStateHooks?.on;
       const currentEventHooks = fromStateEventHooks?.[event];
