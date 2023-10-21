@@ -1,11 +1,45 @@
 import { StateCreators } from "./states";
-import {
-  TUnionToIntersection,
-  TransitionEvent,
-  AnyMachine,
-  AnEventKey,
-} from "./types";
 import { Expand } from "./utility-types";
+
+export type AStateKey = string | number | symbol;
+export type AnEventKey = string | number | symbol;
+
+// interface ContextualEvent<S, C> {
+//   source?: S;
+//   context?: C;
+// }
+export interface TransitionEvent<Event, From, To> {
+  event: Event;
+  from: From;
+  to: To;
+}
+
+export interface AnyMachine<
+  State = unknown,
+  EventKey extends AnEventKey = AnEventKey,
+  Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
+    EventKey,
+    State,
+    State
+  >,
+> {
+  getState: () => State;
+  send: (event: EventKey, ...args: any[]) => void;
+  transition: (event: EventKey, data?: any) => Event | undefined;
+  update: (updater: (event: Event) => Event) => void;
+  getLast: () => Event;
+}
+
+type AnyKey = keyof any;
+type HasAnyKey = { [key in AnyKey]: any };
+
+
+export type TUnionToIntersection<T> = (
+  T extends any ? (x: T) => any : never
+) extends (x: infer R) => any
+  ? R
+  : never;
+
 
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
@@ -111,6 +145,22 @@ type SendFunction<TransitionConfig extends StateTransitionsConfig<any>> = (
 ) => void;
 // Usage within your Machine type
 
+// export interface AnyMachine<
+//   State = any,
+//   EventKey extends AnEventKey = AnEventKey,
+//   Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
+//     EventKey,
+//     State,
+//     State
+//   >,
+// > {
+//   getState: () => State;
+//   send: (event: EventKey, ...args: any[]) => void;
+//   transition: (event: EventKey, data?: any) => Event | undefined;
+//   update: (updater: (event: Event) => Event) => void;
+//   getLast: () => Event;
+// }
+
 export interface MachineFromStateCreatorsAndTransitionsConfig<
   States extends StateCreators<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
@@ -118,39 +168,24 @@ export interface MachineFromStateCreatorsAndTransitionsConfig<
     States,
     TransitionConfig
   >,
-> extends AnyMachine<
-    ReturnType<States[keyof States]>,
-    TransitionEventKeys<TransitionConfig>,
-    Event
-  > {
+> extends AnyMachine {
   config: { states: States; transitions: TransitionConfig };
   states: States;
   events: MachineEvents<StateTransitioners<States, TransitionConfig>>;
   transitions: StateTransitioners<States, TransitionConfig>;
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event;
-  send: SendFunction<TransitionConfig>;
+  send: (
+    event: TransitionEventKeys<TransitionConfig> | AnEventKey,
+    ...args: any[]
+  ) => void;
   transition: (
-    event: TransitionEventKeys<TransitionConfig>,
+    event: TransitionEventKeys<TransitionConfig> | AnEventKey,
     data?: any,
   ) => Event | undefined;
-  update: (updater: (event: Event) => Event) => void;
   reset(): void;
 }
 
-export type AnyMachineFromStateCreatorsAndTransitionsConfig<
-  States extends StateCreators<any> = StateCreators<any>,
-  TransitionConfig extends
-    StateTransitionsConfig<States> = StateTransitionsConfig<States>,
-  Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
-    States,
-    TransitionConfig
-  >,
-> = MachineFromStateCreatorsAndTransitionsConfig<
-  States,
-  TransitionConfig,
-  Event
->;
 export type MachineDefinition<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
