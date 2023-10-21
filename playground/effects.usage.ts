@@ -1,6 +1,6 @@
 import { createStates } from "../src/states";
 import { defineMachine } from "../src/machine";
-import { createEffects, runEffectsOnUpdate } from "../src/effects";
+import { createEffects, runEffectsOnUpdate } from "../src/extras/effects";
 
 const myEffects = createEffects({
   LoadRemote: undefined,

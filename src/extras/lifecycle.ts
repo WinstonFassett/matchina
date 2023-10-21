@@ -1,6 +1,6 @@
-import { MachineEvent, StateMachine, StateTransitionsConfig } from "./types";
+import { MachineEvent, StateMachine, StateTransitionsConfig } from "../types";
+import { StateCreators } from "../states";
 import { onUpdate } from "./on-update";
-import { StateCreators } from "./states";
 
 type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;

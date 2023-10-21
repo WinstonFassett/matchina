@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEffects, runEffectsOnUpdate } from "../src/effects";
+import { createEffects, runEffectsOnUpdate } from "../src/extras/effects";
 import { defineMachine } from "../src/machine";
 import { createStates } from "../src/states";
 

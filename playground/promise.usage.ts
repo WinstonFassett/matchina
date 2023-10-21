@@ -1,5 +1,5 @@
 import { delay } from "../test/delay";
-import { createPromiseMachine } from "../src/promise";
+import { createPromiseMachine } from "../src/extras/promise";
 
 async function promiseUsage () {
   const machine = createPromiseMachine(async (x: number) => {

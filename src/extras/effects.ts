@@ -1,6 +1,5 @@
-import { StateMachine, StateTransitionsConfig } from "./types";
-import { onUpdate } from "./on-update";
-import { StateCreators } from "./states";
+import { StateMachine, StateTransitionsConfig } from "../types";
+import { StateCreators } from "../states";
 import {
   Matchers,
   UnionConfigMember,
@@ -8,7 +7,8 @@ import {
   UnionFactory,
   UnionFactoryData,
   unionize,
-} from "./unionize";
+} from "../unionize";
+import { onUpdate } from "./on-update";
 
 export type Effect = UnionConfigMember<any, "effect">;
 

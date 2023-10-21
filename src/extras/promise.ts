@@ -1,6 +1,6 @@
-import { defineMachine } from "./machine";
+import { defineMachine } from "../machine";
+import { createStates } from "../states";
 import { onUpdate } from "./on-update";
-import { createStates } from "./states";
 
 export function createPromiseMachine<T, A, E extends Error = Error>(
   makePromise?: (...args: A[]) => Promise<T>,

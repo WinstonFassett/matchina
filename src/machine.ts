@@ -6,7 +6,7 @@ import {
 } from "./types";
 import { StateCreators } from "./states";
 
-const INITIALIZE = "__init";
+export const INITIALIZE_EVENT = "__init";
 
 export function defineMachine<
   States extends StateCreators<any>,
@@ -111,7 +111,7 @@ export function defineMachine<
         machine.update((context) => {
           return {
             ...context,
-            event: INITIALIZE,
+            event: INITIALIZE_EVENT,
             to: initialState,
           };
         });

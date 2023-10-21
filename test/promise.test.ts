@@ -1,5 +1,5 @@
 import { expect, it, describe } from "vitest";
-import { createPromiseMachine } from "../src/promise";
+import { createPromiseMachine } from "../src/extras/promise";
 import { delay, delayer } from "./delay";
 
 describe("createPromiseMachine", () => {

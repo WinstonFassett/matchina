@@ -1,6 +1,6 @@
 import { expect, it, describe } from "vitest";
-import { createPromiseMachine } from "../src/promise";
-import { onLifecycle } from "../src/lifecycle";
+import { createPromiseMachine } from "../src/extras/promise";
+import { onLifecycle } from "../src/extras/lifecycle";
 
 describe("onLifecycle usage", () => {
   it("should call guard, handle, and event hooks in lifecycle order", async () => {

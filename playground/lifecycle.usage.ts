@@ -1,6 +1,6 @@
 import { delayed } from "../test/delay";
-import { onLifecycle } from "../src/lifecycle";
-import { createPromiseMachine } from "../src/promise";
+import { onLifecycle } from "../src/extras/lifecycle";
+import { createPromiseMachine } from "../src/extras/promise";
 
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it
