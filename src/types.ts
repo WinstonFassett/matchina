@@ -27,14 +27,21 @@ export interface AnyMachine<
 
 // #region Transition Config Types
 type SimpleStateTarget<T> = T;
-// type FunctionStateTarget<State> = (...args: any[]) => State;
-// type AdvancedFunctionStateTarget<State> = (
-//   ...args: any[]
-// ) => (event: any) => State;
+type FunctionStateTarget<State> = (...args: any[]) => State;
+// ReturnType<States[keyof States]>
+type AdvancedFunctionStateTarget<
+  States extends StatesFactory<any>,
+  EventKey extends AnyEventKey = AnyEventKey,
+> = (
+  ...args: any[]
+) => (
+  event: EventKey,
+  def: MachineDefinition<States, any>,
+) => ReturnType<States[keyof States]>;
 type ConfigStateTransitionExit<States extends StatesFactory<any>> =
-  SimpleStateTarget<keyof States>;
-// | AdvancedFunctionStateTarget<ReturnType<States[keyof States]>>
-// | FunctionStateTarget<ReturnType<States[keyof States]>>;
+  | SimpleStateTarget<keyof States>
+  | AdvancedFunctionStateTarget<States>
+  | FunctionStateTarget<ReturnType<States[keyof States]>>;
 
 export type StateTransitionsConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
@@ -52,7 +59,8 @@ export type StateTransitioners<
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (...args: Parameters<States[Transitions[StateKey][EventKey]]>) => void
       : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
-          ReturnType<States[keyof States]>
+          States,
+          EventKey
         >
       ? (...args: Parameters<Transitions[StateKey][EventKey]>) => void
       : Transitions[StateKey][EventKey] extends FunctionStateTarget<
@@ -133,6 +141,7 @@ export interface StateMachine<
     TransitionConfig
   >,
 > {
+  def: MachineDefinition<States, TransitionConfig>;
   config: { states: States; transitions: TransitionConfig };
   states: States;
   events: MachineEvents<StateTransitioners<States, TransitionConfig>>;

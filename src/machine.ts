@@ -44,7 +44,7 @@ export function defineMachine<
       },
     } as Event;
   }
-  return {
+  const def: MachineDefinition<States, Transitions> = {
     states,
     transitions,
     create: (initialState) => {
@@ -70,6 +70,7 @@ export function defineMachine<
         }
       }
       const machine: StateMachine<States, Transitions> = {
+        def,
         states,
         getState: () => currentState,
         getLast: () => lastEvent,
@@ -82,16 +83,32 @@ export function defineMachine<
           }
         },
         transition: (type, params) => {
-          const toKey = transitions[lastEvent.to.state as any]?.[type as any];
-          if (!toKey) {
+          const targetFuncOrString =
+            transitions[lastEvent.to.state as any]?.[type as any];
+          if (!targetFuncOrString) {
             return lastEvent;
           }
-          const to = states[toKey as any](...params);
+
+          let targetState: State;
+
+          if (typeof targetFuncOrString === "function") {
+            const targetStateOrFunc = targetFuncOrString(...params);
+            targetState =
+              typeof targetStateOrFunc === "function"
+                ? targetStateOrFunc(type, machine.def)
+                : targetStateOrFunc;
+          } else {
+            targetState = states[targetFuncOrString as keyof typeof states](
+              ...params,
+            ) as any;
+          }
+          // console.log({ targetState });
+
           return createEvent({
             from: lastEvent.to,
             event: type,
             params,
-            to: to as any,
+            to: targetState,
           });
         },
         update: (updater) => {
@@ -119,4 +136,5 @@ export function defineMachine<
       return machine;
     },
   };
+  return def;
 }
