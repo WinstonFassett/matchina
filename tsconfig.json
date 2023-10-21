@@ -6,5 +6,5 @@
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "playground"]
 }

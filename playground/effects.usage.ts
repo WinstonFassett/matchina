@@ -20,7 +20,9 @@ const machine = defineMachine(states, {
   Done: {},
 }).create(states.Idle());
 
-runEffectsOnUpdate(machine as any, {
+runEffectsOnUpdate(machine, 
+  state => state.data.effects,
+  {
   Notify: m => console.log('NOTIFY', m),
   _: () => {
     console.log("stub");
