@@ -141,11 +141,11 @@ export interface StateMachine<
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event;
   send: (
-    event: FlattenMemberKeys<TransitionConfig> | AnEventKey,
+    event: FlattenMemberKeys<TransitionConfig>,
     ...args: any[]
   ) => void;
   transition: (
-    event: FlattenMemberKeys<TransitionConfig> | AnEventKey,
+    event: FlattenMemberKeys<TransitionConfig>,
     data?: any,
   ) => Event | undefined;
   reset(): void;
