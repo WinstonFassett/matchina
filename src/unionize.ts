@@ -5,7 +5,9 @@ export type UnionDataFactoryMember =
   | undefined
   | any;
 
-export type UnionDataFactory = { [key: string]: UnionDataFactoryMember };
+export type UnionDataFactory = {
+  [key: string | number | symbol]: UnionDataFactoryMember;
+};
 
 // // Transform UnionDataConfigWithCreate to UnionDataFactory
 // export type UnionDataFactoryFromConfig = {
@@ -96,6 +98,9 @@ export type UnionFactory<
         ...args: Parameters<Funcify<U[Property]>>
       ) => UnionMember<U, TagKey, Property>
     : never;
+};
+export type UnionFactoryData<U extends UnionFactory<any, any>> = {
+  [Property in keyof U]: ReturnType<U[Property]>;
 };
 
 export type UnionFactoryMember<
