@@ -1,4 +1,4 @@
-import { delayed } from "../src/delay";
+import { delayed } from "../test/delay";
 import { onLifecycle } from "../src/lifecycle";
 import { createPromiseMachine } from "../src/promise";
 

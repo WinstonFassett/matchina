@@ -1,6 +1,6 @@
 import { expect, it, describe } from "vitest";
 import { createPromiseMachine } from "../src/promise";
-import { delay, delayer } from "../src/delay";
+import { delay, delayer } from "./delay";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {

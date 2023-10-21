@@ -1,4 +1,4 @@
-import { delay } from "../src/delay";
+import { delay } from "../test/delay";
 import { createPromiseMachine } from "../src/promise";
 
 async function promiseUsage () {
