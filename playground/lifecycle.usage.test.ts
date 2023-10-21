@@ -2,50 +2,9 @@ import { expect, it, describe } from "vitest";
 import { createPromiseMachine } from "../src/promise";
 import { onLifecycle } from "../src/lifecycle";
 
-describe("createPromiseMachine", () => {
-  it("should transition from Idle to Pending and Resolved states", async () => {
-    const machine = createPromiseMachine<number, number>(async (num) => {
-      await delay(num);
-      return num;
-    });
-
-    const initialState = machine.getState();
-    expect(initialState.state).toBe("Idle");
-
-    machine.events.execute(1);
-    const pendingState = machine.getState();
-    expect(pendingState.state).toBe("Pending");
-
-    // Use setTimeout with a very short delay to wait for asynchronous operations to complete
-    await new Promise((resolve) => setTimeout(resolve, 2));
-
-    const resolvedState = machine.getState();
-    expect(resolvedState.state).toBe("Resolved");
-    expect(resolvedState.data).toBe(1);
-  });
-
-  it("should transition to Rejected state on error", async () => {
-    const machine = createPromiseMachine<number, number>(async (num) => {
-      await delay(num);
-      throw new Error("custom error");
-    });
-
-    const initialState = machine.getState();
-    expect(initialState.state).toBe("Idle");
-
-    machine.events.execute(1);
-    const pendingState = machine.getState();
-    expect(pendingState.state).toBe("Pending");
-
-    // Use setTimeout with a very short delay to wait for asynchronous operations to complete
-    await delay(2);
-
-    const rejectedState = machine.getState();
-    expect(rejectedState.state).toBe("Rejected");
-    expect((rejectedState.data as any).message).toBe("custom error");
-  });
-
-  it("should transition from Idle to Pending and Resolved states with lifecycle", async () => {
+describe("onLifecycle", () => {
+  
+  it("should call hooks with lifecycle", async () => {
     const machine = createPromiseMachine<number, number>(async (num) => {
       await delay(num);
       return num;
@@ -55,15 +14,6 @@ describe("createPromiseMachine", () => {
     expect(initialState.state).toBe("Idle");
 
     const removeLifecycle = onLifecycle(machine, {
-      '*': {
-        on: {
-          resolve: {
-            after: () => {
-              console.log('RESOLVED!')
-            }
-          }
-        }
-      },
       Idle: {
         on: {
           execute: {
@@ -91,13 +41,16 @@ describe("createPromiseMachine", () => {
         }
       },
       Pending: {
-        enter: () => {
-          console.log('enter pending')
+        enter: (e) => {
+          console.log('entering Pending via', e.event, e.params)
         },
         on: {
-          '*': {
+          resolve: {
             before: () => {
-              console.log('something before pending')
+              console.log('In Pending before resolve')
+            },
+            after: () => {
+              console.log('Resolved from Pending')
             }
           }
         }
