@@ -102,8 +102,6 @@ export function defineMachine<
               ...params,
             ) as any;
           }
-          // console.log({ targetState });
-
           return createEvent({
             from: lastEvent.to,
             type,

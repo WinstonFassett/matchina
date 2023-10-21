@@ -48,8 +48,6 @@ export type TransitionHookMapping2<
   >;
 };
 
-export default {};
-
 export function onLifecycle<
   States extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
@@ -76,9 +74,7 @@ export function onLifecycle<
       const handled = handle
         ? (handle(updated as any) as typeof updated) ?? current
         : updated;
-      // console.log({ handled });
       if (handled === current) {
-        console.log("HANDLER REJECTED");
         return handled;
       }
       const { to } = handled;
