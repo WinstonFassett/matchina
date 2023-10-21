@@ -84,7 +84,7 @@ export function defineMachine<
         },
         transition: (type, params) => {
           const targetFuncOrString =
-            transitions[lastEvent.to.name as any]?.[type as any];
+            transitions[lastEvent.to.key as any]?.[type as any];
           if (!targetFuncOrString) {
             return lastEvent;
           }

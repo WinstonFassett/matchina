@@ -4,7 +4,7 @@ import { defineStates } from "../src/states";
 
 const makeStates = () =>
   defineStates({
-    Initial: { name: "initial" },
+    Initial: { key: "initial" },
     Done: (ok: boolean) => ({ ok }),
   });
 const makeMachine = () => {
@@ -103,17 +103,17 @@ describe("machine instance", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
       machine.events.done(true);
-      expect(machine.getLast().to.name).toBe("Done");
+      expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles function targets", () => {
       const machine = makeMachine();
       machine.events.doneFunc(100);
-      expect(machine.getLast().to.name).toBe("Done");
+      expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
       machine.events.doneAdvFunc("DONE");
-      expect(machine.getLast().to.name).toBe("Done");
+      expect(machine.getLast().to.key).toBe("Done");
     });
   });
   describe("send", () => {

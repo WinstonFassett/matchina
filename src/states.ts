@@ -5,9 +5,9 @@ import {
 } from "./matchbox-factory";
 
 export type StatesFactory<StatesConfig extends MatchboxConfig> =
-  MatchboxFactory<StatesConfig, "name">;
+  MatchboxFactory<StatesConfig, "key">;
 export function defineStates<StatesConfig extends MatchboxConfig>(
   config: StatesConfig,
 ) {
-  return matchboxFactory(config, "name");
+  return matchboxFactory(config, "key");
 }

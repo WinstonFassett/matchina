@@ -40,37 +40,37 @@ describe("tea example", () => {
     // // Usage example
     // const initialState = teaMakingMachine.getState();
     // expect(initialState).toBeDefined();
-    // expect(initialState.name).toBe("Initial");
+    // expect(initialState.key).toBe("Initial");
 
     // // Interact with the submachines
     // teaMakingMachine.events.start();
-    // expect(teaMakingMachine.getState().name).toBe("HeatingWater");
-    // expect(teaMakingMachine.getState().data.machine.getState().name).toBe(
+    // expect(teaMakingMachine.getState().key).toBe("HeatingWater");
+    // expect(teaMakingMachine.getState().data.machine.getState().key).toBe(
     //   "Heating",
     // );
-    // // expect(heatingWaterMachine.getState().name).toBe('Heating');
+    // // expect(heatingWaterMachine.getState().key).toBe('Heating');
 
     // // Move to the next state in the submachine
     // // heatingWaterMachine.events.done();
     // teaMakingMachine.events.done();
-    // // expect(heatingWaterMachine.getState().name).toBe('Done');
-    // expect(teaMakingMachine.getState().name).toBe("SteepingTea");
-    // expect(teaMakingMachine.getState().data.machine.getState().name).toBe(
+    // // expect(heatingWaterMachine.getState().key).toBe('Done');
+    // expect(teaMakingMachine.getState().key).toBe("SteepingTea");
+    // expect(teaMakingMachine.getState().data.machine.getState().key).toBe(
     //   "Steeping",
     // );
     // teaMakingMachine.events.done();
-    // // expect(steepingMachine.getState().name).toBe('Done');
-    // expect(teaMakingMachine.getState().name).toBe("Done");
+    // // expect(steepingMachine.getState().key).toBe('Done');
+    // expect(teaMakingMachine.getState().key).toBe("Done");
 
     // teaMakingMachine.events.reheat();
-    // expect(teaMakingMachine.getState().name).toBe("HeatingWater");
-    // expect(heatingWaterMachine.getState().name).toBe('HeatingWater');
+    // expect(teaMakingMachine.getState().key).toBe("HeatingWater");
+    // expect(heatingWaterMachine.getState().key).toBe('HeatingWater');
 
     // // Move to the next state in the submachine
     // steepingMachine.events.done();
-    // expect(steepingMachine.getState().name).toBe('Done');
+    // expect(steepingMachine.getState().key).toBe('Done');
 
     // // Check the state of the main machine
-    // expect(teaMakingMachine.getState().name).toBe('SteepingTea');
+    // expect(teaMakingMachine.getState().key).toBe('SteepingTea');
   });
 });

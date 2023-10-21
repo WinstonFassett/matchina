@@ -9,7 +9,7 @@ async function promiseLifecycleUsage () {
     Idle: {
       on: {
         execute: {
-          guard ({ type: event, params, from: { name: from }, to: { name: to } }) {
+          guard ({ type: event, params, from: { key: from }, to: { key: to } }) {
             console.log(`${from} wants to ${event} to ${to} with params ${params.join(', ')}`)
             const accept = params[0] > 1
             console.log('GUARD accept?', accept)
@@ -28,12 +28,12 @@ async function promiseLifecycleUsage () {
           }
         },
       },
-      leave: ({ type: event, from: { name: from }, to: { name: to } }) => {
+      leave: ({ type: event, from: { key: from }, to: { key: to } }) => {
         console.log(`leaving ${from} to ${event} to ${to}`)
       }
     },
   });
-  const checkState = () => console.log(machine.getState().name)
+  const checkState = () => console.log(machine.getState().key)
   console.log('execute 1')
   machine.events.execute(1);
   console.log('execute 1000')

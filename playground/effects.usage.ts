@@ -30,7 +30,7 @@ bindEffects(machine,
 });
 
 
-const checkState = () => console.log({ state: machine.getState().name, effects: machine.getState().data.effects.map(({ effect }) => effect) })
+const checkState = () => console.log({ state: machine.getState().key, effects: machine.getState().data.effects.map(({ effect }) => effect) })
 checkState()
 machine.events.next()
 checkState()

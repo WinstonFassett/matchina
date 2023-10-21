@@ -27,24 +27,24 @@ describe("createStates", () => {
   describe("populates data from config", () => {
     it("undefined -> {}", () => {
       const idleState = states.Idle();
-      expect(idleState.name).toBe("Idle");
+      expect(idleState.key).toBe("Idle");
       expect(idleState.data).toEqual({});
     });
 
     it("object -> object", () => {
       const loadingState = states.Loading();
-      expect(loadingState.name).toBe("Loading");
+      expect(loadingState.key).toBe("Loading");
       expect(loadingState.data.id).toBe(1);
       expect(loadingState.data).toBe(config.Loading);
     });
 
     it("function -> function(...params) => data ", () => {
       const loadedState = states.Loaded("hello");
-      expect(loadedState.name).toBe("Loaded");
+      expect(loadedState.key).toBe("Loaded");
       expect(loadedState.data.data).toBe("hello");
 
       const errorState = states.Error("oops");
-      expect(errorState.name).toBe("Error");
+      expect(errorState.key).toBe("Error");
       expect(errorState.data.error).toBe("oops");
     });
   });
