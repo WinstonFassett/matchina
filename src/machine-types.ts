@@ -15,7 +15,7 @@ export interface TransitionEvent<Event, From, To> {
 }
 
 export interface AnyMachine<
-  State = unknown,
+  State = any,
   EventKey extends AnEventKey = AnEventKey,
   Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
     EventKey,
@@ -33,13 +33,11 @@ export interface AnyMachine<
 type AnyKey = keyof any;
 type HasAnyKey = { [key in AnyKey]: any };
 
-
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
 ) extends (x: infer R) => any
   ? R
   : never;
-
 
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
