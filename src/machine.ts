@@ -4,12 +4,12 @@ import {
   StateMachine,
   StateTransitionsConfig,
 } from "./types";
-import { StateCreators } from "./states";
+import { StatesFactory } from "./states";
 
 export const INITIALIZE_EVENT = "__init";
 
 export function defineMachine<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions extends StateTransitionsConfig<States>,
 >(
   states: States,

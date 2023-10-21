@@ -5,7 +5,7 @@ export type UnionDataFactoryMember =
   | undefined
   | any;
 
-export type UnionDataFactory = {
+export type UnionConfig = {
   [key: string | number | symbol]: UnionDataFactoryMember;
 };
 
@@ -20,27 +20,27 @@ type Funcify<T> = T extends (...args: any[]) => any
   ? () => object
   : () => T;
 
-export type UnionData<U extends UnionDataFactory> = {
+export type UnionData<U extends UnionConfig> = {
   [Property in keyof U]: Funcify<U[Property]> extends (...args: any) => infer R
     ? R
     : never;
 };
 
-export type ExhaustiveMatchers<U extends UnionDataFactory> = {
+export type ExhaustiveMatchers<U extends UnionConfig> = {
   [Property in keyof UnionData<U>]: UnionData<U>[Property] extends undefined
     ? () => any
     : (data: UnionData<U>[Property]) => any;
 };
 type Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
 > = Partial<ExhaustiveMatchers<U>> & { _: (data: any) => any };
 
-export type Matchers<U extends UnionDataFactory> =
+export type Matchers<U extends UnionConfig> =
   | ExhaustiveMatchers<U>
   | Match_MUST_handle_all_keys_OR_provide_a_default_handler_using_underscore<U>;
 
 export type UnionMember<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
   TagKey extends string = "tag",
   K extends keyof UnionData<U> = keyof UnionData<U>,
   D extends UnionData<U>[K] = UnionData<U>[K],
@@ -57,7 +57,7 @@ export type UnionMember<
 >;
 
 class UnionMemberImpl<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
   TagKey extends string = "tag",
 > {
   data: any;
@@ -85,12 +85,12 @@ class UnionMemberImpl<
 }
 
 export type UnionConfigMember<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
   TagKey extends string = "tag",
 > = UnionMember<U, TagKey> & { [K in TagKey]: string };
 
 export type UnionFactory<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
   TagKey extends string = "tag",
 > = {
   [Property in keyof U]: Funcify<U[Property]> extends (...args: any[]) => any
@@ -109,7 +109,7 @@ export type UnionFactoryMember<
 > = ReturnType<F[K]>;
 
 export function unionize<
-  U extends UnionDataFactory,
+  U extends UnionConfig,
   TagKey extends string = "tag",
 >(config: U, tagKey: TagKey = "tag" as TagKey): UnionFactory<U, TagKey> {
   const createObj: any = {};

@@ -1,5 +1,5 @@
 import { MachineEvent, StateMachine, StateTransitionsConfig } from "../types";
-import { StateCreators } from "../states";
+import { StatesFactory } from "../states";
 import { onUpdate } from "./on-update";
 
 type TransitionHookExtensions<T> = {
@@ -10,7 +10,7 @@ type TransitionHookExtensions<T> = {
 };
 
 type StateHookExtensions<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
   TLeave extends ReturnType<States[keyof States]>,
   TEnter extends ReturnType<States[keyof States]>,
@@ -22,7 +22,7 @@ type StateHookExtensions<
 };
 
 export type TransitionHookMapping2<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
 > = {
   [StateKey in keyof TransitionConfig]?: {
@@ -51,7 +51,7 @@ export type TransitionHookMapping2<
 export default {};
 
 export function onLifecycle<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
   Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
     States,

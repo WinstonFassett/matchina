@@ -1,4 +1,4 @@
-import { StateCreators } from "./states";
+import { StatesFactory } from "./states";
 
 // #region General Machine Types
 export type AStateKey = string | number | symbol;
@@ -31,12 +31,12 @@ type FunctionStateTarget<State> = (...args: any[]) => State;
 type AdvancedFunctionStateTarget<State> = (
   ...args: any[]
 ) => (event: any) => State;
-type ConfigStateTransitionExit<States extends StateCreators<any>> =
+type ConfigStateTransitionExit<States extends StatesFactory<any>> =
   | SimpleStateTarget<keyof States>
   | AdvancedFunctionStateTarget<ReturnType<States[keyof States]>>
   | FunctionStateTarget<ReturnType<States[keyof States]>>;
 
-export type StateTransitionsConfig<States extends StateCreators<any>> = {
+export type StateTransitionsConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
     [EventKey: AnEventKey]: ConfigStateTransitionExit<States>;
   };
@@ -45,7 +45,7 @@ export type StateTransitionsConfig<States extends StateCreators<any>> = {
 
 // #region Transitioner Types
 export type StateTransitioners<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions,
 > = {
   [StateKey in keyof Transitions & keyof States]: {
@@ -66,7 +66,7 @@ export type StateTransitioners<
 
 // #region Matchers
 type TransitionEventMatchers<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
 > = {
   [StateKey in keyof TransitionsConfig]?: {
@@ -81,7 +81,7 @@ type TransitionEventMatchers<
 };
 
 type EventMatchers<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
 > = TransitionEventMatchers<States, TransitionsConfig>;
 
@@ -92,7 +92,7 @@ type MachineEvents<Transitions> = TUnionToIntersection<
 
 // #region Machine
 export type ExtractedEventKeys<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions extends StateTransitionsConfig<States>,
 > = {
   [StateKey in keyof StateTransitioners<
@@ -102,7 +102,7 @@ export type ExtractedEventKeys<
 }[keyof StateTransitioners<States, Transitions>];
 
 export type MachineEvent<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions extends StateTransitionsConfig<States>,
   EventKey extends ExtractedEventKeys<States, Transitions> = ExtractedEventKeys<
     States,
@@ -126,7 +126,7 @@ export type MachineEvent<
 >;
 
 export interface StateMachine<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
   Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
     States,
@@ -149,7 +149,7 @@ export interface StateMachine<
 }
 
 export type MachineDefinition<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions extends StateTransitionsConfig<States>,
 > = {
   create: MachineCreator<States, Transitions>;
@@ -157,7 +157,7 @@ export type MachineDefinition<
   transitions: Transitions;
 };
 type MachineCreator<
-  States extends StateCreators<any>,
+  States extends StatesFactory<any>,
   Transitions extends StateTransitionsConfig<States>,
 > = (
   initialState: ReturnType<States[keyof States]>,

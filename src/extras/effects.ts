@@ -1,9 +1,9 @@
 import { StateMachine, StateTransitionsConfig } from "../types";
-import { StateCreators } from "../states";
+import { StatesFactory } from "../states";
 import {
   Matchers,
   UnionConfigMember,
-  UnionDataFactory,
+  UnionConfig,
   UnionFactory,
   UnionFactoryData,
   unionize,
@@ -12,11 +12,11 @@ import { onUpdate } from "./on-update";
 
 export type Effect = UnionConfigMember<any, "effect">;
 
-export function createEffects(config: UnionDataFactory) {
+export function createEffects(config: UnionConfig) {
   return unionize(config, "effect");
 }
 export function runEffectsOnUpdate<
-  StateFactory extends StateCreators<any>,
+  StateFactory extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<StateFactory>,
   EffectFactory extends UnionFactory<any, "effect">,
 >(
