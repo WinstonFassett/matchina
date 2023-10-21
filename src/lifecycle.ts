@@ -1,6 +1,6 @@
 import {
   MachineEvent,
-  MachineFromStateCreatorsAndTransitionsConfig,
+  StateMachine,
   StateTransitionsConfig,
 } from "./machine-types";
 import { onUpdate } from "./on-update";
@@ -62,7 +62,7 @@ export function onLifecycle<
     TransitionConfig
   >,
 >(
-  machine: MachineFromStateCreatorsAndTransitionsConfig<
+  machine: StateMachine<
     States,
     TransitionConfig,
     Event

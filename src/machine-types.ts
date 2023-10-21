@@ -126,7 +126,7 @@ export type MachineEvent<
   }
 >;
 
-export interface MachineFromStateCreatorsAndTransitionsConfig<
+export interface StateMachine<
   States extends StateCreators<any>,
   TransitionConfig extends StateTransitionsConfig<States>,
   Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
@@ -165,7 +165,7 @@ type MachineCreator<
   Transitions extends StateTransitionsConfig<States>,
 > = (
   initialState: ReturnType<States[keyof States]>,
-) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>;
+) => StateMachine<States, Transitions>;
 // #endregion
 
 // #region Utility Types

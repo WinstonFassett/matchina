@@ -1,7 +1,7 @@
 import {
   MachineDefinition,
   MachineEvent,
-  MachineFromStateCreatorsAndTransitionsConfig,
+  StateMachine,
   StateTransitionsConfig,
 } from "./machine-types";
 import { StateCreators } from "./states";
@@ -69,7 +69,7 @@ export function defineMachine<
           }
         }
       }
-      const machine: MachineFromStateCreatorsAndTransitionsConfig<
+      const machine: StateMachine<
         States,
         Transitions
       > = {
