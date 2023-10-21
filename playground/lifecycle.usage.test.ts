@@ -4,16 +4,16 @@ import { onLifecycle } from "../src/lifecycle";
 
 describe("onLifecycle usage", () => {
   it("should call guard, handle, and event hooks in lifecycle order", async () => {
-    let didGuardReject = 0,
-      didGuardAccept = 0,
-      didBeforeExecute = 0,
-      didBeforeResolve = 0,
-      didHandleExecute = 0,
-      didHandlerReject = 0,
-      didAfterResolve = 0,
-      didEnterPending = 0,
-      didLeaveIdle = 0,
-      count = 0;
+    let didGuardReject = 0;
+      let didGuardAccept = 0;
+      let didBeforeExecute = 0;
+      let didBeforeResolve = 0;
+      let didHandleExecute = 0;
+      let didHandlerReject = 0;
+      let didAfterResolve = 0;
+      let didEnterPending = 0;
+      let didLeaveIdle = 0;
+      let count = 0;
 
     // Create machine WITHOUT a promise to drive it
     const machine = createPromiseMachine<number, number>();
@@ -52,6 +52,7 @@ describe("onLifecycle usage", () => {
               const accept = event.params[0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
+                console.log('handler rejecting')
                 // reject by returning undefined
                 return undefined;
               }
@@ -111,6 +112,15 @@ describe("onLifecycle usage", () => {
     expectState("Resolved");
     expectStateData().toBe(100);
 
+    // test non-hooked event, for coverage
+    machine.reset()
+    machine.events.execute(100);
+    expectState("Pending");
+    machine.events.reject(new Error("test"));
+    expectState("Rejected");
+    expectStateData().toBeInstanceOf(Error);
+    expect((machine.getState().data as any).message).toBe("test");
+
     console.log("removing lifecycle");
     removeLifecycle();
     machine.reset();
@@ -126,6 +136,7 @@ describe("onLifecycle usage", () => {
     machine.events.resolve(1);
     expectState("Resolved");
     expectStateData().toBe(1);
+    
 
     console.log({
       didGuardReject,

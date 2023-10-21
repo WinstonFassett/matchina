@@ -84,8 +84,9 @@ export function onLifecycle<
       const handled = handle
         ? (handle(updated as any) as typeof updated) ?? current
         : updated;
-
-      if (handled === current || handled.to.state === currentState.state) {
+      console.log({ handled });
+      if (handled === current) {
+        console.log("HANDLER REJECTED");
         return handled;
       }
       const { to } = handled;
