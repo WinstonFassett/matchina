@@ -1,37 +1,35 @@
 import { describe, it, expect } from "vitest";
 import { matchboxFactory } from "../src/matchbox-factory";
 
-describe("unionize", () => {
-  it("should create a union object with correct keys", () => {
+describe("matchboxFactory", () => {
+  it("should create a matchboxFactory with correct keys", () => {
     const config = {
       A: undefined,
       B: { id: 1 },
       C: (data: string) => ({ data }),
     } as const;
-
-    const union = matchboxFactory(config);
-
-    expect(Object.keys(union)).toEqual(["A", "B", "C"]);
+    const Box = matchboxFactory(config);
+    expect(Object.keys(Box)).toEqual(["A", "B", "C"]);
   });
 
-  it("should create a union object with correct values", () => {
+  it("should create a matchbox according to spec", () => {
     const config = {
       A: undefined,
       B: { id: 1 },
       C: (data: string) => ({ data }),
     } as const;
 
-    const union = matchboxFactory(config);
+    const Box = matchboxFactory(config);
 
-    const a = union.A();
+    const a = Box.A();
     expect(a.tag).toBe("A");
     expect(a.data).toEqual({});
 
-    const b = union.B();
+    const b = Box.B();
     expect(b.tag).toBe("B");
     expect(b.data).toEqual({ id: 1 });
 
-    const c = union.C("hello");
+    const c = Box.C("hello");
     expect(c.tag).toBe("C");
     expect(c.data).toEqual({ data: "hello" });
   });

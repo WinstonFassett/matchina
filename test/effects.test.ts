@@ -16,7 +16,6 @@ const makeStates = (effects = makeEffects()) => {
     Done: () => ({ effects: [effects.Notify(`Done at ${Date.now()}`)] }),
   });
 };
-// type State = UnionFactoryMember<ReturnType<typeof makeStates>>;
 
 const makeMachine = (states = makeStates()) =>
   defineMachine(states, {
