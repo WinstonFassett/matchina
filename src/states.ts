@@ -4,6 +4,8 @@ export type StatesFactory<StatesConfig extends UnionConfig> = UnionFactory<
   StatesConfig,
   "state"
 >;
-export function createStates<StatesConfig extends UnionConfig>(config: StatesConfig) {
+export function createStates<StatesConfig extends UnionConfig>(
+  config: StatesConfig,
+) {
   return unionize(config, "state");
 }

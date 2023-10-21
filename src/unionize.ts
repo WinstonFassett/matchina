@@ -56,10 +56,7 @@ export type UnionMember<
   }
 >;
 
-class UnionMemberImpl<
-  U extends UnionConfig,
-  TagKey extends string = "tag",
-> {
+class UnionMemberImpl<U extends UnionConfig, TagKey extends string = "tag"> {
   data: any;
   [tagKey: string]: any;
 
@@ -108,10 +105,10 @@ export type UnionFactoryMember<
   K extends keyof F = keyof F,
 > = ReturnType<F[K]>;
 
-export function unionize<
-  U extends UnionConfig,
-  TagKey extends string = "tag",
->(config: U, tagKey: TagKey = "tag" as TagKey): UnionFactory<U, TagKey> {
+export function unionize<U extends UnionConfig, TagKey extends string = "tag">(
+  config: U,
+  tagKey: TagKey = "tag" as TagKey,
+): UnionFactory<U, TagKey> {
   const createObj: any = {};
 
   for (const tag of Object.keys(config)) {
