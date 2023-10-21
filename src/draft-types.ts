@@ -1,4 +1,3 @@
-
 // interface ContextualEvent<S, C> {
 //   source?: S;
 //   context?: C;
@@ -6,7 +5,11 @@
 
 // #region draft/unused util-types
 
-import { StateTransitionsConfig, StateTransitioners, ExtractedEventKeys } from "./machine-types";
+import {
+  StateTransitionsConfig,
+  StateTransitioners,
+  ExtractedEventKeys,
+} from "./machine-types";
 import { StateCreators } from "./states";
 
 export type TransitionExitState<

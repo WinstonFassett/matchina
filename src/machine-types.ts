@@ -1,7 +1,7 @@
 import { StateCreators } from "./states";
 import { Expand } from "./utility-types";
 
-//#region General Machine Types
+// #region General Machine Types
 export type AStateKey = string | number | symbol;
 export type AnEventKey = string | number | symbol;
 export interface TransitionEvent<Event, From, To> {
@@ -24,10 +24,9 @@ export interface AnyMachine<
   update: (updater: (event: Event) => Event) => void;
   getLast: () => Event;
 }
-//#endregion
+// #endregion
 
-
-//#region Transition Config Types
+// #region Transition Config Types
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
 type AdvancedFunctionStateTarget<State> = (
@@ -43,9 +42,9 @@ export type StateTransitionsConfig<States extends StateCreators<any>> = {
     [EventKey: AnEventKey]: ConfigStateTransitionExit<States>;
   };
 };
-//#endregion
+// #endregion
 
-//#region Transitioner Types
+// #region Transitioner Types
 export type StateTransitioners<
   States extends StateCreators<any>,
   Transitions,
@@ -64,9 +63,9 @@ export type StateTransitioners<
       : never;
   };
 };
-//#endregion
+// #endregion
 
-//#region Matchers
+// #region Matchers
 type TransitionEventMatchers<
   States extends StateCreators<any>,
   TransitionsConfig extends StateTransitionsConfig<States>,
@@ -90,9 +89,9 @@ type EventMatchers<
 type MachineEvents<Transitions> = TUnionToIntersection<
   FlattenMembers<Transitions>
 >;
-//#endregion
+// #endregion
 
-//#region Machine
+// #region Machine
 export type ExtractedEventKeys<
   States extends StateCreators<any>,
   Transitions extends StateTransitionsConfig<States>,
@@ -134,7 +133,7 @@ export interface MachineFromStateCreatorsAndTransitionsConfig<
     States,
     TransitionConfig
   >,
-> extends AnyMachine {
+> {
   config: { states: States; transitions: TransitionConfig };
   states: States;
   events: MachineEvents<StateTransitioners<States, TransitionConfig>>;
@@ -150,6 +149,7 @@ export interface MachineFromStateCreatorsAndTransitionsConfig<
     data?: any,
   ) => Event | undefined;
   reset(): void;
+  update: (updater: (event: Event) => Event) => void;
 }
 
 export type MachineDefinition<
@@ -166,10 +166,9 @@ type MachineCreator<
 > = (
   initialState: ReturnType<States[keyof States]>,
 ) => MachineFromStateCreatorsAndTransitionsConfig<States, Transitions>;
-//#endregion
+// #endregion
 
-
-//#region Utility Types
+// #region Utility Types
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
 ) extends (x: infer R) => any
@@ -180,8 +179,7 @@ type FlattenMembers<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];
 
-
 type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
-//#endregion
+// #endregion
