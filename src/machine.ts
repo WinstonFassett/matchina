@@ -3,7 +3,7 @@ import {
   MachineEvent,
   StateMachine,
   StateTransitionsConfig,
-} from "./machine-types";
+} from "./types";
 import { StateCreators } from "./states";
 
 const INITIALIZE = "__init";

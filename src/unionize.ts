@@ -1,4 +1,4 @@
-import { Expand } from "./utility-types";
+import { Expand } from "./types";
 
 export type UnionDataFactoryMember =
   | ((...args: any[]) => any)

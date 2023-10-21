@@ -1,5 +1,5 @@
 export * from "./lifecycle";
-export * from "./machine-types";
+export * from "./types";
 export * from "./unionize";
 export * from "./states";
 export * from "./machine";

@@ -9,7 +9,7 @@ import {
   StateTransitionsConfig,
   StateTransitioners,
   ExtractedEventKeys,
-} from "./machine-types";
+} from "./types";
 import { StateCreators } from "./states";
 
 export type TransitionExitState<

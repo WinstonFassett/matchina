@@ -1,5 +1,4 @@
 import { StateCreators } from "./states";
-import { Expand } from "./utility-types";
 
 // #region General Machine Types
 export type AStateKey = string | number | symbol;
@@ -166,6 +165,9 @@ type MachineCreator<
 // #endregion
 
 // #region Utility Types
+
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
 ) extends (x: infer R) => any

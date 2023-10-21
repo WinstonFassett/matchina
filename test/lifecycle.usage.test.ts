@@ -5,23 +5,24 @@ import { onLifecycle } from "../src/lifecycle";
 describe("onLifecycle usage", () => {
   it("should call guard, handle, and event hooks in lifecycle order", async () => {
     let didGuardReject = 0;
-      let didGuardAccept = 0;
-      let didBeforeExecute = 0;
-      let didBeforeResolve = 0;
-      let didHandleExecute = 0;
-      let didHandlerReject = 0;
-      let didAfterResolve = 0;
-      let didEnterPending = 0;
-      let didLeaveIdle = 0;
-      let count = 0;
+    let didGuardAccept = 0;
+    let didBeforeExecute = 0;
+    let didBeforeResolve = 0;
+    let didHandleExecute = 0;
+    let didHandlerReject = 0;
+    let didAfterResolve = 0;
+    let didEnterPending = 0;
+    let didLeaveIdle = 0;
+    let count = 0;
 
     // Create machine WITHOUT a promise to drive it
     const machine = createPromiseMachine<number, number>();
-    const expectState = (state) => expect(machine.getState().state).toBe(state);
+    const expectState = (state: string) =>
+      expect(machine.getState().state).toBe(state);
     const expectStateData = () => {
       return expect(machine.getState().data);
     };
-    
+
     expectState("Idle");
 
     const removeLifecycle = onLifecycle(machine, {
@@ -52,7 +53,7 @@ describe("onLifecycle usage", () => {
               const accept = event.params[0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
-                console.log('handler rejecting')
+                console.log("handler rejecting");
                 // reject by returning undefined
                 return undefined;
               }
@@ -113,7 +114,7 @@ describe("onLifecycle usage", () => {
     expectStateData().toBe(100);
 
     // test non-hooked event, for coverage
-    machine.reset()
+    machine.reset();
     machine.events.execute(100);
     expectState("Pending");
     machine.events.reject(new Error("test"));
@@ -136,7 +137,6 @@ describe("onLifecycle usage", () => {
     machine.events.resolve(1);
     expectState("Resolved");
     expectStateData().toBe(1);
-    
 
     console.log({
       didGuardReject,

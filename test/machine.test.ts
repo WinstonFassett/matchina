@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { defineMachine } from "../src/machine";
-import { MachineDefinition } from "../src/machine-types";
+import { MachineDefinition } from "../src/types";
 import { createStates } from "../src/states";
 import { UnionFactory } from "../src/unionize";
 

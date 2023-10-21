@@ -1,4 +1,4 @@
-import { StateMachine, StateTransitionsConfig } from "./machine-types";
+import { StateMachine, StateTransitionsConfig } from "./types";
 import { onUpdate } from "./on-update";
 import { StateCreators } from "./states";
 import {

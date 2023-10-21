@@ -38,7 +38,7 @@ describe("runEffectsOnUpdate", () => {
     const machine = makeMachine();
     runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
-        didNotify = true;
+        didNotify = !!m;
         // console.log("NOTIFY", m)
       },
     });
@@ -56,7 +56,7 @@ describe("runEffectsOnUpdate", () => {
     const machine = makeMachine();
     runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
-        didNotify = true;
+        didNotify = !!m;
         // console.log("NOTIFY", m)
       },
     });
