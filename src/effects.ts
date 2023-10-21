@@ -1,9 +1,11 @@
 import { onUpdate } from "./on-update";
-import { AnyMachine } from "./types";
+import { AnyMachine } from "./machine-types";
 import {
   Matchers,
   UnionConfigMember,
   UnionDataFactory,
+  UnionFactory,
+  UnionFactoryData,
   unionize,
 } from "./unionize";
 
@@ -12,9 +14,9 @@ export type Effect = UnionConfigMember<any, "effect">;
 export function createEffects(config: UnionDataFactory) {
   return unionize(config, "effect");
 }
-export function runEffectsOnUpdate(
+export function runEffectsOnUpdate<Effects extends UnionFactory<any, "effect">>(
   machine: AnyMachine,
-  matchers: Matchers<any>,
+  matchers: Matchers<UnionFactoryData<Effects>>,
 ) {
   onUpdate(machine, (commit, updater) => {
     commit((ev) => {
