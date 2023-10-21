@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { defineMachine } from "../src/machine";
-import { createStates } from "../src/states";
+import { defineStates } from "../src/states";
 
 const makeStates = () =>
-  createStates({
+  defineStates({
     Initial: { name: "initial" },
     Done: (ok: boolean) => ({ ok }),
   });
@@ -26,7 +26,7 @@ const makeMachine = () => {
 
 describe("defineMachine", () => {
   it("exposes its states and transitions", () => {
-    const states = createStates({});
+    const states = defineStates({});
     const transitions = {};
     const Machine = defineMachine(states, transitions);
     expect(Machine.states).toBe(states);
@@ -36,7 +36,7 @@ describe("defineMachine", () => {
 
 describe("machine instance", () => {
   it("exposes its states and transitions on its config", () => {
-    const states = createStates({});
+    const states = defineStates({});
     const transitions = {};
     const machine = defineMachine(states, transitions).create(
       undefined as never,

@@ -1,11 +1,11 @@
 import { defineMachine } from "../machine";
-import { createStates } from "../states";
+import { defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
 export function createPromiseMachine<T, A, E extends Error = Error>(
   makePromise?: (...args: A[]) => Promise<T>,
 ) {
-  const states = createStates({
+  const states = defineStates({
     Idle: undefined,
     Pending: (...params: A[]) => params,
     Rejected: (error: E) => error,

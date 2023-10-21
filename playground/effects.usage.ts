@@ -1,6 +1,6 @@
-import { createStates } from "../src/states";
+import { defineStates } from "../src/states";
 import { defineMachine } from "../src/machine";
-import { createEffects, runEffectsOnUpdate } from "../src/extras/effects";
+import { createEffects, bindEffects } from "../src/extras/effects";
 
 const myEffects = createEffects({
   LoadRemote: undefined,
@@ -8,7 +8,7 @@ const myEffects = createEffects({
   Notify: (msg: string) => ({ msg }),
 });
 
-const states = createStates({
+const states = defineStates({
   Idle: () => ({ effects: [myEffects.LoadRemote()] }),
   Pending: () => ({ effects: [myEffects.SaveRemote()] }),
   Done: () => ({ effects: [myEffects.Notify("all done!")] }),
@@ -20,7 +20,7 @@ const machine = defineMachine(states, {
   Done: {},
 }).create(states.Idle());
 
-runEffectsOnUpdate(machine, 
+bindEffects(machine, 
   state => state.data.effects,
   {
   Notify: m => console.log('NOTIFY', m),

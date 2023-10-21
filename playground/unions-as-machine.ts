@@ -1,17 +1,17 @@
 import { MatchboxConfig, MatchboxFromFactory, matchboxFactory } from "../src/matchbox-factory";
 
-export const createStates = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "state");
-export const createEvents = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "type");
+export const defineStates = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "state");
+export const defineEvents = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "type");
 
 // Define States
-const states = createStates({
+const states = defineStates({
   Idle: () => ({}),
   Done: (x: number) => ({ result: x }),
 });
 type State = MatchboxFromFactory<typeof states>
 
 // Define Events
-const events = createEvents({
+const events = defineEvents({
   execute: (x: number) => x,
 });
 type Event = MatchboxFromFactory<typeof events>

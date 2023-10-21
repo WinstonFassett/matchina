@@ -1,6 +1,6 @@
 import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/extras/promise";
-import { createStates as states } from "../src/states";
+import { defineStates as states } from "../src/states";
 import { delayer } from "../test/delay";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });

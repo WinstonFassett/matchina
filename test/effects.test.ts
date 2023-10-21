@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createEffects, runEffectsOnUpdate } from "../src/extras/effects";
+import { createEffects, bindEffects } from "../src/extras/effects";
 import { defineMachine } from "../src/machine";
-import { createStates } from "../src/states";
+import { defineStates } from "../src/states";
 
 const effectsConfig = {
   Notify: (msg: string) => ({ msg }),
@@ -10,7 +10,7 @@ const effectsConfig = {
 const makeEffects = () => createEffects(effectsConfig);
 
 const makeStates = (effects = makeEffects()) => {
-  return createStates({
+  return defineStates({
     Idle: undefined,
     Pending: { effects: undefined },
     Done: () => ({ effects: [effects.Notify(`Done at ${Date.now()}`)] }),
@@ -36,7 +36,7 @@ describe("runEffectsOnUpdate", () => {
   it("should handle effects when the state changes", () => {
     let didNotify = false;
     const machine = makeMachine();
-    runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
         didNotify = !!m;
         // console.log("NOTIFY", m)
@@ -54,7 +54,7 @@ describe("runEffectsOnUpdate", () => {
   it("should not invoke effects when the state does not change", () => {
     let didNotify = false;
     const machine = makeMachine();
-    runEffectsOnUpdate(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
         didNotify = !!m;
         // console.log("NOTIFY", m)

@@ -1,11 +1,14 @@
 import { Expand } from "./types";
 
+// #region Config
 export type MatchboxConfig = {
   [key: string | number | symbol]: MatchboxSpec;
 };
 
 export type MatchboxSpec = ((...args: any[]) => any) | undefined | any;
+// #endregion
 
+// #region Matchbox
 type MatchboxCreator<B extends MatchboxSpec> = B extends (...args: any[]) => any
   ? B
   : B extends undefined
@@ -13,26 +16,12 @@ type MatchboxCreator<B extends MatchboxSpec> = B extends (...args: any[]) => any
   : () => B;
 
 export type MatchboxConfigValues<Config extends MatchboxConfig> = {
-  [Property in keyof Config]: MatchboxCreator<Config[Property]> extends (
+  [BoxKey in keyof Config]: MatchboxCreator<Config[BoxKey]> extends (
     ...args: any
   ) => infer R
     ? R
     : never;
 };
-
-export type ExhaustiveMatchers<Config extends MatchboxConfig> = {
-  [Property in keyof MatchboxConfigValues<Config>]: MatchboxConfigValues<Config>[Property] extends undefined
-    ? () => any
-    : (data: MatchboxConfigValues<Config>[Property]) => any;
-};
-type UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<
-  Config extends MatchboxConfig,
-> = Partial<ExhaustiveMatchers<Config>> & { _: (data: any) => any };
-
-export type Matchers<Config extends MatchboxConfig> =
-  | ExhaustiveMatchers<Config>
-  | UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<Config>;
-
 export type Matchbox<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
@@ -50,9 +39,10 @@ export type Matchbox<
     [K in TagKey]: string;
   }
 >;
-
-class MatchboxImpl<Config extends MatchboxConfig, TagKey extends string = "tag"> 
-{
+class MatchboxImpl<
+  Config extends MatchboxConfig,
+  TagKey extends string = "tag",
+> {
   data: any;
   [tagKey: string]: any;
 
@@ -75,33 +65,21 @@ class MatchboxImpl<Config extends MatchboxConfig, TagKey extends string = "tag">
     }
   }
 }
+// #endregion
 
-export type MatchboxFromConfig<
-  Config extends MatchboxConfig,
-  TagKey extends string = "tag",
-> = Matchbox<Config, TagKey> & { [K in TagKey]: string };
-
+// #region Matchbox Factory
 export type MatchboxFactory<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
 > = {
-  [Property in keyof Config]: MatchboxCreator<Config[Property]> extends (
+  [BoxKey in keyof Config]: MatchboxCreator<Config[BoxKey]> extends (
     ...args: any[]
   ) => any
     ? (
-        ...args: Parameters<MatchboxCreator<Config[Property]>>
-      ) => Matchbox<Config, TagKey, Property>
+        ...args: Parameters<MatchboxCreator<Config[BoxKey]>>
+      ) => Matchbox<Config, TagKey, BoxKey>
     : never;
 };
-
-export type MatchboxFactoryValues<Config extends MatchboxFactory<any, any>> = {
-  [Property in keyof Config]: ReturnType<Config[Property]>;
-};
-
-export type MatchboxFromFactory<
-  F extends MatchboxFactory<any, any>,
-  K extends keyof F = keyof F,
-> = ReturnType<F[K]>;
 
 export function matchboxFactory<
   Config extends MatchboxConfig,
@@ -111,10 +89,8 @@ export function matchboxFactory<
   tagKey: TagKey = "tag" as TagKey,
 ): MatchboxFactory<Config, TagKey> {
   const createObj: any = {};
-
   for (const tag of Object.keys(config)) {
     const value = config[tag];
-
     if (typeof value === "function") {
       createObj[tag] = (...args: any) => {
         const data = value(...args);
@@ -126,6 +102,39 @@ export function matchboxFactory<
       createObj[tag] = () => new MatchboxImpl(tag, {}, tagKey);
     }
   }
-
   return createObj;
 }
+// #endregion
+
+// #region  Matchers
+export type ExhaustiveMatchers<Config extends MatchboxConfig> = {
+  [BoxKey in keyof MatchboxConfigValues<Config>]: MatchboxConfigValues<Config>[BoxKey] extends undefined
+    ? () => any
+    : (data: MatchboxConfigValues<Config>[BoxKey]) => any;
+};
+
+type UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<
+  Config extends MatchboxConfig,
+> = Partial<ExhaustiveMatchers<Config>> & { _: (data: any) => any };
+
+export type Matchers<Config extends MatchboxConfig> =
+  | ExhaustiveMatchers<Config>
+  | UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<Config>;
+
+// #endregion
+
+// #region Helpers
+export type MatchboxFactoryValues<Config extends MatchboxFactory<any, any>> = {
+  [BoxKey in keyof Config]: ReturnType<Config[BoxKey]>;
+};
+
+export type MatchboxFromConfig<
+  Config extends MatchboxConfig,
+  TagKey extends string = "tag",
+> = Matchbox<Config, TagKey> & { [K in TagKey]: string };
+
+export type MatchboxFromFactory<
+  F extends MatchboxFactory<any, any>,
+  K extends keyof F = keyof F,
+> = ReturnType<F[K]>;
+// #endregion

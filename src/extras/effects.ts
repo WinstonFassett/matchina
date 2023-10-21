@@ -15,7 +15,7 @@ export type Effect = MatchboxFromConfig<any, "effect">;
 export function createEffects(config: MatchboxConfig) {
   return matchboxFactory(config, "effect");
 }
-export function runEffectsOnUpdate<
+export function bindEffects<
   StateFactory extends StatesFactory<any>,
   TransitionConfig extends StateTransitionsConfig<StateFactory>,
   EffectFactory extends MatchboxFactory<any, "effect">,

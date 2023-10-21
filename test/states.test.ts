@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createStates } from "../src/states";
+import { defineStates } from "../src/states";
 
 describe("createStates", () => {
   const config = {
@@ -8,10 +8,10 @@ describe("createStates", () => {
     Loaded: (data: string) => ({ data }),
     Error: (error: string) => ({ error }),
   } as const;
-  let states: ReturnType<typeof createStates<typeof config>>;
+  let states: ReturnType<typeof defineStates<typeof config>>;
 
   beforeEach(() => {
-    states = createStates(config);
+    states = defineStates(config);
   });
 
   it("should have keys that match the config", () => {
