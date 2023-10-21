@@ -92,7 +92,7 @@ export function onLifecycle<
       const { to } = handled;
       const toStateHooks = config[to.state as keyof typeof config];
 
-      fromStateHooks?.leave?.(handled);
+      fromStateHooks?.leave?.(handled as any); // todo: remove need for any
       before?.(handled as any);
       toStateHooks?.enter?.(handled);
       commit(() => handled);

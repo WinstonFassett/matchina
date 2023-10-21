@@ -30,9 +30,6 @@ export interface AnyMachine<
   getLast: () => Event;
 }
 
-type AnyKey = keyof any;
-type HasAnyKey = { [key in AnyKey]: any };
-
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
 ) extends (x: infer R) => any
@@ -137,27 +134,6 @@ type EventMatchers<
 type MachineEvents<Transitions> = TUnionToIntersection<
   FlattenTransitions<Transitions>
 >;
-type SendFunction<TransitionConfig extends StateTransitionsConfig<any>> = (
-  event: TransitionEventKeys<TransitionConfig>,
-  ...args: any[]
-) => void;
-// Usage within your Machine type
-
-// export interface AnyMachine<
-//   State = any,
-//   EventKey extends AnEventKey = AnEventKey,
-//   Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
-//     EventKey,
-//     State,
-//     State
-//   >,
-// > {
-//   getState: () => State;
-//   send: (event: EventKey, ...args: any[]) => void;
-//   transition: (event: EventKey, data?: any) => Event | undefined;
-//   update: (updater: (event: Event) => Event) => void;
-//   getLast: () => Event;
-// }
 
 export interface MachineFromStateCreatorsAndTransitionsConfig<
   States extends StateCreators<any>,
