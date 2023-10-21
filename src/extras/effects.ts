@@ -6,14 +6,14 @@ import {
   MatchboxConfig,
   MatchboxFactory,
   MatchboxFactoryValues,
-  matchbox,
-} from "../unionize";
+  matchboxFactory,
+} from "../matchbox-factory";
 import { onUpdate } from "./on-update";
 
 export type Effect = MatchboxConfigMember<any, "effect">;
 
 export function createEffects(config: MatchboxConfig) {
-  return matchbox(config, "effect");
+  return matchboxFactory(config, "effect");
 }
 export function runEffectsOnUpdate<
   StateFactory extends StatesFactory<any>,

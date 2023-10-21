@@ -1,5 +1,5 @@
 export * from "./types";
-export * from "./unionize";
+export * from "./matchbox-factory";
 export * from "./states";
 export * from "./machine";
 export * from "./extras/on-update";

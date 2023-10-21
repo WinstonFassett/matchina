@@ -1,19 +1,19 @@
 import { Expand } from "./types";
 
 export type MatchboxConfig = {
-  [key: string | number | symbol]: BoxSpec;
+  [key: string | number | symbol]: MatchboxSpec;
 };
 
-export type BoxSpec = ((...args: any[]) => any) | undefined | any;
+export type MatchboxSpec = ((...args: any[]) => any) | undefined | any;
 
-type BoxSpecToFunction<B extends BoxSpec> = B extends (...args: any[]) => any
+type MatchboxCreator<B extends MatchboxSpec> = B extends (...args: any[]) => any
   ? B
   : B extends undefined
   ? () => object
   : () => B;
 
 export type MatchboxConfigValues<Config extends MatchboxConfig> = {
-  [Property in keyof Config]: BoxSpecToFunction<Config[Property]> extends (
+  [Property in keyof Config]: MatchboxCreator<Config[Property]> extends (
     ...args: any
   ) => infer R
     ? R
@@ -33,7 +33,7 @@ export type Matchers<Config extends MatchboxConfig> =
   | ExhaustiveMatchers<Config>
   | UNDERSCORE_REQUIRED_when_all_cases_are_not_provided<Config>;
 
-export type MatchboxMemberImpl<
+export type Matchbox<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
   K extends
@@ -51,7 +51,8 @@ export type MatchboxMemberImpl<
   }
 >;
 
-class BoxImpl<Config extends MatchboxConfig, TagKey extends string = "tag"> {
+class MatchboxImpl<Config extends MatchboxConfig, TagKey extends string = "tag"> 
+{
   data: any;
   [tagKey: string]: any;
 
@@ -78,18 +79,18 @@ class BoxImpl<Config extends MatchboxConfig, TagKey extends string = "tag"> {
 export type MatchboxConfigMember<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
-> = MatchboxMemberImpl<Config, TagKey> & { [K in TagKey]: string };
+> = Matchbox<Config, TagKey> & { [K in TagKey]: string };
 
 export type MatchboxFactory<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
 > = {
-  [Property in keyof Config]: BoxSpecToFunction<Config[Property]> extends (
+  [Property in keyof Config]: MatchboxCreator<Config[Property]> extends (
     ...args: any[]
   ) => any
     ? (
-        ...args: Parameters<BoxSpecToFunction<Config[Property]>>
-      ) => MatchboxMemberImpl<Config, TagKey, Property>
+        ...args: Parameters<MatchboxCreator<Config[Property]>>
+      ) => Matchbox<Config, TagKey, Property>
     : never;
 };
 
@@ -102,7 +103,7 @@ export type MatchboxFactoryMember<
   K extends keyof F = keyof F,
 > = ReturnType<F[K]>;
 
-export function matchbox<
+export function matchboxFactory<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
 >(
@@ -117,12 +118,12 @@ export function matchbox<
     if (typeof value === "function") {
       createObj[tag] = (...args: any) => {
         const data = value(...args);
-        return new BoxImpl(tag, data, tagKey);
+        return new MatchboxImpl(tag, data, tagKey);
       };
     } else if (typeof value === "object") {
-      createObj[tag] = () => new BoxImpl(tag, value, tagKey);
+      createObj[tag] = () => new MatchboxImpl(tag, value, tagKey);
     } else if (value === undefined) {
-      createObj[tag] = () => new BoxImpl(tag, {}, tagKey);
+      createObj[tag] = () => new MatchboxImpl(tag, {}, tagKey);
     }
   }
 

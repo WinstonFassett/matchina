@@ -1,7 +1,7 @@
-import { MatchboxConfig, MatchboxFactoryMember, matchbox } from "../src/unionize";
+import { MatchboxConfig, MatchboxFactoryMember, matchboxFactory } from "../src/matchbox-factory";
 
-export const createStates = <T extends MatchboxConfig>(config: T) => matchbox(config, "state");
-export const createEvents = <T extends MatchboxConfig>(config: T) => matchbox(config, "type");
+export const createStates = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "state");
+export const createEvents = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "type");
 
 // Define States
 const states = createStates({

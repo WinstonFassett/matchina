@@ -1,9 +1,9 @@
-import { matchbox, MatchboxConfig, MatchboxFactory } from "./unionize";
+import { matchboxFactory, MatchboxConfig, MatchboxFactory } from "./matchbox-factory";
 
 export type StatesFactory<StatesConfig extends MatchboxConfig> =
   MatchboxFactory<StatesConfig, "state">;
 export function createStates<StatesConfig extends MatchboxConfig>(
   config: StatesConfig,
 ) {
-  return matchbox(config, "state");
+  return matchboxFactory(config, "state");
 }
