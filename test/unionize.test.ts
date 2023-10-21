@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { unionize } from "./unionize";
+import { unionize } from "../src/unionize";
 
 describe("unionize", () => {
   it("should create a union object with correct keys", () => {

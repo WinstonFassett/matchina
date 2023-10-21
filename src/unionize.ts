@@ -56,7 +56,7 @@ export type UnionMember<
   }
 >;
 
-export class UnionMemberImpl<
+class UnionMemberImpl<
   U extends UnionDataFactory,
   TagKey extends string = "tag",
 > {
