@@ -45,24 +45,14 @@ export interface StateMachine<
   def: MachineDefinition<States, Transitions>;
   config: {
     initialState: StateFromFactory<States>;
-  }; // remove, get from def
-  event: FlatMemberUnion<StateTransitioners<States, Transitions>>;
+  }; // consolidate with def?
   getState: () => StateFromFactory<States>;
-  getChange: () => StateMachineEvent<States, Transitions>;
   send: SendFunction<States, Transitions>;
+  event: FlatMemberUnion<StateTransitioners<States, Transitions>>;
+  getChange: () => StateMachineEvent<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
 }
-
-export type StateMachineLogic<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-> = {
-  getChange: (
-    event: FlattenMemberKeys<Transitions>,
-    data?: any, // makeChange? whatIf? no, whatIf should be a separate function
-  ) => Event | undefined; // remove?
-};
 
 export type SendFunction<
   States extends StatesFactory<any>,
