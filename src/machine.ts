@@ -51,7 +51,6 @@ export function defineMachine<
     states,
     transitions,
     create: (initialState) => {
-      let currentState: StateFromFactory<States> = initialState;
       let lastChange: any;
       const createSender =
         (eventKey: any) =>
@@ -104,7 +103,7 @@ export function defineMachine<
       }
       const machine: StateMachine<States, Transitions> = {
         def,
-        getState: () => currentState,
+        getState: () => lastChange.to,
         getLast: () => lastChange,
         do: events,
         send: (type, ...params) => {
@@ -117,7 +116,6 @@ export function defineMachine<
           const change = updater(lastChange);
           if (change) {
             lastChange = change;
-            currentState = change.to;
           }
         },
         reset: () => initialize(),
