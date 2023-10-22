@@ -32,9 +32,9 @@ bindEffects(machine,
 
 const checkState = () => console.log({ state: machine.getState().key, effects: machine.getState().data.effects.map(({ effect }) => effect) })
 checkState()
-machine.do.next()
+machine.event.next()
 checkState()
-machine.do.next()
+machine.event.next()
 checkState()
-machine.do.next()
+machine.event.next()
 checkState()

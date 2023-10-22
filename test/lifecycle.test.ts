@@ -64,8 +64,8 @@ describe("onLifecycle usage", () => {
               }
               machine.promise = delayed(num, num);
               machine.done = machine.promise
-                .then(machine.do.resolve)
-                .catch(machine.do.reject);
+                .then(machine.event.resolve)
+                .catch(machine.event.reject);
               didHandleExecute ||= ++count;
               return event;
             },
@@ -97,19 +97,19 @@ describe("onLifecycle usage", () => {
     });
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
-    machine.do.execute(1);
+    machine.event.execute(1);
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
 
     expectState("Idle");
 
     expect(didGuardAccept).toBeFalsy();
-    machine.do.execute(99);
+    machine.event.execute(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
-    machine.do.execute(100);
+    machine.event.execute(100);
 
     expect(didBeforeResolve).toBeFalsy();
     await delay(100);
@@ -120,9 +120,9 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.do.execute(100);
+    machine.event.execute(100);
     expectState("Pending");
-    machine.do.reject(new Error("test"));
+    machine.event.reject(new Error("test"));
     expectState("Rejected");
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
@@ -136,10 +136,10 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.do.execute(1000);
+    machine.event.execute(1000);
     expectState("Pending");
 
-    machine.do.resolve(1);
+    machine.event.resolve(1);
     expectState("Resolved");
     expectStateData().toBe(1);
 

@@ -37,6 +37,6 @@ const rootMachine = Machine.create(Machine.states.Idle())
 
 const log = () => console.log({ rootMachine, last: rootMachine.getLast() })
 log()
-rootMachine.do.start()
+rootMachine.event.start()
 log()
 

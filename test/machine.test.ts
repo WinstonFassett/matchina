@@ -35,14 +35,13 @@ describe("defineMachine", () => {
 });
 
 describe("machine instance", () => {
-  it("exposes its states and transitions on its config", () => {
+  it("exposes its config with initialState", () => {
     const states = defineStates({});
     const transitions = {};
     const machine = defineMachine(states, transitions).create(
-      undefined as never,
+      1 as never,
     );
-    expect(machine.config.states).toBe(states);
-    expect(machine.config.transitions).toBe(transitions);
+    expect(machine.config.initialState).toBe(1);    
   });
 
   describe("states", () => {
@@ -102,17 +101,17 @@ describe("machine instance", () => {
   describe("events transitioners", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
-      machine.do.done(true);
+      machine.event.done(true);
       expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles function targets", () => {
       const machine = makeMachine();
-      machine.do.doneFunc(100);
+      machine.event.doneFunc(100);
       expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
-      machine.do.doneAdvFunc("DONE");
+      machine.event.doneAdvFunc("DONE");
       expect(machine.getLast().to.key).toBe("Done");
     });
   });
@@ -124,7 +123,7 @@ describe("machine instance", () => {
   });
   it("events can match", () => {
     const machine = makeMachine();
-    machine.do.done(true);
+    machine.event.done(true);
     const mustBeOk = machine.getLast().match({
       done: (ok) => {
         console.log("ok?", ok);

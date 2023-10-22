@@ -105,7 +105,7 @@ export function defineMachine<
         def,
         getState: () => lastChange.to,
         getLast: () => lastChange,
-        do: events,
+        event: events,
         send: (type, ...params) => {
           const next = getChange(type, ...params);
           if (next) {

@@ -8,6 +8,8 @@ export interface ChangeEvent<Type, From, To> {
   from: From;
   to: To;
 }
+export type SwapFunc<T> = (updater: (event: T) => T) => void;
+
 // #endregion
 
 // #region Transition Config
@@ -45,18 +47,17 @@ export interface StateMachine<
   >,
 > {
   def: MachineDefinition<States, Transitions>;
-  config: {
-    states: States;
-    transitions: Transitions;
+  config: {    
     initialState: StateFromFactory<States>;
   }; // remove, get from def
-  do: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
+  event: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
   getState: () => StateFromFactory<States>;
   getLast: () => Event; // changed? get changed?
   send: SendFunction<States, Transitions>;
   reset(): void; // remove// externalize
-  update: (updater: (event: Event) => Event) => void; // protect?
+  update: SwapFunc<Event>; // remove// externalize
 }
+
 
 export type StateMachineLogic<
   States extends StatesFactory<any>,

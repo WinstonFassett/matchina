@@ -22,8 +22,8 @@ async function promiseLifecycleUsage () {
             const num = event.params[0]
             machine.promise = delayed(num, num)
             machine.done = machine.promise
-              .then(machine.do.resolve)
-              .catch(machine.do.reject)            
+              .then(machine.event.resolve)
+              .catch(machine.event.reject)            
             return event
           }
         },
@@ -35,9 +35,9 @@ async function promiseLifecycleUsage () {
   });
   const checkState = () => console.log(machine.getState().key)
   console.log('execute 1')
-  machine.do.execute(1);
+  machine.event.execute(1);
   console.log('execute 1000')
-  machine.do.execute(1000);
+  machine.event.execute(1000);
   checkState()
   await machine.done
   checkState()
@@ -49,11 +49,11 @@ async function promiseLifecycleUsage () {
   checkState()
 
   // without lifecycle, there is no delay implementation
-  machine.do.execute(1000)
+  machine.event.execute(1000)
   // state is pending
   checkState()
   // synchronously resolve
-  machine.do.resolve(1)
+  machine.event.resolve(1)
   checkState()
 }
 

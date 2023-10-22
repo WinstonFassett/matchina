@@ -5,7 +5,7 @@ export function makeZen<
   },
 >(machine: M) {
   return {
-    ...machine.do,
+    ...machine.event,
     get state() {
       return machine.getState();
     },
