@@ -50,18 +50,7 @@ export interface StateMachine<
   do: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event; // changed? get changed?
-  send: <
-    E extends S extends keyof Transitions
-      ? keyof StateTransitioners<States, Transitions>[S]
-      : Event["type"],
-    S extends keyof Transitions = keyof States,
-    P = S extends keyof Transitions
-      ? Parameters<StateTransitioners<States, Transitions>[S][E]>[0]
-      : Parameters<StateTransitioners<States, Transitions>[keyof States][E]>[0],
-  >(
-    event: E,
-    params?: P,
-  ) => void;
+  send: SendFunction<States, Transitions>;
   getChange: (
     event: FlattenMemberKeys<Transitions>,
     data?: any, // makeChange? whatIf? no, whatIf should be a separate function
@@ -69,6 +58,25 @@ export interface StateMachine<
   reset(): void; // remove// externalize
   update: (updater: (event: Event) => Event) => void; // protect?
 }
+
+type SendFunction<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = <
+  E extends S extends keyof Transitions
+    ? keyof StateTransitioners<States, Transitions>[S]
+    : Event["type"],
+  S extends keyof Transitions = keyof States,
+  P = Exclude<
+    S extends keyof Transitions
+      ? Parameters<StateTransitioners<States, Transitions>[S][E]>[0]
+      : Parameters<StateTransitioners<States, Transitions>[keyof States][E]>[0],
+    undefined
+  >,
+>(
+  event: E,
+  params: P,
+) => void;
 
 export type MachineCreator<
   States extends StatesFactory<any>,
