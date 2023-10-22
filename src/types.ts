@@ -132,6 +132,8 @@ export interface StateMachine<
   reset(): void;
   update: (updater: (event: Change) => Change) => void;
 }
+export type AnyStateMachine<States extends StatesFactory<any> = StatesFactory<any>>
+   = StateMachine<States, TransitionConfig<States>>;
 
 export type MachineDefinition<
   States extends StatesFactory<any>,

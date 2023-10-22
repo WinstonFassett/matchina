@@ -6,6 +6,8 @@ import {
 } from "./types";
 import { StatesFactory } from "./states";
 
+export const MachineSymbol = Symbol("Machine");
+
 export const INITIALIZE_EVENT = "__init";
 
 export function defineMachine<
