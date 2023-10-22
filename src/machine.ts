@@ -1,4 +1,4 @@
-import { StatesFactory } from "./states";
+import { StateFromFactory, StatesFactory } from "./states";
 import {
   MachineDefinition,
   StateMachine,
@@ -17,7 +17,7 @@ export function defineMachine<
   states: States,
   transitions: Transitions,
 ): MachineDefinition<States, Transitions> {
-  type State = ReturnType<States[keyof States]>;
+  type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
 
   function createChange({
@@ -50,7 +50,7 @@ export function defineMachine<
     states,
     transitions,
     create: (initialState) => {
-      let currentState: ReturnType<States[keyof States]> = initialState;
+      let currentState: StateFromFactory<States> = initialState;
       let lastChange: any;
       const createSender =
         (eventKey: any) =>
@@ -76,7 +76,7 @@ export function defineMachine<
         params: any[],
       ): Event | undefined {
         const targetFuncOrString =
-          machine.config.transitions[lastChange.to.key as any]?.[type as any];
+          transitions[lastChange.to.key as any]?.[type as any];
         if (!targetFuncOrString) {
           return lastChange;
         }
@@ -90,9 +90,9 @@ export function defineMachine<
               ? targetStateOrFunc(type, machine)
               : targetStateOrFunc;
         } else {
-          targetState = machine.config.states[
-            targetFuncOrString as keyof typeof machine.config.states
-          ](...params) as any;
+          targetState = states[targetFuncOrString as keyof typeof states](
+            ...params,
+          ) as any;
         }
         return createChange({
           from: lastChange.to,
@@ -125,6 +125,7 @@ export function defineMachine<
         config: {
           states,
           transitions,
+          initialState,
         },
       };
       const initialize = () =>

@@ -6,7 +6,7 @@ import {
   Matchers,
   matchboxFactory,
 } from "../matchbox-factory";
-import { StatesFactory } from "../states";
+import { StateFromFactory, StatesFactory } from "../states";
 import { StateMachine, TransitionConfig } from "../types";
 import { onUpdate } from "./on-update";
 
@@ -21,7 +21,7 @@ export function bindEffects<
   Effects extends MatchboxFactory<any, "effect">,
 >(
   machine: StateMachine<States, Transitions>,
-  getEffects: (state: ReturnType<States[keyof States]>) => Effect[] | undefined,
+  getEffects: (state: StateFromFactory<States>) => Effect[] | undefined,
   matchers: Matchers<MatchboxFactoryValues<Effects>>,
 ) {
   return onUpdate(machine, (commit, updater) => {

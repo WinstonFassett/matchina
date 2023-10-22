@@ -1,5 +1,5 @@
 import { StateMachineEvent, StateMachine, TransitionConfig } from "../types";
-import { StatesFactory } from "../states";
+import { StateFromFactory, StatesFactory } from "../states";
 import { onUpdate } from "./on-update";
 
 type TransitionHookExtensions<T> = {
@@ -12,8 +12,8 @@ type TransitionHookExtensions<T> = {
 type StateHookExtensions<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  TLeave extends ReturnType<States[keyof States]>,
-  TEnter extends ReturnType<States[keyof States]>,
+  TLeave extends StateFromFactory<States>,
+  TEnter extends StateFromFactory<States>,
 > = {
   leave?: (
     change: StateMachineEvent<States, Transitions, any, TLeave, TEnter>,

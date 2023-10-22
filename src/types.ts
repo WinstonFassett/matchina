@@ -1,4 +1,4 @@
-import { StatesFactory } from "./states";
+import { StateFromFactory, StatesFactory } from "./states";
 
 // #region General
 export type AnyStateKey = string | number | symbol;
@@ -21,11 +21,11 @@ type AdvancedFunctionStateTarget<
 ) => (
   event: EventKey,
   machine: StateMachine<States, any>,
-) => ReturnType<States[keyof States]>;
+) => StateFromFactory<States>;
 type ConfigStateTransitionExit<States extends StatesFactory<any>> =
   | SimpleStateTarget<keyof States>
   | AdvancedFunctionStateTarget<States>
-  | FunctionStateTarget<ReturnType<States[keyof States]>>;
+  | FunctionStateTarget<StateFromFactory<States>>;
 
 export type TransitionConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
@@ -45,10 +45,14 @@ export interface StateMachine<
   >,
 > {
   def: MachineDefinition<States, Transitions>;
-  config: { states: States; transitions: Transitions }; // remove, get from def
+  config: {
+    states: States;
+    transitions: Transitions;
+    initialState: StateFromFactory<States>;
+  }; // remove, get from def
   states: States; // remove
   do: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
-  getState: () => ReturnType<States[keyof States]>;
+  getState: () => StateFromFactory<States>;
   getLast: () => Event; // changed? get changed?
   send: SendFunction<States, Transitions>;
   getChange: (
@@ -82,7 +86,7 @@ export type MachineCreator<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = (
-  initialState: ReturnType<States[keyof States]>,
+  initialState: StateFromFactory<States>,
 ) => StateMachine<States, Transitions>;
 
 export type MachineDefinition<
@@ -103,12 +107,8 @@ export type StateMachineEvent<
     States,
     Transitions
   > = FlattenedEventTypes<States, Transitions>,
-  From extends ReturnType<States[keyof States]> = ReturnType<
-    States[keyof States]
-  >,
-  To extends ReturnType<States[keyof States]> = ReturnType<
-    States[keyof States]
-  >,
+  From extends StateFromFactory<States> = StateFromFactory<States>,
+  To extends StateFromFactory<States> = StateFromFactory<States>,
   Params = any,
 > = Expand<
   ChangeEvent<EventKey, From, To> & {
@@ -149,7 +149,7 @@ export type StateTransitioners<
         >
       ? (...args: Parameters<Transitions[StateKey][EventKey]>) => void
       : Transitions[StateKey][EventKey] extends FunctionStateTarget<
-          ReturnType<States[keyof States]>
+          StateFromFactory<States>
         >
       ? (...args: Parameters<Transitions[StateKey][EventKey]>) => void
       : never;
