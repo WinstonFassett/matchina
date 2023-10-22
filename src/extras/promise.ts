@@ -32,12 +32,13 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
         .catch(machine.do.reject);
     }
     onUpdate(machine, (commit, updater) => {
-      const after = updater(machine.getLast());
-      after.to.match({
-        Pending: execute,
-        _() {},
-      });
-      commit(() => after);
+      commit(before => {
+        const after = updater(before);
+        if (after.type === 'execute') {
+          execute(after.params)          
+        }
+        return before
+      })      
     });
   }
   const promiseMachine = Object.assign(machine, {
