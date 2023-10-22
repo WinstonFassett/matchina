@@ -53,7 +53,7 @@ export function defineMachine<
       let currentState: ReturnType<States[keyof States]> = initialState;
       let lastChange: any;
       const createSender =
-        (eventKey: string) =>
+        (eventKey: any) =>
         (...params: any[]) =>
           machine.send(eventKey, params);
 

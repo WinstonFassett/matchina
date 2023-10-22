@@ -1,6 +1,6 @@
 import { StatesFactory } from "./states";
 
-// #region General 
+// #region General
 export type AnyStateKey = string | number | symbol;
 export type AnyEventKey = string | number | symbol;
 export interface ChangeEvent<Type, From, To> {
@@ -10,7 +10,7 @@ export interface ChangeEvent<Type, From, To> {
 }
 // #endregion
 
-// #region Transition Config 
+// #region Transition Config
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
 type AdvancedFunctionStateTarget<
@@ -39,15 +39,15 @@ export type TransitionConfig<States extends StatesFactory<any>> = {
 export interface StateMachine<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineEvent<
+  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
     States,
     Transitions
-  > = StateMachineEvent<States, Transitions>,
+  >,
 > {
   def: MachineDefinition<States, Transitions>;
-  config: { states: States; transitions: Transitions }; //remove, get from def
-  states: States;  //remove
-  do: FlatMemberUnion<StateTransitioners<States, Transitions>>;  //remove// externalize
+  config: { states: States; transitions: Transitions }; // remove, get from def
+  states: States; // remove
+  do: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Event; // changed? get changed?
   send: <
@@ -57,7 +57,7 @@ export interface StateMachine<
     S extends keyof Transitions = keyof States,
     P = S extends keyof Transitions
       ? Parameters<StateTransitioners<States, Transitions>[S][E]>[0]
-      : Parameters<StateTransitioners<States, Transitions>[keyof States][E]>[0]
+      : Parameters<StateTransitioners<States, Transitions>[keyof States][E]>[0],
   >(
     event: E,
     params?: P,
@@ -65,8 +65,8 @@ export interface StateMachine<
   getChange: (
     event: FlattenMemberKeys<Transitions>,
     data?: any, // makeChange? whatIf? no, whatIf should be a separate function
-  ) => Event | undefined;  //remove?
-  reset(): void;  //remove// externalize
+  ) => Event | undefined; // remove?
+  reset(): void; // remove// externalize
   update: (updater: (event: Event) => Event) => void; // protect?
 }
 
@@ -110,7 +110,7 @@ export type StateMachineEvent<
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
   }
 >;
-//#endregion
+// #endregion
 
 // #region Matchers
 type ChangeEventMatchers<
@@ -127,7 +127,7 @@ type ChangeEventMatchers<
 };
 // #endregion
 
-// #region Transitioners 
+// #region Transitioners
 export type StateTransitioners<
   States extends StatesFactory<any>,
   Transitions,
@@ -158,7 +158,7 @@ export type FlattenedEventTypes<
 }[keyof StateTransitioners<States, Transitions>];
 // #endregion
 
-// #region Utility 
+// #region Utility
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 export type TUnionToIntersection<T> = (
@@ -175,7 +175,5 @@ type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
 
-type FlatMemberUnion<T> = TUnionToIntersection<
-  FlattenMembers<T>
->;
+type FlatMemberUnion<T> = TUnionToIntersection<FlattenMembers<T>>;
 // #endregion

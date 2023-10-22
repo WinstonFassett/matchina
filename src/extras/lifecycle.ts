@@ -1,8 +1,4 @@
-import {
-  StateMachineEvent,
-  StateMachine,
-  TransitionConfig,
-} from "../types";
+import { StateMachineEvent, StateMachine, TransitionConfig } from "../types";
 import { StatesFactory } from "../states";
 import { onUpdate } from "./on-update";
 
@@ -55,10 +51,10 @@ export type TransitionHookMapping2<
 export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineEvent<
+  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
     States,
     Transitions
-  > = StateMachineEvent<States, Transitions>,
+  >,
 >(
   machine: StateMachine<States, Transitions, Event>,
   config: TransitionHookMapping2<States, Transitions>,
