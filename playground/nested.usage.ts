@@ -35,7 +35,7 @@ const Machine = defineMachine(
 );
 const rootMachine = Machine.create(Machine.states.Idle())
 
-const log = () => console.log({ rootMachine, last: rootMachine.getLast() })
+const log = () => console.log({ rootMachine, last: rootMachine.getChange() })
 log()
 rootMachine.event.start()
 log()

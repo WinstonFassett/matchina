@@ -70,7 +70,7 @@ describe("machine instance", () => {
       it("receives current event as context", () => {
         const machine = makeMachine();
         machine.update((context) => {
-          const event = machine.getLast();
+          const event = machine.getChange();
           expect(context.from).toEqual(event.from);
           return context;
         });
@@ -100,17 +100,17 @@ describe("machine instance", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
       machine.event.done(true);
-      expect(machine.getLast().to.key).toBe("Done");
+      expect(machine.getChange().to.key).toBe("Done");
     });
     it("handles function targets", () => {
       const machine = makeMachine();
       machine.event.doneFunc(100);
-      expect(machine.getLast().to.key).toBe("Done");
+      expect(machine.getChange().to.key).toBe("Done");
     });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
       machine.event.doneAdvFunc("DONE");
-      expect(machine.getLast().to.key).toBe("Done");
+      expect(machine.getChange().to.key).toBe("Done");
     });
   });
   describe("send", () => {
@@ -122,14 +122,14 @@ describe("machine instance", () => {
   it("events can match", () => {
     const machine = makeMachine();
     machine.event.done(true);
-    const mustBeOk = machine.getLast().match({
+    const mustBeOk = machine.getChange().match({
       done: (ok) => {
         console.log("ok?", ok);
         return "ok" as const;
       },
     });
     console.log({ mustBeOk });
-    const mustBeThing = machine.getLast().match({
+    const mustBeThing = machine.getChange().match({
       _: () => {
         return "thing" as const;
       },

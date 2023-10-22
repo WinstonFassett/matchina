@@ -48,7 +48,7 @@ export interface StateMachine<
   }; // remove, get from def
   event: FlatMemberUnion<StateTransitioners<States, Transitions>>;
   getState: () => StateFromFactory<States>;
-  getLast: () => StateMachineEvent<States, Transitions>; // changed? get changed?
+  getChange: () => StateMachineEvent<States, Transitions>;
   send: SendFunction<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
