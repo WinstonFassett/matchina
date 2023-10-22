@@ -1,6 +1,7 @@
 import { StateFromFactory, StatesFactory } from "./states";
 import {
   MachineDefinition,
+  SendFunction,
   StateMachine,
   StateMachineEvent,
   TransitionConfig,
@@ -55,7 +56,7 @@ export function defineMachine<
       const createSender =
         (eventKey: any) =>
         (...params: any[]) =>
-          machine.send(eventKey, params);
+          machine.send(eventKey, ...params);
 
       const transitioners: any = {};
       const events: any = {};
@@ -72,9 +73,9 @@ export function defineMachine<
         }
       }
       function getChange(
-        type: Event["type"],
-        params: any[],
+        ...args: Parameters<SendFunction<States, Transitions>>
       ): Event | undefined {
+        const [type, ...params] = args;
         const targetFuncOrString =
           transitions[lastChange.to.key as any]?.[type as any];
         if (!targetFuncOrString) {
@@ -107,13 +108,12 @@ export function defineMachine<
         getState: () => currentState,
         getLast: () => lastChange,
         do: events,
-        send: (type, params) => {
-          const next = machine.getChange(type, params);
+        send: (type, ...params) => {
+          const next = getChange(type, ...params);
           if (next) {
             return machine.update(() => next);
           }
         },
-        getChange,
         update: (updater) => {
           const change = updater(lastChange);
           if (change) {

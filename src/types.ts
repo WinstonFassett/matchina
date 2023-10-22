@@ -55,15 +55,21 @@ export interface StateMachine<
   getState: () => StateFromFactory<States>;
   getLast: () => Event; // changed? get changed?
   send: SendFunction<States, Transitions>;
-  getChange: (
-    event: FlattenMemberKeys<Transitions>,
-    data?: any, // makeChange? whatIf? no, whatIf should be a separate function
-  ) => Event | undefined; // remove?
   reset(): void; // remove// externalize
   update: (updater: (event: Event) => Event) => void; // protect?
 }
 
-type SendFunction<
+export type StateMachineLogic<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = {
+  getChange: (
+    event: FlattenMemberKeys<Transitions>,
+    data?: any, // makeChange? whatIf? no, whatIf should be a separate function
+  ) => Event | undefined; // remove?
+};
+
+export type SendFunction<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = <
@@ -79,7 +85,7 @@ type SendFunction<
   >,
 >(
   event: E,
-  params: P,
+  ...params: P[]
 ) => void;
 
 export type MachineCreator<
