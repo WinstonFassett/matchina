@@ -3,7 +3,6 @@ export function makeZen<
     getState(): any;
     do: any;
   },
-  S,
 >(machine: M) {
   return {
     ...machine.do,

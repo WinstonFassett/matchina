@@ -8,7 +8,7 @@ function makeMachine() {
 }
 
 describe("zen", () => {
-  it("should return an object with machine, state and execute properties", () => {
+  it("should return an object with machine, state and all machine events", () => {
     const machine = makeMachine();
     const zenMachine = makeZen(machine);
     expect(zenMachine).toHaveProperty("machine");

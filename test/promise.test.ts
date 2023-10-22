@@ -1,12 +1,5 @@
-import { expect, it, describe } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "../src/extras/promise";
-import {
-  AnyStateMachine,
-  StateMachine,
-  StatesFactory,
-  TransitionConfig,
-} from "../src";
-import { makeZen } from "../src/extras/zen";
 import { delay, delayer } from "./delay";
 
 describe("createPromiseMachine", () => {
