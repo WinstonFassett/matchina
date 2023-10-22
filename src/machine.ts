@@ -1,10 +1,10 @@
+import { StatesFactory } from "./states";
 import {
   MachineDefinition,
-  StateMachineEvent,
   StateMachine,
+  StateMachineEvent,
   TransitionConfig,
 } from "./types";
-import { StatesFactory } from "./states";
 
 export const MachineSymbol = Symbol("Machine");
 
@@ -71,6 +71,36 @@ export function defineMachine<
           }
         }
       }
+      function getChange(
+        type: Event["type"],
+        params: any[],
+      ): Event | undefined {
+        const targetFuncOrString =
+          machine.config.transitions[lastChange.to.key as any]?.[type as any];
+        if (!targetFuncOrString) {
+          return lastChange;
+        }
+
+        let targetState: State;
+
+        if (typeof targetFuncOrString === "function") {
+          const targetStateOrFunc = targetFuncOrString(...params);
+          targetState =
+            typeof targetStateOrFunc === "function"
+              ? targetStateOrFunc(type, machine)
+              : targetStateOrFunc;
+        } else {
+          targetState = machine.config.states[
+            targetFuncOrString as keyof typeof machine.config.states
+          ](...params) as any;
+        }
+        return createChange({
+          from: lastChange.to,
+          type,
+          params,
+          to: targetState,
+        });
+      }
       const machine: StateMachine<States, Transitions> = {
         def,
         states,
@@ -83,33 +113,7 @@ export function defineMachine<
             return machine.update(() => next);
           }
         },
-        getChange: (type, params) => {
-          const targetFuncOrString =
-            transitions[lastChange.to.key as any]?.[type as any];
-          if (!targetFuncOrString) {
-            return lastChange;
-          }
-
-          let targetState: State;
-
-          if (typeof targetFuncOrString === "function") {
-            const targetStateOrFunc = targetFuncOrString(...params);
-            targetState =
-              typeof targetStateOrFunc === "function"
-                ? targetStateOrFunc(type, machine)
-                : targetStateOrFunc;
-          } else {
-            targetState = states[targetFuncOrString as keyof typeof states](
-              ...params,
-            ) as any;
-          }
-          return createChange({
-            from: lastChange.to,
-            type,
-            params,
-            to: targetState,
-          });
-        },
+        getChange,
         update: (updater) => {
           const change = updater(lastChange);
           if (change) {

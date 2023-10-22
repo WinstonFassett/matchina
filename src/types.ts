@@ -179,7 +179,7 @@ type FlattenMembers<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];
 
-type FlattenMemberKeys<T> = {
+export type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
 

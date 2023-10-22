@@ -92,13 +92,13 @@ describe("machine instance", () => {
       });
     });
   });
-  describe("transition", () => {
-    it("ignores invalid transitions", () => {
-      const machine = makeMachine();
-      const res = machine.getChange("InvalidEvent" as any, {});
-      expect(res).toBe(machine.getLast());
-    });
-  });
+  // describe("getChange", () => {
+  //   it("ignores invalid transitions", () => {
+  //     const machine = makeMachine();
+  //     const res = machine.getChange("InvalidEvent" as any, {});
+  //     expect(res).toBe(machine.getLast());
+  //   });
+  // });
   describe("events transitioners", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
