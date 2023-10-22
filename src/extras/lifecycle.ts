@@ -51,12 +51,8 @@ export type TransitionHookMapping2<
 export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
-    States,
-    Transitions
-  >,
 >(
-  machine: StateMachine<States, Transitions, Event>,
+  machine: StateMachine<States, Transitions>,
   config: TransitionHookMapping2<States, Transitions>,
 ) {
   return onUpdate(machine, (commit, updater) => {

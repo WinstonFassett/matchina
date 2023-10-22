@@ -41,21 +41,17 @@ export type TransitionConfig<States extends StatesFactory<any>> = {
 export interface StateMachine<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
-    States,
-    Transitions
-  >,
 > {
   def: MachineDefinition<States, Transitions>;
   config: {
     initialState: StateFromFactory<States>;
   }; // remove, get from def
-  event: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
+  event: FlatMemberUnion<StateTransitioners<States, Transitions>>;
   getState: () => StateFromFactory<States>;
-  getLast: () => Event; // changed? get changed?
+  getLast: () => StateMachineEvent<States, Transitions>; // changed? get changed?
   send: SendFunction<States, Transitions>;
   reset(): void; // remove// externalize
-  update: SwapFunc<Event>; // remove// externalize
+  update: SwapFunc<StateMachineEvent<States, Transitions>>;
 }
 
 export type StateMachineLogic<
