@@ -31,10 +31,8 @@ export type Matchbox<
 > = Expand<
   {
     data: D;
-    match<M extends Matchers<Config>>(
-      casesObj: M,
-    ): // any
-    M[keyof M] extends (...args: any) => infer R ? R : never;
+    match<M extends Matchers<Config>>(casesObj: M): 
+      M[keyof M] extends (...args: any) => infer R ? R : never;
   } & {
     [K in TagKey]: string;
   }

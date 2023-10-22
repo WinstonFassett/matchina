@@ -1,5 +1,5 @@
 import {
-  StateMachineTransition,
+  StateMachineEvent,
   StateMachine,
   TransitionConfig,
 } from "../types";
@@ -20,7 +20,7 @@ type StateHookExtensions<
   TEnter extends ReturnType<States[keyof States]>,
 > = {
   leave?: (
-    change: StateMachineTransition<States, Transitions, any, TLeave, TEnter>,
+    change: StateMachineEvent<States, Transitions, any, TLeave, TEnter>,
   ) => any;
   enter?: (change: TEnter) => any;
 };
@@ -33,7 +33,7 @@ export type TransitionHookMapping2<
     on?: {
       [Event in keyof Transitions[StateKey]]?: Transitions[StateKey][Event] extends keyof States
         ? TransitionHookExtensions<
-            StateMachineTransition<
+            StateMachineEvent<
               States,
               Transitions,
               Event, // should constrain params
@@ -55,10 +55,10 @@ export type TransitionHookMapping2<
 export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineTransition<
+  Event extends StateMachineEvent<
     States,
     Transitions
-  > = StateMachineTransition<States, Transitions>,
+  > = StateMachineEvent<States, Transitions>,
 >(
   machine: StateMachine<States, Transitions, Event>,
   config: TransitionHookMapping2<States, Transitions>,

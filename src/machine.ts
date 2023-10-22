@@ -1,6 +1,6 @@
 import {
   MachineDefinition,
-  StateMachineTransition,
+  StateMachineEvent,
   StateMachine,
   TransitionConfig,
 } from "./types";
@@ -18,7 +18,7 @@ export function defineMachine<
   transitions: Transitions,
 ): MachineDefinition<States, Transitions> {
   type State = ReturnType<States[keyof States]>;
-  type Event = StateMachineTransition<States, Transitions>;
+  type Event = StateMachineEvent<States, Transitions>;
 
   function createChange({
     type,
