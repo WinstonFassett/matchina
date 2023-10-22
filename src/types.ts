@@ -21,6 +21,7 @@ type AdvancedFunctionStateTarget<
 > = (
   ...args: any[]
 ) => (
+  state: StateFromFactory<States>,
   event: EventKey,
   machine: StateMachine<States, any>,
 ) => StateFromFactory<States>;

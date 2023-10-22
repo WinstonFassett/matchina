@@ -32,3 +32,5 @@ const createMachineWithContext = () => {
   })
   return Object.assign(machine, { context })
 }
+const machine = createMachineWithContext()
+machine.event.go()

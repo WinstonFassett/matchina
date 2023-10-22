@@ -11,8 +11,7 @@ const Machine = defineMachine(states, {
     MOUSE_DOWN: (x: number) => () => states.DETECTING_RESIZE(x)
   },
   DETECTING_RESIZE: {
-    MOUSE_MOVE: (x: number) => (ev, m) => {
-      const state = m.getState() as any;
+    MOUSE_MOVE: (x: number) => (state: any) => {      
       if (Math.abs(x - state.initialX) > 3) {
         return states.RESIZING(x);
       }
