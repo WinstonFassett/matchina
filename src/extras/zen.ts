@@ -1,10 +1,17 @@
-import { StateMachine } from "../types";
-
-export function zen <M extends StateMachine<any,any>>(machine: M) {
-  const wrapper = {
+export function makeZen<
+  M extends {
+    getState(): any;
+    do: any;
+  },
+  S,
+>(machine: M) {
+  return {
     ...machine.do,
-    get machine() { return machine },
-    get state () { return machine.getState() },
-  }
-  return wrapper
+    get state() {
+      return machine.getState();
+    },
+    get machine() {
+      return machine;
+    },
+  };
 }

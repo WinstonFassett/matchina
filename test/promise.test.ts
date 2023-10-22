@@ -1,7 +1,13 @@
 import { expect, it, describe } from "vitest";
 import { createPromiseMachine } from "../src/extras/promise";
+import {
+  AnyStateMachine,
+  StateMachine,
+  StatesFactory,
+  TransitionConfig,
+} from "../src";
+import { makeZen } from "../src/extras/zen";
 import { delay, delayer } from "./delay";
-import { AnyStateMachine, StateMachine, StatesFactory, TransitionConfig } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
@@ -42,50 +48,5 @@ describe("createPromiseMachine", () => {
     const rejectedState = machine.getState();
     expect(rejectedState.key).toBe("Rejected");
     // expect((rejectedState.data as any).message).toBe("custom error");
-  });
-});
-
-export function zen <
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
->(machine: StateMachine<States,Transitions>) {
-  const wrapper = {
-    ...(machine.do ?? {}),
-    get machine() { return machine },
-    get state () { return machine.getState() },
-  }
-  return wrapper
-}
-describe("zen", () => {
-  it("should return an object with machine, state and execute properties", () => {
-    const machine = createPromiseMachine((x:number) => delayer(x, "Resolved Data")());
-    const zenMachine = zen(machine);
-
-    expect(zenMachine).toHaveProperty("machine");
-    expect(zenMachine).toHaveProperty("state");
-    expect(zenMachine).toHaveProperty("execute");
-  });
-
-  it("should return the current state of the machine", () => {
-    const machine = createPromiseMachine(delayer(1, "Resolved Data"));
-    const zenMachine = zen(machine);
-
-    expect(zenMachine.state.key).toBe("Idle");
-
-    console.log({ zenMachine })
-    zenMachine.execute(1)
-    expect(zenMachine.state.key).toBe("Pending");
-
-    return delay(2).then(() => {
-      expect(zenMachine.state.key).toBe("Resolved");
-      expect(zenMachine.state.data).toBe("Resolved Data");
-    });
-  });
-
-  it("should return the machine instance", () => {
-    const machine = createPromiseMachine(delayer(1, "Resolved Data"));
-    const zenMachine = zen(machine);
-
-    expect(zenMachine.machine).toBe(machine);
   });
 });
