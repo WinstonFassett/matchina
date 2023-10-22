@@ -119,9 +119,7 @@ export function defineMachine<
           }
         },
         reset: () => initialize(),
-        config: {
-          states,
-          transitions,
+        config: {                    
           initialState,
         },
       };
