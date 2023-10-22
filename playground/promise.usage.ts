@@ -50,7 +50,12 @@ async function promiseUsage () {
   
 
   reset()
-  machine.send("execute", [1]);
+  // machine.send2('execute', 1000)
+  machine.send<'execute'>('execute', 1)
+  machine.send('execute', 1000)
+  machine.send('reject', new Error('error'))
+  // machine.debugParams<any, 'Pending'>('resolve')('ok')
+  // machine.debugParams<'execute', 'Idle'>('execute')(123)
   await delay(2)
   checkState()
   reset()
