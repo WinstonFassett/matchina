@@ -13,7 +13,6 @@ describe("createPromiseMachine", () => {
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
-    // Use setTimeout with a very short delay to wait for asynchronous operations to complete
     await new Promise((resolve) => setTimeout(resolve, 2));
 
     const resolvedState = machine.getState();
@@ -35,7 +34,6 @@ describe("createPromiseMachine", () => {
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
-    // Use setTimeout with a very short delay to wait for asynchronous operations to complete
     await delay(2);
 
     const rejectedState = machine.getState();

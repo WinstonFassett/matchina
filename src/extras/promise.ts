@@ -47,3 +47,4 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
   });
   return promiseMachine;
 }
+export type PromiseMachine = ReturnType<typeof createPromiseMachine>;

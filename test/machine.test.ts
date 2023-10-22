@@ -38,10 +38,8 @@ describe("machine instance", () => {
   it("exposes its config with initialState", () => {
     const states = defineStates({});
     const transitions = {};
-    const machine = defineMachine(states, transitions).create(
-      1 as never,
-    );
-    expect(machine.config.initialState).toBe(1);    
+    const machine = defineMachine(states, transitions).create(1 as never);
+    expect(machine.config.initialState).toBe(1);
   });
 
   describe("states", () => {

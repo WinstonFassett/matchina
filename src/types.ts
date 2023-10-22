@@ -47,7 +47,7 @@ export interface StateMachine<
   >,
 > {
   def: MachineDefinition<States, Transitions>;
-  config: {    
+  config: {
     initialState: StateFromFactory<States>;
   }; // remove, get from def
   event: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
@@ -57,7 +57,6 @@ export interface StateMachine<
   reset(): void; // remove// externalize
   update: SwapFunc<Event>; // remove// externalize
 }
-
 
 export type StateMachineLogic<
   States extends StatesFactory<any>,
