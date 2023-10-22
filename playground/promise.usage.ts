@@ -22,7 +22,7 @@ async function promiseUsage () {
   // TODO: add this to promise
   const reset = () => {
     console.log('resetting')
-    machine.update(c => ({ ...c, to: machine.states.Idle() }))
+    machine.update(c => ({ ...c, to: machine.def.states.Idle() }))
   }
   checkState()
   machine.do.execute(1000);

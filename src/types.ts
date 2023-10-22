@@ -50,7 +50,6 @@ export interface StateMachine<
     transitions: Transitions;
     initialState: StateFromFactory<States>;
   }; // remove, get from def
-  states: States; // remove
   do: FlatMemberUnion<StateTransitioners<States, Transitions>>; // remove// externalize
   getState: () => StateFromFactory<States>;
   getLast: () => Event; // changed? get changed?

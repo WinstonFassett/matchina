@@ -15,7 +15,7 @@ const makeMachine = () => {
       doneFunc: (done: number) =>
         states[done === 100 ? "Done" : "Initial"](true),
       doneAdvFunc: (done: string) => (event, machine) => {
-        return machine.states[done === "DONE" ? "Done" : "Initial"](
+        return machine.def.states[done === "DONE" ? "Done" : "Initial"](
           event === "doneAdvFunc",
         );
       },
@@ -49,20 +49,20 @@ describe("machine instance", () => {
     const machine = makeMachine();
     it("can match", () => {
       expect(
-        machine.states.Initial().match({
+        machine.def.states.Initial().match({
           Initial: () => 100,
           _: () => 0,
         }),
       ).toBe(100);
 
       expect(
-        machine.states.Initial().match({
+        machine.def.states.Initial().match({
           _: () => 1,
         }),
       ).toBe(1);
 
       expect(() =>
-        machine.states.Initial().match({
+        machine.def.states.Initial().match({
           InvalidKey: () => 1,
         } as any),
       ).toThrow();

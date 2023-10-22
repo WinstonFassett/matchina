@@ -104,7 +104,6 @@ export function defineMachine<
       }
       const machine: StateMachine<States, Transitions> = {
         def,
-        states,
         getState: () => currentState,
         getLast: () => lastChange,
         do: events,
