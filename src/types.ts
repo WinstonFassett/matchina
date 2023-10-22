@@ -3,7 +3,7 @@ import { StatesFactory } from "./states";
 // #region General Machine Types
 export type AnyStateKey = string | number | symbol;
 export type AnyEventKey = string | number | symbol;
-export interface TransitionEvent<Type, From, To> {
+export interface ChangeEvent<Type, From, To> {
   type: Type;
   from: From;
   to: To;
@@ -11,7 +11,7 @@ export interface TransitionEvent<Type, From, To> {
 export interface AnyMachine<
   State = any,
   EventKey extends AnyEventKey = AnyEventKey,
-  Event extends TransitionEvent<EventKey, State, State> = TransitionEvent<
+  Change extends ChangeEvent<EventKey, State, State> = ChangeEvent<
     EventKey,
     State,
     State
@@ -19,16 +19,15 @@ export interface AnyMachine<
 > {
   getState: () => State;
   send: (event: EventKey, ...args: any[]) => void;
-  transition: (event: EventKey, data?: any) => Event | undefined;
-  update: (updater: (event: Event) => Event) => void;
-  getLast: () => Event;
+  transition: (event: EventKey, data?: any) => Change | undefined;
+  update: (updater: (lastChange: Change) => Change) => void;
+  getLast: () => Change;
 }
 // #endregion
 
 // #region Transition Config Types
 type SimpleStateTarget<T> = T;
 type FunctionStateTarget<State> = (...args: any[]) => State;
-// ReturnType<States[keyof States]>
 type AdvancedFunctionStateTarget<
   States extends StatesFactory<any>,
   EventKey extends AnyEventKey = AnyEventKey,
@@ -43,7 +42,7 @@ type ConfigStateTransitionExit<States extends StatesFactory<any>> =
   | AdvancedFunctionStateTarget<States>
   | FunctionStateTarget<ReturnType<States[keyof States]>>;
 
-export type StateTransitionsConfig<States extends StatesFactory<any>> = {
+export type TransitionConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
     [EventKey: AnyEventKey]: ConfigStateTransitionExit<States>;
   };
@@ -75,23 +74,16 @@ export type StateTransitioners<
 // #region Matchers
 type TransitionEventMatchers<
   States extends StatesFactory<any>,
-  TransitionsConfig extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 > = {
-  [StateKey in keyof TransitionsConfig]?: {
-    [EventKey in keyof TransitionsConfig[StateKey]]: TransitionsConfig[StateKey][EventKey] extends keyof States
-      ? (
-          ...args: Parameters<States[TransitionsConfig[StateKey][EventKey]]>
-        ) => any
+  [StateKey in keyof Transitions]?: {
+    [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
+      ? (...args: Parameters<States[Transitions[StateKey][EventKey]]>) => any
       : (...args: any[]) => any;
   };
-}[keyof TransitionsConfig] & {
+}[keyof Transitions] & {
   _?: (...args: any[]) => any;
 };
-
-type EventMatchers<
-  States extends StatesFactory<any>,
-  TransitionsConfig extends StateTransitionsConfig<States>,
-> = TransitionEventMatchers<States, TransitionsConfig>;
 
 type MachineEvents<Transitions> = TUnionToIntersection<
   FlattenMembers<Transitions>
@@ -99,9 +91,9 @@ type MachineEvents<Transitions> = TUnionToIntersection<
 // #endregion
 
 // #region Machine
-export type ExtractedEventKeys<
+export type FlattenedEventTypes<
   States extends StatesFactory<any>,
-  Transitions extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateTransitioners<
     States,
@@ -109,13 +101,13 @@ export type ExtractedEventKeys<
   >]: keyof StateTransitioners<States, Transitions>[StateKey];
 }[keyof StateTransitioners<States, Transitions>];
 
-export type MachineEvent<
+export type StateMachineTransition<
   States extends StatesFactory<any>,
-  Transitions extends StateTransitionsConfig<States>,
-  EventKey extends ExtractedEventKeys<States, Transitions> = ExtractedEventKeys<
+  Transitions extends TransitionConfig<States>,
+  EventKey extends FlattenedEventTypes<
     States,
     Transitions
-  >,
+  > = FlattenedEventTypes<States, Transitions>,
   From extends ReturnType<States[keyof States]> = ReturnType<
     States[keyof States]
   >,
@@ -125,9 +117,9 @@ export type MachineEvent<
   Params = any,
   // TO should use event key plus transition
 > = Expand<
-  TransitionEvent<EventKey, From, To> & {
+  ChangeEvent<EventKey, From, To> & {
     params: Params;
-    match: <M extends EventMatchers<States, Transitions>>(
+    match: <M extends TransitionEventMatchers<States, Transitions>>(
       cases: M,
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
   }
@@ -135,31 +127,31 @@ export type MachineEvent<
 
 export interface StateMachine<
   States extends StatesFactory<any>,
-  TransitionConfig extends StateTransitionsConfig<States>,
-  Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
+  Transitions extends TransitionConfig<States>,
+  Change extends StateMachineTransition<
     States,
-    TransitionConfig
-  >,
+    Transitions
+  > = StateMachineTransition<States, Transitions>,
 > {
-  def: MachineDefinition<States, TransitionConfig>;
-  config: { states: States; transitions: TransitionConfig };
+  def: MachineDefinition<States, Transitions>;
+  config: { states: States; transitions: Transitions };
   states: States;
-  events: MachineEvents<StateTransitioners<States, TransitionConfig>>;
-  transitions: StateTransitioners<States, TransitionConfig>;
+  events: MachineEvents<StateTransitioners<States, Transitions>>;
+  transitions: StateTransitioners<States, Transitions>;
   getState: () => ReturnType<States[keyof States]>;
-  getLast: () => Event;
-  send: (event: FlattenMemberKeys<TransitionConfig>, ...args: any[]) => void;
+  getLast: () => Change;
+  send: (event: FlattenMemberKeys<Transitions>, ...args: any[]) => void;
   transition: (
-    event: FlattenMemberKeys<TransitionConfig>,
+    event: FlattenMemberKeys<Transitions>,
     data?: any,
-  ) => Event | undefined;
+  ) => Change | undefined;
   reset(): void;
-  update: (updater: (event: Event) => Event) => void;
+  update: (updater: (event: Change) => Change) => void;
 }
 
 export type MachineDefinition<
   States extends StatesFactory<any>,
-  Transitions extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 > = {
   create: MachineCreator<States, Transitions>;
   states: States;
@@ -167,7 +159,7 @@ export type MachineDefinition<
 };
 type MachineCreator<
   States extends StatesFactory<any>,
-  Transitions extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 > = (
   initialState: ReturnType<States[keyof States]>,
 ) => StateMachine<States, Transitions>;

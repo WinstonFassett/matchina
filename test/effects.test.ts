@@ -38,16 +38,12 @@ describe("runEffectsOnUpdate", () => {
     bindEffects(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
         didNotify = !!m;
-        // console.log("NOTIFY", m)
       },
     });
     machine.events.next();
     expect(didNotify).toBe(false);
-    // console.log(machine.getState());
     machine.events.next();
-    // console.log(machine.getState());
     expect(didNotify).toBe(true);
-    // expect(states.Notify).toHaveBeenCalled();
   });
 
   it("should not invoke effects when the state does not change", () => {
@@ -56,7 +52,6 @@ describe("runEffectsOnUpdate", () => {
     bindEffects(machine, (state) => (state.data as any)?.effects, {
       Notify: (m) => {
         didNotify = !!m;
-        // console.log("NOTIFY", m)
       },
     });
     expect(didNotify).toBe(false);
@@ -65,7 +60,6 @@ describe("runEffectsOnUpdate", () => {
     expect(didNotify).toBe(true);
     didNotify = false;
     machine.events.next();
-    // console.log(machine.getState());
     expect(didNotify).toBe(false);
   });
 });

@@ -1,13 +1,13 @@
-import { StateMachine, StateTransitionsConfig } from "../types";
-import { StatesFactory } from "../states";
 import {
-  Matchers,
-  MatchboxFromConfig,
   MatchboxConfig,
   MatchboxFactory,
   MatchboxFactoryValues,
+  MatchboxFromConfig,
+  Matchers,
   matchboxFactory,
 } from "../matchbox-factory";
+import { StatesFactory } from "../states";
+import { StateMachine, TransitionConfig } from "../types";
 import { onUpdate } from "./on-update";
 
 export type Effect = MatchboxFromConfig<any, "effect">;
@@ -16,20 +16,18 @@ export function createEffects(config: MatchboxConfig) {
   return matchboxFactory(config, "effect");
 }
 export function bindEffects<
-  StateFactory extends StatesFactory<any>,
-  TransitionConfig extends StateTransitionsConfig<StateFactory>,
-  EffectFactory extends MatchboxFactory<any, "effect">,
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+  Effects extends MatchboxFactory<any, "effect">,
 >(
-  machine: StateMachine<StateFactory, TransitionConfig>,
-  getEffects: (
-    state: ReturnType<StateFactory[keyof StateFactory]>,
-  ) => Effect[] | undefined,
-  matchers: Matchers<MatchboxFactoryValues<EffectFactory>>,
+  machine: StateMachine<States, Transitions>,
+  getEffects: (state: ReturnType<States[keyof States]>) => Effect[] | undefined,
+  matchers: Matchers<MatchboxFactoryValues<Effects>>,
 ) {
   return onUpdate(machine, (commit, updater) => {
-    commit((ev) => {
-      const initial = ev;
-      const updated = updater(ev);
+    commit((current) => {
+      const initial = current;
+      const updated = updater(current);
       if (initial.to !== updated.to) {
         const effects = getEffects(updated.to);
         handleEffects(effects, matchers);

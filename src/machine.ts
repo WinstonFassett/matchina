@@ -1,8 +1,8 @@
 import {
   MachineDefinition,
-  MachineEvent,
+  StateMachineTransition,
   StateMachine,
-  StateTransitionsConfig,
+  TransitionConfig,
 } from "./types";
 import { StatesFactory } from "./states";
 
@@ -10,13 +10,13 @@ export const INITIALIZE_EVENT = "__init";
 
 export function defineMachine<
   States extends StatesFactory<any>,
-  Transitions extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 >(
   states: States,
   transitions: Transitions,
 ): MachineDefinition<States, Transitions> {
   type State = ReturnType<States[keyof States]>;
-  type Event = MachineEvent<States, Transitions>;
+  type Event = StateMachineTransition<States, Transitions>;
 
   function createEvent({
     type,

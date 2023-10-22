@@ -1,4 +1,8 @@
-import { MachineEvent, StateMachine, StateTransitionsConfig } from "../types";
+import {
+  StateMachineTransition,
+  StateMachine,
+  TransitionConfig,
+} from "../types";
 import { StatesFactory } from "../states";
 import { onUpdate } from "./on-update";
 
@@ -11,38 +15,38 @@ type TransitionHookExtensions<T> = {
 
 type StateHookExtensions<
   States extends StatesFactory<any>,
-  TransitionConfig extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
   TLeave extends ReturnType<States[keyof States]>,
   TEnter extends ReturnType<States[keyof States]>,
 > = {
   leave?: (
-    change: MachineEvent<States, TransitionConfig, any, TLeave, TEnter>,
+    change: StateMachineTransition<States, Transitions, any, TLeave, TEnter>,
   ) => any;
   enter?: (change: TEnter) => any;
 };
 
 export type TransitionHookMapping2<
   States extends StatesFactory<any>,
-  TransitionConfig extends StateTransitionsConfig<States>,
+  Transitions extends TransitionConfig<States>,
 > = {
-  [StateKey in keyof TransitionConfig]?: {
+  [StateKey in keyof Transitions]?: {
     on?: {
-      [Event in keyof TransitionConfig[StateKey]]?: TransitionConfig[StateKey][Event] extends keyof States
+      [Event in keyof Transitions[StateKey]]?: Transitions[StateKey][Event] extends keyof States
         ? TransitionHookExtensions<
-            MachineEvent<
+            StateMachineTransition<
               States,
-              TransitionConfig,
+              Transitions,
               Event, // should constrain params
               ReturnType<States[StateKey]>,
-              ReturnType<States[TransitionConfig[StateKey][Event]]>,
-              Parameters<States[TransitionConfig[StateKey][Event]]>
+              ReturnType<States[Transitions[StateKey][Event]]>,
+              Parameters<States[Transitions[StateKey][Event]]>
             >
           >
         : never;
     };
   } & StateHookExtensions<
     States,
-    TransitionConfig,
+    Transitions,
     ReturnType<States[StateKey]>,
     any
   >;
@@ -50,14 +54,14 @@ export type TransitionHookMapping2<
 
 export function onLifecycle<
   States extends StatesFactory<any>,
-  TransitionConfig extends StateTransitionsConfig<States>,
-  Event extends MachineEvent<States, TransitionConfig> = MachineEvent<
+  Transitions extends TransitionConfig<States>,
+  Event extends StateMachineTransition<
     States,
-    TransitionConfig
-  >,
+    Transitions
+  > = StateMachineTransition<States, Transitions>,
 >(
-  machine: StateMachine<States, TransitionConfig, Event>,
-  config: TransitionHookMapping2<States, TransitionConfig>,
+  machine: StateMachine<States, Transitions, Event>,
+  config: TransitionHookMapping2<States, Transitions>,
 ) {
   return onUpdate(machine, (commit, updater) => {
     commit((current) => {
