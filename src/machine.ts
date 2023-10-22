@@ -18,7 +18,7 @@ export function defineMachine<
   type State = ReturnType<States[keyof States]>;
   type Event = StateMachineTransition<States, Transitions>;
 
-  function createEvent({
+  function createChange({
     type,
     params,
     from,
@@ -49,7 +49,7 @@ export function defineMachine<
     transitions,
     create: (initialState) => {
       let currentState: ReturnType<States[keyof States]> = initialState;
-      let lastEvent: any;
+      let lastChange: any;
       const createSender =
         (eventKey: string) =>
         (...params: any[]) =>
@@ -73,7 +73,7 @@ export function defineMachine<
         def,
         states,
         getState: () => currentState,
-        getLast: () => lastEvent,
+        getLast: () => lastChange,
         do: events,
         send: (type, params) => {
           const next = machine.getChange(type, params);
@@ -83,9 +83,9 @@ export function defineMachine<
         },
         getChange: (type, params) => {
           const targetFuncOrString =
-            transitions[lastEvent.to.key as any]?.[type as any];
+            transitions[lastChange.to.key as any]?.[type as any];
           if (!targetFuncOrString) {
-            return lastEvent;
+            return lastChange;
           }
 
           let targetState: State;
@@ -101,18 +101,18 @@ export function defineMachine<
               ...params,
             ) as any;
           }
-          return createEvent({
-            from: lastEvent.to,
+          return createChange({
+            from: lastChange.to,
             type,
             params,
             to: targetState,
           });
         },
         update: (updater) => {
-          const event = updater(lastEvent);
-          if (event) {
-            lastEvent = event;
-            currentState = event.to;
+          const change = updater(lastChange);
+          if (change) {
+            lastChange = change;
+            currentState = change.to;
           }
         },
         reset: () => initialize(),
