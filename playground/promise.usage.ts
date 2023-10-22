@@ -25,19 +25,19 @@ async function promiseUsage () {
     machine.update(c => ({ ...c, to: machine.states.Idle() }))
   }
   checkState()
-  machine.events.execute(1000);
+  machine.do.execute(1000);
   checkState()
   const pendingPromise = machine.promise
   if (pendingPromise !== machine.promise) {
     console.log('Got valid result BUT promise changed!' )    
   }
   reset()
-  machine.events.execute(1)
+  machine.do.execute(1)
   const donePromise = machine.done
   const beforeDoneState = machine.getState()
   checkState()
   console.log('rejecting')
-  machine.events.reject(new Error("error"));
+  machine.do.reject(new Error("error"));
   checkState()
   
   await donePromise
@@ -54,7 +54,6 @@ async function promiseUsage () {
   await delay(2)
   checkState()
   reset()
-  machine.transitions.Idle.execute(2)
   await delay(1)
   checkState()
   await delay(1)

@@ -40,9 +40,9 @@ describe("runEffectsOnUpdate", () => {
         didNotify = !!m;
       },
     });
-    machine.events.next();
+    machine.do.next();
     expect(didNotify).toBe(false);
-    machine.events.next();
+    machine.do.next();
     expect(didNotify).toBe(true);
   });
 
@@ -55,11 +55,11 @@ describe("runEffectsOnUpdate", () => {
       },
     });
     expect(didNotify).toBe(false);
-    machine.events.next();
-    machine.events.next();
+    machine.do.next();
+    machine.do.next();
     expect(didNotify).toBe(true);
     didNotify = false;
-    machine.events.next();
+    machine.do.next();
     expect(didNotify).toBe(false);
   });
 });

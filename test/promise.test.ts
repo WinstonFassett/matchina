@@ -9,7 +9,7 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.events.execute();
+    machine.do.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
@@ -31,7 +31,7 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.events.execute();
+    machine.do.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 

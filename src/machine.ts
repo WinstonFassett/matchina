@@ -74,15 +74,14 @@ export function defineMachine<
         states,
         getState: () => currentState,
         getLast: () => lastEvent,
-        events,
-        transitions: transitioners,
+        do: events,
         send: (type, params) => {
-          const next = machine.transition(type, params);
+          const next = machine.getChange(type, params);
           if (next) {
             return machine.update(() => next);
           }
         },
-        transition: (type, params) => {
+        getChange: (type, params) => {
           const targetFuncOrString =
             transitions[lastEvent.to.key as any]?.[type as any];
           if (!targetFuncOrString) {

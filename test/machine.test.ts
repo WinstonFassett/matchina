@@ -95,24 +95,24 @@ describe("machine instance", () => {
   describe("transition", () => {
     it("ignores invalid transitions", () => {
       const machine = makeMachine();
-      const res = machine.transition("InvalidEvent" as any, {});
+      const res = machine.getChange("InvalidEvent" as any, {});
       expect(res).toBe(machine.getLast());
     });
   });
   describe("events transitioners", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
-      machine.events.done(true);
+      machine.do.done(true);
       expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles function targets", () => {
       const machine = makeMachine();
-      machine.events.doneFunc(100);
+      machine.do.doneFunc(100);
       expect(machine.getLast().to.key).toBe("Done");
     });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
-      machine.events.doneAdvFunc("DONE");
+      machine.do.doneAdvFunc("DONE");
       expect(machine.getLast().to.key).toBe("Done");
     });
   });
@@ -124,7 +124,7 @@ describe("machine instance", () => {
   });
   it("events can match", () => {
     const machine = makeMachine();
-    machine.events.done(true);
+    machine.do.done(true);
     const mustBeOk = machine.getLast().match({
       done: (ok) => {
         console.log("ok?", ok);

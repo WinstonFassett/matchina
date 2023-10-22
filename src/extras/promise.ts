@@ -28,8 +28,8 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
       const promise = _makePromise(...params);
       promiseMachine.promise = promise;
       promiseMachine.done = promise
-        .then(machine.events.resolve)
-        .catch(machine.events.reject);
+        .then(machine.do.resolve)
+        .catch(machine.do.reject);
     }
     onUpdate(machine, (commit, updater) => {
       const after = updater(machine.getLast());

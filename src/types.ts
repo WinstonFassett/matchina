@@ -8,21 +8,6 @@ export interface ChangeEvent<Type, From, To> {
   from: From;
   to: To;
 }
-export interface AnyMachine<
-  State = any,
-  EventKey extends AnyEventKey = AnyEventKey,
-  Change extends ChangeEvent<EventKey, State, State> = ChangeEvent<
-    EventKey,
-    State,
-    State
-  >,
-> {
-  getState: () => State;
-  send: (event: EventKey, ...args: any[]) => void;
-  transition: (event: EventKey, data?: any) => Change | undefined;
-  update: (updater: (lastChange: Change) => Change) => void;
-  getLast: () => Change;
-}
 // #endregion
 
 // #region Transition Config Types
@@ -72,7 +57,7 @@ export type StateTransitioners<
 // #endregion
 
 // #region Matchers
-type TransitionEventMatchers<
+type ChangeEventMatchers<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
@@ -85,7 +70,7 @@ type TransitionEventMatchers<
   _?: (...args: any[]) => any;
 };
 
-type MachineEvents<Transitions> = TUnionToIntersection<
+type FlattenedTransitioners<Transitions> = TUnionToIntersection<
   FlattenMembers<Transitions>
 >;
 // #endregion
@@ -119,7 +104,7 @@ export type StateMachineTransition<
 > = Expand<
   ChangeEvent<EventKey, From, To> & {
     params: Params;
-    match: <M extends TransitionEventMatchers<States, Transitions>>(
+    match: <M extends ChangeEventMatchers<States, Transitions>>(
       cases: M,
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
   }
@@ -136,12 +121,11 @@ export interface StateMachine<
   def: MachineDefinition<States, Transitions>;
   config: { states: States; transitions: Transitions };
   states: States;
-  events: MachineEvents<StateTransitioners<States, Transitions>>;
-  transitions: StateTransitioners<States, Transitions>;
+  do: FlattenedTransitioners<StateTransitioners<States, Transitions>>;
   getState: () => ReturnType<States[keyof States]>;
   getLast: () => Change;
   send: (event: FlattenMemberKeys<Transitions>, ...args: any[]) => void;
-  transition: (
+  getChange: (
     event: FlattenMemberKeys<Transitions>,
     data?: any,
   ) => Change | undefined;
