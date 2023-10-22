@@ -34,11 +34,13 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.2",
+    "@types/react": "^18.2.31",
     "@vitest/coverage-v8": "^0.34.6",
     "changelogen": "^0.5.5",
     "eslint": "^8.51.0",
     "eslint-config-unjs": "^0.2.1",
     "prettier": "^3.0.3",
+    "react": "^18.2.0",
     "shx": "^0.3.4",
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0",
