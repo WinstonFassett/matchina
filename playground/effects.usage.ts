@@ -1,8 +1,8 @@
 import { defineStates } from "../src/states";
 import { defineMachine } from "../src/machine";
-import { createEffects, bindEffects } from "../src/extras/effects";
+import { defineEffects, bindEffects } from "../src/extras/effects";
 
-const myEffects = createEffects({
+const myEffects = defineEffects({
   LoadRemote: undefined,
   SaveRemote: undefined,
   Notify: (msg: string) => ({ msg }),

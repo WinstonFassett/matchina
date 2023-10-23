@@ -1,5 +1,6 @@
 import { delay } from "../test/delay";
 import { createPromiseMachine } from "../src/extras/promise";
+import { makeZen } from "../src/extras/zen";
 
 async function promiseUsage () {
   const machine = createPromiseMachine(async (x: number) => {
@@ -41,11 +42,11 @@ async function promiseUsage () {
   checkState()
   
   await donePromise
-  const state = machine.getState()
-  if (machine.done === donePromise && state === beforeDoneState) {
-    console.log('changed', state.data)
+  const doneState = machine.getState()
+  if (machine.done === donePromise && doneState === beforeDoneState) {
+    console.log('changed', doneState.data)
   } else {
-    console.log(`state changed from ${beforeDoneState.key} to ${state.key}`)
+    console.log(`state changed from ${beforeDoneState.key} to ${doneState.key}`)
   }
   
 
@@ -63,6 +64,29 @@ async function promiseUsage () {
   checkState()
   await delay(1)
   checkState()
+
+  
+
+  const fetchMachine = createPromiseMachine((id: number) => 
+    fetch(`.data/${id}`)
+      .then((response) => response.json())
+  )
+
+  const logState = () => fetchMachine.getState().match({
+    Resolved: (data) => console.log(data),
+    Rejected: (error) => console.log(error),
+    _: () => console.log('not yet'),
+  })
+
+  logState() // not yet
+  fetchMachine.event.execute(123)
+  logState() // not yet
+  await fetchMachine.done
+  logState() // result or error
+
+  const zenFetch = makeZen(fetchMachine)
+  zenFetch.execute(123)  
+  const { state } = zenFetch
 }
 
 await promiseUsage()

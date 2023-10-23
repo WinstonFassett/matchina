@@ -12,7 +12,7 @@ import { onUpdate } from "./on-update";
 
 export type Effect = MatchboxFromConfig<any, "effect">;
 
-export function createEffects(config: MatchboxConfig) {
+export function defineEffects(config: MatchboxConfig) {
   return matchboxFactory(config, "effect");
 }
 export function bindEffects<

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEffects, bindEffects } from "../src/extras/effects";
+import { defineEffects, bindEffects } from "../src/extras/effects";
 import { defineMachine } from "../src/machine";
 import { defineStates } from "../src/states";
 
@@ -7,7 +7,7 @@ const effectsConfig = {
   Notify: (msg: string) => ({ msg }),
 } as const;
 
-const makeEffects = () => createEffects(effectsConfig);
+const makeEffects = () => defineEffects(effectsConfig);
 
 const makeStates = (effects = makeEffects()) => {
   return defineStates({
@@ -24,7 +24,7 @@ const makeMachine = (states = makeStates()) =>
     Done: {},
   }).create(states.Idle());
 
-describe("createEffects", () => {
+describe("defineEffects", () => {
   it("should create an effects union with the correct members", () => {
     const effects = makeEffects();
     expect(Object.keys(effects)).toEqual(Object.keys(effectsConfig));
