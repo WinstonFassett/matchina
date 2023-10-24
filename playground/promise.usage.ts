@@ -74,7 +74,7 @@ async function promiseUsage () {
 
   const logState = () => fetchMachine.getState().match({
     Resolved: (data) => console.log(data),
-    Rejected: (error) => console.log(error),
+    Rejected: (error) => console.log(error.message),
     _: () => console.log('not yet'),
   })
 

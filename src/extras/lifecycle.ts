@@ -1,4 +1,9 @@
-import { StateMachineEvent, StateMachine, TransitionConfig, FlattenedEventTypes } from "../types";
+import {
+  StateMachineEvent,
+  StateMachine,
+  TransitionConfig,
+  FlattenedEventTypes,
+} from "../types";
 import { StateFromFactory, StatesFactory } from "../states";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
@@ -25,33 +30,54 @@ type On<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
   StateKey extends keyof Transitions | "*",
-> = 
-StateKey extends "*" ? {
-  [AnyStateEvent in FlattenedEventTypes<States, Transitions>]?: TransitionHookExtensions<
-    StateMachineEvent<
-      States,
-      Transitions,
-      AnyStateEvent,
-      ReturnType<States[StateKey]> & { key: StateKey}, 
-      StateFromFactory<States> & { key: keyof States },
-      any[] // could be union of all possible params
-    >
-  >
-} :
-{
-  [Event in keyof Transitions[StateKey]]?: Transitions[StateKey][Event] extends keyof States
-    ? TransitionHookExtensions<
+> = StateKey extends "*"
+  ? {
+      [AnyStateEvent in
+        | FlattenedEventTypes<States, Transitions>
+        | "*"]?: TransitionHookExtensions<
         StateMachineEvent<
           States,
           Transitions,
-          Event, // should constrain params
-          ReturnType<States[StateKey]> & { key: StateKey},
-          ReturnType<States[Transitions[StateKey][Event]]> & { key: Transitions[StateKey][Event] },
-          Parameters<States[Transitions[StateKey][Event]]>
+          AnyStateEvent extends "*"
+            ? FlattenedEventTypes<States, Transitions>
+            : AnyStateEvent,
+          StateKey extends "*"
+            ? StateFromFactory<States>
+            : ReturnType<States[StateKey]> & { key: StateKey },
+          StateFromFactory<States> & { key: keyof States },
+          any[] // could be union of all possible params
         >
-      >
-    : never;
-};
+      >;
+    }
+  : {
+      [Event in keyof Transitions[StateKey] | "*"]?: Event extends "*"
+        ? TransitionHookExtensions<
+            StateMachineEvent<
+              States,
+              Transitions,
+              keyof Transitions[StateKey],
+              ReturnType<States[StateKey]> & { key: StateKey },
+              ReturnType<States[keyof States]> & {
+                key: keyof Transitions[StateKey];
+              },
+              any[] // Parameters<States[Transitions[StateKey][Event]]>
+            >
+          >
+        : Transitions[StateKey][Event] extends keyof States
+        ? TransitionHookExtensions<
+            StateMachineEvent<
+              States,
+              Transitions,
+              Event, // should constrain params
+              ReturnType<States[StateKey]> & { key: StateKey },
+              ReturnType<States[Transitions[StateKey][Event]]> & {
+                key: Transitions[StateKey][Event];
+              },
+              Parameters<States[Transitions[StateKey][Event]]>
+            >
+          >
+        : never;
+    };
 
 export type StateEventHookConfig<
   States extends StatesFactory<any>,

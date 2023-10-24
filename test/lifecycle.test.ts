@@ -28,17 +28,34 @@ describe("onLifecycle usage", () => {
     onLifecycle(machine, {
       "*": {
         on: {
-
-        }
-      }
-    })
+          "*": {
+            before(change) {
+              change.from.key = "Idle";
+            },
+          },
+        },
+      },
+    });
 
     const removeLifecycle = onLifecycle(machine, {
+      Rejected: {
+        on: {
+          execute: {
+            before(change) {
+              change.from.key = "Rejected";
+              change.to.key = "Pending";
+            },
+          },
+        },
+      },
       "*": {
         enter(state) {
           console.log("entering", state.key);
         },
         on: {
+          execute: {
+            after: (event) => {},
+          },
           // "*": {
           //   before: (event) => {
           //     console.log("before", event);
