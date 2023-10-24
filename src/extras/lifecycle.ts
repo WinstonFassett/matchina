@@ -32,8 +32,8 @@ StateKey extends "*" ? {
       States,
       Transitions,
       AnyStateEvent,
-      ReturnType<States[StateKey]>, // could be union of all possible entry states
-      StateFromFactory<States>, // could be union of all possible exit states
+      ReturnType<States[StateKey]> & { key: StateKey}, 
+      StateFromFactory<States> & { key: keyof States },
       any[] // could be union of all possible params
     >
   >
@@ -45,8 +45,8 @@ StateKey extends "*" ? {
           States,
           Transitions,
           Event, // should constrain params
-          ReturnType<States[StateKey]>,
-          ReturnType<States[Transitions[StateKey][Event]]>,
+          ReturnType<States[StateKey]> & { key: StateKey},
+          ReturnType<States[Transitions[StateKey][Event]]> & { key: Transitions[StateKey][Event] },
           Parameters<States[Transitions[StateKey][Event]]>
         >
       >

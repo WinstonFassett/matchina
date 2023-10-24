@@ -34,21 +34,21 @@ describe("onLifecycle usage", () => {
     })
 
     const removeLifecycle = onLifecycle(machine, {
-      '*': {
+      "*": {
         enter(state) {
           console.log("entering", state.key);
         },
         on: {
-          '*': {
-            // before: (event) => {
-            //   console.log("before", event);
-            // },
-           
-            // after: (event) => {
-            //   console.log("after", event.type);
-            // },
-          },
-        }
+          // "*": {
+          //   before: (event) => {
+          //     console.log("before", event);
+          //   },
+          //   after: () => {},
+          //   // after: (event) => {
+          //   //   console.log("after", event.type);
+          //   // },
+          // },
+        },
         // on: {
         //   '*': {
         //     before: () => {
