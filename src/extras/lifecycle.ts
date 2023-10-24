@@ -1,6 +1,6 @@
 import { StateMachineEvent, StateMachine, TransitionConfig } from "../types";
 import { StateFromFactory, StatesFactory } from "../states";
-import { onUpdate } from "./on-update";
+import { UpdateEnhancer, onUpdate } from "./on-update";
 
 type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;
@@ -9,7 +9,7 @@ type TransitionHookExtensions<T> = {
   after?: (change: T) => any;
 };
 
-type StateHookExtensions<
+type StateTransitionHooks<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
   TLeave extends StateFromFactory<States>,
@@ -21,7 +21,7 @@ type StateHookExtensions<
   enter?: (change: TEnter) => any;
 };
 
-export type TransitionHookMapping2<
+export type StateEventHookConfig<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
@@ -40,7 +40,7 @@ export type TransitionHookMapping2<
           >
         : never;
     };
-  } & StateHookExtensions<
+  } & StateTransitionHooks<
     States,
     Transitions,
     ReturnType<States[StateKey]>,
@@ -53,9 +53,18 @@ export function onLifecycle<
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,
-  config: TransitionHookMapping2<States, Transitions>,
+  config: StateEventHookConfig<States, Transitions>,
 ) {
-  return onUpdate(machine, (commit, updater) => {
+  return onUpdate(machine, lifecycle(config));
+}
+
+export function lifecycle<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+>(
+  config: StateEventHookConfig<States, Transitions>,
+): UpdateEnhancer<StateMachine<States, Transitions>> {
+  return (commit, updater) => {
     commit((current) => {
       const updated = updater(current);
       const { to: currentState } = current;
@@ -83,5 +92,5 @@ export function onLifecycle<
       after?.(handled as any);
       return handled;
     });
-  });
+  };
 }

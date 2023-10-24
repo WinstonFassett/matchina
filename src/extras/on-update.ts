@@ -1,3 +1,4 @@
+import { SwapFunc } from "../types";
 import { MethodEnhancer, wrapMethod } from "./wrap-method";
 
 export function onUpdate<
@@ -7,3 +8,6 @@ export function onUpdate<
 >(machine: M, customFn: MethodEnhancer<M, "update">) {
   return wrapMethod(machine, "update", customFn);
 }
+
+export type UpdateEnhancer<M extends { update: SwapFunc<any> }> =
+  MethodEnhancer<M, "update">;
