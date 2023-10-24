@@ -1,4 +1,4 @@
-import { StateMachineEvent, StateMachine, TransitionConfig } from "../types";
+import { StateMachineEvent, StateMachine, TransitionConfig, FlattenedEventTypes } from "../types";
 import { StateFromFactory, StatesFactory } from "../states";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
@@ -21,29 +21,48 @@ type StateTransitionHooks<
   enter?: (change: TEnter) => any;
 };
 
+type On<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+  StateKey extends keyof Transitions | "*",
+> = 
+StateKey extends "*" ? {
+  [AnyStateEvent in FlattenedEventTypes<States, Transitions>]?: TransitionHookExtensions<
+    StateMachineEvent<
+      States,
+      Transitions,
+      AnyStateEvent,
+      ReturnType<States[StateKey]>, // could be union of all possible entry states
+      StateFromFactory<States>, // could be union of all possible exit states
+      any[] // could be union of all possible params
+    >
+  >
+} :
+{
+  [Event in keyof Transitions[StateKey]]?: Transitions[StateKey][Event] extends keyof States
+    ? TransitionHookExtensions<
+        StateMachineEvent<
+          States,
+          Transitions,
+          Event, // should constrain params
+          ReturnType<States[StateKey]>,
+          ReturnType<States[Transitions[StateKey][Event]]>,
+          Parameters<States[Transitions[StateKey][Event]]>
+        >
+      >
+    : never;
+};
+
 export type StateEventHookConfig<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
-  [StateKey in keyof Transitions]?: {
-    on?: {
-      [Event in keyof Transitions[StateKey]]?: Transitions[StateKey][Event] extends keyof States
-        ? TransitionHookExtensions<
-            StateMachineEvent<
-              States,
-              Transitions,
-              Event, // should constrain params
-              ReturnType<States[StateKey]>,
-              ReturnType<States[Transitions[StateKey][Event]]>,
-              Parameters<States[Transitions[StateKey][Event]]>
-            >
-          >
-        : never;
-    };
+  [StateKey in keyof Transitions | "*"]?: {
+    on?: On<States, Transitions, StateKey>;
   } & StateTransitionHooks<
     States,
     Transitions,
-    ReturnType<States[StateKey]>,
+    ReturnType<States[StateKey extends "*" ? keyof States : StateKey]>,
     any
   >;
 };
