@@ -28,6 +28,10 @@ import {
   FlatMachineReturnEventToTargetKeyMap,
   FlattenReturnStateTargetTypes,
   FlattenReturnStateTargets,
+  FlatMemberUnionToIntersection,
+  FlatStateTransitionTargetIntersection,
+  FlatStateTransitionTargets,
+  TUnionToIntersection,
 } from "./types";
 
 type PromiseStates<T, A, E extends Error = Error> = MatchboxFactory<
@@ -127,11 +131,16 @@ let s2: MyState = {} as ExecuteToPending
 
 type T3 = FlatEventTargets<typeof m.def.states, typeof m.def.transitions>
 type T4 = FlattenMembers<T3>
+
+type Thing = T4
+
 type T5 = T4[keyof T4]
 type T6 = T3[keyof T3]
 type T7= T6[keyof T6]
 
 type TX = StateTransitions<typeof m.def.states, typeof m.def.transitions>
+
+
 type TT = FlatStateEventTransitionTargets<StateTransitions<typeof m.def.states, typeof m.def.transitions>>
 type TK = StateTransitionTargetKeys<typeof m.def.states, typeof m.def.transitions>
 type TE = FlattenedEventTypes<typeof m.def.states, typeof m.def.transitions>
@@ -153,3 +162,16 @@ const t: TargetTypes = {
   data: new Error('test'),
   match: (x) => x as any
 }
+
+type STT = StateTransitionTargets<typeof m.def.states, typeof m.def.transitions>
+type STFlatMemberUnion = FlatMemberUnionToIntersection<StateTransitionTargets<typeof m.def.states, typeof m.def.transitions>>
+
+type Compare = FlatStateTransitionTargetIntersection<typeof m.def.states, typeof m.def.transitions>['reject']
+type Compare2 = TUnionToIntersection<FlatStateTransitionTargets<typeof m.def.states, typeof m.def.transitions>>
+type ForReject = Compare2['reject']
+const x: ForReject = {} as any
+m.getChange().to = x
+
+// ['reject']
+
+type STFiltered = STFlatMemberUnion['reject']

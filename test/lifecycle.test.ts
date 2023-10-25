@@ -1,6 +1,7 @@
 import { expect, it, describe } from "vitest";
 import { createPromiseMachine } from "../src/extras/promise";
 import { onLifecycle } from "../src/extras/lifecycle";
+import { Expand } from "../src";
 
 describe("onLifecycle usage", () => {
   it("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -97,9 +98,14 @@ describe("onLifecycle usage", () => {
           execute: {
             after: (event) => {
               event.from.key = "Idle";
-              event.to.key = "Idle";
+              event.to.key = 'Pending'
             },
           },
+          reject: {
+            after: (event) => {
+              event.to.key = 'Rejected'
+            }
+          }
           // "*": {
           //   before: (event) => {
           //     console.log("before", event);

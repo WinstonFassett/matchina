@@ -49,7 +49,7 @@ export interface StateMachine<
   }; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<States, Transitions>;
-  event: FlatMemberUnion<StateTransitioners<States, Transitions>>;
+  event: FlatMemberUnionToIntersection<StateTransitioners<States, Transitions>>;
   getChange: () => StateMachineEvent<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
@@ -330,14 +330,14 @@ BUT what I want is just the return types of the functions, not the functions the
 
 export type FlatMachineEventToTargetKeyMap<
   M extends StateMachine<StatesFactory<any>, any>,
-> = FlatMemberUnion<
+> = FlatMemberUnionToIntersection<
   StateTransitionTargetKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
 
 // not sure about this one
 export type FlatMachineReturnEventToTargetKeyMap<
   M extends StateMachine<StatesFactory<any>, any>,
-> = FlatMemberUnion<
+> = FlatMemberUnionToIntersection<
   FlattenReturnStateTargetKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
 
@@ -368,7 +368,7 @@ export type FlattenMemberKeys<T> = {
 // #endregion
 
 export type FlatMachineEvents<M extends StateMachine<StatesFactory<any>, any>> =
-FlatMemberUnion<
+FlatMemberUnionToIntersection<
 StateTransitions<M["def"]["states"], M["def"]["transitions"]>
 >;
 
@@ -376,7 +376,7 @@ export type FlattenMembers<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];
 
-type FlatMemberUnion<T> = TUnionToIntersection<FlattenMembers<T>>;
+export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<FlattenMembers<T>>;
 
 
 export type StateTransitionTargets<
@@ -391,12 +391,22 @@ export type StateTransitionTargets<
       StateTransitions<States, Transitions>[StateKey][EventKey]
     >;
   };
-};
+};  
+
+export type FlatStateTransitionTargetIntersection<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = FlatMemberUnionToIntersection<StateTransitionTargets<States, Transitions>>;  
+
+export type FlatStateTransitionTargets<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = FlattenMembers<StateTransitionTargets<States, Transitions>>;  
 
 
 export type FlatMachineEventTargets<
   M extends StateMachine<StatesFactory<any>, any>,
-> = FlatMemberUnion<
+> = FlatMemberUnionToIntersection<
   StateTransitionTargets<M["def"]["states"], M["def"]["transitions"]>
 >;
 
@@ -450,7 +460,7 @@ export type FlattenedTargets<T> = {
 export type FlatEventers<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-> = FlatMemberUnion<StateTransitioners<States, Transitions>>;
+> = FlatMemberUnionToIntersection<StateTransitioners<States, Transitions>>;
 
 export type FlatMachineEventers<
   M extends StateMachine<StatesFactory<any>, any>,
@@ -528,8 +538,21 @@ type On<
               };
             },
             // SOMEDAY: union of valid TARGET states, i.e. ReturnType<States[Transitions[StateKey][EventKey]]>
-            FlattenReturnStateTargets<States, Transitions>,
-            // AnyStateEvent extends "*" ? 
+            AnyStateEvent extends "*" 
+            ? 
+            FlattenReturnStateTargets<States, Transitions>
+            // get union of maps of events to exit state types. union but not intersection
+            // filter by AnyStateEvent
+            : AnyStateEvent extends keyof TUnionToIntersection<FlatStateTransitionTargets<States, Transitions>> 
+              ? TUnionToIntersection<FlatStateTransitionTargets<States, Transitions>>[AnyStateEvent]
+              : never
+            // FlattenReturnStateTargets<States, Transitions>
+            // TUnionToIntersection<FlattenMembers<StateTransitionTargets<States,Transitions>[AnyEventKey]>> extends infer U
+            //   ? U extends ReturnType<States[keyof States]>
+            //     ? U
+            //     : never
+            //   : never
+            ,
             //   StateFromFactory<States> : 
             //   Filter<
             //     FlatEventTargetsMap<States, Transitions>, AnyEventKey
