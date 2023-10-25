@@ -133,7 +133,9 @@ export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (
           ...args: Parameters<States[Transitions[StateKey][EventKey]]>
-        ) => StateFromFactory<States, Transitions[StateKey][EventKey]> & { key: Transitions[StateKey][EventKey] }
+        ) => StateFromFactory<States, Transitions[StateKey][EventKey]> & {
+          key: Transitions[StateKey][EventKey];
+        }
       : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
           States,
           EventKey

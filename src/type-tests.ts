@@ -51,8 +51,6 @@ type X2 = Expand<PromiseSumEventTypes>;
 type PromiseStateKeys = keyof PromiseStates<any, any>;
 type PromiseTransitionKeys = Expand<keyof PromiseTransitions<any, any>>;
 
-
-
 type PromiseStatesForStateKeys<T, A, E extends Error = Error> = {
   [StateKey in PromiseStateKeys]: ReturnType<PromiseStates<T, A, E>[StateKey]>;
 };
@@ -69,19 +67,18 @@ const m = createPromiseMachine((a: number, b: number) =>
   Promise.resolve(a + b),
 );
 
-type Events = FlatMachineEvents<typeof m>;// data but no typed keys
+type Events = FlatMachineEvents<typeof m>; // data but no typed keys
 type Eventers = FlatMachineEventers<typeof m>;
 type Targets = FlatMachineEventTargets<typeof m>; // data but not typed keys
 type TargetKeys = FlatMachineEventTargetKeys<typeof m>; // event keys
 
-const events = { } as Events
-events.execute(1, 2).key = 'Pending'
-events.execute(1, 2).data = [1]
+const events = {} as Events;
+events.execute(1, 2).key = "Pending";
+events.execute(1, 2).data = [1];
 
-const targets = {} as Targets
-targets.execute.key = 'Pending'
-targets.execute.data = [1]
-targets.reject.data = new Error('test')
+const targets = {} as Targets;
+targets.execute.key = "Pending";
+targets.execute.data = [1];
+targets.reject.data = new Error("test");
 
 // get all targets where event is execute
-

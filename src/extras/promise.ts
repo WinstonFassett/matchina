@@ -17,8 +17,8 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
       resolve: "Resolved",
       reject: "Rejected",
     },
-    Resolved: {  },
-    Rejected: {  },
+    Resolved: {},
+    Rejected: {},
   });
   const initialState = states.Idle();
   const machine = Machine.create(initialState);

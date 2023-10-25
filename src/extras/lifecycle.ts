@@ -77,10 +77,11 @@ type On<
                   : keyof Transitions;
               };
             },
-            // union of valid TARGET states, i.e. ReturnType<States[Transitions[StateKey][EventKey]]>
-            StateFromFactory<States> & {
-              [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
-            }
+            // SOMEDAY: union of valid TARGET states, i.e. ReturnType<States[Transitions[StateKey][EventKey]]>
+            StateFromFactory<States>,
+            // & {
+            //   [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
+            // }
             // & {
             //   key: keyof {
             //     [StateKeyIn in keyof Transitions]: keyof StateTransitions<
@@ -107,7 +108,6 @@ type On<
             //     //       : never;
             //     //   };
             // }
-            ,
             any[] // could be union of all possible params
           >
         >;
