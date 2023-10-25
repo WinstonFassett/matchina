@@ -1,16 +1,9 @@
+import { StatesFactory } from "../states";
 import {
-  StateMachineEvent,
-  StateMachine,
-  TransitionConfig,
-  FlattenedEventTypes,
-  StateTransitions,
-  FlatMachineEventTargets,
-  FlatEventTargetsMap,
-  Filter,
-  AnyEventKey,
   StateEventHookConfig,
+  StateMachine,
+  TransitionConfig
 } from "../types";
-import { StateFromFactory, StatesFactory } from "../states";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
 export function onLifecycle<

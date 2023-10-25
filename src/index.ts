@@ -1,4 +1,3 @@
-export * from "./types";
 export * from "./matchbox-factory";
 export * from "./states";
 export * from "./machine";
