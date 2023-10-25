@@ -26,10 +26,12 @@ type StateTransitionHooks<
       States,
       Transitions,
       FlattenedEventTypes<States, Transitions>,
+      // leave this state
       StateFromFactory<
         States,
         StateKey extends "*" ? keyof States : StateKey
       > & { key: StateKey extends "*" ? keyof States : StateKey },
+      // enter any state
       StateFromFactory<States> & { key: keyof States }
     >,
   ) => any;
@@ -38,7 +40,9 @@ type StateTransitionHooks<
       States,
       Transitions,
       FlattenedEventTypes<States, Transitions>,
+      // from any state
       StateFromFactory<States> & { key: keyof States },
+      // to this state
       StateFromFactory<
         States,
         StateKey extends "*" ? keyof States : StateKey

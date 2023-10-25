@@ -83,6 +83,10 @@ describe("onLifecycle usage", () => {
         },
       },
       "*": {
+        leave(change) {
+          change.from.key = "Idle";
+          change.to.key = 'Idle'
+        },
         enter(state) {
           console.log("entering", state.to.key);
         },
