@@ -26,11 +26,45 @@ describe("onLifecycle usage", () => {
     expectState("Idle");
 
     onLifecycle(machine, {
+      Rejected: {
+        enter(change) {
+          change.from.key = "Idle"; // any event key
+
+          change.to.key = "Rejected"; // typed
+          change.to.data = new Error("test");
+          change.to.data.message = "test";
+        },
+        leave(change) {
+          change.from.data = new Error("test");
+          change.from.data.message = "test";
+          change.from.key = "Rejected"; // typed
+        },
+        on: {
+          execute: {
+            after(change) {
+              change.from.key = "Rejected";
+              change.to.key = "Pending";
+              change.from.data = new Error("test");
+              change.to.data = [100];
+            },
+          },
+        },
+      },
       "*": {
         on: {
           "*": {
             before(change) {
               change.from.key = "Idle";
+              change.to.key = "Idle";
+            },
+          },
+          reject: {
+            after(change) {
+              change.type = "reject"; // typed
+              change.from.key = "Idle"; // loose but not too loose
+
+              // fix these
+              change.to.key = "Idle"; // ideally should error unless Error
             },
           },
         },
@@ -50,11 +84,14 @@ describe("onLifecycle usage", () => {
       },
       "*": {
         enter(state) {
-          console.log("entering", state.key);
+          console.log("entering", state.to.key);
         },
         on: {
           execute: {
-            after: (event) => {},
+            after: (event) => {
+              event.from.key = "Idle";
+              event.to.key = "Idle";
+            },
           },
           // "*": {
           //   before: (event) => {
@@ -127,7 +164,7 @@ describe("onLifecycle usage", () => {
       Pending: {
         enter: (e) => {
           didEnterPending ||= ++count;
-          console.log("entering Pending via", e.event, e.params);
+          console.log("entering Pending via", e.type, e.params);
         },
         on: {
           resolve: {

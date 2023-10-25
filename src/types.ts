@@ -101,7 +101,7 @@ export type StateMachineEvent<
   > = FlattenedEventTypes<States, Transitions>,
   From extends StateFromFactory<States> = StateFromFactory<States>,
   To extends StateFromFactory<States> = StateFromFactory<States>,
-  Params = any,
+  Params = any[],
 > = Expand<
   ChangeEvent<EventKey, From, To> & {
     params: Params;
@@ -128,25 +128,42 @@ type ChangeEventMatchers<
 // #endregion
 
 // #region Transitioners
-export type StateTransitioners<
-  States extends StatesFactory<any>,
-  Transitions,
-> = {
+export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
   [StateKey in keyof Transitions & keyof States]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
-      ? (...args: Parameters<States[Transitions[StateKey][EventKey]]>) => void
+      ? (
+          ...args: Parameters<States[Transitions[StateKey][EventKey]]>
+        ) => StateFromFactory<States>
       : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
           States,
           EventKey
         >
-      ? (...args: Parameters<Transitions[StateKey][EventKey]>) => void
+      ? (
+          ...args: Parameters<Transitions[StateKey][EventKey]>
+        ) => StateFromFactory<States>
       : Transitions[StateKey][EventKey] extends FunctionStateTarget<
           StateFromFactory<States>
         >
-      ? (...args: Parameters<Transitions[StateKey][EventKey]>) => void
+      ? (
+          ...args: Parameters<Transitions[StateKey][EventKey]>
+        ) => StateFromFactory<States>
       : never;
   };
 };
+
+export type StateTransitioners<
+  States extends StatesFactory<any>,
+  Transitions,
+> = {
+  [StateKey in keyof StateTransitions<States, Transitions>]: {
+    [EventKey in keyof StateTransitions<States, Transitions>[StateKey]]: (
+      ...args: Parameters<
+        StateTransitions<States, Transitions>[StateKey][EventKey]
+      >
+    ) => void;
+  };
+};
+
 export type FlattenedEventTypes<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
@@ -156,6 +173,7 @@ export type FlattenedEventTypes<
     Transitions
   >]: keyof StateTransitioners<States, Transitions>[StateKey];
 }[keyof StateTransitioners<States, Transitions>];
+
 // #endregion
 
 // #region Utility
