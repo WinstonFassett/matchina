@@ -57,7 +57,7 @@ describe("onLifecycle usage", () => {
             before(change) {
               change.from.key = "Idle";
               // change.to.key = "Idle";
-              change.to.key = 'Pending'
+              change.to.key = "Pending";
             },
           },
           reject: {
@@ -68,7 +68,7 @@ describe("onLifecycle usage", () => {
               // fix these
               // change.to.key = ''
               // change.to.key = "Idle"; // ideally should error unless Error
-              change.to.key = 'Resolved'
+              change.to.key = "Rejected";
             },
           },
         },
@@ -98,14 +98,14 @@ describe("onLifecycle usage", () => {
           execute: {
             after: (event) => {
               event.from.key = "Idle";
-              event.to.key = 'Pending'
+              event.to.key = "Pending";
             },
           },
           reject: {
             after: (event) => {
-              event.to.key = 'Rejected'
-            }
-          }
+              event.to.key = "Rejected";
+            },
+          },
           // "*": {
           //   before: (event) => {
           //     console.log("before", event);

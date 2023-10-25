@@ -13,7 +13,6 @@ import {
 import { StateFromFactory, StatesFactory } from "../states";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
-
 export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,

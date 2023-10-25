@@ -166,9 +166,8 @@ export type StateTransitioners<
   };
 };
 
-
 export type FlatStateEventTransitionTargets<
-  Transitions extends StateTransitions<any, any>
+  Transitions extends StateTransitions<any, any>,
 > = {
   [StateKey in keyof Transitions]: {
     [EventKey in keyof Transitions[StateKey]]: ReturnType<
@@ -180,7 +179,6 @@ export type FlatStateEventTransitionTargets<
     ? T
     : never
   : never;
-
 
 export type StateTransitionTargetKeys<
   States extends StatesFactory<any>,
@@ -236,69 +234,66 @@ type ValueTypes<T> = T[keyof T];
 // KEEP AND ADAPT TO RETURN TARGET STATES
 export type FlattenReturnStateTargetKeys<
   States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>
-> = ValueTypes<
-  {
-    [StateKey in keyof StateTransitions<States, Transitions>]: {
-      [EventKey in keyof StateTransitions<
-        States,
-        Transitions
-      >[StateKey]]: StateTransitions<States, Transitions>[StateKey][EventKey] extends (
-        ...args: any[]
-      ) => infer TargetState
-        ? TargetState extends StateFromFactory<States, infer TargetStateKey>
-          ? TargetState["key"] extends keyof States
-            ? TargetState["key"]
-            : never
+  Transitions extends TransitionConfig<States>,
+> = ValueTypes<{
+  [StateKey in keyof StateTransitions<States, Transitions>]: {
+    [EventKey in keyof StateTransitions<
+      States,
+      Transitions
+    >[StateKey]]: StateTransitions<
+      States,
+      Transitions
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+        ? TargetState["key"] extends keyof States
+          ? TargetState["key"]
           : never
-        : never;
-    }[keyof StateTransitions<States, Transitions>[StateKey]];
-  }
->;
+        : never
+      : never;
+  }[keyof StateTransitions<States, Transitions>[StateKey]];
+}>;
 
 export type FlattenReturnStateTargets<
   States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>
-> = ValueTypes<
-  {
-    [StateKey in keyof StateTransitions<States, Transitions>]: {
-      [EventKey in keyof StateTransitions<
-        States,
-        Transitions
-      >[StateKey]]: StateTransitions<States, Transitions>[StateKey][EventKey] extends (
-        ...args: any[]
-      ) => infer TargetState
-        ? TargetState extends StateFromFactory<States, infer TargetStateKey>
-          ? TargetStateKey extends keyof States
-            ? TargetState
-            : never
+  Transitions extends TransitionConfig<States>,
+> = ValueTypes<{
+  [StateKey in keyof StateTransitions<States, Transitions>]: {
+    [EventKey in keyof StateTransitions<
+      States,
+      Transitions
+    >[StateKey]]: StateTransitions<
+      States,
+      Transitions
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+        ? TargetStateKey extends keyof States
+          ? TargetState
           : never
-        : never;
-    }[keyof StateTransitions<States, Transitions>[StateKey]];
-  }
->;
+        : never
+      : never;
+  }[keyof StateTransitions<States, Transitions>[StateKey]];
+}>;
 
 export type FlattenReturnStateTargetTypes<
   States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>
-> = ValueTypes<
-  {
-    [StateKey in keyof StateTransitions<States, Transitions>]: {
-      [EventKey in keyof StateTransitions<
-        States,
-        Transitions
-      >[StateKey]]: StateTransitions<States, Transitions>[StateKey][EventKey] extends (
-        ...args: any[]
-      ) => infer TargetState
-        ? TargetState extends StateFromFactory<States, infer TargetStateKey>
-          ? TargetStateKey extends keyof States
-            ? States[TargetStateKey]
-            : never
+  Transitions extends TransitionConfig<States>,
+> = ValueTypes<{
+  [StateKey in keyof StateTransitions<States, Transitions>]: {
+    [EventKey in keyof StateTransitions<
+      States,
+      Transitions
+    >[StateKey]]: StateTransitions<
+      States,
+      Transitions
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+        ? TargetStateKey extends keyof States
+          ? States[TargetStateKey]
           : never
-        : never;
-    }[keyof StateTransitions<States, Transitions>[StateKey]];
-  }
->;
+        : never
+      : never;
+  }[keyof StateTransitions<States, Transitions>[StateKey]];
+}>;
 /*
 This yields
 type TargetTypes = ((...args: number[]) => {
@@ -327,7 +322,6 @@ BUT what I want is just the return types of the functions, not the functions the
 
 */
 
-
 export type FlatMachineEventToTargetKeyMap<
   M extends StateMachine<StatesFactory<any>, any>,
 > = FlatMemberUnionToIntersection<
@@ -340,7 +334,6 @@ export type FlatMachineReturnEventToTargetKeyMap<
 > = FlatMemberUnionToIntersection<
   FlattenReturnStateTargetKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
-
 
 // #endregion
 
@@ -359,8 +352,6 @@ export type TUnionToIntersection<T> = (
   ? R
   : never;
 
-
-
 export type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
@@ -368,16 +359,17 @@ export type FlattenMemberKeys<T> = {
 // #endregion
 
 export type FlatMachineEvents<M extends StateMachine<StatesFactory<any>, any>> =
-FlatMemberUnionToIntersection<
-StateTransitions<M["def"]["states"], M["def"]["transitions"]>
->;
+  FlatMemberUnionToIntersection<
+    StateTransitions<M["def"]["states"], M["def"]["transitions"]>
+  >;
 
 export type FlattenMembers<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];
 
-export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<FlattenMembers<T>>;
-
+export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<
+  FlattenMembers<T>
+>;
 
 export type StateTransitionTargets<
   States extends StatesFactory<any>,
@@ -391,18 +383,17 @@ export type StateTransitionTargets<
       StateTransitions<States, Transitions>[StateKey][EventKey]
     >;
   };
-};  
+};
 
 export type FlatStateTransitionTargetIntersection<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-> = FlatMemberUnionToIntersection<StateTransitionTargets<States, Transitions>>;  
+> = FlatMemberUnionToIntersection<StateTransitionTargets<States, Transitions>>;
 
 export type FlatStateTransitionTargets<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-> = FlattenMembers<StateTransitionTargets<States, Transitions>>;  
-
+> = FlattenMembers<StateTransitionTargets<States, Transitions>>;
 
 export type FlatMachineEventTargets<
   M extends StateMachine<StatesFactory<any>, any>,
@@ -411,19 +402,8 @@ export type FlatMachineEventTargets<
 >;
 
 export type FlatEventTargetsMap<
-States extends StatesFactory<any>,
-Transitions extends TransitionConfig<States>> = {
-  [StateKey in keyof StateTransitions<States, Transitions>]: {
-    [EventKey in keyof StateTransitions<States, Transitions>[StateKey]]: ReturnType<
-      StateTransitions<States, Transitions>[StateKey][EventKey]
-    >;
-  };
-}
-
-
-export type FlatEventTargets<
   States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>
+  Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateTransitions<States, Transitions>]: {
     [EventKey in keyof StateTransitions<
@@ -433,15 +413,28 @@ export type FlatEventTargets<
       StateTransitions<States, Transitions>[StateKey][EventKey]
     >;
   };
-}
+};
+
+export type FlatEventTargets<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = {
+  [StateKey in keyof StateTransitions<States, Transitions>]: {
+    [EventKey in keyof StateTransitions<
+      States,
+      Transitions
+    >[StateKey]]: ReturnType<
+      StateTransitions<States, Transitions>[StateKey][EventKey]
+    >;
+  };
+};
 export type FlattenedTargets<T> = {
   [K1 in keyof T]: {
-    [K2 in keyof T[K1]]: T[K1][K2]
-  }
+    [K2 in keyof T[K1]]: T[K1][K2];
+  };
 }[keyof T];
 
-//[keyof StateTransitions<States, Transitions>];
-
+// [keyof StateTransitions<States, Transitions>];
 
 // filter from tests
 
@@ -455,7 +448,7 @@ export type FlattenedTargets<T> = {
 //   };
 // }
 
-  // Filter<FlatMachineEventTargetKeys, Event>
+// Filter<FlatMachineEventTargetKeys, Event>
 
 export type FlatEventers<
   States extends StatesFactory<any>,
@@ -466,7 +459,7 @@ export type FlatMachineEventers<
   M extends StateMachine<StatesFactory<any>, any>,
 > = FlatEventers<M["def"]["states"], M["def"]["transitions"]>;
 
-//#region Lifecycle
+// #region Lifecycle
 
 export type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;
@@ -538,28 +531,39 @@ type On<
               };
             },
             // SOMEDAY: union of valid TARGET states, i.e. ReturnType<States[Transitions[StateKey][EventKey]]>
-            AnyStateEvent extends "*" 
-            ? 
-            FlattenReturnStateTargets<States, Transitions>
-            // get union of maps of events to exit state types. union but not intersection
-            // filter by AnyStateEvent
-            : AnyStateEvent extends keyof TUnionToIntersection<FlatStateTransitionTargets<States, Transitions>> 
-              ? TUnionToIntersection<FlatStateTransitionTargets<States, Transitions>>[AnyStateEvent]
-              : never
+            AnyStateEvent extends "*"
+              ? FlattenReturnStateTargets<
+                  States,
+                  Transitions
+                > extends ReturnType<States[keyof States]>
+                ? FlattenReturnStateTargets<States, Transitions>
+                : never
+              : // get union of maps of events to exit state types. union but not intersection
+              // filter by AnyStateEvent
+              AnyStateEvent extends keyof TUnionToIntersection<
+                  FlatStateTransitionTargets<States, Transitions>
+                >
+              ? TUnionToIntersection<
+                  FlatStateTransitionTargets<States, Transitions>
+                >[AnyStateEvent] extends ReturnType<States[keyof States]>
+                ? TUnionToIntersection<
+                    FlatStateTransitionTargets<States, Transitions>
+                  >[AnyStateEvent]
+                : never
+              : never,
             // FlattenReturnStateTargets<States, Transitions>
             // TUnionToIntersection<FlattenMembers<StateTransitionTargets<States,Transitions>[AnyEventKey]>> extends infer U
             //   ? U extends ReturnType<States[keyof States]>
             //     ? U
             //     : never
             //   : never
-            ,
-            //   StateFromFactory<States> : 
+            //   StateFromFactory<States> :
             //   Filter<
             //     FlatEventTargetsMap<States, Transitions>, AnyEventKey
-            //   > extends infer U 
-            //       ? U extends ReturnType<States[keyof States]> 
-            //         ? U 
-            //         : never 
+            //   > extends infer U
+            //       ? U extends ReturnType<States[keyof States]>
+            //         ? U
+            //         : never
             //       : never,
 
             // & {
@@ -635,4 +639,4 @@ export type StateEventHookConfig<
     on?: On<States, Transitions, StateKey>;
   } & StateTransitionHooks<States, Transitions, StateKey>;
 };
-//#endregion
+// #endregion

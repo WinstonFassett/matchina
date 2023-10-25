@@ -4,34 +4,28 @@ import { createPromiseMachine } from "./extras/promise";
 import { MatchboxFactory } from "./matchbox-types";
 import { StateFromFactory } from "./states";
 import {
-  StateMachine,
-  FlattenedEventTypes,
   Expand,
-  TransitionConfig,
-  FlatEventers,
-  FlatMachineEventers,
-  FlatMachineEvents,
-  StateTransitionTargets,
+  Filter,
+  FlatEventTargets,
   FlatMachineEventTargets,
   FlatMachineEventToTargetKeyMap,
-  FlatEventTargetsMap,
-  Filter,
-  
-  FlatEventTargets,
-  FlattenedTargets,
-  FlattenMembers,
-  FlatStateEventTransitionTargets,
-  StateTransitions,
-  StateTransitionTargetKeys,  
-  FlattenTransitionTargetKeys,
-  FlattenReturnStateTargetKeys,
+  FlatMachineEventers,
+  FlatMachineEvents,
   FlatMachineReturnEventToTargetKeyMap,
-  FlattenReturnStateTargetTypes,
-  FlattenReturnStateTargets,
   FlatMemberUnionToIntersection,
+  FlatStateEventTransitionTargets,
   FlatStateTransitionTargetIntersection,
   FlatStateTransitionTargets,
+  FlattenMembers,
+  FlattenReturnStateTargetKeys,
+  FlattenReturnStateTargets,
+  FlattenedEventTypes,
+  StateMachine,
+  StateTransitionTargetKeys,
+  StateTransitionTargets,
+  StateTransitions,
   TUnionToIntersection,
+  TransitionConfig,
 } from "./types";
 
 type PromiseStates<T, A, E extends Error = Error> = MatchboxFactory<
@@ -85,8 +79,8 @@ testStates.Idle.key = "blarg"; // this must be 'Idle'
 const m = createPromiseMachine((a: number, b: number) =>
   Promise.resolve(a + b),
 );
-const { states } = m.def
-type MyState = StateFromFactory<typeof states>
+const { states } = m.def;
+type MyState = StateFromFactory<typeof states>;
 type Events = FlatMachineEvents<typeof m>; // data but no typed keys
 type Eventers = FlatMachineEventers<typeof m>;
 type Targets = FlatMachineEventTargets<typeof m>; // data but not typed keys
@@ -117,61 +111,79 @@ type Filter1<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never;
 }[keyof T];
 
-
 type Execute = Filter<Event, "reject">;
 type ExecuteSender = Filter<Eventers, "reject">;
 type ExecuteToPending = Filter<Targets, "reject">;
 type ExecuteTargetKeys = Filter<TargetKeyMap, "reject">;
 
-let state: ReturnType<typeof m.getState> = m.getState()
-state = {} as ExecuteToPending
+let state: ReturnType<typeof m.getState> = m.getState();
+state = {} as ExecuteToPending;
 
+const s2: MyState = {} as ExecuteToPending;
 
-let s2: MyState = {} as ExecuteToPending
+type T3 = FlatEventTargets<typeof m.def.states, typeof m.def.transitions>;
+type T4 = FlattenMembers<T3>;
 
-type T3 = FlatEventTargets<typeof m.def.states, typeof m.def.transitions>
-type T4 = FlattenMembers<T3>
+type Thing = T4;
 
-type Thing = T4
+type T5 = T4[keyof T4];
+type T6 = T3[keyof T3];
+type T7 = T6[keyof T6];
 
-type T5 = T4[keyof T4]
-type T6 = T3[keyof T3]
-type T7= T6[keyof T6]
+type TX = StateTransitions<typeof m.def.states, typeof m.def.transitions>;
 
-type TX = StateTransitions<typeof m.def.states, typeof m.def.transitions>
-
-
-type TT = FlatStateEventTransitionTargets<StateTransitions<typeof m.def.states, typeof m.def.transitions>>
-type TK = StateTransitionTargetKeys<typeof m.def.states, typeof m.def.transitions>
-type TE = FlattenedEventTypes<typeof m.def.states, typeof m.def.transitions>
+type TT = FlatStateEventTransitionTargets<
+  StateTransitions<typeof m.def.states, typeof m.def.transitions>
+>;
+type TK = StateTransitionTargetKeys<
+  typeof m.def.states,
+  typeof m.def.transitions
+>;
+type TE = FlattenedEventTypes<typeof m.def.states, typeof m.def.transitions>;
 
 // type TFK = FlattenTransitionTargetKeys<typeof m.def.states, typeof m.def.transitions>
 // const a: TFK = "Not a Valid State"
 
 // YES! this is what I want
-type TargetKeys2 = FlattenReturnStateTargetKeys<typeof m.def.states, typeof m.def.transitions>
+type TargetKeys2 = FlattenReturnStateTargetKeys<
+  typeof m.def.states,
+  typeof m.def.transitions
+>;
 
 // now can I get the types...
-type TargetTypes = FlattenReturnStateTargets<typeof m.def.states, typeof m.def.transitions>
+type TargetTypes = FlattenReturnStateTargets<
+  typeof m.def.states,
+  typeof m.def.transitions
+>;
 
-type EventsToStateKeys = FlatMachineEventToTargetKeyMap<typeof m>  
-type W3 = FlatMachineReturnEventToTargetKeyMap<typeof m> // hmm this is never
+type EventsToStateKeys = FlatMachineEventToTargetKeyMap<typeof m>;
+type W3 = FlatMachineReturnEventToTargetKeyMap<typeof m>; // hmm this is never
 
 const t: TargetTypes = {
-  key: 'Rejected',
-  data: new Error('test'),
-  match: (x) => x as any
-}
+  key: "Rejected",
+  data: new Error("test"),
+  match: (x) => x as any,
+};
 
-type STT = StateTransitionTargets<typeof m.def.states, typeof m.def.transitions>
-type STFlatMemberUnion = FlatMemberUnionToIntersection<StateTransitionTargets<typeof m.def.states, typeof m.def.transitions>>
+type STT = StateTransitionTargets<
+  typeof m.def.states,
+  typeof m.def.transitions
+>;
+type STFlatMemberUnion = FlatMemberUnionToIntersection<
+  StateTransitionTargets<typeof m.def.states, typeof m.def.transitions>
+>;
 
-type Compare = FlatStateTransitionTargetIntersection<typeof m.def.states, typeof m.def.transitions>['reject']
-type Compare2 = TUnionToIntersection<FlatStateTransitionTargets<typeof m.def.states, typeof m.def.transitions>>
-type ForReject = Compare2['reject']
-const x: ForReject = {} as any
-m.getChange().to = x
+type Compare = FlatStateTransitionTargetIntersection<
+  typeof m.def.states,
+  typeof m.def.transitions
+>["reject"];
+type Compare2 = TUnionToIntersection<
+  FlatStateTransitionTargets<typeof m.def.states, typeof m.def.transitions>
+>;
+type ForReject = Compare2["reject"];
+const x: ForReject = {} as any;
+m.getChange().to = x;
 
 // ['reject']
 
-type STFiltered = STFlatMemberUnion['reject']
+type STFiltered = STFlatMemberUnion["reject"];
