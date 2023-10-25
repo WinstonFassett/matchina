@@ -7,6 +7,7 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
 ) {
   const states = defineStates({
     Idle: undefined,
+    Orphan: undefined,
     Pending: (...params: A[]) => params,
     Rejected: (error: E) => error,
     Resolved: (data: T) => data,
@@ -19,6 +20,7 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
     },
     Resolved: {},
     Rejected: {},
+    Orphan: {}
   });
   const initialState = states.Idle();
   const machine = Machine.create(initialState);

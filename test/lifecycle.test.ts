@@ -55,7 +55,8 @@ describe("onLifecycle usage", () => {
           "*": {
             before(change) {
               change.from.key = "Idle";
-              change.to.key = "Idle";
+              // change.to.key = "Idle";
+              change.to.key = 'Pending'
             },
           },
           reject: {
@@ -64,7 +65,9 @@ describe("onLifecycle usage", () => {
               change.from.key = "Idle"; // loose but not too loose
               // change.to.key =
               // fix these
-              change.to.key = "Idle"; // ideally should error unless Error
+              // change.to.key = ''
+              // change.to.key = "Idle"; // ideally should error unless Error
+              change.to.key = 'Resolved'
             },
           },
         },
