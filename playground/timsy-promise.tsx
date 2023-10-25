@@ -1,5 +1,6 @@
 import React from "react";
-import { Expand, createPromiseMachine } from "../src";
+import { createPromiseMachine } from "../src";
+import { Expand } from "../src/types";
 
 const machine = createPromiseMachine((id: number) =>
   fetch("/data").then((response) => response.json()),

@@ -166,7 +166,6 @@ export type StateTransitioners<
   };
 };
 
-
 // KEEP
 export type FlattenedEventTypes<
   States extends StatesFactory<any>,
@@ -181,7 +180,6 @@ export type FlattenedEventTypes<
 // Utility type to get the value types of an object
 type ValueTypes<T> = T[keyof T];
 
-
 // Provides only the keys that are valid for the given state-event transitions
 export type FlattenReturnStateTargetKeys<
   States extends StatesFactory<any>,
@@ -195,7 +193,7 @@ export type FlattenReturnStateTargetKeys<
       States,
       Transitions
     >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
-      ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+      ? TargetState extends StateFromFactory<States>
         ? TargetState["key"] extends keyof States
           ? TargetState["key"]
           : never
@@ -226,9 +224,6 @@ export type FlattenReturnStateTargets<
   }[keyof StateTransitions<States, Transitions>[StateKey]];
 }>;
 
-
-
-
 // #endregion
 
 // #endregion
@@ -236,18 +231,15 @@ export type FlattenReturnStateTargets<
 // #region Utility
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
 ) extends (x: infer R) => any
   ? R
   : never;
 
-
 // #endregion
 
-
-  // KEEP
+// KEEP
 export type FlattenMembers<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];
@@ -276,10 +268,6 @@ export type FlatStateTransitionTargets<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = FlattenMembers<StateTransitionTargets<States, Transitions>>;
-
-
-
-
 
 // #region Lifecycle
 
@@ -352,15 +340,15 @@ type On<
             },
             // Target State
             AnyStateEvent extends "*"
-              // Wildcard Event inside Wildcard State, return all possible targets
-              ? FlattenReturnStateTargets<
+              ? // Wildcard Event inside Wildcard State, return all possible targets
+                FlattenReturnStateTargets<
                   States,
                   Transitions
-              > extends ReturnType<States[keyof States]>
+                > extends ReturnType<States[keyof States]>
                 ? FlattenReturnStateTargets<States, Transitions>
                 : never
-              // Specific Event inside Wildcard State. Filter to possible targets
-              : AnyStateEvent extends keyof TUnionToIntersection<
+              : // Specific Event inside Wildcard State. Filter to possible targets
+              AnyStateEvent extends keyof TUnionToIntersection<
                   FlatStateTransitionTargets<States, Transitions>
                 >
               ? TUnionToIntersection<
@@ -370,13 +358,13 @@ type On<
                     FlatStateTransitionTargets<States, Transitions>
                   >[AnyStateEvent]
                 : never
-              : never,           
+              : never,
             any[] // could be union of all possible params lol I'm tired
           >
         >;
       }
-    // VALID Transition Source State Key 
-    : {
+    : // VALID Transition Source State Key
+      {
         [Event in keyof Transitions[StateKey] | "*"]?: Event extends "*"
           ? // wildcard events for specific state
             TransitionHookExtensions<

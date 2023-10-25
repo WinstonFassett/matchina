@@ -1,7 +1,6 @@
-import { expect, it, describe } from "vitest";
-import { createPromiseMachine } from "../src/extras/promise";
+import { describe, expect, it } from "vitest";
 import { onLifecycle } from "../src/extras/lifecycle";
-import { Expand } from "../src";
+import { createPromiseMachine } from "../src/extras/promise";
 
 describe("onLifecycle usage", () => {
   it("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -55,8 +54,6 @@ describe("onLifecycle usage", () => {
         on: {
           "*": {
             before(change) {
-              change.from.key = "Idle";
-              // change.to.key = "Idle";
               change.to.key = "Pending";
             },
           },

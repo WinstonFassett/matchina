@@ -1,9 +1,5 @@
 import { StatesFactory } from "../states";
-import {
-  StateEventHookConfig,
-  StateMachine,
-  TransitionConfig
-} from "../types";
+import { StateEventHookConfig, StateMachine, TransitionConfig } from "../types";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
 export function onLifecycle<

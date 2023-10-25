@@ -1,3 +1,7 @@
+// @ts-nocheck
+/* eslint-disable unicorn/no-abusive-eslint-disable */
+/* eslint-disable */
+
 type State<K extends keyof any = string> = {
   key: K;
 };
