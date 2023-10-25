@@ -40,14 +40,14 @@ describe("onLifecycle usage", () => {
           change.from.key = "Rejected"; // typed
         },
         on: {
-          execute: {
-            after(change) {
-              change.from.key = "Rejected";
-              change.to.key = "Pending";
-              change.from.data = new Error("test");
-              change.to.data = [100];
-            },
-          },
+          // execute: {
+          //   after(change) {
+          //     change.from.key = "Rejected";
+          //     change.to.key = "Pending";
+          //     change.from.data = new Error("test");
+          //     change.to.data = [100];
+          //   },
+          // },
         },
       },
       "*": {
@@ -62,7 +62,7 @@ describe("onLifecycle usage", () => {
             after(change) {
               change.type = "reject"; // typed
               change.from.key = "Idle"; // loose but not too loose
-
+              // change.to.key =
               // fix these
               change.to.key = "Idle"; // ideally should error unless Error
             },
@@ -74,18 +74,18 @@ describe("onLifecycle usage", () => {
     const removeLifecycle = onLifecycle(machine, {
       Rejected: {
         on: {
-          execute: {
-            before(change) {
-              change.from.key = "Rejected";
-              change.to.key = "Pending";
-            },
-          },
+          // execute: {
+          //   before(change) {
+          //     change.from.key = "Rejected";
+          //     change.to.key = "Pending";
+          //   },
+          // },
         },
       },
       "*": {
         leave(change) {
           change.from.key = "Idle";
-          change.to.key = 'Idle'
+          change.to.key = "Idle";
         },
         enter(state) {
           console.log("entering", state.to.key);

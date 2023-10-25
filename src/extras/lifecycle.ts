@@ -3,6 +3,7 @@ import {
   StateMachine,
   TransitionConfig,
   FlattenedEventTypes,
+  StateTransitions,
 } from "../types";
 import { StateFromFactory, StatesFactory } from "../states";
 import { UpdateEnhancer, onUpdate } from "./on-update";
@@ -70,11 +71,43 @@ type On<
               : AnyStateEvent,
             // StateKey extends "*" ? StateFromFactory<States> & { key: keyof Transitions } : (ReturnType<States[StateKey]> & { key: StateKey}),
             StateFromFactory<States> & {
-              key: AnyStateEvent extends "*"
-                ? keyof Transitions
-                : keyof Transitions;
+              key: keyof {
+                [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
+                  ? K
+                  : keyof Transitions;
+              };
             },
-            StateFromFactory<States> & { key: keyof States },
+            // union of valid TARGET states, i.e. ReturnType<States[Transitions[StateKey][EventKey]]>
+            StateFromFactory<States> & {
+              [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
+            }
+            // & {
+            //   key: keyof {
+            //     [StateKeyIn in keyof Transitions]: keyof StateTransitions<
+            //       States,
+            //       Transitions[StateKeyIn]
+            //     >;
+            //   }[StateKey];
+            //   // AnyStateEvent extends "*"
+            //     // // wildcard event
+            //     // ? keyof {
+            //     //     [StateKeyIn in keyof Transitions]: keyof {
+            //     //       [Event in keyof Transitions[StateKeyIn]]: Transitions[StateKeyIn][Event] extends keyof States
+            //     //         ? Event
+            //     //         : never;
+            //     //     };
+            //     //   }
+            //     // : keyof {
+            //     //     [StateKeyIn in keyof Transitions]: AnyStateEvent extends keyof Transitions[StateKeyIn]
+            //     //       ? keyof {
+            //     //           [L in keyof Transitions[StateKeyIn][AnyStateEvent]]: Transitions[StateKeyIn][AnyStateEvent][L] extends keyof States
+            //     //             ? L
+            //     //             : never;
+            //     //         }
+            //     //       : never;
+            //     //   };
+            // }
+            ,
             any[] // could be union of all possible params
           >
         >;
