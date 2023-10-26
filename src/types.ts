@@ -1,40 +1,43 @@
 import { StateFromFactory, StatesFactory } from "./states";
 
 // #region General
-export type AnyStateKey = string | number | symbol;
-export type AnyEventKey = string | number | symbol;
+
+export type AnyStateKey = keyof any;
+export type AnyEventKey = keyof any;
 export interface ChangeEvent<Type, From, To> {
   type: Type;
   from: From;
   to: To;
 }
+export type CreateFunc<T, P = any> = (...args: P[]) => T;
 export type SwapFunc<T> = (updater: (event: T) => T) => void;
 
 // #endregion
 
 // #region Transition Config
-type SimpleStateTarget<T> = T;
-type FunctionStateTarget<State> = (...args: any[]) => State;
-type AdvancedFunctionStateTarget<
-  States extends StatesFactory<any>,
-  EventKey extends AnyEventKey = AnyEventKey,
-> = (
-  ...args: any[]
-) => (
-  state: StateFromFactory<States>,
-  event: EventKey,
-  machine: StateMachine<States, any>,
-) => StateFromFactory<States>;
-type ConfigStateTransitionExit<States extends StatesFactory<any>> =
-  | SimpleStateTarget<keyof States>
-  | AdvancedFunctionStateTarget<States>
-  | FunctionStateTarget<StateFromFactory<States>>;
 
 export type TransitionConfig<States extends StatesFactory<any>> = {
-  [StateKey in keyof States]: {
-    [EventKey: AnyEventKey]: ConfigStateTransitionExit<States>;
+  [SourceState in keyof States]: {
+    [EventKey: AnyEventKey]:
+      | keyof States
+      | CreateFunc<StateFromFactory<States>>
+      | TwoPhaseTransitionToStateFunc<States, SourceState, typeof EventKey>;
   };
 };
+
+type TwoPhaseTransitionToStateFunc<
+  States extends StatesFactory<any>,
+  SourceStateKey extends keyof States = keyof States,
+  StateEventKey extends AnyEventKey = AnyEventKey,
+  P = any,
+> = (
+  ...args: P[]
+) => (
+  state: StateFromFactory<States, SourceStateKey>,
+  eventType: StateEventKey,
+  machine: StateMachine<States, any>,
+) => StateFromFactory<States>;
+
 // #endregion
 
 // #region StateMachine
@@ -43,13 +46,13 @@ export interface StateMachine<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > {
-  def: MachineDefinition<States, Transitions>;
+  def: StateMachineDefinition<States, Transitions>;
   config: {
     initialState: StateFromFactory<States>;
   }; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<States, Transitions>;
-  event: FlatMemberUnionToIntersection<StateTransitioners<States, Transitions>>;
+  event: FlatEventSenders<States, Transitions>;
   getChange: () => StateMachineEvent<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
@@ -60,13 +63,15 @@ export type SendFunction<
   Transitions extends TransitionConfig<States>,
 > = <
   E extends S extends keyof Transitions
-    ? keyof StateTransitioners<States, Transitions>[S]
+    ? keyof StateEventTransitionSenders<States, Transitions>[S]
     : Event["type"],
   S extends keyof Transitions = keyof States,
   P = Exclude<
     S extends keyof Transitions
-      ? Parameters<StateTransitioners<States, Transitions>[S][E]>[0]
-      : Parameters<StateTransitioners<States, Transitions>[keyof States][E]>[0],
+      ? Parameters<StateEventTransitionSenders<States, Transitions>[S][E]>[0]
+      : Parameters<
+          StateEventTransitionSenders<States, Transitions>[keyof States][E]
+        >[0],
     undefined
   >,
 >(
@@ -74,18 +79,18 @@ export type SendFunction<
   ...params: P[]
 ) => void;
 
-export type MachineCreator<
+export type StateMachineCreator<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = (
   initialState: StateFromFactory<States>,
 ) => StateMachine<States, Transitions>;
 
-export type MachineDefinition<
+export type StateMachineDefinition<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
-  create: MachineCreator<States, Transitions>;
+  create: StateMachineCreator<States, Transitions>;
   states: States;
   transitions: Transitions;
 };
@@ -95,10 +100,10 @@ export type MachineDefinition<
 export type StateMachineEvent<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  EventKey extends FlattenedEventTypes<
+  EventKey extends FlatEventKeys<States, Transitions> = FlatEventKeys<
     States,
     Transitions
-  > = FlattenedEventTypes<States, Transitions>,
+  >,
   From extends StateFromFactory<States> = StateFromFactory<States>,
   To extends StateFromFactory<States> = StateFromFactory<States>,
   Params = any[],
@@ -110,9 +115,6 @@ export type StateMachineEvent<
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
   }
 >;
-// #endregion
-
-// #region Matchers
 type ChangeEventMatchers<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
@@ -127,23 +129,25 @@ type ChangeEventMatchers<
 };
 // #endregion
 
-// #region Transitioners
-export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
-  [StateKey in keyof Transitions & keyof States]: {
+// #region Mapped Transitions
+export type StateEventTransitionFuncs<
+  States extends StatesFactory<any>,
+  Transitions,
+> = {
+  [StateKey in keyof Transitions]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (
           ...args: Parameters<States[Transitions[StateKey][EventKey]]>
-        ) => StateFromFactory<States, Transitions[StateKey][EventKey]> & {
-          key: Transitions[StateKey][EventKey];
-        }
-      : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
+        ) => StateFromFactory<States, Transitions[StateKey][EventKey]>
+      : Transitions[StateKey][EventKey] extends TwoPhaseTransitionToStateFunc<
           States,
+          StateKey,
           EventKey
         >
       ? (
           ...args: Parameters<Transitions[StateKey][EventKey]>
-        ) => StateFromFactory<States> & { key: Transitions[StateKey][EventKey] }
-      : Transitions[StateKey][EventKey] extends FunctionStateTarget<
+        ) => ReturnType<Transitions[StateKey][EventKey]>
+      : Transitions[StateKey][EventKey] extends CreateFunc<
           StateFromFactory<States>
         >
       ? (
@@ -153,65 +157,49 @@ export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
   };
 };
 
-export type StateTransitioners<
+export type StateEventTransitionSenders<
   States extends StatesFactory<any>,
   Transitions,
 > = {
-  [StateKey in keyof StateTransitions<States, Transitions>]: {
-    [EventKey in keyof StateTransitions<States, Transitions>[StateKey]]: (
+  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      States,
+      Transitions
+    >[StateKey]]: (
       ...args: Parameters<
-        StateTransitions<States, Transitions>[StateKey][EventKey]
+        StateEventTransitionFuncs<States, Transitions>[StateKey][EventKey]
       >
     ) => void;
   };
 };
 
-// KEEP
-export type FlattenedEventTypes<
+type FlatEventSenders<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = FlatMemberUnionToIntersection<
+  StateEventTransitionSenders<States, Transitions>
+>;
+
+export type FlatEventKeys<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
-  [StateKey in keyof StateTransitioners<
+  [StateKey in keyof StateEventTransitionFuncs<
     States,
     Transitions
-  >]: keyof StateTransitioners<States, Transitions>[StateKey];
-}[keyof StateTransitioners<States, Transitions>];
+  >]: keyof StateEventTransitionFuncs<States, Transitions>[StateKey];
+}[keyof StateEventTransitionFuncs<States, Transitions>];
 
-// Utility type to get the value types of an object
-type ValueTypes<T> = T[keyof T];
-
-// Provides only the keys that are valid for the given state-event transitions
-export type FlattenReturnStateTargetKeys<
+// provides the return types of all state-event transitions
+export type FlatExitStates<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-> = ValueTypes<{
-  [StateKey in keyof StateTransitions<States, Transitions>]: {
-    [EventKey in keyof StateTransitions<
+> = Members<{
+  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
       States,
       Transitions
-    >[StateKey]]: StateTransitions<
-      States,
-      Transitions
-    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
-      ? TargetState extends StateFromFactory<States>
-        ? TargetState["key"] extends keyof States
-          ? TargetState["key"]
-          : never
-        : never
-      : never;
-  }[keyof StateTransitions<States, Transitions>[StateKey]];
-}>;
-
-// KEEP
-export type FlattenReturnStateTargets<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-> = ValueTypes<{
-  [StateKey in keyof StateTransitions<States, Transitions>]: {
-    [EventKey in keyof StateTransitions<
-      States,
-      Transitions
-    >[StateKey]]: StateTransitions<
+    >[StateKey]]: StateEventTransitionFuncs<
       States,
       Transitions
     >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
@@ -221,15 +209,61 @@ export type FlattenReturnStateTargets<
           : never
         : never
       : never;
-  }[keyof StateTransitions<States, Transitions>[StateKey]];
+  }[keyof StateEventTransitionFuncs<States, Transitions>[StateKey]];
 }>;
 
-// #endregion
+// Provides only the keys that are valid for the given state-event transitions
+export type FlatExitStateKeys<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = Members<{
+  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      States,
+      Transitions
+    >[StateKey]]: StateEventTransitionFuncs<
+      States,
+      Transitions
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends StateFromFactory<States>
+        ? TargetState["key"] extends keyof States
+          ? TargetState["key"]
+          : never
+        : never
+      : never;
+  }[keyof StateEventTransitionFuncs<States, Transitions>[StateKey]];
+}>;
+
+export type StatesToEventsToStates<
+  States extends StatesFactory<any>,
+  Transitions,
+> = {
+  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      States,
+      Transitions
+    >[StateKey]]: ReturnType<
+      StateEventTransitionFuncs<States, Transitions>[StateKey][EventKey]
+    >;
+  };
+};
+
+export type EventExitStatesIntersection<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+> = TUnionToIntersection<
+  FlatMemberUnion<StatesToEventsToStates<States, Transitions>>
+>;
 
 // #endregion
 
 // #region Utility
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
+type Members<T> = T[keyof T];
+
+export type FlatMemberUnion<T> = {
+  [StateKey in keyof T]: T[StateKey];
+}[keyof T];
 
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never
@@ -237,171 +271,10 @@ export type TUnionToIntersection<T> = (
   ? R
   : never;
 
-// #endregion
-
-// KEEP
-export type FlattenMembers<T> = {
-  [StateKey in keyof T]: T[StateKey];
-}[keyof T];
-
-// KEEP
 export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<
-  FlattenMembers<T>
+  FlatMemberUnion<T>
 >;
 
-export type StateTransitionTargets<
-  States extends StatesFactory<any>,
-  Transitions,
-> = {
-  [StateKey in keyof StateTransitions<States, Transitions>]: {
-    [EventKey in keyof StateTransitions<
-      States,
-      Transitions
-    >[StateKey]]: ReturnType<
-      StateTransitions<States, Transitions>[StateKey][EventKey]
-    >;
-  };
-};
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-// KEEP
-export type FlatStateTransitionTargets<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-> = FlattenMembers<StateTransitionTargets<States, Transitions>>;
-
-// #region Lifecycle
-
-export type TransitionHookExtensions<T> = {
-  guard?: (change: T) => boolean;
-  before?: (change: T) => any;
-  handle?: (change: T) => T | undefined;
-  after?: (change: T) => any;
-};
-
-export type StateTransitionHooks<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-  StateKey extends keyof Transitions | "*",
-> = {
-  leave?: (
-    change: StateMachineEvent<
-      States,
-      Transitions,
-      FlattenedEventTypes<States, Transitions>,
-      // source state
-      StateFromFactory<
-        States,
-        StateKey extends "*" ? keyof States : StateKey
-      >,
-      // target state
-      StateFromFactory<States>
-    >,
-  ) => any;
-  enter?: (
-    change: StateMachineEvent<
-      States,
-      Transitions,
-      FlattenedEventTypes<States, Transitions>,
-      // from any state
-      StateFromFactory<States> & { key: keyof States },
-      // to this state
-      StateFromFactory<
-        States,
-        StateKey extends "*" ? keyof States : StateKey
-      >
-    >,
-  ) => any;
-};
-
-type On<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-  StateKey extends keyof Transitions | "*",
-> =
-  // wildcard state
-  StateKey extends "*"
-    ? {
-        [AnyStateEvent in
-          | FlattenedEventTypes<States, Transitions>
-          | "*"]?: TransitionHookExtensions<
-          StateMachineEvent<
-            States,
-            Transitions,
-            AnyStateEvent extends "*"
-              ? FlattenedEventTypes<States, Transitions>
-              : AnyStateEvent,
-            // Source State
-            StateFromFactory<States> & {
-              key: keyof {
-                [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
-                  ? K
-                  : keyof Transitions;
-              };
-            },
-            // Target State
-            AnyStateEvent extends "*"
-              ? // Wildcard Event inside Wildcard State, return all possible targets
-                FlattenReturnStateTargets<
-                  States,
-                  Transitions
-                > extends StateFromFactory<States>
-                ? FlattenReturnStateTargets<States, Transitions>
-                : never
-              : // Specific Event inside Wildcard State. Filter to possible targets
-              AnyStateEvent extends keyof TUnionToIntersection<
-                  FlatStateTransitionTargets<States, Transitions>
-                >
-              ? TUnionToIntersection<
-                  FlatStateTransitionTargets<States, Transitions>
-                >[AnyStateEvent] extends StateFromFactory<States>
-                ? TUnionToIntersection<
-                    FlatStateTransitionTargets<States, Transitions>
-                  >[AnyStateEvent]
-                : never
-              : never,
-            any[] // could be union of all possible params lol I'm tired
-          >
-        >;
-      }
-    : // VALID Transition Source State Key
-      {
-        [Event in keyof Transitions[StateKey] | "*"]?: Event extends "*"
-          ? // wildcard events for specific state
-            TransitionHookExtensions<
-              StateMachineEvent<
-                States,
-                Transitions,
-                keyof Transitions[StateKey],
-                StateFromFactory<States, StateKey> & { key: StateKey },
-                StateFromFactory<States> & {
-                  key: keyof Transitions[StateKey];
-                },
-                any[]
-              >
-            >
-          : // specific event for specific state
-          Transitions[StateKey][Event] extends keyof States
-          ? TransitionHookExtensions<
-              StateMachineEvent<
-                States,
-                Transitions,
-                Event, // should constrain params
-                StateFromFactory<States, StateKey> & { key: StateKey },
-                StateFromFactory<States, Transitions[StateKey][Event]> & {
-                  key: Transitions[StateKey][Event];
-                },
-                Parameters<States[Transitions[StateKey][Event]]>
-              >
-            >
-          : never;
-      };
-
-export type StateEventHookConfig<
-  States extends StatesFactory<any>,
-  Transitions extends TransitionConfig<States>,
-> = {
-  [StateKey in keyof Transitions | "*"]?: {
-    on?: On<States, Transitions, StateKey>;
-  } & StateTransitionHooks<States, Transitions, StateKey>;
-};
 // #endregion
