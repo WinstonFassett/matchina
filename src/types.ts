@@ -292,9 +292,9 @@ export type StateTransitionHooks<
       StateFromFactory<
         States,
         StateKey extends "*" ? keyof States : StateKey
-      > & { key: StateKey extends "*" ? keyof States : StateKey },
+      >,
       // target state
-      StateFromFactory<States> & { key: keyof States }
+      StateFromFactory<States>
     >,
   ) => any;
   enter?: (
@@ -308,7 +308,7 @@ export type StateTransitionHooks<
       StateFromFactory<
         States,
         StateKey extends "*" ? keyof States : StateKey
-      > & { key: StateKey extends "*" ? keyof States : StateKey }
+      >
     >,
   ) => any;
 };

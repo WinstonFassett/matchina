@@ -35,7 +35,7 @@ export type Matchbox<
       casesObj: M,
     ): M[keyof M] extends (...args: any) => infer R ? R : never;
   } & {
-    [K in TagKey]: string;
+    [Key in TagKey as Extract<TagKey, string>]: Extract<K, string>;
   }
 >;
 
