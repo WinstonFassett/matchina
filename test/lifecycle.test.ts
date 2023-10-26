@@ -25,47 +25,55 @@ describe("onLifecycle usage", () => {
 
     expectState("Idle");
 
-    onLifecycle(machine, {
+    const fakeLifecycle = () => onLifecycle(machine, {
+      Idle: {
+        on: {
+          execute: {
+            before(change) {
+              change.from.key = 'Idle'; // can only be Idle
+              change.to.key = 'Pending'; // can only be Pending
+            },
+          },
+        }
+      },
       Rejected: {
         enter(change) {
-          change.from.key = "Idle"; // any event key
-
-          change.to.key = "Rejected"; // typed
-          change.to.data = new Error("test");
-          change.to.data.message = "test";
+          // TODO: Filter out Rejected and Resolved
+          change.from.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+          change.to.key = "Rejected"; // can only be Rejected
+          change.to.data = new Error("test"); // must be Error type
+          change.to.data.message = "test"; // message autocomplete
         },
         leave(change) {
-          change.from.data = new Error("test");
-          change.from.data.message = "test";
-          change.from.key = "Rejected"; // typed
+          change.from.data = new Error("test"); // must be Error type
+          change.from.data.message = "test"; // Error properties autocomplete
+          change.from.key = "Rejected"; // must be Rejected
+          // TODO: filter out Idle
+          change.to.key = 'Idle' // "Idle" | "Pending" | "Rejected" | "Resolved"
         },
         on: {
-          // execute: {
-          //   after(change) {
-          //     change.from.key = "Rejected";
-          //     change.to.key = "Pending";
-          //     change.from.data = new Error("test");
-          //     change.to.data = [100];
-          //   },
-          // },
+          // execute: {}, // Error. "execute" event not allowed in "Rejected" state
+          '*': {
+            before(change) {
+              change.from.key = 'Rejected' // can only be Rejected
+              change.to.key = 'Pending' // "Idle" | "Pending" | "Rejected" | "Resolved"
+            },
+          }
         },
       },
       "*": {
         on: {
           "*": {
             before(change) {
-              change.to.key = "Pending";
+              change.to.key = "Pending"; // "Idle" | "Pending" | "Rejected" | "Resolved"
             },
           },
           reject: {
             after(change) {
-              change.type = "reject"; // typed
-              change.from.key = "Idle"; // loose but not too loose
-              // change.to.key =
-              // fix these
-              // change.to.key = ''
-              // change.to.key = "Idle"; // ideally should error unless Error
-              change.to.key = "Rejected";
+              change.type = "reject"; // must be "reject"
+              change.from.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+              change.to.data.message = "test"; // Error properties autocomplete
+              change.to.key = "Rejected"; // must be Rejected
             },
           },
         },
@@ -74,19 +82,13 @@ describe("onLifecycle usage", () => {
 
     const removeLifecycle = onLifecycle(machine, {
       Rejected: {
-        on: {
-          // execute: {
-          //   before(change) {
-          //     change.from.key = "Rejected";
-          //     change.to.key = "Pending";
-          //   },
-          // },
+        enter(change) {
+          console.log('something Rejected')
         },
       },
       "*": {
         leave(change) {
-          change.from.key = "Idle";
-          change.to.key = "Idle";
+          console.log('leaving', change.from.key)
         },
         enter(state) {
           console.log("entering", state.to.key);
@@ -94,32 +96,25 @@ describe("onLifecycle usage", () => {
         on: {
           execute: {
             after: (event) => {
-              event.from.key = "Idle";
-              event.to.key = "Pending";
+              // event.from.key = "Idle";
+              // event.to.key = "Pending";
             },
           },
           reject: {
             after: (event) => {
-              event.to.key = "Rejected";
+              // event.to.key = "Rejected";
             },
           },
-          // "*": {
-          //   before: (event) => {
-          //     console.log("before", event);
-          //   },
-          //   after: () => {},
-          //   // after: (event) => {
-          //   //   console.log("after", event.type);
-          //   // },
-          // },
+          "*": {
+            before: (event) => {
+              console.log("before", event.type);
+            },
+            after: () => {},
+            // after: (event) => {
+            //   console.log("after", event.type);
+            // },
+          },
         },
-        // on: {
-        //   '*': {
-        //     before: () => {
-        //       console.log("before");
-        //     },
-        //   }
-        // }
       },
       Idle: {
         on: {
@@ -219,6 +214,7 @@ describe("onLifecycle usage", () => {
     expectState("Pending");
     machine.event.reject(new Error("test"));
     expectState("Rejected");
+    console.log("(((((((***********))))))) ")
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
 
@@ -259,6 +255,7 @@ describe("onLifecycle usage", () => {
     expect(didEnterPending).toBe(7);
     expect(didBeforeResolve).toBe(8);
     expect(didAfterResolve).toBe(9);
+
   });
 });
 
