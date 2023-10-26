@@ -1,6 +1,6 @@
 import { StateFromFactory, StatesFactory } from "./states";
 import {
-  MachineDefinition,
+  StateMachineDefinition,
   SendFunction,
   StateMachine,
   StateMachineEvent,
@@ -17,7 +17,7 @@ export function defineMachine<
 >(
   states: States,
   transitions: Transitions,
-): MachineDefinition<States, Transitions> {
+): StateMachineDefinition<States, Transitions> {
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
 
@@ -47,7 +47,7 @@ export function defineMachine<
       },
     } as Event;
   }
-  const def: MachineDefinition<States, Transitions> = {
+  const def: StateMachineDefinition<States, Transitions> = {
     states,
     transitions,
     create: (initialState) => {
