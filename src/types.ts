@@ -117,9 +117,6 @@ export type StateMachineEvent<
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
   }
 >;
-// #endregion
-
-// #region Matchers
 type ChangeEventMatchers<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
