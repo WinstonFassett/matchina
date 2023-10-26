@@ -13,16 +13,17 @@ export type SwapFunc<T> = (updater: (event: T) => T) => void;
 // #endregion
 
 // #region Transition Config
-type FunctionStateTarget<State> = (...args: any[]) => State;
+type FunctionStateTarget<State, P = any> = (...args: P[]) => State;
 type AdvancedFunctionStateTarget<
   States extends StatesFactory<any>,
   EventKey extends AnyEventKey = AnyEventKey,
+  P = any,
 > = (
-  ...args: any[]
+  ...args: P[]
 ) => (
   state: StateFromFactory<States>,
   event: EventKey,
-  machine: StateMachine<States, any>,
+  machine: StateMachine<States, TransitionConfig<States>>,
 ) => StateFromFactory<States>;
 
 export type TransitionConfig<States extends StatesFactory<any>> = {
