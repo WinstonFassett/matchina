@@ -8,7 +8,7 @@ import {
   FlatMemberUnionToIntersection,
   StateEventTransitionSenders,
   StateMachine,
-  AllowedExitStateKeys,
+  FlatExitStateKeys,
   StateEventTransitionFuncs,
   StatesToEventsToStates,
 } from "../types";
@@ -36,7 +36,7 @@ export type FlatMachineEventers<
 export type FlatMachineReturnEventToTargetKeyMap<
   M extends StateMachine<StatesFactory<any>, any>,
 > = FlatMemberUnionToIntersection<
-  AllowedExitStateKeys<M["def"]["states"], M["def"]["transitions"]>
+  FlatExitStateKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
 
 export type FlatEventTargetsMap<

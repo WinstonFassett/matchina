@@ -2,10 +2,10 @@ import { StateFromFactory, StatesFactory } from "../states";
 import {
   TransitionConfig,
   StateMachineEvent,
-  FlattenedEventTypes,
-  FlattenReturnStateTargets,
+  FlatEventKeys,
+  FlatExitStates,
   TUnionToIntersection,
-  AllowedExitStates,
+  FlatExitStatesUnion,
 } from "../types";
 
 // #region Lifecycle
@@ -26,7 +26,7 @@ export type StateTransitionHooks<
     change: StateMachineEvent<
       States,
       Transitions,
-      FlattenedEventTypes<States, Transitions>,
+      FlatEventKeys<States, Transitions>,
       // source state
       StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>,
       // target state
@@ -37,7 +37,7 @@ export type StateTransitionHooks<
     change: StateMachineEvent<
       States,
       Transitions,
-      FlattenedEventTypes<States, Transitions>,
+      FlatEventKeys<States, Transitions>,
       // from any state
       StateFromFactory<States>,
       // to this state
@@ -54,13 +54,13 @@ type On<
   StateKey extends "*"
     ? {
         [AnyStateEvent in
-          | FlattenedEventTypes<States, Transitions>
+          | FlatEventKeys<States, Transitions>
           | "*"]?: TransitionHookExtensions<
           StateMachineEvent<
             States,
             Transitions,
             AnyStateEvent extends "*"
-              ? FlattenedEventTypes<States, Transitions>
+              ? FlatEventKeys<States, Transitions>
               : AnyStateEvent,
             // Source State
             StateFromFactory<
@@ -73,20 +73,20 @@ type On<
             >,
             // Target State
             AnyStateEvent extends "*"
-              ? FlattenReturnStateTargets<
+              ? FlatExitStates<
                   States,
                   Transitions
                 > extends StateFromFactory<States>
-                ? FlattenReturnStateTargets<States, Transitions>
+                ? FlatExitStates<States, Transitions>
                 : never
               : AnyStateEvent extends keyof TUnionToIntersection<
-                  AllowedExitStates<States, Transitions>
+                  FlatExitStatesUnion<States, Transitions>
                 >
               ? TUnionToIntersection<
-                  AllowedExitStates<States, Transitions>
+                  FlatExitStatesUnion<States, Transitions>
                 >[AnyStateEvent] extends StateFromFactory<States>
                 ? TUnionToIntersection<
-                    AllowedExitStates<States, Transitions>
+                    FlatExitStatesUnion<States, Transitions>
                   >[AnyStateEvent]
                 : never
               : never,
