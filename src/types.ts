@@ -133,24 +133,22 @@ export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (
           ...args: Parameters<States[Transitions[StateKey][EventKey]]>
-        ) => StateFromFactory<States, Transitions[StateKey][EventKey]>
+        ) => StateFromFactory<States, Transitions[StateKey][EventKey]> & {
+          key: Transitions[StateKey][EventKey];
+        }
       : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
           States,
           EventKey
         >
       ? (
           ...args: Parameters<Transitions[StateKey][EventKey]>
-        ) => ReturnType<Transitions[StateKey][EventKey]>
+        ) => StateFromFactory<States> & { key: Transitions[StateKey][EventKey] }
       : Transitions[StateKey][EventKey] extends FunctionStateTarget<
           StateFromFactory<States>
         >
       ? (
           ...args: Parameters<Transitions[StateKey][EventKey]>
-        ) => ReturnType<
-          Transitions[StateKey][EventKey]
-        > extends StateFromFactory<States>
-          ? ReturnType<Transitions[StateKey][EventKey]>
-          : StateFromFactory<States>
+        ) => StateFromFactory<States> & { key: Transitions[StateKey][EventKey] }
       : never;
   };
 };
@@ -291,9 +289,12 @@ export type StateTransitionHooks<
       Transitions,
       FlattenedEventTypes<States, Transitions>,
       // source state
-      StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>,
+      StateFromFactory<
+        States,
+        StateKey extends "*" ? keyof States : StateKey
+      > & { key: StateKey extends "*" ? keyof States : StateKey },
       // target state
-      StateFromFactory<States>
+      StateFromFactory<States> & { key: keyof States }
     >,
   ) => any;
   enter?: (
@@ -302,9 +303,12 @@ export type StateTransitionHooks<
       Transitions,
       FlattenedEventTypes<States, Transitions>,
       // from any state
-      StateFromFactory<States>,
+      StateFromFactory<States> & { key: keyof States },
       // to this state
-      StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>
+      StateFromFactory<
+        States,
+        StateKey extends "*" ? keyof States : StateKey
+      > & { key: StateKey extends "*" ? keyof States : StateKey }
     >,
   ) => any;
 };
@@ -327,14 +331,13 @@ type On<
               ? FlattenedEventTypes<States, Transitions>
               : AnyStateEvent,
             // Source State
-            StateFromFactory<
-              States,
-              keyof {
+            StateFromFactory<States> & {
+              key: keyof {
                 [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
                   ? K
                   : keyof Transitions;
-              }
-            >,
+              };
+            },
             // Target State
             AnyStateEvent extends "*"
               ? // Wildcard Event inside Wildcard State, return all possible targets
@@ -369,8 +372,10 @@ type On<
                 States,
                 Transitions,
                 keyof Transitions[StateKey],
-                StateFromFactory<States, StateKey>,
-                StateFromFactory<States>, // could be limited
+                StateFromFactory<States, StateKey> & { key: StateKey },
+                StateFromFactory<States> & {
+                  key: keyof Transitions[StateKey];
+                },
                 any[]
               >
             >
@@ -381,8 +386,10 @@ type On<
                 States,
                 Transitions,
                 Event, // should constrain params
-                StateFromFactory<States, StateKey>,
-                StateFromFactory<States, Transitions[StateKey][Event]>,
+                StateFromFactory<States, StateKey> & { key: StateKey },
+                StateFromFactory<States, Transitions[StateKey][Event]> & {
+                  key: Transitions[StateKey][Event];
+                },
                 Parameters<States[Transitions[StateKey][Event]]>
               >
             >

@@ -54,7 +54,6 @@ describe("onLifecycle usage", () => {
         on: {
           "*": {
             before(change) {
-              change.from.key = "Idle";
               change.to.key = "Pending";
             },
           },
