@@ -16,21 +16,22 @@ export type SwapFunc<T> = (updater: (event: T) => T) => void;
 type FunctionStateTarget<State, P = any> = (...args: P[]) => State;
 type AdvancedFunctionStateTarget<
   States extends StatesFactory<any>,
+  ExitStateKey extends keyof States = keyof States,
   EventKey extends AnyEventKey = AnyEventKey,
   P = any,
 > = (
   ...args: P[]
 ) => (
-  state: StateFromFactory<States>,
+  state: StateFromFactory<States, ExitStateKey>,
   event: EventKey,
-  machine: StateMachine<States, TransitionConfig<States>>,
+  machine: StateMachine<States, any>,
 ) => StateFromFactory<States>;
 
 export type TransitionConfig<States extends StatesFactory<any>> = {
   [StateKey in keyof States]: {
     [EventKey: AnyEventKey]:
       | keyof States
-      | AdvancedFunctionStateTarget<States>
+      | AdvancedFunctionStateTarget<States, StateKey, typeof EventKey>
       | FunctionStateTarget<StateFromFactory<States>>;
   };
 };
@@ -128,13 +129,14 @@ type ChangeEventMatchers<
 
 // #region Transitioners
 export type StateTransitions<States extends StatesFactory<any>, Transitions> = {
-  [StateKey in keyof Transitions & keyof States]: {
+  [StateKey in keyof Transitions]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
       ? (
           ...args: Parameters<States[Transitions[StateKey][EventKey]]>
         ) => StateFromFactory<States, Transitions[StateKey][EventKey]>
       : Transitions[StateKey][EventKey] extends AdvancedFunctionStateTarget<
           States,
+          StateKey,
           EventKey
         >
       ? (
