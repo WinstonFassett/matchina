@@ -1,14 +1,11 @@
 import { StateFromFactory, StatesFactory } from "../states";
 import {
-  TransitionConfig,
-  StateMachineEvent,
+  EventExitStatesIntersection,
   FlatEventKeys,
   FlatExitStates,
-  TUnionToIntersection,
-  FlatExitStatesUnion,
+  StateMachineEvent,
+  TransitionConfig,
 } from "../types";
-
-// #region Lifecycle
 
 export type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;
@@ -45,6 +42,7 @@ export type StateTransitionHooks<
     >,
   ) => any;
 };
+
 type On<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
@@ -79,14 +77,17 @@ type On<
                 > extends StateFromFactory<States>
                 ? FlatExitStates<States, Transitions>
                 : never
-              : AnyStateEvent extends keyof TUnionToIntersection<
-                  FlatExitStatesUnion<States, Transitions>
+              : AnyStateEvent extends keyof EventExitStatesIntersection<
+                  States,
+                  Transitions
                 >
-              ? TUnionToIntersection<
-                  FlatExitStatesUnion<States, Transitions>
+              ? EventExitStatesIntersection<
+                  States,
+                  Transitions
                 >[AnyStateEvent] extends StateFromFactory<States>
-                ? TUnionToIntersection<
-                    FlatExitStatesUnion<States, Transitions>
+                ? EventExitStatesIntersection<
+                    States,
+                    Transitions
                   >[AnyStateEvent]
                 : never
               : never,
