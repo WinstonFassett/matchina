@@ -29,7 +29,7 @@
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
     "prepack": "bun run build",
     "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
-    "test": "bun lint && bun test:types && vitest run --coverage",    
+    "test": "bun lint:fix && bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck"
   },
   "devDependencies": {
