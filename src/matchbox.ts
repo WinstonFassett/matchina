@@ -41,14 +41,14 @@ class MatchboxImpl<
     Object.assign(this, { [tagKey]: tag, tagKey }, { data });
   }
 
-  match(casesObj: Matchers<Config>): any {
+  match(casesObj: Matchers<Config>, exhaustive = true): any {
     const handler = (casesObj as any)[this.tag];
     if (handler) {
       return handler(this.data);
     } else if (casesObj._) {
       return casesObj._(this.data);
-    } else {
-      throw new Error(`Match did not handle tag: '${this.tag}'`);
+    } else if (exhaustive) {
+      throw new Error(`Match did not handle ${this.tagKey}: '${this.tag}'`);
     }
   }
 }

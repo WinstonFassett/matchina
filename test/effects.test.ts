@@ -17,12 +17,15 @@ const makeStates = (effects = makeEffects()) => {
   });
 };
 
-const makeMachine = (states = makeStates()) =>
+const makeMachine = (
+  states = makeStates(),
+  initialize = (s: typeof states) => s.Idle(),
+) =>
   defineMachine(states, {
     Idle: { next: "Pending" },
     Pending: { next: "Done" },
     Done: {},
-  }).create(states.Idle());
+  }).create(initialize(states));
 
 describe("defineEffects", () => {
   it("should create an effects union with the correct members", () => {
@@ -61,5 +64,17 @@ describe("runEffectsOnUpdate", () => {
     didNotify = false;
     machine.event.next();
     expect(didNotify).toBe(false);
+  });
+  it("non-exhaustive (by default) should not throw when effect not matched", () => {
+    const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
+    bindEffects(machine, (state) => (state.data as any)?.effects, {}, false);
+    expect(() => machine.event.next()).not.toThrow();
+  });
+  it("exhaustive should throw when effect not matched", () => {
+    const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
+    bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
+    expect(() => machine.event.next()).toThrowErrorMatchingInlineSnapshot(
+      `"Match did not handle effect: 'Notify'"`,
+    );
   });
 });

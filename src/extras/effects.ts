@@ -1,16 +1,17 @@
+import { StateMachine, TransitionConfig } from "../machine-types";
 import {
   MatchboxConfig,
   MatchboxFactory,
-  MatchboxFactoryValues,
   MatchboxFromConfig,
+  MatchboxFromFactory,
   Matchers,
+  NonExhaustiveMatchers,
   matchboxFactory,
 } from "../matchbox";
 import { StateFromFactory, StatesFactory } from "../states";
-import { StateMachine, TransitionConfig } from "../machine-types";
 import { onUpdate } from "./on-update";
 
-export type Effect = MatchboxFromConfig<any, "effect">;
+export type AnyEffect = MatchboxFromConfig<any, "effect">;
 
 export function defineEffects(config: MatchboxConfig) {
   return matchboxFactory(config, "effect");
@@ -18,11 +19,18 @@ export function defineEffects(config: MatchboxConfig) {
 export function bindEffects<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-  Effects extends MatchboxFactory<any, "effect">,
+  EffectsConfig extends MatchboxConfig,
+  Effects extends MatchboxFactory<EffectsConfig, "effect">,
+  Exhaustive extends boolean = true,
 >(
   machine: StateMachine<States, Transitions>,
-  getEffects: (state: StateFromFactory<States>) => Effect[] | undefined,
-  matchers: Matchers<MatchboxFactoryValues<Effects>>,
+  getEffects: (
+    state: StateFromFactory<States>,
+  ) => MatchboxFromFactory<Effects>[] | undefined,
+  matchers: Exhaustive extends true
+    ? Matchers<EffectsConfig>
+    : NonExhaustiveMatchers<EffectsConfig>,
+  exhaustive = false,
 ) {
   return onUpdate(machine, (commit, updater) => {
     commit((current) => {
@@ -30,20 +38,24 @@ export function bindEffects<
       const updated = updater(current);
       if (initial.to !== updated.to) {
         const effects = getEffects(updated.to);
-        handleEffects(effects, matchers);
+        handleEffects(effects, matchers, exhaustive);
       }
       return updated;
     });
   });
 }
-export function handleEffects(
-  effects: undefined | Effect[],
-  matchers: Matchers<any>,
+function handleEffects<Exhaustive extends boolean = true>(
+  effects: undefined | AnyEffect[],
+  matchers: Exhaustive extends true
+    ? Matchers<any>
+    : NonExhaustiveMatchers<any>,
+  exhaustive = false,
 ) {
+  console.log({ effects });
   if (!effects) {
     return;
   }
   for (const effect of effects) {
-    effect.match(matchers);
+    effect.match(matchers, exhaustive);
   }
 }

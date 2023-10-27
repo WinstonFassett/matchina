@@ -22,6 +22,12 @@ export type MatchboxConfigValues<Config extends MatchboxConfig> = {
     ? R
     : never;
 };
+export type NonExhaustiveMatchers<Config extends MatchboxConfig> = Partial<
+  ExhaustiveMatchers<Config> & {
+    _: (data: any) => any;
+  }
+>;
+
 export type Matchbox<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
@@ -31,8 +37,14 @@ export type Matchbox<
 > = Expand<
   {
     data: D;
-    match<M extends Matchers<Config>>(
+    match<
+      M extends Exhaustive extends false
+        ? NonExhaustiveMatchers<Config>
+        : Matchers<Config>,
+      Exhaustive extends boolean = true,
+    >(
       casesObj: M,
+      exhaustive?: Exhaustive,
     ): M[keyof M] extends (...args: any) => infer R ? R : never;
   } & {
     [Key in TagKey as Extract<TagKey, string>]: Extract<K, string>;
