@@ -1,6 +1,10 @@
 import { StatesFactory } from "../states";
 import { StateMachine, TransitionConfig } from "../types";
-import { StateEventHookConfig } from "./lifecycle-types";
+import {
+  StateEventHookConfig,
+  StateTransitionHooks,
+  TransitionHookExtensions,
+} from "./lifecycle-types";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
 export function onLifecycle<
@@ -24,27 +28,54 @@ export function lifecycle<
       const updated = updater(current);
       const { to: currentState } = current;
       const { type: event } = updated;
-      const fromStateHooks = config[currentState.key as keyof typeof config];
-      const fromStateEventHooks = fromStateHooks?.on;
-      const currentEventHooks = fromStateEventHooks?.[event];
-      const { handle, guard, before, after } = currentEventHooks || {};
-      if (guard && !guard(updated as any)) {
+      const globalStateHooks = config["*"];
+      const currentStateHooks = config[currentState.key as keyof typeof config];
+      const currentStateCurrentEventHooks = currentStateHooks?.on?.[event];
+
+      const eventHooksMaybe = [
+        globalStateHooks?.on?.["*"],
+        globalStateHooks?.on?.[event],
+        currentStateHooks?.on?.["*"],
+        currentStateHooks?.on?.[event],
+        currentStateCurrentEventHooks,
+      ];
+      // GUARD
+      if (
+        eventHooksMaybe.some(
+          (hooks) => hooks?.guard && !hooks.guard(updated as any),
+        )
+      ) {
         return current;
       }
+      // HANDLE
+      const handle = currentStateCurrentEventHooks?.handle;
       const handled = handle
         ? (handle(updated as any) as typeof updated) ?? current
         : updated;
       if (handled === current) {
         return handled;
       }
-      const { to } = handled;
-      const toStateHooks = config[to.key as keyof typeof config];
-
-      fromStateHooks?.leave?.(handled as any); // todo: remove need for any
-      before?.(handled as any);
-      toStateHooks?.enter?.(handled as any);
+      const nextStateHooks = config[handled.to.key as keyof typeof config];
+      const runStateHooks = (
+        stateHooksMaybe: StateTransitionHooks<States, Transitions, any>[],
+        hookName: keyof StateTransitionHooks<any, any, any>,
+      ) => {
+        for (const hooks of stateHooksMaybe) {
+          hooks?.[hookName]?.(handled as any);
+        }
+      };
+      const runEventHooks = (hookName: keyof TransitionHookExtensions<any>) => {
+        for (const hooks of eventHooksMaybe) {
+          hooks?.[hookName]?.(handled as any);
+        }
+      };
+      // LEAVE, BEFORE, ENTER, COMMIT, AFTER
+      runStateHooks([currentStateHooks, globalStateHooks] as any, "leave");
+      runEventHooks("before");
+      runStateHooks([globalStateHooks, nextStateHooks] as any, "enter");
       commit(() => handled);
-      after?.(handled as any);
+      eventHooksMaybe.reverse();
+      runEventHooks("after");
       return handled;
     });
   };
