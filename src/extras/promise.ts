@@ -1,4 +1,5 @@
 import { defineMachine } from "../machine";
+import { FlatEventKeys } from "../machine-types";
 import { defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
@@ -48,3 +49,7 @@ export function createPromiseMachine<T, A, E extends Error = Error>(
   return promiseMachine;
 }
 export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
+export type PromiseStates = PromiseMachine["def"]["states"];
+export type PromiseTransitions = PromiseMachine["def"]["transitions"];
+export type PromiseStateKey = keyof PromiseStates;
+export type PromiseEventKey = FlatEventKeys<PromiseStates, PromiseTransitions>;

@@ -5,7 +5,7 @@ import {
   StateMachine,
   StateMachineEvent,
   TransitionConfig,
-} from "./types";
+} from "./machine-types";
 
 export const MachineSymbol = Symbol("Machine");
 

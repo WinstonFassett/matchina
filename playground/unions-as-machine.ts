@@ -1,4 +1,4 @@
-import { MatchboxConfig, MatchboxFromFactory, matchboxFactory } from "../src/matchbox-factory";
+import { MatchboxConfig, MatchboxFromFactory, matchboxFactory } from "../src/matchbox";
 
 export const defineStates = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "key");
 export const defineEvents = <T extends MatchboxConfig>(config: T) => matchboxFactory(config, "type");

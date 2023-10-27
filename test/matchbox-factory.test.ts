@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchboxFactory } from "../src/matchbox-factory";
+import { matchboxFactory } from "../src/matchbox";
 
 describe("matchboxFactory", () => {
   it("should create a matchboxFactory with correct keys", () => {

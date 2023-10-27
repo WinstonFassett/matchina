@@ -1,8 +1,4 @@
-import {
-  matchboxFactory,
-  MatchboxConfig,
-  MatchboxFactory,
-} from "./matchbox-factory";
+import { matchboxFactory, MatchboxConfig, MatchboxFactory } from "./matchbox";
 
 export type StatesFactory<StatesConfig extends MatchboxConfig> =
   MatchboxFactory<StatesConfig, "key">;

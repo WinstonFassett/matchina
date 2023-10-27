@@ -1,4 +1,4 @@
-export * from "./matchbox-factory";
+export * from "./matchbox";
 export * from "./states";
 export * from "./machine";
 export * from "./extras/on-update";

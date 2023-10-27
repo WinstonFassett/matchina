@@ -5,9 +5,9 @@ import {
   MatchboxFromConfig,
   Matchers,
   matchboxFactory,
-} from "../matchbox-factory";
+} from "../matchbox";
 import { StateFromFactory, StatesFactory } from "../states";
-import { StateMachine, TransitionConfig } from "../types";
+import { StateMachine, TransitionConfig } from "../machine-types";
 import { onUpdate } from "./on-update";
 
 export type Effect = MatchboxFromConfig<any, "effect">;

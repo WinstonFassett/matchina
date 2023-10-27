@@ -3,15 +3,15 @@
 /* eslint-disable */
 
 import { StatesFactory } from "../states";
+import { FlatMemberUnionToIntersection } from "../types";
 import {
   TransitionConfig,
-  FlatMemberUnionToIntersection,
   StateEventTransitionSenders,
   StateMachine,
   FlatExitStateKeys,
   StateEventTransitionFuncs,
   StatesToEventsToStates,
-} from "../types";
+} from "../machine-types";
 
 export type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];

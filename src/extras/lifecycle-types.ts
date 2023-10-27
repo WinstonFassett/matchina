@@ -5,7 +5,7 @@ import {
   FlatExitStates,
   StateMachineEvent,
   TransitionConfig,
-} from "../types";
+} from "../machine-types";
 
 export type TransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;

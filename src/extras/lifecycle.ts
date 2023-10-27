@@ -1,5 +1,5 @@
 import { StatesFactory } from "../states";
-import { StateMachine, TransitionConfig } from "../types";
+import { StateMachine, TransitionConfig } from "../machine-types";
 import {
   StateEventHookConfig,
   StateTransitionHooks,
