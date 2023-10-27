@@ -77,4 +77,15 @@ describe("runEffectsOnUpdate", () => {
       `"Match did not handle effect: 'Notify'"`,
     );
   });
+  it("_ should match all unmatched effects regardless of whether match is exhaustive", () => {
+    const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
+    let didNotify = false;
+    bindEffects(machine, (state) => (state.data as any)?.effects, {
+      _: () => {
+        didNotify = true;
+      },
+    });
+    machine.event.next();
+    expect(didNotify).toBe(true);
+  });
 });

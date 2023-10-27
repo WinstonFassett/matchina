@@ -13,7 +13,9 @@ import { onUpdate } from "./on-update";
 
 export type AnyEffect = MatchboxFromConfig<any, "effect">;
 
-export function defineEffects(config: MatchboxConfig) {
+export function defineEffects<EffectsConfig extends MatchboxConfig>(
+  config: EffectsConfig,
+) {
   return matchboxFactory(config, "effect");
 }
 export function bindEffects<
@@ -51,7 +53,6 @@ function handleEffects<Exhaustive extends boolean = true>(
     : NonExhaustiveMatchers<any>,
   exhaustive = false,
 ) {
-  console.log({ effects });
   if (!effects) {
     return;
   }

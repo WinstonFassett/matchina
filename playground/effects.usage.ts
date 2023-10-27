@@ -23,11 +23,9 @@ const machine = defineMachine(states, {
 bindEffects(machine, 
   state => state.data.effects as any,
   {
-  Notify: m => console.log('NOTIFY', m),
-  _: () => {
-    console.log("stub");
-  },
-});
+    Notify: m => console.log('NOTIFY', m),  
+  }
+);
 
 
 const checkState = () => console.log({ state: machine.getState().key, effects: machine.getState().data.effects.map(({ effect }) => effect) })
