@@ -1,4 +1,4 @@
-import { Expand } from "./types";
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #region Config
 export type MatchboxConfig = {
@@ -94,7 +94,7 @@ export type MatchboxFactoryValues<Config extends MatchboxFactory<any, any>> = {
 export type MatchboxFromConfig<
   Config extends MatchboxConfig,
   TagKey extends string = "tag",
-> = Matchbox<Config, TagKey> & { [K in TagKey]: string };
+> = Matchbox<Config, TagKey>;
 
 export type MatchboxFromFactory<
   F extends MatchboxFactory<any, any>,
