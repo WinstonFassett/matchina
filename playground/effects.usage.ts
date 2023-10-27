@@ -21,7 +21,7 @@ const machine = defineMachine(states, {
 }).create(states.Idle());
 
 bindEffects(machine, 
-  state => state.data.effects,
+  state => state.data.effects as any,
   {
   Notify: m => console.log('NOTIFY', m),
   _: () => {
