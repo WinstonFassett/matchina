@@ -1,7 +1,7 @@
 import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/extras/promise";
 import { defineStates as states } from "../src/states";
-import { delayer } from "../test/delay";
+import { delayer } from "../src/extras/delay";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
 const submachine = (statesConfig: any, transitionsConfig: any) => ({

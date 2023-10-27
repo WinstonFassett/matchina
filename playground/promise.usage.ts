@@ -1,4 +1,4 @@
-import { delay } from "../test/delay";
+import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
 import { makeZen } from "../src/extras/zen";
 
