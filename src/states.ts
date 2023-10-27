@@ -1,4 +1,9 @@
-import { matchboxFactory, MatchboxConfig, MatchboxFactory } from "./matchbox";
+import {
+  matchboxFactory,
+  MatchboxConfig,
+  MatchboxFactory,
+  MatchboxFromFactory,
+} from "./matchbox";
 
 export type StatesFactory<StatesConfig extends MatchboxConfig> =
   MatchboxFactory<StatesConfig, "key">;
@@ -6,7 +11,7 @@ export type StatesFactory<StatesConfig extends MatchboxConfig> =
 export type StateFromFactory<
   States extends StatesFactory<any>,
   K extends keyof States = keyof States,
-> = ReturnType<States[K]>;
+> = MatchboxFromFactory<States, K>;
 
 export function defineStates<StatesConfig extends MatchboxConfig>(
   config: StatesConfig,
