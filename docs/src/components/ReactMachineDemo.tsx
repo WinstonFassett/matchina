@@ -9,7 +9,7 @@ const delayedAdd = createPromiseMachine(
 
 export function ReactMachineDemo({}) {
   const [state, machine] = useMachine(withSubscribe(delayedAdd))
-  return <div className="m-3">
+  return <div className="bg">
     <div>The state is {state.key}</div>
     {state.match({
       Idle: () => <button onClick={() => machine.send("execute", 1,1)}>Add 1+1</button>,
