@@ -29,7 +29,7 @@ export type StateTransitionHooks<
       // target state
       StateFromFactory<States>
     >,
-  ) => any;
+  ) => void;
   enter?: (
     change: StateMachineEvent<
       States,
@@ -40,7 +40,7 @@ export type StateTransitionHooks<
       // to this state
       StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>
     >,
-  ) => any;
+  ) => void;
 };
 
 type On<
