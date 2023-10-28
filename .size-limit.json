@@ -1,29 +1,56 @@
 [
   {
+    "name": "matchbox",
     "path": "dist/index.mjs",
     "import": "{ matchboxFactory }"
   },
   {
+    "name": "wrap-method",
     "path": "dist/index.mjs",
-    "import": "{ defineStates, defineEffects }"
+    "import": "{ wrapMethod }"
   },
   {
+    "name": "states",
+    "path": "dist/index.mjs",
+    "import": "{ defineStates }"
+  },
+  {
+    "name": "machine",
     "path": "dist/index.mjs",
     "import": "{ defineMachine }"
   },
   {
+    "name": "on-update",
     "path": "dist/index.mjs",
-    "import": "{ onLifecycle }"
+    "import": "{ onUpdate }"
   },
   {
-    "path": "dist/index.mjs",
-    "import": "{ makeZen }"
-  },
-  {
+    "name": "promise",
     "path": "dist/index.mjs",
     "import": "{ createPromiseMachine }"
   },
   {
+    "name": "effects",
+    "path": "dist/index.mjs",
+    "import": "{ defineEffects, bindEffects }"
+  },
+  {
+    "name": "lifecycle",
+    "path": "dist/index.mjs",
+    "import": "{ onLifecycle }"
+  },
+  {
+    "name": "zen",
+    "path": "dist/index.mjs",
+    "import": "{ makeZen }"
+  },
+  {
+    "name": "machine promise lifecycle zen",
+    "path": "dist/index.mjs",
+    "import": "{ createPromiseMachine, onLifecycle, makeZen }"
+  },
+  {
+    "name": "full",
     "path": "dist/index.mjs"
   }
 ]
