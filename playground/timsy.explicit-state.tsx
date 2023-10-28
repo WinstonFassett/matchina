@@ -1,7 +1,5 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { StateFromFactory, defineStates } from "../src/states";
-import type { JSX } from "react";
 
 const states = defineStates({
   NOT_LOADED: () => ({}),

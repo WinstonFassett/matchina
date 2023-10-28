@@ -1,7 +1,6 @@
 import React from "react";
-import { useState } from "react";
-import { StateFromFactory, defineStates } from "../src/states";
 import { defineMachine } from "../src";
+import { defineStates } from "../src/states";
 
 type Data = { whatever: true };
 
