@@ -10,5 +10,6 @@ export function useMachine<
   return React.useSyncExternalStore(
     useCallback(machine.subscribe, [machine]),
     machine.getState,
+    () => machine.getState()
   );
 }
