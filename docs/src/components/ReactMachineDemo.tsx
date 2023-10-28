@@ -10,8 +10,8 @@ const delayedAdd = createPromiseMachine(
 export function ReactMachineDemo({}) {
   const [state, machine] = useMachine(withSubscribe(delayedAdd))
   return <div className="">
-    <div>The state key is <strong>{state.key}</strong></div>
-
+    <p>The state key is <strong>{state.key}</strong></p>
+    <p>The state data is <code>{JSON.stringify(machine.getChange().to.data)}</code></p>
     {state.match({
       Idle: () => <button onClick={() => machine.send("execute", 1,1)}>Add 1+1</button>,
       Pending: () => <div>Waiting...</div>,
@@ -23,7 +23,7 @@ export function ReactMachineDemo({}) {
       {JSON.stringify(state, null, 2)}
     </pre>
 
-    <p>Last change</p>
+    <p>Last change:</p>
     <pre>
       {JSON.stringify(machine.getChange(), null, 2)}
     </pre>
