@@ -1,19 +1,15 @@
 import React, { useCallback } from "react";
-import { StateMachine, TransitionConfig } from "../machine-types";
-import { StatesFactory } from "../states";
-import { onUpdate } from "./on-update";
+import type { TransitionConfig } from "../machine-types";
+import type { StatesFactory } from "../states";
+import type { SubscribableMachine } from "./with-subscribe";
 
 export function useMachine<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
->(machine: StateMachine<States, Transitions>) {
+>(machine: SubscribableMachine<States, Transitions>) {
   return React.useSyncExternalStore(
     useCallback(
-      (listener) =>
-        onUpdate(machine, (commit, updater) => {
-          commit(updater);
-          listener();
-        }),
+      machine.subscribe,
       [machine],
     ),
     machine.getState,
