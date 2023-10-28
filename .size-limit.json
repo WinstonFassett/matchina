@@ -25,6 +25,16 @@
     "import": "{ onUpdate }"
   },
   {
+    "name": "with-subscribe",
+    "path": "dist/index.mjs",
+    "import": "{ withSubscribe }"
+  },
+  {
+    "name": "nanosubscriber",
+    "path": "dist/index.mjs",
+    "import": "{ nanosubscriber }"
+  },
+  {
     "name": "promise",
     "path": "dist/index.mjs",
     "import": "{ createPromiseMachine }"

@@ -8,3 +8,5 @@ export * from "./extras/effects";
 export * from "./extras/zen";
 export * from "./extras/wrap-method";
 export * from "./extras/delay";
+export * from "./extras/nanosubscriber";
+export * from "./extras/with-subscribe";
