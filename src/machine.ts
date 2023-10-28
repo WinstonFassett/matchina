@@ -135,9 +135,10 @@ export function defineMachine<
         },
       };
       const initialize = () =>
-        machine.update((context) => {
+        machine.update((context) => {          
           return {
             ...context,
+            from: context?.to,
             type: InitializeMachine,
             to: initialState,
           };

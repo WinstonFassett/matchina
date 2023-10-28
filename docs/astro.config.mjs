@@ -7,9 +7,9 @@ import react from "@astrojs/react";
 export default defineConfig({
   integrations: [
     starlight({
-      title: "Docs with Tailwind",
+      title: "Matchina",
       social: {
-        github: "https://github.com/withastro/starlight",
+        github: "https://github.com/WinstonFassett/matchina",
       },
       sidebar: [
         {
@@ -22,10 +22,10 @@ export default defineConfig({
             },
           ],
         },
-        {
-          label: "Reference",
-          autogenerate: { directory: "reference" },
-        },
+        // {
+        //   label: "Reference",
+        //   autogenerate: { directory: "reference" },
+        // },
       ],
       customCss: ["./src/tailwind.css"],
     }),
