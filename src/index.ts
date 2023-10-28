@@ -5,3 +5,6 @@ export * from "./extras/on-update";
 export * from "./extras/promise";
 export * from "./extras/lifecycle";
 export * from "./extras/effects";
+export * from "./extras/zen";
+export * from "./extras/wrap-method";
+export * from "./extras/delay";
