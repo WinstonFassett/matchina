@@ -2,8 +2,6 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import tailwind from '@astrojs/tailwind';
 
-import react from "@astrojs/react";
-
 // https://astro.build/config
 export default defineConfig({
 	integrations: [
@@ -17,10 +15,8 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						// Each item here is one entry in the navigation menu.
-						{
-							label: 'Quickstart',
-							link: '/guides/quickstart/'
-						}]
+						{ label: 'Example Guide', link: '/guides/example/' },
+					],
 				},
 				{
 					label: 'Reference',
@@ -30,6 +26,5 @@ export default defineConfig({
 			customCss: ['./src/tailwind.css'],
 		}),
 		tailwind({ applyBaseStyles: false }),
-		react()
 	],
 });
