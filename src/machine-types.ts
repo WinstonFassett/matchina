@@ -19,7 +19,7 @@ export type TransitionConfig<States extends StatesFactory<any>> = {
     [EventKey: AnyEventKey]:
       | keyof States
       | CreateFunc<StateFromFactory<States>>
-      | TwoPhaseTransitionToStateFunc<States, SourceState, typeof EventKey>;
+      | TwoPhaseTransitionToStateFunc<States, SourceState>;
   };
 };
 type TwoPhaseTransitionToStateFunc<
