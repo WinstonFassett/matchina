@@ -7,9 +7,7 @@ import {
   TransitionConfig,
 } from "./machine-types";
 
-export const MachineSymbol = Symbol("Machine");
-
-export const INITIALIZE_EVENT = "__init";
+export const InitializeMachine = "__init";
 
 export function defineMachine<
   States extends StatesFactory<any>,
@@ -127,7 +125,7 @@ export function defineMachine<
         machine.update((context) => {
           return {
             ...context,
-            type: INITIALIZE_EVENT,
+            type: InitializeMachine,
             to: initialState,
           };
         });
