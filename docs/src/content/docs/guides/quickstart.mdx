@@ -6,38 +6,52 @@ import MachineDemo from '../../../components/MachineDemo.astro';
 
 ## Machine Demo
 
+
+This code shows how to:
+- Create a `machine` that manage a promise
+- Subscribe its state with `useMachine`
+- Conditionally render React components `state.match(cases)`
+- Render the machine `state.key` and `state.data`
+- Render the last change using `machine.getChange()`
+- Trigger an event using `machine.send(type, ...args)`
+- Trigger an event using `machine.event[type](...args)`
+- Reset the machine using `machine.reset()`
+
 ### Code 
 
 ```tsx
-import { useMemo } from "react";
 import { createPromiseMachine, withSubscribe } from "matchina";
 import { useMachine } from "matchina/extras/react";
 
-const slowlyAddTwoNumbers = (x: number, y: number) =>
-  new Promise((resolve) => setTimeout(() => resolve(x + y), 1000));
+const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000, name = 'unnamed') =>
+  new Promise((resolve) => setTimeout(() => resolve(x + y), duration));
 
+const machine = withSubscribe(
+  createPromiseMachine(
+    slowlyAddTwoNumbers 
+  )
+)
 
 export function ReactMachineDemo({}) {
-
-  const machine = useMemo(() => withSubscribe(
-    createPromiseMachine(
-      slowlyAddTwoNumbers
-    )
-  ), [])
 
   const [state] = useMachine(machine)
 
   return <div>
-    
+
     <p>
-      Action: 
-
-      {state.match({ // render based on state
-        Idle: () => <button onClick={() => machine.send("execute", 1,1)}>Add 1+1</button>,
-        Pending: () => <span>Waiting...</span>,
-        _: () => <button onClick={machine.reset}>Reset</button>
+      Action: {machine.getState().match({ // render based on state
+        Idle: () => <>
+        <button onClick={() => machine.send("execute", 1,1)}>
+          Add 1+1
+        </button>
+      </>,
+        Pending: ([x, y, duration, name]) => <span>
+          Waiting {duration?.toString() ?? 'default=1000'}ms 
+          to add {x} + {y} 
+          {!!name && `(aka ${name})`}
+        </span>,
+        _: () => <>Done! <button onClick={machine.reset}>Reset</button></>
       })}
-
     </p>
 
     <pre>
@@ -52,11 +66,12 @@ export function ReactMachineDemo({}) {
 }
 
 
+
 ```
 
 ### Preview
 
-<div class="m-3">
+<div class="">
   <MachineDemo />
 </div>
 
