@@ -97,12 +97,12 @@ export type StateMachineDefinition<
   // IDEA: expose transition func here?
   // transition(current: Change): Change;
   transition(
-    lastChange: Event,
+    sourceState: StateFromFactory<States>,
     type: Event["type"],
     params: Event["params"],
     def: StateMachineDefinition<States, Transitions>,
     machine?: StateMachine<States, Transitions>,
-  ): Event | undefined;
+  ): StateFromFactory<States> | undefined;
 };
 // #endregion
 // #region State Machine Event

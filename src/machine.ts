@@ -46,16 +46,16 @@ export function defineMachine<
   }
 
   function transition(
-    lastChange: Event,
+    sourceState: State,
     type: Event["type"],
     params: Event["params"],
     def: StateMachineDefinition<States, Transitions>,
     machine?: StateMachine<States, Transitions>,
-  ): Event | undefined {
+  ): State | undefined {
     const targetFuncOrString =
-      transitions[lastChange.to.key as any]?.[type as any];
+      transitions[sourceState.key as any]?.[type as any];
     if (!targetFuncOrString) {
-      return lastChange;
+      return sourceState;
     }
 
     let targetState: State;
@@ -64,19 +64,14 @@ export function defineMachine<
       const targetStateOrFunc = targetFuncOrString(...params);
       targetState =
         typeof targetStateOrFunc === "function"
-          ? targetStateOrFunc(lastChange.to, type, def, machine)
+          ? targetStateOrFunc(sourceState, type, def, machine)
           : targetStateOrFunc;
     } else {
       targetState = states[targetFuncOrString as keyof typeof states](
         ...params,
       ) as any;
     }
-    return createChange({
-      from: lastChange.to,
-      type,
-      params,
-      to: targetState,
-    });
+    return targetState;
   }
 
   const def: StateMachineDefinition<States, Transitions> = {
@@ -110,9 +105,22 @@ export function defineMachine<
         getChange: () => lastChange,
         event: events,
         send: (type, ...params) => {
-          const next = transition(lastChange, type, params, def, machine);
-          if (next) {
-            return machine.update(() => next);
+          const nextState = transition(
+            lastChange.to,
+            type,
+            params,
+            def,
+            machine,
+          );
+          if (nextState) {
+            return machine.update(() =>
+              createChange({
+                from: lastChange.to,
+                type,
+                params,
+                to: nextState,
+              }),
+            );
           }
         },
         update: (updater) => {
