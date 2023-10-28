@@ -16,6 +16,13 @@ export type SwapFunc<T> = (updater: (event: T) => T) => void;
 
 export type Members<T> = T[keyof T];
 
+export type MemberReturnType<
+  F extends {
+    [key: keyof any]: (...args: any[]) => any;
+  },
+  K extends keyof F,
+> = ReturnType<F[K]>;
+
 export type FlatMemberUnion<T> = {
   [StateKey in keyof T]: T[StateKey];
 }[keyof T];

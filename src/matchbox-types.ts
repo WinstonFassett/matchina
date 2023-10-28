@@ -1,3 +1,5 @@
+import { MemberReturnType } from "./types";
+
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #region Config
@@ -99,5 +101,5 @@ export type MatchboxFromConfig<
 export type MatchboxFromFactory<
   F extends MatchboxFactory<any, any>,
   K extends keyof F = keyof F,
-> = ReturnType<F[K]>;
+> = MemberReturnType<F, K>;
 // #endregion
