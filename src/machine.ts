@@ -69,7 +69,7 @@ export function defineMachine<
           }
         }
       }
-      function getChange(
+      function getNext(
         ...args: Parameters<SendFunction<States, Transitions>>
       ): Event | undefined {
         const [type, ...params] = args;
@@ -105,7 +105,7 @@ export function defineMachine<
         getChange: () => lastChange,
         event: events,
         send: (type, ...params) => {
-          const next = getChange(type, ...params);
+          const next = getNext(type, ...params);
           if (next) {
             return machine.update(() => next);
           }
