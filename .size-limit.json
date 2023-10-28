@@ -40,6 +40,15 @@
     "import": "{ createPromiseMachine }"
   },
   {
+    "name": "react-src",
+    "path": "src/extras/react.ts",
+    "import": "{ useMachine }"
+  },
+  {
+    "name": "react-dist",
+    "path": "dist/extras/react.mjs"
+  },
+  {
     "name": "effects",
     "path": "dist/index.mjs",
     "import": "{ defineEffects, bindEffects }"
