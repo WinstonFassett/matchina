@@ -27,13 +27,15 @@ type TwoPhaseTransitionToStateFunc<
   SourceStateKey extends keyof States = keyof States,
   StateEventKey extends AnyEventKey = AnyEventKey,
   P = any,
+  ExitState extends StateFromFactory<States> = StateFromFactory<States>,
 > = (
   ...args: P[]
 ) => (
-  state: StateFromFactory<States, SourceStateKey>,
+  sourceState: StateFromFactory<States, SourceStateKey>,
   eventType: StateEventKey,
-  machine: StateMachine<States, any>,
-) => StateFromFactory<States>;
+  def: StateMachineDefinition<States, any>,
+  machine?: StateMachine<States, any>,
+) => ExitState;
 // #endregion
 // #region StateMachine
 
@@ -84,10 +86,23 @@ export type StateMachineCreator<
 export type StateMachineDefinition<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
+  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
+    States,
+    Transitions
+  >,
 > = {
   create: StateMachineCreator<States, Transitions>;
   states: States;
   transitions: Transitions;
+  // IDEA: expose transition func here?
+  // transition(current: Change): Change;
+  transition(
+    lastChange: Event,
+    type: Event["type"],
+    params: Event["params"],
+    def: StateMachineDefinition<States, Transitions>,
+    machine?: StateMachine<States, Transitions>,
+  ): Event | undefined;
 };
 // #endregion
 // #region State Machine Event

@@ -14,8 +14,8 @@ const makeMachine = () => {
       done: "Done",
       doneFunc: (done: number) =>
         states[done === 100 ? "Done" : "Initial"](true),
-      doneAdvFunc: (done: string) => (state, event, machine) => {
-        return machine.def.states[done === "DONE" ? "Done" : "Initial"](
+      doneAdvFunc: (done: string) => (_, event, def) => {
+        return def.states[done === "DONE" ? "Done" : "Initial"](
           event === "doneAdvFunc",
         );
       },

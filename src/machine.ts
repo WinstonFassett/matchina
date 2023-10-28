@@ -1,11 +1,10 @@
-import { StateFromFactory, StatesFactory } from "./states";
 import {
-  StateMachineDefinition,
-  SendFunction,
   StateMachine,
+  StateMachineDefinition,
   StateMachineEvent,
   TransitionConfig,
 } from "./machine-types";
+import { StateFromFactory, StatesFactory } from "./states";
 
 export const InitializeMachine = "__init";
 
@@ -45,9 +44,45 @@ export function defineMachine<
       },
     } as Event;
   }
+
+  function transition(
+    lastChange: Event,
+    type: Event["type"],
+    params: Event["params"],
+    def: StateMachineDefinition<States, Transitions>,
+    machine?: StateMachine<States, Transitions>,
+  ): Event | undefined {
+    const targetFuncOrString =
+      transitions[lastChange.to.key as any]?.[type as any];
+    if (!targetFuncOrString) {
+      return lastChange;
+    }
+
+    let targetState: State;
+
+    if (typeof targetFuncOrString === "function") {
+      const targetStateOrFunc = targetFuncOrString(...params);
+      targetState =
+        typeof targetStateOrFunc === "function"
+          ? targetStateOrFunc(lastChange.to, type, def, machine)
+          : targetStateOrFunc;
+    } else {
+      targetState = states[targetFuncOrString as keyof typeof states](
+        ...params,
+      ) as any;
+    }
+    return createChange({
+      from: lastChange.to,
+      type,
+      params,
+      to: targetState,
+    });
+  }
+
   const def: StateMachineDefinition<States, Transitions> = {
     states,
     transitions,
+    transition,
     create: (initialState) => {
       let lastChange: any;
       const createSender =
@@ -69,43 +104,13 @@ export function defineMachine<
           }
         }
       }
-      function getNext(
-        ...args: Parameters<SendFunction<States, Transitions>>
-      ): Event | undefined {
-        const [type, ...params] = args;
-        const targetFuncOrString =
-          transitions[lastChange.to.key as any]?.[type as any];
-        if (!targetFuncOrString) {
-          return lastChange;
-        }
-
-        let targetState: State;
-
-        if (typeof targetFuncOrString === "function") {
-          const targetStateOrFunc = targetFuncOrString(...params);
-          targetState =
-            typeof targetStateOrFunc === "function"
-              ? targetStateOrFunc(lastChange.to, type, machine)
-              : targetStateOrFunc;
-        } else {
-          targetState = states[targetFuncOrString as keyof typeof states](
-            ...params,
-          ) as any;
-        }
-        return createChange({
-          from: lastChange.to,
-          type,
-          params,
-          to: targetState,
-        });
-      }
       const machine: StateMachine<States, Transitions> = {
         def,
         getState: () => lastChange.to,
         getChange: () => lastChange,
         event: events,
         send: (type, ...params) => {
-          const next = getNext(type, ...params);
+          const next = transition(lastChange, type, params, def, machine);
           if (next) {
             return machine.update(() => next);
           }
