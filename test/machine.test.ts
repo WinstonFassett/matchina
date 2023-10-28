@@ -5,7 +5,7 @@ import { defineStates } from "../src/states";
 const makeStates = () =>
   defineStates({
     Initial: { key: "initial" },
-    Done: (ok: boolean) => ({ ok }),
+    Done: (ok: boolean, msg?: string) => ({ ok, msg }),
   });
 const makeMachine = () => {
   const states = makeStates();
@@ -44,7 +44,7 @@ describe("machine instance", () => {
 
   describe("states", () => {
     const machine = makeMachine();
-    it("can match", () => {
+    it("match with parameterized handlers", () => {
       expect(
         machine.def.states.Initial().match({
           Initial: () => 100,
@@ -63,6 +63,12 @@ describe("machine instance", () => {
           InvalidKey: () => 1,
         } as any),
       ).toThrow();
+
+      expect(
+        machine.def.states.Done(true, 'test message').match({
+          Done: (ok) => ok,
+        }, false)        
+      ).toStrictEqual({ ok: true, msg: 'test message' });
     });
   });
   describe("update()", () => {
