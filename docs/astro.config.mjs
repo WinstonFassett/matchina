@@ -8,6 +8,9 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Matchina",
+      editLink: {
+				baseUrl: 'https://github.com/winstonfassett/matchina/edit/main/docs/',
+			},
       social: {
         github: "https://github.com/WinstonFassett/matchina",
       },
