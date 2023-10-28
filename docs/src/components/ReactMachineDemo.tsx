@@ -2,22 +2,33 @@ import { useMemo } from "react";
 import { createPromiseMachine, withSubscribe } from "../../../src";
 import { useMachine } from "../../../src/extras/react";
 
+const slowlyAddTwoNumbers = (x: number, y: number) =>
+  new Promise((resolve) => setTimeout(() => resolve(x + y), 1000));
+
+
 export function ReactMachineDemo({}) {
-  // Create machine
-  const machine = useMemo(() => withSubscribe(createPromiseMachine(
-    (x: number, y: number) =>
-      new Promise((resolve) => setTimeout(() => resolve(x + y), 1000)),
-  )), [])
-  // useMachine
+
+  const machine = useMemo(() => withSubscribe(
+    createPromiseMachine(
+      slowlyAddTwoNumbers
+    )
+  ), [])
+
   const [state] = useMachine(machine)
-  return <div className="">
+
+  return <div>
+
     <p>
-      Action: {state.match({ // render based on state
+      Action: 
+
+      {state.match({ // render based on state
         Idle: () => <button onClick={() => machine.send("execute", 1,1)}>Add 1+1</button>,
-        Pending: () => <span>Waiting...</span>,
+        Pending: () => <span>Waiting 1000ms</span>,
         _: () => <button onClick={machine.reset}>Reset</button>
       })}
+
     </p>
+
     <pre>
       {JSON.stringify({
         "Current State Key": state.key,
@@ -25,5 +36,6 @@ export function ReactMachineDemo({}) {
         "Last Change": machine.getChange()
       }, null, 2)}
     </pre>
+
   </div>;
 }
