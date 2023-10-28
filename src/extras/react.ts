@@ -8,10 +8,7 @@ export function useMachine<
   Transitions extends TransitionConfig<States>,
 >(machine: SubscribableMachine<States, Transitions>) {
   return React.useSyncExternalStore(
-    useCallback(
-      machine.subscribe,
-      [machine],
-    ),
+    useCallback(machine.subscribe, [machine]),
     machine.getState,
   );
 }
