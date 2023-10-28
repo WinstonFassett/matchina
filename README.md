@@ -182,6 +182,7 @@ console.log(zenFetch.state)
 
 - [timsy](https://github.com/christianalfoni/timsy)
 - [safety-match](https://github.com/suchipi/safety-match)
+- [`XState`](https://github.com/statelyai/xstate)
 
 ## License
 
