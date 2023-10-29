@@ -2,7 +2,8 @@ import { defineMachine } from "../machine";
 import { defineStates } from "../states";
 import { onLifecycle } from "../extras/lifecycle";
 import { makeZen } from "../extras/zen";
-import { MatchboxConfig } from "../matchbox-types";
+import { MatchboxConfig, MatchboxSpec } from "../matchbox-types";
+import { EventExitStatesIntersection, FlatExitStateKeys, StateEventTransitionFuncs } from "../machine-types";
 
 type FetchConfig = {
   key: string;
@@ -12,80 +13,76 @@ type FetchConfig = {
 };
 type FetchContext = {
   tries: number;
-  error: Error | undefined;
-  data: any;
+  error?: Error | undefined;
+  data?: any;
 };
 
-function defineStatesWithContext<StatesConfig extends MatchboxConfig, Context>(
-  config: StatesConfig
+type PartialPick<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+type ContextAwareStatesConfig<Context> = {
+  [key: string]: undefined | ((...args: any[]) => (context: Context) => any) | object;
+};
+
+type MatchboxConfigForContextAwareStatesConfig<Context, StatesConfig extends ContextAwareStatesConfig<Context>> = {
+  [Key in keyof StatesConfig]: StatesConfig[Key] extends (...args: infer A) => (context: Context) => infer R
+    ? (context: Context, ...args: A) => R
+    : StatesConfig[Key] extends undefined
+    ? (context: Context) => Context
+    : (context: Context) => Context;
+}
+//  & { [key: string]: ((context: Context, ...args: any[]) => any) | undefined };
+
+function defineStatesWithContext<Context, Config extends ContextAwareStatesConfig<Context>>(
+  initialContext: Context,
+  config: Config
 ) {
-  const statesWithoutContext = defineStates(config)
-  /* 
-  Need to return something that:
-  - has the same keys as states
-  - somehow adds context to the keyed function args
-  - or maybe there's an extra callback somewhere
-  
-  usage would be something like
-
-  const statesWithContext = defineStatesWithContext({ tries: 0 }, {
-    Idle: (context) => context,
-    Pending: (context, tries) => ({ ...context, tries }),
-    Rejected: (context, error) => ({ ...context, error }),
-    Resolved: (context, data) => ({ ...context, data }),
-  })
-
-  */
+  const matchboxConfig = {} as MatchboxConfigForContextAwareStatesConfig<Context, Config>
+  for (const key in config) {
+    const state = config[key]
+    if (typeof state === "function") {
+      matchboxConfig[key as keyof Config] = (state as any) as MatchboxConfigForContextAwareStatesConfig<Context, Config>[keyof Config]
+    } else {
+      matchboxConfig[key as keyof Config] = state as any
+    }
+  }
+  return defineStates(matchboxConfig)
 }
 
 export function createFetchMachine(
   config: Partial<FetchConfig> & Pick<FetchConfig, "url" | "key">,
-  fetchContext: Partial<FetchContext> = {},
+  initialContext: Partial<FetchContext> = {},
 ) {
   const fullConfig = {
     ...config,
     maxRetries: config.maxTries ?? 3,
     fetch: config.fetch ?? fetch,
   };
-  const states = defineStates({
-    Testy: undefined,
-    Idle: (context: Partial<FetchContext>) => context,
-    Pending: (context: Partial<FetchContext> & Pick<FetchContext, "tries">) =>
-      context,
-    Rejected: (context: Partial<FetchContext>, error: Error) => ({
-      ...context,
-      error,
-    }),
-    Resolved: (context: Partial<FetchContext>, data: any) => ({
-      ...context,
-      data,
-      // always clear retries and error on success
-      retries: 0,
-      error: undefined,
-    }),
-    Cancelled: (context: Partial<FetchContext>) => context,
-    CannotRetry: (context: Partial<FetchContext>) => context,
-    TimedOut: (context: Partial<FetchContext>) => context,
-    // would be nice to add Cancelled state
-    // Invalid/Suspended state when retries exceeded? Or just back to idle?
-  });
+  const states = defineStatesWithContext({ tries: 0, ...initialContext } as FetchContext, {
+    Idle: undefined,
+    Pending: () => context => ({ ...context, tries: context.tries+1 }),
+    Rejected: (error: Error) => context => ({ ...context, error }),
+    Resolved: (data: any) => context => ({ ...context, data, tries: 0 }),
+    Cancelled: undefined,
+    CannotRetry: undefined,
+    TimedOut: undefined,  
+  })
+  
   const Machine = defineMachine(states, {
-    Testy: { test: "Idle" },
     Idle: {
       // eslint-disable-next-line unicorn/consistent-function-scoping
-      execute: () => (from) => states.Pending({ tries: 0, ...from.data }),
+      execute: () => ({ data }) => states.Pending(data),
     },
-    Pending: {
-      resolve: (data: any) => (from) => states.Resolved(from.data, data),
-      reject: (error: Error) => (from) => states.Rejected(from.data, error),
+    Pending: {     
+      resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
+      reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
     },
-    Resolved: {},
     Rejected: {},
+    Resolved: {},
     Cancelled: {},
     CannotRetry: {},
-    TimedOut: {}
+    TimedOut: {}    
   });
-  const initialState = states.Idle(fetchContext);
+  const initialState = states.Idle({ tries: 0 });
   const machine = Machine.create(initialState);
   const promiseMachine = Object.assign(machine, {
     promise: undefined as undefined | Promise<any>,
@@ -118,40 +115,35 @@ export function createFetchMachine(
       },
     },
   });
-
-  // type PromiseMachine = typeof promiseMachine;
-  // type PromiseTransitionExits = EventExitStatesIntersection<
-  //   typeof promiseMachine.def.states,
-  //   typeof promiseMachine.def.transitions
-  // >;
-  // type PromiseExitKeys = FlatExitStateKeys<
-  //   typeof promiseMachine.def.states,
-  //   typeof promiseMachine.def.transitions
-  // >; // Idle. Should have everything
-  // type PromiseTransitionFuncs = StateEventTransitionFuncs<
-  //   typeof promiseMachine.def.states,
-  //   typeof promiseMachine.def.transitions
-  // >; // Idle. Should have everything
-  // type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
-  // type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending
-  // type X = PromiseTransitionExits["test"]["key"]; // Idle
-
-  return promiseMachine;
+  return promiseMachine
 }
 
+
 function testFetchMachine() {
-  const m = makeZen(
-    createFetchMachine(
-      {
-        key: "test",
-        url: "https://example.com",
-        maxTries: 3,
-      },
-      { tries: 2 },
-    ),
-  );
-  m.execute(); // meh this is not great. machine should manage this.
-  // maybe this should be transition logic and not lifecycle?
-  // m.reject(m.getState)
+  const machine = createFetchMachine({
+    key: "test",
+    url: "https://example.com",
+    maxTries: 3,
+  }, { tries: 2 })
+
+  const m = makeZen(machine);
+  m.execute();
+
+  type PromiseMachine = typeof machine;
+  type PromiseTransitionExits = EventExitStatesIntersection<
+    typeof machine.def.states,
+    typeof machine.def.transitions
+  >;
+  type PromiseExitKeys = FlatExitStateKeys<
+    typeof machine.def.states,
+    typeof machine.def.transitions
+  >; // Idle. Should have everything
+  type PromiseTransitionFuncs = StateEventTransitionFuncs<
+    typeof machine.def.states,
+    typeof machine.def.transitions
+  >; // Idle. Should have everything
+  type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
+  type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending
+  
 }
 testFetchMachine();
