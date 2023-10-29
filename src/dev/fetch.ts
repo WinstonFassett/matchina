@@ -37,7 +37,7 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
   initialContext: Context,
   config: Config
 ) {
-  const matchboxConfig = {} as any //as MatchboxConfigForContextAwareStatesConfig<Context, Config>;
+  const matchboxConfig = {} as any //;
   for (const key of Reflect.ownKeys(config)) {
     const stateDef = config[key as any];
     matchboxConfig[key as any] = 
@@ -46,7 +46,7 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
         return stateDef(...args)(context);        
       };
   }
-  return defineStates(matchboxConfig);
+  return defineStates(matchboxConfig as MatchboxConfigForContextAwareStatesConfig<Context, Config>);
 }
 
 
