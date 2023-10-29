@@ -37,6 +37,8 @@ export function createFetchMachine1(
       ...context,
       data,
     }),
+    CannotRetry: (context: Partial<FetchContext>) => context,
+    TimedOut: (context: Partial<FetchContext>) => context,
     // would be nice to add Cancelled state
     // Invalid/Suspended state when retries exceeded? Or just back to idle?
   });
@@ -48,6 +50,8 @@ export function createFetchMachine1(
     },
     Resolved: {},
     Rejected: {},
+    CannotRetry: {},
+    TimedOut: {}
   });
   const initialState = states.Idle(fetchContext);
   const machine = Machine.create(initialState);
@@ -134,6 +138,9 @@ export function createFetchMachine(
     Resolved: (context: Partial<FetchContext>, data: any) => ({
       ...context,
       data,
+      // always clear retries and error on success
+      retries: 0,
+      error: undefined,
     }),
     // would be nice to add Cancelled state
     // Invalid/Suspended state when retries exceeded? Or just back to idle?
