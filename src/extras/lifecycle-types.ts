@@ -72,26 +72,26 @@ type On<
             >,
             // Target State
             AnyStateEvent extends "*"
-              // wildcard event
-              ? FlatExitStates<
+              ? // wildcard event
+                FlatExitStates<
                   States,
                   TransitionsRawConfig
                 > extends StateFromFactory<States>
                 ? FlatExitStates<States, TransitionsRawConfig>
                 : never
-              // not wildcard event
+              : // not wildcard event
               // if valid exit state
-              : AnyStateEvent extends keyof EventExitStatesIntersection<
+              AnyStateEvent extends keyof EventExitStatesIntersection<
                   States,
                   TransitionsRawConfig
                 >
-              // and returns state from factory
-              ? EventExitStatesIntersection<
+              ? // and returns state from factory
+                EventExitStatesIntersection<
                   States,
                   TransitionsRawConfig
                 >[AnyStateEvent] extends StateFromFactory<States>
-                // then return the union of all possible exit states for that event key
-                ? EventExitStatesIntersection<
+                ? // then return the union of all possible exit states for that event key
+                  EventExitStatesIntersection<
                     States,
                     TransitionsRawConfig
                   >[AnyStateEvent]

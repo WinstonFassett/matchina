@@ -65,10 +65,13 @@ describe("machine instance", () => {
       ).toThrow();
 
       expect(
-        machine.def.states.Done(true, 'test message').match({
-          Done: (ok) => ok,
-        }, false)        
-      ).toStrictEqual({ ok: true, msg: 'test message' });
+        machine.def.states.Done(true, "test message").match(
+          {
+            Done: (ok) => ok,
+          },
+          false,
+        ),
+      ).toStrictEqual({ ok: true, msg: "test message" });
     });
   });
   describe("update()", () => {

@@ -17,6 +17,6 @@ export function nanosubscriber<T>(): [Subscribe<T>, Emit<T>, Listen<T>[]] {
         listener(value);
       }
     },
-    listeners
-  ]
+    listeners,
+  ];
 }
