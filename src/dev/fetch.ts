@@ -1,7 +1,8 @@
 import { defineMachine } from "../machine";
 import { defineStates } from "../states";
-import { onLifecycle } from "./lifecycle";
-import { makeZen } from "./zen";
+import { onLifecycle } from "../extras/lifecycle";
+import { makeZen } from "../extras/zen";
+import { MatchboxConfig } from "../matchbox-types";
 
 type FetchConfig = {
   key: string;
@@ -14,6 +15,28 @@ type FetchContext = {
   error: Error | undefined;
   data: any;
 };
+
+function defineStatesWithContext<StatesConfig extends MatchboxConfig, Context>(
+  config: StatesConfig
+) {
+  const statesWithoutContext = defineStates(config)
+  /* 
+  Need to return something that:
+  - has the same keys as states
+  - somehow adds context to the keyed function args
+  - or maybe there's an extra callback somewhere
+  
+  usage would be something like
+
+  const statesWithContext = defineStatesWithContext({ tries: 0 }, {
+    Idle: (context) => context,
+    Pending: (context, tries) => ({ ...context, tries }),
+    Rejected: (context, error) => ({ ...context, error }),
+    Resolved: (context, data) => ({ ...context, data }),
+  })
+
+  */
+}
 
 export function createFetchMachine(
   config: Partial<FetchConfig> & Pick<FetchConfig, "url" | "key">,
