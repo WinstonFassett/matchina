@@ -60,6 +60,28 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
 //   }
 // }
 
+function withDataContext<Context, Transitions extends Record<string, any>>(defaultContext: Context, transitions: Transitions): {
+  [Key in keyof Transitions]: Transitions[Key] extends (...args: infer A) => (context: Context) => infer R
+    ? (context: Context, ...args: A) => R
+    : Transitions[Key] extends undefined
+    ? (context: Context) => Context
+    : (context: Context) => Context;
+} {
+  const wrapped: any = {};
+  for (const key of Object.keys(transitions)) {
+    const transition = transitions[key];
+    if (typeof transition === "function") {
+      wrapped[key] = (...args: any[]) => ({ data: context }: { data: Context }) => transition(context, ...args);
+    } 
+    // else if (typeof transition === "string") {
+    //   wrapped[key] = (context: Context) => (context as any)[transition];
+    // } 
+    else {
+      wrapped[key] = (context: Context) => context;
+    }
+  }
+  return wrapped
+}
 
 export function createFetchMachine(
   config: Partial<FetchConfig> & Pick<FetchConfig, "url" | "key">,
@@ -90,6 +112,8 @@ export function createFetchMachine(
   //   }
   // }
 
+
+
   const Machine = defineMachine(states, {
     Idle: {
       // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -99,15 +123,12 @@ export function createFetchMachine(
       resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
       reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
       another: (error: Error) => from => states.Rejected(from.data, error) 
-      // should have same effect as reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
-      // should return type (...args: Parameters<States["Rejected"]>) => (StateFromFactory<States>) => states.Rejected(context, ...args)
-      /*
-      let's implement it
-
-      function populate<States extends StatesFactory<any>, T extends keyof States>(state: States[T], key: T) {
-      }
-      */
     },
+    // Pending: withDataContext(initialContext, {
+    //   resolve: (data: any) => states.Resolved,
+    //   reject: (error: Error) => states.Rejected,
+    //   another: (error: Error) => states.Rejected,
+    // }),
     Rejected: {},
     Resolved: {},
     Cancelled: {},
