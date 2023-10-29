@@ -18,6 +18,7 @@ export function defineMachine<
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
 
+  // Todo: lift this up
   function createChange({
     type,
     params,
