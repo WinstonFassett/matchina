@@ -144,6 +144,7 @@ export type StateEventTransitionFuncs<
 > = {
   [StateKey in keyof Transitions]: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
+      // when it is a state key, return function that returns the state for that key
       ? (
           ...args: Parameters<States[Transitions[StateKey][EventKey]]>
         ) => StateFromFactory<States, Transitions[StateKey][EventKey]>
@@ -152,15 +153,18 @@ export type StateEventTransitionFuncs<
           StateKey,
           EventKey
         >
+      // when it is two-phase function
       ? (
-          ...args: Parameters<Transitions[StateKey][EventKey]>
-        ) => ReturnType<Transitions[StateKey][EventKey]>
+          ...args: Parameters<Transitions[StateKey][EventKey]> // take parameters of first phase
+        ) => ReturnType<ReturnType<Transitions[StateKey][EventKey]>> // return return type of second phase
+      // not two phase
       : Transitions[StateKey][EventKey] extends CreateFunc<
           StateFromFactory<States>
         >
       ? (
           ...args: Parameters<Transitions[StateKey][EventKey]>
         ) => StateFromFactory<States> & { key: Transitions[StateKey][EventKey] }
+      // not a function
       : never;
   };
 };
