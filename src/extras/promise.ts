@@ -3,12 +3,12 @@ import { FlatEventKeys } from "../machine-types";
 import { defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
-export function createPromiseMachine<T, A extends any[], E extends Error = Error>(
-  makePromise?: (...args: A) => Promise<T>,
+export function createPromiseMachine<T, A, E extends Error = Error>(
+  makePromise?: (...args: A[]) => Promise<T>,
 ) {
   const states = defineStates({
     Idle: undefined,
-    Pending: (...params: A) => params,
+    Pending: (...params: A[]) => params,
     Rejected: (error: E) => error,
     Resolved: (data: T) => data,
   });
@@ -25,7 +25,7 @@ export function createPromiseMachine<T, A extends any[], E extends Error = Error
   const machine = Machine.create(initialState);
   if (makePromise) {
     const _makePromise = makePromise;
-    function execute(params: A) {
+    function execute(params: A[]) {
       const promise = _makePromise(...params);
       promiseMachine.promise = promise;
       promiseMachine.done = promise
@@ -36,7 +36,7 @@ export function createPromiseMachine<T, A extends any[], E extends Error = Error
       commit((before) => {
         const after = updater(before);
         if (after.type === "execute") {
-          execute(after.params as A);
+          execute(after.params as A[]);
         }
         return after;
       });
