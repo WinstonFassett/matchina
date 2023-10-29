@@ -1,5 +1,5 @@
 import { defineMachine } from "../machine";
-import { defineStates } from "../states";
+import { StateFromFactory, StatesFactory, defineStates } from "../states";
 import { onLifecycle } from "../extras/lifecycle";
 import { makeZen } from "../extras/zen";
 import { MatchboxConfig, MatchboxSpec } from "../matchbox-types";
@@ -32,21 +32,34 @@ type MatchboxConfigForContextAwareStatesConfig<Context, StatesConfig extends Con
 }
 //  & { [key: string]: ((context: Context, ...args: any[]) => any) | undefined };
 
+
 function defineStatesWithContext<Context, Config extends ContextAwareStatesConfig<Context>>(
   initialContext: Context,
   config: Config
 ) {
-  const matchboxConfig = {} as MatchboxConfigForContextAwareStatesConfig<Context, Config>
-  for (const key in config) {
-    const state = config[key]
-    if (typeof state === "function") {
-      matchboxConfig[key as keyof Config] = (state as any) as MatchboxConfigForContextAwareStatesConfig<Context, Config>[keyof Config]
-    } else {
-      matchboxConfig[key as keyof Config] = state as any
-    }
+  const matchboxConfig = {} as any //as MatchboxConfigForContextAwareStatesConfig<Context, Config>;
+  for (const key of Reflect.ownKeys(config)) {
+    const stateDef = config[key as any];
+    matchboxConfig[key as any] = 
+      typeof stateDef !== "function" ? stateDef :
+      (context: Context, ...args: any[]) => {
+        return stateDef(...args)(context);        
+      };
   }
-  return defineStates(matchboxConfig)
+  return defineStates(matchboxConfig);
 }
+
+
+// function assign<States extends StatesFactory<any>, T>(key: keyof C) {
+//   return (state: any) => (context: C, data: T) => state(context, data)[key];
+// }
+  
+// const assigner = <T extends object, P, R>(key: keyof T) => {
+//   return (fn: (...args: P[]) => R) =>{
+//     return (...args: P[]) => (current: T) => Object.assign(current, { [key]: fn(...args)})
+//   }
+// }
+
 
 export function createFetchMachine(
   config: Partial<FetchConfig> & Pick<FetchConfig, "url" | "key">,
@@ -67,6 +80,16 @@ export function createFetchMachine(
     TimedOut: undefined,  
   })
   
+  function populate1<C, State extends (...args: any[]) => any, T extends keyof ReturnType<State>>(state: State, key: T) {
+    return (context: C, ...args: Parameters<State>) => (context: any) => state(context, ...args)[key];
+  }
+
+  // function mergeData<C, R>(fn: (data: C, ...args: any[]) => R, ...args: any[]) {
+  //   return ({ data }: { data: C }) => {
+  //     return fn()
+  //   }
+  // }
+
   const Machine = defineMachine(states, {
     Idle: {
       // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -75,6 +98,15 @@ export function createFetchMachine(
     Pending: {     
       resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
       reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
+      another: (error: Error) => from => states.Rejected(from.data, error) 
+      // should have same effect as reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
+      // should return type (...args: Parameters<States["Rejected"]>) => (StateFromFactory<States>) => states.Rejected(context, ...args)
+      /*
+      let's implement it
+
+      function populate<States extends StatesFactory<any>, T extends keyof States>(state: States[T], key: T) {
+      }
+      */
     },
     Rejected: {},
     Resolved: {},
@@ -128,7 +160,7 @@ function testFetchMachine() {
 
   const m = makeZen(machine);
   m.execute();
-
+  m.another(new Error("test"));
   type PromiseMachine = typeof machine;
   type PromiseTransitionExits = EventExitStatesIntersection<
     typeof machine.def.states,
