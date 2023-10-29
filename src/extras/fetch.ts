@@ -3,6 +3,7 @@ import { defineMachine } from "../machine";
 import { defineStates } from "../states";
 import { onLifecycle } from "./lifecycle";
 import { makeZen } from "./zen";
+import { EventExitStatesIntersection, FlatExitStateKeys, StateEventTransitionFuncs, StatesToEventsToStates } from "../machine-types";
 
 type FetchConfig = {
   key: string;
@@ -116,6 +117,7 @@ export function createFetchMachine (config: Partial<FetchConfig> & Pick<FetchCon
     fetch: config.fetch ?? fetch,
   }
   const states = defineStates({
+    Testy: undefined,
     Idle: (context: Partial<FetchContext>) => context,
     Pending: (      
       context: Partial<FetchContext> & Pick<FetchContext, | "retries">,
@@ -132,6 +134,7 @@ export function createFetchMachine (config: Partial<FetchConfig> & Pick<FetchCon
     // Invalid/Suspended state when retries exceeded? Or just back to idle?
   });
   const Machine = defineMachine(states, {
+    Testy: { test: 'Idle'},
     Idle: { execute: () => (from) => states.Pending({ retries: 0, ...from.data }) },
     Pending: {
       resolve: (data: any) => from => states.Resolved(from.data, data),
@@ -154,10 +157,14 @@ export function createFetchMachine (config: Partial<FetchConfig> & Pick<FetchCon
       .catch(machine.event.reject);
   }
   onLifecycle(promiseMachine, {
-    "*": {
+    "Idle": {
       on: {
         execute: {
-          guard: (context) => context.to.data.retries < fullConfig.maxRetries,          
+          guard: (context) => context.to.data.retries < fullConfig.maxRetries,
+          handle(change) {
+            execute(change.to.data)
+            return change
+          },
         },
       }
     },
@@ -169,6 +176,14 @@ export function createFetchMachine (config: Partial<FetchConfig> & Pick<FetchCon
       }
     }
   })
+  type PromiseMachine = typeof promiseMachine;
+  type PromiseTransitionExits = EventExitStatesIntersection<typeof promiseMachine.def.states, typeof promiseMachine.def.transitions>;
+  type PromiseExitKeys = FlatExitStateKeys<typeof promiseMachine.def.states, typeof promiseMachine.def.transitions>; // Idle. Should have everything
+  type PromiseTransitionFuncs = StateEventTransitionFuncs<typeof promiseMachine.def.states, typeof promiseMachine.def.transitions>; // Idle. Should have everything
+  type IdleTransitionFuncs = PromiseTransitionFuncs['Idle'] // Idle. Should have everything
+  type IdleExecute = ReturnType<IdleTransitionFuncs['execute']>['key'] // Pending
+  type X = PromiseTransitionExits['test']['key'] // Idle
+
   return promiseMachine;
 }
 
