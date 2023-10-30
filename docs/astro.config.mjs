@@ -2,10 +2,34 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
-
+// import mdx from '@astrojs/mdx';
+import remarkShikiTwoslash from 'remark-shiki-twoslash';
+console.log({ remarkShikiTwoslash})
 // https://astro.build/config
 export default defineConfig({
+  markdown: {
+    syntaxHighlight: false,
+    remarkPlugins: [
+      [remarkShikiTwoslash, { theme: "dark-plus" }]
+      // '@astrojs/markdown-remark',
+      // {
+      //   syntaxHighlight: false,
+      //   remarkPlugins: [
+      //   ]
+      // },
+    ]
+  },
   integrations: [
+    // mdx({
+    //   syntaxHighlight: 'shiki',
+    //   shikiConfig: { theme: 'dracula' },
+    //   remarkPlugins: [remarkShikiTwoslash.default, 
+    //     // remarkToc
+    //   ],
+    //   // rehypePlugins: [rehypeMinifyHtml],
+    //   // remarkRehype: { footnoteLabel: 'Footnotes' },
+    //   // gfm: false,
+    // }),
     starlight({
       title: "Matchina",
       editLink: {
