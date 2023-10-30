@@ -60,22 +60,33 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
 //   }
 // }
 
-function withDataContext<Context, Transitions extends Record<string, any>>(defaultContext: Context, transitions: Transitions): {
-  [Key in keyof Transitions]: Transitions[Key] extends (...args: infer A) => (context: Context) => infer R
-    ? (context: Context, ...args: A) => R
-    : Transitions[Key] extends undefined
-    ? (context: Context) => Context
-    : (context: Context) => Context;
-} {
+/* 
+FIX THE TYPE SIGNATURE of withDataContext
+
+withDataContext(initialContext, {
+  resolve: states.Resolved,
+  reject: states.Rejected,  
+})
+SHOULD RETURN
+    resolve: ({ data: context }) => return type of states.Resolved,
+    reject: ({ data: context }) =>  return type of states.Rejected,
+  BUT INSTEAD IT RETURNS
+    resolve: (context: Partial<FetchContext>) => Partial<FetchContext>;
+    reject: (context: Partial<FetchContext>) => Partial<FetchContext>;
+*/
+
+function withDataContext<Context, Transitions extends Record<string, any>>(initialContext: Context, transitions: Transitions): {
+  [Key in keyof Transitions]: Transitions[Key] extends (context: Context, ...args: infer A) => infer R
+    ? (...args: A) => R
+    : Transitions[Key];
+} 
+{
   const wrapped: any = {};
   for (const key of Object.keys(transitions)) {
     const transition = transitions[key];
     if (typeof transition === "function") {
-      wrapped[key] = (...args: any[]) => ({ data: context }: { data: Context }) => transition(context, ...args);
-    } 
-    // else if (typeof transition === "string") {
-    //   wrapped[key] = (context: Context) => (context as any)[transition];
-    // } 
+      wrapped[key] = (...args: any[]) => ({ data: initialContext }: { data: Context }) => transition(initialContext, ...args);
+    }     
     else {
       wrapped[key] = (context: Context) => context;
     }
@@ -111,6 +122,18 @@ export function createFetchMachine(
   //     return fn()
   //   }
   // }
+  
+  const PendingWithContext = withDataContext(initialContext, {
+    resolve: states.Resolved,
+    reject: states.Rejected,  
+  })
+  /* SHOULD RETURN
+      resolve: ({ data: context }) => return type of states.Resolved,
+      reject: ({ data: context }) =>  return type of states.Rejected,
+    BUT INSTEAD IT RETURNS
+      resolve: (context: Partial<FetchContext>) => Partial<FetchContext>;
+      reject: (context: Partial<FetchContext>) => Partial<FetchContext>;
+  */
 
 
 
@@ -119,16 +142,16 @@ export function createFetchMachine(
       // eslint-disable-next-line unicorn/consistent-function-scoping
       execute: () => ({ data }) => states.Pending(data),
     },
-    Pending: {     
-      resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
-      reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
-      another: (error: Error) => from => states.Rejected(from.data, error) 
-    },
-    // Pending: withDataContext(initialContext, {
-    //   resolve: (data: any) => states.Resolved,
-    //   reject: (error: Error) => states.Rejected,
-    //   another: (error: Error) => states.Rejected,
-    // }),
+    // Pending: {     
+    //   resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
+    //   reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
+    //   another: (error: Error) => from => states.Rejected(from.data, error) 
+    // },
+    Pending: withDataContext(initialContext, {
+      resolve: states.Resolved,
+      reject: states.Rejected,
+      another: states.Rejected,
+    }),
     Rejected: {},
     Resolved: {},
     Cancelled: {},
