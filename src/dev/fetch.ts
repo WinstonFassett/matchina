@@ -17,8 +17,6 @@ type FetchContext = {
   data?: any;
 };
 
-type PartialPick<T, K extends keyof T> = Partial<T> & Pick<T, K>;
-
 type ContextAwareStatesConfig<Context> = {
   [key: string]: undefined | ((...args: any[]) => (context: Context) => any) | object;
 };
@@ -51,7 +49,8 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
 
 type ContextualDataCreator<Context, P, T> = (context: Context, ...args: P[]) => T;
 
-function withDataContext<Context, Transitions extends Record<string, any>>(initialContext: Context, transitions: Transitions): {
+
+function transitionWithPriorStateData<Context, Transitions extends Record<string, any>>(initialContext: Context, transitions: Transitions): {
   [Key in keyof Transitions]: Transitions[Key] extends ContextualDataCreator<infer Context, infer A, infer R>
     ? (args: A) => R
     : Transitions[Key];
@@ -100,7 +99,7 @@ export function createFetchMachine(
     //   reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
     //   another: (error: Error) => from => states.Rejected(from.data, error) 
     // },
-    Pending: withDataContext(initialContext, {
+    Pending: transitionWithPriorStateData(initialContext, {
       resolve: states.Resolved,
       reject: states.Rejected,
       another: states.Rejected,
@@ -124,6 +123,31 @@ export function createFetchMachine(
       .then(machine.event.resolve)
       .catch(machine.event.reject);
   }
+  /*
+  Might be nice to abbreviate this to:
+  guard(machine, '*', 'execute', (context) => context.tries < fullConfig.maxRetries)
+  lifecycle(machine, {}).guard('Idle', 'execute', (context) => context.tries < fullConfig.maxRetries)
+  before('*', '*', console.log)
+  handle('Idle', 'execute', (change) => {})
+
+  or
+
+  const unguard = machine.guard.Idle.execute((context) => context.tries < fullConfig.maxRetries)
+  const unhandle = handle.Idle.execute((change) => {})
+    
+  How would I implement this?
+
+  If I want individual lifecycle methods, would each of them call onLifecycle?
+  Seems wasteful
+  Or should they find some place to register their lifecycle methods?
+  like somewhere there is a lifecycle. and it can have multiple things
+  this is just one way of registering, maybe there are others
+  maybe they are easier, lol
+  these guards are like machine-level
+  machine.guards = [stateKey, eventKey, guardFn][]
+  hey that's not bad.
+  
+  */
   onLifecycle(promiseMachine, {
     Idle: {
       on: {

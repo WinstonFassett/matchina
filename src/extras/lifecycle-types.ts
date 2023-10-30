@@ -9,6 +9,13 @@ import {
 import { StateFromFactory, StatesFactory } from "../states";
 
 export type TransitionHookExtensions<T> = {
+  guard: (change: T) => boolean;
+  before: (change: T) => any;
+  handle: (change: T) => T | undefined;
+  after: (change: T) => any;
+};
+
+export type PartialTransitionHookExtensions<T> = {
   guard?: (change: T) => boolean;
   before?: (change: T) => any;
   handle?: (change: T) => T | undefined;
@@ -54,7 +61,7 @@ type On<
     ? {
         [AnyStateEvent in
           | FlatEventKeys<States, TransitionsRawConfig>
-          | "*"]?: TransitionHookExtensions<
+          | "*"]?: PartialTransitionHookExtensions<
           StateMachineEvent<
             States,
             TransitionsRawConfig,
@@ -107,7 +114,7 @@ type On<
           | keyof TransitionsRawConfig[StateKey]
           | "*"]?: Event extends "*"
           ? // wildcard event
-            TransitionHookExtensions<
+            PartialTransitionHookExtensions<
               StateMachineEvent<
                 States,
                 TransitionsRawConfig,
@@ -125,7 +132,7 @@ type On<
                 TransitionsRawConfig
               >[StateKey][Event]
             > extends StateFromFactory<States>
-          ? TransitionHookExtensions<
+          ? PartialTransitionHookExtensions<
               StateMachineEvent<
                 States,
                 TransitionsRawConfig,

@@ -13,6 +13,9 @@ import {
   StatesToEventsToStates,
 } from "../machine-types";
 
+type PartialPick<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+
 export type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];

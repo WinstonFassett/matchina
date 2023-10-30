@@ -7,12 +7,20 @@ import {
 } from "./lifecycle-types";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
+type Dispose = () => void
+
+
+type LifecycleApi<T, S, E> = {
+  [Key in keyof TransitionHookExtensions<T>]: (stateKey: S, eventKey: E, fn: TransitionHookExtensions<T>[Key]) => Dispose
+}
+
 export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,
   config: StateEventHookConfig<States, Transitions>,
+  initialize: undefined | ((api: LifecycleApi<ReturnType<StateMachine<States,Transitions>['getChange']>, string, string>) => void)
 ) {
   return onUpdate(machine, lifecycle(config));
 }
@@ -64,7 +72,7 @@ export function lifecycle<
           hooks?.[hookName]?.(handled as any);
         }
       };
-      const runEventHooks = (hookName: keyof TransitionHookExtensions<any>) => {
+      const runEventHooks = (hookName: keyof PartialTransitionHookExtensions<any>) => {
         for (const hooks of eventHooksMaybe) {
           hooks?.[hookName]?.(handled as any);
         }
