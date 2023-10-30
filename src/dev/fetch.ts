@@ -49,35 +49,11 @@ function defineStatesWithContext<Context, Config extends ContextAwareStatesConfi
   return defineStates(matchboxConfig as MatchboxConfigForContextAwareStatesConfig<Context, Config>);
 }
 
-
-// function assign<States extends StatesFactory<any>, T>(key: keyof C) {
-//   return (state: any) => (context: C, data: T) => state(context, data)[key];
-// }
-  
-// const assigner = <T extends object, P, R>(key: keyof T) => {
-//   return (fn: (...args: P[]) => R) =>{
-//     return (...args: P[]) => (current: T) => Object.assign(current, { [key]: fn(...args)})
-//   }
-// }
-
-/* 
-FIX THE TYPE SIGNATURE of withDataContext
-
-withDataContext(initialContext, {
-  resolve: states.Resolved,
-  reject: states.Rejected,  
-})
-SHOULD RETURN
-    resolve: ({ data: context }) => return type of states.Resolved,
-    reject: ({ data: context }) =>  return type of states.Rejected,
-  BUT INSTEAD IT RETURNS
-    resolve: (context: Partial<FetchContext>) => Partial<FetchContext>;
-    reject: (context: Partial<FetchContext>) => Partial<FetchContext>;
-*/
+type ContextualDataCreator<Context, P, T> = (context: Context, ...args: P[]) => T;
 
 function withDataContext<Context, Transitions extends Record<string, any>>(initialContext: Context, transitions: Transitions): {
-  [Key in keyof Transitions]: Transitions[Key] extends (context: Context, ...args: infer A) => infer R
-    ? (...args: A) => R
+  [Key in keyof Transitions]: Transitions[Key] extends ContextualDataCreator<infer Context, infer A, infer R>
+    ? (args: A) => R
     : Transitions[Key];
 } 
 {
@@ -113,29 +89,6 @@ export function createFetchMachine(
     TimedOut: undefined,  
   })
   
-  function populate1<C, State extends (...args: any[]) => any, T extends keyof ReturnType<State>>(state: State, key: T) {
-    return (context: C, ...args: Parameters<State>) => (context: any) => state(context, ...args)[key];
-  }
-
-  // function mergeData<C, R>(fn: (data: C, ...args: any[]) => R, ...args: any[]) {
-  //   return ({ data }: { data: C }) => {
-  //     return fn()
-  //   }
-  // }
-  
-  const PendingWithContext = withDataContext(initialContext, {
-    resolve: states.Resolved,
-    reject: states.Rejected,  
-  })
-  /* SHOULD RETURN
-      resolve: ({ data: context }) => return type of states.Resolved,
-      reject: ({ data: context }) =>  return type of states.Rejected,
-    BUT INSTEAD IT RETURNS
-      resolve: (context: Partial<FetchContext>) => Partial<FetchContext>;
-      reject: (context: Partial<FetchContext>) => Partial<FetchContext>;
-  */
-
-
 
   const Machine = defineMachine(states, {
     Idle: {
