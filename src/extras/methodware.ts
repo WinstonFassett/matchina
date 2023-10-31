@@ -39,3 +39,25 @@ export function methodware<S, K extends keyof S>(
     }
   };
 }
+
+const loggingEnhancer = (originalMethod: Function, ...args: any[]) => {
+  console.log(`Calling method with args: ${JSON.stringify(args)}`);
+  const result = originalMethod(...args);
+  console.log(`Method result: ${JSON.stringify(result)}`);
+  return result;
+};
+const errorHandlingEnhancer = (originalMethod: Function, ...args: any[]) => {
+  try {
+    return originalMethod(...args);
+  } catch (error:any) {
+    console.error(`Error in method: ${error.message}`);
+  }
+};
+const timingEnhancer = (originalMethod: Function, ...args: any[]) => {
+  const start = performance.now();
+  const result = originalMethod(...args);
+  const end = performance.now();
+  console.log(`Method execution time: ${end - start} milliseconds`);
+  return result;
+};
+
