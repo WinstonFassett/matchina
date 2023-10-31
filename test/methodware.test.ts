@@ -1,8 +1,16 @@
-import { test, expect } from "vitest";
-import { MethodEnhancer, methodware, wrapMethod } from "../src/extras/wrap-method";
+import { expect, test } from "vitest";
+import { Func, methodware, wrapMethod } from "../src/extras/methodware";
 
+const doubler = (original: Func, ...args: any[]) => {
+  original(...args);
+  original(...args);
+};
 
-test('wraps and restores method', () => {
+const addTenMore = (original: Func, value?: number) => {
+  original((value ?? 0) + 10);
+};
+
+test("wraps and restores method", () => {
   const subject = {
     value: 1,
     increment() {
@@ -10,12 +18,7 @@ test('wraps and restores method', () => {
     },
   };
 
-  const doubler: MethodEnhancer<typeof subject, 'increment'> = (original) => {
-    original();
-    original();
-  };
-
-  const restore = wrapMethod(subject, 'increment', doubler);
+  const restore = wrapMethod(subject, "increment", doubler);
 
   subject.increment();
 
@@ -29,51 +32,42 @@ test('wraps and restores method', () => {
   expect(subject.value).toBe(4);
 });
 
-test('applies multiple methodware and restores', () => {
+test("applies multiple methodware and restores", () => {
   const subject = {
     value: 1,
-    increment() {
-      this.value++;
+    increment(amount = 1) {
+      console.log("increment", amount);
+      this.value += amount;
     },
   };
 
-  const doubler: MethodEnhancer<typeof subject, 'increment'> = (original) => {
-    original();
-    original();
-  };
-
-  const addTen: MethodEnhancer<typeof subject, 'increment'> = (original) => {
-    original();
-    subject.value += 10;
-  }
-
-  const restore = methodware(subject, 'increment', [doubler, addTen]);
+  const restore = methodware(subject, "increment", [addTenMore, doubler]);
 
   subject.increment();
 
   // The increment method has been doubled and then 10 was added
-  expect(subject.value).toBe(13);
+  expect(subject.value).toBe(21);
 
   restore();
   subject.increment();
 
   // The increment method is normal again
-  expect(subject.value).toBe(14);
+  expect(subject.value).toBe(22);
 });
 
-test('logging enhancer', async () => {
-    const subject = {
-      add: (num1: number, num2: number) => {
-        return num1 + num2;
-      }    
-    }    
-    expect(subject.add(2, 3)).toBe(5)
-    
-    const restore = methodware(subject, 'add', [
-      (orig, num1, num2) => orig(num1, num2)*10
-    ]);    
-    expect(subject.add(2, 3)).toBe(50);
+test("logging enhancer", () => {
+  const subject = {
+    add: (num1: number, num2: number) => {
+      return num1 + num2;
+    },
+  };
+  expect(subject.add(2, 3)).toBe(5);
 
-    restore()
-    expect(subject.add(2, 3)).toBe(5)
+  const restore = methodware(subject, "add", [
+    (orig, num1, num2) => orig(num1, num2) * 10,
+  ]);
+  expect(subject.add(2, 3)).toBe(50);
+
+  restore();
+  expect(subject.add(2, 3)).toBe(5);
 });

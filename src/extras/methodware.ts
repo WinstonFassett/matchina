@@ -2,10 +2,16 @@ export type MethodEnhancer<S, K extends keyof S> = S[K] extends (
   ...args: infer A
 ) => infer R
   ? (original: Method<S, K>, ...args: A) => R
+  : S[K] extends (...args: any[]) => void
+  ? (original: Method<S, K>, ...args: any[]) => void
   : never;
 
-type Method<S, K extends keyof S> = S[K] extends (...args: infer A) => infer R
+export type Method<S, K extends keyof S> = S[K] extends (
+  ...args: infer A
+) => infer R
   ? (...args: A) => R
+  : S[K] extends (...args: any[]) => void
+  ? (...args: any[]) => void
   : never;
 
 export function wrapMethod<S, K extends keyof S>(
@@ -40,20 +46,22 @@ export function methodware<S, K extends keyof S>(
   };
 }
 
-const loggingEnhancer = (originalMethod: Function, ...args: any[]) => {
+export type Func<A = any, R = any> = (...args: A[]) => R;
+
+const loggingEnhancer = (originalMethod: Func, ...args: any[]) => {
   console.log(`Calling method with args: ${JSON.stringify(args)}`);
   const result = originalMethod(...args);
   console.log(`Method result: ${JSON.stringify(result)}`);
   return result;
 };
-const errorHandlingEnhancer = (originalMethod: Function, ...args: any[]) => {
+const errorHandlingEnhancer = (originalMethod: Func, ...args: any[]) => {
   try {
     return originalMethod(...args);
-  } catch (error:any) {
+  } catch (error: any) {
     console.error(`Error in method: ${error.message}`);
   }
 };
-const timingEnhancer = (originalMethod: Function, ...args: any[]) => {
+const timingEnhancer = (originalMethod: Func, ...args: any[]) => {
   const start = performance.now();
   const result = originalMethod(...args);
   const end = performance.now();
@@ -61,3 +69,11 @@ const timingEnhancer = (originalMethod: Function, ...args: any[]) => {
   return result;
 };
 
+const beforeAfterEnhancer = (originalMethod: Func, before: Func) => {
+  return (...args: any[]) => {
+    const after = before(...args);
+    const result = originalMethod(...args);
+    after?.(result);
+    return result;
+  };
+};

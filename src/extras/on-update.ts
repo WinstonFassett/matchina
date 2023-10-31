@@ -1,5 +1,5 @@
 import { SwapFunc } from "../types";
-import { MethodEnhancer, wrapMethod } from "./wrap-method";
+import { MethodEnhancer, wrapMethod } from "./methodware";
 
 export function onUpdate<
   M extends Record<string, any> & {
