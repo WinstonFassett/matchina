@@ -1,18 +1,22 @@
 import { StatesFactory } from "../states";
 import { StateMachine, TransitionConfig } from "../machine-types";
 import {
+  PartialTransitionHookExtensions,
   StateEventHookConfig,
   StateTransitionHooks,
   TransitionHookExtensions,
 } from "./lifecycle-types";
 import { UpdateEnhancer, onUpdate } from "./on-update";
 
-type Dispose = () => void
-
+type Dispose = () => void;
 
 type LifecycleApi<T, S, E> = {
-  [Key in keyof TransitionHookExtensions<T>]: (stateKey: S, eventKey: E, fn: TransitionHookExtensions<T>[Key]) => Dispose
-}
+  [Key in keyof TransitionHookExtensions<T>]: (
+    stateKey: S,
+    eventKey: E,
+    fn: TransitionHookExtensions<T>[Key],
+  ) => Dispose;
+};
 
 export function onLifecycle<
   States extends StatesFactory<any>,
@@ -20,7 +24,15 @@ export function onLifecycle<
 >(
   machine: StateMachine<States, Transitions>,
   config: StateEventHookConfig<States, Transitions>,
-  initialize: undefined | ((api: LifecycleApi<ReturnType<StateMachine<States,Transitions>['getChange']>, string, string>) => void)
+  // initialize?:
+  //   | undefined
+  //   | ((
+  //       api: LifecycleApi<
+  //         ReturnType<StateMachine<States, Transitions>["getChange"]>,
+  //         string,
+  //         string
+  //       >,
+  //     ) => void),
 ) {
   return onUpdate(machine, lifecycle(config));
 }
@@ -72,7 +84,9 @@ export function lifecycle<
           hooks?.[hookName]?.(handled as any);
         }
       };
-      const runEventHooks = (hookName: keyof PartialTransitionHookExtensions<any>) => {
+      const runEventHooks = (
+        hookName: keyof PartialTransitionHookExtensions<any>,
+      ) => {
         for (const hooks of eventHooksMaybe) {
           hooks?.[hookName]?.(handled as any);
         }

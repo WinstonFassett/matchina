@@ -3,7 +3,11 @@ import { StateFromFactory, StatesFactory, defineStates } from "../states";
 import { onLifecycle } from "../extras/lifecycle";
 import { makeZen } from "../extras/zen";
 import { MatchboxConfig, MatchboxSpec } from "../matchbox-types";
-import { EventExitStatesIntersection, FlatExitStateKeys, StateEventTransitionFuncs } from "../machine-types";
+import {
+  EventExitStatesIntersection,
+  FlatExitStateKeys,
+  StateEventTransitionFuncs,
+} from "../machine-types";
 
 type FetchConfig = {
   key: string;
@@ -18,55 +22,79 @@ type FetchContext = {
 };
 
 type ContextAwareStatesConfig<Context> = {
-  [key: string]: undefined | ((...args: any[]) => (context: Context) => any) | object;
+  [key: string]:
+    | undefined
+    | ((...args: any[]) => (context: Context) => any)
+    | object;
 };
 
-type MatchboxConfigForContextAwareStatesConfig<Context, StatesConfig extends ContextAwareStatesConfig<Context>> = {
-  [Key in keyof StatesConfig]: StatesConfig[Key] extends (...args: infer A) => (context: Context) => infer R
+type MatchboxConfigForContextAwareStatesConfig<
+  Context,
+  StatesConfig extends ContextAwareStatesConfig<Context>,
+> = {
+  [Key in keyof StatesConfig]: StatesConfig[Key] extends (
+    ...args: infer A
+  ) => (context: Context) => infer R
     ? (context: Context, ...args: A) => R
     : StatesConfig[Key] extends undefined
     ? (context: Context) => Context
     : (context: Context) => Context;
-}
+};
 //  & { [key: string]: ((context: Context, ...args: any[]) => any) | undefined };
 
-
-function defineStatesWithContext<Context, Config extends ContextAwareStatesConfig<Context>>(
-  initialContext: Context,
-  config: Config
-) {
-  const matchboxConfig = {} as any //;
+function defineStatesWithContext<
+  Context,
+  Config extends ContextAwareStatesConfig<Context>,
+>(initialContext: Context, config: Config) {
+  const matchboxConfig = {} as any; // ;
   for (const key of Reflect.ownKeys(config)) {
     const stateDef = config[key as any];
-    matchboxConfig[key as any] = 
-      typeof stateDef !== "function" ? stateDef :
-      (context: Context, ...args: any[]) => {
-        return stateDef(...args)(context);        
-      };
+    matchboxConfig[key as any] =
+      typeof stateDef === "function"
+        ? (context: Context, ...args: any[]) => {
+            return stateDef(...args)(context);
+          }
+        : stateDef;
   }
-  return defineStates(matchboxConfig as MatchboxConfigForContextAwareStatesConfig<Context, Config>);
+  return defineStates(
+    matchboxConfig as MatchboxConfigForContextAwareStatesConfig<
+      Context,
+      Config
+    >,
+  );
 }
 
-type ContextualDataCreator<Context, P, T> = (context: Context, ...args: P[]) => T;
+type ContextualDataCreator<Context, P, T> = (
+  context: Context,
+  ...args: P[]
+) => T;
 
-
-function transitionWithPriorStateData<Context, Transitions extends Record<string, any>>(initialContext: Context, transitions: Transitions): {
-  [Key in keyof Transitions]: Transitions[Key] extends ContextualDataCreator<infer Context, infer A, infer R>
+function transitionWithPriorStateData<
+  Context,
+  Transitions extends Record<string, any>,
+>(
+  initialContext: Context,
+  transitions: Transitions,
+): {
+  [Key in keyof Transitions]: Transitions[Key] extends ContextualDataCreator<
+    infer Context,
+    infer A,
+    infer R
+  >
     ? (args: A) => R
     : Transitions[Key];
-} 
-{
+} {
   const wrapped: any = {};
   for (const key of Object.keys(transitions)) {
     const transition = transitions[key];
-    if (typeof transition === "function") {
-      wrapped[key] = (...args: any[]) => ({ data: initialContext }: { data: Context }) => transition(initialContext, ...args);
-    }     
-    else {
-      wrapped[key] = (context: Context) => context;
-    }
+    wrapped[key] =
+      typeof transition === "function"
+        ? (...args: any[]) =>
+            ({ data: initialContext }: { data: Context }) =>
+              transition(initialContext, ...args)
+        : (context: Context) => context;
   }
-  return wrapped
+  return wrapped;
 }
 
 export function createFetchMachine(
@@ -78,26 +106,32 @@ export function createFetchMachine(
     maxRetries: config.maxTries ?? 3,
     fetch: config.fetch ?? fetch,
   };
-  const states = defineStatesWithContext({ tries: 0, ...initialContext } as FetchContext, {
-    Idle: undefined,
-    Pending: () => context => ({ ...context, tries: context.tries+1 }),
-    Rejected: (error: Error) => context => ({ ...context, error }),
-    Resolved: (data: any) => context => ({ ...context, data, tries: 0 }),
-    Cancelled: undefined,
-    CannotRetry: undefined,
-    TimedOut: undefined,  
-  })
-  
+  const states = defineStatesWithContext(
+    { tries: 0, ...initialContext } as FetchContext,
+    {
+      Idle: undefined,
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      Pending: () => (context) => ({ ...context, tries: context.tries + 1 }),
+      Rejected: (error: Error) => (context) => ({ ...context, error }),
+      Resolved: (data: any) => (context) => ({ ...context, data, tries: 0 }),
+      Cancelled: undefined,
+      CannotRetry: undefined,
+      TimedOut: undefined,
+    },
+  );
 
   const Machine = defineMachine(states, {
     Idle: {
-      // eslint-disable-next-line unicorn/consistent-function-scoping
-      execute: () => ({ data }) => states.Pending(data),
+      execute:
+        () =>
+        // eslint-disable-next-line unicorn/consistent-function-scoping
+        ({ data }) =>
+          states.Pending(data),
     },
-    // Pending: {     
+    // Pending: {
     //   resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
     //   reject: (error: Error) => ({ data: context }) => states.Rejected(context, error),
-    //   another: (error: Error) => from => states.Rejected(from.data, error) 
+    //   another: (error: Error) => from => states.Rejected(from.data, error)
     // },
     Pending: transitionWithPriorStateData(initialContext, {
       resolve: states.Resolved,
@@ -108,7 +142,7 @@ export function createFetchMachine(
     Resolved: {},
     Cancelled: {},
     CannotRetry: {},
-    TimedOut: {}    
+    TimedOut: {},
   });
   const initialState = states.Idle({ tries: 0 });
   const machine = Machine.create(initialState);
@@ -168,16 +202,18 @@ export function createFetchMachine(
       },
     },
   });
-  return promiseMachine
+  return promiseMachine;
 }
 
-
 function testFetchMachine() {
-  const machine = createFetchMachine({
-    key: "test",
-    url: "https://example.com",
-    maxTries: 3,
-  }, { tries: 2 })
+  const machine = createFetchMachine(
+    {
+      key: "test",
+      url: "https://example.com",
+      maxTries: 3,
+    },
+    { tries: 2 },
+  );
 
   const m = makeZen(machine);
   m.execute();
@@ -197,6 +233,5 @@ function testFetchMachine() {
   >; // Idle. Should have everything
   type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
   type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending
-  
 }
 testFetchMachine();
