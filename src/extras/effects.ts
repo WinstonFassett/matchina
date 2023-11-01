@@ -19,7 +19,7 @@ export function defineEffects<EffectsConfig extends MatchboxConfig>(
   return matchboxFactory(config, "effect");
 }
 export function bindEffects<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   EffectsConfig extends MatchboxConfig,
   Effects extends MatchboxFactory<EffectsConfig, "effect">,

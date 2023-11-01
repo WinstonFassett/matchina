@@ -4,7 +4,7 @@ import type { StatesFactory } from "../states";
 import type { SubscribableMachine } from "./with-subscribe";
 
 export function useMachine<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(machine: SubscribableMachine<States, Transitions>) {
   return [

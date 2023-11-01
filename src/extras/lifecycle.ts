@@ -19,7 +19,7 @@ type LifecycleApi<T, S, E> = {
 };
 
 export function onLifecycle<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,
@@ -38,7 +38,7 @@ export function onLifecycle<
 }
 
 export function lifecycle<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
   config: StateEventHookConfig<States, Transitions>,

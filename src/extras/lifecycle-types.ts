@@ -23,7 +23,7 @@ export type PartialTransitionHookExtensions<T> = {
 };
 
 export type StateTransitionHooks<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   StateKey extends keyof Transitions | "*",
 > = {
@@ -52,7 +52,7 @@ export type StateTransitionHooks<
 };
 
 type On<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   TransitionsRawConfig extends TransitionConfig<States>,
   StateKey extends keyof TransitionsRawConfig | "*",
 > =
@@ -156,7 +156,7 @@ type On<
       };
 
 export type StateEventHookConfig<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof Transitions | "*"]?: {

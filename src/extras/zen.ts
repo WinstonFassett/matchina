@@ -2,7 +2,7 @@ import { StatesFactory } from "../states";
 import { StateMachine, TransitionConfig } from "../machine-types";
 
 export function makeZen<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(machine: StateMachine<States, Transitions>) {
   const { send, reset, event } = machine;

@@ -4,7 +4,7 @@ import { nanosubscriber } from "./nanosubscriber";
 import { onUpdate } from "./on-update";
 
 export function withSubscribe<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(machine: StateMachine<States, Transitions>) {
   const [subscribe, emit] =
@@ -20,6 +20,6 @@ export function withSubscribe<
   };
 }
 export type SubscribableMachine<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = ReturnType<typeof withSubscribe<States, Transitions>>;

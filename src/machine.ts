@@ -9,7 +9,7 @@ import { StateFromFactory, StatesFactory } from "./states";
 export const InitializeMachine = "__init";
 
 export function defineMachine<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
   states: States,

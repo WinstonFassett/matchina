@@ -11,10 +11,9 @@ import {
   FlatMemberUnion,
 } from "./types";
 
-// #endregion
 // #region Transition Config
 
-export type TransitionConfig<States extends StatesFactory<any>> = {
+export type TransitionConfig<States extends StatesFactory> = {
   [SourceState in keyof States]: {
     [EventKey: AnyEventKey]:
       | keyof States
@@ -23,7 +22,7 @@ export type TransitionConfig<States extends StatesFactory<any>> = {
   };
 };
 type TwoPhaseTransitionToStateFunc<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   SourceStateKey extends keyof States = keyof States,
   StateEventKey extends AnyEventKey = AnyEventKey,
   P = any,
@@ -40,7 +39,7 @@ type TwoPhaseTransitionToStateFunc<
 // #region StateMachine
 
 export interface StateMachine<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > {
   def: StateMachineDefinition<States, Transitions>;
@@ -56,7 +55,7 @@ export interface StateMachine<
 }
 
 export type SendFunction<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = <
   E extends S extends keyof Transitions
@@ -77,14 +76,14 @@ export type SendFunction<
 ) => void;
 
 export type StateMachineCreator<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = (
   initialState: StateFromFactory<States>,
 ) => StateMachine<States, Transitions>;
 
 export type StateMachineDefinition<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
     States,
@@ -107,7 +106,7 @@ export type StateMachineDefinition<
 // #endregion
 // #region State Machine Event
 export type StateMachineEvent<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   EventKey extends FlatEventKeys<States, Transitions> = FlatEventKeys<
     States,
@@ -125,7 +124,7 @@ export type StateMachineEvent<
   }
 >;
 type ChangeEventMatchers<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof Transitions]?: {
@@ -139,7 +138,7 @@ type ChangeEventMatchers<
 // #endregion
 // #region Mapped Transitions
 export type StateEventTransitionFuncs<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions,
 > = {
   [StateKey in keyof Transitions]: {
@@ -170,7 +169,7 @@ export type StateEventTransitionFuncs<
 };
 
 export type StateEventTransitionSenders<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -185,14 +184,14 @@ export type StateEventTransitionSenders<
   };
 };
 type FlatEventSenders<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = FlatMemberUnionToIntersection<
   StateEventTransitionSenders<States, Transitions>
 >;
 
 export type FlatEventKeys<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<
@@ -203,7 +202,7 @@ export type FlatEventKeys<
 // provides the return types of all state-event transitions
 
 export type FlatExitStates<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = Members<{
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -225,7 +224,7 @@ export type FlatExitStates<
 // Provides only the keys that are valid for the given state-event transitions
 
 export type FlatExitStateKeys<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = Members<{
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -246,7 +245,7 @@ export type FlatExitStateKeys<
 }>;
 
 export type StatesToEventsToStates<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -260,7 +259,7 @@ export type StatesToEventsToStates<
 };
 
 export type EventExitStatesIntersection<
-  States extends StatesFactory<any>,
+  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = TUnionToIntersection<
   FlatMemberUnion<StatesToEventsToStates<States, Transitions>>
