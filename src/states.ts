@@ -5,6 +5,9 @@ import {
   MatchboxFromFactory,
 } from "./matchbox";
 
+/**
+ * This is MyType description
+ */
 export type StatesFactory<StatesConfig extends MatchboxConfig> =
   MatchboxFactory<StatesConfig, "key">;
 

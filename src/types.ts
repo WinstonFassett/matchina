@@ -42,31 +42,33 @@ export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<
 
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>;
 
-export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
+export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
 
 export type ExtractColumnType<DB, TB extends keyof DB, C> =
   // Inline version of DrainOuterGeneric for performance reasons.
   // Don't replace with DrainOuterGeneric!
   [DB] extends [unknown]
     ? {
-        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never;
       }[TB]
-    : never
+    : never;
 export type DictionaryValues<Type> = Type[keyof Type];
 
-
 // export type Head<Type extends AnyArray> = Type["length"] extends 0 ? never : Type[0];
+export type UnknownRecord = Record<PropertyKey, unknown>;
+// export type AnyRecord<T = any> = Record<KeyofBase, T>;
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type NonNever<Type extends {}> = Pick<
   Type,
   { [Key in keyof Type]: Type[Key] extends never ? never : Key }[keyof Type]
 >;
 
 export type KeysOfUnion<ObjectType> = ObjectType extends unknown
-	? keyof ObjectType
-	: never;
+  ? keyof ObjectType
+  : never;
 
 // #endregion
-
