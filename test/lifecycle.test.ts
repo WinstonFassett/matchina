@@ -17,7 +17,7 @@ describe("onLifecycle usage", () => {
     let count = 0;
 
     // Create machine WITHOUT a promise to drive it
-    const machine = createPromiseMachine<number, number>();
+    const machine = createPromiseMachine<number, [number]>();
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {

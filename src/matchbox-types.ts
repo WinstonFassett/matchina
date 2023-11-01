@@ -4,7 +4,7 @@ export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #region Config
 export type MatchboxConfig = {
-  [key: string | number | symbol]: MatchboxSpec;
+  [key: string]: MatchboxSpec;
 };
 
 export type MatchboxSpec = ((...args: any[]) => any) | undefined | any;

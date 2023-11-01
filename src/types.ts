@@ -1,6 +1,6 @@
 // #region General
 
-export type AnyStateKey = keyof any;
+export type AnyStateKey = string;
 export type AnyEventKey = keyof any;
 export interface ChangeEvent<Type, From, To> {
   type: Type;

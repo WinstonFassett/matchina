@@ -4,7 +4,7 @@ import { createPromiseMachine } from "../src/extras/promise";
 
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it
-  const machine = createPromiseMachine<number, number>();
+  const machine = createPromiseMachine<number, [number]>();
   const removeLifecycle = onLifecycle(machine, {
     Idle: {
       on: {
