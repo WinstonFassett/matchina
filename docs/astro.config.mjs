@@ -47,6 +47,10 @@ export default defineConfig({
               label: "Quickstart",
               link: "/guides/quickstart/",
             },
+            {
+              label: "Types",
+              link: "/guides/types/",
+            },
           ],
         },
         // {
