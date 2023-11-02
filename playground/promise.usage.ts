@@ -1,8 +1,7 @@
-import { StateEventTransitionFuncs, TransitionConfig } from "../src";
+import { TransitionConfig } from "../src";
 import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
 import { makeZen } from "../src/extras/zen";
-import { FlatMemberUnion, KeysOfUnion } from "../src/types";
 
 async function promiseUsage () {
   const machine = createPromiseMachine(async (x: number) => {
