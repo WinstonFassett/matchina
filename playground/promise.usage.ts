@@ -1,6 +1,8 @@
+import { StateEventTransitionFuncs, TransitionConfig } from "../src";
 import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
 import { makeZen } from "../src/extras/zen";
+import { FlatMemberUnion, KeysOfUnion } from "../src/types";
 
 async function promiseUsage () {
   const machine = createPromiseMachine(async (x: number) => {
@@ -87,6 +89,36 @@ async function promiseUsage () {
   const zenFetch = makeZen(fetchMachine)
   zenFetch.execute(123)  
   const { state } = zenFetch
+    
+  type PromiseTransitionStateKeys = keyof typeof fetchMachine.def.transitions
+  type TransitionEventKeys<
+    Transitions extends TransitionConfig<any>,
+    StateKey extends keyof Transitions,
+  > = keyof Transitions[StateKey]
+  type PromiseTransitionEventKeys<T extends PromiseTransitionStateKeys> = TransitionEventKeys<typeof fetchMachine.def.transitions, T>
+  type TransitionStateKeys<Transitions extends TransitionConfig<any>> = 
+    keyof Transitions
+  // type TransitionStateEventKeys<
+  //   Transitions extends TransitionConfig<any>, 
+  //   StateKey extends keyof Transitions
+  // > =
+  //  keyof Transitions[keyof Transitions]
+  
+  ;
+    type Idle = PromiseTransitionStateKeys extends infer S ? S extends 'Idle' ? S : never : never
+    type Pending = PromiseTransitionStateKeys extends infer S ? S extends 'Pending' ? S : never : never
+    type ExecuteEvents = PromiseTransitionEventKeys<Idle>
+    type ExecuteEventKeys2 = TransitionEventKeys<typeof fetchMachine.def.transitions, 'Idle'>
+    type PendingEventKeys2 = TransitionEventKeys<typeof fetchMachine.def.transitions, 'Pending'>
+    type StateKeys2 = TransitionStateKeys<typeof fetchMachine.def.transitions>
+    type PendingEvents = PromiseTransitionEventKeys<Pending>
+  // type Pending = TransitionStateKeys extends 'Pending' ? 'Pending' : never;
+  
+  /*
+Property 'execute' does not exist on type '{ execute: (x: number) => Matchbox<{ Idle: undefined; Pending: (x: number) => [x: number]; Rejected: (error: Error) => Error; Resolved: (data: string) => string; }, "key", "Pending", [x: ...]>; } | { ...; } | {} | {}'.ts(2339)
+Property 'reject' does not exist on type '{ execute: (x: number) => Matchbox<{ Idle: undefined; Pending: (x: number) => [x: number]; Rejected: (error: Error) => Error; Resolved: (data: string) => string; }, "key", "Pending", [x: ...]>; } | { ...; } | {} | {}'.ts(2339)
+Property 'resolve' does not exist on type '{ execute: (x: number) => Matchbox<{ Idle: undefined; Pending: (x: number) => [x: number]; Rejected: (error: Error) => Error; Resolved: (data: string) => string; }, "key", "Pending", [x: ...]>; } | { ...; } | {} | {}'.ts(2339)  
+  */
 }
 
 await promiseUsage()
