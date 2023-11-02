@@ -40,7 +40,7 @@ export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<
   FlatMemberUnion<T>
 >;
 
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+// export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>;

@@ -2,8 +2,8 @@ export type MethodEnhancer<S, K extends keyof S> = S[K] extends (
   ...args: infer A
 ) => infer R
   ? (original: Method<S, K>, ...args: A) => R
-  : S[K] extends (...args: any[]) => void
-  ? (original: Method<S, K>, ...args: any[]) => void
+  : S[K] extends (...args: infer A) => void
+  ? (original: Method<S, K>, ...args: A) => void
   : never;
 
 export type Method<S, K extends keyof S> = S[K] extends (

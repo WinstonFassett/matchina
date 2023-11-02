@@ -1,12 +1,12 @@
 import React from "react";
 import { createPromiseMachine } from "../src";
-import { Expand } from "../src/types";
+// import { Expand } from "../src/types";
 
 const machine = createPromiseMachine((id: number) =>
   fetch("/data").then((response) => response.json()),
 );
 const state = machine.getState();
-type S = Expand<typeof state>
+// type S = Expand<typeof state>
 
 const DataComponent: React.FC = () => {
   const state = machine.getState();

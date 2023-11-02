@@ -1,6 +1,6 @@
 import { MemberReturnType } from "./types";
 
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+// export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #region Config
 export type MatchboxConfig = {
@@ -36,7 +36,8 @@ export type Matchbox<
   K extends
     keyof MatchboxConfigValues<Config> = keyof MatchboxConfigValues<Config>,
   D extends MatchboxConfigValues<Config>[K] = MatchboxConfigValues<Config>[K],
-> = Expand<
+> =
+  // Expand<
   {
     data: D;
     match<
@@ -50,8 +51,8 @@ export type Matchbox<
     ): M[keyof M] extends (...args: any) => infer R ? R : never;
   } & {
     [Key in TagKey as Extract<TagKey, string>]: Extract<K, string>;
-  }
->;
+  };
+// >;
 
 // #endregion
 

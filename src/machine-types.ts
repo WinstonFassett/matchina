@@ -3,7 +3,7 @@ import {
   AnyEventKey,
   CreateFunc,
   SwapFunc,
-  Expand,
+  // Expand,
   ChangeEvent,
   FlatMemberUnionToIntersection,
   Members,
@@ -115,14 +115,15 @@ export type StateMachineEvent<
   From extends StateFromFactory<States> = StateFromFactory<States>,
   To extends StateFromFactory<States> = StateFromFactory<States>,
   Params = any[],
-> = Expand<
+> =
+  //  Expand<
   ChangeEvent<EventKey, From, To> & {
     params: Params;
     match: <M extends ChangeEventMatchers<States, Transitions>>(
       cases: M,
     ) => M[keyof M] extends (...args: any) => infer R ? R : never;
-  }
->;
+  };
+// >;
 type ChangeEventMatchers<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
@@ -264,3 +265,14 @@ export type EventExitStatesIntersection<
 > = TUnionToIntersection<
   FlatMemberUnion<StatesToEventsToStates<States, Transitions>>
 >;
+
+export type AnyStates = StatesFactory<any>;
+export type AnyStateKey = keyof AnyStates;
+export type AnyTransitions = TransitionConfig<any>;
+export type AnyTransitionStateKey = keyof AnyTransitions;
+export type AnyEvent = StateMachineEvent<any, any>;
+export type AnyEventType = AnyEvent["type"];
+export type AnyState = StateFromFactory<any>;
+export type AnyMachine = StateMachine<any, any>;
+export type AnyMachineStateKey = keyof AnyMachine["def"]["states"];
+export type AnyDefinition = StateMachineDefinition<any, any>;
