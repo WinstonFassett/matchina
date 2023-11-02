@@ -6,7 +6,7 @@ const slowlyAddTwoNumbers = (
   y: number,
   duration = 1000,
   name = "unnamed",
-) => new Promise((resolve) => setTimeout(() => resolve(x + y), duration));
+) => new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
 const machine = withSubscribe(createPromiseMachine(slowlyAddTwoNumbers));
 
