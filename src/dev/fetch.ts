@@ -1,13 +1,12 @@
-import { defineMachine } from "../machine";
-import { StateFromFactory, StatesFactory, defineStates } from "../states";
 import { onLifecycle } from "../extras/lifecycle";
 import { makeZen } from "../extras/zen";
-import { MatchboxConfig, MatchboxSpec } from "../matchbox-types";
+import { defineMachine } from "../machine";
 import {
   EventExitStatesIntersection,
   FlatExitStateKeys,
   StateEventTransitionFuncs,
 } from "../machine-types";
+import { defineStates } from "../states";
 
 type FetchConfig = {
   key: string;

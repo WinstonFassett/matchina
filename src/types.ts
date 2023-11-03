@@ -1,4 +1,5 @@
 // #region General
+export type Func<A = any, R = any> = (...args: A[]) => R;
 
 export interface ChangeEvent<Type, From, To> {
   type: Type;
@@ -38,3 +39,7 @@ export type FlatMemberUnionToIntersection<T> = TUnionToIntersection<
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #endregion
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>;
+export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;

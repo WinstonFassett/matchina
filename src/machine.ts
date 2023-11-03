@@ -3,8 +3,9 @@ import {
   StateMachineDefinition,
   StateMachineEvent,
   TransitionConfig,
+  StatesFactory,
+  StateFromFactory,
 } from "./machine-types";
-import { StateFromFactory, StatesFactory } from "./states";
 
 export const InitializeMachine = "__init";
 
@@ -65,7 +66,7 @@ export function defineMachine<
       const targetStateOrFunc = targetFuncOrString(...params);
       targetState =
         typeof targetStateOrFunc === "function"
-          ? targetStateOrFunc(sourceState, type, def, machine)
+          ? (targetStateOrFunc as any)(sourceState, type, def, machine)
           : targetStateOrFunc;
     } else {
       targetState = states[targetFuncOrString as keyof typeof states](

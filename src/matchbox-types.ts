@@ -3,10 +3,8 @@ import { MemberReturnType } from "./types";
 // export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 // #region Config
-export type MatchboxConfig = {
-  [key: string]: MatchboxSpec;
-};
-
+export type MatchboxConfig = Record<string, MatchboxSpec>;
+type MatchboxKey = keyof MatchboxConfig; // string
 export type MatchboxSpec = ((...args: any[]) => any) | undefined | any;
 // #endregion
 

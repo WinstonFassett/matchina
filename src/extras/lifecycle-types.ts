@@ -3,10 +3,11 @@ import {
   FlatEventKeys,
   FlatExitStates,
   StateEventTransitionFuncs,
+  StateFromFactory,
   StateMachineEvent,
+  StatesFactory,
   TransitionConfig,
 } from "../machine-types";
-import { StateFromFactory, StatesFactory } from "../states";
 
 export type TransitionHookExtensions<T> = {
   guard: (change: T) => boolean;
@@ -23,7 +24,7 @@ export type PartialTransitionHookExtensions<T> = {
 };
 
 export type StateTransitionHooks<
-  States extends StatesFactory,
+  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
   StateKey extends keyof Transitions | "*",
 > = {
@@ -88,7 +89,7 @@ export type StateTransitionHooks<
 //   : never;
 
 type On<
-  States extends StatesFactory,
+  States extends StatesFactory<any>,
   TransitionsRawConfig extends TransitionConfig<States>,
   StateKey extends keyof TransitionsRawConfig | "*",
 > =
@@ -194,7 +195,7 @@ type On<
       };
 
 export type StateEventHookConfig<
-  States extends StatesFactory,
+  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof Transitions | "*"]?: {

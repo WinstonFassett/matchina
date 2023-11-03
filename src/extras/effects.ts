@@ -1,4 +1,9 @@
-import { StateMachine, TransitionConfig } from "../machine-types";
+import {
+  StateFromFactory,
+  StateMachine,
+  StatesFactory,
+  TransitionConfig,
+} from "../machine-types";
 import {
   MatchboxConfig,
   MatchboxFactory,
@@ -8,7 +13,7 @@ import {
   NonExhaustiveMatchers,
   matchboxFactory,
 } from "../matchbox";
-import { StateFromFactory, StatesFactory } from "../states";
+
 import { onUpdate } from "./on-update";
 
 export type AnyEffect = MatchboxFromConfig<any, "effect">;

@@ -2,7 +2,7 @@
 /* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 
-import { StatesFactory } from "../states";
+import { StatesMatchboxFactory } from "../states";
 import { FlatMemberUnionToIntersection } from "../types";
 import {
   TransitionConfig,
@@ -55,24 +55,25 @@ export type Filter<T, K> = {
 }[keyof T];
 
 export type FlatEventers<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions extends TransitionConfig<States>,
 > = FlatMemberUnionToIntersection<
   StateEventTransitionSenders<States, Transitions>
 >;
 
-export type FlatMachineEventers<M extends StateMachine<StatesFactory, any>> =
-  FlatEventers<M["def"]["states"], M["def"]["transitions"]>;
+export type FlatMachineEventers<
+  M extends StateMachine<StatesMatchboxFactory, any>,
+> = FlatEventers<M["def"]["states"], M["def"]["transitions"]>;
 
 // not sure about this one
 export type FlatMachineReturnEventToTargetKeyMap<
-  M extends StateMachine<StatesFactory, any>,
+  M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
   FlatExitStateKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
 
 export type FlatEventTargetsMap<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -86,7 +87,7 @@ export type FlatEventTargetsMap<
 };
 
 export type FlatEventTargets<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -100,7 +101,7 @@ export type FlatEventTargets<
 };
 
 export type FlatMachineEventTargets<
-  M extends StateMachine<StatesFactory, any>,
+  M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
   StatesToEventsToStates<M["def"]["states"], M["def"]["transitions"]>
 >;
@@ -112,7 +113,7 @@ export type FlattenedTargets<T> = {
 }[keyof T];
 
 export type FlattenReturnStateTargetTypes<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions extends TransitionConfig<States>,
 > = ValueTypes<{
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -133,13 +134,13 @@ export type FlattenReturnStateTargetTypes<
 }>;
 
 export type FlatMachineEventToTargetKeyMap<
-  M extends StateMachine<StatesFactory, any>,
+  M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
   StateTransitionTargetKeys<M["def"]["states"], M["def"]["transitions"]>
 >;
 
 export type StateTransitionTargetKeys<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
@@ -152,13 +153,14 @@ export type StateTransitionTargetKeys<
   };
 };
 
-export type FlatMachineEvents<M extends StateMachine<StatesFactory, any>> =
-  FlatMemberUnionToIntersection<
-    StateEventTransitionFuncs<M["def"]["states"], M["def"]["transitions"]>
-  >;
+export type FlatMachineEvents<
+  M extends StateMachine<StatesMatchboxFactory, any>,
+> = FlatMemberUnionToIntersection<
+  StateEventTransitionFuncs<M["def"]["states"], M["def"]["transitions"]>
+>;
 
 export type FlatStateTransitionTargetIntersection<
-  States extends StatesFactory,
+  States extends StatesMatchboxFactory,
   Transitions extends TransitionConfig<States>,
 > = FlatMemberUnionToIntersection<StatesToEventsToStates<States, Transitions>>;
 

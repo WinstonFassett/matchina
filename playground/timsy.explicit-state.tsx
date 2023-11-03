@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StateFromFactory, defineStates } from "../src/states";
+import { MatchboxFromStatesFactory, defineStates } from "../src/states";
 
 const states = defineStates({
   NOT_LOADED: () => ({}),
@@ -8,7 +8,7 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-type DataState = StateFromFactory<typeof states>;
+type DataState = MatchboxFromStatesFactory<typeof states>;
 
 const DataComponent: React.FC = () => {
   const [state, setState] = useState<DataState>(states.NOT_LOADED());

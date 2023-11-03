@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { Func, methodware, wrapMethod } from "../src/extras/methodware";
+import { methodware, wrapMethod } from "../src/extras/methodware";
+import { Func } from "../src/types";
 
 const doubler = (original: Func, ...args: any[]) => {
   original(...args);

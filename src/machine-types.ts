@@ -6,18 +6,19 @@ import {
   Members,
   TUnionToIntersection,
   FlatMemberUnion,
+  Func,
 } from "./types";
 
 // #region Transition Config
 
-type AState = { key: string };
-type AnEvent = { type: string };
-type AParams = any[];
+export type AState = { key: string; [prop: string]: any };
+export type AnEvent = { type: string };
+export type AParams = any[];
 
-type StatesFactory<T = AState> = {
+export type StatesFactory<T = any> = {
   [key: string]: (...args: any[]) => T;
 };
-type StateFromFactory<
+export type StateFromFactory<
   States extends StatesFactory,
   K extends keyof States = keyof States,
 > = ReturnType<States[K]>;
@@ -81,7 +82,7 @@ export type SendFunction<
     States,
     Transitions
     // eslint-disable-next-line @typescript-eslint/ban-types
-  >[keyof Transitions][EventKey] extends Function
+  >[keyof Transitions][EventKey] extends Func<any[], any>
     ? Parameters<
         StateEventTransitionSenders<
           States,

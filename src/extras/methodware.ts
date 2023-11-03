@@ -1,3 +1,5 @@
+import { Func } from "../types";
+
 export type MethodEnhancer<S, K extends keyof S> = S[K] extends (
   ...args: infer A
 ) => infer R
@@ -45,8 +47,6 @@ export function methodware<S, K extends keyof S>(
     }
   };
 }
-
-export type Func<A = any, R = any> = (...args: A[]) => R;
 
 const loggingEnhancer = (originalMethod: Func, ...args: any[]) => {
   console.log(`Calling method with args: ${JSON.stringify(args)}`);

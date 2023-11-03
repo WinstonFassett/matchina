@@ -1,10 +1,12 @@
 import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
+  
   entries: [
     {
       input: 'src/index.ts',
-      builder: 'rollup'
+      builder: 'rollup',
+    
     },
     {
       input: 'src/extras/react.ts',
@@ -14,6 +16,9 @@ export default defineBuildConfig({
   declaration: true,
   rollup: {
     emitCJS: true,  
+    esbuild: {
+      exclude: ['node_modules', './src/dev'],
+    }
   },
   externals: ['react', 'react-dom'],
 })
