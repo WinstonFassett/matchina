@@ -25,6 +25,7 @@
     "play": "shx ls ./playground | xargs -I {} bun run ./playground/{}",
     "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"bun run play\"",
     "play:watch:file": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"bun run playground/lifecycle.usage.ts\"",
+    "knip": "knip",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
     "prepack": "bun run build",
@@ -41,6 +42,7 @@
     "changelogen": "^0.5.5",
     "eslint": "^8.51.0",
     "eslint-config-unjs": "^0.2.1",
+    "knip": "^2.38.6",
     "prettier": "^3.0.3",
     "react": "^18.2.0",
     "shx": "^0.3.4",
@@ -48,5 +50,5 @@
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0",
     "vitest": "^0.34.6"
-  }  
+  }
 }
