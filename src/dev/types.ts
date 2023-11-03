@@ -13,7 +13,38 @@ import {
   StatesToEventsToStates,
 } from "../machine-types";
 
-type PartialPick<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>;
+export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
+
+export type ExtractColumnType<DB, TB extends keyof DB, C> =
+  // Inline version of DrainOuterGeneric for performance reasons.
+  // Don't replace with DrainOuterGeneric!
+  [DB] extends [unknown]
+    ? {
+        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never;
+      }[TB]
+    : never;
+export type DictionaryValues<Type> = Type[keyof Type];
+export type UnknownRecord = Record<PropertyKey, unknown>;
+
+export type AnyFunction = (...args: any[]) => unknown;
+export type Func<A extends any[], R> = (...args: A) => R;
+export type ArgsType<F extends Func<any, any>> = Parameters<F>;
+
+export type KeysOfUnion<ObjectType> = ObjectType extends unknown
+  ? keyof ObjectType
+  : never;
+
+export type Defined<Value> = Exclude<Value, null | undefined>;
+
+export type PartialPick<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type NonNever<Type extends {}> = Pick<
+  Type,
+  { [Key in keyof Type]: Type[Key] extends never ? never : Key }[keyof Type]
+>;
 
 export type FlattenMemberKeys<T> = {
   [K in keyof T]: keyof T[K];

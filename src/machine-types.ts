@@ -1,15 +1,12 @@
 import { StateFromFactory, StatesFactory } from "./states";
 import {
-  AnyEventKey,
   CreateFunc,
   SwapFunc,
-  // Expand,
   ChangeEvent,
   FlatMemberUnionToIntersection,
   Members,
   TUnionToIntersection,
   FlatMemberUnion,
-  NonNever,
 } from "./types";
 
 // #region Transition Config
