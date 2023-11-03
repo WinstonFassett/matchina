@@ -107,7 +107,6 @@ export function defineMachine<
         getChange: () => lastChange,
         event: events,
         send: (type, ...params) => {
-          type X = typeof type;
           const nextState = transition(
             lastChange.to,
             type,

@@ -1,7 +1,6 @@
 import { defineMachine } from "../machine";
 import { FlatEventKeys } from "../machine-types";
 import { defineStates } from "../states";
-import { Simplify } from "../types";
 import { onUpdate } from "./on-update";
 
 export function createPromiseMachine<

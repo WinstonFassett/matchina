@@ -63,16 +63,6 @@ export interface StateMachine<
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
 }
 
-type EventSenders<
-  States extends StatesFactory,
-  Transitions extends TransitionConfig<States>,
-> = {
-  [K in keyof Transitions]: keyof StateEventTransitionSenders<
-    States,
-    Transitions
-  >[K];
-};
-
 export type SendFunction<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
