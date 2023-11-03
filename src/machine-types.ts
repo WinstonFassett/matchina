@@ -9,18 +9,21 @@ import {
   Members,
   TUnionToIntersection,
   FlatMemberUnion,
+  NonNever,
 } from "./types";
 
 // #region Transition Config
 
 export type TransitionConfig<States extends StatesFactory> = {
-  [SourceState in keyof States]: {
-    [EventKey: AnyEventKey]:
+  [SourceState in keyof States & string]: {
+    [EventKey in string]:
       | keyof States
       | CreateFunc<StateFromFactory<States>>
       | TwoPhaseTransitionToStateFunc<States, SourceState>;
-  };
-};
+  } & Record<string, unknown>;
+} & Record<string, unknown>;
+export type AnyTransitionStateKey = keyof TransitionConfig<any>; // string | number is WRONG. Should be string only
+
 type TwoPhaseTransitionToStateFunc<
   States extends StatesFactory,
   SourceStateKey extends keyof States = keyof States,
@@ -54,25 +57,55 @@ export interface StateMachine<
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
 }
 
-export type SendFunction<
+type EventSenders<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+> = {
+  [K in keyof Transitions]: keyof StateEventTransitionSenders<
+    States,
+    Transitions
+  >[K];
+};
+
+type EventParameters<
+  States extends StatesFactory,
+  Transitions extends TransitionConfig<States>,
+  S extends keyof Transitions,
+  E extends keyof EventSenders<States, Transitions> &
+    keyof StateEventTransitionSenders<States, Transitions>[S],
+> = Parameters<StateEventTransitionSenders<States, Transitions>[S][E]>[0];
+
+// export type SendFunction<
+//   States extends StatesFactory,
+//   Transitions extends TransitionConfig<States>,
+//   S extends keyof Transitions,
+//   E extends keyof Transitions &
+//     keyof StateEventTransitionSenders<States, Transitions>[S],
+// > = (
+//   event: E,
+//   ...params: Exclude<EventParameters<States, Transitions, S, E>, undefined>[]
+// ) => void;
+
+export type SendFunction<
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
 > = <
-  E extends S extends keyof Transitions
-    ? keyof StateEventTransitionSenders<States, Transitions>[S]
-    : Event["type"],
-  S extends keyof Transitions = keyof States,
-  P = Exclude<
-    S extends keyof Transitions
-      ? Parameters<StateEventTransitionSenders<States, Transitions>[S][E]>[0]
-      : Parameters<
-          StateEventTransitionSenders<States, Transitions>[keyof States][E]
-        >[0],
-    undefined
-  >,
+  EventKey extends FlatEventKeys<States, Transitions>,
+  // StateKey extends keyof States = keyof States,
 >(
-  event: E,
-  ...params: P[]
+  event: EventKey,
+  ...params: StateEventTransitionSenders<
+    States,
+    Transitions
+    // eslint-disable-next-line @typescript-eslint/ban-types
+  >[keyof Transitions][EventKey] extends Function
+    ? Parameters<
+        StateEventTransitionSenders<
+          States,
+          Transitions
+        >[keyof Transitions][EventKey]
+      >
+    : any[]
 ) => void;
 
 export type StateMachineCreator<
@@ -139,31 +172,33 @@ type ChangeEventMatchers<
 // #endregion
 // #region Mapped Transitions
 export type StateEventTransitionFuncs<
-  States extends StatesFactory,
-  Transitions,
+  States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
 > = {
-  [StateKey in keyof Transitions]: {
-    [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
+  [TransitionStateKey in keyof Transitions]: {
+    [EventKey in keyof Transitions[TransitionStateKey]]: Transitions[TransitionStateKey][EventKey] extends keyof States
       ? // when it is a state key, return function that returns the state for that key
         (
-          ...args: Parameters<States[Transitions[StateKey][EventKey]]>
-        ) => StateFromFactory<States, Transitions[StateKey][EventKey]>
-      : Transitions[StateKey][EventKey] extends TwoPhaseTransitionToStateFunc<
+          ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
+        ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
+      : Transitions[TransitionStateKey][EventKey] extends TwoPhaseTransitionToStateFunc<
           States,
-          StateKey,
+          string, // StateKey,
           EventKey
         >
       ? // when it is two-phase function
         (
-          ...args: Parameters<Transitions[StateKey][EventKey]> // take parameters of first phase
-        ) => ReturnType<ReturnType<Transitions[StateKey][EventKey]>> // return return type of second phase
+          ...args: Parameters<Transitions[TransitionStateKey][EventKey]> // take parameters of first phase
+        ) => ReturnType<Transitions[TransitionStateKey][EventKey]> // return return type of second phase
       : // not two phase
-      Transitions[StateKey][EventKey] extends CreateFunc<
+      Transitions[TransitionStateKey][EventKey] extends CreateFunc<
           StateFromFactory<States>
         >
       ? (
-          ...args: Parameters<Transitions[StateKey][EventKey]>
-        ) => StateFromFactory<States> & { key: Transitions[StateKey][EventKey] }
+          ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
+        ) => StateFromFactory<States> & {
+          key: Transitions[TransitionStateKey][EventKey];
+        }
       : // not a function
         never;
   };
@@ -171,7 +206,7 @@ export type StateEventTransitionFuncs<
 
 export type StateEventTransitionSenders<
   States extends StatesFactory,
-  Transitions,
+  Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
     [EventKey in keyof StateEventTransitionFuncs<
@@ -247,7 +282,7 @@ export type FlatExitStateKeys<
 
 export type StatesToEventsToStates<
   States extends StatesFactory,
-  Transitions,
+  Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
     [EventKey in keyof StateEventTransitionFuncs<
@@ -269,7 +304,7 @@ export type EventExitStatesIntersection<
 export type AnyStates = StatesFactory<any>;
 export type AnyStateKey = keyof AnyStates;
 export type AnyTransitions = TransitionConfig<any>;
-export type AnyTransitionStateKey = keyof AnyTransitions;
+
 export type AnyEvent = StateMachineEvent<any, any>;
 export type AnyEventType = AnyEvent["type"];
 export type AnyState = StateFromFactory<any>;

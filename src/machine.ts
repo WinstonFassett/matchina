@@ -84,7 +84,7 @@ export function defineMachine<
       const createSender =
         (eventKey: any) =>
         (...params: any[]) =>
-          machine.send(eventKey, ...params);
+          machine.send(eventKey, ...(params as any));
 
       const transitioners: any = {};
       const events: any = {};
@@ -106,6 +106,7 @@ export function defineMachine<
         getChange: () => lastChange,
         event: events,
         send: (type, ...params) => {
+          type X = typeof type;
           const nextState = transition(
             lastChange.to,
             type,

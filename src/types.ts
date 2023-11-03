@@ -71,4 +71,6 @@ export type KeysOfUnion<ObjectType> = ObjectType extends unknown
   ? keyof ObjectType
   : never;
 
+export type Defined<Value> = Exclude<Value, null | undefined>;
+
 // #endregion

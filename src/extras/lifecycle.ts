@@ -50,13 +50,18 @@ export function lifecycle<
       const { type: event } = updated;
       const globalStateHooks = config["*"];
       const currentStateHooks = config[currentState.key as keyof typeof config];
-      const currentStateCurrentEventHooks = currentStateHooks?.on?.[event];
+      const currentStateCurrentEventHooks =
+        currentStateHooks?.on?.[
+          event as keyof (typeof currentStateHooks)["on"]
+        ];
 
       const eventHooksMaybe = [
         globalStateHooks?.on?.["*"],
-        globalStateHooks?.on?.[event],
+        globalStateHooks?.on?.[event as keyof (typeof globalStateHooks)["on"]],
         currentStateHooks?.on?.["*"],
-        currentStateHooks?.on?.[event],
+        currentStateHooks?.on?.[
+          event as keyof (typeof currentStateHooks)["on"]
+        ],
         currentStateCurrentEventHooks,
       ];
       // GUARD

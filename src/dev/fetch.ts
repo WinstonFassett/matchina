@@ -121,12 +121,12 @@ export function createFetchMachine(
   );
 
   const Machine = defineMachine(states, {
+    // TwoPhaseTransitionFunc is not working
     Idle: {
-      execute:
-        () =>
-        // eslint-disable-next-line unicorn/consistent-function-scoping
-        ({ data }) =>
-          states.Pending(data),
+      execute: (state) => states.Pending({ tries: 2 }),
+      // // eslint-disable-next-line unicorn/consistent-function-scoping
+      // ({ data }) =>
+      //   states.Pending(data),
     },
     // Pending: {
     //   resolve: (data: any) => ({ data: context }) => states.Resolved(context, data),
@@ -182,9 +182,19 @@ export function createFetchMachine(
   hey that's not bad.
   
   */
+
   onLifecycle(promiseMachine, {
     Idle: {
       on: {
+        execute: {}, // undefined error
+      },
+    },
+  });
+
+  onLifecycle(promiseMachine, {
+    Idle: {
+      on: {
+        // Idle on execute is undefined for some reason
         execute: {
           guard: (context) => context.to.data.tries < fullConfig.maxRetries,
           handle(change) {
@@ -194,6 +204,7 @@ export function createFetchMachine(
         },
       },
     },
+    // Pending reject works
     Pending: {
       on: {
         reject: {
@@ -216,7 +227,7 @@ function testFetchMachine() {
   );
 
   const m = makeZen(machine);
-  m.execute();
+  m.execute({ foo: "bar" });
   m.another(new Error("test"));
   type PromiseMachine = typeof machine;
   type PromiseTransitionExits = EventExitStatesIntersection<

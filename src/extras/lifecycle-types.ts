@@ -33,7 +33,11 @@ export type StateTransitionHooks<
       Transitions,
       FlatEventKeys<States, Transitions>,
       // source state
-      StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>,
+      // StateFromFactory<States>,
+      StateFromFactory<
+        States,
+        StateKey extends keyof States ? StateKey : keyof States
+      >,
       // target state
       StateFromFactory<States>
     >,
@@ -46,19 +50,98 @@ export type StateTransitionHooks<
       // from any state
       StateFromFactory<States>,
       // to this state
-      StateFromFactory<States, StateKey extends "*" ? keyof States : StateKey>
+      // StateFromFactory<States>
+      StateFromFactory<
+        States,
+        StateKey extends keyof States ? StateKey : keyof States
+      >
     >,
   ) => void;
 };
+
+// type Test1<
+//   States extends StatesFactory<any>,
+//   TransitionsRawConfig extends TransitionConfig<States>,
+//   TransitionKey extends keyof TransitionsRawConfig | "*",
+//   StateKey extends TransitionKey extends keyof States
+//     ? TransitionKey
+//     : keyof States,
+//   EventKey extends keyof TransitionsRawConfig[StateKey] | "*",
+// > = TransitionKey extends keyof States
+//   ? {
+//       key: StateKey;
+//       eventKey: EventKey;
+//       transitionKey: TransitionKey;
+//       event: StateMachineEvent<
+//         States,
+//         TransitionsRawConfig,
+//         EventKey extends "*"
+//           ? FlatEventKeys<States, TransitionsRawConfig>
+//           : EventKey extends "*"
+//           ? FlatEventKeys<States, TransitionsRawConfig>
+//           : EventKey,
+//         // FlatEventKeys<States, TransitionsRawConfig>
+//         StateFromFactory<States, StateKey>,
+//         StateFromFactory<States> // could be limited
+//       >;
+//     }
+//   : never;
 
 type On<
   States extends StatesFactory,
   TransitionsRawConfig extends TransitionConfig<States>,
   StateKey extends keyof TransitionsRawConfig | "*",
 > =
-  // wildcard state
-  StateKey extends "*"
-    ? {
+  // regular state
+  StateKey extends keyof States
+    ? // specific state
+      {
+        [Event in
+          | keyof TransitionsRawConfig[StateKey]
+          | "*"]?: Event extends FlatEventKeys<States, TransitionsRawConfig>
+          ? ReturnType<
+              StateEventTransitionFuncs<
+                States,
+                TransitionsRawConfig
+              >[StateKey][Event]
+            > extends StateFromFactory<States>
+            ? PartialTransitionHookExtensions<
+                StateMachineEvent<
+                  States,
+                  TransitionsRawConfig,
+                  Event, // should constrain params
+                  StateFromFactory<States, StateKey>,
+                  ReturnType<
+                    StateEventTransitionFuncs<
+                      States,
+                      TransitionsRawConfig
+                    >[StateKey][Event]
+                  >,
+                  Parameters<
+                    StateEventTransitionFuncs<
+                      States,
+                      TransitionsRawConfig
+                    >[StateKey][Event]
+                  >
+                >
+              >
+            : never
+          : // wildcard event
+            PartialTransitionHookExtensions<
+              StateMachineEvent<
+                States,
+                TransitionsRawConfig,
+                keyof TransitionsRawConfig[keyof TransitionsRawConfig],
+                StateFromFactory<States, StateKey>,
+                StateFromFactory<States>, // could be limited
+                any[]
+              >
+            >;
+        // specific event returns keyof states
+        // fix this. we need to transform transitionconfig above to StatesToEventsToStates
+      }
+    : // wildcard state
+      {
         [AnyStateEvent in
           | FlatEventKeys<States, TransitionsRawConfig>
           | "*"]?: PartialTransitionHookExtensions<
@@ -73,9 +156,10 @@ type On<
               States,
               keyof {
                 [K in keyof TransitionsRawConfig]: AnyStateEvent extends keyof TransitionsRawConfig[K]
-                  ? K
-                  : keyof TransitionsRawConfig;
-              }
+                  ? Extract<K, string>
+                  : Extract<keyof TransitionsRawConfig, string>;
+              } &
+                keyof States
             >,
             // Target State
             AnyStateEvent extends "*"
@@ -107,52 +191,6 @@ type On<
             any[] // could be union of all possible params lol I'm tired
           >
         >;
-      }
-    : // specific state
-      {
-        [Event in
-          | keyof TransitionsRawConfig[StateKey]
-          | "*"]?: Event extends "*"
-          ? // wildcard event
-            PartialTransitionHookExtensions<
-              StateMachineEvent<
-                States,
-                TransitionsRawConfig,
-                keyof TransitionsRawConfig[StateKey],
-                StateFromFactory<States, StateKey>,
-                StateFromFactory<States>, // could be limited
-                any[]
-              >
-            >
-          : // specific event returns keyof states
-          // fix this. we need to transform transitionconfig above to StatesToEventsToStates
-          ReturnType<
-              StateEventTransitionFuncs<
-                States,
-                TransitionsRawConfig
-              >[StateKey][Event]
-            > extends StateFromFactory<States>
-          ? PartialTransitionHookExtensions<
-              StateMachineEvent<
-                States,
-                TransitionsRawConfig,
-                Event, // should constrain params
-                StateFromFactory<States, StateKey>,
-                ReturnType<
-                  StateEventTransitionFuncs<
-                    States,
-                    TransitionsRawConfig
-                  >[StateKey][Event]
-                >,
-                Parameters<
-                  StateEventTransitionFuncs<
-                    States,
-                    TransitionsRawConfig
-                  >[StateKey][Event]
-                >
-              >
-            >
-          : never;
       };
 
 export type StateEventHookConfig<
