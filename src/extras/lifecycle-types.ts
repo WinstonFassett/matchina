@@ -98,7 +98,7 @@ type On<
       {
         [Event in
           | keyof TransitionsRawConfig[StateKey]
-          | "*"]?: Event extends FlatEventKeys<States, TransitionsRawConfig>
+          | "*"]?: Event extends FlatEventKeys<States, TransitionsRawConfig> // specific event
           ? ReturnType<
               StateEventTransitionFuncs<
                 States,
@@ -131,7 +131,7 @@ type On<
               StateMachineEvent<
                 States,
                 TransitionsRawConfig,
-                keyof TransitionsRawConfig[keyof TransitionsRawConfig],
+                FlatEventKeys<States, TransitionsRawConfig>,
                 StateFromFactory<States, StateKey>,
                 StateFromFactory<States>, // could be limited
                 any[]

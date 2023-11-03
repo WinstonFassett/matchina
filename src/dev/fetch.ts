@@ -123,8 +123,8 @@ export function createFetchMachine(
   const Machine = defineMachine(states, {
     // TwoPhaseTransitionFunc is not working
     Idle: {
-      execute: (state) => states.Pending({ tries: 2 }),
-      // // eslint-disable-next-line unicorn/consistent-function-scoping
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      execute: (state) => (a, b, c) => states.Pending({ tries: 2 }),
       // ({ data }) =>
       //   states.Pending(data),
     },
