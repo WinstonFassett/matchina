@@ -1,5 +1,14 @@
+/* eslint-disable unicorn/consistent-function-scoping */
 import { expect, test } from "vitest";
-import { methodware, wrapMethod } from "../src/extras/methodware";
+import {
+  beforeAfterEnhancer,
+  errorHandlingEnhancer,
+  loggingEnhancer,
+  methodware,
+  methodwareEnhancer,
+  timingEnhancer,
+  wrapMethod,
+} from "../src/extras/methodware";
 import { Func } from "../src/types";
 
 const doubler = (original: Func, ...args: any[]) => {
@@ -71,4 +80,101 @@ test("logging enhancer", () => {
 
   restore();
   expect(subject.add(2, 3)).toBe(5);
+});
+test("logging enhancer", () => {
+  const subject = {
+    add: (num1: number, num2: number) => {
+      return num1 + num2;
+    },
+  };
+  expect(subject.add(2, 3)).toBe(5);
+
+  const restore = wrapMethod(subject, "add", loggingEnhancer);
+  expect(subject.add(2, 3)).toBe(5);
+
+  restore();
+});
+
+test("error handling enhancer", () => {
+  const subject = {
+    divide: (num1: number, num2: number) => {
+      if (num2 === 0) {
+        throw new Error("Cannot divide by zero");
+      }
+      return num1 / num2;
+    },
+  };
+  expect(() => subject.divide(10, 2)).not.toThrow();
+  expect(() => subject.divide(10, 0)).toThrow();
+
+  const restore = wrapMethod(subject, "divide", errorHandlingEnhancer);
+  expect(subject.divide(10, 2)).toBe(5);
+  expect(subject.divide(10, 0)).toBeUndefined();
+
+  restore();
+});
+
+test("timing enhancer", () => {
+  const subject = {
+    slowAdd: (num1: number, num2: number) => {
+      let result = 0;
+      for (let i = 0; i < 100_000_000; i++) {
+        result += i;
+      }
+      return num1 + num2 + result;
+    },
+  };
+  expect(subject.slowAdd(2, 3)).toBeGreaterThan(0);
+
+  const restore = wrapMethod(subject, "slowAdd", (orig, a, b) => {
+    return timingEnhancer(orig, a, b);
+    return orig(a, b);
+  });
+  expect(subject.slowAdd(2, 3)).toBeGreaterThan(0);
+
+  restore();
+});
+
+test("before after enhancer", () => {
+  const subject = {
+    add: (num1: number, num2: number) => {
+      return num1 + num2;
+    },
+  };
+  expect(subject.add(2, 3)).toBe(5);
+
+  const before = (num1: number, num2: number) => {
+    console.log(`Before add: ${num1}, ${num2}`);
+    return (result: number) => {
+      console.log(`After add: ${result}`);
+    };
+  };
+  const restore = methodware(subject, "add", [beforeAfterEnhancer(before)]);
+  expect(subject.add(2, 3)).toBe(5);
+
+  restore();
+});
+
+test.only("methodware enhancer", () => {
+  const subject = {
+    add: (num1: number, num2: number) => {
+      return num1 + num2;
+    },
+  };
+  expect(subject.add(2, 3)).toBe(5);
+
+  const restore = wrapMethod(
+    subject,
+    "add",
+    methodwareEnhancer(subject, 'add', [      
+      timingEnhancer,
+      errorHandlingEnhancer,
+      loggingEnhancer('first logger'),
+      loggingEnhancer('second logger'),
+    ]),
+  );
+  console.log('TEST')
+  expect(subject.add(2, 3)).toBe(5);
+
+  restore();
 });
