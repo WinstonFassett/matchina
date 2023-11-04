@@ -48,20 +48,16 @@ export function defineMachine<
         getChange: () => lastChange,
         // event: events,
         send: (type, ...params) => {
-          console.log("in machine SEND", type);
           const from = lastChange.to;
           const nextState = transition(from, type, params, def, machine);
-          console.log({ nextState });
           if (nextState) {
             return machine.update((previous) => {
-              console.log("updating for", type, { previous });
               const change = createChange({
                 from,
                 type,
                 params,
                 to: nextState,
               });
-              console.log({ change });
               return change;
             });
           }
@@ -69,7 +65,6 @@ export function defineMachine<
         update: (updater) => {
           const change = updater(lastChange);
           if (change) {
-            console.log("updated", change.to.key);
             lastChange = change;
           }
         },

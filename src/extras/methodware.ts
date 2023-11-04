@@ -86,7 +86,6 @@ function composeEnhancers<
     orig: F,
     ...args: Parameters<F>
   ) => {
-    console.log("ORIG");
     return orig(...args);
   }) as MethodEnhancer<S, K>;
   let i = enhancers.length;
@@ -95,7 +94,6 @@ function composeEnhancers<
     const id = i--;
     const nextEnhancer = finalEnhancer;
     finalEnhancer = ((innerMethod: Method<S, K>, ...args: Parameters<F>) => {
-      console.log("enhancer", id);
       return enhancer(
         ((...args: Parameters<F>) =>
           nextEnhancer(innerMethod, ...args)) as Method<S, K>,
@@ -104,11 +102,6 @@ function composeEnhancers<
     }) as MethodEnhancer<S, K>;
   }
   return finalEnhancer;
-  // return ((orig, ...args) => {
-  //   console.log('final enhancer')
-  //   return finalEnhancer?.(orig, ...args) ?? orig(...args)
-
-  // }) as MethodEnhancer<S,K>
 }
 
 export const loggingEnhancer =
@@ -130,10 +123,8 @@ export const errorHandlingEnhancer = (originalMethod: Func, ...args: any[]) => {
   }
 };
 export const timingEnhancer = (originalMethod: Func, ...args: any[]) => {
-  console.log("timing enhancer", { originalMethod, args });
   const start = performance.now();
   const result = originalMethod(...args);
-  console.log("OK");
   const end = performance.now();
   console.log(`Method execution time: ${end - start} milliseconds`);
   return result as ReturnType<typeof originalMethod>;
@@ -152,10 +143,8 @@ export const debounceEnhancer = (wait: number) => {
   let timeout: any;
   return <M extends Method<any, any>>(originalMethod: M, ...args: any[]) => {
     clearTimeout(timeout);
-    let result: ReturnType<M>;
     timeout = setTimeout(() => {
-      result = originalMethod(...args) as ReturnType<M>;
-      console.log("debounce enhancer", { result });
+      originalMethod(...args) as ReturnType<M>;
     }, wait);
     return undefined as any;
   };
