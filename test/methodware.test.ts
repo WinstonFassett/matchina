@@ -228,12 +228,12 @@ test.only("log-debounce-log middleware", async () => {
   );
   console.log('second call to expansive')
   subject.expensive()
-  // subject.expensive()
-  // subject.expensive()
+  subject.expensive()
+  subject.expensive()
   // expect(count).toBe(1)
-  // restore();
-  // subject.expensive()
-  // expect(count).toBe(2)
-  await new Promise(r => setTimeout(r, 500))
+  restore();
+  subject.expensive()
   expect(count).toBe(2)
+  await new Promise(r => setTimeout(r, 200))
+  expect(count).toBe(3)
 });
