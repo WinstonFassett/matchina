@@ -11,3 +11,4 @@ export * from "./extras/methodware";
 export * from "./extras/delay";
 export * from "./extras/nanosubscriber";
 export * from "./extras/with-subscribe";
+export * from "./extras/with-events";

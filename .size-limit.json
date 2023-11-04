@@ -10,6 +10,16 @@
     "import": "{ wrapMethod }"
   },
   {
+    "name": "methodware",
+    "path": "dist/index.mjs",
+    "import": "{ methodwareEnhancer }"
+  },
+  {
+    "name": "nanosubscriber",
+    "path": "dist/index.mjs",
+    "import": "{ nanosubscriber }"
+  },
+  {
     "name": "states",
     "path": "dist/index.mjs",
     "import": "{ defineStates }"
@@ -20,9 +30,19 @@
     "import": "{ defineMachine }"
   },
   {
+    "name": "states+machine",
+    "path": "dist/index.mjs",
+    "import": "{ defineStates, defineMachine }"
+  },
+  {
     "name": "on-update",
     "path": "dist/index.mjs",
     "import": "{ onUpdate }"
+  },
+  {
+    "name": "on-lifecycle",
+    "path": "dist/index.mjs",
+    "import": "{ onLifecycle }"
   },
   {
     "name": "with-subscribe",
@@ -30,9 +50,9 @@
     "import": "{ withSubscribe }"
   },
   {
-    "name": "nanosubscriber",
+    "name": "with-events",
     "path": "dist/index.mjs",
-    "import": "{ nanosubscriber }"
+    "import": "{ withEvents }"
   },
   {
     "name": "promise",
@@ -40,23 +60,15 @@
     "import": "{ createPromiseMachine }"
   },
   {
-    "name": "react-src",
-    "path": "src/extras/react.ts",
-    "import": "{ useMachine }"
-  },
-  {
     "name": "react-dist",
-    "path": "dist/extras/react.mjs"
+    "path": "dist/extras/react.mjs",
+    "import": "{ useMachine }",
+    "ignore": ["react"]
   },
   {
     "name": "effects",
     "path": "dist/index.mjs",
     "import": "{ defineEffects, bindEffects }"
-  },
-  {
-    "name": "lifecycle",
-    "path": "dist/index.mjs",
-    "import": "{ onLifecycle }"
   },
   {
     "name": "zen",
