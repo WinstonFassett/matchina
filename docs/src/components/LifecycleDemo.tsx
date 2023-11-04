@@ -15,6 +15,7 @@ export function LifecycleDemo({}) {
   const [state] = useMachine(machine);
   useEffect(() => {
     console.log('add lifecycle')
+    // onlifecycle happens too late, not on underlying thing with update
     onLifecycle(machine, {
       Idle: {
         on: {
