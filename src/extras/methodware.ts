@@ -103,11 +103,12 @@ function composeEnhancers<S,
       ) as ReturnType<F>
     }) as MethodEnhancer<S, K>;      
   }
-  return ((orig, ...args) => {
-    console.log('final enhancer')
-    return finalEnhancer?.(orig, ...args) ?? orig(...args)
+  return finalEnhancer
+  // return ((orig, ...args) => {
+  //   console.log('final enhancer')
+  //   return finalEnhancer?.(orig, ...args) ?? orig(...args)
   
-  }) as MethodEnhancer<S,K>
+  // }) as MethodEnhancer<S,K>
 }
 
 export const loggingEnhancer = (prefix = '') => (originalMethod: Func, ...args: any[]) => {
@@ -142,3 +143,16 @@ export const beforeAfterEnhancer = (before: Func) => {
     return result;
   };
 };
+
+export const debounceEnhancer = (wait: number) => {
+  let timeout: any;
+  return <M extends Method<any, any>>(originalMethod: M, ...args: any[]) => {
+    clearTimeout(timeout);
+    let result: ReturnType<M>
+    timeout = setTimeout(() => {
+      result = originalMethod(...args) as ReturnType<M>;
+      console.log('debounce enhancer', { result })
+    }, wait);
+    return undefined as any
+  };
+}
