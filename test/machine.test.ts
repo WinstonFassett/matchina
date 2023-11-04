@@ -14,6 +14,8 @@ const makeMachine = () => {
     defineMachine(states, {
       Initial: {
         done: "Done",
+        doneFunc: (done: number) =>
+          states[done === 100 ? "Done" : "Initial"](true),
         doneAdvFunc: (done: string) => (_, event, def) => {
           return def.states[done === "DONE" ? "Done" : "Initial"](
             event === "doneAdvFunc",
@@ -112,11 +114,11 @@ describe("machine instance", () => {
       machine.event.done(true);
       expect(machine.getChange().to.key).toBe("Done");
     });
-    // it("handles function targets", () => {
-    //   const machine = makeMachine();
-    //   machine.event.doneFunc(100);
-    //   expect(machine.getChange().to.key).toBe("Done");
-    // });
+    it("handles function targets", () => {
+      const machine = makeMachine();
+      machine.event.doneFunc(100);
+      expect(machine.getChange().to.key).toBe("Done");
+    });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
       // machine.event

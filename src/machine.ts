@@ -25,25 +25,6 @@ export function defineMachine<
     // transition: transition,
     create: (initialState) => {
       let lastChange: any;
-      const createSender =
-        (eventKey: any) =>
-        (...params: any[]) =>
-          machine.send(eventKey, ...(params as any));
-
-      const transitioners: any = {};
-      const events: any = {};
-      for (const stateKey in states) {
-        const transitionKey = stateKey as keyof typeof transitions;
-        const stateTransitions = transitions[transitionKey];
-        transitioners[transitionKey] = {};
-        if (stateTransitions) {
-          for (const eventKey in stateTransitions) {
-            const sender = createSender(eventKey);
-            transitioners[transitionKey][eventKey] = sender;
-            events[eventKey] ||= sender;
-          }
-        }
-      }
       const transition = (
         from: State,
         event: Event["type"],
@@ -60,11 +41,6 @@ export function defineMachine<
           def,
           machine,
         );
-        // const transitionFunc = transitions[from][event as string];
-        // if (transitionFunc) {
-        //   return transitionFunc(from, ...args);
-        // }
-        // return undefined;
       };
       const machine: StateMachine<States, Transitions> = {
         def,
