@@ -69,10 +69,10 @@ async function promiseUsage () {
 
   
 
-  const fetchMachine = createPromiseMachine((id: number) => 
+  const fetchMachine = withEvents(createPromiseMachine((id: number) => 
     fetch(`.data/${id}`)
       .then((response) => response.json())
-  )
+  ))
 
   const logState = () => fetchMachine.getState().match({
     Resolved: (data) => console.log(data),

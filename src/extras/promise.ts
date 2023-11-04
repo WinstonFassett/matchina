@@ -24,15 +24,15 @@ export function createPromiseMachine<
     Rejected: {},
   });
   const initialState = states.Idle();
-  const machine = (Machine.create(initialState));
+  const machine = Machine.create(initialState);
   if (makePromise) {
     const _makePromise = makePromise;
     function execute(params: A) {
       const promise = _makePromise(...params);
       promiseMachine.promise = promise;
       promiseMachine.done = promise
-        .then(res => promiseMachine.send('resolve', res))
-        .catch(err => promiseMachine.send('reject', err));
+        .then((res) => promiseMachine.send("resolve", res))
+        .catch((error) => promiseMachine.send("reject", error));
     }
     onUpdate(machine, (commit, updater) => {
       commit((before) => {

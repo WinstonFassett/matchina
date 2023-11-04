@@ -12,9 +12,9 @@ export function withEvents<M extends StateMachine<any, any>>(machine: M) {
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {
-      console.log('SEND', eventKey, params)
+      console.log("SEND", eventKey, params);
       return machine.send(eventKey, ...(params as any));
-    }
+    };
 
   const transitioners: any = {};
   const events: any = {};
@@ -27,12 +27,12 @@ export function withEvents<M extends StateMachine<any, any>>(machine: M) {
         const sender = createSender(eventKey);
         transitioners[transitionKey][eventKey] = sender;
         events[eventKey] ||= sender;
-        console.log('sender', eventKey)
+        console.log("sender", eventKey);
       }
     }
   }
-  console.log({ events })
-  return Object.assign(machine, {    
+  console.log({ events });
+  return Object.assign(machine, {
     event: events,
   }) as MachineWithEvents<typeof machine>;
 }
