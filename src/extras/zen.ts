@@ -3,12 +3,14 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
+import { withEvents } from "./with-events";
 
 export function makeZen<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(machine: StateMachine<States, Transitions>) {
-  const { send, reset, event } = machine;
+  const eventMachine = withEvents(machine);
+  const { send, reset, event } = eventMachine;
 
   return {
     ...Object.assign({}, event),
@@ -16,7 +18,7 @@ export function makeZen<
       return machine.getState();
     },
     get machine() {
-      return machine;
+      return eventMachine;
     },
     send,
     reset,

@@ -2,6 +2,7 @@ import { defineMachine } from "../src/machine";
 import { createPromiseMachine } from "../src/extras/promise";
 import { defineStates as states } from "../src/states";
 import { delayer } from "../src/extras/delay";
+import { withEvents } from "../src/extras/with-events";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
 const submachine = (statesConfig: any, transitionsConfig: any) => ({
@@ -33,7 +34,7 @@ const Machine = defineMachine(
     Done: {},
   },
 );
-const rootMachine = Machine.create(Machine.states.Idle())
+const rootMachine = withEvents(Machine.create(Machine.states.Idle()))
 
 const log = () => console.log({ rootMachine, last: rootMachine.getChange() })
 log()

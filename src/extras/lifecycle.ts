@@ -34,6 +34,7 @@ export function onLifecycle<
   //       >,
   //     ) => void),
 ) {
+  console.log('ON LIFECYCLE')
   return onUpdate(machine, lifecycle(config));
 }
 
@@ -43,8 +44,11 @@ export function lifecycle<
 >(
   config: StateEventHookConfig<States, Transitions>,
 ): UpdateEnhancer<StateMachine<States, Transitions>> {
+  console.log('LIFECYCLE')
   return (commit, updater) => {
+    console.log('YOOOOOOOO')
     commit((current) => {
+      console.log('COMMMMMITITTITITITTTT')
       const updated = updater(current);
       const { to: currentState } = current;
       const { type: event } = updated;
@@ -65,6 +69,7 @@ export function lifecycle<
         currentStateCurrentEventHooks,
       ];
       // GUARD
+      console.log('GUARS')
       if (
         eventHooksMaybe.some(
           (hooks) => hooks?.guard && !hooks.guard(updated as any),

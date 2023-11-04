@@ -1,4 +1,5 @@
 import { defineMachine, defineStates } from "../src";
+import { withEvents } from "../src/extras/with-events";
 
 const states = defineStates({
   IDLE: () => ({}),
@@ -29,5 +30,5 @@ const Machine = defineMachine(states, {
     MOUSE_UP: () => () => states.IDLE()
   }
 });
-const machine = Machine.create(states.IDLE());
+const machine = withEvents(Machine.create(states.IDLE()));
 machine.event.MOUSE_DOWN(2)

@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "../src/extras/promise";
 import { delay, delayer } from "../src/extras/delay";
+import { withEvents } from "../src/extras/with-events";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const machine = createPromiseMachine(delayer(1, "Resolved Data"));
+    const machine = withEvents(
+      createPromiseMachine(delayer(1, "Resolved Data")),
+    );
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
@@ -21,11 +24,13 @@ describe("createPromiseMachine", () => {
   });
 
   it("should transition to Rejected state on error", async () => {
-    const machine = createPromiseMachine(async () => {
-      // console.log('execute')
-      await delay(1);
-      throw new Error("custom error");
-    });
+    const machine = withEvents(
+      createPromiseMachine(async () => {
+        // console.log('execute')
+        await delay(1);
+        throw new Error("custom error");
+      }),
+    );
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");

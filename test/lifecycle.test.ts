@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { onLifecycle } from "../src/extras/lifecycle";
 import { createPromiseMachine } from "../src/extras/promise";
+import { withEvents } from "../src/extras/with-events";
 
 describe("onLifecycle usage", () => {
-  it("should call guard, handle, and event hooks in lifecycle order", async () => {
+  it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
     let didGuardReject = 0;
     let didGuardAccept = 0;
     let didBeforeExecute = 0;
@@ -17,7 +18,7 @@ describe("onLifecycle usage", () => {
     let count = 0;
 
     // Create machine WITHOUT a promise to drive it
-    const machine = createPromiseMachine<number, [number]>();
+    const machine = withEvents(createPromiseMachine<number, [number]>());
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {

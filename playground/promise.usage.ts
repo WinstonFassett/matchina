@@ -1,14 +1,15 @@
 import { TransitionConfig } from "../src";
 import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
+import { withEvents } from "../src/extras/with-events";
 import { makeZen } from "../src/extras/zen";
 
 async function promiseUsage () {
-  const machine = createPromiseMachine(async (x: number) => {
+  const machine = withEvents(createPromiseMachine(async (x: number) => {
     console.log('sleeping for', x)
     await delay(x)
     return `slept for ${x}ms`
-  });
+  }));
   
   const it = machine.getState().match({
     Rejected: () => ({ kablamo: false }),

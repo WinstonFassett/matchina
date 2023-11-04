@@ -1,6 +1,7 @@
 import { defineStates } from "../src/states";
 import { defineMachine } from "../src/machine";
 import { defineEffects, bindEffects } from "../src/extras/effects";
+import { withEvents } from "../src/extras/with-events";
 
 const myEffects = defineEffects({
   LoadRemote: undefined,
@@ -14,25 +15,27 @@ const states = defineStates({
   Done: () => ({ effects: [myEffects.Notify("all done!")] }),
 });
 
-const machine = defineMachine(states, {
-  Idle: { next: "Pending" },
-  Pending: { next: "Done" },
-  Done: {},
-}).create(states.Idle());
-
-bindEffects(machine, 
-  state => state.data.effects as any,
-  {
-    Notify: m => console.log('NOTIFY', m),  
-  }
+const machine = withEvents(
+  defineMachine(states, {
+    Idle: { next: "Pending" },
+    Pending: { next: "Done" },
+    Done: {},
+  }).create(states.Idle()),
 );
 
+bindEffects(machine, (state) => state.data.effects as any, {
+  Notify: (m) => console.log("NOTIFY", m),
+});
 
-const checkState = () => console.log({ state: machine.getState().key, effects: machine.getState().data.effects.map(({ effect }) => effect) })
-checkState()
-machine.event.next()
-checkState()
-machine.event.next()
-checkState()
-machine.event.next()
-checkState()
+const checkState = () =>
+  console.log({
+    state: machine.getState().key,
+    effects: machine.getState().data.effects.map(({ effect }) => effect),
+  });
+checkState();
+machine.event.next();
+checkState();
+machine.event.next();
+checkState();
+machine.event.next();
+checkState();

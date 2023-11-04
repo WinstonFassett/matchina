@@ -1,10 +1,11 @@
 import React from "react";
 import { createPromiseMachine } from "../src";
 import { Expand } from "../src/types";
+import { withEvents } from "../src/extras/with-events";
 
-const machine = createPromiseMachine((id: number) =>
+const machine = withEvents(createPromiseMachine((id: number) =>
   fetch("/data").then((response) => response.json()),
-);
+));
 const state = machine.getState();
 type S = Expand<typeof state>
 

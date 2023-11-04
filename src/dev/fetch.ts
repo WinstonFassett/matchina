@@ -1,4 +1,5 @@
 import { onLifecycle } from "../extras/lifecycle";
+import { withEvents } from "../extras/with-events";
 import { makeZen } from "../extras/zen";
 import { defineMachine } from "../machine";
 import {
@@ -123,7 +124,10 @@ export function createFetchMachine(
     // TwoPhaseTransitionFunc is not working
     Idle: {
       // eslint-disable-next-line unicorn/consistent-function-scoping
-      execute: (state) => (a, b, c) => states.Pending({ tries: 2 }),
+      execute: (state) => (a, b, c) => {
+        console.log({ b });
+        return states.Pending({ tries: 2 });
+      },
       // ({ data }) =>
       //   states.Pending(data),
     },
@@ -144,7 +148,7 @@ export function createFetchMachine(
     TimedOut: {},
   });
   const initialState = states.Idle({ tries: 0 });
-  const machine = Machine.create(initialState);
+  const machine = withEvents(Machine.create(initialState));
   const promiseMachine = Object.assign(machine, {
     promise: undefined as undefined | Promise<any>,
     done: undefined as undefined | Promise<void>,

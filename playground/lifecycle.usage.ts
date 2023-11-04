@@ -1,6 +1,7 @@
 import { delayed } from "../src/extras/delay";
 import { onLifecycle } from "../src/extras/lifecycle";
 import { createPromiseMachine } from "../src/extras/promise";
+import { withEvents } from "../src/extras/with-events";
 
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it
@@ -21,7 +22,7 @@ async function promiseLifecycleUsage () {
           handle: (event) => {
             const num = event.params[0]
             machine.promise = delayed(num, num)
-            machine.done = machine.promise
+            machine.done = (machine.promise as Promise<any>)
               .then(machine.event.resolve)
               .catch(machine.event.reject)            
             return event

@@ -1,4 +1,5 @@
 import { defineMachine, defineStates } from "../src"
+import { withEvents } from "../src/extras/with-events"
 
 
 const states = defineStates({
@@ -18,7 +19,7 @@ const runMachine = defineMachine(
   }
 )
 
-const machine = runMachine.create(states.FOO())
+const machine = withEvents(runMachine.create(states.FOO()))
 
 machine.event.switch()
 

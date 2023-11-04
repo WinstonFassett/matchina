@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { defineEffects, bindEffects } from "../src/extras/effects";
 import { defineMachine } from "../src/machine";
 import { defineStates } from "../src/states";
+import { withEvents } from "../src/extras/with-events";
 
 const effectsConfig = {
   Notify: (msg: string) => ({ msg }),
@@ -21,11 +22,13 @@ const makeMachine = (
   states = makeStates(),
   initialize = (s: typeof states) => s.Idle(),
 ) =>
-  defineMachine(states, {
-    Idle: { next: "Pending" },
-    Pending: { next: "Done" },
-    Done: {},
-  }).create(initialize(states));
+  withEvents(
+    defineMachine(states, {
+      Idle: { next: "Pending" },
+      Pending: { next: "Done" },
+      Done: {},
+    }).create(initialize(states)),
+  );
 
 describe("defineEffects", () => {
   it("should create an effects union with the correct members", () => {

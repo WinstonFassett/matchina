@@ -1,4 +1,5 @@
 import { defineStates, defineMachine } from "../src";
+import { withEvents } from "../src/extras/with-events";
 
 type SomeResult = {
   someResult: string
@@ -36,7 +37,7 @@ const sampleRequestState = states.Pending({ id: 123 })
 const sampleResponse = states.Resolved({ someResult: 'ok' })
 const sampleError = states.Rejected(new Error('nope'))
 
-const machine = Machine.create(initialState)
+const machine = withEvents(Machine.create(initialState))
 machine.event.execute({ id: 123 }, true)
 machine.event.reject(new Error('error'))
 

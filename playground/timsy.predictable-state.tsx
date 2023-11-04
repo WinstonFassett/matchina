@@ -1,6 +1,7 @@
 import React from "react";
 import { defineMachine } from "../src";
 import { defineStates } from "../src/states";
+import { withEvents } from "../src/extras/with-events";
 
 type Data = { whatever: true };
 
@@ -11,7 +12,7 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-const dataMachine = defineMachine(states, {
+const dataMachine = withEvents(defineMachine(states, {
   NOT_LOADED: {
     load: () => () => states.LOADING(),
   },
@@ -21,7 +22,7 @@ const dataMachine = defineMachine(states, {
   },
   LOADED: {},
   ERROR: {},
-}).create(states.NOT_LOADED());
+}).create(states.NOT_LOADED()));
 
 const DataComponent: React.FC = () => {
   // soon

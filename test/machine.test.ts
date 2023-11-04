@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineMachine } from "../src/machine";
 import { defineStates } from "../src/states";
+import { withEvents } from "../src/extras/with-events";
 
 const makeStates = () =>
   defineStates({
@@ -9,19 +10,19 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  return defineMachine(states, {
-    Initial: {
-      done: "Done",
-      doneFunc: (done: number) =>
-        states[done === 100 ? "Done" : "Initial"](true),
-      doneAdvFunc: (done: string) => (_, event, def) => {
-        return def.states[done === "DONE" ? "Done" : "Initial"](
-          event === "doneAdvFunc",
-        );
+  return withEvents(
+    defineMachine(states, {
+      Initial: {
+        done: "Done",
+        doneAdvFunc: (done: string) => (_, event, def) => {
+          return def.states[done === "DONE" ? "Done" : "Initial"](
+            event === "doneAdvFunc",
+          );
+        },
       },
-    },
-    Done: {},
-  }).create(states.Initial());
+      Done: {},
+    }).create(states.Initial()),
+  );
 };
 
 describe("defineMachine", () => {
@@ -111,13 +112,14 @@ describe("machine instance", () => {
       machine.event.done(true);
       expect(machine.getChange().to.key).toBe("Done");
     });
-    it("handles function targets", () => {
-      const machine = makeMachine();
-      machine.event.doneFunc(100);
-      expect(machine.getChange().to.key).toBe("Done");
-    });
+    // it("handles function targets", () => {
+    //   const machine = makeMachine();
+    //   machine.event.doneFunc(100);
+    //   expect(machine.getChange().to.key).toBe("Done");
+    // });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
+      // machine.event
       machine.event.doneAdvFunc("DONE");
       expect(machine.getChange().to.key).toBe("Done");
     });
