@@ -20,32 +20,6 @@ export function defineMachine<
   type Event = StateMachineEvent<States, Transitions>;
 
   // Todo: lift this up
-  function createChange({
-    type,
-    params,
-    from,
-    to,
-  }: {
-    type: Event["type"];
-    params: Event["params"];
-    from: State;
-    to: State;
-  }) {
-    return {
-      type,
-      params,
-      from,
-      to,
-      match(cases) {
-        const handler = (cases as any)[type];
-        if (handler) {
-          return handler(...params);
-        } else if (cases._) {
-          return cases._(...params);
-        }
-      },
-    } as Event;
-  }
 
   function transition(
     sourceState: State,
@@ -150,4 +124,35 @@ export function defineMachine<
     },
   };
   return def;
+}
+
+
+function createChange<
+  States extends StatesFactory,
+  Transitions extends TransitionConfig<States>,
+>({
+  type,
+  params,
+  from,
+  to,
+}: {
+  type: StateMachineEvent<States, Transitions>["type"];
+  params: StateMachineEvent<States, Transitions>["params"];
+  from: StateFromFactory<States>;
+  to: StateFromFactory<States>;
+}): StateMachineEvent<States, Transitions> {
+  return {
+    type,
+    params,
+    from,
+    to,
+    match(cases) {
+      const handler = (cases as any)[type];
+      if (handler) {
+        return handler(...params);
+      } else if (cases._) {
+        return cases._(...params);
+      }
+    },
+  };
 }
