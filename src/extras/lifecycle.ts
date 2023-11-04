@@ -63,9 +63,6 @@ export function lifecycle<M extends StateMachine<any, any>>(
         globalStateHooks?.on?.["*"],
         globalStateHooks?.on?.[event as keyof (typeof globalStateHooks)["on"]],
         currentStateHooks?.on?.["*"],
-        currentStateHooks?.on?.[
-          event as keyof (typeof currentStateHooks)["on"]
-        ],
         currentStateCurrentEventHooks,
       ];
       // GUARD
