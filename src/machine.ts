@@ -19,41 +19,10 @@ export function defineMachine<
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
 
-  // Todo: lift this up
-
-  function transition(
-    sourceState: State,
-    type: Event["type"],
-    params: Event["params"],
-    def: StateMachineDefinition<States, Transitions>,
-    machine?: StateMachine<States, Transitions>,
-  ): State | undefined {
-    const targetFuncOrString =
-      transitions[sourceState.key as any]?.[type as any];
-    if (!targetFuncOrString) {
-      return sourceState;
-    }
-
-    let targetState: State;
-
-    if (typeof targetFuncOrString === "function") {
-      const targetStateOrFunc = targetFuncOrString(...params);
-      targetState =
-        typeof targetStateOrFunc === "function"
-          ? (targetStateOrFunc as any)(sourceState, type, def, machine)
-          : targetStateOrFunc;
-    } else {
-      targetState = states[targetFuncOrString as keyof typeof states](
-        ...params,
-      ) as any;
-    }
-    return targetState;
-  }
-
   const def: StateMachineDefinition<States, Transitions> = {
     states,
     transitions,
-    transition,
+    // transition: transition,
     create: (initialState) => {
       let lastChange: any;
       const createSender =
@@ -75,6 +44,28 @@ export function defineMachine<
           }
         }
       }
+      const transition = (
+        from: State,
+        event: Event["type"],
+        args: any[],
+        def: StateMachineDefinition<States, Transitions>,
+        machine: StateMachine<States, Transitions>,
+      ): State | undefined => {
+        return getExitState(
+          def.states,
+          def.transitions,
+          from,
+          event,
+          args,
+          def,
+          machine,
+        );
+        // const transitionFunc = transitions[from][event as string];
+        // if (transitionFunc) {
+        //   return transitionFunc(from, ...args);
+        // }
+        // return undefined;
+      };
       const machine: StateMachine<States, Transitions> = {
         def,
         getState: () => lastChange.to,
@@ -126,7 +117,6 @@ export function defineMachine<
   return def;
 }
 
-
 function createChange<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
@@ -155,4 +145,37 @@ function createChange<
       }
     },
   };
+}
+
+function getExitState<
+  States extends StatesFactory,
+  Transitions extends TransitionConfig<States>,
+>(
+  states: States,
+  transitions: Transitions,
+  sourceState: StateFromFactory<States>,
+  type: StateMachineEvent<States, Transitions>["type"],
+  params: StateMachineEvent<States, Transitions>["params"],
+  def: StateMachineDefinition<States, Transitions>,
+  machine?: StateMachine<States, Transitions>,
+): StateFromFactory<States> | undefined {
+  const targetFuncOrString = transitions[sourceState.key as any]?.[type as any];
+  if (!targetFuncOrString) {
+    return sourceState;
+  }
+
+  let targetState: StateFromFactory<States>;
+
+  if (typeof targetFuncOrString === "function") {
+    const targetStateOrFunc = targetFuncOrString(...params);
+    targetState =
+      typeof targetStateOrFunc === "function"
+        ? (targetStateOrFunc as any)(sourceState, type, def, machine)
+        : targetStateOrFunc;
+  } else {
+    targetState = states[targetFuncOrString as keyof typeof states](
+      ...params,
+    ) as any;
+  }
+  return targetState;
 }

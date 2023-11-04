@@ -90,7 +90,7 @@ test("logging enhancer", () => {
   };
   expect(subject.add(2, 3)).toBe(5);
 
-  const restore = wrapMethod(subject, "add", loggingEnhancer('LOG TEST'));
+  const restore = wrapMethod(subject, "add", loggingEnhancer("LOG TEST"));
   expect(subject.add(2, 3)).toBe(5);
 
   restore();
@@ -167,73 +167,69 @@ test("methodware enhancer", () => {
   const restore = wrapMethod(
     subject,
     "add",
-    methodwareEnhancer(subject, 'add', [      
+    methodwareEnhancer(subject, "add", [
       timingEnhancer,
       errorHandlingEnhancer,
-      loggingEnhancer('first logger'),
-      loggingEnhancer('second logger'),
+      loggingEnhancer("first logger"),
+      loggingEnhancer("second logger"),
     ]),
   );
-  console.log('TEST')
+  console.log("TEST");
   expect(subject.add(2, 3)).toBe(5);
 
   restore();
 });
 
 test("debounce enhancer", async () => {
-  let count = 0
+  let count = 0;
   const subject = {
     expensive: () => {
-      console.log('expensive')
-      count++
+      console.log("expensive");
+      count++;
     },
   };
-  subject.expensive()
-  expect(count).toBe(1)
-  const restore = wrapMethod(
-    subject,
-    'expensive',
-    debounceEnhancer(100),
-  );
-  subject.expensive()
-  subject.expensive()
-  subject.expensive()
-  expect(count).toBe(1)
+  subject.expensive();
+  expect(count).toBe(1);
+  const restore = wrapMethod(subject, "expensive", debounceEnhancer(100));
+  subject.expensive();
+  subject.expensive();
+  subject.expensive();
+  expect(count).toBe(1);
   restore();
-  subject.expensive()
-  expect(count).toBe(2)
-  await new Promise(r => setTimeout(r, 200))
-  expect(count).toBe(3)
+  subject.expensive();
+  expect(count).toBe(2);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(count).toBe(3);
 });
 
-test.only("log-debounce-log middleware", async () => {
-  let count = 0
+test("log-debounce-log middleware", async () => {
+  let count = 0;
   const subject = {
     expensive: () => {
-      count++
-      console.log('mock expensive thing', count)
-      return { result: 'that was expensive'}
+      count++;
+      console.log("mock expensive thing", count);
+      return { result: "that was expensive" };
     },
   };
-  subject.expensive()
-  expect(count).toBe(1)
+  subject.expensive();
+  expect(count).toBe(1);
   const restore = wrapMethod(
     subject,
-    'expensive',
-    methodwareEnhancer(subject, 'expensive', [
+    "expensive",
+    methodwareEnhancer(subject, "expensive", [
       // loggingEnhancer('above debounce'),
       debounceEnhancer(100),
-      loggingEnhancer('below debounce'),
+      loggingEnhancer("below debounce"),
     ]),
   );
-  console.log('second call to expansive')
-  subject.expensive()
-  subject.expensive()
-  subject.expensive()
+  console.log("second call to expansive");
+  subject.expensive();
+  subject.expensive();
+  subject.expensive();
   // expect(count).toBe(1)
   restore();
-  subject.expensive()
-  expect(count).toBe(2)
-  await new Promise(r => setTimeout(r, 200))
-  expect(count).toBe(3)
+  subject.expensive();
+  expect(count).toBe(2);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(count).toBe(3);
 });

@@ -92,21 +92,10 @@ export type StateMachineCreator<
 export type StateMachineDefinition<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
-  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
-    States,
-    Transitions
-  >,
 > = {
   create: StateMachineCreator<States, Transitions>;
   states: States;
   transitions: Transitions;
-  transition(
-    sourceState: StateFromFactory<States>,
-    type: Event["type"],
-    params: Event["params"],
-    def: StateMachineDefinition<States, Transitions>,
-    machine?: StateMachine<States, Transitions>,
-  ): StateFromFactory<States> | undefined;
 };
 // #endregion
 // #region State Machine Event
