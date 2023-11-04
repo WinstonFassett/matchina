@@ -1,3 +1,4 @@
+import { FuncEnhancer } from "./extras/methodware";
 import {
   StateMachine,
   StateMachineDefinition,
@@ -6,8 +7,11 @@ import {
   StatesFactory,
   StateFromFactory,
 } from "./machine-types";
+import { SwapFunc } from "./types";
 
 export const InitializeMachine = "__init";
+
+export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
 
 export function defineMachine<
   States extends StatesFactory,
@@ -15,6 +19,7 @@ export function defineMachine<
 >(
   states: States,
   transitions: Transitions,
+  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>,
 ): StateMachineDefinition<States, Transitions> {
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
@@ -25,6 +30,7 @@ export function defineMachine<
     // transition: transition,
     create: (initialState) => {
       let lastChange: any;
+
       const transition = (
         from: State,
         event: Event["type"],
@@ -63,7 +69,14 @@ export function defineMachine<
           }
         },
         update: (updater) => {
-          const change = updater(lastChange);
+          const change = enhancer
+            ? enhancer((updater) => {
+                const change = updater(lastChange);
+                if (change) {
+                  lastChange = change;
+                }
+              }, lastChange)
+            : updater(lastChange);
           if (change) {
             lastChange = change;
           }

@@ -1,12 +1,17 @@
 import { StatesMatchboxFactory } from "../states";
-import { StateMachine, TransitionConfig } from "../machine-types";
+import {
+  StateMachine,
+  StateMachineEvent,
+  TransitionConfig,
+} from "../machine-types";
+import { UpdateEnhancer } from "../machine";
 import {
   PartialTransitionHookExtensions,
   StateEventHookConfig,
   StateTransitionHooks,
   TransitionHookExtensions,
 } from "./lifecycle-types";
-import { UpdateEnhancer, onUpdate } from "./on-update";
+import { onUpdate } from "./on-update";
 
 type Dispose = () => void;
 
@@ -37,12 +42,11 @@ export function onLifecycle<
   return onUpdate(machine, lifecycle(config));
 }
 
-export function lifecycle<
-  States extends StatesMatchboxFactory,
-  Transitions extends TransitionConfig<States>,
->(
-  config: StateEventHookConfig<States, Transitions>,
-): UpdateEnhancer<StateMachine<States, Transitions>> {
+export function lifecycle<M extends StateMachine<any, any>>(
+  config: StateEventHookConfig<M["def"]["states"], M["def"]["transitions"]>,
+): UpdateEnhancer<
+  StateMachineEvent<M["def"]["states"], M["def"]["transitions"]>
+> {
   return (commit, updater) => {
     commit((current) => {
       const updated = updater(current);
@@ -82,7 +86,11 @@ export function lifecycle<
       }
       const nextStateHooks = config[handled.to.key as keyof typeof config];
       const runStateHooks = (
-        stateHooksMaybe: StateTransitionHooks<States, Transitions, any>[],
+        stateHooksMaybe: StateTransitionHooks<
+          M["def"]["states"],
+          M["def"]["transitions"],
+          any
+        >[],
         hookName: keyof StateTransitionHooks<any, any, any>,
       ) => {
         for (const hooks of stateHooksMaybe) {

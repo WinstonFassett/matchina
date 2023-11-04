@@ -1,4 +1,4 @@
-import { defineMachine } from "../machine";
+import { UpdateEnhancer, defineMachine } from "../machine";
 import { FlatEventKeys } from "../machine-types";
 import { defineStates } from "../states";
 import { onUpdate } from "./on-update";
@@ -7,22 +7,21 @@ export function createPromiseMachine<
   T,
   A extends any[],
   E extends Error = Error,
->(makePromise?: (...args: A) => Promise<T>) {
-  const states = defineStates({
-    Idle: undefined,
-    Pending: (...params: A) => params,
-    Rejected: (error: E) => error,
-    Resolved: (data: T) => data,
-  });
-  const Machine = defineMachine(states, {
-    Idle: { execute: "Pending" },
-    Pending: {
-      resolve: "Resolved",
-      reject: "Rejected",
+>(makePromise?: (...args: A) => Promise<T>, enhancer?: UpdateEnhancer<any>) {
+  const states = definePromiseStates<T, A, E>();
+  const Machine = defineMachine(
+    states,
+    {
+      Idle: { execute: "Pending" },
+      Pending: {
+        resolve: "Resolved",
+        reject: "Rejected",
+      },
+      Resolved: {},
+      Rejected: {},
     },
-    Resolved: {},
-    Rejected: {},
-  });
+    enhancer,
+  );
   const initialState = states.Idle();
   const machine = Machine.create(initialState);
   if (makePromise) {
@@ -51,7 +50,17 @@ export function createPromiseMachine<
   return promiseMachine;
 }
 export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
+export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
 export type PromiseStates = PromiseMachine["def"]["states"];
 export type PromiseTransitions = PromiseMachine["def"]["transitions"];
 export type PromiseStateKey = keyof PromiseStates;
 export type PromiseEventKey = FlatEventKeys<PromiseStates, PromiseTransitions>;
+
+function definePromiseStates<T, A extends any[], E extends Error = Error>() {
+  return defineStates({
+    Idle: undefined,
+    Pending: (...params: A) => params,
+    Rejected: (error: E) => error,
+    Resolved: (data: T) => data,
+  });
+}

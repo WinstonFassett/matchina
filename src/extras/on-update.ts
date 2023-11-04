@@ -9,5 +9,5 @@ export function onUpdate<
   return wrapMethod(machine, "update", customFn);
 }
 
-export type UpdateEnhancer<M extends { update: SwapFunc<any> }> =
+export type UpdateMethodEnhancer<M extends { update: SwapFunc<any> }> =
   MethodEnhancer<M, "update">;

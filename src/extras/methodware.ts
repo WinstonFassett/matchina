@@ -32,13 +32,17 @@ export function methodware<S, K extends keyof S>(
   };
 }
 
-export type MethodEnhancer<S, K extends keyof S> = S[K] extends (
+export type FuncEnhancer<F extends Func> = F extends (
   ...args: infer A
 ) => infer R
-  ? (original: Method<S, K>, ...args: A) => R
-  : S[K] extends (...args: infer A) => void
-  ? (original: Method<S, K>, ...args: A) => void
-  : never;
+  ? (original: F, ...args: A) => R
+  : F extends (...args: infer A) => void
+  ? (original: F, ...args: A) => void
+  : never; // (original: Func, ...args: any[]) => unknown;
+
+export type MethodEnhancer<S, K extends keyof S> = FuncEnhancer<
+  S[K] extends Func ? S[K] : never
+>;
 
 export type Method<S, K extends keyof S> = S[K] extends (
   ...args: infer A
@@ -61,7 +65,7 @@ export const methodwareEnhancer = <
   method: K,
   enhancers: MethodEnhancer<S, K>[],
 ) => {
-  return composeEnhancers<S, K, F>(enhancers);
+  return composeEnhancers<F>(enhancers);
 };
 
 /* 
@@ -73,36 +77,45 @@ export const methodwareEnhancer = <
   and the last enhancer should return the result
   so we don't use reduce with values, but we could use reduce to create a function chain
   */
-function composeEnhancers<
-  S,
-  K extends keyof S,
-  F extends S[K] extends (...args: any[]) => any ? S[K] : never = S[K] extends (
-    ...args: any[]
-  ) => any
-    ? S[K]
-    : never,
->(enhancers: MethodEnhancer<S, K>[]): MethodEnhancer<S, K> {
-  let finalEnhancer: MethodEnhancer<S, K> = ((
-    orig: F,
-    ...args: Parameters<F>
-  ) => {
+export function composeEnhancers<F extends Func>(
+  enhancers: FuncEnhancer<F>[],
+): FuncEnhancer<F> {
+  let finalEnhancer: FuncEnhancer<F> = ((orig: F, ...args: Parameters<F>) => {
     return orig(...args);
-  }) as MethodEnhancer<S, K>;
+  }) as FuncEnhancer<F>;
   let i = enhancers.length;
   const copy = [...enhancers].reverse();
   for (const enhancer of copy) {
     const id = i--;
     const nextEnhancer = finalEnhancer;
-    finalEnhancer = ((innerMethod: Method<S, K>, ...args: Parameters<F>) => {
+    finalEnhancer = ((innerMethod: F, ...args: Parameters<F>) => {
       return enhancer(
-        ((...args: Parameters<F>) =>
-          nextEnhancer(innerMethod, ...args)) as Method<S, K>,
+        ((...args: Parameters<F>) => nextEnhancer(innerMethod, ...args)) as F,
         ...args,
       ) as ReturnType<F>;
-    }) as MethodEnhancer<S, K>;
+    }) as FuncEnhancer<F>;
   }
   return finalEnhancer;
 }
+
+// export function runWithEnhancers<F extends Func>(
+//   original: F,
+//   enhancers: FuncEnhancer<F>[],
+//   ...args: Parameters<F>
+// ): ReturnType<F> {
+//   // const enhanced = composeEnhancers(enhancers);
+//   // try to implement this without composeEnhancers
+//   // similar to how that method works
+//   // need to reverse the enhancers I think
+//   let returnValue
+//   let prevFunc = original
+//   for (const enhancer of enhancers) {
+//     // returnValue = enhancer(original, ...args)
+//     returnValue = enhancer(prevFunc, ...args)
+
+//   }
+//   return returnValue
+// }
 
 export const loggingEnhancer =
   (prefix = "") =>

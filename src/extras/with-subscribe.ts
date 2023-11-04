@@ -14,11 +14,10 @@ export function withSubscribe<
     commit(updater);
     emit(machine.getState());
   });
-  return {
-    ...machine,
+  return Object.assign(machine, {
     subscribe,
     dispose,
-  } as SubscribableMachine<typeof machine>;
+  }) as SubscribableMachine<typeof machine>;
 }
 export type SubscribableMachine<
   M extends StateMachine<any, any> = StateMachine<any, any>,

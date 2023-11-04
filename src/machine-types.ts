@@ -1,3 +1,5 @@
+import { FuncEnhancer } from "./extras/methodware";
+import { UpdateMethodEnhancer } from "./extras/on-update";
 import {
   CreateFunc,
   SwapFunc,
@@ -61,6 +63,11 @@ export interface StateMachine<
   getChange: () => StateMachineEvent<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
+  // use: (
+  //   ...updateEnhancers: FuncEnhancer<
+  //     SwapFunc<StateMachineEvent<States, Transitions>>
+  //   >[]
+  // ) => () => void;
 }
 
 export type SendFunction<
