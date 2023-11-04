@@ -1,4 +1,4 @@
-import { createPromiseMachine, withSubscribe } from "../../../src";
+import { createPromiseMachine, withSubscribe, withEvents } from "../../../src";
 import { useMachine } from "../../../src/extras/react";
 
 const slowlyAddTwoNumbers = (
@@ -8,7 +8,7 @@ const slowlyAddTwoNumbers = (
   name = "unnamed",
 ) => new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
-const machine = withSubscribe(createPromiseMachine(slowlyAddTwoNumbers));
+const machine = withSubscribe(withEvents(createPromiseMachine(slowlyAddTwoNumbers)));
 
 export function ReactMachineDemo({}) {
   const [state] = useMachine(machine);
