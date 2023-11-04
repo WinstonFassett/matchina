@@ -51,6 +51,10 @@ export default defineConfig({
               label: "Types",
               link: "/guides/types/",
             },
+            {
+              label: "Lifecycle",
+              link: "/guides/lifecycle/",
+            },
           ],
         },
         // {
