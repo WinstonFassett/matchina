@@ -21,8 +21,8 @@ export function LifecycleDemo({}) {
         on: {
           execute:{
             after: (event) => {
-              console.log('after', event)
-              log(`After ${event.type}`)
+              console.log('Idle.execute', event)
+              log(`Idle.execute ${event.type}`)
             },
           },
         },      
@@ -31,8 +31,8 @@ export function LifecycleDemo({}) {
         on: {
           "*": {
             after: (event) => {
-              console.log('after', event)
-              log(`After ${event.type}`)
+              console.log('* after', event)
+              log(`* after ${event.type}`)
             },
           }
         }
