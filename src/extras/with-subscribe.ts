@@ -7,9 +7,10 @@ export function withSubscribe<
   States extends StatesMatchboxFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(machine: StateMachine<States, Transitions>) {
-  type M = typeof machine;
-  type State = MatchboxFromStatesFactory<M["def"]["states"]>;
+  type State = ReturnType<(typeof machine)["getState"]>;
   const [subscribe, emit] = nanosubscriber<State>();
+  const s: State = machine.getState();
+
   const dispose = onUpdate(machine, (commit, updater) => {
     commit(updater);
     emit(machine.getState());
@@ -17,11 +18,5 @@ export function withSubscribe<
   return Object.assign(machine, {
     subscribe,
     dispose,
-  }) as SubscribableMachine<typeof machine>;
+  });
 }
-export type SubscribableMachine<
-  M extends StateMachine<any, any> = StateMachine<any, any>,
-> = M & {
-  subscribe: Subscribe<ReturnType<M["getState"]>>;
-  dispose: () => void;
-};

@@ -23,9 +23,9 @@ export function withEvents<M extends StateMachine<any, any>>(machine: M) {
     }
   }
   return Object.assign(machine, {
-    event: events,
-  }) as MachineWithEvents<typeof machine>;
+    event: events as FlatEventSenders<
+      M["def"]["states"],
+      M["def"]["transitions"]
+    >,
+  });
 }
-export type MachineWithEvents<M extends StateMachine<any, any>> = M & {
-  event: FlatEventSenders<M["def"]["states"], M["def"]["transitions"]>;
-};
