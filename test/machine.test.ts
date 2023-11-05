@@ -150,3 +150,33 @@ describe("machine instance", () => {
     console.log({ mustBeThing });
   });
 });
+describe("enhancer", () => {
+  let didEnhancerRun = false;
+  it("should run before/around/after update", () => {
+    const states = makeStates();
+    const machine = defineMachine(states, {
+      Initial: {
+        done: "Done",
+      },
+      Done: {},
+    }).create(states.Initial(), function (doUpdate, previous) {
+      console.log("RUN ENHANCER");
+      if (!previous) {
+        console.log("SKIP");
+      }
+      // doUpdate(function (old){
+      //   console.log('DOING UPDATE', arguments)
+      //   return old
+      // })
+      doUpdate(previous);
+      didEnhancerRun = true;
+      console.log("BEFORE");
+      // commit(updater);
+      console.log("AFTER");
+    });
+
+    expect(didEnhancerRun).toBe(true);
+    machine.send("done");
+    expect(didEnhancerRun).toBe(true);
+  });
+});

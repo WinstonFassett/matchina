@@ -94,7 +94,10 @@ export type StateMachineCreator<
   Transitions extends TransitionConfig<States>,
 > = (
   initialState: StateFromFactory<States>,
+  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>,
 ) => StateMachine<States, Transitions>;
+
+export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
 
 export type StateMachineDefinition<
   States extends StatesFactory,

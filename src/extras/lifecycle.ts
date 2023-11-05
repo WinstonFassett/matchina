@@ -3,8 +3,8 @@ import {
   StateMachine,
   StateMachineEvent,
   TransitionConfig,
+  UpdateEnhancer,
 } from "../machine-types";
-import { UpdateEnhancer } from "../machine";
 import { Func } from "../types";
 import {
   PartialTransitionHookExtensions,

@@ -11,15 +11,12 @@ import { SwapFunc } from "./types";
 
 export const InitializeMachine = "__init";
 
-export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
-
 export function defineMachine<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
   states: States,
   transitions: Transitions,
-  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>,
 ): StateMachineDefinition<States, Transitions> {
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
@@ -28,7 +25,7 @@ export function defineMachine<
     states,
     transitions,
     // transition: transition,
-    create: (initialState) => {
+    create: (initialState, enhancer) => {
       let lastChange: any;
 
       const transition = (
@@ -54,7 +51,7 @@ export function defineMachine<
         getChange: () => lastChange,
         // event: events,
         send: (type, ...params) => {
-          const from = lastChange.to;
+          const from = lastChange?.to;
           const nextState = transition(from, type, params, def, machine);
           if (nextState && nextState !== from) {
             return machine.update((previous) => {
@@ -68,15 +65,19 @@ export function defineMachine<
             });
           }
         },
-        update: (updater) => {
-          const change = enhancer
-            ? enhancer((updater) => {
-                const change = updater(lastChange);
-                if (change) {
-                  lastChange = change;
-                }
-              }, lastChange)
-            : updater(lastChange);
+        update: (getUpdate) => {
+          let change: undefined | Event;
+          if (enhancer) {
+            console.log("using enhancer", lastChange);
+            const changed = getUpdate(lastChange);
+            console.log("changed", changed);
+            enhancer(function doUpdate(enhancerChange) {
+              // console.log('doUpdate', arguments)
+              change = enhancerChange as any;
+            }, changed as any);
+          } else {
+            change = getUpdate(lastChange);
+          }
           if (change) {
             lastChange = change;
           }
@@ -144,6 +145,7 @@ function getExitState<
   def: StateMachineDefinition<States, Transitions>,
   machine?: StateMachine<States, Transitions>,
 ): StateFromFactory<States> | undefined {
+  // console.log('getExitState', arguments)
   const targetFuncOrString = transitions[sourceState.key as any]?.[type as any];
   if (!targetFuncOrString) {
     return sourceState;

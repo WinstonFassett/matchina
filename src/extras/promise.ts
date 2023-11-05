@@ -1,5 +1,5 @@
-import { UpdateEnhancer, defineMachine } from "../machine";
-import { FlatEventKeys } from "../machine-types";
+import { defineMachine } from "../machine";
+import { FlatEventKeys, UpdateEnhancer } from "../machine-types";
 import { defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
@@ -9,21 +9,17 @@ export function createPromiseMachine<
   E extends Error = Error,
 >(makePromise?: (...args: A) => Promise<T>, enhancer?: UpdateEnhancer<any>) {
   const states = definePromiseStates<T, A, E>();
-  const Machine = defineMachine(
-    states,
-    {
-      Idle: { execute: "Pending" },
-      Pending: {
-        resolve: "Resolved",
-        reject: "Rejected",
-      },
-      Resolved: {},
-      Rejected: {},
+  const Machine = defineMachine(states, {
+    Idle: { execute: "Pending" },
+    Pending: {
+      resolve: "Resolved",
+      reject: "Rejected",
     },
-    enhancer,
-  );
+    Resolved: {},
+    Rejected: {},
+  });
   const initialState = states.Idle();
-  const machine = Machine.create(initialState);
+  const machine = Machine.create(initialState, enhancer);
   if (makePromise) {
     const _makePromise = makePromise;
     function execute(params: A) {
