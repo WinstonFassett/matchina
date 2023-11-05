@@ -62,7 +62,7 @@ export default defineConfig({
         //   autogenerate: { directory: "reference" },
         // },
       ],
-      customCss: ["./src/tailwind.css"],
+      customCss: ["./src/styles/tailwind.css", "./src/styles/shiki-twoslash.css"],
     }),
     tailwind({ applyBaseStyles: false }),
     react(),
