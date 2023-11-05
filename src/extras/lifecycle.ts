@@ -5,6 +5,7 @@ import {
   TransitionConfig,
 } from "../machine-types";
 import { UpdateEnhancer } from "../machine";
+import { Func } from "../types";
 import {
   PartialTransitionHookExtensions,
   StateEventHookConfig,
@@ -12,7 +13,6 @@ import {
   TransitionHookExtensions,
 } from "./lifecycle-types";
 import { onUpdate } from "./on-update";
-import { Func } from "../types";
 
 type Dispose = () => void;
 
@@ -48,7 +48,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
 ): UpdateEnhancer<
   StateMachineEvent<M["def"]["states"], M["def"]["transitions"]>
 > {
-  let after: undefined | Func<[],void> = undefined
+  const after: undefined | Func<[], void> = undefined;
   return (commit, updater) => {
     commit((current) => {
       const updated = updater(current);
@@ -114,7 +114,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
       eventHooksMaybe.reverse();
       Promise.resolve().then(() => {
         runEventHooks("after");
-      })
+      });
       return handled;
     });
   };

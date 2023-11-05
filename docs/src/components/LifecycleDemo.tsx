@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { createPromiseMachine, withSubscribe, withEvents, onLifecycle } from "../../../src";
+import {
+  createPromiseMachine,
+  withSubscribe,
+  withEvents,
+  onLifecycle,
+} from "../../../src";
 import { useMachine } from "../../../src/extras/react";
 
 const slowlyAddTwoNumbers = (
@@ -7,43 +12,77 @@ const slowlyAddTwoNumbers = (
   y: number,
   duration = 1000,
   name = "unnamed",
-) => new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
+) =>
+  new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
+createPromiseMachine();
 
-const machine = withEvents(withSubscribe(createPromiseMachine(slowlyAddTwoNumbers)));
+const machine = withEvents(
+  withSubscribe(createPromiseMachine(slowlyAddTwoNumbers)),
+);
 
 export function LifecycleDemo({}) {
   const [state] = useMachine(machine);
+  const [logs, setLogs] = useState<string[]>(["Log:"]);
+  const log = (msg: string) => setLogs((logs) => [...logs, msg]);
   useEffect(() => {
-    console.log('add lifecycle')
-    // onlifecycle happens too late, not on underlying thing with update
+    const origConsole = console;
+    const dualConsole = {
+      ...console,
+      log: (...args: any[]) => {
+        origConsole.log(...args);
+        log(args.join(" "));
+      },
+    };
+    console = dualConsole;
     onLifecycle(machine, {
       Idle: {
         on: {
-          execute:{
-            after: (event) => {
-              console.log('Idle.execute', event)
-              log(`Idle.execute ${event.type}`)
+          execute: {
+            after: ({ type, from, to }) => {
+              console.log(
+                "Specific state and event:",
+                type, // MUST equal and autocomplete to 'execute'
+                "from", from.key, // MUST equal and autocomplete to 'Idle'
+                "to", to.key, // MUST equal and autocomplete to 'Pending'
+              )
             },
           },
-        },      
+        },
       },
       "*": {
         on: {
           "*": {
-            after: (event) => {
-              console.log('* after', event)
-              log(`* after ${event.type}`)
+            after: ({ type, from, to }) => {
+              console.log(
+                "any state with any event:",
+                type, // any valid event b/c wildcard event
+                "from", from.key, // any valid state b/c wildcard state
+                "to", to.key, // any valid exit state (which excludes Idle)
+                "with data", to.data, // any valid state data b/c wildcard state
+              )
             },
-          }
-        }
-      }
+          },
+          reject: {
+            after: ({ type, from, to }) => {
+              const { name, stack, message } = to.data // can only be Error type
+              console.log(        
+                "Any reject event:",    
+                type, // MUST be 'reject'
+                "from", from.key, // any valid state b/c wildcard state
+                "with data", from.data, // any valid state data b/c wildcard state
+                "to", to.key, // MUST equal and autocomplete to 'Rejected'            
+                "Error", name, message, stack, // Error properties
+              )
+            },
+          },
+        },
+      },
     })
-  }, [])
-    
-  const [logs, setLogs] = useState<string[]>(['Log:'])
-  const log = (msg: string) => setLogs((logs) => [...logs, msg])
+  }, []);
+
   return (
-    <div className="not-content">!!!
+    <div className="not-content">
+      !!!
       <div>
         Action:{" "}
         {machine.getState().match({
@@ -89,7 +128,7 @@ export function LifecycleDemo({}) {
             2,
           )}
         </pre>
-        <pre className="flex-1">{logs.join('\n')}</pre>
+        <pre className="flex-1">{logs.join("\n")}</pre>
       </div>
     </div>
   );
