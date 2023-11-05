@@ -105,7 +105,10 @@ export function lifecycle<M extends StateMachine<any, any>>(
       runStateHooks([currentStateHooks, globalStateHooks] as any, "leave");
       runEventHooks("before");
       runStateHooks([globalStateHooks, nextStateHooks] as any, "enter");
-      commit(() => handled);
+      // commit(() => handled);
+      // implicitly the commit/change happens here
+      // but we still run after hooks before returning
+      // maybe that's not semantically correct. lets move it out maybe
       eventHooksMaybe.reverse();
       runEventHooks("after");
       return handled;
