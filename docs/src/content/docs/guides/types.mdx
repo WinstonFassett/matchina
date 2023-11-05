@@ -46,7 +46,7 @@ promiseMachine.getState().match({
   Resolved: (data) => { console.log(data.result) },
   Rejected: (error) => { console.log(error.message) },
 }, false)
-promiseMachine.event.execute(100, 'test', { delay: 1000 })
+promiseMachine.send('execute', 100, 'test', { delay: 1000 })
 
 ```
 
