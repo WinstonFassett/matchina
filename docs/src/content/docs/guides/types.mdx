@@ -34,7 +34,9 @@ const resolvedData = resolved.data
 ## Promise Machine 
 
 ```tsx twoslash
-import { createPromiseMachine, withSubscribe, useMachine } from "/Users/winston/dev/personal/matchina/docs/src/matchina-source-lib";
+import { createPromiseMachine, withSubscribe } from "matchina";
+import { useMachine } from "../src/extras/react";
+
 // ---cut---
 type MakeAPromise = (x: number, s:string, options?: { delay: number }) => Promise<{ result: string }>
 const promiseMachine = createPromiseMachine(null as unknown as MakeAPromise)

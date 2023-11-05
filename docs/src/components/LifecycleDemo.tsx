@@ -5,8 +5,7 @@ import {
   withEvents,
   onLifecycle,
 } from "matchina";
-// import { useMachine } from "matchina/extras/react";
-import { useMachine } from "../../../src/extras/react";
+import { useMachine } from "matchina/extras/react";
 
 const slowlyAddTwoNumbers = (
   x: number,
@@ -83,7 +82,6 @@ export function LifecycleDemo({}) {
 
   return (
     <div className="not-content">
-      !!!
       <div>
         Action:{" "}
         {machine.getState().match({

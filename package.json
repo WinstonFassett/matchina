@@ -11,6 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./extras/react": {
+      "types": "./dist/extras/react.d.ts",
+      "import": "./dist/extras/react.mjs",
+      "require": "./dist/extras/react.cjs"
     }
   },
   "main": "./dist/index.cjs",

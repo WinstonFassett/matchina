@@ -1,6 +1,6 @@
 import { createPromiseMachine, withSubscribe, withEvents } from "matchina";
 // import { useMachine } from "matchina/extras/react";
-import { useMachine } from "../../../src/extras/react";
+import { useMachine } from "matchina/extras/react";
 
 const slowlyAddTwoNumbers = (
   x: number,
