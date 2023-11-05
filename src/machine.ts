@@ -56,7 +56,7 @@ export function defineMachine<
         send: (type, ...params) => {
           const from = lastChange.to;
           const nextState = transition(from, type, params, def, machine);
-          if (nextState) {
+          if (nextState && nextState !== from) {
             return machine.update((previous) => {
               const change = createChange({
                 from,

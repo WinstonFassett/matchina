@@ -40,7 +40,7 @@ export function LifecycleDemo({}) {
           execute: {
             after: ({ type, from, to }) => {
               console.log(
-                "Specific state and event:",
+                "Specific state and event:\n",
                 type, // MUST equal and autocomplete to 'execute'
                 "from", from.key, // MUST equal and autocomplete to 'Idle'
                 "to", to.key, // MUST equal and autocomplete to 'Pending'
@@ -54,7 +54,7 @@ export function LifecycleDemo({}) {
           "*": {
             after: ({ type, from, to }) => {
               console.log(
-                "any state with any event:",
+                "any state with any event:\n",
                 type, // any valid event b/c wildcard event
                 "from", from.key, // any valid state b/c wildcard state
                 "to", to.key, // any valid exit state (which excludes Idle)
@@ -66,7 +66,7 @@ export function LifecycleDemo({}) {
             after: ({ type, from, to }) => {
               const { name, stack, message } = to.data // can only be Error type
               console.log(        
-                "Any reject event:",    
+                "Any reject event:\n",    
                 type, // MUST be 'reject'
                 "from", from.key, // any valid state b/c wildcard state
                 "with data", from.data, // any valid state data b/c wildcard state
@@ -107,6 +107,13 @@ export function LifecycleDemo({}) {
               Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
               {y}
               {!!name && `(aka ${name})`}
+              <button
+                onClick={() =>
+                  machine.event.reject(new Error("User rejected!"))
+                }
+              >
+                REJECT!
+              </button>
             </span>
           ),
           _: () => (
