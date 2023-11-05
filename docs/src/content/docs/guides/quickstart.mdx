@@ -20,11 +20,8 @@ This code shows how to:
 ### Code 
 
 ```tsx twoslash
-import { createPromiseMachine, withSubscribe, useMachine } from "./src/matchina-source-lib";
-// import { createPromiseMachine, withSubscribe } from "matchina";
-// import { useMachine } from "matchina/extras/react";
-// import { useMachine } from "../../../../../src/extras/react";
-
+import { createPromiseMachine, withSubscribe } from "matchina";
+import { useMachine } from "matchina/extras/react";
 
 const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000, name = 'unnamed') =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
@@ -62,9 +59,6 @@ export function ReactMachineDemo({}) {
     </pre>
   </div>;
 }
-
-
-
 ```
 
 ### Preview

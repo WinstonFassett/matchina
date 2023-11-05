@@ -26,6 +26,7 @@
   ],
   "scripts": {
     "build": "unbuild && size-limit",
+    "shim-docs": "cp ./src/extras/react.ts ./extras/react/index.ts",
     "dev": "vitest dev",
     "play": "shx ls ./playground | xargs -I {} bun run ./playground/{}",
     "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"bun run play\"",
