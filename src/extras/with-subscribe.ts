@@ -1,20 +1,24 @@
-import { StateMachine, TransitionConfig } from "../machine-types";
-import { MatchboxFromStatesFactory, StatesMatchboxFactory } from "../states";
-import { Subscribe, nanosubscriber } from "./nanosubscriber";
+import {
+  StateFromFactory,
+  StateMachine,
+  StatesFactory,
+  TransitionConfig,
+} from "../machine-types";
+import { nanosubscriber } from "./nanosubscriber";
 import { onUpdate } from "./on-update";
 
 export function withSubscribe<
-  States extends StatesMatchboxFactory<any>,
+  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
->(machine: StateMachine<States, Transitions>) {
-  type State = ReturnType<(typeof machine)["getState"]>;
+  M extends StateMachine<StatesFactory, TransitionConfig<StatesFactory>>,
+>(machine: M) {
+  type State = StateFromFactory<States>;
   const [subscribe, emit] = nanosubscriber<State>();
-  const s: State = machine.getState();
-
-  const dispose = onUpdate(machine, (commit, updater) => {
+  machine.update((previous) => previous);
+  const dispose = onUpdate(machine, ((commit: any, updater: any) => {
     commit(updater);
     emit(machine.getState());
-  });
+  }) as any);
   return Object.assign(machine, {
     subscribe,
     dispose,
