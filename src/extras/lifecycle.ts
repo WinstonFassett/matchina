@@ -12,6 +12,7 @@ import {
   TransitionHookExtensions,
 } from "./lifecycle-types";
 import { onUpdate } from "./on-update";
+import { Func } from "../types";
 
 type Dispose = () => void;
 
@@ -47,6 +48,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
 ): UpdateEnhancer<
   StateMachineEvent<M["def"]["states"], M["def"]["transitions"]>
 > {
+  let after: undefined | Func<[],void> = undefined
   return (commit, updater) => {
     commit((current) => {
       const updated = updater(current);
@@ -110,7 +112,9 @@ export function lifecycle<M extends StateMachine<any, any>>(
       // but we still run after hooks before returning
       // maybe that's not semantically correct. lets move it out maybe
       eventHooksMaybe.reverse();
-      runEventHooks("after");
+      Promise.resolve().then(() => {
+        runEventHooks("after");
+      })
       return handled;
     });
   };
