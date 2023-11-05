@@ -3,6 +3,9 @@ export type Options = {
   console?: typeof console;
 };
 
+const GroupSymbol = Symbol("GroupSymbol");
+const GroupEndSymbol = Symbol("GroupEndSymbol");
+
 export class BufferedConsole {
   messages: string[][] = [];
   timeout?: NodeJS.Timeout;
@@ -22,14 +25,35 @@ export class BufferedConsole {
     }
   }
 
+  group() {
+    this.messages.push([GroupSymbol.toString()]);
+    if (this.flushed) {
+      this.flushAfterDebounce();
+    }
+  }
+
+  groupEnd() {
+    this.messages.push([GroupEndSymbol.toString()]);
+    if (this.flushed) {
+      this.flushAfterDebounce();
+    }
+  }
+
   flush() {
     if (this.timeout) {
       clearTimeout(this.timeout);
     }
     this.flushed ||= true;
-    if (this.messages.length > 0) {
-      this.messages.map((m) => this._console.log(...m));
-      this.messages = [];
+    const { messages, _console } = this;
+    this.messages = [];
+    for (const message of messages) {
+      if (message[0] === GroupSymbol.toString()) {
+        _console.group();
+      } else if (message[0] === GroupEndSymbol.toString()) {
+        _console.groupEnd();
+      } else {
+        _console.log(...message);
+      }
     }
   }
 
