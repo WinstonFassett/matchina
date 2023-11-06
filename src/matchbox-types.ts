@@ -35,7 +35,7 @@ export type Matchbox<
   // Expand<
   {
     data: D;
-    match: MatchFunction<Config, TagKey>
+    match: MatchFunction<Config, TagKey>;
   } & {
     [Key in TagKey as Extract<TagKey, string>]: Extract<K, string>;
   };
@@ -60,7 +60,10 @@ export type MatchboxFactory<
 // #endregion
 
 // #region  Matchers
-type MatchFunction<Config extends MatchboxConfig, TagKey extends string = "tag"> = <
+type MatchFunction<
+  Config extends MatchboxConfig,
+  TagKey extends string = "tag",
+> = <
   M extends Exhaustive extends false
     ? NonExhaustiveMatchers<Config>
     : Matchers<Config>,
@@ -68,7 +71,7 @@ type MatchFunction<Config extends MatchboxConfig, TagKey extends string = "tag">
 >(
   casesObj: M,
   exhaustive?: Exhaustive,
-) => M[keyof M] extends (...args: any) => infer R ? R : never
+) => M[keyof M] extends (...args: any) => infer R ? R : never;
 
 export type ExhaustiveMatchers<Config extends MatchboxConfig> = {
   [BoxKey in keyof MatchboxConfigValues<Config>]: MatchboxConfigValues<Config>[BoxKey] extends undefined
