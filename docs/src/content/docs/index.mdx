@@ -25,3 +25,10 @@ hero:
     #   link: https://starlight.astro.build
     #   icon: external
 ---
+import CodeBlock from "@components/CodeBlock.astro";
+import code from './code/teaser.ts?raw'
+
+<CodeBlock
+  lang={'ts'}
+  code={code}        
+/>

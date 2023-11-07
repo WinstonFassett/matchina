@@ -63,11 +63,10 @@ export function defineMachine<
         update: (getUpdate) => {
           let change: undefined | Event;
           if (enhancer) {
-            console.log("using enhancer", lastChange);
+            // console.log("using enhancer", lastChange);
             const changed = getUpdate(lastChange);
-            console.log("changed", changed);
-            enhancer(function doUpdate(enhancerChange) {
-              // console.log('doUpdate', arguments)
+            // console.log("changed", changed);
+            enhancer((enhancerChange) => {
               change = enhancerChange as any;
             }, changed as any);
           } else {

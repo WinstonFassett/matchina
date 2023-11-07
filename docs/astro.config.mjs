@@ -55,6 +55,14 @@ export default defineConfig({
               label: "Lifecycle",
               link: "/guides/lifecycle/",
             },
+            {
+              label: "Effects",
+              link: "/guides/effects/",
+            },
+            {
+              label: "Union Machines",
+              link: "/guides/union-machines/",
+            },
           ],
         },
         // {

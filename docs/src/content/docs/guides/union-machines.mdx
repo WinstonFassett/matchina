@@ -1,0 +1,20 @@
+---
+title: Union Machines
+---
+import CodeBlock from "@components/CodeBlock.astro";
+import unionsAsMachine from '@lib/playground/unions-as-machine.ts?raw'
+import matchboxReactState from '@lib/playground/timsy.explicit-state.tsx?raw'
+
+Compose a machine out of matchboxes:
+
+<CodeBlock
+  lang={'ts'}
+  code={unionsAsMachine}        
+/>
+
+Use matchboxes for state:
+
+<CodeBlock
+  lang={'js'}
+  code={matchboxReactState}        
+/>

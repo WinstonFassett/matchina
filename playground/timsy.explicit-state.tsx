@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StateFromFactory } from "../src";
 import { defineStates } from "../src/states";
-
+// ---cut---
 const states = defineStates({
   NOT_LOADED: () => ({}),
   LOADING: () => ({}),

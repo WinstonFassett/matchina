@@ -1,14 +1,11 @@
-import {
-  StateFromFactory,
-  StateMachine,
-  StatesFactory,
-  TransitionConfig,
-} from "../machine-types";
+import { StateFromFactory, StateMachine, StatesFactory, TransitionConfig } from "../machine-types";
 import { nanosubscriber } from "./nanosubscriber";
 import { onUpdate } from "./on-update";
 
 export function withSubscribe<
-  M extends StateMachine<StatesFactory, TransitionConfig<StatesFactory>>,
+  States extends StatesFactory,
+  Transitions extends TransitionConfig<States>,
+  M extends StateMachine<States, Transitions>,
 >(machine: M) {
   type State = StateFromFactory<M["def"]["states"]>;
   const [subscribe, emit] = nanosubscriber<State>();
