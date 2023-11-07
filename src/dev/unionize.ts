@@ -1,27 +1,27 @@
-export type Unionized<Record, TaggedRecord, TagProp extends string> = UnionTypes<
+export type Unionized<Record, TaggedRecord, TagProp extends string> = UnionMeta<
   Record,
   TaggedRecord
 > &
   Creators<Record, TaggedRecord, TagProp> &
-  UnionExtensions<Record, TaggedRecord>;
+  UnionMember<Record, TaggedRecord>;
 
-export interface UnionTypes<Record, TaggedRecord> {
+export interface UnionMeta<Record, TaggedRecord> {
   _TaggedRecord: TaggedRecord;
   _Tags: keyof TaggedRecord;
   _Record: Record;
   _Union: TaggedRecord[keyof TaggedRecord];
 }
-export interface UnionExtensions<Record, TaggedRecord> {
+export interface UnionMember<Record, TaggedRecord> {
   is: Predicates<TaggedRecord>;
   as: Casts<Record, TaggedRecord[keyof TaggedRecord]>;
   match: Match<Record, TaggedRecord[keyof TaggedRecord]>;
   transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
 }
 
-export type TaggedRecordOf<U extends UnionTypes<any, any>> = U['_TaggedRecord'];
-export type TagsOf<U extends UnionTypes<any, any>> = U['_Tags'];
-export type RecordOf<U extends UnionTypes<any, any>> = U['_Record'];
-export type UnionOf<U extends UnionTypes<any, any>> = U['_Union'];
+export type TaggedRecordOf<U extends UnionMeta<any, any>> = U['_TaggedRecord'];
+export type TagsOf<U extends UnionMeta<any, any>> = U['_Tags'];
+export type RecordOf<U extends UnionMeta<any, any>> = U['_Record'];
+export type UnionOf<U extends UnionMeta<any, any>> = U['_Union'];
 
 export type Creators<Record, TaggedRecord, TagProp extends string> = {
   [T in keyof Record]: {} extends Required<Record[T]>
