@@ -16,12 +16,12 @@ export interface UnionExtensions<Record, TaggedRecord> {
   transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
 }
 
-export interface MemberExtensions<Record, TaggedRecord> {
-  is: (key: keyof Record) => this is TaggedRecord[keyof TaggedRecord];
-  as: (key: keyof Record) => Record[keyof Record];
-  match: Match<Record, TaggedRecord[keyof TaggedRecord]>;
-  // transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
-}
+// export interface MemberExtensions<Record, TaggedRecord> {
+//   is: <T extends keyof TaggedRecord>(key: keyof TaggedRecord) => this is TaggedRecord[T];
+//   as: <T extends keyof TaggedRecord>(key: T) => TaggedRecord[T];
+//   match: Match<Record, TaggedRecord[keyof TaggedRecord]>;
+//   // transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
+// }
 
 /*
  * Create a tagged union from a record mapping tags to value types, along with associated
@@ -97,9 +97,64 @@ type FactoryMember<
   Tag extends keyof FunctionOrValueRecord,
   TagProp extends string,
   ValProp extends string,
-> = (FunctionOrValueRecord[Tag] extends (...args: any[]) => any
+> = ((FunctionOrValueRecord[Tag] extends (...args: any[]) => any
   ? { [_ in ValProp]: ReturnType<FunctionOrValueRecord[Tag]> }
-  : { [_ in ValProp]: FunctionOrValueRecord[Tag] }) & { [_ in TagProp]: Tag }; 
+  : { [_ in ValProp]: FunctionOrValueRecord[Tag] }) & { [_ in TagProp]: Tag }) 
+  & FactoryMemberExtensions<FunctionOrValueRecord, TagProp, ValProp>
+  & {
+    // TODO: Extend with member extensions
+    /* 
+      DISCUSSION: How do I extend this with the member extensions 
+      that are aware of THIS type?
+      I.e. I want to be able to do this:
+      const x = UnionizedDataFactory<Config>;
+      x.is('Object') // should return boolean
+      x.as('Object') // should return Object
+      x.match({ Object: (x) => x.hello }) // should return string
+      x.transform({ Object: (x) => x.hello }) // should return string
+      Does this require recursion to be aware of the factorymember type?
+      Or can I do it with a generic type that is aware of the factorymember type?
+      
+     */
+  }; 
+
+interface FactoryMemberExtensions<
+  FunctionOrValueRecord,
+  TagProp extends string,
+  ValProp extends string,  
+> {
+  is: <T extends keyof FunctionOrValueRecord>(key: T) => 
+    this is FactoryMember<FunctionOrValueRecord, T, TagProp, ValProp>;
+  as: <T extends keyof FunctionOrValueRecord>(key: T) =>
+    FactoryMember<FunctionOrValueRecord, T, TagProp, ValProp>;
+  match: FactoryValueMatch<FunctionOrValueRecord>;
+  // Match<
+  //   FactoryMemberRecord<FunctionOrValueRecord, TagProp, ValProp>,
+  //   FactoryMember<
+  //     FunctionOrValueRecord, 
+  //     keyof FunctionOrValueRecord, 
+  //     TagProp, 
+  //     ValProp
+  //   >
+  // >;
+  // is: (key: Tag) => boolean;
+  // as: (key: Tag) => FunctionOrValueRecord[Tag];
+  // match: (cases: any) => any;
+  // transform: (cases: any) => any;
+};
+
+export interface FactoryValueMatch<FunctionOrValueRecord> {
+  <A>(
+    cases: MatchCases<
+      FactoryValueRecord<FunctionOrValueRecord>,
+      // FunctionOrValueRecord[keyof FunctionOrValueRecord],
+      FactoryValueRecord<FunctionOrValueRecord>,
+      A
+    >,
+  ): (variant: FunctionOrValueRecord[keyof FunctionOrValueRecord]) => A;
+  // <A>(cases: MatchCases<Record, Union, A>): (variant: Union) => A;
+  // <A>(variant: Union, cases: MatchCases<Record, Union, A>): A;
+}
 
 //  Unionized<
 //   // here, FunctionOrValueRecord is a mapping to values OR parameterized creator functions
@@ -124,7 +179,10 @@ const z = x.Function(1, '2')
 type ValueMap = FactoryValueRecord<C>
 type MemberMap = FactoryMemberRecord<C, 'tag', 'data'>
 
-
+const r = z.match({
+  Function: (x) => x.x,
+  default() { return undefined }
+})
 
 export type FactoryConfig = Record<string, FactoryItemSpec>;
 export type FactoryItemSpec = ((...args: any[]) => any) | any;
