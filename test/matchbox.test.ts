@@ -71,4 +71,28 @@ describe("matchboxFactory", () => {
     );
     expect(matched).toBe("test");
   });
+  describe("as", () => {
+    it("should return this when the tag is correct", () => {
+      const box = Box.A();
+      expect(box.as("A")).toBe(box);
+    });
+
+    it("should throw an error when the tag is incorrect", () => {
+      const box = Box.A();
+      expect(() => box.as("B")).toThrowError(
+        `Attempted to cast ${box.testKey} as B`,
+      );
+    });
+  });
+  describe("is", () => {
+    it("should return true when the tag matches", () => {
+      const box = Box.A();
+      expect(box.is("A")).toBe(true);
+    });
+
+    it("should return false when the tag does not match", () => {
+      const box = Box.A();
+      expect(box.is("B")).toBe(false);
+    });
+  });
 });

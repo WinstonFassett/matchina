@@ -68,15 +68,6 @@ export const methodwareEnhancer = <
   return composeEnhancers<F>(enhancers);
 };
 
-/* 
-  how should this work?
-  enhancers are not called with results, but with orig func and args
-  the first enhancer should be called with the original method and args
-  the next enhancer should be called with the first enhancer and args
-  the last enhancer should be called with the previous enhancer and args
-  and the last enhancer should return the result
-  so we don't use reduce with values, but we could use reduce to create a function chain
-  */
 export function composeEnhancers<F extends Func>(
   enhancers: FuncEnhancer<F>[],
 ): FuncEnhancer<F> {
@@ -97,25 +88,6 @@ export function composeEnhancers<F extends Func>(
   }
   return finalEnhancer;
 }
-
-// export function runWithEnhancers<F extends Func>(
-//   original: F,
-//   enhancers: FuncEnhancer<F>[],
-//   ...args: Parameters<F>
-// ): ReturnType<F> {
-//   // const enhanced = composeEnhancers(enhancers);
-//   // try to implement this without composeEnhancers
-//   // similar to how that method works
-//   // need to reverse the enhancers I think
-//   let returnValue
-//   let prevFunc = original
-//   for (const enhancer of enhancers) {
-//     // returnValue = enhancer(original, ...args)
-//     returnValue = enhancer(prevFunc, ...args)
-
-//   }
-//   return returnValue
-// }
 
 export const loggingEnhancer =
   (prefix = "") =>

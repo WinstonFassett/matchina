@@ -1,14 +1,13 @@
 import { FuncEnhancer } from "./extras/methodware";
-import { UpdateMethodEnhancer } from "./extras/on-update";
 import {
-  CreateFunc,
-  SwapFunc,
   ChangeEvent,
-  FlatMemberUnionToIntersection,
-  Members,
-  TUnionToIntersection,
+  CreateFunc,
   FlatMemberUnion,
+  FlatMemberUnionToIntersection,
   Func,
+  Members,
+  SwapFunc,
+  TUnionToIntersection,
 } from "./types";
 
 // #region Transition Config
@@ -165,49 +164,6 @@ export type StateEventTransitionFunc<
         key: Transitions[TransitionStateKey][EventKey];
       }
     : never;
-  // ? (
-  //     ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
-  //   ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
-  // : Transitions[TransitionStateKey][EventKey] extends (
-  //     ...args: infer A
-  //   ) => (...innerArgs: any[]) => infer R
-  // ? /*
-  //   Hey AI, we are trying to make this clause work.
-
-  //   This:
-  //   Transitions[TransitionStateKey][EventKey] extends (
-  //     ...args: any[]
-  //   ) => (...args: any[]) => StateFromFactory<States> should match and return
-
-  //   (
-  //     ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
-  //   ) => ReturnType<ReturnType<Transitions[TransitionStateKey][EventKey]>>
-
-  //   There are no places in my usage code where it should return never, but it is not matching.
-
-  //   We want to be able to use a two-phase transition function.
-  //   A function that returns a function that returns a valid state
-
-  //   For transitions like:
-  //   {
-  //     done: "Done",
-  //     doneAdvFunc: (done: string) => (_, event, def) => {
-  //       return def.states[done === "DONE" ? "Done" : "Initial"](
-  //         event === "doneAdvFunc",
-  //       );
-  //     },
-  //   }
-  //   The above code works fine which
-  //   The typescript correctly picks up all of the keys but not the returns, as in this type info:
-
-  //   event: {
-  //       done: (ok: boolean, msg?: string | undefined) => void;
-  //       doneAdvFunc: (...args: never) => void;
-  //   } & {}
-
-  //   */
-  //   (umm: { uum: string }) => R
-  // :  (umm: { uum: string }) => { whaterver: boolean};
 };
 export type StateEventTransitionFuncs<
   States extends StatesFactory<any>,

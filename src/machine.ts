@@ -1,13 +1,11 @@
-import { FuncEnhancer } from "./extras/methodware";
 import {
+  StateFromFactory,
   StateMachine,
   StateMachineDefinition,
   StateMachineEvent,
-  TransitionConfig,
   StatesFactory,
-  StateFromFactory,
+  TransitionConfig,
 } from "./machine-types";
-import { SwapFunc } from "./types";
 
 export const InitializeMachine = "__init";
 
@@ -20,14 +18,11 @@ export function defineMachine<
 ): StateMachineDefinition<States, Transitions> {
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
-
   const def: StateMachineDefinition<States, Transitions> = {
     states,
     transitions,
-    // transition: transition,
     create: (initialState, enhancer) => {
       let lastChange: any;
-
       const transition = (
         from: State,
         event: Event["type"],
@@ -145,14 +140,11 @@ function getExitState<
   def: StateMachineDefinition<States, Transitions>,
   machine?: StateMachine<States, Transitions>,
 ): StateFromFactory<States> | undefined {
-  // console.log('getExitState', arguments)
   const targetFuncOrString = transitions[sourceState.key as any]?.[type as any];
   if (!targetFuncOrString) {
     return sourceState;
   }
-
   let targetState: StateFromFactory<States>;
-
   if (typeof targetFuncOrString === "function") {
     const targetStateOrFunc = targetFuncOrString(...params);
     targetState =
