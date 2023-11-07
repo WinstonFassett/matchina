@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { MatchboxFromStatesFactory, defineStates } from "../src/states";
+import { StateFromFactory } from "../src";
+import { defineStates } from "../src/states";
 
 const states = defineStates({
   NOT_LOADED: () => ({}),
@@ -8,7 +9,7 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-type DataState = MatchboxFromStatesFactory<typeof states>;
+type DataState = StateFromFactory<typeof states>;
 
 const DataComponent: React.FC = () => {
   const [state, setState] = useState<DataState>(states.NOT_LOADED());
@@ -27,7 +28,7 @@ const DataComponent: React.FC = () => {
           >
             Load Data
           </button>
-        ),
+        ) as any,
         LOADING: () => "Loading...",
         LOADED: ({ data }) => JSON.stringify(data),
         ERROR: ({ error }) => `ops, ${error.message}`,

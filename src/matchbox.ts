@@ -12,6 +12,12 @@ export type UnionFactory<
   ValProp extends string = "data",
 > = MemberCreators<SpecRecord, TagProp, ValProp>;
 
+export type MatchboxFactory<
+  SpecRecord,
+  TagProp extends string = "tag",
+  ValProp extends string = "data",
+> = UnionFactory<SpecRecord, TagProp, ValProp>;
+
 export type MemberCreators<
   SpecRecord,
   TagProp extends string,
@@ -56,13 +62,15 @@ interface MemberExtensions<
 }
 
 interface MemberValueMatch<SpecRecord> {
-  <A>(
+  <A, Exhaustive extends boolean = true>(
     cases: MatchCases<
       MemberValueRecord<SpecRecord>,
       MemberValueRecord<SpecRecord>,
-      A
+      A,
+      Exhaustive
     >,
-  ): (cases: SpecRecord[keyof SpecRecord]) => A;
+    exhaustive?: Exhaustive,
+  ): A;
 }
 
 export type MemberValueRecord<SpecRecord> = {
@@ -73,19 +81,58 @@ export type MemberValueRecord<SpecRecord> = {
 
 export type Cases<Record, A> = { [T in keyof Record]: (value: Record[T]) => A };
 
-export type MatchCases<Record, Union, A> =
-  | (Cases<Record, A> & NoDefaultProp)
-  | (Partial<Cases<Record, A>> & { default: (variant: Union) => A });
+type PartialCases<Record, A, Union> = Partial<Cases<Record, A>> & {
+  _: (variant: Union) => A;
+};
+
+type AnyCases<Record, A, Union> = Partial<
+  Cases<Record, A> & {
+    _: (variant: Union) => A;
+  }
+>;
+
+export type MatchCases<
+  Record,
+  Union,
+  A,
+  Exhaustive extends boolean = true,
+> = Exhaustive extends true
+  ? (Cases<Record, A> & NoDefaultProp) | PartialCases<Record, A, Union>
+  : AnyCases<Record, A, Union>;
 
 export type SingleValueRec = NoDefaultRec<any>;
+export type MatchboxConfig = SingleValueRec;
 export type NoDefaultRec<Val> = {
   [k: string]: Val;
 } & NoDefaultProp;
 
 // Forbid usage of default property; reserved for pattern matching.
 export interface NoDefaultProp {
-  default?: never;
+  _?: never;
 }
+
+// type MatchboxFromFactory<Factory, Key extends keyof Factory> =
+//   Factory extends UnionFactory<
+//     infer Config,
+//     infer TagProp,
+//     infer ValProp
+//   >
+//     ? UnionMember<Config, keyof Config, TagProp, ValProp>
+//     : never;
+
+type MemberFromFactory1<
+  Factory,
+  Key extends keyof Factory,
+> = Factory extends UnionFactory<infer Config, infer TagProp, infer ValProp>
+  ? Key extends keyof Config
+    ? UnionMember<Config, Key, TagProp, ValProp>
+    : never
+  : never;
+
+export type MatchboxFromFactory<
+  Factory extends UnionFactory<any, any, any>,
+  Key extends keyof Factory = keyof Factory,
+> = ReturnType<Factory[Key]>;
 
 /**
  * Create a tagged union from a record mapping tags to value types, along with associated
@@ -99,7 +146,7 @@ export interface NoDefaultProp {
  * the value must be a dictionary type.
  */
 export function matchboxFactory<
-  Config extends SingleValueRec,
+  Config extends MatchboxConfig,
   TagProp extends string = "tag",
   ValueProp extends string = "data",
 >(
@@ -189,8 +236,8 @@ class MemberImpl<
     const handler = (casesObj as any)[tag];
     if (handler) {
       return handler(data);
-    } else if (casesObj.default) {
-      return casesObj.default(data);
+    } else if (casesObj._) {
+      return casesObj._(data);
     } else if (exhaustive) {
       throw new Error(`Match did not handle ${tagProp}: '${tag.toString()}'`);
     }

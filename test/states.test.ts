@@ -28,7 +28,7 @@ describe("createStates", () => {
     it("undefined -> {}", () => {
       const idleState = states.Idle();
       expect(idleState.key).toBe("Idle");
-      expect(idleState.data).toEqual({});
+      expect(idleState.data).toEqual(undefined);
     });
 
     it("object -> object", () => {

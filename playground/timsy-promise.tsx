@@ -27,7 +27,7 @@ const DataComponent: React.FC = () => {
           >
             Load Data
           </button>
-        ),
+        ) as any,
         Pending: () => "Loading...",
         Resolved: (value) => JSON.stringify(value),
         Rejected: (error) => `ops, ${error.message}`,

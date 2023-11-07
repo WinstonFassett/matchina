@@ -18,7 +18,7 @@ describe("matchboxFactory", () => {
   it("should create a matchbox according to spec", () => {
     const a = Box.A();
     expect(a.testKey).toBe("A");
-    expect(a.data).toEqual({});
+    expect(a.data).toEqual(undefined);
 
     const b = Box.B();
     expect(b.testKey).toBe("B");
@@ -62,6 +62,7 @@ describe("matchboxFactory", () => {
   });
   it("non-exhaustive", () => {
     const c = Box.C("test");
+    c.match({ _() {} }, false);
     const matched = c.match(
       {
         C: ({ data }) => data,

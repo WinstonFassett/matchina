@@ -54,7 +54,7 @@ const DataComponent: React.FC = () => {
           >
             Load Data
           </button>
-        ),
+        ) as any,
         LOADING: () => "Loading...",
         LOADED: ({ data }) => JSON.stringify(data),
         ERROR: ({ error }) => `ops, ${error.message}`,

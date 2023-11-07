@@ -6,6 +6,9 @@ import { withEvents } from "../src/extras/with-events";
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it
   const machine = withEvents(createPromiseMachine<number, [number]>());
+  machine.event.execute(1);
+  machine.event.reject(new Error("error"));
+  // machine.promise = delayed(1, 1)
   const removeLifecycle = onLifecycle(machine, {
     Idle: {
       on: {

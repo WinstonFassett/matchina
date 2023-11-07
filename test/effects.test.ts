@@ -33,6 +33,9 @@ const makeMachine = (
 describe("defineEffects", () => {
   it("should create an effects union with the correct members", () => {
     const effects = makeEffects();
+    effects.Notify("test").match({
+      Notify: (msg) => {},
+    });
     expect(Object.keys(effects)).toEqual(Object.keys(effectsConfig));
   });
 });

@@ -7,16 +7,15 @@ import {
 import {
   MatchboxConfig,
   MatchboxFactory,
-  MatchboxFromConfig,
   MatchboxFromFactory,
-  Matchers,
-  NonExhaustiveMatchers,
+  MatchCases,
+  UnionMember,
   matchboxFactory,
 } from "../matchbox";
 
 import { onUpdate } from "./on-update";
 
-export type AnyEffect = MatchboxFromConfig<any, "effect">;
+export type AnyEffect = UnionMember<any, any, "effect", any>;
 
 export function defineEffects<EffectsConfig extends MatchboxConfig>(
   config: EffectsConfig,
@@ -27,17 +26,21 @@ export function bindEffects<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   EffectsConfig extends MatchboxConfig,
-  Effects extends MatchboxFactory<EffectsConfig, "effect">,
-  Exhaustive extends boolean = true,
+  Exhaustive extends boolean = false,
 >(
   machine: StateMachine<States, Transitions>,
   getEffects: (
     state: StateFromFactory<States>,
-  ) => MatchboxFromFactory<Effects>[] | undefined,
-  matchers: Exhaustive extends true
-    ? Matchers<EffectsConfig>
-    : NonExhaustiveMatchers<EffectsConfig>,
-  exhaustive = false,
+  ) =>
+    | MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>[]
+    | undefined,
+  matchers: MatchCases<
+    EffectsConfig,
+    MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>,
+    any,
+    Exhaustive
+  >,
+  exhaustive = false as Exhaustive,
 ) {
   return onUpdate(machine, (commit, updater) => {
     commit((current) => {
@@ -51,17 +54,23 @@ export function bindEffects<
     });
   });
 }
-function handleEffects<Exhaustive extends boolean = true>(
+function handleEffects<
+  EffectsConfig extends MatchboxConfig,
+  Exhaustive extends boolean = true,
+>(
   effects: undefined | AnyEffect[],
-  matchers: Exhaustive extends true
-    ? Matchers<any>
-    : NonExhaustiveMatchers<any>,
-  exhaustive = false,
+  matchers: MatchCases<
+    EffectsConfig,
+    MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>,
+    any,
+    Exhaustive
+  >,
+  exhaustive = false as Exhaustive,
 ) {
   if (!effects) {
     return;
   }
   for (const effect of effects) {
-    effect.match(matchers, exhaustive);
+    effect.match(matchers as any, exhaustive);
   }
 }
