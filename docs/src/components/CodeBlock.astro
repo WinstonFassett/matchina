@@ -1,0 +1,40 @@
+---
+import { renderCodeToHTML, runTwoSlash, createShikiHighlighter } from "shiki-twoslash"
+import { Markdown, Markup } from "astro-remote";
+import CodeSpan from "../components/CodeSpan.astro";
+
+import Heading from "../components/Heading.astro";
+import Note from "../components/Note.astro";
+import '../styles/shiki-twoslash.css'
+
+export let html = ``
+const highlighter = await createShikiHighlighter({ theme: "dark-plus" })
+const { lang, code, ...props } = Astro.props;
+
+if (['ts', 'tsx'].includes(lang)) {
+  const twoslash = runTwoSlash(
+    code, 
+    lang, 
+    {}
+  )
+  html = renderCodeToHTML(
+    twoslash.code, 
+    lang, 
+    { twoslash: true }, 
+    { themeName: "dark-plus" }, 
+    highlighter, 
+    twoslash
+  )
+} else {
+  html = renderCodeToHTML(code, lang, {}, { themeName: "dark-plus" }, highlighter);
+}
+
+---
+{
+  lang === 'md' 
+  ? <Markdown
+      content={code}
+      components={{ Heading, CodeBlock, CodeSpan, Note }}
+    /> 
+  : <div set:html={html} />
+}
