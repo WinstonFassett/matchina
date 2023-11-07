@@ -66,5 +66,4 @@ class MatchboxImpl<
   // TODO: is, as
   // Expose factory here? as factory/source/creator/maker/owner/def/kind?
   // would beat using a symbo, but makes things not serializable. could be getter
-
 }
