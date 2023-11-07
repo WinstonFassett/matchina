@@ -3,7 +3,7 @@ export type Unionized<Record, TaggedRecord, TagProp extends string> = UnionMeta<
   TaggedRecord
 > &
   Creators<Record, TaggedRecord, TagProp> &
-  UnionMember<Record, TaggedRecord>;
+  UnionExtensions<Record, TaggedRecord>;
 
 export interface UnionMeta<Record, TaggedRecord> {
   _TaggedRecord: TaggedRecord;
@@ -11,12 +11,21 @@ export interface UnionMeta<Record, TaggedRecord> {
   _Record: Record;
   _Union: TaggedRecord[keyof TaggedRecord];
 }
-export interface UnionMember<Record, TaggedRecord> {
-  is: Predicates<TaggedRecord>;
-  as: Casts<Record, TaggedRecord[keyof TaggedRecord]>;
-  match: Match<Record, TaggedRecord[keyof TaggedRecord]>;
+export interface UnionExtensions<Record, TaggedRecord> {
   transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
 }
+
+export interface MemberExtensions<Record, TaggedRecord> {
+  is: (key: keyof Record) => this is TaggedRecord[keyof TaggedRecord];
+  as: (key: keyof Record) => Record[keyof Record];
+  match: Match<Record, TaggedRecord[keyof TaggedRecord]>;
+  // transform: Transform<Record, TaggedRecord[keyof TaggedRecord]>;
+}
+
+export type FactoryConfig = Record<string, FactoryItemSpec>;
+export type FactoryItemSpec = ((...args: any[]) => any) | any;
+
+export type FunctionFrom<T> = T extends (...args: any[]) => any ? T : () => T;
 
 export type TaggedRecordOf<U extends UnionMeta<any, any>> = U['_TaggedRecord'];
 export type TagsOf<U extends UnionMeta<any, any>> = U['_Tags'];
@@ -28,14 +37,6 @@ export type Creators<Record, TaggedRecord, TagProp extends string> = {
     ? ((value?: {}) => TaggedRecord[keyof TaggedRecord])
     : ((value: Record[T]) => TaggedRecord[keyof TaggedRecord])
 };
-
-export type Predicates<TaggedRecord> = {
-  [T in keyof TaggedRecord]: (
-    variant: TaggedRecord[keyof TaggedRecord],
-  ) => variant is TaggedRecord[T]
-};
-
-export type Casts<Record, Union> = { [T in keyof Record]: (variant: Union) => Record[T] };
 
 export type Cases<Record, A> = { [T in keyof Record]: (value: Record[T]) => A };
 
@@ -94,67 +95,67 @@ export type NoDefaultRec<Val> = {
  * the value must be a dictionary type.
  */
 
-export function unionize<
-  Record extends SingleValueRec,
-  ValProp extends string,
-  TagProp extends string = 'tag'
->(
-  record: Record,
-  config: { value: ValProp; tag?: TagProp },
-): Unionized<Record, SingleValueVariants<Record, TagProp, ValProp>, TagProp>;
-export function unionize<Record extends MultiValueRec<TagProp>, TagProp extends string = 'tag'>(
-  record: Record,
-  config?: { tag: TagProp },
-): Unionized<Record, MultiValueVariants<Record, TagProp>, TagProp>;
-export function unionize<Record>(record: Record, config?: { value?: string; tag?: string }) {
-  const { value: valProp = undefined, tag: tagProp = 'tag' } = config || {};
+// export function unionize<
+//   Record extends SingleValueRec,
+//   ValProp extends string,
+//   TagProp extends string = 'tag'
+// >(
+//   record: Record,
+//   config: { value: ValProp; tag?: TagProp },
+// ): Unionized<Record, SingleValueVariants<Record, TagProp, ValProp>, TagProp>;
+// export function unionize<Record extends MultiValueRec<TagProp>, TagProp extends string = 'tag'>(
+//   record: Record,
+//   config?: { tag: TagProp },
+// ): Unionized<Record, MultiValueVariants<Record, TagProp>, TagProp>;
+// export function unionize<Record>(record: Record, config?: { value?: string; tag?: string }) {
+//   const { value: valProp = undefined, tag: tagProp = 'tag' } = config || {};
 
-  const creators = {} as Creators<Record, any, any>;
-  for (const tag in record) {
-    creators[tag] = ((value: any = {}) =>
-      valProp ? { [tagProp]: tag, [valProp]: value } : { ...value, [tagProp]: tag }) as any;
-  }
+//   const creators = {} as Creators<Record, any, any>;
+//   for (const tag in record) {
+//     creators[tag] = ((value: any = {}) =>
+//       valProp ? { [tagProp]: tag, [valProp]: value } : { ...value, [tagProp]: tag }) as any;
+//   }
 
-  const is = {} as Predicates<any>;
-  for (const tag in record) {
-    is[tag] = ((variant: any) => variant[tagProp] === tag) as any;
-  }
+//   const is = {} as Predicates<any>;
+//   for (const tag in record) {
+//     is[tag] = ((variant: any) => variant[tagProp] === tag) as any;
+//   }
 
-  function evalMatch(variant: any, cases: any, defaultCase = cases.default): any {
-    const handler = cases[variant[tagProp]];
-    return handler ? handler(valProp ? variant[valProp] : variant) : defaultCase(variant);
-  }
+//   function evalMatch(variant: any, cases: any, defaultCase = cases.default): any {
+//     const handler = cases[variant[tagProp]];
+//     return handler ? handler(valProp ? variant[valProp] : variant) : defaultCase(variant);
+//   }
 
-  const match = (first: any, second?: any) =>
-    second ? evalMatch(first, second) : (variant: any) => evalMatch(variant, first);
+//   const match = (first: any, second?: any) =>
+//     second ? evalMatch(first, second) : (variant: any) => evalMatch(variant, first);
 
-  const identity = <A>(x: A) => x;
-  const transform = (first: any, second?: any) =>
-    second
-      ? evalMatch(first, second, identity)
-      : (variant: any) => evalMatch(variant, first, identity);
+//   const identity = <A>(x: A) => x;
+//   const transform = (first: any, second?: any) =>
+//     second
+//       ? evalMatch(first, second, identity)
+//       : (variant: any) => evalMatch(variant, first, identity);
 
-  const as = {} as Casts<Record, any>;
-  for (const expectedTag in record) {
-    as[expectedTag] = match({
-      [expectedTag]: (x: any) => x,
-      default: (val: any) => {
-        throw new Error(`Attempted to cast ${val[tagProp]} as ${expectedTag}`);
-      },
-    });
-  }
+//   const as = {} as Casts<Record, any>;
+//   for (const expectedTag in record) {
+//     as[expectedTag] = match({
+//       [expectedTag]: (x: any) => x,
+//       default: (val: any) => {
+//         throw new Error(`Attempted to cast ${val[tagProp]} as ${expectedTag}`);
+//       },
+//     });
+//   }
 
-  return Object.assign(
-    {
-      is,
-      as,
-      match,
-      transform,
-      _Record: record,
-    },
-    creators,
-  );
-}
+//   return Object.assign(
+//     {
+//       is,
+//       as,
+//       match,
+//       transform,
+//       _Record: record,
+//     },
+//     creators,
+//   );
+// }
 
 /**
  * Creates a pseudo-witness of a given type. That is, it pretends to return a value of
@@ -163,4 +164,4 @@ export function unionize<Record>(record: Record, config?: { value?: string; tag?
  */
 export const ofType = <T>() => (undefined as any) as T;
 
-export default unionize;
+// export default unionize;
