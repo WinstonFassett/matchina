@@ -25,7 +25,7 @@ type LifecycleApi<T, S, E> = {
 };
 
 export function onLifecycle<
-  States extends StatesMatchboxFactory,
+  States extends StatesMatchboxFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,

@@ -1,8 +1,7 @@
 import { matchboxFactory, MatchboxConfig, UnionFactory } from "./matchbox";
 
-export type StatesMatchboxFactory<
-  StatesConfig extends MatchboxConfig = MatchboxConfig,
-> = UnionFactory<StatesConfig, "key">;
+export type StatesMatchboxFactory<StatesConfig extends MatchboxConfig> =
+  UnionFactory<StatesConfig, "key">;
 
 // export type MatchboxFromStatesFactory<
 //   States extends StatesMatchboxFactory<any>,
