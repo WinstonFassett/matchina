@@ -40,11 +40,11 @@ export type UnionMember<
 > = ((SpecRecord[Tag] extends (...args: any[]) => any
   ? { [_ in ValProp]: ReturnType<SpecRecord[Tag]> }
   : { [_ in ValProp]: SpecRecord[Tag] }) & { [_ in TagProp]: Tag }) 
-  & MemberExtensions<SpecRecord, TagProp, ValProp>;
+  // & UnionMemberExtensions<SpecRecord, TagProp, ValProp>;
 
 
 
-interface MemberExtensions<
+interface UnionMemberExtensions<
   SpecRecord,
   TagProp extends string,
   ValProp extends string,
@@ -91,17 +91,6 @@ export interface NoDefaultProp {
   default?: never;
 }
 
-/**
- * Create a tagged union from a record mapping tags to value types, along with associated
- * variant constructors, type predicates and `match` function.
- *
- * @param specs A record mapping tags to value types. The actual values of the record don't
- * matter; they're just used in the types of the resulting tagged union. See `ofType`.
- * @param config An optional config object. By default tag='tag' and value is merged into object itself
- * @param config.tag An optional custom name for the tag property of the union.
- * @param config.value An optional custom name for the value property of the union. If not specified,
- * the value must be a dictionary type.
- */
 export function matchboxFactory<
   Config extends SingleValueRec,
   TagProp extends string = "tag",
@@ -134,12 +123,13 @@ export function matchbox<
 >(tag: Tag, data: any, tagProp: TagProp = "tag" as TagProp, valProp = "data" as ValProp) 
 : UnionMember<Config, Tag, TagProp, ValProp>
 {
-  return new MemberImpl<Config, Tag, TagProp, ValProp>(
+  const it = new MemberImpl<Config, Tag, TagProp, ValProp>(
     tag,
     data,
     tagProp,
     valProp
-  ) as any;  
+  );
+  return it as any
 }
 
 class MemberImpl<
@@ -149,18 +139,21 @@ class MemberImpl<
   ValProp extends string = "data",
 > 
 // implements UnionMember<Config, Tag, TagKey, ValProp> 
+// except that its members aren't known early enough to declare this
 {  
+  tagProp: TagProp;
+  valueProp: ValProp; 
   [key: string]: any;
 
   constructor(
-    tag: Tag,
-    value: Config[Tag], 
-    public tagProp: TagProp = "tag" as TagProp,
-    public valProp: ValProp = "data" as ValProp
+    public tag: Tag,
+    public data: Config[Tag], // Here changed any to Config[Tag]
+    tagKey: TagProp = "tag" as TagProp,
+    valueKey: ValProp = "data" as ValProp
   ) {
-    this.tagProp = tagProp;
-    this.valProp = valProp;
-    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, [valProp]: value });
+    this.tagProp = tagKey;
+    this.valueProp = valueKey;
+    Object.assign(this, { [tagKey]: tag, tagKey, [valueKey]: data });
   }
   as (expectedTag: keyof Config) {
     if (!this.is(expectedTag)) {
@@ -177,7 +170,7 @@ class MemberImpl<
     MemberValueRecord<Config>,
     A
   >, exhaustive = true): any {
-    const { tagProp, valProp: valueProp } = this
+    const { tagProp, valueProp } = this
     const tag = this[tagProp]
     const data = this[valueProp]
     const handler = (casesObj as any)[tag];
