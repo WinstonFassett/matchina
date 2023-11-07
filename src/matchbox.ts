@@ -27,10 +27,9 @@ export type MemberCreate<
   ValProp extends string,
 > = SpecRecord[Tag] extends (...args: infer P) => infer R
   ? (...args: P) => UnionMember<SpecRecord, Tag, TagProp, ValProp>
-  : (
-    // ...args:any[]
+  : () // ...args:any[]
     // value?: SpecRecord[Tag]
-  ) => UnionMember<SpecRecord, Tag, TagProp, ValProp>;
+    => UnionMember<SpecRecord, Tag, TagProp, ValProp>;
 
 export type UnionMember<
   SpecRecord,
@@ -39,10 +38,8 @@ export type UnionMember<
   ValProp extends string,
 > = ((SpecRecord[Tag] extends (...args: any[]) => any
   ? { [_ in ValProp]: ReturnType<SpecRecord[Tag]> }
-  : { [_ in ValProp]: SpecRecord[Tag] }) & { [_ in TagProp]: Tag }) 
-  & MemberExtensions<SpecRecord, TagProp, ValProp>;
-
-
+  : { [_ in ValProp]: SpecRecord[Tag] }) & { [_ in TagProp]: Tag }) &
+  MemberExtensions<SpecRecord, TagProp, ValProp>;
 
 interface MemberExtensions<
   SpecRecord,
@@ -80,8 +77,7 @@ export type MatchCases<Record, Union, A> =
   | (Cases<Record, A> & NoDefaultProp)
   | (Partial<Cases<Record, A>> & { default: (variant: Union) => A });
 
-
-export type SingleValueRec = NoDefaultRec<{} | null>;
+export type SingleValueRec = NoDefaultRec<any>;
 export type NoDefaultRec<Val> = {
   [k: string]: Val;
 } & NoDefaultProp;
@@ -109,17 +105,17 @@ export function matchboxFactory<
 >(
   config: Config,
   tagKey = "tag" as TagProp,
-  valueKey = "data" as ValueProp
+  valueKey = "data" as ValueProp,
 ): UnionFactory<Config, TagProp, ValueProp> {
   const createObj: any = {};
   for (const tag in config) {
     const spec = config[tag];
-    createObj[tag] = (...args: any) => {      
+    createObj[tag] = (...args: any) => {
       return matchbox<Config, any, TagProp, ValueProp>(
-        tag, 
-        typeof spec === 'function' ? spec(...args) : spec,        
+        tag,
+        typeof spec === "function" ? spec(...args) : spec,
         tagKey,
-        valueKey
+        valueKey,
       );
     };
   }
@@ -130,16 +126,19 @@ export function matchbox<
   Config,
   Tag extends keyof Config,
   TagProp extends string = "tag",
-  ValProp extends string = "data"
->(tag: Tag, data: any, tagProp: TagProp = "tag" as TagProp, valProp = "data" as ValProp) 
-: UnionMember<Config, Tag, TagProp, ValProp>
-{
+  ValProp extends string = "data",
+>(
+  tag: Tag,
+  data: any,
+  tagProp: TagProp = "tag" as TagProp,
+  valProp = "data" as ValProp,
+): UnionMember<Config, Tag, TagProp, ValProp> {
   return new MemberImpl<Config, Tag, TagProp, ValProp>(
     tag,
     data,
     tagProp,
-    valProp
-  ) as any;  
+    valProp,
+  ) as any;
 }
 
 class MemberImpl<
@@ -147,48 +146,53 @@ class MemberImpl<
   Tag extends keyof Config = keyof Config,
   TagProp extends string = "tag",
   ValProp extends string = "data",
-> 
-// implements UnionMember<Config, Tag, TagKey, ValProp> 
-{  
+> {
+  // implements UnionMember<Config, Tag, TagKey, ValProp>
   [key: string]: any;
 
   constructor(
     tag: Tag,
-    value: Config[Tag], 
+    value: Config[Tag],
     public tagProp: TagProp = "tag" as TagProp,
-    public valProp: ValProp = "data" as ValProp
+    public valProp: ValProp = "data" as ValProp,
   ) {
     this.tagProp = tagProp;
     this.valProp = valProp;
     Object.assign(this, { [tagProp]: tag, tagKey: tagProp, [valProp]: value });
   }
-  as (expectedTag: keyof Config) {
+
+  as(expectedTag: keyof Config) {
     if (!this.is(expectedTag)) {
       const tag = this[this.tagProp];
-      throw new Error(`Attempted to cast ${this[this.tagProp]} as ${expectedTag.toString()}`);
-    }    
-    return this
+      throw new Error(
+        `Attempted to cast ${this[this.tagProp]} as ${expectedTag.toString()}`,
+      );
+    }
+    return this;
   }
-  is (tag: keyof Config) {
-    return this[this.tagProp] === tag
+
+  is(tag: keyof Config) {
+    return this[this.tagProp] === tag;
   }
-  match<A>(casesObj: MatchCases<
-    MemberValueRecord<Config>,
-    MemberValueRecord<Config>,
-    A
-  >, exhaustive = true): any {
-    const { tagProp, valProp: valueProp } = this
-    const tag = this[tagProp]
-    const data = this[valueProp]
+
+  match<A>(
+    casesObj: MatchCases<
+      MemberValueRecord<Config>,
+      MemberValueRecord<Config>,
+      A
+    >,
+    exhaustive = true,
+  ): any {
+    const { tagProp, valProp: valueProp } = this;
+    const tag = this[tagProp];
+    const data = this[valueProp];
     const handler = (casesObj as any)[tag];
     if (handler) {
       return handler(data);
     } else if (casesObj.default) {
       return casesObj.default(data);
     } else if (exhaustive) {
-      throw new Error(
-        `Match did not handle ${tagProp}: '${tag.toString()}'`,
-      );
+      throw new Error(`Match did not handle ${tagProp}: '${tag.toString()}'`);
     }
   }
 }
