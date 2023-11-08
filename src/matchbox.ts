@@ -1,82 +1,65 @@
 // export type Spec = ((...args: any[]) => any) | any;
-// export type FactoryConfig = Record<string, Spec>;
-export type FunctionFrom<Spec> = Spec extends (...args: any[]) => any
-  ? Spec
-  : Spec extends undefined
-  ? () => Spec
-  : (value?: Spec) => Spec;
+// export type Specs = Record<string, Spec>;
 
 export type UnionFactory<
-  SpecRecord,
+  Specs,
   TagProp extends string = "tag",
-  ValProp extends string = "data",
-> = MemberCreators<SpecRecord, TagProp, ValProp>;
+  DataProp extends string = "data",
+> = Creators<Specs, TagProp, DataProp>;
 
 export type MatchboxFactory<
-  SpecRecord,
+  Specs,
   TagProp extends string = "tag",
-  ValProp extends string = "data",
-> = UnionFactory<SpecRecord, TagProp, ValProp>;
+  DataProp extends string = "data",
+> = UnionFactory<Specs, TagProp, DataProp>;
 
-export type MemberCreators<
-  SpecRecord,
-  TagProp extends string,
-  ValProp extends string,
-> = {
-  [T in keyof SpecRecord]: MemberCreate<SpecRecord, T, TagProp, ValProp>;
+export type Creators<Specs, TagProp extends string, DataProp extends string> = {
+  [T in keyof Specs]: MemberCreate<Specs, T, TagProp, DataProp>;
 };
 
 export type MemberCreate<
-  SpecRecord,
-  Tag extends keyof SpecRecord,
+  Specs,
+  Tag extends keyof Specs,
   TagProp extends string,
-  ValProp extends string,
-> = SpecRecord[Tag] extends (...args: infer P) => infer R
-  ? (...args: P) => UnionMember<SpecRecord, Tag, TagProp, ValProp>
-  : () // ...args:any[]
-    // value?: SpecRecord[Tag]
-    => UnionMember<SpecRecord, Tag, TagProp, ValProp>;
+  DataProp extends string,
+> = Specs[Tag] extends (...args: infer P) => infer R
+  ? (...args: P) => Member<Specs, Tag, TagProp, DataProp>
+  : () // value?: Specs[Tag]
+    => Member<Specs, Tag, TagProp, DataProp>;
 
-export type UnionMember<
-  SpecRecord,
-  Tag extends keyof SpecRecord,
+export type Member<
+  Specs,
+  Tag extends keyof Specs,
   TagProp extends string,
-  ValProp extends string,
-> = ((SpecRecord[Tag] extends (...args: any[]) => any
-  ? { [_ in ValProp]: ReturnType<SpecRecord[Tag]> }
-  : { [_ in ValProp]: SpecRecord[Tag] }) & { [_ in TagProp]: Tag }) &
-  MemberExtensions<SpecRecord, TagProp, ValProp>;
+  DataProp extends string,
+> = ((Specs[Tag] extends (...args: any[]) => any
+  ? { [_ in DataProp]: ReturnType<Specs[Tag]> }
+  : { [_ in DataProp]: Specs[Tag] }) & { [_ in TagProp]: Tag }) &
+  MemberExtensions<Specs, TagProp, DataProp>;
 
 interface MemberExtensions<
-  SpecRecord,
+  Specs,
   TagProp extends string,
-  ValProp extends string,
+  DataProp extends string,
 > {
-  is: <T extends keyof SpecRecord>(
+  is: <T extends keyof Specs>(
     key: T,
-  ) => this is UnionMember<SpecRecord, T, TagProp, ValProp>;
-  as: <T extends keyof SpecRecord>(
-    key: T,
-  ) => UnionMember<SpecRecord, T, TagProp, ValProp>;
-  match: MemberValueMatch<SpecRecord>;
+  ) => this is Member<Specs, T, TagProp, DataProp>;
+  as: <T extends keyof Specs>(key: T) => Member<Specs, T, TagProp, DataProp>;
+  match: Match<Specs>;
 }
 
-interface MemberValueMatch<SpecRecord> {
+interface Match<Specs> {
   <A, Exhaustive extends boolean = true>(
-    cases: MatchCases<
-      MemberValueRecord<SpecRecord>,
-      MemberValueRecord<SpecRecord>,
-      A,
-      Exhaustive
-    >,
+    cases: MatchCases<MemberData<Specs>, MemberData<Specs>, A, Exhaustive>,
     exhaustive?: Exhaustive,
   ): A;
 }
 
-export type MemberValueRecord<SpecRecord> = {
-  [T in keyof SpecRecord]: SpecRecord[T] extends (...args: any[]) => any
-    ? ReturnType<SpecRecord[T]>
-    : SpecRecord[T];
+export type MemberData<Specs> = {
+  [T in keyof Specs]: Specs[T] extends (...args: any[]) => any
+    ? ReturnType<Specs[T]>
+    : Specs[T];
 };
 
 export type Cases<Record, A> = { [T in keyof Record]: (value: Record[T]) => A };
@@ -101,7 +84,7 @@ export type MatchCases<
   : AnyCases<Record, A, Union>;
 
 export type SingleValueRec = NoDefaultRec<any>;
-export type MatchboxConfig = SingleValueRec;
+export type UnionSpec = SingleValueRec;
 export type NoDefaultRec<Val> = {
   [k: string]: Val;
 } & NoDefaultProp;
@@ -111,25 +94,7 @@ export interface NoDefaultProp {
   _?: never;
 }
 
-// type MatchboxFromFactory<Factory, Key extends keyof Factory> =
-//   Factory extends UnionFactory<
-//     infer Config,
-//     infer TagProp,
-//     infer ValProp
-//   >
-//     ? UnionMember<Config, keyof Config, TagProp, ValProp>
-//     : never;
-
-type MemberFromFactory1<
-  Factory,
-  Key extends keyof Factory,
-> = Factory extends UnionFactory<infer Config, infer TagProp, infer ValProp>
-  ? Key extends keyof Config
-    ? UnionMember<Config, Key, TagProp, ValProp>
-    : never
-  : never;
-
-export type MatchboxFromFactory<
+export type MemberOf<
   Factory extends UnionFactory<any, any, any>,
   Key extends keyof Factory = keyof Factory,
 > = ReturnType<Factory[Key]>;
@@ -146,19 +111,19 @@ export type MatchboxFromFactory<
  * the value must be a dictionary type.
  */
 export function matchboxFactory<
-  Config extends MatchboxConfig,
+  Config extends UnionSpec,
   TagProp extends string = "tag",
-  ValueProp extends string = "data",
+  DataProp extends string = "data",
 >(
   config: Config,
   tagKey = "tag" as TagProp,
-  valueKey = "data" as ValueProp,
-): UnionFactory<Config, TagProp, ValueProp> {
+  valueKey = "data" as DataProp,
+): UnionFactory<Config, TagProp, DataProp> {
   const createObj: any = {};
   for (const tag in config) {
     const spec = config[tag];
     createObj[tag] = (...args: any) => {
-      return matchbox<Config, any, TagProp, ValueProp>(
+      return matchbox<Config, any, TagProp, DataProp>(
         tag,
         typeof spec === "function" ? spec(...args) : spec,
         tagKey,
@@ -173,18 +138,18 @@ export function matchbox<
   Config,
   Tag extends keyof Config,
   TagProp extends string = "tag",
-  ValProp extends string = "data",
+  DataProp extends string = "data",
 >(
   tag: Tag,
   data: any,
   tagProp: TagProp = "tag" as TagProp,
-  valProp = "data" as ValProp,
-): UnionMember<Config, Tag, TagProp, ValProp> {
-  return new MemberImpl<Config, Tag, TagProp, ValProp>(
+  DataProp = "data" as DataProp,
+): Member<Config, Tag, TagProp, DataProp> {
+  return new MemberImpl<Config, Tag, TagProp, DataProp>(
     tag,
     data,
     tagProp,
-    valProp,
+    DataProp,
   ) as any;
 }
 
@@ -192,20 +157,20 @@ class MemberImpl<
   Config,
   Tag extends keyof Config = keyof Config,
   TagProp extends string = "tag",
-  ValProp extends string = "data",
+  DataProp extends string = "data",
 > {
-  // implements UnionMember<Config, Tag, TagKey, ValProp>
+  // implements UnionMember<Config, Tag, TagKey, DataProp>
   [key: string]: any;
 
   constructor(
     tag: Tag,
     value: Config[Tag],
     public tagProp: TagProp = "tag" as TagProp,
-    public valProp: ValProp = "data" as ValProp,
+    public DataProp: DataProp = "data" as DataProp,
   ) {
     this.tagProp = tagProp;
-    this.valProp = valProp;
-    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, [valProp]: value });
+    this.DataProp = DataProp;
+    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, [DataProp]: value });
   }
 
   as(expectedTag: keyof Config) {
@@ -223,16 +188,12 @@ class MemberImpl<
   }
 
   match<A>(
-    casesObj: MatchCases<
-      MemberValueRecord<Config>,
-      MemberValueRecord<Config>,
-      A
-    >,
+    casesObj: MatchCases<MemberData<Config>, MemberData<Config>, A>,
     exhaustive = true,
   ): any {
-    const { tagProp, valProp: valueProp } = this;
+    const { tagProp, DataProp: dataProp } = this;
     const tag = this[tagProp];
-    const data = this[valueProp];
+    const data = this[dataProp];
     const handler = (casesObj as any)[tag];
     if (handler) {
       return handler(data);

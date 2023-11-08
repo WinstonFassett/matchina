@@ -1,4 +1,9 @@
-import { StateFromFactory, StateMachine, StatesFactory, TransitionConfig } from "../machine-types";
+import {
+  StateFromFactory,
+  StateMachine,
+  StatesFactory,
+  TransitionConfig,
+} from "../machine-types";
 import { nanosubscriber } from "./nanosubscriber";
 import { onUpdate } from "./on-update";
 

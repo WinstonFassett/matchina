@@ -5,19 +5,19 @@ import {
   TransitionConfig,
 } from "../machine-types";
 import {
-  MatchboxConfig,
+  UnionSpec,
   MatchboxFactory,
-  MatchboxFromFactory,
+  MemberOf,
   MatchCases,
-  UnionMember,
+  Member,
   matchboxFactory,
 } from "../matchbox";
 
 import { onUpdate } from "./on-update";
 
-export type AnyEffect = UnionMember<any, any, "effect", any>;
+export type AnyEffect = Member<any, any, "effect", any>;
 
-export function defineEffects<EffectsConfig extends MatchboxConfig>(
+export function defineEffects<EffectsConfig extends UnionSpec>(
   config: EffectsConfig,
 ) {
   return matchboxFactory(config, "effect");
@@ -25,18 +25,16 @@ export function defineEffects<EffectsConfig extends MatchboxConfig>(
 export function bindEffects<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
-  EffectsConfig extends MatchboxConfig,
+  EffectsConfig extends UnionSpec,
   Exhaustive extends boolean = false,
 >(
   machine: StateMachine<States, Transitions>,
   getEffects: (
     state: StateFromFactory<States>,
-  ) =>
-    | MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>[]
-    | undefined,
+  ) => MemberOf<MatchboxFactory<EffectsConfig, "effect">>[] | undefined,
   matchers: MatchCases<
     EffectsConfig,
-    MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>,
+    MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
     any,
     Exhaustive
   >,
@@ -55,13 +53,13 @@ export function bindEffects<
   });
 }
 function handleEffects<
-  EffectsConfig extends MatchboxConfig,
+  EffectsConfig extends UnionSpec,
   Exhaustive extends boolean = true,
 >(
   effects: undefined | AnyEffect[],
   matchers: MatchCases<
     EffectsConfig,
-    MatchboxFromFactory<MatchboxFactory<EffectsConfig, "effect">>,
+    MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
     any,
     Exhaustive
   >,

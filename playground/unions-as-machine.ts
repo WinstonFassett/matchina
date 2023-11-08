@@ -1,9 +1,9 @@
-import { MatchboxConfig, MatchboxFromFactory, matchboxFactory } from "../src/matchbox";
+import { UnionSpec, MemberOf, matchboxFactory } from "../src/matchbox";
 // ---cut---
-export const defineStates = <T extends MatchboxConfig>
+export const defineStates = <T extends UnionSpec>
   (config: T) => matchboxFactory(config, "key");
 
-export const defineEvents = <T extends MatchboxConfig>
+export const defineEvents = <T extends UnionSpec>
   (config: T) => matchboxFactory(config, "type");
 
 // Define States
@@ -11,13 +11,13 @@ const states = defineStates({
   Idle: () => ({}),
   Done: (x: number) => ({ result: x }),
 });
-type State = MatchboxFromFactory<typeof states>
+type State = MemberOf<typeof states>
 
 // Define Events
 const events = defineEvents({
   execute: (x: number) => x,
 });
-type Event = MatchboxFromFactory<typeof events>
+type Event = MemberOf<typeof events>
 
 // Define state-event transitions
 const transition = (state: State, event: Event) => state.match({
