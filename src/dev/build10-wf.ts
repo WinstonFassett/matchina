@@ -11,8 +11,8 @@ interface StateMachineContext {
 }
 
 
-type Enhancer<C> = Function
-type Extender<C> = Function
+type Enhancer<C> = (target: C) => void
+type Extender<T, X> = (target: T) => X
 interface BaseBuilder<C> {
   use(...middlewares: Enhancer<C>[]): this
   extend(...extensions: Extender<C>[]): this
@@ -92,3 +92,8 @@ initialStateAfterTRansitions.createMachine()
 const machine: StateMachine = initialStateWithTransitions.createMachine();
 machine.send('start'); // Should log "Event sent: start, current state: Idle"
 
+builder
+  .defineStates({ Idle: {}, Working: {}, Done: {} })
+  .defineTransitions({ Idle: { start: 'Working' }, Working: { finish: 'Done' } })
+  .setInitialState('Idle')
+  .createMachine()
