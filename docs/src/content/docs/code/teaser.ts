@@ -1,38 +1,43 @@
-import { defineMachine, defineStates, withEvents, makeZen } from 'matchina'
+import { defineStates, defineMachine } from "../src";
+import { withEvents } from "../src/extras/with-events";
+
+type SomeResult = {
+  someResult: string
+}
+
+type SomeRequest = {
+  id: number
+}
 
 const states = defineStates({
-  Red: 'Stop', Green: 'Go', Yellow: 'Caution'
-} as const)
-const red = states.Red()
-
-const def = defineMachine(states, {
-  Red: { tick: 'Green' }, 
-  Green: { tick: 'Yellow' },
-  Yellow: { tick: 'Red' }
+  Idle: undefined,
+  Pending: (req: SomeRequest) => req,
+  Rejected: (error: Error) => error,
+  Resolved: (data: SomeResult) => data,
 })
-const machine = makeZen(def.create(states.Red()))
-machine.tick()
-const { state } = machine
-const change = machine.machine.getChange()
 
-const { to, from, type } = change
+const Machine = defineMachine(states, {
+  Idle: {
+    execute: (req: SomeRequest, somethingElse: boolean) => {
+      console.log('execute', req.id, somethingElse)
 
-// Ways to type narrow:
-
-if (from.key === 'Yellow') {
-  const { key } = from
-}
-
-from.match({
-  Red: () => {
-    console.log('from red')
+      return states.Pending(req)    
+    }
   },
-}, false)
+  Pending: {
+    resolve: 'Resolved',
+    reject: 'Rejected'
+  },
+  Rejected: {},
+  Resolved: {}
+})
 
-if (to.is('Green')) {
-  const { key } = to
-}
+const initialState = states.Idle()
+const sampleRequestState = states.Pending({ id: 123 })
+const sampleResponse = states.Resolved({ someResult: 'ok' })
+const sampleError = states.Rejected(new Error('nope'))
 
-to.as('Red').key
-
+const machine = withEvents(Machine.create(initialState))
+machine.event.execute({ id: 123 }, true)
+machine.event.reject(new Error('error'))
 
