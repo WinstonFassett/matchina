@@ -28,49 +28,32 @@ interface BaseBuilder {
 }
 
 // Builder interfaces corresponding to each context stage
-interface NoStatesBuilder {
+interface NoStatesBuilder extends BaseBuilder {
   defineStates(states: States): StatesWithoutTransitionsBuilder;
 }
 
-type HasStatesBuilder<C extends BaseContext = BaseContext> = BaseBuilder & {
-  defineStates(states: States): StatesWithoutTransitionsBuilder;
-} & C;
+// type HasStatesBuilder<C extends BaseContext = BaseContext> = BaseBuilder & {
+//   defineStates(states: States): StatesWithoutTransitionsBuilder;
+// } & C;
 
-interface StatesWithoutTransitionsBuilder extends HasStatesBuilder {
+interface StatesWithoutTransitionsBuilder extends BaseBuilder, MachineBuilder<{
+  transitions: Transitions
+}> {
   defineTransitions(transitions: Transitions): TransitionsWithoutInitialStateBuilder;
 }
 
-interface TransitionsWithoutInitialStateBuilder extends HasStatesBuilder {
+interface TransitionsWithoutInitialStateBuilder extends BaseBuilder, MachineBuilder<{
+  initialState: string
+}> {
   setInitialState(initialState: string): FullContextMachineBuilder;
 }
 
-// mix together interfaces based on C
-// if C has states, figure out which states interfaces to include
-// if C has transitions, figure out which transitions interfaces to include
-// figure out whether to include initial state interface
-// maybe do this as a union and then flatten it? idk
-/*
-Discussion:
-Answer yes or no:
-- Can we use conditional types to do this? (yes)
-- Can we use mapped types to do this? (yes)
-- Can we use generics to do this? (yes)
-- Can we use a combination of the above? (yes)
-- Can we use a union of interfaces to do this? (no)
-- Can we use a union of mapped types to do this? (no)
-- Can we use a union of generics to do this? (no)
-- Can we use a union of conditional types to do this? (no)
-- Can we use a combination of the above? (no)
-
-Recommendation:
-- Use a combination of conditional types and mapped types
-*/
-type MachineBuilderForContext<C extends BaseContext> = BaseBuilder & 
-  C['states'] extends undefined ? NoStatesBuilder :
-  C['transitions'] extends undefined ? StatesWithoutTransitionsBuilder :
-  C['initialState'] extends undefined ? TransitionsWithoutInitialStateBuilder :
-  FullContextMachineBuilder;
-;
+// type MachineBuilderForContext<C extends BaseContext> = BaseBuilder & 
+//   C['states'] extends undefined ? NoStatesBuilder :
+//   C['transitions'] extends undefined ? StatesWithoutTransitionsBuilder :
+//   C['initialState'] extends undefined ? TransitionsWithoutInitialStateBuilder :
+//   FullContextMachineBuilder;
+// ;
 
 interface MachineBuilder<RequiredContext> {
   createMachine(context: RequiredContext): StateMachine;
@@ -141,13 +124,25 @@ interface StateMachine {
 }
 
 // Usage example
-const machine = define()
-  .defineStates({ Idle: {}, Working: {}, Done: {} })
+const context = define()
+  .use(() => {})
+  .extend(() => {})
+const states = context
+  .defineStates({ Idle: {}, Working: {}, Done: {} })  
+const machineFromStates = states.createMachine({ 
+  transitions: {} 
+})
+const transitions = states
   .defineTransitions({
     Idle: { start: 'Working' },
     Working: { finish: 'Done' },
   })
+const machineFromTransitions = transitions.createMachine({
+  initialState: 'Idle',
+})
+const initial = transitions
   .setInitialState('Idle')
+const machine = initial
   .createMachine();
 
 machine.send('start'); // Should log "Transitioning with event: start"
