@@ -2,7 +2,7 @@ import React from "react";
 import { createPromiseMachine } from "../src";
 import { Expand } from "../src/types";
 import { withEvents } from "../src/extras/with-events";
-
+// ---cut---
 const machine = withEvents(createPromiseMachine((id: number) =>
   fetch("/data").then((response) => response.json()),
 ));

@@ -2,7 +2,7 @@ import React from "react";
 import { defineMachine } from "../src";
 import { defineStates } from "../src/states";
 import { withEvents } from "../src/extras/with-events";
-
+// ---cut---
 type Data = { whatever: true };
 
 const states = defineStates({

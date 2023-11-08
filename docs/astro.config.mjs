@@ -48,6 +48,10 @@ export default defineConfig({
               link: "/guides/quickstart/",
             },
             {
+              label: "Basics",
+              link: "/guides/basics/",
+            },
+            {
               label: "Types",
               link: "/guides/types/",
             },
@@ -58,6 +62,10 @@ export default defineConfig({
             {
               label: "Effects",
               link: "/guides/effects/",
+            },
+            {
+              label: "Promises",
+              link: "/guides/promises/",
             },
             {
               label: "Union Machines",
