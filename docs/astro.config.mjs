@@ -10,7 +10,7 @@ export default defineConfig({
   markdown: {
     syntaxHighlight: false,
     remarkPlugins: [
-      [remarkShikiTwoslash, { theme: "dark-plus" }]
+      [remarkShikiTwoslash, { theme: "material-ocean" }]
       // '@astrojs/markdown-remark',
       // {
       //   syntaxHighlight: false,

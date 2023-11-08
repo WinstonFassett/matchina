@@ -8,7 +8,7 @@ import Note from "../components/Note.astro";
 import '../styles/shiki-twoslash.css'
 
 export let html = ``
-const highlighter = await createShikiHighlighter({ theme: "dark-plus" })
+const highlighter = await createShikiHighlighter({ theme: "material-ocean" })
 const { lang, code, ...props } = Astro.props;
 
 if (['ts', 'tsx'].includes(lang)) {
@@ -21,12 +21,12 @@ if (['ts', 'tsx'].includes(lang)) {
     twoslash.code, 
     lang, 
     { twoslash: true }, 
-    { themeName: "dark-plus" }, 
+    { themeName: "material-ocean" }, 
     highlighter, 
     twoslash
   )
 } else {
-  html = renderCodeToHTML(code, lang, {}, { themeName: "dark-plus" }, highlighter);
+  html = renderCodeToHTML(code, lang, {}, { themeName: "material-ocean" }, highlighter);
 }
 
 ---
