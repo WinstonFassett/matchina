@@ -26,7 +26,11 @@ if (['ts', 'tsx'].includes(lang)) {
     twoslash
   )
 } else {
-  html = renderCodeToHTML(code, lang, {}, { themeName: "material-ocean" }, highlighter);
+  html = renderCodeToHTML(applyCut(code), lang, {}, { themeName: "material-ocean" }, highlighter);
+}
+
+function applyCut (s: string) {
+  return s.split(/\/\/ \-\-\-cut\-\-\-\s*/).pop() ?? ''
 }
 
 ---
