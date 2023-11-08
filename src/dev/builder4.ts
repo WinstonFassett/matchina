@@ -96,7 +96,8 @@ class StateMachineBuilder implements NoStatesBuilder, StatesWithoutTransitionsBu
     return this;
   }
 
-  createMachine(): StateMachine {
+  createMachine(additionalContext:BaseContext = {}): StateMachine {
+    Object.assign(this, additionalContext)
     if (!this.context.initialState || !this.context.states || !this.context.transitions) {
       throw new Error("Initial state, states, and transitions must all be defined before creating the machine.");
     }
