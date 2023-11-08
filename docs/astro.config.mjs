@@ -71,6 +71,10 @@ export default defineConfig({
               label: "Union Machines",
               link: "/guides/union-machines/",
             },
+            {
+              label: "Timsy Compatibility",
+              link: "/guides/timsy/",
+            },
           ],
         },
         // {
