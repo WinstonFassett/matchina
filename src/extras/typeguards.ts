@@ -20,19 +20,19 @@ type ChangeEventFilter<Type, To, From> = RecordFilter<ChangeEvent<Type, To, From
 function matchKey<T>(keyOrKeys: T|T[]|undefined, value:T ) {
   return keyOrKeys === undefined ? true : Array.isArray(keyOrKeys) ? keyOrKeys.includes(value) : keyOrKeys === value;
 }
-
-function hasKeyValue<T, K extends PropertyKey, V>(obj: T, key: K, value: V): obj is T & Record<K, V> {
-  return (obj as Record<K, V>)[key] === value;
-}
-function hasKeyValues<T, K extends PropertyKey, V>(obj: T, key: K, values: V[]): obj is T & Record<K, V> {
+function hasKeyValue<T, K extends PropertyKey, V>(obj: T, key: K, values: V|V[]): obj is T & Record<K, V> {
+  if (!Array.isArray(values)) {
+    return (obj as Record<K, V>)[key] === values;
+  }
   return values.includes((obj as Record<K, V>)[key]);
 }
+
 
 const a: unknown = {}
 if (hasKeyValue(a, 'foo', 'bar' as const)) {
   a.foo
 }
-if (hasKeyValues(a, 'foo', ['manchu' as const, 'bar' as const])) {
+if (hasKeyValue(a, 'foo', ['manchu' as const, 'bar' as const])) {
   a.foo
 }
 
