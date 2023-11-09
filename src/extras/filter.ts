@@ -117,6 +117,36 @@ x.from.key = 'bar'
 x.from.key = 'ball'
 
 
+type StateMachine = {
+  state: string;
+  transition: (action: string) => void;  
+};
+
+function subscribeKeyedChangeEvent<
+  E extends unknown,
+  Type extends ChangeEventType<E>,
+  ToKey extends ChangeEventToKey<E>,
+  FromKey extends ChangeEventFromKey<E>,
+>(  
+  filter: ChangeEventFilter<Type, ToKey, FromKey>,
+  callback: (event: E&KeyedChangeEvent<Type, FromKey, ToKey>) => void,
+) {
+  // implementation not important
+}
+
+subscribeKeyedChangeEvent({
+  type: ['baz', 'bake'],
+  to: ['foo', 'foot'],
+  from: ['bar', 'ball'],
+}, (ev) => {
+  ev.type = 'baz'
+  ev.type = 'bake'
+  ev.to.key = 'foo'
+  ev.to.key = 'foot'
+  ev.from.key = 'bar'
+  ev.from.key = 'ball'
+})
+
 type HasKeyAndValue<K extends PropertyKey, V> = {
   [key in K]: V;
 };
