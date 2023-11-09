@@ -6,30 +6,28 @@ interface StateMachine {
   transition: (action: string) => void;
   extend<R>(extender: Extender<this, R>): R;
   into<U>(cb: (val: this) => U): U;
-};
+}
 
 // Define extender functions
 type Extender<In, Out> = (target: In) => Out;
 
 const withSubscribe = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  subscribe: (callback: () => void) => {
-  },
+  subscribe: (callback: () => void) => {},
 });
 
 const withZen = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  zen: () => {
-  },
+  zen: () => {},
 });
 
 // Usage example
 const baseMachine: StateMachine = {
   state: 'Idle',
-  transition: (action: string) => { },
+  transition: (action: string) => {},
 } as any;
 
-const x = baseMachine.extend(it => ({...it, yooo: 'hello'})).extend(it => ({...it, thing2: 'world'}))
+const x = baseMachine.extend(it => ({ ...it, yooo: 'hello' })).extend(it => ({ ...it, thing2: 'world' }))
 
 interface Pipe<T> {
   val: T;

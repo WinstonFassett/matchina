@@ -67,9 +67,11 @@ class StateMachineBuilder implements NoStatesBuilder, StatesWithoutTransitionsBu
   use(...middlewares: Function[]): this {
     throw new Error("Method not implemented.");
   }
+
   extend(...extensions: Function[]): this {
     throw new Error("Method not implemented.");
   }
+
   states?: States | undefined;
   transitions?: Transitions | undefined;
   initialState?: string | undefined;

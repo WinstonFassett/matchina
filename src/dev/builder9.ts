@@ -33,7 +33,7 @@ export type MachineBuilder<C extends BaseContext> =
   (C extends { initialState: undefined } ? CanSetInitialState : {}) &
   (C extends { states: States, initialState: string } ? CanCreateMachine : {});
 
-let builder1 = {} as MachineBuilder<{}>;
+const builder1 = {} as MachineBuilder<{}>;
 
 export interface StateMachine {
   state: string;
@@ -42,13 +42,13 @@ export interface StateMachine {
 
 // Usage example
 // Start with a builder that can only define states
-let builder: CanDefineStates = {} as CanDefineStates;
+const builder: CanDefineStates = {} as CanDefineStates;
 
 // Define states, and now we can define transitions or set initial state
 const builderWithStates = builder.defineStates({ Idle: {}, Working: {}, Done: {} });
 
 // We choose to set the initial state first
-let builderWithInitialState: CanDefineTransitions & CanCreateMachine = builderWithStates.setInitialState('Idle');
+const builderWithInitialState: CanDefineTransitions & CanCreateMachine = builderWithStates.setInitialState('Idle');
 
 // Now define transitions
 const builderWithTransitions = builderWithInitialState.defineTransitions({

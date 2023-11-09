@@ -1,26 +1,63 @@
+import { ChangeEventFromKey, ChangeEventToKey, ChangeEventType } from "../../playground/typeguard.usage";
+import { defineMachine } from "../machine";
 import {
-  StateFromFactory,
-  StateMachine,
-  StatesFactory,
-  TransitionConfig,
+  StateMachine
 } from "../machine-types";
+import { defineStates } from "../states";
 import { nanosubscriber } from "./nanosubscriber";
 import { onUpdate } from "./on-update";
+import { ChangeEventFilter, KeyedChangeEvent, isKeyedChangeEvent } from "./typeguards";
 
 export function withSubscribe<
-  States extends StatesFactory,
-  Transitions extends TransitionConfig<States>,
-  M extends StateMachine<States, Transitions>,
+  M extends StateMachine<any, any>
 >(machine: M) {
-  type State = StateFromFactory<M["def"]["states"]>;
-  const [subscribe, emit] = nanosubscriber<State>();
+  type Event = ReturnType<M['getChange']>;
+  const [subscribe, emit] = nanosubscriber<Event>();
   machine.update((previous) => previous);
   const dispose = onUpdate(machine, ((commit: any, updater: any) => {
+    const current = machine.getChange() as Event;
     commit(updater);
-    emit(machine.getState());
+    const change = machine.getChange() as Event
+    if (change && change !== current) {
+      emit(change);
+    }
   }) as any);
   return Object.assign(machine, {
     subscribe,
+    when: subscribeKey,
     dispose,
   });
-}
+
+  function subscribeKey<
+    E extends Event,
+    Type extends ChangeEventType<E>,
+    ToKey extends ChangeEventToKey<E>,
+    FromKey extends ChangeEventFromKey<E>
+  >(
+    filter: ChangeEventFilter<Type, ToKey, FromKey>,
+    listener: (event: E & KeyedChangeEvent<Type, FromKey, ToKey>) => void
+  ) {
+    return subscribe((event) => {
+      if (isKeyedChangeEvent(event, filter)) {
+        listener(event as any);
+      }
+    })
+  }
+}  
+
+
+// // usage test
+// const states = defineStates({
+//   Idle: {},
+//   Running: {},
+// });
+
+// const inner = defineMachine(states, {
+//   Idle: {
+//     start: states.Running,
+//   },
+//   Running: {
+//     stop: states.Idle,
+//   },
+// }).create(states.Idle())
+// const machine = withSubscribe(inner);

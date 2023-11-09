@@ -58,7 +58,7 @@ export interface StateMachine {
 }
 
 // Usage example
-let builder = {} as Simplify<BuilderForContext<{ 
+const builder = {} as Simplify<BuilderForContext<{ 
   // states: {}, transitions: {}, initialState: 'S' 
 }>>;
 builder.createMachine({ states: {}, transitions: {}, initialState: 'S' })

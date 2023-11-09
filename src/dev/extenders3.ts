@@ -47,14 +47,12 @@ class ExtensibleClass implements Extensible {
 
 const withSubscribe = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  subscribe: (callback: () => void) => {
-  },
+  subscribe: (callback: () => void) => {},
 });
 
 const withZen = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  zen: () => {
-  },
+  zen: () => {},
 });
 
 interface StateMachine extends Extensible {
@@ -64,14 +62,14 @@ interface StateMachine extends Extensible {
 // Usage example
 const baseMachine: StateMachine = {
   state: 'Idle',
-  transition: (action: string) => { },
+  transition: (action: string) => {},
 } as any;
 
 const m = baseMachine.extend(
   withSubscribe, 
   withZen,
-  it => ({...it, whatever: {hello: 'world'} } as const),
-  it => ({...it, moar: {stuff: 'ok'} } as const)
+  it => ({ ...it, whatever: { hello: 'world' } } as const),
+  it => ({ ...it, moar: { stuff: 'ok' } } as const)
 )
   
 m.whatever.hello

@@ -4,33 +4,31 @@ interface StateMachine {
   state: string;
   transition: (action: string) => void;
   extend: <R>(extender: Extender<this, R>) => R;
-};
+}
 
 // Define extender functions
 type Extender<In, Out> = (target: In) => Out;
 
 const withSubscribe = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  subscribe: (callback: () => void) => {
-  },
+  subscribe: (callback: () => void) => {},
 });
 
 const withZen = <M extends StateMachine>(machine: M) => ({
   ...machine,
-  zen: () => {
-  },
+  zen: () => {},
 });
 
 // Usage example
 const baseMachine: StateMachine = {
   state: 'Idle',
-  transition: (action: string) => { },
+  transition: (action: string) => {},
 } as any;
 
 const m = baseMachine
   .extend(withSubscribe)
   .extend(withZen)
-  .extend(it => ({...it, whatever: {hello: 'world'} } as const));
+  .extend(it => ({ ...it, whatever: { hello: 'world' } } as const));
   
 m.whatever.hello
 m.subscribe(() => {})

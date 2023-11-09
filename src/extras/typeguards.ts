@@ -8,20 +8,22 @@ export type ChangeEvent<Type, To, From> = {
 type RecordFilter<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
-type ChangeEventFilter<Type, To, From> = RecordFilter<ChangeEvent<Type, To, From>>;
+export type ChangeEventFilter<Type, To, From> = RecordFilter<ChangeEvent<Type, To, From>>;
+
 function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
-  return keyOrKeys === undefined ? true : Array.isArray(keyOrKeys) ? keyOrKeys.includes(value) : keyOrKeys === value;
+  return keyOrKeys === undefined ? true : (Array.isArray(keyOrKeys) ? keyOrKeys.includes(value) : keyOrKeys === value);
 }
+
 export function hasKeyValue<T, K extends PropertyKey, V>(obj: T, key: K, values: V | V[]): obj is T & Record<K, V> {
   if (!Array.isArray(values)) {
     return (obj as Record<K, V>)[key] === values;
   }
   return values.includes((obj as Record<K, V>)[key]);
 }
-type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<Type, { key: ToKey; }, { key: FromKey; }>;
+export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<Type, { key: ToKey; }, { key: FromKey; }>;
 
 export function isKeyedChangeEvent<
-  E extends unknown,
+  E,
   Type extends ChangeEventType<E>,
   ToKey extends ChangeEventToKey<E>,
   FromKey extends ChangeEventFromKey<E>
@@ -70,15 +72,4 @@ export function asChangeTypeToFrom<
     return event;
   }
   throw new Error('not a match');
-}
-export function subscribeKeyedChangeEvent<
-  E extends unknown,
-  Type extends ChangeEventType<E>,
-  ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>
->(
-  filter: ChangeEventFilter<Type, ToKey, FromKey>,
-  callback: (event: E & KeyedChangeEvent<Type, FromKey, ToKey>) => void
-) {
-  // implementation not important
 }

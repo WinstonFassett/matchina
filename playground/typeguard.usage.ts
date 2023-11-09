@@ -1,4 +1,4 @@
-import { hasKeyValue, ChangeEvent, isKeyedChangeEvent, isChangeTypeToFrom, asChangeTypeToFrom, subscribeKeyedChangeEvent } from "../src/extras/typeguards";
+import { hasKeyValue, ChangeEvent, isKeyedChangeEvent, isChangeTypeToFrom, asChangeTypeToFrom } from "../src/extras/typeguards";
 
 export {}
 
@@ -45,18 +45,18 @@ type StateMachine = {
   transition: (action: string) => void;  
 };
 
-subscribeKeyedChangeEvent({
-  type: ['baz', 'bake'],
-  to: ['foo', 'foot'],
-  from: ['bar', 'ball'],
-}, (ev) => {
-  ev.type = 'baz'
-  ev.type = 'bake'
-  ev.to.key = 'foo'
-  ev.to.key = 'foot'
-  ev.from.key = 'bar'
-  ev.from.key = 'ball'
-})
+// subscribeKeyedChangeEvent({
+//   type: ['baz', 'bake'],
+//   to: ['foo', 'foot'],
+//   from: ['bar', 'ball'],
+// }, (ev) => {
+//   ev.type = 'baz'
+//   ev.type = 'bake'
+//   ev.to.key = 'foo'
+//   ev.to.key = 'foot'
+//   ev.from.key = 'bar'
+//   ev.from.key = 'ball'
+// })
 
 type HasKeyAndValue<K extends PropertyKey, V> = {
   [key in K]: V;
@@ -75,10 +75,9 @@ if (hasName(alice, 'Alice')) {
   console.log(alice.age); // Error: Property 'age' does not exist on type 'PersonWithName<"Alice">'
 }
 
-const person: unknown = {  };
+const person: unknown = {};
 if (hasName(person, 'Alice')) {
   // TypeScript knows that `person` is a `Person` with name 'Alice'
   person.name
-
 }
 
