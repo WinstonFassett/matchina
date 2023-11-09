@@ -4,7 +4,7 @@ import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
 import { withEvents } from "../src/extras/with-events";
 import { makeZen } from "../src/extras/zen";
-
+import { isChangeTypeToFrom, isKeyedChangeEvent } from "../src/extras/filter";
 // ---cut---
 async function promiseUsage () {
   const machine = withEvents(createPromiseMachine(async (x: number) => {
@@ -91,6 +91,24 @@ async function promiseUsage () {
   const zenFetch = makeZen(fetchMachine)
   zenFetch.execute(123)  
   const { state } = zenFetch
+
+  const change = machine.getChange()
+  
+  if (isKeyedChangeEvent(change, {
+    to: 'Idle',
+    from: 'Pending',
+    type: 'execute',
+  })) {
+    change.from.key = 'Pending'
+    change.type = 'execute'
+    change.to.key = 'Idle'
+  }
+
+  if (isChangeTypeToFrom(change, ['execute', 'reject'], 'Idle', 'Pending')) {
+    change.from.key = 'Pending'
+    change.type = 'execute'
+    change.to.key = 'Idle'
+  }
     
   type PromiseTransitionStateKeys = keyof typeof fetchMachine.def.transitions
   type TransitionEventKeys<
