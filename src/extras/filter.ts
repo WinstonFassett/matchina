@@ -92,6 +92,31 @@ if (isChangeTypeToFrom(ev2, 'baz', 'foo', 'bar')) {
   ev2.type
 }
 
+function asChangeTypeToFrom<
+  E, // extends ChangeEvent<any, { key: any }, { key: any }>,
+  Type extends ChangeEventType<E>,
+  ToKey extends ChangeEventToKey<E>,
+  FromKey extends ChangeEventFromKey<E>
+>(
+  event: E,
+  type?: Type|Type[],
+  to?: ToKey|ToKey[],
+  from?: FromKey|FromKey[],  
+): E&KeyedChangeEvent<Type, FromKey, ToKey> {
+  if (isChangeTypeToFrom(event, type, to, from)) {
+    return event
+  }
+  throw new Error('not a match')
+}
+
+const x = asChangeTypeToFrom(ev2, 'baz' as const, 'foo' as 'foo' | 'foot', ['bar', 'ball'] as ('bar' | 'ball')[])
+x.type = 'baz'
+x.to.key = 'foo'
+x.to.key = 'foot'
+x.from.key = 'bar'
+x.from.key = 'ball'
+
+
 type HasKeyAndValue<K extends PropertyKey, V> = {
   [key in K]: V;
 };
