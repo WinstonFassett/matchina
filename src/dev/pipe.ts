@@ -1,5 +1,4 @@
-
-export {}
+export {};
 // Define your base StateMachine type
 interface StateMachine {
   state: string;
@@ -23,11 +22,13 @@ const withZen = <M extends StateMachine>(machine: M) => ({
 
 // Usage example
 const baseMachine: StateMachine = {
-  state: 'Idle',
+  state: "Idle",
   transition: (action: string) => {},
 } as any;
 
-const x = baseMachine.extend(it => ({ ...it, yooo: 'hello' })).extend(it => ({ ...it, thing2: 'world' }))
+const x = baseMachine
+  .extend((it) => ({ ...it, yooo: "hello" }))
+  .extend((it) => ({ ...it, thing2: "world" }));
 
 interface Pipe<T> {
   val: T;
@@ -35,15 +36,12 @@ interface Pipe<T> {
 }
 
 function pipe<T>(val: T): Pipe<T> {
-  return { val, into: cb => pipe(cb(val)) }
+  return { val, into: (cb) => pipe(cb(val)) };
 }
-  
+
 // // Example Usage
-export const inverseEuler = (e: number) => pipe(e)
-  .into(x => ('hello'))
-  .into(s => s.length)
-  .into(n => n + 1)
-  .val
-
-
-  
+export const inverseEuler = (e: number) =>
+  pipe(e)
+    .into((x) => "hello")
+    .into((s) => s.length)
+    .into((n) => n + 1).val;

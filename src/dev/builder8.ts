@@ -23,7 +23,10 @@ interface CanCreateMachine {
   createMachine(): StateMachine;
 }
 
-type MachineBuilder = CanDefineStates & CanDefineTransitions & CanSetInitialState & CanCreateMachine;
+type MachineBuilder = CanDefineStates &
+  CanDefineTransitions &
+  CanSetInitialState &
+  CanCreateMachine;
 
 class StateMachineBuilder {
   private context: BaseContext = {};
@@ -45,7 +48,9 @@ class StateMachineBuilder {
 
   createMachine() {
     if (!this.context.states || !this.context.initialState) {
-      throw new Error("States and initial state must be defined before creating the machine.");
+      throw new Error(
+        "States and initial state must be defined before creating the machine.",
+      );
     }
 
     const machine: StateMachine = {
@@ -67,11 +72,11 @@ interface StateMachine {
 
 const machineBuilder = new StateMachineBuilder()
   .defineStates({ Idle: {}, Working: {}, Done: {} })
-  .setInitialState('Idle')
+  .setInitialState("Idle")
   .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
   });
 
 const machine = machineBuilder.createMachine();
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"

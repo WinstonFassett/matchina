@@ -1,4 +1,4 @@
-export {}
+export {};
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
 
@@ -8,24 +8,38 @@ interface Context {
   defineStates(states: States): ContextWithStates;
 }
 
-interface ContextWithStates<InitialStateKey extends undefined | string = undefined> extends Context {
+interface ContextWithStates<
+  InitialStateKey extends undefined | string = undefined,
+> extends Context {
   initialState<T extends string>(initialState: T): this & ContextWithStates<T>;
-  defineTransitions(transitions: Transitions): this & StateMachineContext<InitialStateKey>;
+  defineTransitions(
+    transitions: Transitions,
+  ): this & StateMachineContext<InitialStateKey>;
 }
 
-interface StateMachineContext<InitialStateKey extends undefined | string = undefined> extends Context {
-  createMachine(initialState?: InitialStateKey extends undefined ? string : string): StateMachine;
+interface StateMachineContext<
+  InitialStateKey extends undefined | string = undefined,
+> extends Context {
+  createMachine(
+    initialState?: InitialStateKey extends undefined ? string : string,
+  ): StateMachine;
 }
 
 interface StateMachine {
-  state: string
+  state: string;
   send(event: any): void;
 }
 
 // Example implementations for extenders and middleware
-const withSubscribe = (machine: any) => { /* ... */ };
-const withAsync = (machine: any) => { /* ... */ };
-const logger = (machine: any) => { /* ... */ };
+const withSubscribe = (machine: any) => {
+  /* ... */
+};
+const withAsync = (machine: any) => {
+  /* ... */
+};
+const logger = (machine: any) => {
+  /* ... */
+};
 
 // Builder class
 class MachineBuilder implements Context {
@@ -57,23 +71,25 @@ class MachineBuilder implements Context {
   }
 
   createMachine(): StateMachine {
-    const machine = { /* ... construction of the state machine ... */ };
+    const machine = {
+      /* ... construction of the state machine ... */
+    };
     // Apply middlewares and extensions to the machine
     return machine as StateMachine;
   }
 }
 
 // Usage example
-const machine = 
-// const states = 
+const machine =
+  // const states =
   (new MachineBuilder() as Context)
-  .defineStates({ Idle: {}, Done: {} })
-// const transitions = states
-  .defineTransitions({ Idle: { execute: 'Done' } })
-// const extensions = transitions
-  .extend(withSubscribe, withAsync)
-  .use(logger)
-// const machine = extensions
-  .createMachine();
+    .defineStates({ Idle: {}, Done: {} })
+    // const transitions = states
+    .defineTransitions({ Idle: { execute: "Done" } })
+    // const extensions = transitions
+    .extend(withSubscribe, withAsync)
+    .use(logger)
+    // const machine = extensions
+    .createMachine();
 
-machine.send('execute'); // Starts the state machine
+machine.send("execute"); // Starts the state machine

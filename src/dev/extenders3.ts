@@ -1,10 +1,9 @@
-export {}
+export {};
 type Context = {
   // ... your Context type definition
 };
 
 type Extender<A, B> = (input: A) => B;
-
 
 // Usage
 
@@ -16,14 +15,14 @@ type Extend<T> = {
     fn1: Extender<T, A>,
     fn2: Extender<A, B>,
     fn3: Extender<B, C>,
-    fn4: Extender<C, D>
+    fn4: Extender<C, D>,
   ): D;
   <A, B, C, D, E>(
     fn1: Extender<T, A>,
     fn2: Extender<A, B>,
     fn3: Extender<B, C>,
     fn4: Extender<C, D>,
-    fn5: Extender<D, E>
+    fn5: Extender<D, E>,
   ): E;
 };
 
@@ -61,20 +60,20 @@ interface StateMachine extends Extensible {
 }
 // Usage example
 const baseMachine: StateMachine = {
-  state: 'Idle',
+  state: "Idle",
   transition: (action: string) => {},
 } as any;
 
 const m = baseMachine.extend(
-  withSubscribe, 
+  withSubscribe,
   withZen,
-  it => ({ ...it, whatever: { hello: 'world' } } as const),
-  it => ({ ...it, moar: { stuff: 'ok' } } as const)
-)
-  
-m.whatever.hello
-m.moar.stuff
-m.subscribe(() => {})
+  (it) => ({ ...it, whatever: { hello: "world" } }) as const,
+  (it) => ({ ...it, moar: { stuff: "ok" } }) as const,
+);
+
+m.whatever.hello;
+m.moar.stuff;
+m.subscribe(() => {});
 // const x = m
 //   .extend(it => ({...it, hello: 'world'}))
 //   .extend(it => ({...it, there: 'world'}))

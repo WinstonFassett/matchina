@@ -1,4 +1,4 @@
-export {}
+export {};
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
 
@@ -45,7 +45,9 @@ class StateMachineBuilder implements BaseBuilder {
 
   createMachine(): StateMachine {
     if (!this.context.states || !this.context.initialState) {
-      throw new Error("States and initial state must be defined before creating the machine.");
+      throw new Error(
+        "States and initial state must be defined before creating the machine.",
+      );
     }
 
     const machine: StateMachine = {
@@ -69,11 +71,11 @@ interface StateMachine {
 // Usage example
 const machine = new StateMachineBuilder()
   .defineStates({ Idle: {}, Working: {}, Done: {} })
-  .setInitialState('Idle') // Now we can set the initial state independently of transitions
+  .setInitialState("Idle") // Now we can set the initial state independently of transitions
   .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
   })
   .createMachine();
 
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"

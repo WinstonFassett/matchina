@@ -1,4 +1,4 @@
-export {} 
+export {};
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
 
@@ -40,7 +40,13 @@ interface MachineBuilder {
 }
 
 // State machine builder class
-class StateMachineBuilder implements StatesBuilder, TransitionsBuilder, InitialStateBuilder, MachineBuilder {
+class StateMachineBuilder
+  implements
+    StatesBuilder,
+    TransitionsBuilder,
+    InitialStateBuilder,
+    MachineBuilder
+{
   private context: BaseContext = {};
 
   defineStates(states: States): TransitionsBuilder {
@@ -58,15 +64,23 @@ class StateMachineBuilder implements StatesBuilder, TransitionsBuilder, InitialS
 
   setInitialState(initialState: string): MachineBuilder {
     if (!this.context.states) {
-      throw new Error("States must be defined before setting the initial state.");
+      throw new Error(
+        "States must be defined before setting the initial state.",
+      );
     }
     this.context.initialState = initialState;
     return this;
   }
 
   createMachine(): StateMachine {
-    if (!this.context.initialState || !this.context.states || !this.context.transitions) {
-      throw new Error("Initial state, states, and transitions must all be defined before creating the machine.");
+    if (
+      !this.context.initialState ||
+      !this.context.states ||
+      !this.context.transitions
+    ) {
+      throw new Error(
+        "Initial state, states, and transitions must all be defined before creating the machine.",
+      );
     }
     // The context is now fully defined, so we can cast it to FullContext
     const fullContext: MachineContext = this.context as MachineContext;
@@ -90,11 +104,11 @@ interface StateMachine {
 // Usage example
 const machine = new StateMachineBuilder()
   .defineStates({ Idle: {}, Working: {}, Done: {} })
-  .setInitialState('Idle')
+  .setInitialState("Idle")
   .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
   })
   .createMachine();
 
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"

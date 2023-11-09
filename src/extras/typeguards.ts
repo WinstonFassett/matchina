@@ -1,4 +1,8 @@
-import { ChangeEventType, ChangeEventToKey, ChangeEventFromKey } from "../../playground/typeguard.usage";
+import {
+  ChangeEventType,
+  ChangeEventToKey,
+  ChangeEventFromKey,
+} from "../../playground/typeguard.usage";
 
 export type ChangeEvent<Type, To, From> = {
   type: Type;
@@ -8,28 +12,42 @@ export type ChangeEvent<Type, To, From> = {
 type RecordFilter<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
-export type ChangeEventFilter<Type, To, From> = RecordFilter<ChangeEvent<Type, To, From>>;
+export type ChangeEventFilter<Type, To, From> = RecordFilter<
+  ChangeEvent<Type, To, From>
+>;
 
-function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
-  return keyOrKeys === undefined ? true : (Array.isArray(keyOrKeys) ? keyOrKeys.includes(value) : keyOrKeys === value);
-}
-
-export function hasKeyValue<T, K extends PropertyKey, V>(obj: T, key: K, values: V | V[]): obj is T & Record<K, V> {
+export function hasKeyValue<T, K extends PropertyKey, V>(
+  obj: T,
+  key: K,
+  values: V | V[],
+): obj is T & Record<K, V> {
   if (!Array.isArray(values)) {
     return (obj as Record<K, V>)[key] === values;
   }
   return values.includes((obj as Record<K, V>)[key]);
 }
-export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<Type, { key: ToKey; }, { key: FromKey; }>;
+export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
+  Type,
+  { key: ToKey },
+  { key: FromKey }
+>;
+
+function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
+  return keyOrKeys === undefined
+    ? true
+    : Array.isArray(keyOrKeys)
+    ? keyOrKeys.includes(value)
+    : keyOrKeys === value;
+}
 
 export function isKeyedChangeEvent<
   E,
   Type extends ChangeEventType<E>,
   ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>
+  FromKey extends ChangeEventFromKey<E>,
 >(
   event: E,
-  filter: ChangeEventFilter<Type, ToKey, FromKey>
+  filter: ChangeEventFilter<Type, ToKey, FromKey>,
 ): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
   const subject = event as any;
   return (
@@ -43,12 +61,12 @@ export function isChangeTypeToFrom<
   E,
   Type extends ChangeEventType<E>,
   ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>
+  FromKey extends ChangeEventFromKey<E>,
 >(
   event: E,
   type?: Type | Type[],
   to?: ToKey | ToKey[],
-  from?: FromKey | FromKey[]
+  from?: FromKey | FromKey[],
 ): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
   const subject = event as any;
   return (
@@ -61,15 +79,15 @@ export function asChangeTypeToFrom<
   E,
   Type extends ChangeEventType<E>,
   ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>
+  FromKey extends ChangeEventFromKey<E>,
 >(
   event: E,
   type?: Type | Type[],
   to?: ToKey | ToKey[],
-  from?: FromKey | FromKey[]
+  from?: FromKey | FromKey[],
 ): E & KeyedChangeEvent<Type, FromKey, ToKey> {
   if (isChangeTypeToFrom(event, type, to, from)) {
     return event;
   }
-  throw new Error('not a match');
+  throw new Error("not a match");
 }

@@ -18,9 +18,9 @@ describe("withSubscribe", () => {
       Running: {
         stop: states.Idle,
       },
-    }).create(states.Idle())
-    const e = withEvents(inner)
-    
+    }).create(states.Idle());
+    const e = withEvents(inner);
+
     const machine = withSubscribe(inner);
     expect(machine.subscribe).toBeDefined();
     expect(machine.when).toBeDefined();
@@ -40,7 +40,7 @@ describe("withSubscribe", () => {
         Running: {
           stop: states.Idle,
         },
-      }).create(states.Idle())
+      }).create(states.Idle()),
     );
     const subscriber = vi.fn();
     const subscription = machine.subscribe(subscriber);
@@ -62,9 +62,9 @@ describe("withSubscribe", () => {
         Running: {
           stop: states.Idle,
         },
-      }).create(states.Idle())
+      }).create(states.Idle()),
     );
-    
+
     const subscriber = vi.fn();
     const subscription = machine.when({ type: "start" }, subscriber);
     machine.send("stop");
@@ -86,10 +86,13 @@ describe("withSubscribe", () => {
         Running: {
           stop: states.Idle,
         },
-      }).create(states.Idle())
+      }).create(states.Idle()),
     );
     const subscriber = vi.fn();
-    const subscription = machine.when({ from: 'Idle', to: 'Running' }, subscriber);
+    const subscription = machine.when(
+      { from: "Idle", to: "Running" },
+      subscriber,
+    );
     machine.send("stop");
     machine.send("start");
     expect(subscriber).toHaveBeenCalledTimes(1);
@@ -109,12 +112,12 @@ describe("withSubscribe", () => {
         Running: {
           stop: states.Idle,
         },
-      }).create(states.Idle())
+      }).create(states.Idle()),
     );
     const subscriber = vi.fn();
     const subscription = machine.when(
-      { from: 'Idle', to: 'Running', type: "start" },
-      subscriber
+      { from: "Idle", to: "Running", type: "start" },
+      subscriber,
     );
     machine.send("stop");
     machine.send("start");
@@ -135,9 +138,9 @@ describe("withSubscribe", () => {
         Running: {
           stop: states.Idle,
         },
-      }).create(states.Idle())
+      }).create(states.Idle()),
     );
-    
+
     const subscriber = vi.fn();
     const unsub = machine.subscribe(subscriber);
     machine.send("start");

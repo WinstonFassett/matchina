@@ -1,4 +1,4 @@
-export {}
+export {};
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
 
@@ -30,7 +30,11 @@ interface FullContext {
   initialState: string;
 }
 
-type Context = EmptyContext | StatesDefinedContext | TransitionsDefinedContext | FullContext;
+type Context =
+  | EmptyContext
+  | StatesDefinedContext
+  | TransitionsDefinedContext
+  | FullContext;
 
 class StateMachineBuilder<Ctx extends Context> {
   private context: Ctx;
@@ -40,15 +44,30 @@ class StateMachineBuilder<Ctx extends Context> {
   }
 
   defineStates(states: States): StateMachineBuilder<StatesDefinedContext> {
-    return new StateMachineBuilder<StatesDefinedContext>({ ...this.context, states } as StatesDefinedContext);
+    return new StateMachineBuilder<StatesDefinedContext>({
+      ...this.context,
+      states,
+    } as StatesDefinedContext);
   }
 
-  defineTransitions(this: StateMachineBuilder<StatesDefinedContext>, transitions: Transitions): StateMachineBuilder<TransitionsDefinedContext> {
-    return new StateMachineBuilder<TransitionsDefinedContext>({ ...this.context, transitions } as TransitionsDefinedContext);
+  defineTransitions(
+    this: StateMachineBuilder<StatesDefinedContext>,
+    transitions: Transitions,
+  ): StateMachineBuilder<TransitionsDefinedContext> {
+    return new StateMachineBuilder<TransitionsDefinedContext>({
+      ...this.context,
+      transitions,
+    } as TransitionsDefinedContext);
   }
 
-  setInitialState(this: StateMachineBuilder<TransitionsDefinedContext>, initialState: keyof States): StateMachineBuilder<FullContext> {
-    return new StateMachineBuilder<FullContext>({ ...this.context, initialState } as FullContext);
+  setInitialState(
+    this: StateMachineBuilder<TransitionsDefinedContext>,
+    initialState: keyof States,
+  ): StateMachineBuilder<FullContext> {
+    return new StateMachineBuilder<FullContext>({
+      ...this.context,
+      initialState,
+    } as FullContext);
   }
 
   createMachine(this: StateMachineBuilder<FullContext>): StateMachine {
@@ -71,15 +90,15 @@ interface StateMachine {
 }
 
 // Usage
-const builder = new StateMachineBuilder({} as EmptyContext)
+const builder = new StateMachineBuilder({} as EmptyContext);
 
 const machine = builder
   .defineStates({ Idle: {}, Working: {}, Done: {} })
   .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
   })
-  .setInitialState('Idle')
+  .setInitialState("Idle")
   .createMachine();
 
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"

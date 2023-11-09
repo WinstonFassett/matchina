@@ -1,4 +1,4 @@
-export {}
+export {};
 
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
@@ -28,21 +28,30 @@ interface BaseBuilder {
   defineStates(states: States): StatesDefinedBuilder;
 }
 
-interface StatesDefinedBuilder extends Omit<BaseBuilder, 'defineStates'> {
+interface StatesDefinedBuilder extends Omit<BaseBuilder, "defineStates"> {
   defineTransitions(transitions: Transitions): TransitionsDefinedBuilder;
   setInitialState(initialState: string): InitialStateDefinedBuilder;
 }
 
-interface TransitionsDefinedBuilder extends Omit<StatesDefinedBuilder, 'defineTransitions'> {
+interface TransitionsDefinedBuilder
+  extends Omit<StatesDefinedBuilder, "defineTransitions"> {
   setInitialState(initialState: string): InitialStateDefinedBuilder;
 }
 
 interface InitialStateDefinedBuilder {
-  createMachine<Ctx extends Context & NoInitialState>(initialState: Ctx['initialState']): StateMachine;
+  createMachine<Ctx extends Context & NoInitialState>(
+    initialState: Ctx["initialState"],
+  ): StateMachine;
 }
 
 // State machine builder class
-class StateMachineBuilder implements BaseBuilder, StatesDefinedBuilder, TransitionsDefinedBuilder, InitialStateDefinedBuilder {
+class StateMachineBuilder
+  implements
+    BaseBuilder,
+    StatesDefinedBuilder,
+    TransitionsDefinedBuilder,
+    InitialStateDefinedBuilder
+{
   private context: Context = {};
 
   defineStates(states: States): StatesDefinedBuilder {
@@ -63,14 +72,18 @@ class StateMachineBuilder implements BaseBuilder, StatesDefinedBuilder, Transiti
     return this;
   }
 
-  createMachine<Ctx extends Context & NoInitialState>(initialState?: Ctx['initialState']): StateMachine {
+  createMachine<Ctx extends Context & NoInitialState>(
+    initialState?: Ctx["initialState"],
+  ): StateMachine {
     const finalContext: Context = {
       ...this.context,
       initialState: initialState ?? this.context.initialState,
     };
 
     if (!finalContext.states || !finalContext.initialState) {
-      throw new Error("States and initial state must be defined before creating the machine.");
+      throw new Error(
+        "States and initial state must be defined before creating the machine.",
+      );
     }
 
     const machine: StateMachine = {
@@ -93,11 +106,11 @@ interface StateMachine {
 // Usage example
 const machine = new StateMachineBuilder()
   .defineStates({ Idle: {}, Working: {}, Done: {} })
-  .setInitialState('Idle') // Now we can set the initial state independently of transitions
+  .setInitialState("Idle") // Now we can set the initial state independently of transitions
   .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
   })
   .createMachine(); // We can create a machine without explicitly setting an initial state again
 
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"

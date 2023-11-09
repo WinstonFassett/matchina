@@ -1,4 +1,4 @@
-export {} 
+export {};
 type States = Record<string, unknown>;
 type Transitions = Record<string, Record<string, string>>;
 
@@ -23,8 +23,8 @@ interface TransitionsDefinedContext extends StatesDefinedContext {
 type MachineContext = Required<BaseContext>;
 
 interface BaseBuilder {
-  use(...middlewares: Function[]): this
-  extend(...extensions: Function[]): this
+  use(...middlewares: Function[]): this;
+  extend(...extensions: Function[]): this;
 }
 
 // Builder interfaces corresponding to each context stage
@@ -36,19 +36,25 @@ interface NoStatesBuilder extends BaseBuilder {
 //   defineStates(states: States): StatesWithoutTransitionsBuilder;
 // } & C;
 
-interface StatesWithoutTransitionsBuilder extends BaseBuilder, MachineBuilder<{
-  transitions: Transitions
-}> {
-  defineTransitions(transitions: Transitions): TransitionsWithoutInitialStateBuilder;
+interface StatesWithoutTransitionsBuilder
+  extends BaseBuilder,
+    MachineBuilder<{
+      transitions: Transitions;
+    }> {
+  defineTransitions(
+    transitions: Transitions,
+  ): TransitionsWithoutInitialStateBuilder;
 }
 
-interface TransitionsWithoutInitialStateBuilder extends BaseBuilder, MachineBuilder<{
-  initialState: string
-}> {
+interface TransitionsWithoutInitialStateBuilder
+  extends BaseBuilder,
+    MachineBuilder<{
+      initialState: string;
+    }> {
   setInitialState(initialState: string): FullContextMachineBuilder;
 }
 
-// type MachineBuilderForContext<C extends BaseContext> = BaseBuilder & 
+// type MachineBuilderForContext<C extends BaseContext> = BaseBuilder &
 //   C['states'] extends undefined ? NoStatesBuilder :
 //   C['transitions'] extends undefined ? StatesWithoutTransitionsBuilder :
 //   C['initialState'] extends undefined ? TransitionsWithoutInitialStateBuilder :
@@ -63,7 +69,13 @@ interface FullContextMachineBuilder {
 }
 
 // State machine builder class
-class StateMachineBuilder implements NoStatesBuilder, StatesWithoutTransitionsBuilder, TransitionsWithoutInitialStateBuilder, FullContextMachineBuilder {
+class StateMachineBuilder
+  implements
+    NoStatesBuilder,
+    StatesWithoutTransitionsBuilder,
+    TransitionsWithoutInitialStateBuilder,
+    FullContextMachineBuilder
+{
   use(...middlewares: Function[]): this {
     throw new Error("Method not implemented.");
   }
@@ -92,16 +104,24 @@ class StateMachineBuilder implements NoStatesBuilder, StatesWithoutTransitionsBu
 
   setInitialState(initialState: string): FullContextMachineBuilder {
     if (!this.context.states) {
-      throw new Error("States must be defined before setting the initial state.");
+      throw new Error(
+        "States must be defined before setting the initial state.",
+      );
     }
     this.context.initialState = initialState;
     return this;
   }
 
-  createMachine(additionalContext:BaseContext = {}): StateMachine {
-    Object.assign(this, additionalContext)
-    if (!this.context.initialState || !this.context.states || !this.context.transitions) {
-      throw new Error("Initial state, states, and transitions must all be defined before creating the machine.");
+  createMachine(additionalContext: BaseContext = {}): StateMachine {
+    Object.assign(this, additionalContext);
+    if (
+      !this.context.initialState ||
+      !this.context.states ||
+      !this.context.transitions
+    ) {
+      throw new Error(
+        "Initial state, states, and transitions must all be defined before creating the machine.",
+      );
     }
     // The context is now fully defined, so we can cast it to FullContext
     const fullContext: MachineContext = this.context as MachineContext;
@@ -129,23 +149,19 @@ interface StateMachine {
 // Usage example
 const context = define()
   .use(() => {})
-  .extend(() => {})
-const states = context
-  .defineStates({ Idle: {}, Working: {}, Done: {} })  
-const machineFromStates = states.createMachine({ 
-  transitions: {} 
-})
-const transitions = states
-  .defineTransitions({
-    Idle: { start: 'Working' },
-    Working: { finish: 'Done' },
-  })
+  .extend(() => {});
+const states = context.defineStates({ Idle: {}, Working: {}, Done: {} });
+const machineFromStates = states.createMachine({
+  transitions: {},
+});
+const transitions = states.defineTransitions({
+  Idle: { start: "Working" },
+  Working: { finish: "Done" },
+});
 const machineFromTransitions = transitions.createMachine({
-  initialState: 'Idle',
-})
-const initial = transitions
-  .setInitialState('Idle')
-const machine = initial
-  .createMachine();
+  initialState: "Idle",
+});
+const initial = transitions.setInitialState("Idle");
+const machine = initial.createMachine();
 
-machine.send('start'); // Should log "Transitioning with event: start"
+machine.send("start"); // Should log "Transitioning with event: start"
