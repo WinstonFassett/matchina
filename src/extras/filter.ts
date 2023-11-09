@@ -59,16 +59,21 @@ if (isKeyedChangeEvent(ev, { to: 'foo', from: 'bar', type: 'baz' })) {
   ev.type
 }
 
+type ChangeEventType<E> = E extends ChangeEvent<infer T, any, any> ? T : never;
+type ChangeEventToKey<E> = E extends ChangeEvent<any, { key: infer K }, any> ? K : never;
+type ChangeEventFromKey<E> = E extends ChangeEvent<any, any, { key: infer K }> ? K : never;
+
 export function isChangeTypeToFrom<
-  Type extends string,
-  ToKey extends PropertyKey,
-  FromKey extends PropertyKey,
+  E extends ChangeEvent<any, { key: any }, { key: any }>,
+  Type extends ChangeEventType<E>,
+  ToKey extends ChangeEventToKey<E>,
+  FromKey extends ChangeEventFromKey<E>,
 >(  
-  event: any, // ChangeEvent<Type, { key: ToKey }, { key: FromKey }>,
+  event: E,
   type?: Type|Type[],
   to?: ToKey|ToKey[],
   from?: FromKey|FromKey[],  
-): event is ChangeEvent<Type, { key: ToKey }, { key: FromKey }> {
+): event is E {
   
   return (
     matchKey(to, event.to.key) &&
