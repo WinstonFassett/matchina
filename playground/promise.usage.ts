@@ -4,7 +4,7 @@ import { delay } from "../src/extras/delay";
 import { createPromiseMachine } from "../src/extras/promise";
 import { withEvents } from "../src/extras/with-events";
 import { makeZen } from "../src/extras/zen";
-import { isChangeTypeToFrom, isKeyedChangeEvent } from "../src/extras/filter";
+import { isChangeTypeToFrom, isKeyedChangeEvent } from "../src/extras/typeguards";
 // ---cut---
 async function promiseUsage () {
   const machine = withEvents(createPromiseMachine(async (x: number) => {
