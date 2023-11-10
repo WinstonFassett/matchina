@@ -90,7 +90,7 @@ export type StateMachineCreator<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > = (
-  initialState: StateFromFactory<States>,
+  initialState: StateFromFactory<States> | keyof States,
   enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>,
 ) => StateMachine<States, Transitions>;
 
@@ -102,7 +102,7 @@ export type StateMachineContext<
 > = {
   states: States;
   transitions: Transitions;
-  initialState: StateFromFactory<States>;
+  initialState: keyof States | StateFromFactory<States>;
   enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>;
 };
 
@@ -290,5 +290,5 @@ export type EventExitStatesIntersection<
 // export type AnyEventType = AnyEvent["type"];
 // export type AnyState = StateFromFactory<any>;
 // export type AnyMachine = StateMachine<any, any>;
-// export type AnyMachineStateKey = keyof AnyMachine["config"]["states"];
+// export type AnyMachineStateKey = keyof AnyMachine["context"]["states"];
 // export type AnyDefinition = StateMachineDefinition<any, any>;

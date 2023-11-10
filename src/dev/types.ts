@@ -63,13 +63,13 @@ export type FlatEventers<
 
 export type FlatMachineEventers<
   M extends StateMachine<StatesMatchboxFactory, any>,
-> = FlatEventers<M["config"]["states"], M["config"]["transitions"]>;
+> = FlatEventers<M["context"]["states"], M["context"]["transitions"]>;
 
 // not sure about this one
 export type FlatMachineReturnEventToTargetKeyMap<
   M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
-  FlatExitStateKeys<M["config"]["states"], M["config"]["transitions"]>
+  FlatExitStateKeys<M["context"]["states"], M["context"]["transitions"]>
 >;
 
 export type FlatEventTargetsMap<
@@ -103,7 +103,7 @@ export type FlatEventTargets<
 export type FlatMachineEventTargets<
   M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
-  StatesToEventsToStates<M["config"]["states"], M["config"]["transitions"]>
+  StatesToEventsToStates<M["context"]["states"], M["context"]["transitions"]>
 >;
 
 export type FlattenedTargets<T> = {
@@ -136,7 +136,7 @@ export type FlattenReturnStateTargetTypes<
 export type FlatMachineEventToTargetKeyMap<
   M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
-  StateTransitionTargetKeys<M["config"]["states"], M["config"]["transitions"]>
+  StateTransitionTargetKeys<M["context"]["states"], M["context"]["transitions"]>
 >;
 
 export type StateTransitionTargetKeys<
@@ -156,7 +156,7 @@ export type StateTransitionTargetKeys<
 export type FlatMachineEvents<
   M extends StateMachine<StatesMatchboxFactory, any>,
 > = FlatMemberUnionToIntersection<
-  StateEventTransitionFuncs<M["config"]["states"], M["config"]["transitions"]>
+  StateEventTransitionFuncs<M["context"]["states"], M["context"]["transitions"]>
 >;
 
 export type FlatStateTransitionTargetIntersection<

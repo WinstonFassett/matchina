@@ -31,9 +31,19 @@ export function createMachine<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(context: StateMachineContext<States, Transitions>) {
-  const { states, transitions, initialState, enhancer } = context;
+  const {
+    states,
+    transitions,
+    initialState: initialKeyOrState,
+    enhancer,
+  } = context;
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
+  const createInitialState = () =>
+    typeof initialKeyOrState === "string"
+      ? states[initialKeyOrState]()
+      : initialKeyOrState;
+
   let lastChange: any;
   const transition = (
     from: State,
@@ -93,7 +103,7 @@ export function createMachine<
     context: {
       states,
       transitions,
-      initialState,
+      initialState: createInitialState(),
     },
   };
   const initialize = () =>
@@ -102,7 +112,7 @@ export function createMachine<
         ...context,
         from: context?.to,
         type: InitializeMachine,
-        to: initialState,
+        to: createInitialState(),
       };
     });
   initialize();

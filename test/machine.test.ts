@@ -23,7 +23,7 @@ const makeMachine = () => {
         },
       },
       Done: {},
-    }).create(states.Initial()),
+    }).create("Initial"),
   );
 };
 
