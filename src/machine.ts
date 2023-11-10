@@ -35,7 +35,11 @@ export function createMachineClass<
   Transitions extends TransitionConfig<States>,
   C extends StateMachineContext<States, Transitions>,
   PC extends Partial<C>,
->(staticContext: PC) {
+>(
+  staticContext: PC,
+): new (
+  context: RemainingProperties<C, PC> & Partial<C>,
+) => StateMachine<States, Transitions> {
   type Machine = StateMachine<States, Transitions>;
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
@@ -58,7 +62,7 @@ export function createMachineClass<
     );
   }
 
-  return class StateMachineImpl implements StateMachine<States, Transitions> {
+  return class StateMachineImpl implements Machine {
     static transition = transition;
     context: C;
     private lastChange: Event = undefined as any;
