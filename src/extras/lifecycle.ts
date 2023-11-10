@@ -1,9 +1,9 @@
-import { States as StateFactory } from "../states";
 import {
   StateMachine,
   StateMachineEvent,
   TransitionConfig,
   UpdateEnhancer,
+  StatesFactory,
 } from "../machine-types";
 import { Func } from "../types";
 import {
@@ -25,7 +25,7 @@ type LifecycleApi<T, S, E> = {
 };
 
 export function onLifecycle<
-  States extends StateFactory<any>,
+  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,
