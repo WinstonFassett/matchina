@@ -44,16 +44,16 @@ export function createMachineClass<
     from: State,
     event: Event["type"],
     args: any[],
-    def: StateMachineContext<States, Transitions>,
+    context: StateMachineContext<States, Transitions>,
     machine: Machine,
   ): State | undefined {
-    return getExitState(
+    return transitionState(
       machine.context.states,
       machine.context.transitions,
       from,
       event,
       args,
-      def,
+      context,
       machine,
     );
   }
@@ -85,7 +85,6 @@ export function createMachineClass<
       });
     }
 
-    // // def,
     getState() {
       return this.lastChange.to;
     }
@@ -94,7 +93,6 @@ export function createMachineClass<
       return this.lastChange;
     }
 
-    // // event: events,
     send(type: string, ...params: any[]) {
       const { context, lastChange } = this;
       const from = lastChange?.to;
@@ -121,12 +119,12 @@ export function createMachineClass<
       let change: undefined | Event;
       const { enhancer } = context;
       if (enhancer) {
-        // console.log("using enhancer", lastChange);
-        const changed = getUpdate(lastChange);
-        // console.log("changed", changed);
-        enhancer((enhancerChange) => {
-          change = enhancerChange as any;
-        }, changed as any);
+        enhancer(
+          (enhancerChange) => {
+            change = enhancerChange as any;
+          },
+          getUpdate(lastChange) as any,
+        );
       } else {
         change = getUpdate(lastChange);
       }
@@ -174,7 +172,7 @@ function createChange<
   };
 }
 
-function getExitState<
+function transitionState<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
@@ -190,17 +188,12 @@ function getExitState<
   if (!targetFuncOrString) {
     return sourceState;
   }
-  let targetState: StateFromFactory<States>;
   if (typeof targetFuncOrString === "function") {
     const targetStateOrFunc = targetFuncOrString(...params);
-    targetState =
-      typeof targetStateOrFunc === "function"
-        ? (targetStateOrFunc as any)(sourceState, type, def, machine)
-        : targetStateOrFunc;
+    return typeof targetStateOrFunc === "function"
+      ? (targetStateOrFunc as any)(sourceState, type, def, machine)
+      : targetStateOrFunc;
   } else {
-    targetState = states[targetFuncOrString as keyof typeof states](
-      ...params,
-    ) as any;
+    return states[targetFuncOrString as keyof typeof states](...params) as any;
   }
-  return targetState;
 }
