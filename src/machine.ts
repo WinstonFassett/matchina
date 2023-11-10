@@ -58,9 +58,7 @@ export function createMachineClass<
     );
   }
 
-  return class StateMachineImpl
-    implements StateMachine<States, Transitions, C, Event>
-  {
+  return class StateMachineImpl implements StateMachine<States, Transitions> {
     static transition = transition;
     context: C;
     private lastChange: Event = undefined as any;

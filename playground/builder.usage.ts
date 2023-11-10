@@ -62,7 +62,7 @@ interface CanCreateStateMachineClass<C extends Partial<StateMachineContext>, M e
 
 };
 
-type RemainingProperties<Required, Present, Match = any> = Pick<
+export type RemainingProperties<Required, Present, Match = any> = Pick<
   Required,
   Exclude<keyof Required, keyof Present> &
     (Match extends any
