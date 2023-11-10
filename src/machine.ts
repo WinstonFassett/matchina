@@ -1,4 +1,7 @@
+import { RemainingProperties } from "../playground/builder.usage";
 import {
+  SendFunction,
+  StateEventTransitionFuncs,
   StateFromFactory,
   StateMachine,
   StateMachineContext,
@@ -8,6 +11,7 @@ import {
   TransitionConfig,
   UpdateEnhancer,
 } from "./machine-types";
+import { SwapFunc } from "./types";
 
 export const InitializeMachine = "__init";
 
@@ -21,37 +25,28 @@ export function defineMachine<
   return {
     states,
     transitions,
-    create: (initialState, enhancer) => {
-      return createMachine({ states, transitions, initialState, enhancer });
-    },
+    create: (initialState, enhancer) =>
+      createMachine({ states, transitions, initialState, enhancer }),
   };
 }
 
-export function createMachine<
+export function createMachineClass<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
->(context: StateMachineContext<States, Transitions>) {
-  const {
-    states,
-    transitions,
-    initialState: initialKeyOrState,
-    enhancer,
-  } = context;
+  C extends StateMachineContext<States, Transitions>,
+  PC extends Partial<C>,
+>(staticContext: PC) {
+  type Machine = StateMachine<States, Transitions>;
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<States, Transitions>;
-  const createInitialState = () =>
-    typeof initialKeyOrState === "string"
-      ? states[initialKeyOrState]()
-      : initialKeyOrState;
 
-  let lastChange: any;
-  const transition = (
+  function transition(
     from: State,
     event: Event["type"],
     args: any[],
     def: StateMachineContext<States, Transitions>,
-    machine: StateMachine<States, Transitions>,
-  ): State | undefined => {
+    machine: Machine,
+  ): State | undefined {
     return getExitState(
       machine.context.states,
       machine.context.transitions,
@@ -61,17 +56,53 @@ export function createMachine<
       def,
       machine,
     );
-  };
-  const machine: StateMachine<States, Transitions> = {
-    // def,
-    getState: () => lastChange.to,
-    getChange: () => lastChange,
-    // event: events,
-    send: (type, ...params) => {
+  }
+
+  return class StateMachineImpl
+    implements StateMachine<States, Transitions, C, Event>
+  {
+    static transition = transition;
+    context: C;
+    private lastChange: Event = undefined as any;
+    constructor(context: RemainingProperties<C, PC> & Partial<C>) {
+      this.context = Object.assign({}, staticContext, context) as unknown as C;
+      this.initialize();
+    }
+
+    createInitialState() {
+      const { states, initialState } = this.context;
+      return typeof initialState === "string"
+        ? states[initialState]()
+        : initialState;
+    }
+
+    initialize() {
+      this.update((change) => {
+        return {
+          ...change,
+          from: change?.to,
+          type: InitializeMachine,
+          to: this.createInitialState(),
+        };
+      });
+    }
+
+    // // def,
+    getState() {
+      return this.lastChange.to;
+    }
+
+    getChange() {
+      return this.lastChange;
+    }
+
+    // // event: events,
+    send(type: string, ...params: any[]) {
+      const { context, lastChange } = this;
       const from = lastChange?.to;
-      const nextState = transition(from, type, params, context, machine);
+      const nextState = transition(from, type, params, context, this as any);
       if (nextState && nextState !== from) {
-        return machine.update((previous) => {
+        return this.update((previous) => {
           const change = createChange({
             from,
             type,
@@ -81,8 +112,14 @@ export function createMachine<
           return change;
         });
       }
-    },
-    update: (getUpdate) => {
+    }
+
+    reset() {
+      this.initialize();
+    }
+
+    update(getUpdate: (ev: Event) => Event) {
+      const { context, lastChange } = this;
       let change: undefined | Event;
       const { enhancer } = context;
       if (enhancer) {
@@ -96,27 +133,17 @@ export function createMachine<
         change = getUpdate(lastChange);
       }
       if (change) {
-        lastChange = change;
+        this.lastChange = change;
       }
-    },
-    reset: () => initialize(),
-    context: {
-      states,
-      transitions,
-      initialState: createInitialState(),
-    },
+    }
   };
-  const initialize = () =>
-    machine.update((context) => {
-      return {
-        ...context,
-        from: context?.to,
-        type: InitializeMachine,
-        to: createInitialState(),
-      };
-    });
-  initialize();
-  return machine;
+}
+
+export function createMachine<C extends StateMachineContext<any, any>>(
+  context: C,
+): StateMachine<C["states"], C["transitions"]> {
+  const Machine = createMachineClass(context);
+  return new Machine(context);
 }
 
 function createChange<
