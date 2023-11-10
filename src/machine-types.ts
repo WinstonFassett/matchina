@@ -53,11 +53,7 @@ export interface StateMachine<
   Transitions extends TransitionConfig<States>,
 > {
   // def: StateMachineDefinition<States, Transitions>;
-  config: {
-    states: States;
-    transitions: Transitions;
-    initialState: StateFromFactory<States>;
-  }; // consolidate with def?
+  context: StateMachineContext<States, Transitions>; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<States, Transitions>;
   // event: FlatEventSenders<States, Transitions>;

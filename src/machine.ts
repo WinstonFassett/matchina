@@ -43,8 +43,8 @@ export function createMachine<
     machine: StateMachine<States, Transitions>,
   ): State | undefined => {
     return getExitState(
-      machine.config.states,
-      machine.config.transitions,
+      machine.context.states,
+      machine.context.transitions,
       from,
       event,
       args,
@@ -90,7 +90,7 @@ export function createMachine<
       }
     },
     reset: () => initialize(),
-    config: {
+    context: {
       states,
       transitions,
       initialState,

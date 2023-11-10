@@ -45,11 +45,11 @@ export function onLifecycle<
 
 export function lifecycle<M extends StateMachine<any, any>>(
   config: StateEventHookConfig<
-    M["config"]["states"],
-    M["config"]["transitions"]
+    M["context"]["states"],
+    M["context"]["transitions"]
   >,
 ): UpdateEnhancer<
-  StateMachineEvent<M["config"]["states"], M["config"]["transitions"]>
+  StateMachineEvent<M["context"]["states"], M["context"]["transitions"]>
 > {
   const after: undefined | Func<[], void> = undefined;
   return (commit, updater) => {
@@ -89,8 +89,8 @@ export function lifecycle<M extends StateMachine<any, any>>(
       const nextStateHooks = config[handled.to.key as keyof typeof config];
       const runStateHooks = (
         stateHooksMaybe: StateTransitionHooks<
-          M["config"]["states"],
-          M["config"]["transitions"],
+          M["context"]["states"],
+          M["context"]["transitions"],
           any
         >[],
         hookName: keyof StateTransitionHooks<any, any, any>,

@@ -27,7 +27,7 @@ async function promiseUsage () {
   // TODO: add this to promise
   const reset = () => {
     console.log('resetting')
-    machine.update(c => ({ ...c, to: machine.config.states.Idle() }))
+    machine.update(c => ({ ...c, to: machine.context.states.Idle() }))
   }
   checkState()
   machine.event.execute(1000);
@@ -110,12 +110,12 @@ async function promiseUsage () {
     change.to.key = 'Idle'
   }
     
-  type PromiseTransitionStateKeys = keyof typeof fetchMachine.config.transitions
+  type PromiseTransitionStateKeys = keyof typeof fetchMachine.context.transitions
   type TransitionEventKeys<
     Transitions extends TransitionConfig<any>,
     StateKey extends keyof Transitions,
   > = keyof Transitions[StateKey]
-  type PromiseTransitionEventKeys<T extends PromiseTransitionStateKeys> = TransitionEventKeys<typeof fetchMachine.config.transitions, T>
+  type PromiseTransitionEventKeys<T extends PromiseTransitionStateKeys> = TransitionEventKeys<typeof fetchMachine.context.transitions, T>
   type TransitionStateKeys<Transitions extends TransitionConfig<any>> = 
     keyof Transitions
   // type TransitionStateEventKeys<
@@ -128,9 +128,9 @@ async function promiseUsage () {
     type Idle = PromiseTransitionStateKeys extends infer S ? S extends 'Idle' ? S : never : never
     type Pending = PromiseTransitionStateKeys extends infer S ? S extends 'Pending' ? S : never : never
     type ExecuteEvents = PromiseTransitionEventKeys<Idle>
-    type ExecuteEventKeys2 = TransitionEventKeys<typeof fetchMachine.config.transitions, 'Idle'>
-    type PendingEventKeys2 = TransitionEventKeys<typeof fetchMachine.config.transitions, 'Pending'>
-    type StateKeys2 = TransitionStateKeys<typeof fetchMachine.config.transitions>
+    type ExecuteEventKeys2 = TransitionEventKeys<typeof fetchMachine.context.transitions, 'Idle'>
+    type PendingEventKeys2 = TransitionEventKeys<typeof fetchMachine.context.transitions, 'Pending'>
+    type StateKeys2 = TransitionStateKeys<typeof fetchMachine.context.transitions>
     type PendingEvents = PromiseTransitionEventKeys<Pending>
   // type Pending = TransitionStateKeys extends 'Pending' ? 'Pending' : never;
   

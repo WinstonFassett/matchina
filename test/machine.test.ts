@@ -42,33 +42,33 @@ describe("machine instance", () => {
     const states = defineStates({});
     const transitions = {};
     const machine = defineMachine(states, transitions).create(1 as never);
-    expect(machine.config.initialState).toBe(1);
+    expect(machine.context.initialState).toBe(1);
   });
 
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {
       expect(
-        machine.config.states.Initial().match({
+        machine.context.states.Initial().match({
           Initial: () => 100,
           _: () => 0,
         }),
       ).toBe(100);
 
       expect(
-        machine.config.states.Initial().match({
+        machine.context.states.Initial().match({
           _: () => 1,
         }),
       ).toBe(1);
 
       expect(() =>
-        machine.config.states.Initial().match({
+        machine.context.states.Initial().match({
           InvalidKey: () => 1,
         } as any),
       ).toThrow();
 
       expect(
-        machine.config.states.Done(true, "test message").match(
+        machine.context.states.Done(true, "test message").match(
           {
             Done: (ok) => ok,
           },
