@@ -1,17 +1,13 @@
 import { RemainingProperties } from "../playground/builder.usage";
 import {
-  SendFunction,
-  StateEventTransitionFuncs,
   StateFromFactory,
   StateMachine,
   StateMachineContext,
   StateMachineDefinition,
   StateMachineEvent,
   StatesFactory,
-  TransitionConfig,
-  UpdateEnhancer,
+  TransitionConfig
 } from "./machine-types";
-import { SwapFunc } from "./types";
 
 export const InitializeMachine = "__init";
 
@@ -182,20 +178,20 @@ function transitionState<
 >(
   states: States,
   transitions: Transitions,
-  sourceState: StateFromFactory<States>,
+  from: StateFromFactory<States>,
   type: StateMachineEvent<States, Transitions>["type"],
   params: StateMachineEvent<States, Transitions>["params"],
-  def: StateMachineContext<States, Transitions>,
+  context: StateMachineContext<States, Transitions>,
   machine?: StateMachine<States, Transitions>,
 ): StateFromFactory<States> | undefined {
-  const targetFuncOrString = transitions[sourceState.key as any]?.[type as any];
+  const targetFuncOrString = transitions[from.key as any]?.[type as any];
   if (!targetFuncOrString) {
-    return sourceState;
+    return from;
   }
   if (typeof targetFuncOrString === "function") {
     const targetStateOrFunc = targetFuncOrString(...params);
     return typeof targetStateOrFunc === "function"
-      ? (targetStateOrFunc as any)(sourceState, type, def, machine)
+      ? (targetStateOrFunc as any)(from, type, context, machine)
       : targetStateOrFunc;
   } else {
     return states[targetFuncOrString as keyof typeof states](...params) as any;
