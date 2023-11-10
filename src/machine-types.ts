@@ -52,8 +52,10 @@ export interface StateMachine<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > {
-  def: StateMachineDefinition<States, Transitions>;
+  // def: StateMachineDefinition<States, Transitions>;
   config: {
+    states: States;
+    transitions: Transitions;
     initialState: StateFromFactory<States>;
   }; // consolidate with def?
   getState: () => StateFromFactory<States>;
@@ -282,5 +284,5 @@ export type EventExitStatesIntersection<
 // export type AnyEventType = AnyEvent["type"];
 // export type AnyState = StateFromFactory<any>;
 // export type AnyMachine = StateMachine<any, any>;
-// export type AnyMachineStateKey = keyof AnyMachine["def"]["states"];
+// export type AnyMachineStateKey = keyof AnyMachine["config"]["states"];
 // export type AnyDefinition = StateMachineDefinition<any, any>;

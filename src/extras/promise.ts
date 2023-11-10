@@ -47,8 +47,8 @@ export function createPromiseMachine<
 }
 export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
 export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
-export type PromiseStates = PromiseMachine["def"]["states"];
-export type PromiseTransitions = PromiseMachine["def"]["transitions"];
+export type PromiseStates = PromiseMachine["config"]["states"];
+export type PromiseTransitions = PromiseMachine["config"]["transitions"];
 export type PromiseStateKey = keyof PromiseStates;
 export type PromiseEventKey = FlatEventKeys<PromiseStates, PromiseTransitions>;
 

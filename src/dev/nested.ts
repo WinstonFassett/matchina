@@ -37,9 +37,9 @@ export function constructState(states: any, path: StateTuple[]): StateType {
     newState.parent = parentState;
 
     // If this state has a machine (sub-machine), dive into it for the next tuple
-    if (newState.machine && newState.machine.def.states) {
+    if (newState.machine && newState.machine.config.states) {
       parentState = newState;
-      currentStateContext = newState.machine.def.states;
+      currentStateContext = newState.machine.config.states;
     }
   }
 

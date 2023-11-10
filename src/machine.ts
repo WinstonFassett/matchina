@@ -31,8 +31,8 @@ export function defineMachine<
         machine: StateMachine<States, Transitions>,
       ): State | undefined => {
         return getExitState(
-          def.states,
-          def.transitions,
+          machine.config.states,
+          machine.config.transitions,
           from,
           event,
           args,
@@ -41,7 +41,7 @@ export function defineMachine<
         );
       };
       const machine: StateMachine<States, Transitions> = {
-        def,
+        // def,
         getState: () => lastChange.to,
         getChange: () => lastChange,
         // event: events,
@@ -78,6 +78,8 @@ export function defineMachine<
         },
         reset: () => initialize(),
         config: {
+          states,
+          transitions,
           initialState,
         },
       };

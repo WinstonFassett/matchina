@@ -234,16 +234,16 @@ function testFetchMachine() {
   m.another(new Error("test"));
   type PromiseMachine = typeof machine;
   type PromiseTransitionExits = EventExitStatesIntersection<
-    typeof machine.def.states,
-    typeof machine.def.transitions
+    typeof machine.config.states,
+    typeof machine.config.transitions
   >;
   type PromiseExitKeys = FlatExitStateKeys<
-    typeof machine.def.states,
-    typeof machine.def.transitions
+    typeof machine.config.states,
+    typeof machine.config.transitions
   >; // Idle. Should have everything
   type PromiseTransitionFuncs = StateEventTransitionFuncs<
-    typeof machine.def.states,
-    typeof machine.def.transitions
+    typeof machine.config.states,
+    typeof machine.config.transitions
   >; // Idle. Should have everything
   type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
   type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending

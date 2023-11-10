@@ -1,7 +1,7 @@
 import { FlatEventSenders, StateMachine } from "../machine-types";
 
 export function withEvents<M extends StateMachine<any, any>>(machine: M) {
-  const { states, transitions } = machine.def;
+  const { states, transitions } = machine.config;
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {
@@ -24,8 +24,8 @@ export function withEvents<M extends StateMachine<any, any>>(machine: M) {
   }
   return Object.assign(machine, {
     event: events as FlatEventSenders<
-      M["def"]["states"],
-      M["def"]["transitions"]
+      M["config"]["states"],
+      M["config"]["transitions"]
     >,
   });
 }
