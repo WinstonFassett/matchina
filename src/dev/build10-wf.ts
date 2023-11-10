@@ -11,7 +11,7 @@ interface StateMachineContext {
 }
 
 type Enhancer<C> = (target: C) => void;
-type Extender<T, X> = (target: T) => X;
+type Extender<T, X = any> = (target: T) => X;
 interface BaseBuilder<C> {
   use(...middlewares: Enhancer<C>[]): this;
   extend(...extensions: Extender<C>[]): this;
