@@ -28,7 +28,7 @@ export function bindEffects<
   EffectsConfig extends UnionSpec,
   Exhaustive extends boolean = false,
 >(
-  machine: StateMachine<States, Transitions>,
+  machine: StateMachine<Transitions, States>,
   getEffects: (
     state: StateFromFactory<States>,
   ) => MemberOf<MatchboxFactory<EffectsConfig, "effect">>[] | undefined,

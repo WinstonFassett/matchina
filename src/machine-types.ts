@@ -42,93 +42,90 @@ type TwoPhaseTransitionToStateFunc<
 ) => (
   sourceState: StateFromFactory<States, StateKey>,
   eventType: EventKey,
-  def: StateMachineDefinition<States, any>,
-  machine?: StateMachine<States, any>,
+  def: StateMachineDefinition<any, States>,
+  machine?: StateMachine<any, States>,
 ) => StateFromFactory<States>;
 // #endregion
 // #region StateMachine
 
 export interface StateMachine<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
 > {
-  context: StateMachineContext<States, Transitions>; // consolidate with def?
+  context: StateMachineContext<Transitions, States>; // consolidate with def?
   getState: () => StateFromFactory<States>;
-  send: SendFunction<States, Transitions>;
-  getChange: () => StateMachineEvent<States, Transitions>;
+  send: SendFunction<Transitions, States>;
+  getChange: () => StateMachineEvent<Transitions, States>;
   reset(): void; // remove// externalize
-  update: SwapFunc<StateMachineEvent<States, Transitions>>;
+  update: SwapFunc<StateMachineEvent<Transitions, States>>;
 }
 
 export type SendFunction<
-  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
-> = <EventKey extends string & FlatEventKeys<States, Transitions>>(
+  States extends StatesFactory<any>,
+> = <EventKey extends string & FlatEventKeys<Transitions, States>>(
   event: EventKey,
   ...params: StateEventTransitionSenders<
-    States,
-    Transitions
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    Transitions,
+    States
   >[keyof Transitions][EventKey] extends Func<any[], any>
     ? Parameters<
         StateEventTransitionSenders<
-          States,
-          Transitions
+          Transitions,
+          States
         >[keyof Transitions][EventKey]
       >
     : any[]
 ) => void;
 
 export type StateMachineCreator<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
 > = (
   initialState: StateFromFactory<States> | keyof States,
-  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>,
-) => StateMachine<States, Transitions>;
+  enhancer?: UpdateEnhancer<StateMachineEvent<Transitions, States>>,
+) => StateMachine<Transitions, States>;
 
 export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
 
 export type StateMachineContext<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
 > = {
   states: States;
   transitions: Transitions;
   initialState: keyof States | StateFromFactory<States>;
-  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>;
+  enhancer?: UpdateEnhancer<StateMachineEvent<Transitions, States>>;
 };
 
 export type StateMachineDefinition<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
 > = {
-  create: StateMachineCreator<States, Transitions>;
+  create: StateMachineCreator<Transitions, States>;
   states: States;
   transitions: Transitions;
 };
 // #endregion
 // #region State Machine Event
 export type StateMachineEvent<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
-  EventKey extends string & FlatEventKeys<States, Transitions> = string &
-    FlatEventKeys<States, Transitions>,
+  States extends StatesFactory,
+  EventKey extends string & FlatEventKeys<Transitions, States> = string &
+    FlatEventKeys<Transitions, States>,
   From extends StateFromFactory<States> = StateFromFactory<States>,
   To extends StateFromFactory<States> = StateFromFactory<States>,
   Params = any[],
-> =
-  //  Expand<
-  ChangeEvent<EventKey, From, To> & {
-    params: Params;
-    match: <M extends ChangeEventMatchers<States, Transitions>>(
-      cases: M,
-    ) => M[keyof M] extends (...args: any) => infer R ? R : never;
-  };
+> = ChangeEvent<EventKey, From, To> & {
+  params: Params;
+  match: <M extends ChangeEventMatchers<Transitions, States>>(
+    cases: M,
+  ) => M[keyof M] extends (...args: any) => infer R ? R : never;
+};
 // >;
 export type ChangeEventMatchers<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
 > = {
   [StateKey in keyof Transitions]?: {
     [EventKey in keyof Transitions[StateKey]]: Transitions[StateKey][EventKey] extends keyof States
@@ -143,8 +140,8 @@ export type ChangeEventMatchers<
 // #region Mapped Transitions
 
 export type StateEventTransitionFunc<
-  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
   TransitionStateKey extends keyof Transitions,
 > = {
   [EventKey in keyof Transitions[TransitionStateKey] &
@@ -167,61 +164,61 @@ export type StateEventTransitionFunc<
     : never;
 };
 export type StateEventTransitionFuncs<
-  States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = {
   [TransitionStateKey in keyof Transitions]: StateEventTransitionFunc<
-    States,
     Transitions,
+    States,
     TransitionStateKey
   >;
 };
 
 export type StateEventTransitionSenders<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = {
-  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
     [EventKey in keyof StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey]]: (
       ...args: Parameters<
-        StateEventTransitionFuncs<States, Transitions>[StateKey][EventKey]
+        StateEventTransitionFuncs<Transitions, States>[StateKey][EventKey]
       >
     ) => void;
   };
 };
 export type FlatEventSenders<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = FlatMemberUnionToIntersection<
-  StateEventTransitionSenders<States, Transitions>
+  StateEventTransitionSenders<Transitions, States>
 >;
 
 export type FlatEventKeys<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = string &
   {
     [StateKey in keyof StateEventTransitionFuncs<
-      States,
-      Transitions
-    >]: keyof StateEventTransitionFuncs<States, Transitions>[StateKey];
-  }[keyof StateEventTransitionFuncs<States, Transitions>];
+      Transitions,
+      States
+    >]: keyof StateEventTransitionFuncs<Transitions, States>[StateKey];
+  }[keyof StateEventTransitionFuncs<Transitions, States>];
 // provides the return types of all state-event transitions
 
 export type FlatExitStates<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = Members<{
-  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
     [EventKey in keyof StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey]]: StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
       ? TargetState extends StateFromFactory<States, infer TargetStateKey>
         ? TargetStateKey extends keyof States
@@ -229,21 +226,21 @@ export type FlatExitStates<
           : never
         : never
       : never;
-  }[keyof StateEventTransitionFuncs<States, Transitions>[StateKey]];
+  }[keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
 }>;
 // Provides only the keys that are valid for the given state-event transitions
 
 export type FlatExitStateKeys<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = Members<{
-  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
     [EventKey in keyof StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey]]: StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
       ? TargetState extends StateFromFactory<States>
         ? TargetState["key"] extends keyof States
@@ -251,37 +248,26 @@ export type FlatExitStateKeys<
           : never
         : never
       : never;
-  }[keyof StateEventTransitionFuncs<States, Transitions>[StateKey]];
+  }[keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
 }>;
 
 export type StatesToEventsToStates<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = {
-  [StateKey in keyof StateEventTransitionFuncs<States, Transitions>]: {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
     [EventKey in keyof StateEventTransitionFuncs<
-      States,
-      Transitions
+      Transitions,
+      States
     >[StateKey]]: ReturnType<
-      StateEventTransitionFuncs<States, Transitions>[StateKey][EventKey]
+      StateEventTransitionFuncs<Transitions, States>[StateKey][EventKey]
     >;
   };
 };
 
 export type EventExitStatesIntersection<
-  States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = TUnionToIntersection<
-  FlatMemberUnion<StatesToEventsToStates<States, Transitions>>
+  FlatMemberUnion<StatesToEventsToStates<Transitions, States>>
 >;
-
-// export type AnyStates = StatesFactory<any>;
-// export type AnyStateKey = keyof AnyStates;
-// export type AnyTransitions = TransitionConfig<any>;
-
-// export type AnyEvent = StateMachineEvent<any, any>;
-// export type AnyEventType = AnyEvent["type"];
-// export type AnyState = StateFromFactory<any>;
-// export type AnyMachine = StateMachine<any, any>;
-// export type AnyMachineStateKey = keyof AnyMachine["context"]["states"];
-// export type AnyDefinition = StateMachineDefinition<any, any>;

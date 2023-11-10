@@ -30,9 +30,9 @@ export type StateTransitionHooks<
 > = {
   leave?: (
     change: StateMachineEvent<
-      States,
       Transitions,
-      FlatEventKeys<States, Transitions>,
+      States,
+      FlatEventKeys<Transitions, States>,
       // source state
       // StateFromFactory<States>,
       StateFromFactory<
@@ -45,9 +45,9 @@ export type StateTransitionHooks<
   ) => void;
   enter?: (
     change: StateMachineEvent<
-      States,
       Transitions,
-      FlatEventKeys<States, Transitions>,
+      States,
+      FlatEventKeys<Transitions, States>,
       // from any state
       StateFromFactory<States>,
       // to this state
@@ -77,11 +77,11 @@ export type StateTransitionHooks<
 //         States,
 //         TransitionsRawConfig,
 //         EventKey extends "*"
-//           ? FlatEventKeys<States, TransitionsRawConfig>
+//           ? FlatEventKeys<TransitionsRawConfig, States>
 //           : EventKey extends "*"
-//           ? FlatEventKeys<States, TransitionsRawConfig>
+//           ? FlatEventKeys<TransitionsRawConfig, States>
 //           : EventKey,
-//         // FlatEventKeys<States, TransitionsRawConfig>
+//         // FlatEventKeys<TransitionsRawConfig, States>
 //         StateFromFactory<States, StateKey>,
 //         StateFromFactory<States> // could be limited
 //       >;
@@ -89,8 +89,8 @@ export type StateTransitionHooks<
 //   : never;
 
 type On<
-  States extends StatesFactory<any>,
   TransitionsRawConfig extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
   StateKey extends keyof TransitionsRawConfig | "*",
 > =
   // regular state
@@ -99,29 +99,29 @@ type On<
       {
         [Event in
           | keyof TransitionsRawConfig[StateKey]
-          | "*"]?: Event extends FlatEventKeys<States, TransitionsRawConfig> // specific event
+          | "*"]?: Event extends FlatEventKeys<TransitionsRawConfig, States> // specific event
           ? ReturnType<
               StateEventTransitionFuncs<
-                States,
-                TransitionsRawConfig
+                TransitionsRawConfig,
+                States
               >[StateKey][Event]
             > extends StateFromFactory<States>
             ? PartialTransitionHookExtensions<
                 StateMachineEvent<
-                  States,
                   TransitionsRawConfig,
+                  States,
                   Event, // should constrain params
                   StateFromFactory<States, StateKey>,
                   ReturnType<
                     StateEventTransitionFuncs<
-                      States,
-                      TransitionsRawConfig
+                      TransitionsRawConfig,
+                      States
                     >[StateKey][Event]
                   >,
                   Parameters<
                     StateEventTransitionFuncs<
-                      States,
-                      TransitionsRawConfig
+                      TransitionsRawConfig,
+                      States
                     >[StateKey][Event]
                   >
                 >
@@ -130,9 +130,9 @@ type On<
           : // wildcard event
             PartialTransitionHookExtensions<
               StateMachineEvent<
-                States,
                 TransitionsRawConfig,
-                FlatEventKeys<States, TransitionsRawConfig>,
+                States,
+                FlatEventKeys<TransitionsRawConfig, States>,
                 StateFromFactory<States, StateKey>,
                 StateFromFactory<States>, // could be limited
                 any[]
@@ -144,13 +144,13 @@ type On<
     : // wildcard state
       {
         [AnyStateEvent in
-          | FlatEventKeys<States, TransitionsRawConfig>
+          | FlatEventKeys<TransitionsRawConfig, States>
           | "*"]?: PartialTransitionHookExtensions<
           StateMachineEvent<
-            States,
             TransitionsRawConfig,
+            States,
             AnyStateEvent extends "*"
-              ? FlatEventKeys<States, TransitionsRawConfig>
+              ? FlatEventKeys<TransitionsRawConfig, States>
               : AnyStateEvent,
             // Source State
             StateFromFactory<
@@ -166,26 +166,26 @@ type On<
             AnyStateEvent extends "*"
               ? // wildcard event
                 FlatExitStates<
-                  States,
-                  TransitionsRawConfig
+                  TransitionsRawConfig,
+                  States
                 > extends StateFromFactory<States>
-                ? FlatExitStates<States, TransitionsRawConfig>
+                ? FlatExitStates<TransitionsRawConfig, States>
                 : never
               : // not wildcard event
               // if valid exit state
               AnyStateEvent extends keyof EventExitStatesIntersection<
-                  States,
-                  TransitionsRawConfig
+                  TransitionsRawConfig,
+                  States
                 >
               ? // and returns state from factory
                 EventExitStatesIntersection<
-                  States,
-                  TransitionsRawConfig
+                  TransitionsRawConfig,
+                  States
                 >[AnyStateEvent] extends StateFromFactory<States>
                 ? // then return the union of all possible exit states for that event key
                   EventExitStatesIntersection<
-                    States,
-                    TransitionsRawConfig
+                    TransitionsRawConfig,
+                    States
                   >[AnyStateEvent]
                 : never
               : never,
@@ -199,6 +199,6 @@ export type StateEventHookConfig<
   Transitions extends TransitionConfig<States>,
 > = {
   [StateKey in keyof Transitions | "*"]?: {
-    on?: On<States, Transitions, StateKey>;
+    on?: On<Transitions, States, StateKey>;
   } & StateTransitionHooks<States, Transitions, StateKey>;
 };

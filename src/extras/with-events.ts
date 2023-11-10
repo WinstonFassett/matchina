@@ -24,8 +24,8 @@ export function withEvents<M extends StateMachine<any, any>>(machine: M) {
   }
   return Object.assign(machine, {
     event: events as FlatEventSenders<
-      M["context"]["states"],
-      M["context"]["transitions"]
+      M["context"]["transitions"],
+      M["context"]["states"]
     >,
   });
 }

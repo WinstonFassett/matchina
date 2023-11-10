@@ -28,7 +28,7 @@ export function onLifecycle<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(
-  machine: StateMachine<States, Transitions>,
+  machine: StateMachine<Transitions, States>,
   config: StateEventHookConfig<States, Transitions>,
   // initialize?:
   //   | undefined

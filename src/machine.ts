@@ -1,4 +1,4 @@
-import { RemainingProperties } from "../playground/builder.usage";
+import { RemainingProperties } from "./../playground/builder.usage";
 import {
   StateFromFactory,
   StateMachine,
@@ -17,7 +17,7 @@ export function defineMachine<
 >(
   states: States,
   transitions: Transitions,
-): StateMachineDefinition<States, Transitions> {
+): StateMachineDefinition<Transitions, States> {
   return {
     states,
     transitions,
@@ -29,22 +29,22 @@ export function defineMachine<
 export function createMachineClass<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
-  C extends StateMachineContext<States, Transitions>,
+  C extends StateMachineContext<Transitions, States>,
   PC extends Partial<C>,
 >(
   staticContext: PC,
 ): new (
   context: RemainingProperties<C, PC> & Partial<C>,
-) => StateMachine<States, Transitions> {
-  type Machine = StateMachine<States, Transitions>;
+) => StateMachine<Transitions, States> {
+  type Machine = StateMachine<Transitions, States>;
   type State = StateFromFactory<States>;
-  type Event = StateMachineEvent<States, Transitions>;
+  type Event = StateMachineEvent<Transitions, States>;
 
   function transition(
     from: State,
     event: Event["type"],
     args: any[],
-    context: StateMachineContext<States, Transitions>,
+    context: StateMachineContext<Transitions, States>,
     machine: Machine,
   ): State | undefined {
     return transitionState(
@@ -137,7 +137,7 @@ export function createMachineClass<
 
 export function createMachine<C extends StateMachineContext<any, any>>(
   context: C,
-): StateMachine<C["states"], C["transitions"]> {
+): StateMachine<C["transitions"], C["states"]> {
   const Machine = createMachineClass(context);
   return new Machine(context);
 }
@@ -151,11 +151,11 @@ function createChange<
   from,
   to,
 }: {
-  type: StateMachineEvent<States, Transitions>["type"];
-  params: StateMachineEvent<States, Transitions>["params"];
+  type: StateMachineEvent<Transitions, States>["type"];
+  params: StateMachineEvent<Transitions, States>["params"];
   from: StateFromFactory<States>;
   to: StateFromFactory<States>;
-}): StateMachineEvent<States, Transitions> {
+}): StateMachineEvent<Transitions, States> {
   return {
     type,
     params,
@@ -179,10 +179,10 @@ function transitionState<
   states: States,
   transitions: Transitions,
   from: StateFromFactory<States>,
-  type: StateMachineEvent<States, Transitions>["type"],
-  params: StateMachineEvent<States, Transitions>["params"],
-  context: StateMachineContext<States, Transitions>,
-  machine?: StateMachine<States, Transitions>,
+  type: StateMachineEvent<Transitions, States>["type"],
+  params: StateMachineEvent<Transitions, States>["params"],
+  context: StateMachineContext<Transitions, States>,
+  machine?: StateMachine<Transitions, States>,
 ): StateFromFactory<States> | undefined {
   const targetFuncOrString = transitions[from.key as any]?.[type as any];
   if (!targetFuncOrString) {

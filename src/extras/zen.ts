@@ -8,7 +8,7 @@ import { withEvents } from "./with-events";
 export function makeZen<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
->(machine: StateMachine<States, Transitions>) {
+>(machine: StateMachine<Transitions, States>) {
   const eventMachine = withEvents(machine);
   const { send, reset, event } = eventMachine;
 
