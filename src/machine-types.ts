@@ -51,15 +51,23 @@ type TwoPhaseTransitionToStateFunc<
 export interface StateMachine<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
+  C extends StateMachineContext<States, Transitions> = StateMachineContext<
+    States,
+    Transitions
+  >,
+  Event extends StateMachineEvent<States, Transitions> = StateMachineEvent<
+    States,
+    Transitions
+  >,
 > {
   // def: StateMachineDefinition<States, Transitions>;
-  context: StateMachineContext<States, Transitions>; // consolidate with def?
+  context: C; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<States, Transitions>;
   // event: FlatEventSenders<States, Transitions>;
-  getChange: () => StateMachineEvent<States, Transitions>;
+  getChange: () => Event;
   reset(): void; // remove// externalize
-  update: SwapFunc<StateMachineEvent<States, Transitions>>;
+  update: SwapFunc<Event>;
   // use: (
   //   ...updateEnhancers: FuncEnhancer<
   //     SwapFunc<StateMachineEvent<States, Transitions>>
