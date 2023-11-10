@@ -6,7 +6,7 @@ import {
   StateMachineDefinition,
   StateMachineEvent,
   StatesFactory,
-  TransitionConfig
+  TransitionConfig,
 } from "./machine-types";
 
 export const InitializeMachine = "__init";
