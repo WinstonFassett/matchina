@@ -3,7 +3,7 @@ import { matchboxFactory, UnionSpec, MemberExtensions } from "./matchbox";
 export type State<Tag extends keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;
-} & MemberExtensions<Specs, "key", "data">;
+} & MemberExtensions<Specs, "key">;
 
 export type States<Specs extends UnionSpec> = {
   [T in keyof Specs]: CreateState<Specs, T>;

@@ -15,7 +15,7 @@ import {
 
 import { onUpdate } from "./on-update";
 
-export type AnyEffect = Member<any, any, "effect", any>;
+export type AnyEffect = Member<any, any, "effect">;
 
 export function defineEffects<EffectsConfig extends UnionSpec>(
   config: EffectsConfig,

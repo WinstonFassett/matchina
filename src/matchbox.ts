@@ -1,51 +1,41 @@
 // export type Spec = ((...args: any[]) => any) | any;
 // export type Specs = Record<string, Spec>;
 
-export type UnionFactory<
+export type UnionFactory<Specs, TagProp extends string = "tag"> = Creators<
   Specs,
-  TagProp extends string = "tag",
-  DataProp extends string = "data",
-> = Creators<Specs, TagProp, DataProp>;
+  TagProp
+>;
 
 export type MatchboxFactory<
   Specs,
   TagProp extends string = "tag",
-  DataProp extends string = "data",
-> = UnionFactory<Specs, TagProp, DataProp>;
+> = UnionFactory<Specs, TagProp>;
 
-export type Creators<Specs, TagProp extends string, DataProp extends string> = {
-  [T in keyof Specs]: MemberCreate<T, Specs, TagProp, DataProp>;
+export type Creators<Specs, TagProp extends string> = {
+  [T in keyof Specs]: MemberCreate<T, Specs, TagProp>;
 };
 
 export type MemberCreate<
   Tag extends keyof Specs,
   Specs,
   TagProp extends string,
-  DataProp extends string,
 > = Specs[Tag] extends (...args: infer P) => infer R
-  ? (...args: P) => Member<Tag, Specs, TagProp, DataProp>
+  ? (...args: P) => Member<Tag, Specs, TagProp>
   : () // value?: Specs[Tag]
-    => Member<Tag, Specs, TagProp, DataProp>;
+    => Member<Tag, Specs, TagProp>;
 
 export type Member<
   Tag extends keyof Specs,
   Specs,
   TagProp extends string,
-  DataProp extends string,
 > = ((Specs[Tag] extends (...args: any[]) => any
-  ? { [_ in DataProp]: ReturnType<Specs[Tag]> }
-  : { [_ in DataProp]: Specs[Tag] }) & { [_ in TagProp]: Tag }) &
-  MemberExtensions<Specs, TagProp, DataProp>;
+  ? { data: ReturnType<Specs[Tag]> }
+  : { data: Specs[Tag] }) & { [_ in TagProp]: Tag }) &
+  MemberExtensions<Specs, TagProp>;
 
-export interface MemberExtensions<
-  Specs,
-  TagProp extends string,
-  DataProp extends string,
-> {
-  is: <T extends keyof Specs>(
-    key: T,
-  ) => this is Member<T, Specs, TagProp, DataProp>;
-  as: <T extends keyof Specs>(key: T) => Member<T, Specs, TagProp, DataProp>;
+export interface MemberExtensions<Specs, TagProp extends string> {
+  is: <T extends keyof Specs>(key: T) => this is Member<T, Specs, TagProp>;
+  as: <T extends keyof Specs>(key: T) => Member<T, Specs, TagProp>;
   match: Match<Specs>;
 }
 
@@ -88,7 +78,7 @@ export type UnionSpec<Val = any> = {
 } & { _?: never };
 
 export type MemberOf<
-  Factory extends UnionFactory<any, any, any>,
+  Factory extends UnionFactory<any, any>,
   Key extends keyof Factory = keyof Factory,
 > = ReturnType<Factory[Key]>;
 
@@ -106,21 +96,15 @@ export type MemberOf<
 export function matchboxFactory<
   Config extends UnionSpec,
   TagProp extends string = "tag",
-  DataProp extends string = "data",
->(
-  config: Config,
-  tagKey = "tag" as TagProp,
-  valueKey = "data" as DataProp,
-): UnionFactory<Config, TagProp, DataProp> {
+>(config: Config, tagKey = "tag" as TagProp): UnionFactory<Config, TagProp> {
   const createObj: any = {};
   for (const tag in config) {
     const spec = config[tag];
     createObj[tag] = (...args: any) => {
-      return matchbox<Config, any, TagProp, DataProp>(
+      return matchbox<Config, any, TagProp>(
         tag,
         typeof spec === "function" ? spec(...args) : spec,
         tagKey,
-        valueKey,
       );
     };
   }
@@ -131,39 +115,29 @@ export function matchbox<
   Config,
   Tag extends keyof Config,
   TagProp extends string = "tag",
-  DataProp extends string = "data",
 >(
   tag: Tag,
   data: any,
   tagProp: TagProp = "tag" as TagProp,
-  DataProp = "data" as DataProp,
-): Member<Tag, Config, TagProp, DataProp> {
-  return new MemberImpl<Config, Tag, TagProp, DataProp>(
-    tag,
-    data,
-    tagProp,
-    DataProp,
-  ) as any;
+): Member<Tag, Config, TagProp> {
+  return new MemberImpl<Config, Tag, TagProp>(tag, data, tagProp) as any;
 }
 
 class MemberImpl<
   Config,
   Tag extends keyof Config = keyof Config,
   TagProp extends string = "tag",
-  DataProp extends string = "data",
 > {
-  // implements UnionMember<Tag, Config, TagKey, DataProp>
+  // implements UnionMember<Tag, Config, TagKey>
   [key: string]: any;
 
   constructor(
     tag: Tag,
     value: Config[Tag],
     public tagProp: TagProp = "tag" as TagProp,
-    public DataProp: DataProp = "data" as DataProp,
   ) {
     this.tagProp = tagProp;
-    this.DataProp = DataProp;
-    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, [DataProp]: value });
+    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, data: value });
   }
 
   as(expectedTag: keyof Config) {
