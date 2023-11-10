@@ -1,28 +1,24 @@
 import { matchboxFactory, UnionSpec, MemberExtensions } from "./matchbox";
 
-export type StateFactory<Specs extends UnionSpec> =
-  // StateCreators<Specs>;
-  // type StateCreators<Specs> =
-  {
-    [T in keyof Specs]: StateCreate<Specs, T>;
-  };
-type TagProp = "key";
-type DataProp = "data";
+export type State<Specs, Tag extends keyof Specs> = {
+  key: Tag;
+  data: StateData<Specs[Tag]>;
+} & MemberExtensions<Specs, "key", "data">;
 
-type StateCreate<Specs, Tag extends keyof Specs> = Specs[Tag] extends (
+export type States<Specs extends UnionSpec> = {
+  [T in keyof Specs]: CreateState<Specs, T>;
+};
+
+type CreateState<Specs, Tag extends keyof Specs> = Specs[Tag] extends (
   ...args: infer P
 ) => infer R
   ? (...args: P) => State<Specs, Tag>
-  : () // value?: Specs[Tag]
-    => State<Specs, Tag>;
+  : () => State<Specs, Tag>;
 
-export type State<Specs, Tag extends keyof Specs> = ((Specs[Tag] extends (
-  ...args: any[]
-) => any
-  ? { [_ in DataProp]: ReturnType<Specs[Tag]> }
-  : { [_ in DataProp]: Specs[Tag] }) & { [_ in TagProp]: Tag }) &
-  MemberExtensions<Specs, TagProp, DataProp>;
+type StateData<Spec> = Spec extends (...args: any[]) => any
+  ? ReturnType<Spec>
+  : Spec;
 
 export function defineStates<Config extends UnionSpec>(config: Config) {
-  return matchboxFactory(config, "key") as StateFactory<Config>;
+  return matchboxFactory(config, "key") as States<Config>;
 }

@@ -1,4 +1,4 @@
-import { StateFactory } from "../states";
+import { States as StateFactory } from "../states";
 import {
   StateMachine,
   StateMachineEvent,
