@@ -37,7 +37,7 @@ export type Member<
   : { [_ in DataProp]: Specs[Tag] }) & { [_ in TagProp]: Tag }) &
   MemberExtensions<Specs, TagProp, DataProp>;
 
-interface MemberExtensions<
+export interface MemberExtensions<
   Specs,
   TagProp extends string,
   DataProp extends string,
@@ -80,19 +80,12 @@ export type MatchCases<
   A,
   Exhaustive extends boolean = true,
 > = Exhaustive extends true
-  ? (Cases<Record, A> & NoDefaultProp) | PartialCases<Record, A, Union>
+  ? (Cases<Record, A> & { _?: never }) | PartialCases<Record, A, Union>
   : AnyCases<Record, A, Union>;
 
-export type SingleValueRec = NoDefaultRec<any>;
-export type UnionSpec = SingleValueRec;
-export type NoDefaultRec<Val> = {
+export type UnionSpec<Val = any> = {
   [k: string]: Val;
-} & NoDefaultProp;
-
-// Forbid usage of default property; reserved for pattern matching.
-export interface NoDefaultProp {
-  _?: never;
-}
+} & { _?: never };
 
 export type MemberOf<
   Factory extends UnionFactory<any, any, any>,

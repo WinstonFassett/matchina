@@ -1,4 +1,4 @@
-import { StatesMatchboxFactory } from "../states";
+import { StateFactory } from "../states";
 import {
   StateMachine,
   StateMachineEvent,
@@ -25,7 +25,7 @@ type LifecycleApi<T, S, E> = {
 };
 
 export function onLifecycle<
-  States extends StatesMatchboxFactory<any>,
+  States extends StateFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(
   machine: StateMachine<States, Transitions>,
