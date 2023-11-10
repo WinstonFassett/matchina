@@ -100,6 +100,16 @@ export type StateMachineCreator<
 
 export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
 
+export type StateMachineContext<
+  States extends StatesFactory,
+  Transitions extends TransitionConfig<States>,
+> = {
+  states: States;
+  transitions: Transitions;
+  initialState: StateFromFactory<States>;
+  enhancer?: UpdateEnhancer<StateMachineEvent<States, Transitions>>;
+};
+
 export type StateMachineDefinition<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
