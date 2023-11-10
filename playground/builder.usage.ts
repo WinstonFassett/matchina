@@ -22,31 +22,44 @@ interface BaseBuilder<C extends Partial<StateMachineContext>,M> {
 }
 
 interface CanDefineStates<C extends Partial<StateMachineContext>,M> extends BaseBuilder<C,M> {
-  defineStates<T extends States>(
+  states<T extends States>(
     states: T,
   ): BuilderForContext<C & { states: T },M>;
 }
 
 interface CanSetInitialState<C extends Partial<StateMachineContext>,M> extends BaseBuilder<C,M> {
-  setInitialState<T extends string>(
+  initialState<T extends string>(
     initialState: T,
   ): BuilderForContext<C & { initialState: T }, M>;
 }
 interface CanDefineTransitions<C extends Partial<StateMachineContext>,M> extends BaseBuilder<C,M> {
-  defineTransitions<T extends Transitions>(
+  transitions<T extends Transitions>(
     transitions: T,
   ): BuilderForContext<C & { transitions: T }, M>;
 }
 
 type StateMachineFromBuilder<C> = StateMachine<C extends StateMachineContext ? C : StateMachineContext>;
 
-interface CanCreateStateMachine<C extends Partial<StateMachineContext>, M extends StateMachineFromBuilder<C>> extends BaseBuilder<C,M> {
+interface CanCreateStateMachine<C extends Partial<StateMachineContext>, M> extends BaseBuilder<C,M> {
   createMachine: C extends StateMachineContext
     ? () // context?: Partial<StateMachineContext>
       => M
     : <RC extends RemainingProperties<StateMachineContext, C>>(
         context: RC,
       ) => StateMachineFromBuilder<C & RC & StateMachineContext>;
+  createClass: () => C extends StateMachineContext
+    ? new () // context?: Partial<StateMachineContext>
+      => M
+    : new <RC extends RemainingProperties<StateMachineContext, C>>(
+        context: RC,
+      ) => StateMachineFromBuilder<C & RC & StateMachineContext>;      
+};
+
+type ClassForProps<T> = new (props: T) => T;
+
+
+interface CanCreateStateMachineClass<C extends Partial<StateMachineContext>, M extends StateMachineFromBuilder<C>> extends BaseBuilder<C,M> {
+
 };
 
 type RemainingProperties<Required, Present, Match = any> = Pick<
@@ -85,7 +98,7 @@ const builder = {} as Simplify<
 builder.createMachine({ states: {}, transitions: {}, initialState: "S" });
 
 // Define states, and now we can define transitions or set initial state
-const builderWithStates = builder.defineStates({
+const builderWithStates = builder.states({
   Idle: {},
   Working: {},
   Done: {},
@@ -94,7 +107,7 @@ const builderWithStates = builder.defineStates({
 // builderWithStates.context.states.Done;
 
 // We can set the initial state directly after defining states
-const initialStateBeforeTransitions = builderWithStates.setInitialState(
+const initialStateBeforeTransitions = builderWithStates.initialState(
   "Idle" as const,
 );
 initialStateBeforeTransitions.context.states.Done;
@@ -102,7 +115,7 @@ initialStateBeforeTransitions.context.initialState = "Idle";
 
 // Now define transitions, after setting the initial state
 const initialStateWithTransitions =
-  initialStateBeforeTransitions.defineTransitions({
+  initialStateBeforeTransitions.transitions({
     Idle: { start: "Working" },
     Working: { finish: "Done" },
   } as const);
@@ -111,10 +124,10 @@ initialStateWithTransitions.context.initialState = "Idle";
 initialStateWithTransitions.context.transitions.Idle.start;
 initialStateWithTransitions.createMachine();
 
-const transitionsBeforeInitialState = builderWithStates.defineTransitions({});
+const transitionsBeforeInitialState = builderWithStates.transitions({});
 transitionsBeforeInitialState.createMachine({ initialState: "Idle" as const });
 const initialStateAfterTRansitions =
-  transitionsBeforeInitialState.setInitialState("Idle" as const);
+  transitionsBeforeInitialState.initialState("Idle" as const);
 initialStateAfterTRansitions.createMachine();
 
 // We have all required parts, create the machine
@@ -131,17 +144,28 @@ const m2 = builder
     x => ({...x, kablamo: 'world' as const})
   )
   )
-  .defineStates({ Idle: {}, Working: {}, Done: {} })
-  .defineTransitions({
+  .states({ Idle: {}, Working: {}, Done: {} })
+  .transitions({
     Idle: { start: "Working" },
     Working: { finish: "Done" },
   })
-  .setInitialState("Idle")
+  .initialState("Idle")
   // .extend(x => ({...x}))
   .createMachine();
   
 m2.send('start');
 m2.kablamo = 'world'
+
+const Machine3 = builder
+  .states({ Idle: {}, Working: {}, Done: {} })
+  .transitions({
+    Idle: { start: "Working" },
+    Working: { finish: "Done" },
+  })
+  .initialState("Idle")
+  .createClass()
+
+const m3 = new Machine3();
 
 function pipe<A, B, C>(f1: Func<A, B>, f2: Func<B, C>): Func<A, C>;
 function pipe<A, B, C, D>(
