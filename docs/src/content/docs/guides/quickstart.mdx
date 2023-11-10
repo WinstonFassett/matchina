@@ -33,7 +33,7 @@ const machine = withSubscribe(
 )
 
 export function ReactMachineDemo({}) {
-  const [state] = useMachine(machine)
+  const [change] = useMachine(machine)
   return <div>
     <p>
       Action: {machine.getState().match({ // render based on state
@@ -52,8 +52,8 @@ export function ReactMachineDemo({}) {
     </p>
     <pre>
       {JSON.stringify({
-        "Current State Key": state.key,
-        "Current State Data": state.data,
+        "Current State Key": change.to.key,
+        "Current State Data": change.to.data,
         "Last Change": machine.getChange()
       }, null, 2)}
     </pre>

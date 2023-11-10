@@ -11,8 +11,7 @@ const slowlyAddTwoNumbers = (
 const machine = withSubscribe(withEvents(createPromiseMachine(slowlyAddTwoNumbers)));
 
 export function ReactMachineDemo({}) {
-  const [state] = useMachine(machine);
-
+  const [change] = useMachine(machine);
   return (
     <div>
       <div>
@@ -52,8 +51,8 @@ export function ReactMachineDemo({}) {
       <pre>
         {JSON.stringify(
           {
-            "Current State Key": state.key,
-            "Current State Data": state.data,
+            "Current State Key": change.to.key,
+            "Current State Data": change.to.data,
             "Last Change": machine.getChange(),
           },
           null,
