@@ -8,7 +8,7 @@ import {
 
 describe("typeguards", () => {
   describe("isKeyedChangeEvent", () => {
-    it("returns true if event matches type, to, and from", () => {
+    it("matches on single values", () => {
       const event = {
         type: "change",
         from: { key: "a" },
@@ -22,23 +22,37 @@ describe("typeguards", () => {
         }),
       ).toBe(true);
     });
-
-    it("returns false if event does not match type, to, and from", () => {
+    it("matches on multiple values", () => {
       const event = {
         type: "change",
         from: { key: "a" },
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(event, { type: "other", to: "c", from: "d" }),
-      ).toBe(false);
+        isKeyedChangeEvent(event, {
+          type: "change",
+          to: ["b", "c"],
+          from: ["a", "d"],
+        }),
+      ).toBe(true);
+    });
+    it("matches on undefined values", () => {
+      const event = {
+        type: "change",
+        from: { key: "a" },
+        to: { key: "b" },
+      };
+      expect(
+        isKeyedChangeEvent(event, {
+          type: "change",
+          to: undefined,
+          from: undefined,
+        }),
+      ).toBe(true);
     });
   });
-});
-
-describe("typeguards", () => {
   describe("isChangeTypeToFrom", () => {
-    it("returns true if event matches type, to, and from", () => {
+    it("matches on single values", () => {
       const event = {
         type: "change",
         from: { key: "a" },
@@ -46,8 +60,27 @@ describe("typeguards", () => {
       };
       expect(isChangeTypeToFrom(event, "change", "b", "a")).toBe(true);
     });
-  
-    it("returns false if event does not match type", () => {
+    it("matches on multiple values", () => {
+      const event = {
+        type: "change",
+        from: { key: "a" },
+        to: { key: "b" },
+      };
+      expect(isChangeTypeToFrom(event, "change", ["b", "c"], ["a", "d"])).toBe(
+        true,
+      );
+    });
+    it("matches on undefined values", () => {
+      const event = {
+        type: "change",
+        from: { key: "a" },
+        to: { key: "b" },
+      };
+      expect(isChangeTypeToFrom(event, "change", undefined, undefined)).toBe(
+        true,
+      );
+    });
+    it("returns false if event does not match", () => {
       const event = {
         type: "change",
         from: { key: "a" },
@@ -56,11 +89,8 @@ describe("typeguards", () => {
       expect(isChangeTypeToFrom(event, "other", "b", "a")).toBe(false);
     });
   });
-});
-
-describe("typeguards", () => {  
   describe("asChangeTypeToFrom", () => {
-    it("returns the event if it matches type, to, and from", () => {
+    it("matches on single values", () => {
       const event = {
         type: "change",
         from: { key: "a" },
@@ -68,7 +98,26 @@ describe("typeguards", () => {
       };
       expect(asChangeTypeToFrom(event, "change", "b", "a")).toBe(event);
     });
-
+    it("matches on multiple values", () => {
+      const event = {
+        type: "change",
+        from: { key: "a" },
+        to: { key: "b" },
+      };
+      expect(asChangeTypeToFrom(event, "change", ["b", "c"], ["a", "d"])).toBe(
+        event,
+      );
+    });
+    it("matches on undefined values", () => {
+      const event = {
+        type: "change",
+        from: { key: "a" },
+        to: { key: "b" },
+      };
+      expect(asChangeTypeToFrom(event, "change", undefined, undefined)).toBe(
+        event,
+      );
+    });
     it("throws an error if event does not match type", () => {
       const event = {
         type: "change",
@@ -77,24 +126,19 @@ describe("typeguards", () => {
       };
       expect(() => asChangeTypeToFrom(event, "other", "b", "a")).toThrow();
     });
-
   });
-});
-
-describe("typeguards", () => {
-  // returns true if event matches type, to, and from
-  // returns false if no parameters
   describe("hasKeyValue", () => {
-    it("returns true if object has key with single value", () => {
+    it("matches on single values", () => {
       const obj = { a: 1, b: "two" };
       expect(hasKeyValue(obj, "a", 1)).toBe(true);
     });
-
-    it("returns false if object does not have key with single value", () => {
+    it("matches on multiple values", () => {
       const obj = { a: 1, b: "two" };
-      expect(hasKeyValue(obj, "a", 2)).toBe(false);
+      expect(hasKeyValue(obj, "a", [1, 2])).toBe(true);
+    });
+    it("returns false if no parameters", () => {
+      const obj = { a: 1, b: "two" };
+      expect(hasKeyValue(obj, "a", undefined)).toBe(false);
     });
   });
 });
-
-
