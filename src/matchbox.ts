@@ -14,22 +14,22 @@ export type MatchboxFactory<
 > = UnionFactory<Specs, TagProp, DataProp>;
 
 export type Creators<Specs, TagProp extends string, DataProp extends string> = {
-  [T in keyof Specs]: MemberCreate<Specs, T, TagProp, DataProp>;
+  [T in keyof Specs]: MemberCreate<T, Specs, TagProp, DataProp>;
 };
 
 export type MemberCreate<
-  Specs,
   Tag extends keyof Specs,
+  Specs,
   TagProp extends string,
   DataProp extends string,
 > = Specs[Tag] extends (...args: infer P) => infer R
-  ? (...args: P) => Member<Specs, Tag, TagProp, DataProp>
+  ? (...args: P) => Member<Tag, Specs, TagProp, DataProp>
   : () // value?: Specs[Tag]
-    => Member<Specs, Tag, TagProp, DataProp>;
+    => Member<Tag, Specs, TagProp, DataProp>;
 
 export type Member<
-  Specs,
   Tag extends keyof Specs,
+  Specs,
   TagProp extends string,
   DataProp extends string,
 > = ((Specs[Tag] extends (...args: any[]) => any
@@ -44,8 +44,8 @@ export interface MemberExtensions<
 > {
   is: <T extends keyof Specs>(
     key: T,
-  ) => this is Member<Specs, T, TagProp, DataProp>;
-  as: <T extends keyof Specs>(key: T) => Member<Specs, T, TagProp, DataProp>;
+  ) => this is Member<T, Specs, TagProp, DataProp>;
+  as: <T extends keyof Specs>(key: T) => Member<T, Specs, TagProp, DataProp>;
   match: Match<Specs>;
 }
 
@@ -137,7 +137,7 @@ export function matchbox<
   data: any,
   tagProp: TagProp = "tag" as TagProp,
   DataProp = "data" as DataProp,
-): Member<Config, Tag, TagProp, DataProp> {
+): Member<Tag, Config, TagProp, DataProp> {
   return new MemberImpl<Config, Tag, TagProp, DataProp>(
     tag,
     data,
@@ -152,7 +152,7 @@ class MemberImpl<
   TagProp extends string = "tag",
   DataProp extends string = "data",
 > {
-  // implements UnionMember<Config, Tag, TagKey, DataProp>
+  // implements UnionMember<Tag, Config, TagKey, DataProp>
   [key: string]: any;
 
   constructor(
