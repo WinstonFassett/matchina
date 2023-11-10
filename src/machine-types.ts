@@ -52,19 +52,12 @@ export interface StateMachine<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 > {
-  // def: StateMachineDefinition<States, Transitions>;
   context: StateMachineContext<States, Transitions>; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<States, Transitions>;
-  // event: FlatEventSenders<States, Transitions>;
   getChange: () => StateMachineEvent<States, Transitions>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<States, Transitions>>;
-  // use: (
-  //   ...updateEnhancers: FuncEnhancer<
-  //     SwapFunc<StateMachineEvent<States, Transitions>>
-  //   >[]
-  // ) => () => void;
 }
 
 export type SendFunction<
