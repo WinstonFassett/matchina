@@ -1,13 +1,10 @@
 export {};
-type Context = {
-  // ... your Context type definition
-};
 
 type Extender<A, B> = (input: A) => B;
 
 // Usage
 
-type Extend<T> = {
+export type Extend<T> = {
   <A>(fn1: Extender<T, A>): A;
   <A, B>(fn1: Extender<T, A>, fn2: Extender<A, B>): B;
   <A, B, C>(fn1: Extender<T, A>, fn2: Extender<A, B>, fn3: Extender<B, C>): C;
@@ -29,6 +26,14 @@ type Extend<T> = {
 interface Extensible {
   extend: Extend<this>;
 }
+
+
+export type ExtendBuilder<T, X extends Extend<T>=Extend<T>> = (...params: Parameters<X>) => ExtendBuilder<ReturnType<X>>;
+
+interface ExtensibleBuilder<C> {
+  // extend: ;
+}
+
 
 class ExtensibleClass implements Extensible {
   // Implementation (the actual extend method)
