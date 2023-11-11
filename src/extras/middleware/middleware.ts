@@ -88,23 +88,41 @@ const debounceMiddleware = (delay: number): Middleware<any[], any> => (next) => 
 };
 
 
-// Middleware for subscribe pattern
-const subscribeMiddleware = <A extends any[], R>(
-  subscribeCallback: (...args: A) => ((result: R) => void) | undefined
+const enterExitMiddleware = <A extends any[], R>(
+  beforeCallback: (...args: A) => ((result: R) => void) | undefined
 ): Middleware<A, R> => (next) => async (...args) => {
-  // Get the resultCallback from subscribeCallback
-  const resultCallback = subscribeCallback(...args);
-
-  // Execute the target function
+  const afterCallback = beforeCallback(...args);
   const result = await next(...args);
-
-  // Call the resultCallback if provided with the result
-  resultCallback?.(result);
-
-  // Return the result
+  afterCallback?.(result);
   return result;
 };
 
+
+// Example synchronous target function
+const syncFunction = (...args: any[]) => {
+  console.log(`Executing the synchronous target function with args:`, args);
+  return 42;
+};
+
+
+// Usage
+const subscribeCallback = (...args: any[]) => {
+  console.log('before', ...args);
+
+  // Return an "after" callback if needed
+  const afterCallback = (result: number) => {
+    console.log('after', result);
+  };
+
+  return afterCallback; // "before" callback returning an "after" callback
+};
+
+const middlewareArray1 = [enterExitMiddleware(subscribeCallback)];
+
+const enhancedFunction1 = applyMiddleware(syncFunction, ...middlewareArray1);
+
+const result1 = enhancedFunction1(1, 'example');
+console.log(`Result:`, result1);
 
 // Example target function
 const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
