@@ -106,6 +106,8 @@ export type StateMachineDefinition<
   states: States;
   transitions: Transitions;
 };
+export type MatchEvent<Transitions extends TransitionConfig<States>, States extends StatesFactory> = <M extends ChangeEventMatchers<Transitions, States>>(cases: M) => M[keyof M] extends (...args: any) => infer R ? R : never;
+
 // #endregion
 // #region State Machine Event
 export type StateMachineEvent<
@@ -118,9 +120,7 @@ export type StateMachineEvent<
   Params = any[],
 > = ChangeEvent<EventKey, From, To> & {
   params: Params;
-  match: <M extends ChangeEventMatchers<Transitions, States>>(
-    cases: M,
-  ) => M[keyof M] extends (...args: any) => infer R ? R : never;
+  match: MatchEvent<Transitions, States>;
 };
 // >;
 export type ChangeEventMatchers<

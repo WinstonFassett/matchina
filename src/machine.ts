@@ -1,5 +1,6 @@
 import { RemainingProperties } from "./../playground/builder.usage";
 import {
+  ChangeEventMatchers,
   StateFromFactory,
   StateMachine,
   StateMachineContext,
@@ -40,26 +41,7 @@ export function createMachineClass<
   type State = StateFromFactory<States>;
   type Event = StateMachineEvent<Transitions, States>;
 
-  function transition(
-    from: State,
-    event: Event["type"],
-    args: any[],
-    context: StateMachineContext<Transitions, States>,
-    machine: Machine,
-  ): State | undefined {
-    return transitionState(
-      machine.context.states,
-      machine.context.transitions,
-      from,
-      event,
-      args,
-      context,
-      machine,
-    );
-  }
-
   return class StateMachineImpl implements Machine {
-    static transition = transition;
     context: C;
     private lastChange: Event = undefined as any;
     constructor(context: RemainingProperties<C, PC> & Partial<C>) {
@@ -96,15 +78,23 @@ export function createMachineClass<
     send(type: string, ...params: any[]) {
       const { context, lastChange } = this;
       const from = lastChange?.to;
-      const nextState = transition(from, type, params, context, this as any);
+      const nextState = transitionState(
+        context.states,
+        context.transitions,
+        from,
+        type,
+        params,
+        context,
+        this as any,
+      );      
       if (nextState && nextState !== from) {
         return this.update((previous) => {
-          const change = createChange({
-            from,
+          const change = new MachineChangeImpl<States, Transitions>(
             type,
             params,
-            to: nextState,
-          });
+            from,
+            nextState,
+          );
           return change;
         });
       }
@@ -142,40 +132,34 @@ export function createMachine<C extends StateMachineContext<any, any>>(
   return new Machine(context);
 }
 
-function createChange<
+class MachineChangeImpl<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
->({
-  type,
-  params,
-  from,
-  to,
-}: {
-  type: StateMachineEvent<Transitions, States>["type"];
-  params: StateMachineEvent<Transitions, States>["params"];
-  from: StateFromFactory<States>;
-  to: StateFromFactory<States>;
-}): StateMachineEvent<Transitions, States> {
-  return {
-    type,
-    params,
-    from,
-    to,
-    match(cases) {
-      const handler = (cases as any)[type];
-      if (handler) {
-        return handler(...params);
-      } else if (cases._) {
-        return cases._(...params);
-      }
-    },
-  };
+> implements StateMachineEvent<Transitions, States> {
+  constructor(  
+      public type: StateMachineEvent<Transitions, States>["type"],
+      public params: StateMachineEvent<Transitions, States>["params"],
+      public from: StateFromFactory<States>,
+      public to: StateFromFactory<States> 
+  ) {
+    Object.assign(this, { type, params, from, to });
+  }
+  // <M extends ChangeEventMatchers<Transitions, States>>(cases: M) => M[keyof M] extends (...args: any) => infer R ? R : never;
+  match(cases: ChangeEventMatchers<Transitions, States>) {
+    const handler = (cases as any)[this.type];
+    if (handler) {
+      return handler(...this.params);
+    } else if (cases._) {
+      return cases._(...this.params);
+    }
+  }
 }
 
 function transitionState<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
 >(
+  // drop states and transitions, use context instead
   states: States,
   transitions: Transitions,
   from: StateFromFactory<States>,
