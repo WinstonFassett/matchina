@@ -1,7 +1,6 @@
 import { defineMachine } from "../machine";
 import { UpdateEnhancer } from "../machine-types";
 import { States, defineStates } from "../states";
-import { onUpdate } from "./on-update";
 
 export type PromiseStates<T=any, A extends any[]=any[], E extends Error = Error> = States<{
   Idle: undefined;
@@ -10,43 +9,51 @@ export type PromiseStates<T=any, A extends any[]=any[], E extends Error = Error>
   Resolved: (data: T) => T;
 }>;
 
+const promiseStates = defineStates({
+  Idle: undefined,
+  Pending: (...params: any) => params,
+  Rejected: (error: any) => error,
+  Resolved: (data: any) => data,
+})
+
+const promiseTransitions = {
+  Idle: { execute: "Pending" },
+  Pending: {
+    resolve: "Resolved",
+    reject: "Rejected",
+  },
+  Resolved: {},
+  Rejected: {},
+} as const;
+
 export function createPromiseMachine<
   T,
   A extends any[],
   E extends Error = Error,
 >(makePromise?: (...args: A) => Promise<T>, enhancer?: UpdateEnhancer<any>) {
   const states = definePromiseStates<T, A, E>();
-  const Machine = defineMachine(states, {
-    Idle: { execute: "Pending" },
-    Pending: {
-      resolve: "Resolved",
-      reject: "Rejected",
-    },
-    Resolved: {},
-    Rejected: {},
-  });
+  const Machine = defineMachine(states, promiseTransitions);
   const initialState = states.Idle();
   const machine = Machine.create(initialState, enhancer);
   if (makePromise) {
     const _makePromise = makePromise;
-    function execute(params: A) {
-      const promise = _makePromise(...params);
-      promiseMachine.promise = promise;
-      promiseMachine.done = promise
-        .then((res) => promiseMachine.send("resolve", res))
-        .catch((error) => promiseMachine.send("reject", error));
-    }
-    onUpdate(machine, (commit, updater) => {
-      commit((before) => {
+    const origUpdate = machine.update;
+    machine.update = (updater) => {
+      origUpdate.call(machine, (before) => {
         const after = updater(before);
         if (after.type === "execute") {
-          execute(after.params as A);
+          const promise = _makePromise(...after.params as A);
+          promiseMachine.promise = promise;
+          promiseMachine.done = promise
+            .then((res) => promiseMachine.send("resolve", res))
+            .catch((error) => promiseMachine.send("reject", error));
         }
         return after;
       });
-    });
+    };
   }
   const promiseMachine = Object.assign(machine, {
+    // should this go on context?
     promise: undefined as undefined | Promise<T>,
     done: undefined as undefined | Promise<void>,
   });
@@ -59,11 +66,7 @@ export type PromiseTransitions = PromiseMachine["context"]["transitions"];
 export type PromiseContextStateKey = keyof PromiseContextStates;
 export type PromiseStateKey = keyof PromiseStates;
 
+
 function definePromiseStates<T, A extends any[], E extends Error = Error>() {
-  return defineStates({
-    Idle: undefined,
-    Pending: (...params: A) => params,
-    Rejected: (error: E) => error,
-    Resolved: (data: T) => data,
-  });
+  return promiseStates as PromiseStates<T, A, E>;
 }
