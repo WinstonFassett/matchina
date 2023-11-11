@@ -87,6 +87,25 @@ const debounceMiddleware = (delay: number): Middleware<any[], any> => (next) => 
   }, delay);
 };
 
+
+// Middleware for subscribe pattern
+const subscribeMiddleware = <A extends any[], R>(
+  subscribeCallback: (...args: A) => ((result: R) => void) | undefined
+): Middleware<A, R> => (next) => async (...args) => {
+  // Get the resultCallback from subscribeCallback
+  const resultCallback = subscribeCallback(...args);
+
+  // Execute the target function
+  const result = await next(...args);
+
+  // Call the resultCallback if provided with the result
+  resultCallback?.(result);
+
+  // Return the result
+  return result;
+};
+
+
 // Example target function
 const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
   console.log(`Executing the target function with args:`, args);
