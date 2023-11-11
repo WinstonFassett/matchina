@@ -1,6 +1,6 @@
 import { defineMachine } from "../machine";
-import { FlatEventKeys, UpdateEnhancer } from "../machine-types";
-import { defineStates } from "../states";
+import { UpdateEnhancer } from "../machine-types";
+import { States, defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
 export function createPromiseMachine<
@@ -50,7 +50,6 @@ export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
 export type PromiseStates = PromiseMachine["context"]["states"];
 export type PromiseTransitions = PromiseMachine["context"]["transitions"];
 export type PromiseStateKey = keyof PromiseStates;
-export type PromiseEventKey = FlatEventKeys<PromiseTransitions, PromiseStates>;
 
 function definePromiseStates<T, A extends any[], E extends Error = Error>() {
   return defineStates({
