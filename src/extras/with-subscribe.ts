@@ -1,3 +1,4 @@
+import { exit } from "process";
 import {
   ChangeEventFromKey,
   ChangeEventToKey,
@@ -32,6 +33,14 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
     dispose,
   });
 
+  type Subscriber<
+    E extends Event, 
+    Type extends ChangeEventType<E>, 
+    FromKey extends ChangeEventFromKey<E>, 
+    ToKey extends ChangeEventToKey<E>
+  > = 
+    (event: E & KeyedChangeEvent<Type, FromKey, ToKey>) => (void | (() => void));
+
   function subscribeKey<
     E extends Event,
     Type extends ChangeEventType<E>,
@@ -39,11 +48,13 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
     FromKey extends ChangeEventFromKey<E>,
   >(
     filter: ChangeEventFilter<Type, ToKey, FromKey>,
-    listener: (event: E & KeyedChangeEvent<Type, FromKey, ToKey>) => void,
+    subscriber: Subscriber<E, Type, FromKey, ToKey>,
   ) {
+    let exitListener: void | (() => void);
     return subscribe((event) => {
       if (isKeyedChangeEvent(event, filter)) {
-        listener(event as any);
+        exitListener?.();
+        exitListener = subscriber(event as any);
       }
     });
   }

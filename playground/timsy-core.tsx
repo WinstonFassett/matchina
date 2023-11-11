@@ -1,10 +1,11 @@
-import { defineMachine, defineStates } from "../src"
+import { defineMachine, defineStates, withSubscribe } from "../src"
 import { withEvents } from "../src/extras/with-events"
 
 // ---cut---
 const states = defineStates({
   FOO: () => ({}),
   BAR: () => ({}),
+  BAZ: () => ({})
 })
 
 const runMachine = defineMachine(
@@ -16,65 +17,44 @@ const runMachine = defineMachine(
     BAR: {
       switch: () => () => states.FOO(),
     },
+    BAZ: {
+      switch: () => () => states.BAZ(),
+    },
   }
 )
 
-const machine = withEvents(runMachine.create(states.FOO()))
+const machine = withSubscribe(withEvents(runMachine.create(states.FOO())))
 
 machine.event.switch()
 
 const currentState = machine.getState()
 
-// No subscription (yet)
+const unsubscribe = machine.subscribe((change) => {
+  // Any change
+  const { type, from, to, params } = change
+  change.match({
+    switch: function (...args: any[]) {      
+      console.log('switching!')
+    }
+  })
+  return () => {
+    console.log('exiting', change)
+  }
+})
 
-// const dispose = machine.subscribe((state, event, prevState) => {
-//   // Any change
-// })
+machine.when({to:"FOO"}, ({ to }) => {
+  // When first entering either state
+  return () => {
+    // When exiting to other state
+  }
+})
 
-// const dispose = machine.subscribe("FOO", (state) => {
-//   // When entering state
-//   return () => {
-//     // When exiting state
-//   }
-// })
+machine.when({to:["FOO", "BAR"]}, ({ to }) => {})
 
-// const dispose = machine.subscribe(["FOO", "BAR"], (state) => {
-//   // When first entering either state
-//   return () => {
-//     // When exiting to other state
-//   }
-// })
+machine.when({ to:"FOO", type: "switch" }, ({ to }) => {})
 
-// const dispose = machine.subscribe(
-//   "FOO",
-//   "switch",
-//   (state, eventParams) => {
-//     // When entering state by event
-//   }
-// )
+machine.when({ to: ["FOO", "BAR"], type: "switch" }, (change) => {})
 
-// const dispose = machine.subscribe(
-//   ["FOO", "BAR"],
-//   "switch",
-//   (state, eventParams) => {
-//     // When entering either state by event
-//   }
-// )
+machine.when({ type: "switch", to: "FOO", from: "BAR" }, (change) => {})
 
-// const dispose = machine.subscribe(
-//   "FOO",
-//   "switch",
-//   "BAR",
-//   (state, eventParams, prevState) => {
-//     // When entering state by event from state
-//   }
-// )
-
-// const dispose = machine.subscribe(
-//   ["FOO", "BAR"],
-//   "switch",
-//   "BAZ"
-//   (state, eventParams, prevState) => {
-//     // When entering either state by event from state
-//   }
-// )
+machine.when({ to: ["FOO", "BAR"], type: "switch", from: "BAZ" },  (change) => {})

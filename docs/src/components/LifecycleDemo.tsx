@@ -117,7 +117,7 @@ export function LifecycleDemo({}) {
           ),
           _: () => (
             <span>
-              Done! <button onClick={machine.reset}>Reset</button>
+              Done! <button onClick={() => machine.reset()}>Reset</button>
             </span>
           ),
         })}

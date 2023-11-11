@@ -1,25 +1,16 @@
 import { UnionSpec, MemberOf, matchboxFactory } from "../src/matchbox";
 // ---cut---
-export const defineStates = <T extends UnionSpec>
-  (config: T) => matchboxFactory(config, "key");
-
-export const defineEvents = <T extends UnionSpec>
-  (config: T) => matchboxFactory(config, "type");
-
-// Define States
-const states = defineStates({
+const states = matchboxFactory({
   Idle: () => ({}),
   Done: (x: number) => ({ result: x }),
-});
+}, 'key');
 type State = MemberOf<typeof states>
 
-// Define Events
-const events = defineEvents({
+const events = matchboxFactory({
   execute: (x: number) => x,
-});
+}, 'type');
 type Event = MemberOf<typeof events>
 
-// Define state-event transitions
 const transition = (state: State, event: Event) => state.match({
   Idle: () => event.match({
     execute: (x) => states.Done(x)
@@ -27,7 +18,6 @@ const transition = (state: State, event: Event) => state.match({
   Done: () => state,
 });
 
-// Implement state machine
 function createMachine (initialState: State) {
   let currentState = initialState
   return {
@@ -40,9 +30,14 @@ function createMachine (initialState: State) {
 
 // Usage
 const machine = createMachine(states.Idle())
-const checkState = () => console.log(machine.getState())
-checkState()
 machine.send(events.execute(123))
-checkState()
-machine.send(events.execute(456))
-checkState()
+console.log(machine.getState().key)
+
+const state = machine.getState()
+if (state.is('Done')) {
+  state.data.result = 123
+} 
+
+// OR
+
+const result = state.as('Done').data.result

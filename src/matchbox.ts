@@ -158,9 +158,9 @@ class MemberImpl<
     casesObj: MatchCases<MemberData<Config>, MemberData<Config>, A>,
     exhaustive = true,
   ): any {
-    const { tagProp, DataProp: dataProp } = this;
+    const { tagProp } = this;
     const tag = this[tagProp];
-    const data = this[dataProp];
+    const data = this.data;
     const handler = (casesObj as any)[tag];
     if (handler) {
       return handler(data);
