@@ -9,7 +9,7 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
-
+import { Middleware, applyMiddleware } from "./dev/middleware3";
 export const InitializeMachine = "__init";
 
 export function defineMachine<
@@ -104,11 +104,25 @@ export function createMachineClass<
       this.initialize();
     }
 
+    // TODO: factor out public method
     update(getUpdate: (ev: Event) => Event) {
       const change = getUpdate(this.lastChange);
       if (change) {
         this.lastChange = change;
       }
+    }
+
+    use(
+      ...mw: Middleware<
+        Parameters<Machine["update"]>,
+        ReturnType<Machine["update"]>
+      >[]
+    ) {
+      const origUpdate = this.update;
+      this.update = applyMiddleware(origUpdate, ...mw);
+      return () => {
+        this.update = origUpdate;
+      };
     }
   };
 }

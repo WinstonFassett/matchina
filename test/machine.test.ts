@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { defineMachine } from "../src/machine";
 import { defineStates } from "../src/states";
 import { withEvents } from "../src/extras/with-events";
@@ -180,3 +180,15 @@ describe("machine instance", () => {
 //     expect(didEnhancerRun).toBe(true);
 //   });
 // });
+describe("use", () => {
+  it("applies middleware to update function", () => {
+    const machine = makeMachine();
+    const middleware = vi.fn((update) => update);
+    const removeMiddleware = machine.use(middleware);
+    machine.update(() => ({}));
+    expect(middleware).toHaveBeenCalled();
+    removeMiddleware();
+    machine.update(() => ({}));
+    expect(middleware).toHaveBeenCalledTimes(1);
+  });
+});
