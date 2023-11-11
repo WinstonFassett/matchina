@@ -92,10 +92,7 @@ export interface StateMachine<
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<Transitions, States>>;
   use(
-    ...mw: Middleware<
-      Parameters<SwapFunc<StateMachineEvent<Transitions, States>>>,
-      ReturnType<SwapFunc<StateMachineEvent<Transitions, States>>>
-    >[]
+    ...mw: Middleware<SwapFunc<StateMachineEvent<Transitions, States>>>[]
   ): void
 }
 
