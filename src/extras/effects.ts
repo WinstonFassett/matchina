@@ -13,8 +13,6 @@ import {
   matchboxFactory,
 } from "../matchbox";
 
-import { onUpdate } from "./on-update";
-
 export type AnyEffect = Member<any, any, "effect">;
 
 export function defineEffects<EffectsConfig extends UnionSpec>(
@@ -40,17 +38,16 @@ export function bindEffects<
   >,
   exhaustive = false as Exhaustive,
 ) {
-  return onUpdate(machine, (commit, updater) => {
-    commit((current) => {
-      const initial = current;
+  const origUpdate = machine.update;
+  machine.update = (updater) => {
+    return origUpdate.call(machine, (current) => {
       const updated = updater(current);
-      if (initial.to !== updated.to) {
-        const effects = getEffects(updated.to);
-        handleEffects(effects, matchers, exhaustive);
-      }
+      const effects = getEffects(updated.to);
+      handleEffects(effects, matchers, exhaustive);      
       return updated;
     });
-  });
+  };
+  return () => { machine.update = origUpdate }  
 }
 function handleEffects<
   EffectsConfig extends UnionSpec,
