@@ -10,15 +10,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.js"
     },
     "./extras/react": {
       "types": "./dist/extras/react.d.ts",
       "import": "./dist/extras/react.mjs",
-      "require": "./dist/extras/react.cjs"
+      "require": "./dist/extras/react.js"
     }
   },
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [

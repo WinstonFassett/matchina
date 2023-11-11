@@ -1,16 +1,28 @@
 import { defineBuildConfig } from 'unbuild'
 
+const mkdistEntry = {
+  input: "./src/",
+  outDir: "./dist",
+  builder: 'mkdist',
+  pattern: "**/!(*.stories).{js,jsx,ts,tsx}",
+} as const
+
 export default defineBuildConfig({
   
   entries: [
     {
-      input: 'src/index.ts',
-      builder: 'rollup',
-    
+      ...mkdistEntry,
+      format: "esm",
     },
+
     {
-      input: 'src/extras/react.ts',
-      builder: 'rollup'
+      ...mkdistEntry,
+      format: "cjs",      
+    },    
+    {
+      input: 'src/extras/react/',
+      outDir: "./dist/extras/react",
+      builder: 'mkdist'
     }
   ],
   declaration: true,
