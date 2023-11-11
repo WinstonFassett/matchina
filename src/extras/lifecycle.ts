@@ -12,7 +12,6 @@ import {
   StateTransitionHooks,
   TransitionHookExtensions,
 } from "./lifecycle-types";
-import { onUpdate } from "./on-update";
 
 type Dispose = () => void;
 
@@ -40,7 +39,18 @@ export function onLifecycle<
   //       >,
   //     ) => void),
 ) {
-  return onUpdate(machine, lifecycle(config));
+  const originalUpdate = machine.update
+  const enhancer = lifecycle(machine, config)
+  machine.update = updater => {
+    originalUpdate.call(machine, (current) => {
+      let result: typeof current | undefined = undefined
+      enhancer((enhanced) => {
+        result = enhanced(current)                  
+      }, updater)
+      return result ?? current
+    })
+  }
+  return () => { machine.update = originalUpdate}
 }
 
 export function lifecycle<M extends StateMachine<any, any>>(
