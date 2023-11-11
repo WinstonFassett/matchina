@@ -17,29 +17,22 @@ export type AState = { key: string; [prop: string]: any };
 export type AnEvent = { type: string };
 export type AParams = any[];
 
-type Kernel<T> = {
-
-}
 interface FunctionalStateMachineKernel<
   T,
   E extends string = string,
-  P extends any[]= any[]
+  P extends any[] = any[],
 > {
   getState<T>(): T;
   send<T>(event: E, ...params: P[]): void;
 }
 
-interface EventfulStateMachineKernel<
-  T,
-  E,
-  P
-> {
+interface EventfulStateMachineKernel<T, E, P> {
   getState<T>(): T;
   send<T>(event: E, param: P): void;
 }
 
 interface ChangeMachine<Event, To, From = To> {
-  getChange(): ChangeEvent<Event, From, To>
+  getChange(): ChangeEvent<Event, From, To>;
 }
 
 interface Resettable {
@@ -93,15 +86,15 @@ export interface StateMachine<
   update: SwapFunc<StateMachineEvent<Transitions, States>>;
   use(
     ...mw: Middleware<SwapFunc<StateMachineEvent<Transitions, States>>>[]
-  ): void
+  ): void;
 }
 
 export interface StateMachineProtected<
   Transitions extends TransitionConfig<States>,
   States extends StatesFactory,
-> {  
+> {
   reset(): void; // remove// externalize
-  update: SwapFunc<StateMachineEvent<Transitions, States>>;  
+  update: SwapFunc<StateMachineEvent<Transitions, States>>;
 }
 
 export type SendFunction<

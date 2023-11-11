@@ -35,9 +35,9 @@ export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
 function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   return keyOrKeys === undefined
     ? true
-    : (Array.isArray(keyOrKeys)
+    : Array.isArray(keyOrKeys)
     ? keyOrKeys.includes(value)
-    : keyOrKeys === value);
+    : keyOrKeys === value;
 }
 
 export function isKeyedChangeEvent<

@@ -9,7 +9,11 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
-import { Middleware, applyMethodware, applyMiddleware } from "./dev/middleware3";
+import {
+  Middleware,
+  applyMethodware,
+  applyMiddleware,
+} from "./dev/middleware3";
 export const InitializeMachine = "__init";
 
 export function defineMachine<
@@ -112,9 +116,7 @@ export function createMachineClass<
       }
     }
 
-    use(
-      ...mw: Middleware<Machine["update"]>[]
-    ) {
+    use(...mw: Middleware<Machine["update"]>[]) {
       return applyMethodware(this, "update", ...mw);
     }
   };

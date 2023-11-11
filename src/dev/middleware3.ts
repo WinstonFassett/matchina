@@ -2,9 +2,7 @@ import { Func } from "../types";
 
 export {};
 
-export type Middleware<F extends Func> = (
-  fn: F,
-) => F;
+export type Middleware<F extends Func> = (fn: F) => F;
 
 export function applyMiddleware<F extends Func>(
   targetFunction: F,
@@ -18,12 +16,8 @@ export function applyMiddleware<F extends Func>(
 
 export function applyMethodware<
   T extends Record<K, (...args: any[]) => any>,
-  K extends keyof T
->(
-  subject: T,
-  key: K,
-  ...middlewares: Middleware<T[K]>[]
-) {
+  K extends keyof T,
+>(subject: T, key: K, ...middlewares: Middleware<T[K]>[]) {
   const inner = subject[key];
   subject[key] = applyMiddleware(inner, ...middlewares);
   return () => {
