@@ -22,8 +22,8 @@ export function defineMachine<
   return {
     states,
     transitions,
-    create: (initialState, enhancer) =>
-      createMachine({ states, transitions, initialState, enhancer }),
+    create: (initialState) =>
+      createMachine({ states, transitions, initialState }),
   };
 }
 
@@ -86,7 +86,7 @@ export function createMachineClass<
         params,
         context,
         this as any,
-      );      
+      );
       if (nextState && nextState !== from) {
         return this.update((previous) => {
           const change = new MachineChangeImpl<States, Transitions>(
@@ -105,19 +105,7 @@ export function createMachineClass<
     }
 
     update(getUpdate: (ev: Event) => Event) {
-      const { context, lastChange } = this;
-      let change: undefined | Event;
-      const { enhancer } = context;
-      if (enhancer) {
-        enhancer(
-          (enhancerChange) => {
-            change = enhancerChange as any;
-          },
-          getUpdate(lastChange) as any,
-        );
-      } else {
-        change = getUpdate(lastChange);
-      }
+      const change = getUpdate(this.lastChange);
       if (change) {
         this.lastChange = change;
       }
@@ -135,15 +123,17 @@ export function createMachine<C extends StateMachineContext<any, any>>(
 class MachineChangeImpl<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
-> implements StateMachineEvent<Transitions, States> {
-  constructor(  
-      public type: StateMachineEvent<Transitions, States>["type"],
-      public params: StateMachineEvent<Transitions, States>["params"],
-      public from: StateFromFactory<States>,
-      public to: StateFromFactory<States> 
+> implements StateMachineEvent<Transitions, States>
+{
+  constructor(
+    public type: StateMachineEvent<Transitions, States>["type"],
+    public params: StateMachineEvent<Transitions, States>["params"],
+    public from: StateFromFactory<States>,
+    public to: StateFromFactory<States>,
   ) {
     Object.assign(this, { type, params, from, to });
   }
+
   // <M extends ChangeEventMatchers<Transitions, States>>(cases: M) => M[keyof M] extends (...args: any) => infer R ? R : never;
   match(cases: ChangeEventMatchers<Transitions, States>) {
     const handler = (cases as any)[this.type];

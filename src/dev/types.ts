@@ -178,4 +178,8 @@ export type FlatStateEventTransitionTargets<
     : never
   : never;
 
-  export type With<BaseType, ObjectKey extends string, ComposedType> = BaseType & { [k in ObjectKey]: ComposedType };
+export type With<
+  BaseType,
+  ObjectKey extends string,
+  ComposedType,
+> = BaseType & { [k in ObjectKey]: ComposedType };

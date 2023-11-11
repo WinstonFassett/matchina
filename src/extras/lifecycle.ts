@@ -24,8 +24,8 @@ type LifecycleApi<T, S, E> = {
 };
 
 export function onLifecycle<
-Transitions extends TransitionConfig<States>,
-States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 >(
   machine: StateMachine<Transitions, States>,
   config: StateEventHookConfig<States, Transitions>,
@@ -39,18 +39,20 @@ States extends StatesFactory<any>,
   //       >,
   //     ) => void),
 ) {
-  const originalUpdate = machine.update
-  const enhancer = lifecycle(machine, config)
-  machine.update = updater => {
+  const originalUpdate = machine.update;
+  const enhancer = lifecycle(config);
+  machine.update = (updater) => {
     originalUpdate.call(machine, (current) => {
-      let result: typeof current | undefined = undefined
+      let result: typeof current | undefined;
       enhancer((enhanced) => {
-        result = enhanced(current)                  
-      }, updater)
-      return result ?? current
-    })
-  }
-  return () => { machine.update = originalUpdate}
+        result = enhanced(current);
+      }, updater);
+      return result ?? current;
+    });
+  };
+  return () => {
+    machine.update = originalUpdate;
+  };
 }
 
 export function lifecycle<M extends StateMachine<any, any>>(

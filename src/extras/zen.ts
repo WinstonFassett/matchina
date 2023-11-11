@@ -10,7 +10,6 @@ export function makeZen<
   States extends StatesFactory<any>,
   Transitions extends TransitionConfig<States>,
 >(machine: StateMachine<Transitions, States>) {
-  
   const zenMachine = withSubscribe(withEvents(machine));
   // hmm this is a class now
   const { send, reset, event, subscribe, when } = zenMachine;
@@ -29,6 +28,6 @@ export function makeZen<
     send,
     reset,
     subscribe,
-    when
+    when,
   };
 }

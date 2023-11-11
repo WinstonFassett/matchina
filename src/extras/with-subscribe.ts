@@ -1,4 +1,4 @@
-import { exit } from "process";
+import { exit } from "node:process";
 import {
   ChangeEventFromKey,
   ChangeEventToKey,
@@ -34,12 +34,13 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
   });
 
   type Subscriber<
-    E extends Event, 
-    Type extends ChangeEventType<E>, 
-    FromKey extends ChangeEventFromKey<E>, 
-    ToKey extends ChangeEventToKey<E>
-  > = 
-    (event: E & KeyedChangeEvent<Type, FromKey, ToKey>) => (void | (() => void));
+    E extends Event,
+    Type extends ChangeEventType<E>,
+    FromKey extends ChangeEventFromKey<E>,
+    ToKey extends ChangeEventToKey<E>,
+  > = (
+    event: E & KeyedChangeEvent<Type, FromKey, ToKey>,
+  ) => void | (() => void);
 
   function subscribeKey<
     E extends Event,

@@ -83,7 +83,6 @@ export type StateMachineCreator<
   States extends StatesFactory,
 > = (
   initialState: StateFromFactory<States> | keyof States,
-  enhancer?: UpdateEnhancer<StateMachineEvent<Transitions, States>>,
 ) => StateMachine<Transitions, States>;
 
 export type UpdateEnhancer<T> = FuncEnhancer<SwapFunc<T>>;
@@ -95,7 +94,6 @@ export type StateMachineContext<
   states: States;
   transitions: Transitions;
   initialState: keyof States | StateFromFactory<States>;
-  enhancer?: UpdateEnhancer<StateMachineEvent<Transitions, States>>;
 };
 
 export type StateMachineDefinition<
@@ -106,7 +104,12 @@ export type StateMachineDefinition<
   states: States;
   transitions: Transitions;
 };
-export type MatchEvent<Transitions extends TransitionConfig<States>, States extends StatesFactory> = <M extends ChangeEventMatchers<Transitions, States>>(cases: M) => M[keyof M] extends (...args: any) => infer R ? R : never;
+export type MatchEvent<
+  Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
+> = <M extends ChangeEventMatchers<Transitions, States>>(
+  cases: M,
+) => M[keyof M] extends (...args: any) => infer R ? R : never;
 
 // #endregion
 // #region State Machine Event

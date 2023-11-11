@@ -43,11 +43,13 @@ export function bindEffects<
     return origUpdate.call(machine, (current) => {
       const updated = updater(current);
       const effects = getEffects(updated.to);
-      handleEffects(effects, matchers, exhaustive);      
+      handleEffects(effects, matchers, exhaustive);
       return updated;
     });
   };
-  return () => { machine.update = origUpdate }  
+  return () => {
+    machine.update = origUpdate;
+  };
 }
 function handleEffects<
   EffectsConfig extends UnionSpec,
