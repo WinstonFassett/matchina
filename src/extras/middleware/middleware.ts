@@ -9,16 +9,16 @@ function applyMiddleware<A extends any[], R>(
   ...middlewares: Middleware<A, R>[]
 ): (...args: A) => Promise<R> {
   return async (...args: A) => {
-    const context = { args };
     let index = -1;
-
     async function next(): Promise<R> {
       index++;
       if (index < middlewares.length) {
-        const currentMiddleware = middlewares[index];
-        return await currentMiddleware(next)(...args);
-      } else {
+        return await middlewares[index](next)(...args);
+      } else if (index === middlewares.length) {
+        index++; // Allow the last "next" call
         return await targetFunction(...args);
+      } else {
+        throw new Error('next() called multiple times or out of order');
       }
     }
 
