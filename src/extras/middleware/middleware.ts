@@ -1,4 +1,5 @@
 export {}
+
 type Middleware<A extends any[], R> = (
   fn: (...args: A) => Promise<R> | R
 ) => (...args: A) => Promise<R>;
@@ -26,6 +27,16 @@ function applyMiddleware<A extends any[], R>(
 }
 
 // Example middleware functions
+const authenticationMiddleware: Middleware<any[], any> = (next) => async (...args) => {
+  // Perform authentication logic here
+  const isAuthenticated = true; // For demonstration purposes
+  if (isAuthenticated) {
+    return await next(...args);
+  } else {
+    console.log(`Unauthorized`);
+  }
+};
+
 const loggerMiddleware: Middleware<any[], any> = (next) => async (...args) => {
   const startTime = Date.now();
   console.log(`[${new Date(startTime).toLocaleTimeString()}] Calling the target function with args:`, args);
@@ -35,14 +46,45 @@ const loggerMiddleware: Middleware<any[], any> = (next) => async (...args) => {
   return result;
 };
 
-const authorizationMiddleware: Middleware<any[], any> = (next) => async (...args) => {
-  // Perform authorization logic here
-  const isAuthenticated = true; // For demonstration purposes
-  if (isAuthenticated) {
+const timingMiddleware: Middleware<any[], any> = (next) => async (...args) => {
+  const startTime = Date.now();
+  const result = await next(...args);
+  const endTime = Date.now();
+  console.log(`Execution time: ${endTime - startTime}ms`);
+  return result;
+};
+
+const errorHandlingMiddleware: Middleware<any[], any> = (next) => async (...args) => {
+  try {
+    return await next(...args);
+  } catch (error) {
+    console.error(`Error: ${error}`);
+    throw error;
+  }
+};
+
+const throttleMiddleware = (delay: number): Middleware<any[], any> => (next) => async (...args) => {
+  let isThrottled = false;
+  if (!isThrottled) {
+    isThrottled = true;
+    setTimeout(() => {
+      isThrottled = false;
+    }, delay);
     return await next(...args);
   } else {
-    console.log(`Unauthorized`);
+    console.log(`Function throttled. Skipping execution.`);
   }
+};
+
+const debounceMiddleware = (delay: number): Middleware<any[], any> => (next) => async (...args) => {
+  let timeout: NodeJS.Timeout | null = null;
+  if (timeout) {
+    clearTimeout(timeout);
+  }
+  timeout = setTimeout(async () => {
+    timeout = null;
+    return await next(...args);
+  }, delay);
 };
 
 // Example target function
@@ -54,7 +96,16 @@ const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
 };
 
 // Usage
-const enhancedFunction = applyMiddleware(myFunction, loggerMiddleware, authorizationMiddleware);
+const middlewareArray = [
+  authenticationMiddleware,
+  loggerMiddleware,
+  timingMiddleware,
+  errorHandlingMiddleware,
+  throttleMiddleware(1000),
+  debounceMiddleware(1000),
+];
+
+const enhancedFunction = applyMiddleware(myFunction, ...middlewareArray);
 
 enhancedFunction(1, 'example').then((result) => {
   console.log(`Result:`, result);
