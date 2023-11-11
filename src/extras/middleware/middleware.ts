@@ -1,76 +1,61 @@
 export {}
-
-
 type Middleware<A extends any[], R> = (
-  next: (...args: A) => Promise<R> | R
+  fn: (...args: A) => Promise<R> | R
 ) => (...args: A) => Promise<R>;
 
 function applyMiddleware<A extends any[], R>(
   targetFunction: (...args: A) => Promise<R> | R,
   ...middlewares: Middleware<A, R>[]
 ): (...args: A) => Promise<R> {
-    return async (...args: A) => {
-      const asyncTargetFunction = async () => {
-        return await Promise.resolve(targetFunction(...args));
-      };
+  return async (...args: A) => {
+    const context = { args };
+    let index = -1;
 
-      return middlewares.reduceRight(
-        (composed, middleware) => {
-          return middleware(composed);
-        },
-        asyncTargetFunction
-      )();
-    };
-  }
-  
+    async function next(): Promise<R> {
+      index++;
+      if (index < middlewares.length) {
+        const currentMiddleware = middlewares[index];
+        return await currentMiddleware(next)(...args);
+      } else {
+        return await targetFunction(...args);
+      }
+    }
+
+    return await next();
+  };
+}
 
 // Example middleware functions
-function timingMiddleware<A extends any[], R>(
-  next: (...args: A) => Promise<R> | R
-): (...args: A) => Promise<R> {
-  return async (...args: A) => {
-    const startTime = Date.now();
-    const result = await next(...args);
-    const endTime = Date.now();
-    console.log(`Execution time: ${endTime - startTime}ms`);
-    return result;
-  };
-}
+const loggerMiddleware: Middleware<any[], any> = (next) => async (...args) => {
+  const startTime = Date.now();
+  console.log(`[${new Date(startTime).toLocaleTimeString()}] Calling the target function with args:`, args);
+  const result = await next(...args);
+  const endTime = Date.now();
+  console.log(`[${new Date(endTime).toLocaleTimeString()}] Target function finished execution. Return value:`, result);
+  return result;
+};
 
-function errorHandlingMiddleware<A extends any[], R>(
-  next: (...args: A) => Promise<R> | R
-): (...args: A) => Promise<R> {
-  return async (...args: A) => {
-    try {
-      const result = await next(...args);
-      return result;
-    } catch (error) {
-      console.error(`Error: ${error}`);
-      throw error;
-    }
-  };
-}
+const authorizationMiddleware: Middleware<any[], any> = (next) => async (...args) => {
+  // Perform authorization logic here
+  const isAuthenticated = true; // For demonstration purposes
+  if (isAuthenticated) {
+    return await next(...args);
+  } else {
+    console.log(`Unauthorized`);
+  }
+};
 
 // Example target function
-async function asyncAdd(a: number, b: number): Promise<number> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(a + b);
-    }, 1000);
-  });
-}
+const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
+  console.log(`Executing the target function with args:`, args);
+  // Simulate some asynchronous work
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return 42;
+};
 
-function syncMultiply(x: number, y: number): number {
-  return x * y;
-}
+// Usage
+const enhancedFunction = applyMiddleware(myFunction, loggerMiddleware, authorizationMiddleware);
 
-// Usage with async function
-const asyncEnhancedFunction = applyMiddleware(asyncAdd, timingMiddleware, errorHandlingMiddleware);
-asyncEnhancedFunction(2, 3).then((result) => {
-  console.log(`Result (Async):`, result);
+enhancedFunction(1, 'example').then((result) => {
+  console.log(`Result:`, result);
 });
-
-// Usage with sync function
-const syncEnhancedFunction = applyMiddleware(syncMultiply, timingMiddleware, errorHandlingMiddleware);
-const syncResult = syncEnhancedFunction(2, 3);
-console.log(`Result (Sync):`, syncResult);
