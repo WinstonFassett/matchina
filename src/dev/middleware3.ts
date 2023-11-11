@@ -1,13 +1,15 @@
+import { Func } from "../types";
+
 export {};
 
-export type Middleware<A extends any[], R> = (
-  fn: (...args: A) => R,
-) => (...args: A) => R;
+export type Middleware<F extends Func> = (
+  fn: F,
+) => F;
 
-export function applyMiddleware<A extends any[], R>(
-  targetFunction: (...args: A) => R,
-  ...middlewares: Middleware<A, R>[]
-): (...args: A) => R {
+export function applyMiddleware<F extends Func>(
+  targetFunction: F,
+  ...middlewares: Middleware<F>[]
+): F {
   return middlewares.reduceRight(
     (composed, middleware) => middleware(composed),
     targetFunction,
@@ -15,20 +17,24 @@ export function applyMiddleware<A extends any[], R>(
 }
 
 export function applyMethodware<
-  T extends { [key: string]: (...args: any[])=> any}, 
-  K extends keyof T,
+  T extends Record<K, (...args: any[]) => any>,
+  K extends keyof T
 >(
-  subject: T, key: K,
-  ...middlewares: Middleware<Parameters<T[K]>, ReturnType<T[K]>>[]
-): (...args: Parameters<T[K]>) => ReturnType<T[K]> {  
-  return applyMiddleware(subject[key], ...middlewares);
+  subject: T,
+  key: K,
+  ...middlewares: Middleware<T[K]>[]
+) {
+  const inner = subject[key];
+  subject[key] = applyMiddleware(inner, ...middlewares);
+  return () => {
+    subject[key] = inner;
+  };
 }
 
-// Example middleware functions
-function loggerMiddleware<A extends any[], R>(
-  fn: (...args: A) => R,
-): (...args: A) => R {
-  return (...args: A) => {
+function loggerMiddleware<F extends Func>(
+  fn: F,
+): (...args: Parameters<F>) => ReturnType<F> {
+  return (...args: Parameters<F>): ReturnType<F> => {
     const startTime = Date.now();
     console.log(
       `[${new Date(

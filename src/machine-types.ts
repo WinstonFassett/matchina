@@ -9,12 +9,45 @@ import {
   SwapFunc,
   TUnionToIntersection,
 } from "./types";
+import { Middleware, applyMiddleware } from "./dev/middleware3";
 
 // #region Transition Config
 
 export type AState = { key: string; [prop: string]: any };
 export type AnEvent = { type: string };
 export type AParams = any[];
+
+type Kernel<T> = {
+
+}
+interface FunctionalStateMachineKernel<
+  T,
+  E extends string = string,
+  P extends any[]= any[]
+> {
+  getState<T>(): T;
+  send<T>(event: E, ...params: P[]): void;
+}
+
+interface EventfulStateMachineKernel<
+  T,
+  E,
+  P
+> {
+  getState<T>(): T;
+  send<T>(event: E, param: P): void;
+}
+
+interface ChangeMachine<Event, To, From = To> {
+  getChange(): ChangeEvent<Event, From, To>
+}
+
+interface Resettable {
+  reset(): void;
+}
+interface Usable<F extends Func> {
+  use(...mw: Middleware<F>[]): void;
+}
 
 export type StatesFactory<T = any> = {
   [key: string]: (...args: any[]) => T;
@@ -58,6 +91,20 @@ export interface StateMachine<
   getChange: () => StateMachineEvent<Transitions, States>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<Transitions, States>>;
+  use(
+    ...mw: Middleware<
+      Parameters<SwapFunc<StateMachineEvent<Transitions, States>>>,
+      ReturnType<SwapFunc<StateMachineEvent<Transitions, States>>>
+    >[]
+  ): void
+}
+
+export interface StateMachineProtected<
+  Transitions extends TransitionConfig<States>,
+  States extends StatesFactory,
+> {  
+  reset(): void; // remove// externalize
+  update: SwapFunc<StateMachineEvent<Transitions, States>>;  
 }
 
 export type SendFunction<
