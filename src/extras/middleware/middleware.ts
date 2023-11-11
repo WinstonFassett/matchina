@@ -89,7 +89,7 @@ const debounceMiddleware = (delay: number): Middleware<any[], any> => (next) => 
 
 
 const enterExitMiddleware = <A extends any[], R>(
-  beforeCallback: (...args: A) => ((result: R) => void) | undefined
+  beforeCallback: (...args: A) => (void | ((result: R) => void))
 ): Middleware<A, R> => (next) => async (...args) => {
   const afterCallback = beforeCallback(...args);
   const result = await next(...args);
@@ -125,7 +125,7 @@ const result1 = enhancedFunction1(1, 'example');
 console.log(`Result:`, result1);
 
 // Example target function
-const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
+const myFunction: (x: number, s: string) => Promise<number> = async (...args) => {
   console.log(`Executing the target function with args:`, args);
   // Simulate some asynchronous work
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -133,16 +133,23 @@ const myFunction: (...args: any[]) => Promise<number> = async (...args) => {
 };
 
 // Usage
-const middlewareArray = [
+
+const enhancedFunction = applyMiddleware(myFunction,  
   authenticationMiddleware,
   loggerMiddleware,
   timingMiddleware,
   errorHandlingMiddleware,
   throttleMiddleware(1000),
   debounceMiddleware(1000),
-];
-
-const enhancedFunction = applyMiddleware(myFunction, ...middlewareArray);
+  enterExitMiddleware((x,s) => {
+    console.log('entered', x, s)
+  }),
+  enterExitMiddleware((x,s) => { 
+    return (result) => {
+      console.log('exit', result)
+    }
+  })
+);
 
 enhancedFunction(1, 'example').then((result) => {
   console.log(`Result:`, result);
