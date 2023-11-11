@@ -3,6 +3,13 @@ import { UpdateEnhancer } from "../machine-types";
 import { States, defineStates } from "../states";
 import { onUpdate } from "./on-update";
 
+export type PromiseStates<T=any, A extends any[]=any[], E extends Error = Error> = States<{
+  Idle: undefined;
+  Pending: (...params: A) => A;
+  Rejected: (error: E) => E;
+  Resolved: (data: T) => T;
+}>;
+
 export function createPromiseMachine<
   T,
   A extends any[],
@@ -47,8 +54,9 @@ export function createPromiseMachine<
 }
 export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
 export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
-export type PromiseStates = PromiseMachine["context"]["states"];
+export type PromiseContextStates = PromiseMachine["context"]["states"];
 export type PromiseTransitions = PromiseMachine["context"]["transitions"];
+export type PromiseContextStateKey = keyof PromiseContextStates;
 export type PromiseStateKey = keyof PromiseStates;
 
 function definePromiseStates<T, A extends any[], E extends Error = Error>() {
