@@ -15,7 +15,7 @@ function applyMiddleware<A extends any[], R>(
       if (index < middlewares.length) {
         return await middlewares[index](next)(...args);
       } else if (index === middlewares.length) {
-        index++; // Allow the last "next" call
+        index++;
         return await targetFunction(...args);
       } else {
         throw new Error('next() called multiple times or out of order');
