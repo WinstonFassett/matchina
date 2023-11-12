@@ -2,16 +2,23 @@
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from '../extras/typeguards';
 
 type Disposer = () => void;
+export type Sink<E> = (event: E) => void;
 export type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
-export function applyMiddleware<E>(targetFunction: (event: E) => void, ...middlewares: Middleware<E>[]): (event: E) => void {
-  let currentFn: (event: E) => void | Promise<void> = targetFunction;
-  for (const middleware of middlewares) {
-    const previousFn = currentFn;
-    currentFn = (event: E) => middleware(event, previousFn);
-  }
-  return currentFn;
+function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middleware<E> {
+  return (event: E, next: (event: E) => void) => {
+    let currentFn: (event: E) => void | Promise<void> = next;
+    for (let i = middlewares.length - 1; i >= 0; i--) {
+      const middleware = middlewares[i];
+      const previousFn = currentFn;
+      currentFn = (event: E) => middleware(event, previousFn);
+    }
+    return currentFn(event);
+  };
 }
+
+const applyMiddleware = <E>(fn: Sink<E>, ...middlewares: Middleware<E>[]) =>  
+   (event: E) => composeMiddleware(...middlewares)(event, fn)
 
 export const guard: <E>(test: (event: E) => boolean) => Middleware<E> 
   = (test) => (event, next) => {
