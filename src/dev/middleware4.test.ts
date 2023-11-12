@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyMiddleware } from "./middleware4";
+import { applyMiddleware, Middleware } from "./middleware4";
 
 describe("applyMiddleware", () => {
   // Define a synchronous function for testing
@@ -30,7 +30,7 @@ describe("applyMiddleware", () => {
   });
 
   it("should work with asynchronous function and logger middleware", async () => {
-    const loggerMiddleware = (next) => async (...args) => {
+    const loggerMiddleware: Middleware<any,any> = (next) => async (...args) => {
       expect(args).toEqual([4, 5]);
       const result = await next(...args);
       expect(result).toBe(9);
