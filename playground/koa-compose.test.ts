@@ -12,7 +12,7 @@ describe("applyMethodware", () => {
     };
     const orig = subject.addOne;
     applyMethodware(subject, "addOne", middleware1, middleware2);
-    const result = await subject.addOne(1);
+    const result = subject.addOne(1);
     expect(result).toBe(4);
     expect(middleware1).toHaveBeenCalledWith(orig);
     expect(middleware2).toHaveBeenCalled()
