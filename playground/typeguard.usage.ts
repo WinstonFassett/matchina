@@ -15,8 +15,8 @@ if (hasKeyValue(a, 'foo', ['manchu' as const, 'bar' as const])) {
 
 
 const ev = {} as ChangeEvent<unknown, unknown, unknown>
-if (isKeyedChangeEvent(ev, { to: 'foo', from: 'bar', type: 'baz' })) {
-  ev.to.key
+if (isKeyedChangeEvent(ev, { to: 'foo', from: 'bar', type: 'baz' } as const)) {
+  ev.to.key 
   ev.from.key
   ev.type
 }
