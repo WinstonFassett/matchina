@@ -1,7 +1,27 @@
-export {}
 import compose from 'koa-compose';
 
 type Middleware<T> = (context: T, next: () => Promise<void>) => Promise<void>;
+
+export const applyMiddleware = compose
+
+export function applyMethodware<
+  T extends Record<K, (...args: any[]) => any>,
+  K extends keyof T,
+>(subject: T, key: K, ...middlewares: Middleware<T[K]>[]) {
+  const inner = subject[key];  
+  console.log({ middlewares })
+  const composed = (compose as any)(middlewares.concat(inner))
+  subject[key] = ((...args: any[]) => 
+    composed({
+      args,
+    }, async () => await inner(...args))) as any;
+  return () => {
+    subject[key] = inner;
+  };
+}
+
+// Usage
+
 
 // Authentication Middleware
 const authenticationMiddleware: Middleware<{ isAuthenticated: boolean }> = async (context, next) => {
@@ -85,8 +105,19 @@ const middlewareArray = [
 ];
 const composedMiddleware = compose(middlewareArray);
 
-// Usage
 const context = { isAuthenticated: false };
 composedMiddleware(context, async () => {}).then(() => {
   console.log(`Middleware stack completed.`);
 });
+
+
+
+const calc = {
+  sum: (a: number, b: number) => a + b,
+  sub: (a: number, b: number) => a - b,
+  mul: (a: number, b: number) => a * b,
+  div: (a: number, b: number) => a / b,
+}
+
+applyMethodware(calc, 'sum', loggerMiddleware);
+calc.sum(1, 2);
