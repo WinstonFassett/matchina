@@ -43,17 +43,17 @@ export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
 >;
 
 
-type KeyedChangeEventFilter<Type, ToKey, FromKey> = RecordFilter<
-  KeyedChangeEvent<Type, ToKey, FromKey>
+export type KeyedChangeEventFilter<E> = RecordFilter<
+  KeyedChangeEvent<
+    ChangeEventType<E>,
+    ChangeEventToKey<E>,
+    ChangeEventFromKey<E>
+  >
 >;
 
 export function isKeyedChangeEvent<E>(
   event: E,
-  filter: KeyedChangeEventFilter<
-    ChangeEventType<E>,
-    ChangeEventToKey<E>,
-    ChangeEventFromKey<E>
-  >,
+  filter: KeyedChangeEventFilter<E>,
 ): event is E & KeyedChangeEvent<
   ChangeEventType<E>,
   ChangeEventFromKey<E>,
