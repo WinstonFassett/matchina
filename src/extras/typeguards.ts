@@ -26,11 +26,6 @@ export function hasKeyValue<T, K extends PropertyKey, V>(
   }
   return values.includes((obj as Record<K, V>)[key]);
 }
-export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
-  Type,
-  { key: ToKey },
-  { key: FromKey }
->;
 
 function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   if (keyOrKeys === undefined) {
@@ -41,15 +36,29 @@ function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
     : keyOrKeys === value;
 }
 
-export function isKeyedChangeEvent<
-  E,
-  Type extends ChangeEventType<E>,
-  ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>,
->(
+export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
+  Type,
+  { key: ToKey },
+  { key: FromKey }
+>;
+
+
+type KeyedChangeEventFilter<Type, ToKey, FromKey> = RecordFilter<
+  KeyedChangeEvent<Type, ToKey, FromKey>
+>;
+
+export function isKeyedChangeEvent<E>(
   event: E,
-  filter: ChangeEventFilter<Type, ToKey, FromKey>,
-): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
+  filter: KeyedChangeEventFilter<
+    ChangeEventType<E>,
+    ChangeEventToKey<E>,
+    ChangeEventFromKey<E>
+  >,
+): event is E & KeyedChangeEvent<
+  ChangeEventType<E>,
+  ChangeEventFromKey<E>,
+  ChangeEventToKey<E>
+> {
   const subject = event as any;
   return (
     matchKey(filter.to, subject?.to?.key) &&
