@@ -1,156 +1,54 @@
-export {}
+export {};
 
-type Middleware<A extends any[], R> = (
-  fn: (...args: A) => Promise<R> | R
-) => (...args: A) => Promise<R>;
+// First, we need to define types for our argument and return types
+type Fn<T extends any[], R> = (...args: T) => R;
 
-function applyMiddleware<A extends any[], R>(
-  targetFunction: (...args: A) => Promise<R> | R,
-  ...middlewares: Middleware<A, R>[]
-): (...args: A) => Promise<R> {
-  return async (...args: A) => {
-    let index = -1;
-    async function next(): Promise<R> {
-      index++;
-      if (index < middlewares.length) {
-        return await middlewares[index](next)(...args);
-      } else if (index === middlewares.length) {
-        index++;
-        return await targetFunction(...args);
-      } else {
-        throw new Error('next() called multiple times or out of order');
-      }
-    }
+type Middleware<T extends any[], R> = (fn: Fn<T, R>) => Fn<T, R>;
 
-    return await next();
-  };
+function applyMiddleware<T extends any[], R>(
+  targetFunction: Fn<T, R>,
+  ...middlewares: Middleware<T, R>[]
+): Fn<T, R>;
+
+async function applyMiddleware<T extends any[], R>(
+  targetFunction: Fn<T, R>,
+  ...middlewares: Middleware<T, R>[]
+): Promise<Fn<T, R>>;
+
+function applyMiddleware<T extends any[], R>(
+  targetFunction: Fn<T, R>,
+  ...middlewares: Middleware<T, R>[]
+): Fn<T, R> | Promise<Fn<T, R>> {
+  let currentFn: Fn<T, R> = targetFunction;
+
+  for (const middleware of middlewares) {
+    currentFn = middleware(currentFn);
+  }
+
+  return currentFn;
 }
 
-// Example middleware functions
-const authenticationMiddleware: Middleware<any[], any> = (next) => async (...args) => {
-  // Perform authentication logic here
-  const isAuthenticated = true; // For demonstration purposes
-  if (isAuthenticated) {
-    return await next(...args);
-  } else {
-    console.log(`Unauthorized`);
-  }
-};
-
-const loggerMiddleware: Middleware<any[], any> = (next) => async (...args) => {
-  const startTime = Date.now();
-  console.log(`[${new Date(startTime).toLocaleTimeString()}] Calling the target function with args:`, args);
+// loggerMiddleware
+const loggerMiddleware: Middleware<any[], any> = (next) => async (...args: any[]) => {
+  console.log('Before:', args);
   const result = await next(...args);
-  const endTime = Date.now();
-  console.log(`[${new Date(endTime).toLocaleTimeString()}] Target function finished execution. Return value:`, result);
+  console.log('After:', result);
   return result;
 };
 
-const timingMiddleware: Middleware<any[], any> = (next) => async (...args) => {
-  const startTime = Date.now();
-  const result = await next(...args);
-  const endTime = Date.now();
-  console.log(`Execution time: ${endTime - startTime}ms`);
-  return result;
+// Example with synchronous function
+let syncSum = (a: number, b: number): number => a + b;
+syncSum = applyMiddleware(syncSum, loggerMiddleware);
+
+// Example with asynchronous function
+let asyncSum = async (a: number, b: number): Promise<number> => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(a + b), 1000);
+  });
 };
+asyncSum = await applyMiddleware(asyncSum, loggerMiddleware);
 
-const errorHandlingMiddleware: Middleware<any[], any> = (next) => async (...args) => {
-  try {
-    return await next(...args);
-  } catch (error) {
-    console.error(`Error: ${error}`);
-    throw error;
-  }
-};
-
-const throttleMiddleware = (delay: number): Middleware<any[], any> => (next) => async (...args) => {
-  let isThrottled = false;
-  if (!isThrottled) {
-    isThrottled = true;
-    setTimeout(() => {
-      isThrottled = false;
-    }, delay);
-    return await next(...args);
-  } else {
-    console.log(`Function throttled. Skipping execution.`);
-  }
-};
-
-const debounceMiddleware = (delay: number): Middleware<any[], any> => (next) => async (...args) => {
-  let timeout: NodeJS.Timeout | null = null;
-  if (timeout) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(async () => {
-    timeout = null;
-    return await next(...args);
-  }, delay);
-};
-
-
-const enterExitMiddleware = <A extends any[], R>(
-  beforeCallback: (...args: A) => (void | ((result: R) => void))
-): Middleware<A, R> => (next) => async (...args) => {
-  const afterCallback = beforeCallback(...args);
-  const result = await next(...args);
-  afterCallback?.(result);
-  return result;
-};
-
-
-// Example synchronous target function
-const syncFunction = (...args: any[]) => {
-  console.log(`Executing the synchronous target function with args:`, args);
-  return 42;
-};
-
-
-// Usage
-const subscribeCallback = (...args: any[]) => {
-  console.log('before', ...args);
-
-  // Return an "after" callback if needed
-  const afterCallback = (result: number) => {
-    console.log('after', result);
-  };
-
-  return afterCallback; // "before" callback returning an "after" callback
-};
-
-const middlewareArray1 = [enterExitMiddleware(subscribeCallback)];
-
-const enhancedFunction1 = applyMiddleware(syncFunction, ...middlewareArray1);
-
-const result1 = enhancedFunction1(1, 'example');
-console.log(`Result:`, result1);
-
-// Example target function
-const myFunction: (x: number, s: string) => Promise<number> = async (...args) => {
-  console.log(`Executing the target function with args:`, args);
-  // Simulate some asynchronous work
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return 42;
-};
-
-// Usage
-
-const enhancedFunction = applyMiddleware(myFunction,  
-  authenticationMiddleware,
-  loggerMiddleware,
-  timingMiddleware,
-  errorHandlingMiddleware,
-  throttleMiddleware(1000),
-  debounceMiddleware(1000),
-  enterExitMiddleware((x,s) => {
-    console.log('entered', x, s)
-  }),
-  enterExitMiddleware((x,s) => { 
-    return (result) => {
-      console.log('exit', result)
-    }
-  })
-);
-
-enhancedFunction(1, 'example').then((result) => {
-  console.log(`Result:`, result);
-});
+(async () => {
+  console.log(await syncSum(1, 2)); // Logs: "Before: [1, 2]", "After: 3", Output: 3
+  console.log(await asyncSum(3, 4)); // Logs: "Before: [3, 4]", "After: 7", Output: 7 (after 1 second delay)
+})();
