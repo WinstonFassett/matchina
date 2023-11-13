@@ -52,7 +52,7 @@ export function onLifecycle<
 }
 
 
-const asArray = <T>(u: T) => Array.isArray(u) ? u : [u]
+const asArray = <T>(u: T): T[] => Array.isArray(u) ? u : [u]
 
 export function lifecycleware<
   Transitions extends TransitionConfig<States>,
@@ -76,15 +76,26 @@ export function lifecycleware<
         from: fromKey === '*' ? undefined : fromKey as any,        
       })(
         ((ev, next) => {          
-          console.log('enter')
-          for (const fn of asArray(enter)) {
-            fn?.(ev)                
-          }
-          next(ev)
-          return () => {
-            for (const fn of asArray(leave)) {
+          if (enter) {
+            console.log('enter')
+            console.group()
+            for (const fn of asArray<any>(enter)) {
               fn?.(ev)                
             }
+            console.groupEnd()
+          }
+          console.log('next', ev)
+          console.group()
+          next(ev)
+          console.groupEnd()
+          console.log('done with next') 
+          return () => {
+            console.log('leave')
+            console.group()
+            for (const fn of asArray<any>(leave)) {
+              fn(ev)                
+            }
+            console.groupEnd()
           }
         })
       ))
@@ -96,26 +107,37 @@ export function lifecycleware<
         const eventwares: Middleware<E>[] = []
         if (!eventConfig) continue;
         const { guard, handle, before, after } = eventConfig
-        if (guard) {
-          
+        if (guard) {          
           eventwares.push(
             (ev, next) => { 
               if (asArray(guard).every(g => g(ev))) next(ev)
+              else {
+                console.log('guard failed', ev)
+              }
             }
           )
         }
         if (handle) {  
-          console.log('handle!')
           eventwares.push(
             (e,n) => {
               n(e)
               console.log('handled', e)
             },
-            ...asArray(handle))
+            ...asArray(handle).map(h => {
+              return ((ev, next) => {
+                console.log('handle', ev)
+                ev = h(ev)
+                if (ev){
+                  console.log('handler handled',ev)
+                  next(ev)                
+                }
+              }) as Middleware<E>
+            }))
         }
         if (before||after) {
           eventwares.push(
-            listen((ev) => {              
+            listen((ev) => {     
+              console.log('BEFORE', ev)         
               for (const fn of asArray(before)) {
                 fn?.(ev)                
               }
@@ -139,8 +161,11 @@ export function lifecycleware<
   console.log('count', wares.length)
   return composeMiddleware(
     (e, next) => {
+      console.log('OUTER')
+      console.group()
       next(e)
-      console.log('EVENT!', e)
+      console.groupEnd()
+      console.log('OUTER DONE')
     },
     ...wares);
 }

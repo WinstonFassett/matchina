@@ -27,7 +27,7 @@ export type StateTransitionHooks<
   States extends StatesFactory<any>,
   StateKey extends keyof Transitions | "*",
 > = {
-  leave?: (
+  leave: (
     change: StateMachineEvent<
       Transitions,
       States,
@@ -39,7 +39,7 @@ export type StateTransitionHooks<
       StateFromFactory<States>
     >,
   ) => void;
-  enter?: (
+  enter: (
     change: StateMachineEvent<
       Transitions,
       States,

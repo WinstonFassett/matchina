@@ -179,9 +179,14 @@ describe("onLifecycle usage", () => {
         },
       },
     });
+    const checkState = ()=> {
+      console.log('state', machine.getState().key)
+    }
+    expectState('Idle')
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     machine.event.execute(1);
+    checkState()
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
 

@@ -60,12 +60,13 @@ export function isKeyedChangeEvent<E>(
   ChangeEventToKey<E>
 > {
   const subject = event as any;
-  console.log('checking', subject.type, filter)
-  return (
+  const matched = (
     matchKey(filter.to, subject?.to?.key) &&
     matchKey(filter.type, subject?.type) &&
     matchKey(filter.from, subject?.from?.key)
   );
+  console.log('match?', matched, filter)
+  return matched;
 }
 
 export function isChangeTypeToFrom<
