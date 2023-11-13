@@ -71,10 +71,12 @@ export function lifecycleware<
     if (!fromStateConfig) continue;
     const { enter, leave } = fromStateConfig
     if (enter || leave) {
+      // console.log('enter/leave', fromKey, fromStateConfig)
       wares.push(when<E>({ 
         from: fromKey === '*' ? undefined : fromKey as any,        
       })(
         ((ev, next) => {          
+          console.log('enter')
           for (const fn of asArray(enter)) {
             fn?.(ev)                
           }
@@ -95,18 +97,21 @@ export function lifecycleware<
         if (!eventConfig) continue;
         const { guard, handle, before, after } = eventConfig
         if (guard) {
-          eventwares.push(when<E>({ 
-            from: fromKey === '*' ? undefined : fromKey as any,
-            type: eventKey === '*' ? undefined : eventKey as any            
-          })(
+          
+          eventwares.push(
             (ev, next) => { 
               if (asArray(guard).every(g => g(ev))) next(ev)
             }
-          ))          
+          )
         }
         if (handle) {  
-          // need to splice
-          wares.push(...asArray(handle))
+          console.log('handle!')
+          eventwares.push(
+            (e,n) => {
+              n(e)
+              console.log('handed', e)
+            },
+            ...asArray(handle))
         }
         if (before||after) {
           eventwares.push(
@@ -131,7 +136,12 @@ export function lifecycleware<
       }
     }
   }
-  return composeMiddleware(...wares);
+  return composeMiddleware(
+    (e, next) => {
+      next(e)
+      console.log('EVENT!', e)
+    },
+    ...wares);
 }
 
 
