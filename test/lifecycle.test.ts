@@ -193,10 +193,12 @@ describe("onLifecycle usage", () => {
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
+    console.log('BEFORE FAIL', machine.getState().key)
     machine.event.execute(100);
-
+    console.log('AFTER Execute', machine.getState().key)
     expect(didBeforeResolve).toBeFalsy();
     await delay(100);
+    console.log('AFTER delay', machine.getState().key)
     expect(didBeforeResolve).toBeTruthy();
 
     expectState("Resolved");

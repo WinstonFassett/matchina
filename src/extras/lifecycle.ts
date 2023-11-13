@@ -109,7 +109,7 @@ export function lifecycleware<
           eventwares.push(
             (e,n) => {
               n(e)
-              console.log('handed', e)
+              console.log('handled', e)
             },
             ...asArray(handle))
         }
