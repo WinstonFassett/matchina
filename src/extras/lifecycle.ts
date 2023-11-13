@@ -84,7 +84,7 @@ export function lifecycleware<
             }
             console.groupEnd()
           }
-          console.log('next', ev)
+          console.log('next', ev.type)
           console.group()
           next(ev)
           console.groupEnd()
@@ -121,14 +121,14 @@ export function lifecycleware<
           eventwares.push(
             (e,n) => {
               n(e)
-              console.log('handled', e)
+              console.log('handled', e.type)
             },
             ...asArray(handle).map(h => {
               return ((ev, next) => {
-                console.log('handle', ev)
+                console.log('handle', ev.type)
                 ev = h(ev)
                 if (ev){
-                  console.log('handler handled',ev)
+                  console.log('handler handled',ev.type)
                   next(ev)                
                 }
               }) as Middleware<E>
@@ -137,7 +137,7 @@ export function lifecycleware<
         if (before||after) {
           eventwares.push(
             listen((ev) => {     
-              console.log('BEFORE', ev)         
+              console.log('BEFORE', ev.type)         
               for (const fn of asArray(before)) {
                 fn?.(ev)                
               }

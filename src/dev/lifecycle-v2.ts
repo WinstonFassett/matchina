@@ -77,20 +77,19 @@ export function enhanceMachine<E>(
         console.log('START ENHANCED UPDATE', current?.from?.key??'none', current.type, current.to.key)
         console.group()
         console.log('Updater')
-        console.group()
-        let updated = updater(current)
+        console.group()        
         console.groupEnd()
         console.log('Composed')
         console.group()
-        let enhancedResult
-        composed(updated, (result => {
-          console.log('RESULT', result)
+        let enhancedResult: any
+        composed(updater(current), (result => {
           enhancedResult = result
+          console.log('RESULT', enhancedResult?.to.key)          
         }));
         console.groupEnd()
-        console.log('End Composed', {enhancedResult})
+        console.log('End Composed', enhancedResult?.to.key)
         console.groupEnd()
-        console.log('FINISH ENHANCED UPDATE', updated)        
+        console.log('FINISH ENHANCED UPDATE')        
         return enhancedResult ?? current
       })
     }

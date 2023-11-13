@@ -163,7 +163,7 @@ describe("onLifecycle usage", () => {
       Pending: {
         enter: (e) => {
           didEnterPending ||= ++count;
-          console.log("entering Pending via", e.type, e.params);
+          console.log("entering Pending via", e.type);
         },
         on: {
           resolve: {
