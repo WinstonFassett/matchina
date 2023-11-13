@@ -108,39 +108,7 @@ export function lifecycleware<
       )
 
     }
-    // if (enter || leave) {
-    //   // console.log('enter/leave', fromKey, fromStateConfig)
-    //   wares.push(when<E>({ 
-    //     from: stateKey === '*' ? undefined : stateKey as any,        
-    //   })(
-    //     ((ev, next) => {       
-    //       // we are entering the leave state 
-    //       // not the from state.  
-    //       if (enter) {
-    //         console.log('enter from', stateKey, ev.type)
-    //         console.group()
-    //         for (const fn of asArray<any>(enter)) {
-    //           fn?.(ev)                
-    //         }
-    //         console.groupEnd()
-    //       }
-    //       console.log('next', ev.type)
-    //       console.group()
-    //       next(ev)
-    //       console.groupEnd()
-    //       console.log('done with next') 
-    //       return () => {
-    //         // we are leaving the leave state
-    //         console.log('leave')
-    //         console.group()
-    //         for (const fn of asArray<any>(leave)) {
-    //           fn(ev)                
-    //         }
-    //         console.groupEnd()
-    //       }
-    //     })
-    //   ))
-    // }
+    
     const { on } = fromStateConfig
     if (on) {
       for (const eventKey in on) {
