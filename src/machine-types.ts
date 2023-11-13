@@ -27,9 +27,9 @@ interface FunctionalStateMachineKernel<
 }
 
 
-interface ChangeEvent<Type extends string = string, To = any, From = any, Params extends any[] = any[]> { type: Type, to: To, from: From, params: Params }
-interface StateChangeMachine<E extends ChangeEvent> { 
-  send(type: E['type'], ...params: E['params']): void // calls update(transition(type, ...params))
+
+interface StateChangeMachine<E extends ChangeEvent<any,any,any>,P extends any[]> { 
+  send(type: E['type'], ...params: P): void // calls update(transition(type, ...params))
   update(fn: (ev: E) => E): void // main extension/interception point for middleware and lifecycle
 }
 
