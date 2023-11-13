@@ -44,8 +44,10 @@ export const conditionware = <E>(
   ...middlewares: Middleware<E>[]) => {
     const composed = composeMiddleware(...middlewares)
     return (event: E, next: (event: E) => void) => {
-      console.log('CONDITION TEST', test(event))
-      if (test(event)) composed(event, next);
+      if (test(event)) {
+        console.log('CONDITION')
+        composed(event, next);
+      }
       else next(event);
     };
   }
@@ -74,15 +76,16 @@ export function enhanceMachine<E>(
     console.log('USE')
     machine.update = (updater) => {
       bound((current:any) => {
-        console.log('START ENHANCED UPDATE', current?.from?.key??'none', current.type, current.to.key)
+        console.log('START ENHANCED UPDATE from', current.to.key)
         console.group()
         console.log('Updater')
-        console.group()        
+        console.group()
+        const updated = updater(current) 
         console.groupEnd()
         console.log('Composed')
         console.group()
         let enhancedResult: any
-        composed(updater(current), (result => {
+        composed(updated, (result => {
           enhancedResult = result
           console.log('RESULT', enhancedResult?.to.key)          
         }));

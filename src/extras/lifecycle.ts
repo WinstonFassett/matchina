@@ -161,7 +161,7 @@ export function lifecycleware<
   console.log('count', wares.length)
   return composeMiddleware(
     (e, next) => {
-      console.log('OUTER')
+      console.log('OUTER', e.type)
       console.group()
       next(e)
       console.groupEnd()

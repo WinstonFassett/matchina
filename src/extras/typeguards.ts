@@ -65,7 +65,7 @@ export function isKeyedChangeEvent<E>(
     matchKey(filter.type, subject?.type) &&
     matchKey(filter.from, subject?.from?.key)
   );
-  console.log('match?', matched, filter)
+  // console.log('match?', matched, filter)
   return matched;
 }
 
