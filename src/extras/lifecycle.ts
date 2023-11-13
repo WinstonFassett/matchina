@@ -2,20 +2,100 @@ import { composeMiddleware, enhanceMachine, listen, Middleware, when } from "../
 import {
   StateMachine,
   StateMachineEvent,
+  StatesFactory,
   TransitionConfig,
   UpdateEnhancer,
-  StatesFactory,
 } from "../machine-types";
 import { Func } from "../types";
-import {  
+import {
   StateEventHookConfig,
   StateTransitionHooks,
-  TransitionHookConfig,
-  TransitionHookExtensions,
+  TransitionHookConfig
 } from "./lifecycle-types";
-import { KeyedChangeEventFilter } from "./typeguards";
 
 type Dispose = () => void;
+
+const LIFECYCLE = [
+  'guard',
+  'handle',  
+  'leave',
+  'before',
+  'enter',
+  'after',  
+]
+
+const CLEANUP_OFFSET = "_cleanup";
+
+function on<E>(machine: StateMachine<any, any>, eventKey: string, listener: Middleware<E>) {
+    const subject = machine as any
+    if (!subject.$on  ) {
+      subject.$on  = {};
+      // enhance machine
+      const unenhance = enhanceMachine(machine)(
+        (event, next) => {
+          let phaseEvent = event
+          for (const phase of LIFECYCLE) {
+            console.log('PHASE', phase)            
+            dispatchware(subject, phase)(phaseEvent, nextEvent => { phaseEvent = nextEvent as any })
+            if (!phaseEvent) { break; }
+          }
+        }
+      )
+      subject.$on[CLEANUP_OFFSET] = [() => {
+        console.log('UNENHANCING')
+        unenhance()
+      }]
+    }
+    if (!subject.$on[eventKey]) {
+      subject.$on [eventKey] = [];
+    }  
+    subject.$on [eventKey].push(listener);
+    // Cleanup function to remove the listener
+    return function cleanup() {
+      let listeners = subject.$on [eventKey];
+      let index = listeners.indexOf(listener);
+      if (index !== -1) {
+          listeners.splice(index, 1);
+      }
+      // If no more listeners for this phase, clean up
+      if (listeners.length === 0) {
+        delete subject.$on  [eventKey];
+        let cleanupPhase = eventKey + CLEANUP_OFFSET;
+        if (subject.$on [cleanupPhase]) {
+          subject.$on [cleanupPhase]();
+          delete subject.$on  [cleanupPhase];
+        }
+      }
+      if (Object.keys(subject.$on ).length === 1 && subject.$on [CLEANUP_OFFSET]) {
+        subject.$on [CLEANUP_OFFSET].forEach((fn: any) => fn());
+        delete subject.$on ;
+      }
+    };
+}
+
+function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCallback: (finalValue: T) => void): void {
+  let index = 0;
+
+  function run(currentIndex: number, currentValue: T) {
+      if (currentIndex === middlewares.length) {
+          finalCallback(currentValue);
+          return;
+      }
+
+      let middleware = middlewares[currentIndex];
+      middleware(currentValue, newValue => run(currentIndex + 1, newValue));
+  }
+
+  run(index, initialValue);
+}
+
+const  dispatchware = <E>(subject: any, eventKey: string) => ((event, next) => {
+  const listeners = (subject.$on   && subject.$on [eventKey]) as Middleware<E>[] | undefined;
+  if (listeners) {
+    runMiddleware(listeners, event, next)    
+  }
+  return next(event)
+}) as Middleware<E>
 
 
 export function onLifecycle1<
@@ -56,6 +136,19 @@ export function onLifecycle<
 const asArray = <T>(u: T): T[] => Array.isArray(u) ? u : [u]
 
 export function lifecycleware<
+  Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
+  E extends StateMachineEvent<Transitions, States>
+>(
+  config: StateEventHookConfig<
+    Transitions,
+    States
+  >,
+): Middleware<E> {
+  // 
+}
+
+export function lifecycleware1<
   Transitions extends TransitionConfig<States>,
   States extends StatesFactory<any>,
   E extends StateMachineEvent<Transitions, States>
