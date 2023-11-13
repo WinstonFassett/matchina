@@ -6,10 +6,10 @@ import {
   StatesFactory,
 } from "../machine-types";
 import { Func } from "../types";
-import {
-  PartialTransitionHookExtensions,
+import {  
   StateEventHookConfig,
   StateTransitionHooks,
+  TransitionHookConfig,
   TransitionHookExtensions,
 } from "./lifecycle-types";
 
@@ -28,7 +28,7 @@ export function onLifecycle<
   States extends StatesFactory<any>,
 >(
   machine: StateMachine<Transitions, States>,
-  config: StateEventHookConfig<States, Transitions>,
+  config: StateEventHookConfig<Transitions, States>,
   // initialize?:
   //   | undefined
   //   | ((
@@ -76,7 +76,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
           event as keyof (typeof currentStateHooks)["on"]
         ];
 
-      const eventHooksMaybe = [
+      const eventHooksMaybe: (undefined | TransitionHookConfig<any>)[] = [
         globalStateHooks?.on?.["*"],
         globalStateHooks?.on?.[event as keyof (typeof globalStateHooks)["on"]],
         currentStateHooks?.on?.["*"],
@@ -85,7 +85,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
       // GUARD
       if (
         eventHooksMaybe.some(
-          (hooks) => hooks?.guard && !hooks.guard(updated as any),
+          (hooks) => hooks?.guard && !runHook(hooks.guard, updated as any),
         )
       ) {
         return current;
@@ -93,7 +93,7 @@ export function lifecycle<M extends StateMachine<any, any>>(
       // HANDLE
       const handle = currentStateCurrentEventHooks?.handle;
       const handled = handle
-        ? (handle(updated as any) as typeof updated) ?? current
+        ? (runHook(handle as any, updated as any) as typeof updated) ?? current
         : updated;
       if (handled === current) {
         return handled;
@@ -112,10 +112,12 @@ export function lifecycle<M extends StateMachine<any, any>>(
         }
       };
       const runEventHooks = (
-        hookName: keyof PartialTransitionHookExtensions<any>,
+        hookName: keyof TransitionHookConfig<any>,
       ) => {
         for (const hooks of eventHooksMaybe) {
-          hooks?.[hookName]?.(handled as any);
+          const hook = hooks?.[hookName]
+          runHook(hook, handled)
+          
         }
       };
       // LEAVE, BEFORE, ENTER, COMMIT, AFTER
@@ -134,3 +136,12 @@ export function lifecycle<M extends StateMachine<any, any>>(
     });
   };
 }
+function runHook<E>(hook: undefined | HookFunc<E> | HookFunc<E>[], event: E) {
+  if(!hook) return
+  if (typeof hook ==='function') return hook(event);
+  return hook.reduceRight((e, fn) => {
+    return fn(e) ?? e
+  }, event)
+}
+
+type HookFunc<E> = (ev:E) => (void | E)

@@ -1,6 +1,8 @@
 // lifecycle-v2.ts
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from '../extras/typeguards';
 import { SwapFunc } from '../types';
+import { StateEventHookConfig } from '../extras/lifecycle-types'
+import { StateMachineEvent, StatesFactory, TransitionConfig } from '../machine-types';
 
 type Disposer = () => void;
 export type Sink<E> = (event: E) => void;
@@ -21,7 +23,7 @@ export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middlewar
 export const applyMiddleware = <E>(fn: Sink<E>, ...middlewares: Middleware<E>[]) =>  
    (event: E) => composeMiddleware(...middlewares)(event, fn)
 
-export const guard: <E>(test: (event: E) => boolean) => Middleware<E> 
+export const guardware: <E>(test: (event: E) => boolean) => Middleware<E> 
   = (test) => (event, next) => {
     if (test(event)) next(event);  
   };
@@ -39,7 +41,7 @@ export const listen = <E>(entryListener: EntryListener<E>) =>
 
 export const when = <E>(filter: KeyedChangeEventFilter<E>) => (...middleware: Middleware<E>[]) =>
   composeMiddleware( 
-    guard<E>(ev => isKeyedChangeEvent(ev, filter)),
+    guardware<E>(ev => isKeyedChangeEvent(ev, filter)),
     ...middleware
   );
 
@@ -68,3 +70,84 @@ export function enhanceMachine<E>(
   };
   return context.use;
 }
+
+export function lifecycle<
+Transitions extends TransitionConfig<States>,
+States extends StatesFactory<any>,
+>(
+  config: StateEventHookConfig<Transitions, States>,
+): Middleware<StateMachineEvent<Transitions, States>> {
+  type E = StateMachineEvent<Transitions, States>
+  const wares: Middleware<E> [] = []
+  for (const fromKey in config) {
+    const fromStateConfig = config[fromKey]
+    if (!fromStateConfig) continue;
+    const { enter, leave } = fromStateConfig
+    if (enter || leave) {
+      wares.push(when<E>({ 
+        from: fromKey === '*' ? undefined : fromKey as any,        
+      })(
+        ((ev, next) => {          
+          for (const fn of asArray(enter)) {
+            fn?.(ev)                
+          }
+          next(ev)
+          return () => {
+            for (const fn of asArray(leave)) {
+              fn?.(ev)                
+            }
+          }
+        })
+      ))
+    }
+    const { on } = fromStateConfig
+    if (on) {
+      for (const eventKey in on) {
+        const eventConfig = on[eventKey]
+        const eventwares: Middleware<E>[] = []
+        if (!eventConfig) continue;
+        const { guard, handle, before, after } = eventConfig
+        if (guard) {
+          eventwares.push(when<E>({ 
+            from: fromKey === '*' ? undefined : fromKey as any,
+            type: eventKey === '*' ? undefined : eventKey as any            
+          })(
+            (ev, next) => { 
+              if (asArray(guard).every(g => g(ev))) next(ev)
+            }
+          ))          
+        }
+        if (handle) {  
+          // need to splice
+          wares.push(...asArray(handle))
+        }
+        if (before||after) {
+          eventwares.push(
+            listen((ev) => {              
+              for (const fn of asArray(before)) {
+                fn?.(ev)                
+              }
+              return () => {
+                for (const fn of asArray(after)) {
+                  fn?.(ev)                
+                }
+              }
+            })
+          )
+        }
+        if (eventwares.length>0) {
+          wares.push(when<E>({ 
+            from: fromKey === '*' ? undefined : fromKey as any,
+            type: eventKey === '*' ? undefined : eventKey as any            
+          })(...eventwares))
+        }
+      }
+    }
+  }
+
+  // next(current);
+
+  return composeMiddleware(...wares);
+}
+
+const asArray = <T>(u: T) => Array.isArray(u) ? u : [u]

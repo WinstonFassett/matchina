@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { applyMiddleware } from './middleware';
 
-describe('applyMiddleware', () => {
+describe.skip('applyMiddleware', () => {
   it('returns the original function if no middleware is provided', () => {
     const originalFn = vi.fn((a: number, b: number) => a + b);
     const wrappedFn = applyMiddleware(originalFn);

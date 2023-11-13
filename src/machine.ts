@@ -115,10 +115,6 @@ export function createMachineClass<
         this.lastChange = change;
       }
     }
-
-    use(...mw: Middleware<Machine["update"]>[]) {
-      return applyMethodware(this, "update", ...mw);
-    }
   };
 }
 
