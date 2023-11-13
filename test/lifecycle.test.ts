@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { onLifecycle } from "../src/extras/lifecycle";
+import { onLifecycle1 as onLifecycle } from "../src/extras/lifecycle";
 import { createPromiseMachine } from "../src/extras/promise";
 import { withEvents } from "../src/extras/with-events";
 
