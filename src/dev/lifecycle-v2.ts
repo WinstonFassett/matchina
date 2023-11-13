@@ -57,9 +57,10 @@ export function enhanceMachine<E>(
   if (context.use) return context.use;
   context.use = (...middleware: Middleware<E>[]) => {
     const origUpdate = machine.update;
+    const bound = origUpdate.bind(machine)
     const composed = composeMiddleware(...middleware)
     machine.update = (updater) => {
-      origUpdate(function enhancedUpdater (value) {        
+      bound(function enhancedUpdater (value) {        
         composed(value, updater);
         return value
       })
