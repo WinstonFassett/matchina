@@ -60,6 +60,7 @@ export function isKeyedChangeEvent<E>(
   ChangeEventToKey<E>
 > {
   const subject = event as any;
+  console.log('checking', subject.type, filter)
   return (
     matchKey(filter.to, subject?.to?.key) &&
     matchKey(filter.type, subject?.type) &&

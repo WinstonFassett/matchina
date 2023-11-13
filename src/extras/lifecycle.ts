@@ -136,6 +136,7 @@ export function lifecycleware<
       }
     }
   }
+  console.log('count', wares.length)
   return composeMiddleware(
     (e, next) => {
       next(e)

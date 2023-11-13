@@ -25,6 +25,7 @@ export const applyMiddleware = <E>(fn: Sink<E>, ...middlewares: Middleware<E>[])
 
 export const guardware: <E>(test: (event: E) => boolean) => Middleware<E> 
   = (test) => (event, next) => {
+    console.log('guarding!', test(event))
     if (test(event)) next(event);  
   };
 
@@ -38,10 +39,21 @@ export const listen = <E>(entryListener: EntryListener<E>) =>
     exitListener?.(event);
   };
 
+export const conditionware = <E>(
+  test: (event: E) => boolean,
+  ...middlewares: Middleware<E>[]) => {
+    const composed = composeMiddleware(...middlewares)
+    return (event: E, next: (event: E) => void) => {
+      console.log('TEST', test(event))
+      if (test(event)) composed(event, next);
+      else next(event);
+    };
+  }
+
 
 export const when = <E>(filter: KeyedChangeEventFilter<E>) => (...middleware: Middleware<E>[]) =>
-  composeMiddleware( 
-    guardware<E>(ev => isKeyedChangeEvent(ev, filter)),
+  conditionware( 
+    ev => isKeyedChangeEvent(ev, filter),
     ...middleware
   );
 
