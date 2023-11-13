@@ -13,6 +13,7 @@ import {
   TransitionHookConfig,
   TransitionHookExtensions,
 } from "./lifecycle-types";
+import { KeyedChangeEventFilter } from "./typeguards";
 
 type Dispose = () => void;
 
@@ -66,40 +67,80 @@ export function lifecycleware<
 ): Middleware<E> {
   
   const wares: Middleware<E> [] = []
-  for (const fromKey in config) {
-    const fromStateConfig = config[fromKey]
+
+  function hookware (
+    hook: HookFunc<E> | HookFunc<E>[],    
+  ): Middleware<E> {
+    return (ev, next) => {      
+      if (typeof hook ==='function') return hook(ev) ?? next(ev);
+      return hook.reduceRight((e, fn) => {
+        return fn(e) ?? e
+      }, ev)
+    }
+  }
+  
+  for (const stateKey in config) {
+    const fromStateConfig = config[stateKey]
     if (!fromStateConfig) continue;
     const { enter, leave } = fromStateConfig
-    if (enter || leave) {
-      // console.log('enter/leave', fromKey, fromStateConfig)
-      wares.push(when<E>({ 
-        from: fromKey === '*' ? undefined : fromKey as any,        
-      })(
-        ((ev, next) => {          
-          if (enter) {
-            console.log('enter')
-            console.group()
-            for (const fn of asArray<any>(enter)) {
-              fn?.(ev)                
-            }
-            console.groupEnd()
-          }
-          console.log('next', ev.type)
-          console.group()
-          next(ev)
-          console.groupEnd()
-          console.log('done with next') 
-          return () => {
-            console.log('leave')
-            console.group()
-            for (const fn of asArray<any>(leave)) {
-              fn(ev)                
-            }
-            console.groupEnd()
-          }
-        })
-      ))
+   
+    if (enter) {
+      wares.push(
+        when<E>({ 
+          to: stateKey === '*' ? undefined : stateKey as any
+        })(hookware(enter))
+      )
     }
+    if (leave) {
+      wares.push(
+        when<E>({ 
+          from: stateKey === '*' ? undefined : stateKey as any
+        })(
+          (ev, next) => {
+            console.log('leaveware before')
+            console.group()
+            next(ev)
+            console.groupEnd()
+            console.log('leaveware after')
+          },
+          hookware(leave)
+        )
+      )
+
+    }
+    // if (enter || leave) {
+    //   // console.log('enter/leave', fromKey, fromStateConfig)
+    //   wares.push(when<E>({ 
+    //     from: stateKey === '*' ? undefined : stateKey as any,        
+    //   })(
+    //     ((ev, next) => {       
+    //       // we are entering the leave state 
+    //       // not the from state.  
+    //       if (enter) {
+    //         console.log('enter from', stateKey, ev.type)
+    //         console.group()
+    //         for (const fn of asArray<any>(enter)) {
+    //           fn?.(ev)                
+    //         }
+    //         console.groupEnd()
+    //       }
+    //       console.log('next', ev.type)
+    //       console.group()
+    //       next(ev)
+    //       console.groupEnd()
+    //       console.log('done with next') 
+    //       return () => {
+    //         // we are leaving the leave state
+    //         console.log('leave')
+    //         console.group()
+    //         for (const fn of asArray<any>(leave)) {
+    //           fn(ev)                
+    //         }
+    //         console.groupEnd()
+    //       }
+    //     })
+    //   ))
+    // }
     const { on } = fromStateConfig
     if (on) {
       for (const eventKey in on) {
@@ -151,7 +192,7 @@ export function lifecycleware<
         }
         if (eventwares.length>0) {
           wares.push(when<E>({ 
-            from: fromKey === '*' ? undefined : fromKey as any,
+            from: stateKey === '*' ? undefined : stateKey as any,
             type: eventKey === '*' ? undefined : eventKey as any            
           })(...eventwares))
         }
