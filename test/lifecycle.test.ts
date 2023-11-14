@@ -71,7 +71,7 @@ describe("onLifecycle usage", () => {
           on: {
             "*": {
               before(change) {
-                change.to.key = "Pending"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+                change.to.key = "Pending"; // "Pending" | "Rejected" | "Resolved"
               },
             },
             reject: {

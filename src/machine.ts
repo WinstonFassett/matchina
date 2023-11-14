@@ -1,4 +1,3 @@
-import { RemainingProperties } from "./../playground/builder.usage";
 import {
   ChangeEventMatchers,
   StateFromFactory,
@@ -9,6 +8,7 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
+import { RemainingProperties } from "./types";
 export const InitializeMachine = "__init";
 
 export function defineMachine<

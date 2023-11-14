@@ -1,5 +1,5 @@
 import { UpdateEnhancer } from "../src";
-import { Func, Simplify } from "../src/types";
+import { Func, RemainingProperties, Simplify } from "../src/types";
 import { Extend, ExtendBuilder } from "./extender.usage";
 
 export {};
@@ -62,15 +62,7 @@ interface CanCreateStateMachineClass<C extends Partial<StateMachineContext>, M e
 
 };
 
-export type RemainingProperties<Required, Present, Match = any> = Pick<
-  Required,
-  Exclude<keyof Required, keyof Present> &
-    (Match extends any
-      ? {
-          [K in keyof Required]: Required[K] extends Match ? K : never;
-        }[keyof Required]
-      : never)
->;
+
 
 type BuilderForContext<C extends Partial<StateMachineContext>, M> = {
   context: C;
