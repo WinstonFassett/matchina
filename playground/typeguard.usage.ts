@@ -21,9 +21,7 @@ if (isKeyedChangeEvent(ev, { to: 'foo', from: 'bar', type: 'baz' } as const)) {
   ev.type
 }
 
-export type ChangeEventType<E> = E extends ChangeEvent<infer T, any, any> ? T : string;
-export type ChangeEventToKey<E> = E extends ChangeEvent<any, { key: infer K }, any> ? K : string;
-export type ChangeEventFromKey<E> = E extends ChangeEvent<any, any, { key: infer K }> ? K : string;
+
 
 const ev2 = {} as unknown // ChangeEvent<unknown, unknown, unknown>
 if (isChangeTypeToFrom(ev2, 'baz', 'foo', 'bar')) {

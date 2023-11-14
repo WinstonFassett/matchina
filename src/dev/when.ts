@@ -3,7 +3,7 @@ import {
   isKeyedChangeEvent,
 } from "../extras/typeguards";
 import { SwapFunc } from "../types";
-import { conditionware } from "./conditionware";
+import { conditionware } from "../extras/middleware/conditionware";
 import { Middleware } from "./Middleware";
 
 export const when =

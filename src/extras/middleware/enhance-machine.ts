@@ -1,6 +1,6 @@
-import { composeMiddleware } from "./composeMiddleware";
-import { Middleware } from "./Middleware";
-import { StateChangeMachine } from "./when";
+import { Middleware } from "../../dev/Middleware";
+import { StateChangeMachine } from "../../dev/when";
+import { composeMiddleware } from "./compose-middleware";
 
 export type Disposer = () => void;
 
@@ -8,11 +8,15 @@ export function enhanceMachine<E>(
   machine: StateChangeMachine<E>,
 ): (...middleware: Middleware<E>[]) => Disposer {
   const context = machine as any;
-  if (context.use) return context.use;
+  if (context.use) {
+    return context.use;
+  }
   context.use = (...middleware: Middleware<E>[]) => {
     const origUpdate = machine.update;
     const bound = origUpdate.bind(machine);
-    if (!middleware[0]) throw new TypeError("middleware is required");
+    if (!middleware[0]) {
+      throw new TypeError("middleware is required");
+    }
     console.log({ middleware });
     const composed = composeMiddleware(...middleware);
     console.log("USE");

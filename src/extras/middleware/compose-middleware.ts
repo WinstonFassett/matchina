@@ -1,4 +1,4 @@
-import { Middleware } from "./Middleware";
+import { Middleware } from "../../dev/Middleware";
 
 export function composeMiddleware<E>(
   ...middlewares: Middleware<E>[]
@@ -10,7 +10,7 @@ export function composeMiddleware<E>(
         return;
       }
       middlewares[index](event, (nextEvent) => {
-        next(index + 1, nextEvent !== undefined ? nextEvent : event);
+        next(index + 1, nextEvent === undefined ? event : nextEvent);
       });
     }
     next(0, initialEvent);

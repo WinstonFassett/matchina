@@ -1,12 +1,15 @@
 import { Middleware } from "../dev/Middleware";
 import { when } from "../dev/when";
-import { enhanceMachine } from "../dev/enhanceMachine";
-import { composeMiddleware, runMiddleware } from "../dev/composeMiddleware";
 import {
   StateMachine,
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
+import { enhanceMachine } from "./middleware/enhance-machine";
+import {
+  composeMiddleware,
+  runMiddleware,
+} from "./middleware/compose-middleware";
 import { StateEventHookConfig } from "./lifecycle-types";
 import { KeyedChangeEventFilter } from "./typeguards";
 

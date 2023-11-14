@@ -1,5 +1,5 @@
-import { composeMiddleware } from "./composeMiddleware";
-import { Middleware } from "./Middleware";
+import { Middleware } from "../../dev/Middleware";
+import { composeMiddleware } from "./compose-middleware";
 
 export const conditionware = <E>(
   test: (event: E) => boolean,
@@ -9,6 +9,8 @@ export const conditionware = <E>(
   return (event: E, next: (event?: E) => void) => {
     if (test(event)) {
       composed(event, next);
-    } else next(event);
+    } else {
+      next(event);
+    }
   };
 };
