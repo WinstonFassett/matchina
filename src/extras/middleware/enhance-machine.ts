@@ -1,40 +1,24 @@
-import { StateChangeMachine } from "../../dev/when";
-import { Middleware } from "./middleware";
-import { composeMiddleware } from "./compose-middleware";
+import { StateChangeMachine } from "../../machine-types";
 
-export type Disposer = () => void;
+type Disposer = () => void;
 
 export function enhanceMachine<E>(
   machine: StateChangeMachine<E>,
-): (...middleware: Middleware<E>[]) => Disposer {
+): (enhancer: Middleware<E>) => Disposer {
   const context = machine as any;
   if (context.use) {
     return context.use;
   }
-  context.use = (...middleware: Middleware<E>[]) => {
+  context.use = (enhancer: Middleware<E>) => {
     const origUpdate = machine.update;
     const bound = origUpdate.bind(machine);
-    if (!middleware[0]) {
-      throw new TypeError("middleware is required");
-    }
-    console.log({ middleware });
-    const composed = composeMiddleware(...middleware);
     console.log("USE");
     machine.update = (updater) => {
-      bound((current: any) => {
-        // console.log('Updater')
-        // console.group()
-        const updated = updater(current);
-        // console.groupEnd()
-        // console.log('Apply update', {current: current.to.key, udpated: updated.to.key})
-        // console.group()
+      bound((current: any) => {        
         let enhancedResult: any;
-        composed(updated, (result) => {
+        enhancer(updater(current), (result) => {
           enhancedResult = result;
-          // console.log('RESULT', enhancedResult?.to.key)
         });
-        // console.groupEnd()
-        // console.log('End Composed', enhancedResult?.to.key)
         return enhancedResult ?? current;
       });
     };

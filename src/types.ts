@@ -44,7 +44,6 @@ export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>;
 export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
 
-
 export type RemainingProperties<Required, Present, Match = any> = Pick<
   Required,
   Exclude<keyof Required, keyof Present> &

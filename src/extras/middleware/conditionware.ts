@@ -1,5 +1,4 @@
-import { Middleware } from "./middleware";
-import { composeMiddleware } from "./compose-middleware";
+import { composeMiddleware, Middleware } from "./middleware";
 
 export const conditionware = <E>(
   test: (event: E) => boolean,
