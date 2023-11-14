@@ -1,4 +1,4 @@
-import { composeMiddleware, enhanceMachine, listen, Middleware, when } from "../dev/lifecycle-v2";
+import { composeMiddleware, enhanceMachine, listen, Middleware, runMiddleware, when } from "../dev/lifecycle-v2";
 import {
   StateMachine,
   StateMachineEvent,
@@ -37,15 +37,17 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
           for (const phase of LIFECYCLE) {
             console.log('PHASE', phase)
             let ran = false
-            dispatchware(subject, phase)(phaseEvent, nextEvent => { 
-              phaseEvent = nextEvent as any 
+            dispatchware(subject, phase)(event, result => { 
+              phaseEvent = result as any 
               ran = true
             })            
             if (!ran) { 
               console.log('BREAKING at', phase)
+              phaseEvent = undefined as any
               break; 
             }
           }
+          if (phaseEvent) next(phaseEvent)
         }
       )
       subject.$on[CLEANUP_OFFSET] = [() => {
@@ -80,54 +82,43 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
     };
 }
 
+let mwid = 0
 function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCallback: (finalValue: T) => void): void {
   let index = 0;
-  console.log('running middleware')
+  const id = mwid++
+  
   function run(currentIndex: number, currentValue: T) {
+      console.log('runMiddleware', mwid, currentIndex, 'of', middlewares.length)
+      console.group()
       if (currentIndex === middlewares.length) {
-          console.log('final', currentValue)
           finalCallback(currentValue);
+          console.log('done runMiddleware', mwid)
           return;
       }
 
-      let middleware = middlewares[currentIndex];
-      middleware(currentValue, newValue => run(currentIndex + 1, newValue));
+      middlewares[currentIndex](currentValue, newValue => run(currentIndex + 1, newValue ?? currentValue));
+      console.groupEnd()
   }
-
+  console.log('runMiddleware', mwid)
+  console.group()
   run(index, initialValue);
+  console.log('done', mwid)
+  console.groupEnd()
 }
+
 
 const  dispatchware = <E>(subject: any, eventKey: string) => ((event, next) => {
-  const listeners = (subject.$on   && subject.$on [eventKey]) as Middleware<E>[] | undefined;
+  const listeners = (subject.$on && subject.$on [eventKey]) as Middleware<E>[] | undefined;
   if (listeners) {
-    return runMiddleware(listeners, event, next)    
+    console.log('Dispatching')
+    console.group()
+    runMiddleware(listeners, event, next)
+    console.groupEnd()
+    console.log('Dispatched')
+    return
   }
-  return next(event)
+  next(event)
 }) as Middleware<E>
-
-
-export function onLifecycle1<
-  Transitions extends TransitionConfig<States>,
-  States extends StatesFactory<any>,
->(
-  machine: StateMachine<Transitions, States>,
-  config: StateEventHookConfig<Transitions, States>,
-) {
-  const originalUpdate = machine.update;
-  const enhancer = lifecycle(config);
-  machine.update = (updater) => {
-    originalUpdate.call(machine, (current) => {
-      let result: typeof current | undefined;
-      enhancer((enhanced) => {
-        result = enhanced(current);
-      }, updater);
-      return result ?? current;
-    });
-  };
-  return () => {
-    machine.update = originalUpdate;
-  };
-}
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -150,25 +141,6 @@ function hookware <E>(
     return hook
   }
   return composeMiddleware(...hook)
-  // return (ev, next) => {
-  //   if (typeof hook ==='function') {
-  //     console.log('hook func')
-  //     console.group()
-  //     const res = hook(ev, next);
-  //     console.log('hook func res', res)
-  //     console.groupEnd()
-  //     if (res) next(res)
-  //     return
-  //   }
-  //   console.log('hookware')    
-  //   console.group()
-  //   const res =  hook.reduceRight((e, fn) => {
-  //     return fn(e) ?? e
-  //   }, ev)
-  //   console.groupEnd()
-  //   console.log('hookware res', res)
-  //   next(res)
-  // }
 }  
 
 export function lifecycleware<
@@ -215,94 +187,5 @@ export function lifecycleware<
   }
 }
 
-
-export function lifecycle<M extends StateMachine<any, any>>(
-  config: StateEventHookConfig<
-    M["context"]["states"],
-    M["context"]["transitions"]
-  >,
-): UpdateEnhancer<
-  StateMachineEvent<M["context"]["states"], M["context"]["transitions"]>
-> {
-  const after: undefined | Func<[], void> = undefined;
-  return (commit, updater) => {
-    commit((current) => {
-      const updated = updater(current);
-      const { to: currentState } = current;
-      const { type: event } = updated;
-      const globalStateHooks = config["*"];
-      const currentStateHooks = config[currentState.key as keyof typeof config];
-      const currentStateCurrentEventHooks =
-        currentStateHooks?.on?.[
-          event as keyof (typeof currentStateHooks)["on"]
-        ];
-
-      const eventHooksMaybe: (undefined | TransitionHookConfig<any>)[] = [
-        globalStateHooks?.on?.["*"],
-        globalStateHooks?.on?.[event as keyof (typeof globalStateHooks)["on"]],
-        currentStateHooks?.on?.["*"],
-        currentStateCurrentEventHooks,
-      ];
-      // GUARD
-      if (
-        eventHooksMaybe.some(
-          (hooks) => hooks?.guard && !runHook(hooks.guard, updated as any),
-        )
-      ) {
-        return current;
-      }
-      // HANDLE
-      const handle = currentStateCurrentEventHooks?.handle;
-      const handled = handle
-        ? (runHook(handle as any, updated as any) as typeof updated) ?? current
-        : updated;
-      if (handled === current) {
-        return handled;
-      }
-      const nextStateHooks = config[handled.to.key as keyof typeof config];
-      const runStateHooks = (
-        stateHooksMaybe: StateTransitionHooks<
-          M["context"]["states"],
-          M["context"]["transitions"],
-          any
-        >[],
-        hookName: keyof StateTransitionHooks<any, any, any>,
-      ) => {
-        for (const hooks of stateHooksMaybe) {
-          hooks?.[hookName]?.(handled as any);
-        }
-      };
-      const runEventHooks = (
-        hookName: keyof TransitionHookConfig<any>,
-      ) => {
-        for (const hooks of eventHooksMaybe) {
-          const hook = hooks?.[hookName]
-          runHook(hook, handled)
-          
-        }
-      };
-      // LEAVE, BEFORE, ENTER, COMMIT, AFTER
-      runStateHooks([currentStateHooks, globalStateHooks] as any, "leave");
-      runEventHooks("before");
-      runStateHooks([globalStateHooks, nextStateHooks] as any, "enter");
-      // commit(() => handled);
-      // implicitly the commit/change happens here
-      // but we still run after hooks before returning
-      // maybe that's not semantically correct. lets move it out maybe
-      eventHooksMaybe.reverse();
-      Promise.resolve().then(() => {
-        runEventHooks("after");
-      });
-      return handled;
-    });
-  };
-}
-function runHook<E>(hook: undefined | HookFunc<E> | HookFunc<E>[], event: E) {
-  if(!hook) return
-  if (typeof hook ==='function') return hook(event);
-  return hook.reduceRight((e, fn) => {
-    return fn(e) ?? e
-  }, event)
-}
 
 type HookFunc<E> = (ev:E) => (void | E)

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { onLifecycle as onLifecycle } from "../src/extras/lifecycle";
 import { createPromiseMachine } from "../src/extras/promise";
 import { withEvents } from "../src/extras/with-events";
+import { listen } from "../src/dev/lifecycle-v2";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -87,22 +88,27 @@ describe("onLifecycle usage", () => {
 
     const removeLifecycle = onLifecycle(machine, {
       Rejected: {
-        enter(change) {
+        enter(change, next) {
           console.log("something Rejected from", change.from.key);
           didEnterRejected ||= ++count;
+          next(change)
         },
       },
       "*": {
-        leave(change) {
+        leave: listen(change => {
           console.log("* leaving", change.from.key);
-        },
-        enter(state) {
-          console.log("* entering", state.to.key);
-        },
+        }),
+        enter: listen(change => {
+          console.log("* entering", change.to.key);
+        }),
         on: {
           "*": {
-            before: (event) => {
+            before: (event, next) => {
               console.log("* before", event.type);
+              console.group()
+              next(event)
+              console.groupEnd()
+              console.log('* before done')
             },
             after: (event) => {
               console.log("* after", event.type);
@@ -132,35 +138,43 @@ describe("onLifecycle usage", () => {
                 didGuardReject ||= ++count;
               }
               console.log("GUARD accept?", accept);
-              next(change)
-              return accept;
+              if (accept) {
+                next()
+              }
+              // return accept;
             },
-            before({ params: [amount] }) {
+            before: (({ params: [amount] }, next) => {
               didBeforeExecute ||= ++count;
               console.log("executing", amount);
-            },
-            handle: (event) => {
+              console.group()
+              next();
+              console.groupEnd()
+              console.log('done executing')
+
+            }),
+            handle: (event, next) => {
               const num = event.params[0];
               const accept = event.params[0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
                 console.log("handler rejecting");
-                // reject by returning undefined
-                return undefined;
+                // reject by returning
+                return;
               }
               machine.promise = delayed(num, num);
               machine.done = machine.promise
                 .then(machine.event.resolve)
                 .catch(machine.event.reject);
               didHandleExecute ||= ++count;
-              return event;
+              console.log("handler accepting");
+              next(event);
             },
           },
         },
-        leave: ({ type: event, from: { key: from }, to: { key: to } }) => {
+        leave: listen(({ type: event, from: { key: from }, to: { key: to } }) => {
           didLeaveIdle ||= ++count;
           console.log(`leaving ${from} to ${event} to ${to}`);
-        },
+        }),
       },
       Pending: {
         enter: (e) => {
@@ -169,9 +183,13 @@ describe("onLifecycle usage", () => {
         },
         on: {
           resolve: {
-            before: () => {
+            before: (ev, next) => {
               didBeforeResolve ||= ++count;
               console.log("In Pending before resolve");
+              console.group()
+              next()
+              console.groupEnd
+              console.log('done before resolve')
             },
             after: () => {
               didAfterResolve ||= ++count;
@@ -203,12 +221,13 @@ describe("onLifecycle usage", () => {
     console.log('BEFORE FAIL', machine.getState().key)
     machine.event.execute(100);
     console.log('AFTER Execute', machine.getState().key)
+    expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
     await delay(100);
     console.log('AFTER delay', machine.getState().key)
-    expect(didBeforeResolve).toBeTruthy();
-
+    
     expectState("Resolved");
+    expect(didBeforeResolve).toBeTruthy();
     expectStateData().toBe(100);
 
     // test non-hooked event, for coverage
@@ -221,7 +240,7 @@ describe("onLifecycle usage", () => {
     expect((machine.getState().data as any).message).toBe("test");
 
     console.log("removing lifecycle");
-    removeLifecycle();
+    // removeLifecycle();
     machine.reset();
     console.log("resetting");
 
