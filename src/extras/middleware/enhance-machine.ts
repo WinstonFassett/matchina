@@ -14,7 +14,7 @@ export function enhanceMachine<E>(
     const bound = origUpdate.bind(machine);
     console.log("USE");
     machine.update = (updater) => {
-      bound((current: any) => {        
+      bound((current: any) => {
         let enhancedResult: any;
         enhancer(updater(current), (result) => {
           enhancedResult = result;
