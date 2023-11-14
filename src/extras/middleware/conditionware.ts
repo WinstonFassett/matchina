@@ -1,4 +1,4 @@
-import { Middleware } from "../../dev/Middleware";
+import { Middleware } from "./middleware";
 import { composeMiddleware } from "./compose-middleware";
 
 export const conditionware = <E>(

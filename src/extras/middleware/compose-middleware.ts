@@ -1,4 +1,4 @@
-import { Middleware } from "../../dev/Middleware";
+import { Middleware } from "./middleware";
 
 export function composeMiddleware<E>(
   ...middlewares: Middleware<E>[]

@@ -1,10 +1,10 @@
-import { Middleware } from "../dev/Middleware";
 import { when } from "../dev/when";
 import {
   StateMachine,
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
+import { Middleware } from "./middleware/middleware";
 import { enhanceMachine } from "./middleware/enhance-machine";
 import {
   composeMiddleware,

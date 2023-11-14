@@ -22,7 +22,7 @@ function interleaveMiddleware<E>(
         customBehavior(nextEvent, nextCallback, currentWareInfo);
         next(
           index + 1,
-          nextEvent !== undefined ? nextEvent : event,
+          nextEvent === undefined ? event : nextEvent,
           nextCallback,
         );
       });

@@ -4,7 +4,7 @@ import {
 } from "../extras/typeguards";
 import { SwapFunc } from "../types";
 import { conditionware } from "../extras/middleware/conditionware";
-import { Middleware } from "./Middleware";
+import { Middleware } from "../extras/middleware/middleware";
 
 export const when =
   <E>(filter: KeyedChangeEventFilter<E>) =>

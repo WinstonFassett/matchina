@@ -9,7 +9,6 @@ import {
   SwapFunc,
   TUnionToIntersection,
 } from "./types";
-import { Middleware, applyMiddleware } from "./dev/middleware3";
 
 // #region Transition Config
 

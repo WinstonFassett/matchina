@@ -8,7 +8,7 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
-import { Middleware } from "../dev/Middleware";
+import { Middleware } from "./middleware/middleware";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];

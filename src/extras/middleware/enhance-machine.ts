@@ -1,5 +1,5 @@
-import { Middleware } from "../../dev/Middleware";
 import { StateChangeMachine } from "../../dev/when";
+import { Middleware } from "./middleware";
 import { composeMiddleware } from "./compose-middleware";
 
 export type Disposer = () => void;
