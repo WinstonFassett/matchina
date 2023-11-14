@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { composeMiddleware } from '../src/dev/lifecycle-v2'; // Import your composeMiddleware function
+import { describe, expect, it } from "vitest";
+import { composeMiddleware } from "../src/dev/composeMiddleware";
 
 // Define a mock middleware for testing
 function mockMiddleware<E>(event: E, next: (nextEvent: E) => void) {
@@ -8,13 +8,13 @@ function mockMiddleware<E>(event: E, next: (nextEvent: E) => void) {
 }
 
 // Define the test suite using describe
-describe('Middleware Suite', () => {
+describe("Middleware Suite", () => {
   // Define individual test cases using it
-  it('should execute middleware chain', () => {
+  it("should execute middleware chain", () => {
     const middlewareChain = composeMiddleware(
       mockMiddleware,
       mockMiddleware,
-      mockMiddleware
+      mockMiddleware,
     );
 
     // Create a mock callback function for finalNext
@@ -24,7 +24,7 @@ describe('Middleware Suite', () => {
     };
 
     // Initialize the initialEvent
-    const initialEvent = { data: 'test' };
+    const initialEvent = { data: "test" };
 
     // Call the middleware chain with the initialEvent and finalNextMock
     middlewareChain(initialEvent, finalNextMock);

@@ -2,7 +2,11 @@ type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
 function interleaveMiddleware<E>(
   middlewares: Middleware<E>[],
-  customBehavior: (event: E, next: (event: E) => void, currentWareInfo: { index: number }) => void
+  customBehavior: (
+    event: E,
+    next: (event: E) => void,
+    currentWareInfo: { index: number },
+  ) => void,
 ): Middleware<E> {
   return (initialEvent: E, finalNext: (event: E) => void) => {
     function next(index: number, event: E, nextCallback: (event: E) => void) {
@@ -14,9 +18,13 @@ function interleaveMiddleware<E>(
       const currentMiddleware = middlewares[index];
       const currentWareInfo = { index };
 
-      currentMiddleware(event, nextEvent => {
+      currentMiddleware(event, (nextEvent) => {
         customBehavior(nextEvent, nextCallback, currentWareInfo);
-        next(index + 1, nextEvent !== undefined ? nextEvent : event, nextCallback);
+        next(
+          index + 1,
+          nextEvent !== undefined ? nextEvent : event,
+          nextCallback,
+        );
       });
     }
 
@@ -40,12 +48,16 @@ const middleware3: Middleware<number> = (event, next) => {
   next(event + 1);
 };
 
-const lotsOfWares: Middleware<number>[] = [middleware1, middleware2, middleware3];
+const lotsOfWares: Middleware<number>[] = [
+  middleware1,
+  middleware2,
+  middleware3,
+];
 
 const customBehavior = (
   event: number,
   next: (event: number) => void,
-  currentWareInfo: { index: number }
+  currentWareInfo: { index: number },
 ) => {
   console.log(`Before Middleware ${currentWareInfo.index}`);
   next(event);
@@ -54,6 +66,6 @@ const customBehavior = (
 
 const instrumentedVersion = interleaveMiddleware(lotsOfWares, customBehavior);
 
-instrumentedVersion(0, finalResult => {
+instrumentedVersion(0, (finalResult) => {
   console.log("Final Result:", finalResult);
 });

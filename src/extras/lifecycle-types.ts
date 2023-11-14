@@ -8,19 +8,17 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
-import { Middleware } from "../dev/lifecycle-v2";
+import { Middleware } from "../dev/Middleware";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
-
-
 export type TransitionHookExtensions<T> = {
   guard: Middleware<T>;
-  before: Middleware<T>; 
+  before: Middleware<T>;
   handle: Middleware<T>;
-  after: Middleware<T>; 
+  after: Middleware<T>;
 };
 
 export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
@@ -30,17 +28,20 @@ export type StateTransitionHooks<
   States extends StatesFactory<any>,
   StateKey extends keyof Transitions | "*",
 > = {
-  leave: Middleware<StateMachineEvent<
-  Transitions,
-  States,
-  FlatEventKeys<Transitions, States>,
-  StateFromFactory<
-    States,
-    StateKey extends keyof States ? StateKey : keyof States
-  >,
-  StateFromFactory<States>
->>;
-  enter: Middleware<StateMachineEvent<
+  leave: Middleware<
+    StateMachineEvent<
+      Transitions,
+      States,
+      FlatEventKeys<Transitions, States>,
+      StateFromFactory<
+        States,
+        StateKey extends keyof States ? StateKey : keyof States
+      >,
+      StateFromFactory<States>
+    >
+  >;
+  enter: Middleware<
+    StateMachineEvent<
       Transitions,
       States,
       FlatEventKeys<Transitions, States>,
@@ -49,7 +50,8 @@ export type StateTransitionHooks<
         States,
         StateKey extends keyof States ? StateKey : keyof States
       >
-    >>
+    >
+  >;
 };
 
 export type StateTransitionHookConfig<
@@ -57,7 +59,6 @@ export type StateTransitionHookConfig<
   States extends StatesFactory<any>,
   StateKey extends keyof Transitions | "*",
 > = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
-
 
 type On<
   TransitionsRawConfig extends TransitionConfig<States>,
@@ -166,10 +167,10 @@ type On<
       };
 
 export type StateEventHookConfig<
-Transitions extends TransitionConfig<States>,
-States extends StatesFactory<any>,
+  Transitions extends TransitionConfig<States>,
+  States extends StatesFactory<any>,
 > = {
   [StateKey in keyof Transitions | "*"]?: {
-    on?: On<Transitions, States, StateKey>    
+    on?: On<Transitions, States, StateKey>;
   } & StateTransitionHookConfig<Transitions, States, StateKey>;
 };

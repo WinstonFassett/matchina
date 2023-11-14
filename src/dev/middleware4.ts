@@ -7,12 +7,12 @@ export function applyMiddleware<T extends any[], R, M extends R>(
   ...middlewares: Middleware<T, M>[]
 ): Func<T, R>;
 
-export async function applyMiddleware<T extends any[], R,  M extends R>(
+export async function applyMiddleware<T extends any[], R, M extends R>(
   targetFunction: Func<T, R>,
   ...middlewares: Middleware<T, M>[]
 ): Promise<Func<T, R>>;
 
-export function applyMiddleware<T extends any[], R,  M extends R>(
+export function applyMiddleware<T extends any[], R, M extends R>(
   targetFunction: Func<T, R>,
   ...middlewares: Middleware<T, R>[]
 ): Func<T, R> | Promise<Func<T, R>> {
@@ -26,9 +26,13 @@ export function applyMiddleware<T extends any[], R,  M extends R>(
 export function applyMethodware<
   T extends Record<K, (...args: any[]) => any>,
   K extends keyof T,
->(subject: T, key: K, ...middlewares: Middleware<Parameters<T[K]>, ReturnType<T[K]>>[]) {
-  const inner = subject[key];  
-  const composed = (applyMiddleware as any)(inner, ...middlewares)
+>(
+  subject: T,
+  key: K,
+  ...middlewares: Middleware<Parameters<T[K]>, ReturnType<T[K]>>[]
+) {
+  const inner = subject[key];
+  const composed = (applyMiddleware as any)(inner, ...middlewares);
   subject[key] = composed;
   return () => {
     subject[key] = inner;

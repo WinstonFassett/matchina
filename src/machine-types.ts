@@ -26,13 +26,13 @@ interface FunctionalStateMachineKernel<
   send<T>(event: E, ...params: P[]): void;
 }
 
-
-
-interface StateChangeMachine<E extends ChangeEvent<any,any,any>,P extends any[]> { 
-  send(type: E['type'], ...params: P): void // calls update(transition(type, ...params))
-  update(fn: (ev: E) => E): void // main extension/interception point for middleware and lifecycle
+interface StateChangeMachine<
+  E extends ChangeEvent<any, any, any>,
+  P extends any[],
+> {
+  send(type: E["type"], ...params: P): void; // calls update(transition(type, ...params))
+  update(fn: (ev: E) => E): void; // main extension/interception point for middleware and lifecycle
 }
-
 
 interface EventfulStateMachineKernel<T, E, P> {
   getState<T>(): T;

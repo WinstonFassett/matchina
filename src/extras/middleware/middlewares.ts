@@ -1,5 +1,5 @@
 function timingMiddleware<A extends any[], R>(
-  fn: (...args: A) => R
+  fn: (...args: A) => R,
 ): (...args: A) => R {
   return (...args: A) => {
     const startTime = Date.now();
@@ -10,9 +10,8 @@ function timingMiddleware<A extends any[], R>(
   };
 }
 
-
 function errorHandlingMiddleware<A extends any[], R>(
-  fn: (...args: A) => R
+  fn: (...args: A) => R,
 ): (...args: A) => R {
   return (...args: A) => {
     try {
@@ -25,38 +24,37 @@ function errorHandlingMiddleware<A extends any[], R>(
   };
 }
 
+function throttleMiddleware<A extends any[], R>(
+  fn: (...args: A) => R,
+  delay: number,
+): (...args: A) => R {
+  let isThrottled = false;
+  let result: R;
 
-  function throttleMiddleware<A extends any[], R>(
-    fn: (...args: A) => R,
-    delay: number
-  ): (...args: A) => R {
-    let isThrottled = false;
-    let result: R;
-
-    return (...args: A) => {
-      if (!isThrottled) {
-        isThrottled = true;
-        setTimeout(() => {
-          isThrottled = false;
-          fn(...args);
-        }, delay);
-        result = fn(...args);
-      }
-      return result;
-    };
-  }
+  return (...args: A) => {
+    if (!isThrottled) {
+      isThrottled = true;
+      setTimeout(() => {
+        isThrottled = false;
+        fn(...args);
+      }, delay);
+      result = fn(...args);
+    }
+    return result;
+  };
+}
 
 function debounceMiddleware<A extends any[], R>(
   fn: (...args: A) => R,
-  delay: number
+  delay: number,
 ): (...args: A) => R {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: NodeJS.Timeout | undefined;
   return (...args: A) => {
     if (timeout) {
       clearTimeout(timeout);
     }
     timeout = setTimeout(() => {
-      timeout = null;
+      timeout = undefined;
       fn(...args);
     }, delay);
     return undefined as R;

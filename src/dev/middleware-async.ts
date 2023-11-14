@@ -9,12 +9,12 @@ export type Middleware<T = any> = AsyncMiddleware<T>;
 
 export function compose<T = any>(middleware: AsyncMiddleware<T>[]) {
   if (!Array.isArray(middleware)) {
-    throw new TypeError('Middleware stack must be an array!');
+    throw new TypeError("Middleware stack must be an array!");
   }
 
   for (const fn of middleware) {
-    if (typeof fn !== 'function') {
-      throw new TypeError('Middleware must be composed of functions!');
+    if (typeof fn !== "function") {
+      throw new TypeError("Middleware must be composed of functions!");
     }
   }
 
@@ -26,7 +26,7 @@ export function compose<T = any>(middleware: AsyncMiddleware<T>[]) {
 
     function dispatch(this: any, i: number): Promise<any> {
       if (i <= index) {
-        return Promise.reject(new Error('next() called multiple times'));
+        return Promise.reject(new Error("next() called multiple times"));
       }
 
       index = i;

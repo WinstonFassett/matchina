@@ -9,11 +9,6 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
-import {
-  Middleware,
-  applyMethodware,
-  applyMiddleware,
-} from "./dev/middleware3";
 export const InitializeMachine = "__init";
 
 export function defineMachine<

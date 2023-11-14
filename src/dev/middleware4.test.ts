@@ -15,12 +15,14 @@ describe("applyMiddleware", () => {
   }
 
   it("should work with synchronous function and logger middleware", () => {
-    const loggerMiddleware = (next) => (...args) => {
-      expect(args).toEqual([2, 3]);
-      const result = next(...args);
-      expect(result).toBe(5);
-      return result;
-    };
+    const loggerMiddleware =
+      (next) =>
+      (...args) => {
+        expect(args).toEqual([2, 3]);
+        const result = next(...args);
+        expect(result).toBe(5);
+        return result;
+      };
 
     const enhancedSyncSum = applyMiddleware(syncSum, loggerMiddleware);
     const result = enhancedSyncSum(2, 3);
@@ -30,12 +32,14 @@ describe("applyMiddleware", () => {
   });
 
   it("should work with asynchronous function and logger middleware", async () => {
-    const loggerMiddleware: Middleware<any,any> = (next) => async (...args) => {
-      expect(args).toEqual([4, 5]);
-      const result = await next(...args);
-      expect(result).toBe(9);
-      return result;
-    };
+    const loggerMiddleware: Middleware<any, any> =
+      (next) =>
+      async (...args) => {
+        expect(args).toEqual([4, 5]);
+        const result = await next(...args);
+        expect(result).toBe(9);
+        return result;
+      };
 
     const enhancedAsyncSum = applyMiddleware(asyncSum, loggerMiddleware);
     const result = await enhancedAsyncSum(4, 5);

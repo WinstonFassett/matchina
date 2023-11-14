@@ -42,7 +42,6 @@ export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
   { key: FromKey }
 >;
 
-
 export type KeyedChangeEventFilter<E> = RecordFilter<
   KeyedChangeEvent<
     ChangeEventType<E>,
@@ -54,17 +53,17 @@ export type KeyedChangeEventFilter<E> = RecordFilter<
 export function isKeyedChangeEvent<E>(
   event: E,
   filter: KeyedChangeEventFilter<E>,
-): event is E & KeyedChangeEvent<
-  ChangeEventType<E>,
-  ChangeEventFromKey<E>,
-  ChangeEventToKey<E>
-> {
+): event is E &
+  KeyedChangeEvent<
+    ChangeEventType<E>,
+    ChangeEventFromKey<E>,
+    ChangeEventToKey<E>
+  > {
   const subject = event as any;
-  const matched = (
+  const matched =
     matchKey(filter.to, subject?.to?.key) &&
     matchKey(filter.type, subject?.type) &&
-    matchKey(filter.from, subject?.from?.key)
-  );
+    matchKey(filter.from, subject?.from?.key);
   // console.log('match?', matched, filter)
   return matched;
 }

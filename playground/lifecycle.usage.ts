@@ -47,7 +47,7 @@ async function promiseLifecycleUsage () {
   checkState()
 
   console.log('removing lifecycle')
-  removeLifecycle()
+  // removeLifecycle()
   machine.reset()
   console.log('resetting')
   checkState()
