@@ -17,40 +17,24 @@ function logGroup(name: string, logFunction: () => void) {
   console.log(`/${name}`);
 }
 
-let runNumber = 0
-
 export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middleware<E> {
-  if (middlewares.length ===6) throw new Error('wtf')
-  const currentRunNumber = runNumber++;
   return (initialEvent: E, finalNext: (event: E) => void) => {
     function next(index: number, event: E): void {
       if (index >= middlewares.length) {
-        logGroup(`[${currentRunNumber}] Final part`, () => {
-          finalNext(event);
-        });
+        finalNext(event);        
         return;
       }
-
-      const middlewareName = `part ${currentRunNumber} - ${index + 1} of ${middlewares.length}`;
-      logGroup(middlewareName, () => {
-        middlewares[index](event, nextEvent => {
-          logGroup(`[${currentRunNumber}] part ${index + 1} - Next`, () => {
-            next(index + 1, nextEvent !== undefined ? nextEvent : event);
-          });
-        });
+      middlewares[index](event, nextEvent => {
+        next(index + 1, nextEvent !== undefined ? nextEvent : event);
       });
     }
-
-    logGroup(`Run ${currentRunNumber}`, () => {
-      next(0, initialEvent);
-    });
+    next(0, initialEvent);
   };
 }
 
 export function runMiddleware<E>(middlewares: Middleware<E>[], initialValue: E, finalCallback: (finalValue?: E) => void): void {
   composeMiddleware(...middlewares)(initialValue, finalCallback);
 }
-
 
 export const applyMiddleware = <E>(fn: (event?: E) => void, ...middlewares: Middleware<E>[]) =>  
    (event: E) => composeMiddleware(...middlewares)(event, fn)
@@ -77,7 +61,6 @@ export const conditionware = <E>(
     const composed = composeMiddleware(...middlewares)
     return (event: E, next: (event?: E) => void) => {
       if (test(event)) {
-        console.log('CONDITION')
         composed(event, next);
       }
       else next(event);
@@ -110,23 +93,22 @@ export function enhanceMachine<E>(
     console.log('USE')
     machine.update = (updater) => {
       bound((current:any) => {
-        console.log('START ENHANCED UPDATE from', current.to.key)
-        console.group()
-        console.log('Updater')
-        console.group()
+        
+        // console.log('Updater')
+        // console.group()
         const updated = updater(current) 
-        console.groupEnd()
-        console.log('After updater', {current: current.to.key, udpated: updated.to.key})
-        console.group()
+        // console.groupEnd()
+
+        // console.log('Apply update', {current: current.to.key, udpated: updated.to.key})
+        // console.group()
         let enhancedResult: any
         composed(updated, (result => {
           enhancedResult = result
-          console.log('RESULT', enhancedResult?.to.key)          
+          // console.log('RESULT', enhancedResult?.to.key)          
         }));
-        console.groupEnd()
-        console.log('End Composed', enhancedResult?.to.key)
-        console.groupEnd()
-        console.log('FINISH ENHANCED UPDATE')        
+        // console.groupEnd()
+        // console.log('End Composed', enhancedResult?.to.key)
+        
         return enhancedResult ?? current
       })
     }

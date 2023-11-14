@@ -148,11 +148,11 @@ describe("onLifecycle usage", () => {
             },
             before: (({ params: [amount] }, next) => {
               didBeforeExecute ||= ++count;
-              console.log("executing", amount);
-              console.group()
+              // console.log("executing", amount);
+              // console.group()
               next();
-              console.groupEnd()
-              console.log('done executing')
+              // console.groupEnd()
+              // console.log('done executing')
 
             }),
             handle: (event, next) => {
@@ -188,11 +188,11 @@ describe("onLifecycle usage", () => {
           resolve: {
             before: (ev, next) => {
               didBeforeResolve ||= ++count;
-              console.log("In Pending before resolve", ev)
+              console.log("In Pending before resolve")
               expect(ev.type).toBe("resolve");
               console.group()
               next()
-              console.groupEnd
+              console.groupEnd()
               console.log('done before resolve')
             },
             after: listen(() => {

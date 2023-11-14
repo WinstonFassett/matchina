@@ -28,19 +28,19 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
       const unenhance = enhanceMachine(machine)(
         (event, next) => {
           let phaseEvent = event
-          console.log('onPhase')
-          console.group()
+          // console.log('onPhase')
+          // console.group()
           for (const phase of LIFECYCLE) {
-            console.log('PHASE', phase)
-            console.group()
+            // console.log('PHASE', phase)
+            // console.group()
             let ran = false
             dispatchware(subject, phase)(event, result => { 
-              console.log('inside dispatchware', phase, result.type)
+              // console.log('inside dispatchware', phase, result.type)
               phaseEvent = result as any 
               ran = true
             })
-            console.groupEnd()            
-            console.log('DONE PHASE', phase)
+            // console.groupEnd()            
+            // console.log('DONE PHASE', phase)
             if (!ran) { 
               console.log('BREAKING at', phase)
               phaseEvent = undefined as any
@@ -48,15 +48,15 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
             }            
           }
           if (phaseEvent) {
-            console.log('NEXT', phaseEvent.type)
-            console.group()
+            // console.log('NEXT', phaseEvent.type)
+            // console.group()
             next(phaseEvent)
-            console.groupEnd()
-            console.log('DONE NEXT')
+            // console.groupEnd()
+            // console.log('DONE NEXT')
           } 
 
-          console.groupEnd()
-          console.log('END onPhase')
+          // console.groupEnd()
+          // console.log('END onPhase')
         }
       )
       subject.$on[CLEANUP_OFFSET] = [() => {
@@ -98,12 +98,12 @@ const  dispatchware = <E>(subject: any, eventKey: string) => ((event, next) => {
   const listeners = (subject.$on && subject.$on [eventKey]) as Middleware<E>[] | undefined;
   if (listeners) {
     dispid++    
-    console.log('Dispatching', eventKey, dispid)
-    console.group()
+    // console.log('Dispatching', eventKey, dispid)
+    // console.group()
     // composeMiddleware(...listeners)(event, next)
     runMiddleware(listeners, event, next)
-    console.groupEnd()
-    console.log('Dispatched', eventKey, dispid)
+    // console.groupEnd()
+    // console.log('Dispatched', eventKey, dispid)
     return
   }
   next(event)
@@ -156,7 +156,7 @@ function hookware <E>(
     ? composeMiddleware(...hook)
     :  hook
   
-  console.log('composing', hook.length)
+  // console.log('composing', hook.length)
   if (hook.length === 6) throw new Error('wtf!!')
   return when(filter)(runHook) 
 }  
