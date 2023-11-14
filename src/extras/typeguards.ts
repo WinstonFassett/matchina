@@ -1,17 +1,9 @@
-import {
-  ChangeEventType,
-  ChangeEventToKey,
-  ChangeEventFromKey,
-} from "../../playground/typeguard.usage";
-
 export type ChangeEvent<Type, To, From> = {
   type: Type;
   to: To;
   from: From;
 };
-type RecordFilter<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
+
 export type ChangeEventFilter<Type, To, From> = RecordFilter<
   ChangeEvent<Type, To, From>
 >;
@@ -42,23 +34,49 @@ export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
   { key: FromKey }
 >;
 
-export type KeyedChangeEventFilter<E> = RecordFilter<
-  KeyedChangeEvent<
-    ChangeEventType<E>,
-    ChangeEventToKey<E>,
-    ChangeEventFromKey<E>
-  >
->;
+type RecordFilter<T> = {
+  [K in keyof T]?: T[K] | T[K][];
+};
+export type ChangeEventType<E> = E extends ChangeEvent<infer T, any, any>
+  ? T
+  : string;
+export type ChangeEventToKey<E> = E extends ChangeEvent<
+  any,
+  { key: infer K },
+  any
+>
+  ? K
+  : string;
+export type ChangeEventFromKey<E> = E extends ChangeEvent<
+  any,
+  any,
+  { key: infer K }
+>
+  ? K
+  : string;
 
-export function isKeyedChangeEvent<E>(
+// export type KeyedChangeEventFilter<E> = RecordFilter<
+//   KeyedChangeEvent<
+//     ChangeEventType<E>,
+//     ChangeEventToKey<E>,
+//     ChangeEventFromKey<E>
+//   >
+// >;
+export type KeyedChangeEventFilter<E> = {
+  type?: ChangeEventType<E> | ChangeEventType<E>[];
+  to?: ChangeEventToKey<E> | ChangeEventToKey<E>[];
+  from?: ChangeEventFromKey<E> | ChangeEventFromKey<E>[];
+};
+
+export function isKeyedChangeEvent<
+  E,
+  Type extends ChangeEventType<E>,
+  ToKey extends ChangeEventToKey<E>,
+  FromKey extends ChangeEventFromKey<E>,
+>(
   event: E,
   filter: KeyedChangeEventFilter<E>,
-): event is E &
-  KeyedChangeEvent<
-    ChangeEventType<E>,
-    ChangeEventFromKey<E>,
-    ChangeEventToKey<E>
-  > {
+): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
   const subject = event as any;
   const matched =
     matchKey(filter.to, subject?.to?.key) &&
@@ -67,7 +85,6 @@ export function isKeyedChangeEvent<E>(
   // console.log('match?', matched, filter)
   return matched;
 }
-
 export function isChangeTypeToFrom<
   E,
   Type extends ChangeEventType<E>,
