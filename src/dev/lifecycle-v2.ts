@@ -25,7 +25,7 @@ export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middlewar
   return (initialEvent: E, finalNext: (event: E) => void) => {
     function next(index: number, event: E): void {
       if (index >= middlewares.length) {
-        logGroup(`Run ${currentRunNumber} - Final Middleware`, () => {
+        logGroup(`[${currentRunNumber}] Final part`, () => {
           finalNext(event);
         });
         return;
@@ -34,7 +34,7 @@ export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middlewar
       const middlewareName = `part ${currentRunNumber} - ${index + 1} of ${middlewares.length}`;
       logGroup(middlewareName, () => {
         middlewares[index](event, nextEvent => {
-          logGroup(`Run ${currentRunNumber} - Middleware ${index + 1} - Next`, () => {
+          logGroup(`[${currentRunNumber}] part ${index + 1} - Next`, () => {
             next(index + 1, nextEvent !== undefined ? nextEvent : event);
           });
         });
@@ -116,7 +116,7 @@ export function enhanceMachine<E>(
         console.group()
         const updated = updater(current) 
         console.groupEnd()
-        console.log('After updater', {current, updated})
+        console.log('After updater', {current: current.to.key, udpated: updated.to.key})
         console.group()
         let enhancedResult: any
         composed(updated, (result => {
