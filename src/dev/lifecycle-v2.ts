@@ -6,21 +6,27 @@ import { StateMachineEvent, StatesFactory, TransitionConfig } from '../machine-t
 
 type Disposer = () => void;
 export type Sink<E> = (event: E) => void;
-export type Middleware<E> = (event: E, next: (event: E) => void) => void;
+export type Middleware<E> = (event: E, next: (event?: E) => void) => void;
 
 export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middleware<E> {
-  return (event: E, next: (event: E) => void) => {
-    let currentFn: (event: E) => void | Promise<void> = next;
-    for (let i = middlewares.length - 1; i >= 0; i--) {
-      const middleware = middlewares[i];
-      const previousFn = currentFn;
-      currentFn = (event: E) => middleware(event, previousFn);
+  return (initialEvent: E, finalNext: (event: E) => void) => {
+    function next(index: number, event: E): void {
+      if (index >= middlewares.length) {
+        finalNext(event);
+        return;
+      }      
+      middlewares[index](event, nextEvent => next(index + 1, nextEvent !== undefined ? nextEvent : event));
     }
-    return currentFn(event);
+    next(0, initialEvent);
   };
 }
 
-export const applyMiddleware = <E>(fn: Sink<E>, ...middlewares: Middleware<E>[]) =>  
+export function runMiddleware<E>(middlewares: Middleware<E>[], initialValue: E, finalCallback: (finalValue?: E) => void): void {
+  composeMiddleware(...middlewares)(initialValue, finalCallback);
+}
+
+
+export const applyMiddleware = <E>(fn: (event?: E) => void, ...middlewares: Middleware<E>[]) =>  
    (event: E) => composeMiddleware(...middlewares)(event, fn)
 
 export const guardware: <E>(test: (event: E) => boolean) => Middleware<E> 
@@ -43,7 +49,7 @@ export const conditionware = <E>(
   test: (event: E) => boolean,
   ...middlewares: Middleware<E>[]) => {
     const composed = composeMiddleware(...middlewares)
-    return (event: E, next: (event: E) => void) => {
+    return (event: E, next: (event?: E) => void) => {
       if (test(event)) {
         console.log('CONDITION')
         composed(event, next);
