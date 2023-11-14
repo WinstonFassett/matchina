@@ -110,8 +110,9 @@ describe("onLifecycle usage", () => {
               console.groupEnd()
               console.log('* before done')
             },
-            after: (event) => {
+            after: (event, next) => {
               console.log("* after", event.type);
+              next()
             },
           },
         },
@@ -131,6 +132,7 @@ describe("onLifecycle usage", () => {
                   ", ",
                 )}`,
               );
+              console.group()
               const accept = params[0] > 1;
               if (accept) {
                 didGuardAccept ||= ++count;
@@ -141,6 +143,7 @@ describe("onLifecycle usage", () => {
               if (accept) {
                 next()
               }
+              console.groupEnd()
               // return accept;
             },
             before: (({ params: [amount] }, next) => {
@@ -177,24 +180,25 @@ describe("onLifecycle usage", () => {
         }),
       },
       Pending: {
-        enter: (e) => {
+        enter: listen((e) => {
           didEnterPending ||= ++count;
           console.log("entering Pending via", e.type);
-        },
+        }),
         on: {
           resolve: {
             before: (ev, next) => {
               didBeforeResolve ||= ++count;
-              console.log("In Pending before resolve");
+              console.log("In Pending before resolve", ev)
+              expect(ev.type).toBe("resolve");
               console.group()
               next()
               console.groupEnd
               console.log('done before resolve')
             },
-            after: () => {
+            after: listen(() => {
               didAfterResolve ||= ++count;
               console.log("Resolved from Pending");
-            },
+            }),
           },
         },
       },
@@ -205,6 +209,7 @@ describe("onLifecycle usage", () => {
     expectState('Idle')
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
+    console.log('test guard reject')
     machine.event.execute(1);
     checkState()
     expect(didGuardReject).toBeTruthy();
@@ -213,12 +218,14 @@ describe("onLifecycle usage", () => {
     expectState("Idle");
 
     expect(didGuardAccept).toBeFalsy();
+    console.log('test guard accept, handler reject')
     machine.event.execute(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log('BEFORE FAIL', machine.getState().key)
+    console.log('***test handler accept')
     machine.event.execute(100);
     console.log('AFTER Execute', machine.getState().key)
     expectState("Pending");

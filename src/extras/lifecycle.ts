@@ -12,6 +12,7 @@ import {
   StateTransitionHooks,
   TransitionHookConfig
 } from "./lifecycle-types";
+import { KeyedChangeEventFilter } from "./typeguards";
 
 type Dispose = () => void;
 
@@ -34,20 +35,35 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
       const unenhance = enhanceMachine(machine)(
         (event, next) => {
           let phaseEvent = event
+          console.log('onPhase')
+          console.group()
           for (const phase of LIFECYCLE) {
             console.log('PHASE', phase)
+            console.group()
             let ran = false
             dispatchware(subject, phase)(event, result => { 
+              console.log('inside dispatchware', phase, result)
               phaseEvent = result as any 
               ran = true
-            })            
+            })
+            console.groupEnd()            
+            console.log('DONE PHASE', phase)
             if (!ran) { 
               console.log('BREAKING at', phase)
               phaseEvent = undefined as any
               break; 
-            }
+            }            
           }
-          if (phaseEvent) next(phaseEvent)
+          if (phaseEvent) {
+            console.log('NEXT', phaseEvent.type)
+            console.group()
+            next(phaseEvent)
+            console.groupEnd()
+            console.log('DONE NEXT')
+          } 
+
+          console.groupEnd()
+          console.log('END onPhase')
         }
       )
       subject.$on[CLEANUP_OFFSET] = [() => {
@@ -83,38 +99,40 @@ function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener:
 }
 
 let mwid = 0
-function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCallback: (finalValue: T) => void): void {
-  let index = 0;
-  const id = mwid++
+// function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCallback: (finalValue: T) => void): void {
+//   let index = 0;
+//   const id = mwid++
   
-  function run(currentIndex: number, currentValue: T) {
-      console.log('runMiddleware', mwid, currentIndex, 'of', middlewares.length)
-      console.group()
-      if (currentIndex === middlewares.length) {
-          finalCallback(currentValue);
-          console.log('done runMiddleware', mwid)
-          return;
-      }
+//   function run(currentIndex: number, currentValue: T) {
+//       console.log('inside run', mwid, currentIndex, 'of', middlewares.length)
+//       // console.group()
+//       if (currentIndex === middlewares.length) {
+//           finalCallback(currentValue);
+//           console.log('done', mwid)
+//           return;
+//       }
 
-      middlewares[currentIndex](currentValue, newValue => run(currentIndex + 1, newValue ?? currentValue));
-      console.groupEnd()
-  }
-  console.log('runMiddleware', mwid)
-  console.group()
-  run(index, initialValue);
-  console.log('done', mwid)
-  console.groupEnd()
-}
+//       middlewares[currentIndex](currentValue, newValue => run(currentIndex + 1, newValue ?? currentValue));
+//       // console.groupEnd()
+//   }
+//   console.log('call run', mwid)
+//   console.group()
+//   run(index, initialValue);
+//   console.groupEnd()
+//   console.log('done run', mwid)
+// }
 
-
+let dispid = 0
 const  dispatchware = <E>(subject: any, eventKey: string) => ((event, next) => {
   const listeners = (subject.$on && subject.$on [eventKey]) as Middleware<E>[] | undefined;
   if (listeners) {
-    console.log('Dispatching')
+    dispid++    
+    console.log('Dispatching', eventKey, dispid)
     console.group()
+    // composeMiddleware(...listeners)(event, next)
     runMiddleware(listeners, event, next)
     console.groupEnd()
-    console.log('Dispatched')
+    console.log('Dispatched', eventKey, dispid)
     return
   }
   next(event)
@@ -135,12 +153,16 @@ export function onLifecycle<
 const asArray = <T>(u: T): T[] => Array.isArray(u) ? u : [u]
 
 function hookware <E>(
-  hook: HookFunc<E> | HookFunc<E>[],    
+  hook: HookFunc<E> | HookFunc<E>[],
+  filter: KeyedChangeEventFilter<E> = {},
 ): Middleware<E> {
-  if (!Array.isArray(hook)) {
-    return hook
-  }
-  return composeMiddleware(...hook)
+  const runHook = Array.isArray(hook)
+    ? composeMiddleware(...hook)
+    :  hook
+  
+  console.log('composing', hook.length)
+  if (hook.length === 6) throw new Error('wtf!!')
+  return when(filter)(runHook) 
 }  
 
 export function lifecycleware<
@@ -160,26 +182,23 @@ export function lifecycleware<
     const { enter, leave } = fromStateConfig
    
     if (enter) {
-      onPhase(machine, 'enter', hookware(enter as any))      
+      onPhase(machine, 'enter', hookware(enter as any, { to: stateKey as any }))      
     }
     if (leave) {
-      onPhase(machine, 'leave', hookware(leave as any))
+      onPhase(machine, 'leave', hookware(leave as any, { from: stateKey as any }))
     }
     const { on } = fromStateConfig
     if (on) {
       for (const eventKey in on) {
         const eventConfig = on[eventKey]
         if (!eventConfig) continue;
-        for (const hookKey in eventConfig) {
-          const hook = eventConfig[hookKey as never]
-          if (hook) {
-            onPhase(machine, hookKey, hookware(hook as any))
-          }
-        }
         (['guard', 'handle', 'before','after'] as const).forEach(phase => {
           const hook = eventConfig[phase]
           if (hook) {
-            onPhase(machine, phase, hookware(hook as any))
+            onPhase(machine, phase, hookware(hook as any, {
+              from: stateKey as any,
+              type: eventKey as any
+            }))
           }
         })                
       }

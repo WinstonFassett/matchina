@@ -8,16 +8,42 @@ type Disposer = () => void;
 export type Sink<E> = (event: E) => void;
 export type Middleware<E> = (event: E, next: (event?: E) => void) => void;
 
+
+function logGroup(name: string, logFunction: () => void) {
+  console.log(`${name}`);
+  console.group();
+  logFunction();
+  console.groupEnd();
+  console.log(`/${name}`);
+}
+
+let runNumber = 0
+
 export function composeMiddleware<E>(...middlewares: Middleware<E>[]): Middleware<E> {
+  if (middlewares.length ===6) throw new Error('wtf')
+  const currentRunNumber = runNumber++;
   return (initialEvent: E, finalNext: (event: E) => void) => {
     function next(index: number, event: E): void {
       if (index >= middlewares.length) {
-        finalNext(event);
+        logGroup(`Run ${currentRunNumber} - Final Middleware`, () => {
+          finalNext(event);
+        });
         return;
-      }      
-      middlewares[index](event, nextEvent => next(index + 1, nextEvent !== undefined ? nextEvent : event));
+      }
+
+      const middlewareName = `part ${currentRunNumber} - ${index + 1} of ${middlewares.length}`;
+      logGroup(middlewareName, () => {
+        middlewares[index](event, nextEvent => {
+          logGroup(`Run ${currentRunNumber} - Middleware ${index + 1} - Next`, () => {
+            next(index + 1, nextEvent !== undefined ? nextEvent : event);
+          });
+        });
+      });
     }
-    next(0, initialEvent);
+
+    logGroup(`Run ${currentRunNumber}`, () => {
+      next(0, initialEvent);
+    });
   };
 }
 
@@ -90,7 +116,7 @@ export function enhanceMachine<E>(
         console.group()
         const updated = updater(current) 
         console.groupEnd()
-        console.log('New event', updated, composed)
+        console.log('After updater', {current, updated})
         console.group()
         let enhancedResult: any
         composed(updated, (result => {
