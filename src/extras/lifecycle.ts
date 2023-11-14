@@ -22,11 +22,11 @@ const LIFECYCLE = [
   'before',
   'enter',
   'after',  
-]
+] as const
 
-const CLEANUP_OFFSET = "_cleanup";
+const CLEANUP_OFFSET = "_cleanup" as const;
 
-function on<E>(machine: StateMachine<any, any>, eventKey: string, listener: Middleware<E>) {
+function onPhase<E>(machine: StateMachine<any, any>, eventKey: string, listener: Middleware<E>) {
     const subject = machine as any
     if (!subject.$on  ) {
       subject.$on  = {};
@@ -35,9 +35,16 @@ function on<E>(machine: StateMachine<any, any>, eventKey: string, listener: Midd
         (event, next) => {
           let phaseEvent = event
           for (const phase of LIFECYCLE) {
-            console.log('PHASE', phase)            
-            dispatchware(subject, phase)(phaseEvent, nextEvent => { phaseEvent = nextEvent as any })
-            if (!phaseEvent) { break; }
+            console.log('PHASE', phase)
+            let ran = false
+            dispatchware(subject, phase)(phaseEvent, nextEvent => { 
+              phaseEvent = nextEvent as any 
+              ran = true
+            })            
+            if (!ran) { 
+              console.log('BREAKING at', phase)
+              break; 
+            }
           }
         }
       )
@@ -75,9 +82,10 @@ function on<E>(machine: StateMachine<any, any>, eventKey: string, listener: Midd
 
 function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCallback: (finalValue: T) => void): void {
   let index = 0;
-
+  console.log('running middleware')
   function run(currentIndex: number, currentValue: T) {
       if (currentIndex === middlewares.length) {
+          console.log('final', currentValue)
           finalCallback(currentValue);
           return;
       }
@@ -92,7 +100,7 @@ function runMiddleware<T>(middlewares: Middleware<T>[], initialValue: T, finalCa
 const  dispatchware = <E>(subject: any, eventKey: string) => ((event, next) => {
   const listeners = (subject.$on   && subject.$on [eventKey]) as Middleware<E>[] | undefined;
   if (listeners) {
-    runMiddleware(listeners, event, next)    
+    return runMiddleware(listeners, event, next)    
   }
   return next(event)
 }) as Middleware<E>
@@ -128,148 +136,83 @@ export function onLifecycle<
   machine: StateMachine<Transitions, States>,
   config: StateEventHookConfig<Transitions, States>,
 ) {
-  const use = enhanceMachine(machine)
-  return use(lifecycleware(config))
+  
+  return lifecycleware(machine, config)
 }
 
 
 const asArray = <T>(u: T): T[] => Array.isArray(u) ? u : [u]
+
+function hookware <E>(
+  hook: HookFunc<E> | HookFunc<E>[],    
+): Middleware<E> {
+  if (!Array.isArray(hook)) {
+    return hook
+  }
+  return composeMiddleware(...hook)
+  // return (ev, next) => {
+  //   if (typeof hook ==='function') {
+  //     console.log('hook func')
+  //     console.group()
+  //     const res = hook(ev, next);
+  //     console.log('hook func res', res)
+  //     console.groupEnd()
+  //     if (res) next(res)
+  //     return
+  //   }
+  //   console.log('hookware')    
+  //   console.group()
+  //   const res =  hook.reduceRight((e, fn) => {
+  //     return fn(e) ?? e
+  //   }, ev)
+  //   console.groupEnd()
+  //   console.log('hookware res', res)
+  //   next(res)
+  // }
+}  
 
 export function lifecycleware<
   Transitions extends TransitionConfig<States>,
   States extends StatesFactory<any>,
   E extends StateMachineEvent<Transitions, States>
 >(
+  machine: StateMachine<Transitions, States>,
   config: StateEventHookConfig<
     Transitions,
     States
   >,
-): Middleware<E> {
-  // 
-}
-
-export function lifecycleware1<
-  Transitions extends TransitionConfig<States>,
-  States extends StatesFactory<any>,
-  E extends StateMachineEvent<Transitions, States>
->(
-  config: StateEventHookConfig<
-    Transitions,
-    States
-  >,
-): Middleware<E> {
-  
-  const wares: Middleware<E> [] = []
-
-  function hookware (
-    hook: HookFunc<E> | HookFunc<E>[],    
-  ): Middleware<E> {
-    return (ev, next) => {      
-      if (typeof hook ==='function') return hook(ev) ?? next(ev);
-      return hook.reduceRight((e, fn) => {
-        return fn(e) ?? e
-      }, ev)
-    }
-  }
-  
+) {
   for (const stateKey in config) {
     const fromStateConfig = config[stateKey]
     if (!fromStateConfig) continue;
     const { enter, leave } = fromStateConfig
    
     if (enter) {
-      wares.push(
-        when<E>({ 
-          to: stateKey === '*' ? undefined : stateKey as any
-        })(hookware(enter))
-      )
+      onPhase(machine, 'enter', hookware(enter as any))      
     }
     if (leave) {
-      wares.push(
-        when<E>({ 
-          from: stateKey === '*' ? undefined : stateKey as any
-        })(
-          (ev, next) => {
-            console.log('leaveware before')
-            console.group()
-            next(ev)
-            console.groupEnd()
-            console.log('leaveware after')
-          },
-          hookware(leave)
-        )
-      )
-
+      onPhase(machine, 'leave', hookware(leave as any))
     }
-    
     const { on } = fromStateConfig
     if (on) {
       for (const eventKey in on) {
         const eventConfig = on[eventKey]
-        const eventwares: Middleware<E>[] = []
         if (!eventConfig) continue;
-        const { guard, handle, before, after } = eventConfig
-        if (guard) {          
-          eventwares.push(
-            (ev, next) => { 
-              if (asArray(guard).every(g => g(ev))) next(ev)
-              else {
-                console.log('guard failed', ev)
-              }
-            }
-          )
+        for (const hookKey in eventConfig) {
+          const hook = eventConfig[hookKey as never]
+          if (hook) {
+            onPhase(machine, hookKey, hookware(hook as any))
+          }
         }
-        if (handle) {  
-          eventwares.push(
-            (e,n) => {
-              n(e)
-              console.log('handled', e.type)
-            },
-            ...asArray(handle).map(h => {
-              return ((ev, next) => {
-                console.log('handle', ev.type)
-                ev = h(ev)
-                if (ev){
-                  console.log('handler handled',ev.type)
-                  next(ev)                
-                }
-              }) as Middleware<E>
-            }))
-        }
-        if (before||after) {
-          eventwares.push(
-            listen((ev) => {     
-              console.log('BEFORE', ev.type)         
-              for (const fn of asArray(before)) {
-                fn?.(ev)                
-              }
-              return () => {
-                for (const fn of asArray(after)) {
-                  fn?.(ev)                
-                }
-              }
-            })
-          )
-        }
-        if (eventwares.length>0) {
-          wares.push(when<E>({ 
-            from: stateKey === '*' ? undefined : stateKey as any,
-            type: eventKey === '*' ? undefined : eventKey as any            
-          })(...eventwares))
-        }
+        (['guard', 'handle', 'before','after'] as const).forEach(phase => {
+          const hook = eventConfig[phase]
+          if (hook) {
+            onPhase(machine, phase, hookware(hook as any))
+          }
+        })                
       }
     }
   }
-  console.log('count', wares.length)
-  return composeMiddleware(
-    (e, next) => {
-      console.log('OUTER', e.type)
-      console.group()
-      next(e)
-      console.groupEnd()
-      console.log('OUTER DONE')
-    },
-    ...wares);
 }
 
 

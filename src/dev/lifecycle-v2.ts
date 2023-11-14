@@ -72,6 +72,8 @@ export function enhanceMachine<E>(
   context.use = (...middleware: Middleware<E>[]) => {
     const origUpdate = machine.update;
     const bound = origUpdate.bind(machine)
+    if (!middleware[0]) throw new TypeError("middleware is required")
+    console.log({ middleware })
     const composed = composeMiddleware(...middleware)
     console.log('USE')
     machine.update = (updater) => {
@@ -82,7 +84,7 @@ export function enhanceMachine<E>(
         console.group()
         const updated = updater(current) 
         console.groupEnd()
-        console.log('Composed')
+        console.log('New event', updated, composed)
         console.group()
         let enhancedResult: any
         composed(updated, (result => {

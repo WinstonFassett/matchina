@@ -50,7 +50,10 @@ export function createMachineClass<
     private lastChange: Event = undefined as any;
     constructor(context: RemainingProperties<C, PC> & Partial<C>) {
       this.context = Object.assign({}, staticContext, context) as unknown as C;
-      this.initialize();
+      this.lastChange = {
+        type: InitializeMachine,
+        to: this.createInitialState(),
+      } as any;
     }
 
     createInitialState() {
@@ -58,17 +61,6 @@ export function createMachineClass<
       return typeof initialState === "string"
         ? states[initialState]()
         : initialState;
-    }
-
-    initialize() {
-      this.update((change) => {
-        return {
-          ...change,
-          from: change?.to,
-          type: InitializeMachine,
-          to: this.createInitialState(),
-        };
-      });
     }
 
     getState() {
@@ -105,7 +97,14 @@ export function createMachineClass<
     }
 
     reset() {
-      this.initialize();
+      this.update((change) => {
+        return {
+          ...change,
+          from: change?.to,
+          type: InitializeMachine,
+          to: this.createInitialState(),
+        };
+      });
     }
 
     // TODO: factor out public method

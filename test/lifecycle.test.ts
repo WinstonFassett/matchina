@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { onLifecycle1 as onLifecycle } from "../src/extras/lifecycle";
+import { onLifecycle as onLifecycle } from "../src/extras/lifecycle";
 import { createPromiseMachine } from "../src/extras/promise";
 import { withEvents } from "../src/extras/with-events";
 
@@ -113,12 +113,13 @@ describe("onLifecycle usage", () => {
       Idle: {
         on: {
           execute: {
-            guard({
-              type: event,
-              params,
-              from: { key: from },
-              to: { key: to },
-            }) {
+            guard(change, next) {
+              const {
+                type: event,
+                params,
+                from: { key: from },
+                to: { key: to },
+              } = change
               console.log(
                 `${from} wants to ${event} to ${to} with params ${params.join(
                   ", ",
@@ -131,6 +132,7 @@ describe("onLifecycle usage", () => {
                 didGuardReject ||= ++count;
               }
               console.log("GUARD accept?", accept);
+              next(change)
               return accept;
             },
             before({ params: [amount] }) {

@@ -8,16 +8,19 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
+import { Middleware } from "../dev/lifecycle-v2";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
+
+
 export type TransitionHookExtensions<T> = {
-  guard: (change: T) => boolean;
-  before: (change: T) => any;
-  handle: (change: T) => T | undefined;
-  after: (change: T) => any;
+  guard: Middleware<T>;
+  before: Middleware<T>; 
+  handle: Middleware<T>;
+  after: Middleware<T>; 
 };
 
 export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
@@ -27,20 +30,17 @@ export type StateTransitionHooks<
   States extends StatesFactory<any>,
   StateKey extends keyof Transitions | "*",
 > = {
-  leave: (
-    change: StateMachineEvent<
-      Transitions,
-      States,
-      FlatEventKeys<Transitions, States>,
-      StateFromFactory<
-        States,
-        StateKey extends keyof States ? StateKey : keyof States
-      >,
-      StateFromFactory<States>
-    >,
-  ) => void;
-  enter: (
-    change: StateMachineEvent<
+  leave: Middleware<StateMachineEvent<
+  Transitions,
+  States,
+  FlatEventKeys<Transitions, States>,
+  StateFromFactory<
+    States,
+    StateKey extends keyof States ? StateKey : keyof States
+  >,
+  StateFromFactory<States>
+>>;
+  enter: Middleware<StateMachineEvent<
       Transitions,
       States,
       FlatEventKeys<Transitions, States>,
@@ -49,8 +49,7 @@ export type StateTransitionHooks<
         States,
         StateKey extends keyof States ? StateKey : keyof States
       >
-    >,
-  ) => void;
+    >>
 };
 
 export type StateTransitionHookConfig<

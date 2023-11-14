@@ -92,9 +92,6 @@ export interface StateMachine<
   getChange: () => StateMachineEvent<Transitions, States>;
   reset(): void; // remove// externalize
   update: SwapFunc<StateMachineEvent<Transitions, States>>;
-  use(
-    ...mw: Middleware<SwapFunc<StateMachineEvent<Transitions, States>>>[]
-  ): void;
 }
 
 export interface StateMachineProtected<
