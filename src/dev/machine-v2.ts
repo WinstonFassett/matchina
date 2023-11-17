@@ -4,6 +4,10 @@ interface StateMachine<State, Type, Params> {
   send(type: Type, ...params: Params[]): void
 }
 
+interface State<K extends string = string> {
+  key: K
+}
+
 interface ChangeEvent<Type, To, From> {
   type: Type
   to: To
@@ -11,7 +15,6 @@ interface ChangeEvent<Type, To, From> {
 }
 
 type AnyChangeEvent = ChangeEvent<any, any, any>
-
 
 interface StoreInternals<T> {
   get(): T
@@ -36,10 +39,7 @@ extends ChangeEvent<Type, To, From>
 }
 
 interface ChangeMachineInternals<
-  State,
-  Type,
-  Params extends any[] = any[],
-  Event extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Type, State, State, Params>,
+  Event extends AnyChangeEvent
 > {
   store: StoreInternals<Event>,
   transition: TransitionInternals<Event>
@@ -58,12 +58,21 @@ const atom = <T>(initial: T): StoreInternals<T> => {
   }
 }
 
+type TransitionToState<S> = S extends State<infer K> ? K : never
+
+type StateEventTransitionConfig<S extends State, Type, Params> = {
+  [StateKey in keyof S]: {
+    [EventKey in keyof Type]: TransitionToState<S>
+  }
+}
+
 const defaultInternals = {
   transition: {
     match: (type: string, ...params: any[]) => ({
       type,
       to: 'init',
-      from: 'init'
+      from: 'init',
+      params
     }),
     guard: (event: AnyChangeEvent) => true,
     handle: (event: AnyChangeEvent) => event
@@ -80,13 +89,13 @@ Type,
 Params extends any[] = any[],
 E extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Type, State, State, Params>,
 >(
-  options: Partial<ChangeMachineInternals<State,Type,Params,E>>
+  options: Partial<ChangeMachineInternals<E>>
 ) {
   const internals = {
     ...defaultInternals,
     ...options,
     store: options.store || atom<E>({} as E)
-  } as ChangeMachineInternals<State,Type,Params,E>
+  } as ChangeMachineInternals<E>
   if (!internals.store) internals.store = atom<E>({} as E)
   return {
     getChange: () => internals.store.get(),
@@ -114,5 +123,7 @@ E extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Ty
   };
 }
 
-function createMachineWithHooks () {}
+function createMachineWithHooks () {
+  // TODO: type and implement
+}
 
