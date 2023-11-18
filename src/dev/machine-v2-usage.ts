@@ -24,6 +24,9 @@ const machine = createStateChangeMachine(
   },
   {}
 )
-
-machine.send('')
+const change = machine.getChange()
+const type = change.type
+change.from.key
+change.to.key
+machine.send('execute')
 // machine.send('')

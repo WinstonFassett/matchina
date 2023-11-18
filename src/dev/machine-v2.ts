@@ -64,8 +64,11 @@ type AnyChangeEvent = ChangeEvent<any, any, any>
 
 interface ChangeMachineEvent<Type, To, From, Params>
 
-extends ChangeEvent<Type, To, From>
+// extends ChangeEvent<Type, To, From>
 {
+  type: Type
+  to: To
+  from: From
   params: Params
 }
 type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>
@@ -131,7 +134,7 @@ interface MachineContextEvent<
   CP extends any[] = any[]
 > extends
   StateChangeMachineEvent<
-    string & keyof Context[keyof Context], // flat event keys from context.transitions
+    string & FlatEventKeys<Context['transitions']>, // flat event keys from context.transitions
     ReturnType<Context['states'][keyof Context['states']]>,
     ReturnType<Context['states'][keyof Context['states']]>,
     CP
@@ -167,7 +170,16 @@ extends
   transition?: (event: Event) => Event | undefined
 }
 
-type FlatEventKeys<T> = keyof T[keyof T];
+type X = FlatEventKeys<{
+  Ignore1: { a: 1 },
+  Ignore2: { b: 2 }
+}> // "a" | "b"
+// implement FlatEventKeys
+type FlatEventKeys<T extends Record<string, any>> = 
+  {
+    [K in keyof T]: keyof T[K]      
+  }[keyof T]
+  
 
 type StateFromFactory<
   States extends Record<string, (...params:any[]) => any>,
@@ -306,7 +318,7 @@ export type CreateStateChangeMachineProps<
 export function createStateChangeMachine<
   TC extends TransitionConfig<SF>,
   SF extends Record<string, (...any:[]) => State>,
-  Props extends CreateStateChangeMachineProps<any>,
+  Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC,SF>>,
 >(
   states: SF, 
