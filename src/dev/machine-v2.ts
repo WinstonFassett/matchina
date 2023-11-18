@@ -1,4 +1,5 @@
 import { Middleware } from '../extras/middleware'
+import { FlatMemberUnionToIntersection } from '../types'
 interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
   getState(): E['to'] | E['from']
   getChange(): E
@@ -7,7 +8,7 @@ interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
 
 // type StatesRecord<K extends string, S extends State> = Record<K, S>
 
-type TransitionConfig<
+export type TransitionConfig<
   SF extends AnyStatesFactory,
   CP extends any[] = any[]
 > = {
@@ -96,22 +97,29 @@ interface StateChangeMachineTransitionContext<
 }
 
 interface StateMachine<
-  E extends MachineContextEvent<any>
+  TC extends TransitionConfig<SF>,
+  SF extends AnyStatesFactory,
+  E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>> = MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>
 > {
   getState(): E['to'] | E['from']
   getChange(): E
-  send(type: E['type'], ...params: E['params']): void
+  // send(type: E['type'], ...params: E['params']): void
+  send: SendFunction<TC, SF>
+  events: FlatEventSenders<TC, SF>
+  senders: StateEventTransitionSenders<TC, SF>
 }
 
 
 interface StateChangeMachineTransitionRuntimeContext<
   SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
+  E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
   M extends StateMachine<
-    MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>    
+    TC,
+    SF,
+    E    
   >
->
-extends StateChangeMachineTransitionContext<TC, SF> 
+> extends StateChangeMachineTransitionContext<TC, SF> 
 {
   machine: M
 }
@@ -162,7 +170,7 @@ type X = FlatEventKeys<{
   Ignore2: { b: 2 }
 }> // "a" | "b"
 // implement FlatEventKeys
-type FlatEventKeys<T extends Record<string, any>> = 
+export type FlatEventKeys<T> = 
   {
     [K in keyof T]: keyof T[K]      
   }[keyof T]
@@ -223,24 +231,63 @@ export type StateEventTransitionSenders<
   };
 };
 
-type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+export type FlatEventSenders<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = FlatMemberUnionToIntersection<
+  StateEventTransitionSenders<Transitions, States>
+>;
+
+
+export type TransitionRecord = Record<string, Record<string, (...args: any[]) => any>>;
+
+export type TransitionRecordParameters<T> = {
+  [K in keyof T]: T[K] extends Record<string, (...args: infer P) => any>
+    ? P
+    : never;
+}[keyof T];
+
+export type TransitionRecordParametersForEvent<T, FuncKey extends keyof any> = {
+  [OuterKey in keyof T]: FuncKey extends keyof T[OuterKey]
+    ? T[OuterKey][FuncKey] extends (...args: infer P) => any
+      ? P
+      : never
+    : never;
+}[keyof T];
+
+export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
 
 export type SendFunction<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory
 > = <EventKey extends string & FlatEventKeys<Transitions>>(
   event: EventKey,
-  ...params: StateEventTransitionSenders<
-    Transitions,
-    States
-  >[keyof Transitions][EventKey] extends () => any
-    ? Parameters<
-        StateEventTransitionSenders<
-          Transitions,
-          States
-        >[keyof Transitions][EventKey]
-      >
-    : any[]
+  // debug:  StateEventTransitionSenders<Transitions, States>,
+  ...params: TransitionRecordParametersForEvent<
+    StateEventTransitionSenders<Transitions, States>,
+    EventKey
+  >
+  // ...params: StateEventTransitionSenders<Transitions, States>
+  
+  /*
+    I want params to be typed based on the event key
+    but I can't figure out how to do it.
+    maybe I need a type that maps event keys to params
+  */
+
+    // StateEventTransitionFunc<Transitions, States, ay
+    // any[]
+  // ...params: StateEventTransitionSenders<
+  //   Transitions,
+  //   States
+  // >[keyof Transitions][EventKey] extends () => any
+  //   ? Parameters<
+  //       StateEventTransitionSenders<
+  //         Transitions,
+  //         States
+  //       >[keyof Transitions][EventKey]
+  //     >
+  //   : any[]
 ) => void;
 
 const atom = <T>(initial: T): StoreInternals<T> => {
@@ -303,7 +350,7 @@ export function createStateChangeMachine<
   states: SF, 
   transitions: TC,
   options: Props  
-): StateMachine<E> {
+): StateMachine<TC, SF> {
   const internals = {
     ...defaultInternals,
     ...options,
@@ -344,7 +391,7 @@ export function createStateChangeMachine<
 }
 
 type ResolveEvent<E extends MachineContextEvent<any, any[]>> = Omit<E, "to"> & {
-  machine: StateMachine<E>
+  machine: StateMachine<any, any, E>
 };
 
 type StateMachineHooks<E extends AnyMachineChangeEvent> = {
