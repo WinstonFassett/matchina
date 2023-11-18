@@ -8,7 +8,7 @@ interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
 // type StatesRecord<K extends string, S extends State> = Record<K, S>
 
 type TransitionConfig<
-  SF extends Record<string, (...params:any[]) => any>,
+  SF extends AnyStatesFactory,
   CP extends any[] = any[]
 > = {
   [FromStateKey in string & keyof SF]: {
@@ -96,13 +96,9 @@ interface StateChangeNotifyInternals<E> {
   exit: (event: E) => void
 }
 
-type StateRecordFromStateFactoryRecord<SF extends Record<string, (...params:any[]) => any>> = {
-  [StateKey in keyof SF]: ReturnType<SF[StateKey]>
-}
-
 interface StateChangeMachineTransitionContext<
   TC extends TransitionConfig<SF>,
-  SF extends Record<string, (...any:[]) => State>,
+  SF extends AnyStatesFactory,
 > {
   states: SF,
   transitions: TC,
@@ -118,7 +114,7 @@ interface StateMachine<
 
 
 interface StateChangeMachineTransitionRuntimeContext<
-  SF extends Record<string, (...any:[]) => State>,
+  SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
   M extends StateMachine<
     MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>    
@@ -154,7 +150,7 @@ extends
 }
 
 interface StateChangeMachineInternals<
-  States extends Record<string, (...any:[]) => State>,  
+  States extends AnyStatesFactory,  
   S extends ReturnType<States[keyof States]>,
   Event extends ChangeMachineEvent<any, S, S, any>,
   TC extends TransitionConfig<States>
@@ -182,7 +178,7 @@ type FlatEventKeys<T extends Record<string, any>> =
   
 
 type StateFromFactory<
-  States extends Record<string, (...params:any[]) => any>,
+  States extends AnyStatesFactory,
   StateKey extends keyof States = keyof States
 > = ReturnType<States[StateKey]>
 
@@ -305,19 +301,12 @@ function createResolver<
 }
 
 export type CreateStateChangeMachineProps<
-  SF extends Record<string, () => State>
-> =
-  // // StateChangeMachineTransitionContext<SF>
-  // {
-  //   states: SF,
-  //   transitions: TransitionConfig<SF>,
-  // }
-  // & 
-  Partial<StateChangeMachineInternals<any,any,any, any>>
+  SF extends AnyStatesFactory
+> = Partial<StateChangeMachineInternals<any,any,any, any>>
 
 export function createStateChangeMachine<
   TC extends TransitionConfig<SF>,
-  SF extends Record<string, (...any:[]) => State>,
+  SF extends AnyStatesFactory,
   Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC,SF>>,
 >(
@@ -373,7 +362,7 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
 };
 
 export function createMachineWithHooks<
-  SF extends Record<string, (...any:[]) => State>,
+  SF extends AnyStatesFactory,
   T extends TransitionConfig<SF>,
   C extends CreateStateChangeMachineProps<any>,
   E extends AnyMachineChangeEvent,
