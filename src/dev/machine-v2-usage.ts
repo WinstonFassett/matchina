@@ -1,5 +1,5 @@
 import { defineStates } from '../states'
-import { StateEventTransitionSenders, TransitionRecordParameters, TransitionRecordParametersForEvent, createStateChangeMachine } from './machine-v2'
+import { StateEventTransitionSenders, TransitionRecordParameters, TransitionRecordParametersForEvent, createMachineWithHooks, createStateChangeMachine } from './machine-v2'
 
 const states = defineStates({
   Idle: {},
@@ -91,3 +91,6 @@ type RSP = TransitionRecordParametersForEvent<S, 'resolve'>
 const f = <K>(k: K, ...x: SP) => {
   
 }
+
+
+const machine2 = createMachineWithHooks(states, transitions, {})

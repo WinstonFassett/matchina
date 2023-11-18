@@ -385,40 +385,41 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
 export function createMachineWithHooks<
   SF extends AnyStatesFactory,
   T extends TransitionConfig<SF>,
-  C extends CreateStateChangeMachineProps<any>,
+  C extends CreateStateChangeMachineProps<any> & {
+    hooks?: StateMachineHooks<E>
+  },
   E extends AnyMachineChangeEvent,
 >(
   states: SF, 
   transitions: T,
   options: C,
-  hooks: StateMachineHooks<E>
+  
 ){
-  const internals: C & {hooks: StateMachineHooks<E>} = {
+  const internals: C & {hooks?: StateMachineHooks<E>} = {
     ...options,
-    hooks,
     resolve: (event) => {
       let result: E | undefined = undefined
       let resolve = options.resolve ?? createResolver({ states, transitions })
-      internals.hooks.resolve?.(event, nextEvent => result = nextEvent && resolve(nextEvent))
+      internals.hooks?.resolve?.(event, nextEvent => result = nextEvent && resolve(nextEvent))
       return result
     },
     guard: event => {
       let result = true
       let guard = options.guard ?? defaultInternals.guard
-      internals.hooks.guard?.(event, (nextEvent) => result = !!nextEvent && guard(nextEvent))
+      internals.hooks?.guard?.(event, (nextEvent) => result = !!nextEvent && guard(nextEvent))
       return result
     },
     handle: event => {
       let result: E| undefined = event
       let handle = options.handle ?? defaultInternals.handle
-      internals.hooks.handle?.(event, nextEvent => result = nextEvent && handle(nextEvent))
+      internals.hooks?.handle?.(event, nextEvent => result = nextEvent && handle(nextEvent))
       return result
     },
     enter: event => {
-      internals.hooks.enter?.(event, nextEvent => (internals.enter ?? defaultInternals.enter)(nextEvent ?? event))
+      internals.hooks?.enter?.(event, nextEvent => (internals.enter ?? defaultInternals.enter)(nextEvent ?? event))
     },
     exit: event => {
-      internals.hooks.exit?.(event, nextEvent => (internals.exit ?? defaultInternals.exit)(nextEvent ?? event))
+      internals.hooks?.exit?.(event, nextEvent => (internals.exit ?? defaultInternals.exit)(nextEvent ?? event))
     },
   }
   return createStateChangeMachine(states, transitions, internals);  
