@@ -262,32 +262,10 @@ export type SendFunction<
   States extends AnyStatesFactory
 > = <EventKey extends string & FlatEventKeys<Transitions>>(
   event: EventKey,
-  // debug:  StateEventTransitionSenders<Transitions, States>,
   ...params: TransitionRecordParametersForEvent<
     StateEventTransitionSenders<Transitions, States>,
     EventKey
   >
-  // ...params: StateEventTransitionSenders<Transitions, States>
-  
-  /*
-    I want params to be typed based on the event key
-    but I can't figure out how to do it.
-    maybe I need a type that maps event keys to params
-  */
-
-    // StateEventTransitionFunc<Transitions, States, ay
-    // any[]
-  // ...params: StateEventTransitionSenders<
-  //   Transitions,
-  //   States
-  // >[keyof Transitions][EventKey] extends () => any
-  //   ? Parameters<
-  //       StateEventTransitionSenders<
-  //         Transitions,
-  //         States
-  //       >[keyof Transitions][EventKey]
-  //     >
-  //   : any[]
 ) => void;
 
 const atom = <T>(initial: T): StoreInternals<T> => {
