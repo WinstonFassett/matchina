@@ -69,6 +69,13 @@ extends ChangeEvent<Type, To, From>
 {
   params: Params
 }
+
+interface StateChangeMachineEvent<
+  Type extends string,
+  To extends State,
+  From extends State,
+  Params> extends ChangeMachineEvent<Type, To, From, Params> {}
+
 type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>
 
 interface ChangeMachineInternals<
@@ -89,17 +96,6 @@ const atom = <T>(initial: T): StoreInternals<T> => {
     set(newValue: T) {
       value = newValue
     }
-  }
-}
-
-type TransitionToState<E, StateKey, EventKey> = 
-  E extends State<infer K> 
-    ? K 
-    : never
-
-type StateEventTransitionConfig<E extends AnyMachineChangeEvent> = {
-  [StateKey in keyof (E['from'])]: {
-    [EventKey in keyof E['type']]: TransitionToState<E, StateKey, EventKey>
   }
 }
 
