@@ -27,13 +27,20 @@ type ConfiguredTransitions<
 > = {
   [S in keyof Config]: {
     [E in keyof Config[S]]: 
+      
+      // state key
       Config[S][E] extends keyof SR 
       ? SR[Config[S][E]]
+      
+      // func that returns a state
       : Config[S][E] extends (...params: any[]) => (...params: any[]) => any 
-        ?  ReturnType<ReturnType<Config[S][E]>> 
-        : Config[S][E] extends (...params: any[]) => any 
-          ? ReturnType<Config[S][E]> 
-          : never
+      ?  ReturnType<ReturnType<Config[S][E]>> 
+      
+      // func that returns a func that takes context params and returns a state
+      : Config[S][E] extends (...params: any[]) => any 
+      ? ReturnType<Config[S][E]> 
+
+      : never
   }
 }
 
