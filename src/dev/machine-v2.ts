@@ -14,15 +14,14 @@ interface ChangeEvent<Type, To, From> {
   from: From
 }
 
-type AnyChangeEvent = ChangeEvent<any, any, any>
 
 interface StoreInternals<T> {
   get(): T
   set(value: T): void
 }
 
-interface TransitionInternals<E> {
-  match: (type: string, ...params: any[]) => E,
+interface TransitionInternals<E extends AnyMachineChangeEvent> {
+  match: (type: E['type'], ...params: E['params']) => E,
   guard: (event: E) => boolean,
   handle: (event: E) => E  
 }
@@ -37,13 +36,16 @@ extends ChangeEvent<Type, To, From>
 {
   params: Params
 }
+type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>
 
 interface ChangeMachineInternals<
-  Event extends AnyChangeEvent
-> {
+  Event extends AnyMachineChangeEvent
+>
+extends TransitionInternals<Event>, StateChangeNotifyInternals<Event>
+{
   store: StoreInternals<Event>,
-  transition: TransitionInternals<Event>
-  notify: StateChangeNotifyInternals<Event>
+  // transition: TransitionInternals<Event>
+  // notify: StateChangeNotifyInternals<Event>
 }
 
 const atom = <T>(initial: T): StoreInternals<T> => {
@@ -67,27 +69,20 @@ type StateEventTransitionConfig<S extends State, Type, Params> = {
 }
 
 const defaultInternals = {
-  transition: {
-    match: (type: string, ...params: any[]) => ({
-      type,
-      to: 'init',
-      from: 'init',
-      params
-    }),
-    guard: (event: AnyChangeEvent) => true,
-    handle: (event: AnyChangeEvent) => event
-  },
-  notify: {
-    enter: (event: AnyChangeEvent) => {},
-    exit: (event: AnyChangeEvent) => {}
-  }
+  match: (type: string, ...params: any[]) => ({
+    type,
+    to: 'init',
+    from: 'init',
+    params
+  }),
+  guard: (event: AnyMachineChangeEvent) => true,
+  handle: (event: AnyMachineChangeEvent) => event,
+  enter: (event: AnyMachineChangeEvent) => {},
+  exit: (event: AnyMachineChangeEvent) => {}
 }
 
 function createStateChangeMachine<
-State,
-Type,
-Params extends any[] = any[],
-E extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Type, State, State, Params>,
+E extends AnyMachineChangeEvent
 >(
   options: Partial<ChangeMachineInternals<E>>
 ) {
@@ -100,8 +95,8 @@ E extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Ty
   return {
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
-    send: (type: string, ...params: Params) => {
-      const nextState = internals.transition.match(type, ...params);
+    send: (type: string, ...params: E['params']) => {
+      const nextState = internals.match(type, ...params);
       if (!nextState) return;
       const lastEvent = internals.store.get();
       const nextEvent = {
@@ -111,19 +106,35 @@ E extends ChangeMachineEvent<Type, State, State, Params> = ChangeMachineEvent<Ty
         to: nextState
       }
       if (
-        !internals.transition.guard(nextEvent)
+        !internals.guard(nextEvent)
       )
         return;
-      const handled = internals.transition.handle(nextEvent);
+      const handled = internals.handle(nextEvent);
       if (!handled) return;
-      internals.notify.exit(lastEvent);
       internals.store.set(handled);
-      internals.notify.enter(handled);
+      internals.exit(lastEvent);
+      internals.enter(handled);
     },
   };
 }
 
-function createMachineWithHooks () {
-  // TODO: type and implement
-}
+function createMachineWithHooks<E extends AnyMachineChangeEvent>(
+  hooksConfig: {
+    guard?: (event: E) => boolean,
+    transition?: (event: E) => E,
+    handle?: (event: E) => E,
+    enter?: (event: E) => void,
+    exit?: (event: E) => void,
+  }
+) {
+  // Create the state change machine with overridden internals using hooks
+  const machine = createStateChangeMachine<E>({    
+    guard: hooksConfig.guard,
+    handle: hooksConfig.handle,
+    enter: hooksConfig.enter,
+    exit: hooksConfig.exit,
+  });
 
+  // Return the machine with the custom internals
+  return machine;
+}
