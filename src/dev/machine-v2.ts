@@ -188,7 +188,7 @@ function createMatcher<
 ): ResolveTransition<E> {
   const { states, transitions, machine } = context
   return (from, type, ...params) => {
-    const to = context.transitions[from][type]
+    const to = transitions[from][type]
     if (!to) return undefined
     if (typeof to === "function") {
       const targetStateOrFunc = to(...params);
@@ -197,12 +197,6 @@ function createMatcher<
         : targetStateOrFunc;
     } else {
       return states[to as keyof typeof states](...params) as any;
-    }
-    return {
-      type,
-      from,
-      to,
-      params
     }
   }
 }
