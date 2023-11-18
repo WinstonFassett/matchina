@@ -77,8 +77,7 @@ interface StoreInternals<T> {
 }
 
 interface TransitionInternals<E extends AnyMachineChangeEvent> {
-  // match: (from: E['from'], event: Omit<E, 'to'>) => E | undefined,
-  match: ResolveTransition<E>
+  resolve: ResolveTransition<E>
   guard: (event: E) => boolean,
   handle: (event: E) => E | undefined 
 }
@@ -181,7 +180,7 @@ type ResolveTransition<E extends AnyMachineChangeEvent> = (
   event: ResolveEvent<E>
 ) => E | undefined
 
-function createMatcher<
+function createResolver<
   C extends StateChangeMachineTransitionContext<any,any,any,any>,
   E extends MachineContextEvent<C> = MachineContextEvent<C>
 >(
@@ -216,7 +215,7 @@ function createStateChangeMachine<
     ...defaultInternals,
     ...options,
     store: options.store || atom<E>({} as E),
-    matcher: options.match || createMatcher(options)
+    resolver: options.resolve || createResolver(options)
   } as ChangeMachineInternals<E>
   if (!internals.store) internals.store = atom<E>({} as E)
   return {
@@ -224,7 +223,7 @@ function createStateChangeMachine<
     getState: () => internals.store.get().to,
     send: (type, ...params) => {
       const lastEvent = internals.store.get();
-      const nextState = internals.match({
+      const nextState = internals.resolve({
         ...lastEvent,
         from: lastEvent.to,
         type
@@ -252,7 +251,7 @@ function createStateChangeMachine<
 type ResolveEvent<E> = Omit<E, "to">;
 
 type StateMachineHooks<E extends AnyMachineChangeEvent> = {
-  match?: Middleware<ResolveEvent<E>>;
+  resolve?: Middleware<ResolveEvent<E>>;
   guard?: Middleware<E>;
   handle?: Middleware<E>;
   enter?: Middleware<E>;
@@ -269,10 +268,10 @@ function createMachineWithHooks<
   const internals: C & {hooks: StateMachineHooks<E>} = {
     ...options,
     hooks,
-    match: (event) => {
+    resolve: (event) => {
       let result: E | undefined = undefined
-      let match = options.match ?? createMatcher(options)
-      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent))
+      let resolve = options.resolve ?? createResolver(options)
+      internals.hooks.resolve?.(event, nextEvent => result = nextEvent && resolve(nextEvent))
       return result
     },
     guard: event => {
