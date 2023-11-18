@@ -1,4 +1,5 @@
 import { StateChangeMachine } from "../../machine-types";
+import { Middleware } from "./middleware";
 
 type Disposer = () => void;
 
@@ -7,7 +8,7 @@ export function enhanceMachine<E>(
 ): (enhancer: Middleware<E>) => Disposer {
   const context = machine as any;
   if (context.use) {
-    return context.use;
+    return context.use.bind(context);
   }
   context.use = (enhancer: Middleware<E>) => {
     const origUpdate = machine.update;
