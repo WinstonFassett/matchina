@@ -54,6 +54,7 @@ interface ChangeEvent<Type, To, From> {
   to: To
   from: From
 }
+type AnyChangeEvent = ChangeEvent<any, any, any>
 
 interface ChangeMachineEvent<Type, To, From, Params>
 
@@ -75,8 +76,9 @@ interface StoreInternals<T> {
   set(value: T): void
 }
 
-interface TransitionInternals<E> {
-  match: (event: Omit<E, 'to'>) => E | undefined,
+interface TransitionInternals<E extends AnyMachineChangeEvent> {
+  // match: (from: E['from'], event: Omit<E, 'to'>) => E | undefined,
+  match: ResolveTransition<E>
   guard: (event: E) => boolean,
   handle: (event: E) => E | undefined 
 }
@@ -124,7 +126,7 @@ interface MachineContextEvent<
 
 
 
-interface ChangeMachineInternals<Event>
+interface ChangeMachineInternals<Event extends AnyMachineChangeEvent>
 extends 
   TransitionInternals<Event>, 
   StateChangeNotifyInternals<Event>
@@ -167,12 +169,7 @@ const atom = <T>(initial: T): StoreInternals<T> => {
 }
 
 const defaultInternals = {
-  match: (type: string, ...params: any[]) => ({
-    type,
-    to: 'init',
-    from: 'init',
-    params
-  }),
+
   guard: (event: AnyMachineChangeEvent) => true,
   handle: (event: AnyMachineChangeEvent) => event,
   enter: (event: AnyMachineChangeEvent) => {},
@@ -181,9 +178,7 @@ const defaultInternals = {
 
 
 type ResolveTransition<E extends AnyMachineChangeEvent> = (
-  from: E['from'],
-  type: E['type'],
-  ...params: E['params']
+  event: ResolveEvent<E>
 ) => E | undefined
 
 function createMatcher<
@@ -193,7 +188,7 @@ function createMatcher<
   context: C
 ): ResolveTransition<E> {
   const { states, transitions, machine } = context
-  return (from, type, ...params) => {
+  return ({ from, type, params }) => {
     const to = transitions[from][type]
     if (!to) return undefined
     if (typeof to === "function") {
@@ -229,7 +224,11 @@ function createStateChangeMachine<
     getState: () => internals.store.get().to,
     send: (type, ...params) => {
       const lastEvent = internals.store.get();
-      const nextState = internals.match({ ...lastEvent, type, params });
+      const nextState = internals.match({
+        ...lastEvent,
+        from: lastEvent.to,
+        type
+      });
       if (!nextState) return;
       const nextEvent = {
         ...lastEvent,
@@ -250,8 +249,10 @@ function createStateChangeMachine<
   };
 }
 
+type ResolveEvent<E> = Omit<E, "to">;
+
 type StateMachineHooks<E extends AnyMachineChangeEvent> = {
-  match?: Middleware<Omit<E, "to">>;
+  match?: Middleware<ResolveEvent<E>>;
   guard?: Middleware<E>;
   handle?: Middleware<E>;
   enter?: Middleware<E>;
@@ -268,10 +269,10 @@ function createMachineWithHooks<
   const internals: C & {hooks: StateMachineHooks<E>} = {
     ...options,
     hooks,
-    match: event => {
+    match: (event) => {
       let result: E | undefined = undefined
-      let match = options.match ?? defaultInternals.match
-      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent as any))
+      let match = options.match ?? createMatcher(options)
+      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent))
       return result
     },
     guard: event => {
