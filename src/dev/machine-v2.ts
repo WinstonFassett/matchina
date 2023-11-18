@@ -167,12 +167,13 @@ const atom = <T>(initial: T): StoreInternals<T> => {
   }
 }
 
-const defaultInternals = {
+const emptyEffect = <E>(event: E) => {}
 
+const defaultInternals = {
   guard: (event: AnyMachineChangeEvent) => true,
   handle: (event: AnyMachineChangeEvent) => event,
-  enter: (event: AnyMachineChangeEvent) => {},
-  exit: (event: AnyMachineChangeEvent) => {}
+  enter: emptyEffect,
+  exit: emptyEffect
 }
 
 
