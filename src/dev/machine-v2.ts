@@ -1,7 +1,8 @@
 import { Middleware } from '../extras/middleware'
-interface StateMachine<State, Type, Params> {
-  getState(): State
-  send(type: Type, ...params: Params[]): void
+interface StateMachine<E extends AnyMachineChangeEvent> {
+  getState(): E['to'] | E['from']
+  getChange(): E
+  send(type: E['type'], ...params: E['params']): void
 }
 
 interface State<K extends string = string> {
@@ -13,7 +14,6 @@ interface ChangeEvent<Type, To, From> {
   to: To
   from: From
 }
-
 
 interface StoreInternals<T> {
   get(): T
@@ -59,11 +59,14 @@ const atom = <T>(initial: T): StoreInternals<T> => {
   }
 }
 
-type TransitionToState<S> = S extends State<infer K> ? K : never
+type TransitionToState<E, StateKey, EventKey> = 
+  E extends State<infer K> 
+    ? K 
+    : never
 
-type StateEventTransitionConfig<S extends State, Type, Params> = {
-  [StateKey in keyof S]: {
-    [EventKey in keyof Type]: TransitionToState<S>
+type StateEventTransitionConfig<E extends AnyMachineChangeEvent> = {
+  [StateKey in keyof (E['from'])]: {
+    [EventKey in keyof E['type']]: TransitionToState<E, StateKey, EventKey>
   }
 }
 
@@ -84,7 +87,7 @@ function createStateChangeMachine<
 E extends AnyMachineChangeEvent
 >(
   options: Partial<ChangeMachineInternals<E>>
-) {
+): StateMachine<E> {
   const internals = {
     ...defaultInternals,
     ...options,
@@ -94,7 +97,7 @@ E extends AnyMachineChangeEvent
   return {
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
-    send: (type: string, ...params: E['params']) => {
+    send: (type, ...params) => {
       const lastEvent = internals.store.get();
       const nextState = internals.match({ ...lastEvent, type, params });
       if (!nextState) return;
@@ -138,9 +141,9 @@ function createMachineWithHooks<E extends AnyMachineChangeEvent>(
     ...options,
     hooks,
     match: event => {
-      let result 
+      let result: E | undefined = undefined
       let match = options.match ?? defaultInternals.match
-      internals.hooks.match?.(event, nextEvent => result = !!nextEvent && match(nextEvent))
+      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent))
       return result
     },
     guard: event => {
