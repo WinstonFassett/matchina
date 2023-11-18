@@ -1,4 +1,4 @@
-
+import { Middleware } from '../extras/middleware'
 interface StateMachine<State, Type, Params> {
   getState(): State
   send(type: Type, ...params: Params[]): void
@@ -21,7 +21,7 @@ interface StoreInternals<T> {
 }
 
 interface TransitionInternals<E extends AnyMachineChangeEvent> {
-  match: (type: E['type'], ...params: E['params']) => E | undefined,
+  match: (event: Omit<E, 'to'>) => E | undefined,
   guard: (event: E) => boolean,
   handle: (event: E) => E | undefined 
 }
@@ -95,9 +95,9 @@ E extends AnyMachineChangeEvent
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
     send: (type: string, ...params: E['params']) => {
-      const nextState = internals.match(type, ...params);
-      if (!nextState) return;
       const lastEvent = internals.store.get();
+      const nextState = internals.match({ ...lastEvent, type, params });
+      if (!nextState) return;
       const nextEvent = {
         ...lastEvent,
         type,
@@ -117,24 +117,61 @@ E extends AnyMachineChangeEvent
   };
 }
 
-function createMachineWithHooks<E extends AnyMachineChangeEvent>(
-  hooksConfig: {
-    guard?: (event: E) => boolean,
-    transition?: (event: E) => E,
-    handle?: (event: E) => E,
-    enter?: (event: E) => void,
-    exit?: (event: E) => void,
-  }
-) {
-  // Create the state change machine with overridden internals using hooks
-  const machine = createStateChangeMachine<E>({    
-    guard: hooksConfig.guard,
-    transition: hooksConfig.transition,
-    handle: hooksConfig.handle,
-    enter: hooksConfig.enter,
-    exit: hooksConfig.exit,
-  });
+// function createMachineWithHooks<E extends AnyMachineChangeEvent>(
+//   hooksConfig: {
+//     guard?: (event: E) => boolean,
+//     transition?: (event: E) => E,
+//     handle?: (event: E) => E,
+//     enter?: (event: E) => void,
+//     exit?: (event: E) => void,
+//   }
+// ) {
+//   // Create the state change machine with overridden internals using hooks
+//   const machine = createStateChangeMachine<E>({    
+//     guard: hooksConfig.guard,
+//     transition: hooksConfig.transition,
+//     handle: hooksConfig.handle,
+//     enter: hooksConfig.enter,
+//     exit: hooksConfig.exit,
+//   });
 
-  // Return the machine with the custom internals
+//   // Return the machine with the custom internals
+//   return machine;
+// }
+
+function createMachineWithHooks<E extends AnyMachineChangeEvent>(
+  internals: ChangeMachineInternals<E>,
+  hooks: {
+    match?: Middleware<Omit<E,'to'>>,
+    guard?: Middleware<E>,
+    handle?: Middleware<E>,
+    enter?: Middleware<E>,
+    exit?: Middleware<E>,
+  }
+){
+  const machine = createStateChangeMachine<E>({
+    ...internals,
+    match: event => {
+      let result 
+      hooks.match?.(event, nextEvent => result = nextEvent)
+      return result
+    },
+    guard: event => {
+      let result = true
+      hooks.guard?.(event, () => result = false)
+      return result
+    },
+    handle: event => {
+      let result = event
+      hooks.handle?.(event, nextEvent => result = nextEvent || event)
+      return result
+    },
+    enter: event => {
+      hooks.enter?.(event, () => {})
+    },
+    exit: event => {
+      hooks.exit?.(event, () => {})
+    },
+  });
   return machine;
 }
