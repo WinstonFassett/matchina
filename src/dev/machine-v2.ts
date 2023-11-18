@@ -203,21 +203,32 @@ function createResolver<
   }
 }
 
-export type CreateStateChangeMachineProps<> =
-  StateChangeMachineTransitionContext<any>
-  & Partial<StateChangeMachineInternals<any,any,any>>
+export type CreateStateChangeMachineProps<
+  SF extends Record<string, () => State>
+> =
+  // // StateChangeMachineTransitionContext<SF>
+  // {
+  //   states: SF,
+  //   transitions: TransitionConfig<SF>,
+  // }
+  // & 
+  Partial<StateChangeMachineInternals<any,any,any>>
 
-function createStateChangeMachine<
-  Props extends CreateStateChangeMachineProps,
-  E extends AnyMachineChangeEvent,
+export function createStateChangeMachine<
+  SF extends Record<string, (...any:[]) => State>,
+  T extends TransitionConfig<SF>,
+  Props extends CreateStateChangeMachineProps<any>,
+  E extends MachineContextEvent<StateChangeMachineTransitionContext<SF>>,
 >(
+  states: SF, 
+  transitions: T,
   options: Props  
 ): StateMachine<E> {
   const internals = {
     ...defaultInternals,
     ...options,
     store: options.store || atom<E>({} as E),
-    resolver: options.resolve || createResolver(options)
+    resolver: options.resolve || createResolver({ states, transitions })
   } as ChangeMachineInternals<E>
   if (!internals.store) internals.store = atom<E>({} as E)
   return {
@@ -261,9 +272,13 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
 };
 
 export function createMachineWithHooks<
-  C extends CreateStateChangeMachineProps,
-  E extends MachineContextEvent<C> = MachineContextEvent<C>,
->(  
+  SF extends Record<string, (...any:[]) => State>,
+  T extends TransitionConfig<SF>,
+  C extends CreateStateChangeMachineProps<any>,
+  E extends AnyMachineChangeEvent,
+>(
+  states: SF, 
+  transitions: T,
   options: C,
   hooks: StateMachineHooks<E>
 ){
@@ -272,7 +287,7 @@ export function createMachineWithHooks<
     hooks,
     resolve: (event) => {
       let result: E | undefined = undefined
-      let resolve = options.resolve ?? createResolver(options)
+      let resolve = options.resolve ?? createResolver({ states, transitions })
       internals.hooks.resolve?.(event, nextEvent => result = nextEvent && resolve(nextEvent))
       return result
     },
@@ -295,5 +310,5 @@ export function createMachineWithHooks<
       internals.hooks.exit?.(event, nextEvent => (internals.exit ?? defaultInternals.exit)(nextEvent ?? event))
     },
   }
-  return createStateChangeMachine<C,E>(internals);  
+  return createStateChangeMachine(states, transitions, internals);  
 }

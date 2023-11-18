@@ -1,4 +1,5 @@
 import { defineStates } from '../states'
+import { CreateStateChangeMachineProps, createMachineWithHooks, createStateChangeMachine } from './machine-v2'
 
 const states = defineStates({
   Idle: {},
@@ -7,4 +8,21 @@ const states = defineStates({
   Rejected: {} 
 })
 
-// const machine = 
+
+const machine = createStateChangeMachine(
+  states, 
+  {
+    Idle: {
+      execute: 'Pending'
+    },
+    Pending: {
+      resolve: 'Resolved',
+      reject: 'Rejected'
+    },
+    Resolved: {},
+    Rejected: {}
+  },
+  {}
+)
+
+// machine.send('')
