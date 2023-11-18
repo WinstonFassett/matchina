@@ -117,17 +117,24 @@ E extends AnyMachineChangeEvent
   };
 }
 
+type ChangeMachineWithHooksInternals<E extends AnyMachineChangeEvent> =
+  ChangeMachineInternals<E> & {
+    hooks: StateMachineHooks<E>;
+  };
+
+type StateMachineHooks<E extends AnyMachineChangeEvent> = {
+  match?: Middleware<Omit<E, "to">>;
+  guard?: Middleware<E>;
+  handle?: Middleware<E>;
+  enter?: Middleware<E>;
+  exit?: Middleware<E>;
+};
+
 function createMachineWithHooks<E extends AnyMachineChangeEvent>(
   options: ChangeMachineInternals<E>,
-  hooks: {
-    match?: Middleware<Omit<E,'to'>>,
-    guard?: Middleware<E>,
-    handle?: Middleware<E>,
-    enter?: Middleware<E>,
-    exit?: Middleware<E>,
-  }
+  hooks: StateMachineHooks<E>
 ){
-  const internals = {
+  const internals: ChangeMachineWithHooksInternals<E> = {
     ...options,
     hooks,
     match: event => {
@@ -143,19 +150,17 @@ function createMachineWithHooks<E extends AnyMachineChangeEvent>(
       return result
     },
     handle: event => {
-      let result = event
+      let result: E| undefined = event
       let handle = options.handle ?? defaultInternals.handle
-      internals.hooks.handle?.(event, nextEvent => result = !!nextEvent && handle(nextEvent))
+      internals.hooks.handle?.(event, nextEvent => result = nextEvent && handle(nextEvent))
       return result
     },
     enter: event => {
-      internals.hooks.enter?.(event, internals.enter ?? defaultInternals.enter)
+      internals.hooks.enter?.(event, nextEvent => (internals.enter ?? defaultInternals.enter)(nextEvent ?? event))
     },
     exit: event => {
-      internals.hooks.exit?.(event, internals.exit ?? defaultInternals.exit)
+      internals.hooks.exit?.(event, nextEvent => (internals.exit ?? defaultInternals.exit)(nextEvent ?? event))
     },
   }
-
-  const machine = createStateChangeMachine<E>(internals);
-  return machine;
+  return createStateChangeMachine<E>(internals);  
 }
