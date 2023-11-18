@@ -21,9 +21,9 @@ interface StoreInternals<T> {
 }
 
 interface TransitionInternals<E extends AnyMachineChangeEvent> {
-  match: (type: E['type'], ...params: E['params']) => E,
+  match: (type: E['type'], ...params: E['params']) => E | undefined,
   guard: (event: E) => boolean,
-  handle: (event: E) => E  
+  handle: (event: E) => E | undefined 
 }
 
 interface StateChangeNotifyInternals<E> {
@@ -44,8 +44,7 @@ interface ChangeMachineInternals<
 extends TransitionInternals<Event>, StateChangeNotifyInternals<Event>
 {
   store: StoreInternals<Event>,
-  // transition: TransitionInternals<Event>
-  // notify: StateChangeNotifyInternals<Event>
+  transition?: (event: Event) => Event | undefined
 }
 
 const atom = <T>(initial: T): StoreInternals<T> => {
@@ -130,6 +129,7 @@ function createMachineWithHooks<E extends AnyMachineChangeEvent>(
   // Create the state change machine with overridden internals using hooks
   const machine = createStateChangeMachine<E>({    
     guard: hooksConfig.guard,
+    transition: hooksConfig.transition,
     handle: hooksConfig.handle,
     enter: hooksConfig.enter,
     exit: hooksConfig.exit,
