@@ -109,6 +109,21 @@ type StateChangeMachineTransitionContext<
   machine: M
 }
 
+interface MachineContextEvent<
+  Context extends StateChangeMachineTransitionContext<any,any,any,CP>,
+  CP extends any[] = any[]
+> extends
+  StateChangeMachineEvent<
+    string & keyof Context[keyof Context], // flat event keys from context.transitions
+    ReturnType<Context['states'][keyof Context['states']]>,
+    ReturnType<Context['states'][keyof Context['states']]>,
+    CP
+  >{
+    // match
+  }
+
+
+
 interface ChangeMachineInternals<Event>
 extends 
   TransitionInternals<Event>, 
@@ -173,12 +188,7 @@ type ResolveTransition<E extends AnyMachineChangeEvent> = (
 
 function createMatcher<
   C extends StateChangeMachineTransitionContext<any,any,any,any>,
-  E extends StateChangeMachineEvent<
-    any,
-    ReturnType<C['states'][keyof C['states']]>,
-    ReturnType<C['states'][keyof C['states']]>,
-    any[]
-  >
+  E extends MachineContextEvent<C> = MachineContextEvent<C>
 >(
   context: C
 ): ResolveTransition<E> {
