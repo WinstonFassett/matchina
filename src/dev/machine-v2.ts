@@ -8,18 +8,24 @@ interface StateMachine<E extends AnyMachineChangeEvent> {
 // type StatesRecord<K extends string, S extends State> = Record<K, S>
 
 type TransitionConfig<
-  S,
-  SR extends Record<string, S>,
-  SK extends string & keyof SR = string & keyof SR,
-  CP extends any[] = any[],
+  SF extends Record<string, (...params:any[]) => any>,
+  CP extends any[] = any[]
 > = {
-  [FromStateKey in string]: {
+  [FromStateKey in string & keyof SF]: {
     [EventKey in string]:
-      | SK
-      | ((...params: any[]) => S)
-      | ((...params: any[]) => (...context: CP) => S);
+      | keyof SF
+      | ((...params: any[]) => ReturnType<SF[keyof SF]>)
+      | ((...params: any[]) => (...context: CP) => ReturnType<SF[keyof SF]>);
   };
 };
+
+// S,
+// { 
+//   [SK in keyof SF]: ReturnType<SF[SK]>
+// }
+// ,SK
+// ,CP
+
 
 type ConfiguredTransitions<
   Config,  
@@ -91,27 +97,26 @@ type StateRecordFromStateFactoryRecord<SF extends Record<string, (...params:any[
   [StateKey in keyof SF]: ReturnType<SF[StateKey]>
 }
 
-type StateChangeMachineTransitionContext<
-  S,
-  SF extends Record<string, (...any:[]) => S>,
-  SK extends string & keyof SF = string & keyof SF,
-  CP extends any[] = any[],
-  M extends StateMachine<ChangeMachineEvent<any, S, S, any>> = StateMachine<ChangeMachineEvent<any, S, S, any>>
-> ={
+interface StateChangeMachineTransitionContext<
+  SF extends Record<string, (...any:[]) => State>,
+> {
   states: SF,
-  transitions: TransitionConfig<
-    S,
-    { 
-      [SK in keyof SF]: ReturnType<SF[SK]>
-    }
-    ,SK
-    ,CP
-  >,
+  transitions: TransitionConfig<SF>,
+}
+
+interface StateChangeMachineTransitionRuntimeContext<
+  SF extends Record<string, (...any:[]) => State>,
+  M extends StateMachine<
+    MachineContextEvent<StateChangeMachineTransitionContext<SF>>    
+  >
+>
+extends StateChangeMachineTransitionContext<SF> 
+{
   machine: M
 }
 
 interface MachineContextEvent<
-  Context extends StateChangeMachineTransitionContext<any,any,any,CP>,
+  Context extends StateChangeMachineTransitionContext<any>,
   CP extends any[] = any[]
 > extends
   StateChangeMachineEvent<
@@ -142,15 +147,10 @@ interface StateChangeMachineInternals<
 extends 
   ChangeMachineInternals<Event>, 
   StateChangeNotifyInternals<Event>,
-  StateChangeMachineTransitionContext<any,any,any,any>
+  StateChangeMachineTransitionContext<States>
 {
   states: States,
-  transitions: TransitionConfig<
-    ReturnType<States[keyof States]>, 
-    StateRecordFromStateFactoryRecord<States>, 
-    string & keyof States, 
-    Event['params']
-  >, 
+  transitions: TransitionConfig<States>, 
   store: StoreInternals<Event>,
   transition?: (event: Event) => Event | undefined
 }
@@ -182,12 +182,13 @@ type ResolveTransition<E extends AnyMachineChangeEvent> = (
 ) => E | undefined
 
 function createResolver<
-  C extends StateChangeMachineTransitionContext<any,any,any,any>,
+  C extends StateChangeMachineTransitionContext<any>,
   E extends MachineContextEvent<C> = MachineContextEvent<C>
 >(
   context: C
 ): ResolveTransition<E> {
-  const { states, transitions, machine } = context
+  const { states, transitions } = context
+  const { machine } = context as any // TODO: fix typing here
   return ({ from, type, params }) => {
     const to = transitions[from][type]
     if (!to) return undefined
@@ -202,8 +203,8 @@ function createResolver<
   }
 }
 
-type CreateStateChangeMachineProps =
-  StateChangeMachineTransitionContext<any,any,any,any>
+export type CreateStateChangeMachineProps<> =
+  StateChangeMachineTransitionContext<any>
   & Partial<StateChangeMachineInternals<any,any,any>>
 
 function createStateChangeMachine<
@@ -259,9 +260,9 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
   exit?: Middleware<E>;
 };
 
-function createMachineWithHooks<
+export function createMachineWithHooks<
   C extends CreateStateChangeMachineProps,
-  E extends AnyMachineChangeEvent,
+  E extends MachineContextEvent<C> = MachineContextEvent<C>,
 >(  
   options: C,
   hooks: StateMachineHooks<E>
