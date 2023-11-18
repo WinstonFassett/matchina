@@ -1,5 +1,5 @@
 import { Middleware } from "../extras/middleware";
-import { FlatMemberUnionToIntersection, Simplify } from "../types";
+import { FlatMemberUnion, FlatMemberUnionToIntersection, Members, Simplify, TUnionToIntersection } from "../types";
 interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
   getState(): E["to"] | E["from"];
   getChange(): E;
@@ -15,8 +15,8 @@ export type TransitionConfig<
   [FromStateKey in string & keyof SF]: {
     [EventKey in string]:
       | keyof SF
-      | ((...params: any[]) => ReturnType<SF[keyof SF]>)
-      | ((...params: any[]) => (...context: CP) => ReturnType<SF[keyof SF]>);
+      | ((...params: any[]) => StateFromFactory<SF>)
+      | ((...params: any[]) => (...context: CP) => StateFromFactory<SF>);
   };
 };
 
@@ -55,7 +55,7 @@ interface ChangeMachineEvent<Type, To, From, Params> {
 }
 type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>;
 
-interface StateChangeMachineEvent<
+export interface StateChangeMachineEvent<
   Type extends string,
   To extends State,
   From extends State,
@@ -89,9 +89,7 @@ interface StateChangeMachineTransitionContext<
 interface StateMachine<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
-  E extends MachineContextEvent<
-    StateChangeMachineTransitionContext<TC, SF>
-  > = MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
+  E extends StateTransitionEvent<TC, SF> = StateTransitionEvent<TC, SF>
 > {
   getState(): E["to"] | E["from"];
   getChange(): E;
@@ -101,10 +99,12 @@ interface StateMachine<
   senders: StateEventTransitionSenders<TC, SF>;
 }
 
+export type StateTransitionEvent<TC extends TransitionConfig<SF>, SF extends AnyStatesFactory> = MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>;
+
 interface StateChangeMachineTransitionRuntimeContext<
   SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
-  E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
+  E extends StateTransitionEvent<TC, SF>,
   M extends StateMachine<TC, SF, E>,
 > extends StateChangeMachineTransitionContext<TC, SF> {
   machine: M;
@@ -115,8 +115,8 @@ interface MachineContextEvent<
   CP extends any[] = any[],
 > extends StateChangeMachineEvent<
     string & FlatEventKeys<Context["transitions"]>, // flat event keys from context.transitions
-    ReturnType<Context["states"][keyof Context["states"]]>,
-    ReturnType<Context["states"][keyof Context["states"]]>,
+    StateFromFactory<Context["states"]>,
+    StateFromFactory<Context["states"]>,
     CP
   > {
   // match
@@ -131,7 +131,7 @@ interface ChangeMachineInternals<Event extends AnyMachineChangeEvent>
 
 interface StateChangeMachineInternals<
   States extends AnyStatesFactory,
-  S extends ReturnType<States[keyof States]>,
+  S extends StateFromFactory<States>,
   Event extends ChangeMachineEvent<any, S, S, any>,
   TC extends TransitionConfig<States>,
 > extends ChangeMachineInternals<Event>,
@@ -152,7 +152,7 @@ export type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
 
-type StateFromFactory<
+export type StateFromFactory<
   States extends AnyStatesFactory,
   StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
@@ -192,6 +192,50 @@ export type StateEventTransitionFuncs<
     TransitionStateKey
   >;
 };
+
+
+export type FlatExitStates<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = Members<{
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      Transitions,
+      States
+    >[StateKey]]: StateEventTransitionFuncs<
+      Transitions,
+      States
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+        ? TargetStateKey extends keyof States
+          ? TargetState
+          : never
+        : never
+      : never;
+  }[keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
+}>;
+
+export type StatesToEventsToStates<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      Transitions,
+      States
+    >[StateKey]]: ReturnType<
+      StateEventTransitionFuncs<Transitions, States>[StateKey][EventKey]
+    >;
+  };
+};
+
+
+export type EventExitStatesIntersection<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = TUnionToIntersection<
+  FlatMemberUnion<StatesToEventsToStates<Transitions, States>>
+>;
 
 export type StateEventTransitionSenders<
   Transitions extends TransitionConfig<States>,
