@@ -364,6 +364,8 @@ export function createStateChangeMachine<
       internals.exit(handled);
       internals.enter(handled);
     },
+    api: {} as any, // stubs,
+    senders: {} as any // stubs
   };
   return machine;
 }
