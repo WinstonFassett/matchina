@@ -1,4 +1,4 @@
-import { Middleware } from "./middleware";
+type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
 function interleaveMiddleware<E>(
   middlewares: Middleware<E>[],

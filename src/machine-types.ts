@@ -1,5 +1,4 @@
 import { FuncEnhancer } from "./extras/methodware";
-import { Middleware } from "./extras/middleware";
 import {
   ChangeEvent,
   CreateFunc,
@@ -43,8 +42,8 @@ interface ChangeMachine<Event, To, From = To> {
 interface Resettable {
   reset(): void;
 }
-interface Usable<E> {
-  use(enhancer: Middleware<E>): () => void;
+interface Usable<F extends Func> {
+  use(...mw: Middleware<F>[]): void;
 }
 
 export type StatesFactory<T = any> = {
@@ -82,9 +81,7 @@ type TwoPhaseTransitionToStateFunc<
 export interface StateMachine<
   Transitions extends TransitionConfig<States>,
   States extends StatesFactory,
-  E extends StateMachineEvent<Transitions, States> = StateMachineEvent<Transitions, States>
-> extends Usable<E>
- {
+> {
   context: StateMachineContext<Transitions, States>; // consolidate with def?
   getState: () => StateFromFactory<States>;
   send: SendFunction<Transitions, States>;

@@ -1,7 +1,5 @@
-import { Middleware } from "./extras/middleware";
 import {
   ChangeEventMatchers,
-  StateEventTransitionFuncs,
   StateFromFactory,
   StateMachine,
   StateMachineContext,
@@ -92,6 +90,7 @@ export function createMachineClass<
         });
       }
     }
+
     reset() {
       this.update((change) => {
         return {
@@ -102,22 +101,7 @@ export function createMachineClass<
         };
       });
     }
-    use(enhancer: Middleware<Event>) {
-      const origUpdate = this.update;      
-      console.log("USE");
-      this.update = (updater) => {
-        origUpdate.call(this, (current: any) => {
-          let enhancedResult: any;
-          enhancer(updater(current), (result) => {
-            enhancedResult = result;
-          });
-          return enhancedResult ?? current;
-        });
-      };
-      return () => {
-        this.update = origUpdate;
-      };        
-    }
+
     // TODO: factor out public method
     update(getUpdate: (ev: Event) => Event) {
       const change = getUpdate(this.lastChange);
