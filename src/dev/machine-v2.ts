@@ -19,14 +19,6 @@ type TransitionConfig<
   };
 };
 
-// S,
-// { 
-//   [SK in keyof SF]: ReturnType<SF[SK]>
-// }
-// ,SK
-// ,CP
-
-
 type ConfiguredTransitions<
   Config,  
   SR
@@ -63,7 +55,6 @@ interface ChangeEvent<Type, To, From> {
 type AnyChangeEvent = ChangeEvent<any, any, any>
 
 interface ChangeMachineEvent<Type, To, From, Params>
-
 // extends ChangeEvent<Type, To, From>
 {
   type: Type
@@ -284,9 +275,8 @@ function createResolver<
 >(
   context: C
 ): ResolveTransition<E> {
-  const { states, transitions } = context
-  const { machine } = context as any // TODO: fix typing here
-  return ({ from, type, params }) => {
+  const { states, transitions } = context  
+  return ({ from, type, params, machine }) => {
     const to = transitions[from][type]
     if (!to) return undefined
     if (typeof to === "function") {
@@ -321,7 +311,7 @@ export function createStateChangeMachine<
     resolver: options.resolve || createResolver({ states, transitions })
   } as ChangeMachineInternals<E>
   if (!internals.store) internals.store = atom<E>({} as E)
-  return {
+  const machine = {
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
     send: (type, ...params) => {
@@ -329,7 +319,8 @@ export function createStateChangeMachine<
       const nextState = internals.resolve({
         ...lastEvent,
         from: lastEvent.to,
-        type
+        type,
+        machine
       });
       if (!nextState) return;
       const nextEvent = {
@@ -349,9 +340,12 @@ export function createStateChangeMachine<
       internals.enter(handled);
     },
   };
+  return machine;
 }
 
-type ResolveEvent<E> = Omit<E, "to">;
+type ResolveEvent<E extends MachineContextEvent<any, any[]>> = Omit<E, "to"> & {
+  machine: StateMachine<E>
+};
 
 type StateMachineHooks<E extends AnyMachineChangeEvent> = {
   resolve?: Middleware<ResolveEvent<E>>;
