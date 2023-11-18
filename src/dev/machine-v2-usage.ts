@@ -25,4 +25,5 @@ const machine = createStateChangeMachine(
   {}
 )
 
+machine.send('')
 // machine.send('')

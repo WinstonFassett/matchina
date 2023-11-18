@@ -1,5 +1,5 @@
 import { Middleware } from '../extras/middleware'
-interface StateMachine<E extends AnyMachineChangeEvent> {
+interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
   getState(): E['to'] | E['from']
   getChange(): E
   send(type: E['type'], ...params: E['params']): void
@@ -98,25 +98,36 @@ type StateRecordFromStateFactoryRecord<SF extends Record<string, (...params:any[
 }
 
 interface StateChangeMachineTransitionContext<
+  TC extends TransitionConfig<SF>,
   SF extends Record<string, (...any:[]) => State>,
 > {
   states: SF,
-  transitions: TransitionConfig<SF>,
+  transitions: TC,
 }
+
+interface StateMachine<
+  E extends MachineContextEvent<any>
+> {
+  getState(): E['to'] | E['from']
+  getChange(): E
+  send(type: E['type'], ...params: E['params']): void
+}
+
 
 interface StateChangeMachineTransitionRuntimeContext<
   SF extends Record<string, (...any:[]) => State>,
+  TC extends TransitionConfig<SF>,
   M extends StateMachine<
-    MachineContextEvent<StateChangeMachineTransitionContext<SF>>    
+    MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>    
   >
 >
-extends StateChangeMachineTransitionContext<SF> 
+extends StateChangeMachineTransitionContext<TC, SF> 
 {
   machine: M
 }
 
 interface MachineContextEvent<
-  Context extends StateChangeMachineTransitionContext<any>,
+  Context extends StateChangeMachineTransitionContext<any, any>,
   CP extends any[] = any[]
 > extends
   StateChangeMachineEvent<
@@ -143,17 +154,95 @@ interface StateChangeMachineInternals<
   States extends Record<string, (...any:[]) => State>,  
   S extends ReturnType<States[keyof States]>,
   Event extends ChangeMachineEvent<any, S, S, any>,
+  TC extends TransitionConfig<States>
 >
 extends 
   ChangeMachineInternals<Event>, 
   StateChangeNotifyInternals<Event>,
-  StateChangeMachineTransitionContext<States>
+  StateChangeMachineTransitionContext<TC, States>
 {
   states: States,
-  transitions: TransitionConfig<States>, 
+  transitions: TC, 
   store: StoreInternals<Event>,
   transition?: (event: Event) => Event | undefined
 }
+
+type FlatEventKeys<T> = keyof T[keyof T];
+
+type StateFromFactory<
+  States extends Record<string, (...params:any[]) => any>,
+  StateKey extends keyof States = keyof States
+> = ReturnType<States[StateKey]>
+
+export type StateEventTransitionFunc<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+  TransitionStateKey extends keyof Transitions,
+> = {
+  [EventKey in keyof Transitions[TransitionStateKey] &
+    string]: Transitions[TransitionStateKey][EventKey] extends keyof States
+    ? (
+        ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
+      ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
+    : Transitions[TransitionStateKey][EventKey] extends (
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer R
+    ? (...args: A) => R
+    : Transitions[TransitionStateKey][EventKey] extends (...any:[])=>  StateFromFactory<States>      
+    ? (
+        ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
+      ) => StateFromFactory<States> & {
+        key: Transitions[TransitionStateKey][EventKey];
+      }
+    : never;
+};
+
+export type StateEventTransitionFuncs<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = {
+  [TransitionStateKey in keyof Transitions]: StateEventTransitionFunc<
+    Transitions,
+    States,
+    TransitionStateKey
+  >;
+};
+
+export type StateEventTransitionSenders<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = {
+  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      Transitions,
+      States
+    >[StateKey]]: (
+      ...args: Parameters<
+        StateEventTransitionFuncs<Transitions, States>[StateKey][EventKey]
+      >
+    ) => void;
+  };
+};
+
+type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+
+export type SendFunction<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory
+> = <EventKey extends string & FlatEventKeys<Transitions>>(
+  event: EventKey,
+  ...params: StateEventTransitionSenders<
+    Transitions,
+    States
+  >[keyof Transitions][EventKey] extends () => any
+    ? Parameters<
+        StateEventTransitionSenders<
+          Transitions,
+          States
+        >[keyof Transitions][EventKey]
+      >
+    : any[]
+) => void;
 
 const atom = <T>(initial: T): StoreInternals<T> => {
   let value = initial
@@ -182,7 +271,7 @@ type ResolveTransition<E extends AnyMachineChangeEvent> = (
 ) => E | undefined
 
 function createResolver<
-  C extends StateChangeMachineTransitionContext<any>,
+  C extends StateChangeMachineTransitionContext<any, any>,
   E extends MachineContextEvent<C> = MachineContextEvent<C>
 >(
   context: C
@@ -212,16 +301,16 @@ export type CreateStateChangeMachineProps<
   //   transitions: TransitionConfig<SF>,
   // }
   // & 
-  Partial<StateChangeMachineInternals<any,any,any>>
+  Partial<StateChangeMachineInternals<any,any,any, any>>
 
 export function createStateChangeMachine<
+  TC extends TransitionConfig<SF>,
   SF extends Record<string, (...any:[]) => State>,
-  T extends TransitionConfig<SF>,
   Props extends CreateStateChangeMachineProps<any>,
-  E extends MachineContextEvent<StateChangeMachineTransitionContext<SF>>,
+  E extends MachineContextEvent<StateChangeMachineTransitionContext<TC,SF>>,
 >(
   states: SF, 
-  transitions: T,
+  transitions: TC,
   options: Props  
 ): StateMachine<E> {
   const internals = {
