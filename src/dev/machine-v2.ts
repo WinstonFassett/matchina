@@ -5,8 +5,41 @@ interface StateMachine<E extends AnyMachineChangeEvent> {
   send(type: E['type'], ...params: E['params']): void
 }
 
-interface State<K extends string = string> {
+// type StatesRecord<K extends string, S extends State> = Record<K, S>
+
+type TransitionConfig<
+  S,
+  SR extends Record<string, S>,
+  SK extends string & keyof SR = string & keyof SR,
+  CP extends any[] = any[],
+> = {
+  [FromStateKey in string]: {
+    [EventKey in string]:
+      | SK
+      | ((...params: any[]) => S)
+      | ((...params: any[]) => (...context: CP) => S);
+  };
+};
+
+type ConfiguredTransitions<
+  Config,  
+  SR
+> = {
+  [S in keyof Config]: {
+    [E in keyof Config[S]]: 
+      Config[S][E] extends keyof SR 
+      ? SR[Config[S][E]]
+      : Config[S][E] extends (...params: any[]) => (...params: any[]) => any 
+        ?  ReturnType<ReturnType<Config[S][E]>> 
+        : Config[S][E] extends (...params: any[]) => any 
+          ? ReturnType<Config[S][E]> 
+          : never
+  }
+}
+
+interface State<K extends string = string, D = any> {
   key: K
+  data: D
 }
 
 interface ChangeEvent<Type, To, From> {
