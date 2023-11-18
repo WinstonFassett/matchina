@@ -1,4 +1,5 @@
 import { FuncEnhancer } from "./extras/methodware";
+import { Middleware } from "./extras/middleware";
 import {
   ChangeEvent,
   CreateFunc,
