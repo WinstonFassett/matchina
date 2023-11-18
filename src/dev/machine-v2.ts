@@ -86,8 +86,6 @@ interface StateChangeNotifyInternals<E> {
   exit: (event: E) => void
 }
 
-
-
 type StateRecordFromStateFactoryRecord<SF extends Record<string, (...params:any[]) => any>> = {
   [StateKey in keyof SF]: ReturnType<SF[StateKey]>
 }
@@ -111,26 +109,25 @@ type StateChangeMachineTransitionContext<
   machine: M
 }
 
-interface ChangeMachineInternals<
-  Event
->
-extends TransitionInternals<
-  Event
->, StateChangeNotifyInternals<Event>
+interface ChangeMachineInternals<Event>
+extends 
+TransitionInternals<Event>, 
+StateChangeNotifyInternals<Event>
 {
   store: StoreInternals<Event>,
   transition?: (event: Event) => Event | undefined
 }
-
+// StateChangeMachineTransitionContext<any,any,any,any
 
 interface StateChangeMachineInternals<
   States extends Record<string, (...any:[]) => State>,  
   S extends ReturnType<States[keyof States]>,
   Event extends ChangeMachineEvent<any, S, S, any>,
 >
-extends ChangeMachineInternals<
-  Event
->, StateChangeNotifyInternals<Event>
+extends 
+ChangeMachineInternals<Event>, 
+StateChangeNotifyInternals<Event>,
+StateChangeMachineTransitionContext<any,any,any,any>
 {
   states: States,
   transitions: TransitionConfig<
@@ -201,18 +198,27 @@ function createMatcher<
   }
 }
 
+// type CreateStateChangeMachineProps = 
+//   StateChangeMachineInternals<any,any,any>
+//  & StateChangeMachineTransitionContext<any,any,any,any>
+type CreateStateChangeMachineProps =
+  StateChangeMachineTransitionContext<any,any,any,any>
+  & Partial<StateChangeMachineInternals<any,any,any>>
+
+
 function createStateChangeMachine<
-E extends AnyMachineChangeEvent,
-C extends StateChangeMachineTransitionContext<any,any,any,any>
+// C extends StateChangeMachineTransitionContext<any,any,any,any>
+// param Props should require all transition context and partial internals
+  Props extends CreateStateChangeMachineProps,
+  E extends AnyMachineChangeEvent,
 >(
-  context: C,
-  options: Partial<ChangeMachineInternals<E>>
+  options: Props  
 ): StateMachine<E> {
   const internals = {
     ...defaultInternals,
     ...options,
     store: options.store || atom<E>({} as E),
-    matcher: options.match || createMatcher(context)
+    matcher: options.match || createMatcher(options)
   } as ChangeMachineInternals<E>
   if (!internals.store) internals.store = atom<E>({} as E)
   return {
@@ -241,11 +247,6 @@ C extends StateChangeMachineTransitionContext<any,any,any,any>
   };
 }
 
-type ChangeMachineWithHooksInternals<E extends AnyMachineChangeEvent> =
-  ChangeMachineInternals<E> & {
-    hooks: StateMachineHooks<E>;
-  };
-
 type StateMachineHooks<E extends AnyMachineChangeEvent> = {
   match?: Middleware<Omit<E, "to">>;
   guard?: Middleware<E>;
@@ -255,20 +256,19 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
 };
 
 function createMachineWithHooks<
+  C extends CreateStateChangeMachineProps,
   E extends AnyMachineChangeEvent,
-  C extends StateChangeMachineTransitionContext<any,any,any,any>
 >(  
-  context: C,
-  options: ChangeMachineInternals<E>,
+  options: C,
   hooks: StateMachineHooks<E>
 ){
-  const internals: ChangeMachineWithHooksInternals<E> = {
+  const internals: C & {hooks: StateMachineHooks<E>} = {
     ...options,
     hooks,
     match: event => {
       let result: E | undefined = undefined
       let match = options.match ?? defaultInternals.match
-      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent))
+      internals.hooks.match?.(event, nextEvent => result = nextEvent && match(nextEvent as any))
       return result
     },
     guard: event => {
@@ -290,5 +290,5 @@ function createMachineWithHooks<
       internals.hooks.exit?.(event, nextEvent => (internals.exit ?? defaultInternals.exit)(nextEvent ?? event))
     },
   }
-  return createStateChangeMachine<E,C>(context, internals);  
+  return createStateChangeMachine<C,E>(internals);  
 }
