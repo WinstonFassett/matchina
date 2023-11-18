@@ -111,13 +111,12 @@ type StateChangeMachineTransitionContext<
 
 interface ChangeMachineInternals<Event>
 extends 
-TransitionInternals<Event>, 
-StateChangeNotifyInternals<Event>
+  TransitionInternals<Event>, 
+  StateChangeNotifyInternals<Event>
 {
   store: StoreInternals<Event>,
   transition?: (event: Event) => Event | undefined
 }
-// StateChangeMachineTransitionContext<any,any,any,any
 
 interface StateChangeMachineInternals<
   States extends Record<string, (...any:[]) => State>,  
@@ -125,9 +124,9 @@ interface StateChangeMachineInternals<
   Event extends ChangeMachineEvent<any, S, S, any>,
 >
 extends 
-ChangeMachineInternals<Event>, 
-StateChangeNotifyInternals<Event>,
-StateChangeMachineTransitionContext<any,any,any,any>
+  ChangeMachineInternals<Event>, 
+  StateChangeNotifyInternals<Event>,
+  StateChangeMachineTransitionContext<any,any,any,any>
 {
   states: States,
   transitions: TransitionConfig<
@@ -198,17 +197,11 @@ function createMatcher<
   }
 }
 
-// type CreateStateChangeMachineProps = 
-//   StateChangeMachineInternals<any,any,any>
-//  & StateChangeMachineTransitionContext<any,any,any,any>
 type CreateStateChangeMachineProps =
   StateChangeMachineTransitionContext<any,any,any,any>
   & Partial<StateChangeMachineInternals<any,any,any>>
 
-
 function createStateChangeMachine<
-// C extends StateChangeMachineTransitionContext<any,any,any,any>
-// param Props should require all transition context and partial internals
   Props extends CreateStateChangeMachineProps,
   E extends AnyMachineChangeEvent,
 >(
