@@ -86,7 +86,7 @@ interface StateChangeMachineTransitionContext<
   transitions: TC;
 }
 
-interface StateMachine<
+export interface StateMachine<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
   E extends StateTransitionEvent<TC, SF> = StateTransitionEvent<TC, SF>
@@ -279,7 +279,7 @@ export type TransitionRecordParametersForEvent<T, FuncKey extends keyof any> = {
     : never;
 }[keyof T];
 
-export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+export type AnyStatesFactory = Record<string, (...params: any[]) => State>; 
 
 export type SendFunction<
   Transitions extends TransitionConfig<States>,
@@ -344,12 +344,12 @@ export function createStateChangeMachine<
   SF extends AnyStatesFactory,
   Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
->(states: SF, transitions: TC, options: Props): StateMachine<TC, SF> {
+>(states: SF, transitions: TC, options?: Props): StateMachine<TC, SF> {
   const internals = {
     ...defaultInternals,
     ...options,
-    store: options.store || atom<E>({} as E),
-    resolver: options.resolve || createResolver({ states, transitions }),
+    store: options?.store || atom<E>({} as E),
+    resolver: options?.resolve || createResolver({ states, transitions }),
   } as ChangeMachineInternals<E>;
   if (!internals.store) internals.store = atom<E>({} as E);
   const machine = {

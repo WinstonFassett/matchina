@@ -8,6 +8,7 @@ import {
   TransitionConfig,
   FlatExitStates,
   EventExitStatesIntersection,
+  StateMachine
 } from "./machine-v2";
 import { Middleware } from "../extras/middleware";
 
@@ -196,3 +197,13 @@ export type StateEventHookConfig<
     on?: On<TC, SF, SK>;
   } & StateTransitionHookConfig<TC, SF, SK>;
 };
+
+
+export function onLifecycle<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+>(
+  machine: StateMachine<Transitions, States>,
+  config: StateEventHookConfig<Transitions, States>,
+) {
+}
