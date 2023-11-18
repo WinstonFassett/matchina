@@ -34,24 +34,16 @@ export type StateTransitionHooks<
     StateChangeMachineEvent<
       Event['type'],
       Event['to'],
-      Event['from'],
+      Event['from'] & { key: StateKey },
       Event['params']
     >
   >;
   enter: Middleware<
   StateChangeMachineEvent<
       Event['type'],
-      Event['to'],
+      Event['to'] & { key: StateKey },
       Event['from'],
       Event['params']
-      // Transitions,
-      // States,
-      // FlatEventKeys<Event>,
-      // StateFromFactory<States>,
-      // StateFromFactory<
-      //   States,
-      //   StateKey extends keyof States ? StateKey : keyof States
-      // >
     >
   >;
 };
@@ -73,22 +65,27 @@ type On<
   SK extends keyof SF
     ? // specific state
       {
-        [TEK in
+        [StateEventKey in
           | keyof TC[SK]
           | "*"]?: 
-          TEK extends EK //FlatEventKeys<E> // specific event
+          StateEventKey extends EK //FlatEventKeys<E> // specific event
           ? ReturnType<
               StateEventTransitionFuncs<
                 TC,
                 SF
-              >[SK][TEK]
+              >[SK][StateEventKey]
             > extends StateFromFactory<SF>
             ? TransitionHookConfig<
                 StateChangeMachineEvent<
-                  EK,
+                  StateEventKey,
                   StateFromFactory<SF, SK>,
                   StateFromFactory<SF>,
-                  any[]
+                  Parameters<
+                    StateEventTransitionFuncs<
+                      TC,
+                      SF
+                    >[SK][StateEventKey]
+                  >
                 >
                 // StateMachineEvent<
                 //   TC,
@@ -192,10 +189,10 @@ type On<
       };
 
 export type StateEventHookConfig<
-  Transitions extends TransitionConfig<States>,
-  States extends AnyStatesFactory,
+  TC extends TransitionConfig<SF>,
+  SF extends AnyStatesFactory,
 > = {
-  [StateKey in keyof Transitions | "*"]?: {
-    on?: On<Transitions, States, StateKey>;
-  } & StateTransitionHookConfig<Transitions, States, StateKey>;
+  [SK in keyof TC | "*"]?: {
+    on?: On<TC, SF, SK>;
+  } & StateTransitionHookConfig<TC, SF, SK>;
 };
