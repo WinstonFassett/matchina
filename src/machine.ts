@@ -1,3 +1,4 @@
+import { Middleware } from "./extras/middleware";
 import {
   ChangeEventMatchers,
   StateFromFactory,
