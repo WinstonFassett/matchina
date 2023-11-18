@@ -1,5 +1,5 @@
 import { Middleware } from '../extras/middleware'
-import { FlatMemberUnionToIntersection } from '../types'
+import { FlatMemberUnionToIntersection, Simplify } from '../types'
 interface SimpleStateMachine<E extends AnyMachineChangeEvent> {
   getState(): E['to'] | E['from']
   getChange(): E
@@ -105,7 +105,7 @@ interface StateMachine<
   getChange(): E
   // send(type: E['type'], ...params: E['params']): void
   send: SendFunction<TC, SF>
-  events: FlatEventSenders<TC, SF>
+  api: Simplify<FlatEventSenders<TC, SF>>
   senders: StateEventTransitionSenders<TC, SF>
 }
 

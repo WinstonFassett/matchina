@@ -80,13 +80,14 @@ machine.send('reject', new Error() )
 machine.send('resolve', 123)
 // machine.send('execute', '')
 // machine.send('')
-machine.events.reject(new Error())
+machine.api.reject(new Error())
 machine.senders.Pending.reject(new Error());
 
 type X = TransitionRecordParameters<typeof debug>
 type S = StateEventTransitionSenders<Transitions, States>
 type SP = TransitionRecordParameters<S>
 type ESP = TransitionRecordParametersForEvent<S, 'reject'>
+type RSP = TransitionRecordParametersForEvent<S, 'resolve'>
 const f = <K>(k: K, ...x: SP) => {
   
 }
