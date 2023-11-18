@@ -93,4 +93,25 @@ const f = <K>(k: K, ...x: SP) => {
 }
 
 
-const machine2 = createMachineWithHooks(states, transitions, {})
+const machine2 = createMachineWithHooks(states, transitions, {
+  enter(event) {
+    console.log('enter', event)
+  },
+  hooks: {
+    enter (event) {
+      console.log('enter hook')
+    },
+    guard (event, next) {
+      console.log('guard hook')
+      next()
+    },
+    handle (event, next) {
+      console.log('handle hook')
+      event.from.match({
+        _(){},
+        Rejected(error) {}
+      })
+      next()
+    }
+  }
+})

@@ -388,7 +388,7 @@ export function createMachineWithHooks<
   C extends CreateStateChangeMachineProps<any> & {
     hooks?: StateMachineHooks<E>
   },
-  E extends AnyMachineChangeEvent,
+  E extends MachineContextEvent<StateChangeMachineTransitionContext<T, SF>> = MachineContextEvent<StateChangeMachineTransitionContext<T, SF>>
 >(
   states: SF, 
   transitions: T,
