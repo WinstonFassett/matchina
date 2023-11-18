@@ -19,7 +19,7 @@ function interleaveMiddleware<E>(
       const currentWareInfo = { index };
 
       currentMiddleware(event, (nextEvent) => {
-        customBehavior(nextEvent, nextCallback, currentWareInfo);
+        customBehavior(nextEvent as E, nextCallback, currentWareInfo);
         next(
           index + 1,
           nextEvent === undefined ? event : nextEvent,

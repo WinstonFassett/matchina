@@ -92,6 +92,7 @@ export function createMachineClass<
         });
       }
     }
+
     reset() {
       this.update((change) => {
         return {
@@ -102,8 +103,9 @@ export function createMachineClass<
         };
       });
     }
+
     use(enhancer: Middleware<Event>) {
-      const origUpdate = this.update;      
+      const origUpdate = this.update;
       console.log("USE");
       this.update = (updater) => {
         origUpdate.call(this, (current: any) => {
@@ -116,8 +118,9 @@ export function createMachineClass<
       };
       return () => {
         this.update = origUpdate;
-      };        
+      };
     }
+
     // TODO: factor out public method
     update(getUpdate: (ev: Event) => Event) {
       const change = getUpdate(this.lastChange);
