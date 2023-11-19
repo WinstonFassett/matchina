@@ -98,6 +98,11 @@ export function createPromiseMachine<
 // export type PromiseContextStateKey = keyof PromiseContextStates;
 // export type PromiseStateKey = keyof PromiseStates;
 
-function definePromiseStates<T, A extends any[], E extends Error = Error>() {
-  return promiseStates
+export function definePromiseStates<T, A extends any[], E extends Error = Error>() {
+  return promiseStates as States<{    
+    Idle: undefined,
+    Pending: <P extends any[]>(...params: P) => P,
+    Rejected: (error: any) => E,
+    Resolved: (data: any) => T,
+  }>
 }
