@@ -215,6 +215,36 @@ export type FlatExitStates<
   }[keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
 }>;
 
+export type FilterEmptyRecords<T> = {
+  [K in keyof T]: keyof T[K] extends never ? never : K;
+}[keyof T];
+
+// type KeysWithTransitions<T> = FilteredKeys<T>;
+
+export type FlatEntryStates<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+> = StateFromFactory<States> & {
+  [StateKey in keyof States & FilterEmptyRecords<Transitions>]: ReturnType<States[StateKey]>;
+};
+  // {
+  // [EventKey in keyof StateEventTransitionFuncs<
+  //   Transitions,
+  //   States
+  // >[StateKey]]: StateEventTransitionFuncs<
+  //   Transitions,
+  //   States
+  // >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+  //   ? TargetState extends StateFromFactory<States, infer TargetStateKey>
+  //     ? TargetStateKey extends keyof States
+  //       ? TargetState
+  //       : never
+  //     : never
+  //   : never;
+  // }
+  // [keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
+// }>;
+
 export type StatesToEventsToStates<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
