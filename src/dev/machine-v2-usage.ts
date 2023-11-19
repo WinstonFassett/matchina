@@ -116,5 +116,5 @@ const machine2 = createMachineWithHooks(states, transitions, {
 });
 
 
-machine2.getChange().to.key = 'Idle'
-machine2.getChange().from.key = 'Resolved'
+machine2.getChange().to.key = 'Resolved'
+machine2.getChange().from.key = 'Pending'

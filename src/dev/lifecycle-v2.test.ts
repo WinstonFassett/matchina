@@ -60,7 +60,7 @@ describe("onLifecycle usage", () => {
             change.from.data.message = "test"; // Error properties autocomplete
             change.from.key = "Rejected"; // must be Rejected
             // TODO: filter out Idle
-            change.to.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+            change.to.key = "Resolved"; // "Idle" | "Pending" | "Rejected" | "Resolved"
           },
           on: {
             // execute: {}, // Error. "execute" event not allowed in "Rejected" state

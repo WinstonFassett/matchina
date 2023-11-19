@@ -115,8 +115,10 @@ interface MachineContextEvent<
   CP extends any[] = any[],
 > extends StateChangeMachineEvent<
     string & FlatEventKeys<Context["transitions"]>, // flat event keys from context.transitions
-    StateFromFactory<Context["states"]>,
-    StateFromFactory<Context["states"]>,
+    // StateFromFactory<Context["states"]>,
+    FlatExitStates<Context['transitions'], Context['states']>,
+    // StateFromFactory<Context["states"]>,
+    FlatEntryStates<Context['transitions'], Context['states']>,
     CP
   > {
   // match
