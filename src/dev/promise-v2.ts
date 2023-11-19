@@ -36,6 +36,7 @@ export function createPromiseMachine<
   const states = promiseStates as PromiseStates<T,P,E>
   const machine = createStateChangeMachine(
     states, 
+    states.Idle(),
     promiseTransitions, {
     handle: (event) => {
       if (makePromise && event.type === "execute") {

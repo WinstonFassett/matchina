@@ -343,9 +343,11 @@ function createResolver<
   C extends StateChangeMachineTransitionContext<any, any>,
   E extends MachineContextEvent<C> = MachineContextEvent<C>,
 >(context: C): ResolveTransition<E> {
+  console.log('createResolver', context)
   const { states, transitions } = context;
   return ({ from, type, params, machine }) => {
-    const to = transitions[from][type];
+    console.log('resolve', {from, type, params, machine})
+    const to = transitions[from.key][type];
     if (!to) return undefined;
     if (typeof to === "function") {
       const targetStateOrFunc = to(...params);
@@ -366,14 +368,20 @@ export function createStateChangeMachine<
   SF extends AnyStatesFactory,
   Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
->(states: SF, transitions: TC, options?: Props): StateMachine<TC, SF> {
+>(states: SF, initialState: StateFromFactory<SF>, transitions: TC, options?: Props): StateMachine<TC, SF> {
   const internals = {
     ...defaultInternals,
     ...options,
     store: options?.store || atom<E>({} as E),
-    resolver: options?.resolve || createResolver({ states, transitions }),
+    resolve: options?.resolve || createResolver({ states, transitions }),
   } as ChangeMachineInternals<E>;
   if (!internals.store) internals.store = atom<E>({} as E);
+  internals.store.set({
+    type: "__init",
+    from: undefined,
+    to: initialState,
+    params: [] as any[],
+  } as E)
   const machine = {
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
@@ -426,7 +434,7 @@ export function createMachineWithHooks<
   E extends MachineContextEvent<
     StateChangeMachineTransitionContext<T, SF>
   > = MachineContextEvent<StateChangeMachineTransitionContext<T, SF>>,
->(states: SF, transitions: T, options: C) {
+>(states: SF, initialState: StateFromFactory<SF>, transitions: T, options: C) {
   const internals: C & { hooks?: StateMachineHooks<E> } = {
     ...options,
     resolve: (event) => {
@@ -467,5 +475,5 @@ export function createMachineWithHooks<
       );
     },
   };
-  return createStateChangeMachine(states, transitions, internals);
+  return createStateChangeMachine(states, initialState, transitions, internals);
 }

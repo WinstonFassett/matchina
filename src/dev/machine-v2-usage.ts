@@ -31,7 +31,7 @@ const transitions = {
 
 type Transitions = typeof transitions;
 
-const machine = createStateChangeMachine(states, transitions, {});
+const machine = createStateChangeMachine(states, states.Idle(), transitions, {});
 const change = machine.getChange();
 const type = change.type;
 change.from.key;
