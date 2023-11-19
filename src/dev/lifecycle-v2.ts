@@ -28,21 +28,21 @@ export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
 export type StateTransitionHooks<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
-  StateKey extends keyof Transitions | "*",
+  StateKey extends keyof States | "*",
   Event extends StateTransitionEvent<Transitions, States> = StateTransitionEvent<Transitions, States>,
 > = {
   leave: Middleware<
     StateChangeMachineEvent<
       Event['type'],
       Event['to'],
-      Event['from'],// & { key: StateKey },
+      StateFromFactory<States, StateKey>,
       Event['params']
     >
   >;
   enter: Middleware<
   StateChangeMachineEvent<
       Event['type'],
-      Event['to'],
+      StateFromFactory<States, StateKey>,
       Event['from'],
       Event['params']
     >
@@ -52,7 +52,7 @@ export type StateTransitionHooks<
 export type StateTransitionHookConfig<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
-  StateKey extends keyof Transitions | "*",
+  StateKey extends keyof States | "*",
 > = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
 
 type On<
@@ -79,7 +79,13 @@ type On<
             ? TransitionHookConfig<
                 StateChangeMachineEvent<
                   StateEventKey,
-                  StateFromFactory<SF>,
+                  // StateFromFactory<SF>,
+                  ReturnType<
+                    StateEventTransitionFuncs<
+                      TC,
+                      SF
+                    >[SK][StateEventKey]
+                  >,
                   StateFromFactory<SF, SK>,
                   Parameters<
                     StateEventTransitionFuncs<
@@ -139,8 +145,8 @@ type On<
             AnyStateEvent extends keyof EventExitStatesIntersection<TC,SF>
               ? EventExitStatesIntersection<TC,SF>[AnyStateEvent] extends StateFromFactory<SF>
                 ? EventExitStatesIntersection<TC,SF>[AnyStateEvent]
-                : never
-              : never,
+                : StateFromFactory<SF>
+              : StateFromFactory<SF>,
             StateFromFactory<SF,
               AnyStateEvent extends keyof TC[SK]
                 ? Extract<SK, string>
@@ -201,7 +207,7 @@ export type StateEventHookConfig<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
 > = {
-  [SK in keyof TC | "*"]?: {
+  [SK in keyof TC & keyof SF | "*"]?: {
     on?: On<TC, SF, SK>;
   } & StateTransitionHookConfig<TC, SF, SK>;
 };

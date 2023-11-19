@@ -18,10 +18,13 @@ describe("onLifecycle usage", () => {
     let didEnterRejected = 0;
     let count = 0;
 
+    function add (a: number, b: number) { return a+b}
+
     // Create machine WITHOUT a promise to drive it
-    const machine = Object.assign(createPromiseMachine<number, [number]>(), {
+    const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(), {
       reset () {}
     });
+    machine.api.execute(1, 1)
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {
@@ -200,10 +203,13 @@ describe("onLifecycle usage", () => {
               console.groupEnd();
               console.log("done before resolve");
             },
-            after: listen(() => {
-              didAfterResolve ||= ++count;
-              console.log("Resolved from Pending");
-            }),
+            after: (ev, next) => {
+                didAfterResolve ||= ++count;
+                console.log("Resolved from Pending");
+              next(ev)
+            },
+            // after: listen((ev) => {
+            // }),
           },
         },
       },

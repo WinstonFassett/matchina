@@ -1,6 +1,6 @@
 
 import { States, defineStates } from "../states";
-import { createStateChangeMachine } from "./machine-v2";
+import { AnyStatesFactory, createStateChangeMachine } from "./machine-v2";
 
 // export type PromiseStates<
 //   T = any,
@@ -13,12 +13,12 @@ import { createStateChangeMachine } from "./machine-v2";
 //   Resolved: (data: T) => T;
 // }>;
 
-type PromiseStates<T, A extends any[], E extends Error> = States<{
-  Idle: undefined;
-  Pending: (...params: A[]) => A;
-  Rejected: (error: E) => E;
-  Resolved: (data: T) => T;
-}>
+// type PromiseStates<T, A extends any[], E extends Error = Error> = States<{
+//   Idle: undefined;
+//   Pending: (...params: A) => A;
+//   Rejected: (error: E) => E;
+//   Resolved: (data: T) => T;
+// }>
 
 const promiseStates = defineStates({
   Idle: undefined,
@@ -36,7 +36,7 @@ const promiseTransitions = {
   Resolved: {},
   Rejected: {},
 } as const;
-
+type PromiseTransitions = typeof promiseTransitions;
 
 
 
@@ -58,19 +58,19 @@ export function createThing<
 
 export function createPromiseMachine<
   T,
-  P extends any[],
+  P extends any[] = any[],
   E extends Error = Error,
 >(makePromise?: (...args: P) => Promise<T>) {
   const states = definePromiseStates<T, P, E>();
-  
   // const states = defineStates({
   //   Idle: undefined,
-  //   Pending: (...params: P[]) => params,
+  //   Pending: (...params: any[]) => params,
   //   Rejected: (error: E) => error,
   //   Resolved: (data: any) => data,
   // });
-
-  const machine = createStateChangeMachine(states, promiseTransitions, {
+  const machine = createStateChangeMachine(
+    states, 
+    promiseTransitions, {
     handle: (event) => {
       if (makePromise && event.type === "execute") {
         const promise = makePromise(...(event.params as P));
@@ -91,13 +91,13 @@ export function createPromiseMachine<
   });
   return promiseMachine;
 }
-export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
-export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
-// export type PromiseContextStates = PromiseMachine["context"]["states"];
-// export type PromiseTransitions = PromiseMachine["context"]["transitions"];
+// export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
+// export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
+// // export type PromiseContextStates = PromiseMachine["context"]["states"];
+// // export type PromiseTransitions = PromiseMachine["context"]["transitions"];
 // export type PromiseContextStateKey = keyof PromiseContextStates;
 // export type PromiseStateKey = keyof PromiseStates;
 
 function definePromiseStates<T, A extends any[], E extends Error = Error>() {
-  return promiseStates as unknown as PromiseStates<T, A, E>;
+  return promiseStates
 }

@@ -46,7 +46,7 @@ interface ChangeEvent<Type, To, From> {
 }
 type AnyChangeEvent = ChangeEvent<any, any, any>;
 
-interface ChangeMachineEvent<Type, To, From, Params> {
+interface ChangeMachineEvent<Type, To, From, Params extends any[] = any[]> {
   // extends ChangeEvent<Type, To, From>
   type: Type;
   to: To;
@@ -59,7 +59,7 @@ export interface StateChangeMachineEvent<
   Type extends string,
   To extends State,
   From extends State,
-  Params,
+  Params extends any[] = any[],
 > extends ChangeMachineEvent<Type, To, From, Params> {}
 
 interface StoreInternals<T> {
