@@ -5,6 +5,9 @@ export function composeMiddleware<E>(
 ): Middleware<E> {
   // console.log(`run (compose) ${middlewares.length} middlewares`)
   return (initialEvent: E, finalNext: (event: E) => void) => {
+    if (!finalNext) {
+      throw new Error("finalNext is required");
+    }
     console.log(`run ${middlewares.length} middlewares`)
     function next(index: number, event: E): void {
       if (index >= middlewares.length) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "./promise-v2";
-import { onLifecycle, withLifecycle } from "./lifecycle-v2";
+import {  withLifecycle } from "./lifecycle-v2";
 // import { withEvents } from "../src/extras/with-events";
 import { listen } from "../extras/middleware/listen";
 
@@ -29,7 +29,16 @@ describe("onLifecycle usage", () => {
         machineInternals = internals; 
       }
     ), {
-      reset () {}
+      reset () {
+        const current = machineInternals.store.get()
+        console.log('RESET', { current, machineInternals })
+        machineInternals.store.set({
+          ...current,
+          from: current.to, 
+          to: machineInternals.states.Idle(),
+          type: 'reset',
+        })
+      }
     });
     // machine.send('execute', 1, 1)
     const expectState = (state: string) =>

@@ -210,8 +210,8 @@ somewhere on the machine or better, on extended internals
 
 // }
 
-type Phase = "guard" | "handle" | "before" | "after" | "enter" | "leave";
-const Phases = ["guard", "handle", "before", "after", "enter", "leave"];
+type Phase = "guard" | "handle" | "enter" | "exit";
+const Phases = ["guard", "handle", "enter", "exit"];
 type PhaseInternals<E> = {
   phases: {
     // __init: () => void,
@@ -246,10 +246,20 @@ export function enhancePhase<E>(
     const hookAdapters = {}
     for (const phase of Phases) {
       hookAdapters[phase] = (event, next) => {
-        console.log('hook adapter', phase)
+        console.log('hook adapter', phase, event.to.key, internals.phases)
         const phaseHooks = internals.phases[phase] ?? [];
         // console.group()
-        runMiddleware(phaseHooks, event, next);
+        if (['enter', 'exit'].includes(phase)) {
+          console.log(phase, phaseHooks.length, 'hooks')
+          for (const hook of phaseHooks) {
+            console.log('run', hook)
+            hook(event, (x) => {
+              // console.log('done', { x })
+            });
+          }
+        } else {
+          runMiddleware(phaseHooks, event, next);
+        }
         // console.group()
         console.log(`/${phase}`)
       }
@@ -296,7 +306,7 @@ export function withLifecycle<
     if (leave) {
       enhancePhase(
         machineInternals,
-        "leave",
+        "exit",
         hookware(leave as any, { from: stateKey as any }),
       );
     }
@@ -310,11 +320,15 @@ export function withLifecycle<
         for (const phase of ["guard", "handle", "before", "after"] as const) {
           const hook = eventConfig[phase];
           if (hook) {
+            console.log(`on ${phase} ${stateKey}=>${eventKey}`)
             enhancePhase(
               machineInternals,
-              phase,
+              {
+                after: "exit",
+                before: "enter"
+              }[phase] ?? phase,
               hookware(hook as any, {
-                from: stateKey as any,
+                ['from']: stateKey as any,
                 type: eventKey as any,
               }),
             );
@@ -337,5 +351,6 @@ function hookware<E>(
   if (hook.length === 6) {
     throw new Error("wtf!!");
   }
+  console.log({ filter })
   return when(filter)(runHook);
 }

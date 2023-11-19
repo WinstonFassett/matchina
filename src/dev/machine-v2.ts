@@ -447,7 +447,9 @@ export function createStateChangeMachine<
       if (!handled) return;
       internals.store.set(handled);
       console.log('running effects')
+      console.log('EXIT', handled.from?.key)
       internals.exit(handled);
+      console.log('ENTER', handled.to.key)
       internals.enter(handled);
     },
     api: {} as any, // stubs,
@@ -464,8 +466,8 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
   resolve?: Middleware<ResolveEvent<E>>;
   guard?: Middleware<E>;
   handle?: Middleware<E>;
-  enter?: Middleware<E>;
-  exit?: Middleware<E>;
+  enter?: Effect<E>;
+  exit?: Effect<E>;
 };
 
 export function internalsToHooks<
@@ -480,8 +482,8 @@ export function internalsToHooks<
     resolve: (event, next) => { next(internals.resolve(event) as any) },      
     guard: (event, next) => { if (internals.guard(event)) next(event) },
     handle: (event, next) => { next(internals.handle(event)) },
-    exit: (event, next) => { internals.exit(event); next() },
-    enter: (event, next) => { internals.enter(event); next() },    
+    exit: (event) => { internals.exit(event); },
+    enter: (event) => { internals.enter(event); },    
   };
 }
 
@@ -686,20 +688,13 @@ export function ensureHookInternals<
         return result
       }
     },
-    enter: (event) => {
-      const key = 'enter'
-      runWithHooksMaybe2(
-        internals.hooks?.enter,
-        event,
-        originals.enter ?? defaultInternals.enter,
-      );
+    enter: (event) => {      
+      (originals.enter ?? defaultInternals.enter)(event);
+      internals.hooks?.enter?.(event)      
     },
     exit: (event) => {
-      runWithHooksMaybe2(
-        internals.hooks?.exit,
-        event,
-        originals.exit ?? defaultInternals.exit,
-      );      
+      (originals.exit ?? defaultInternals.exit)(event);
+      internals.hooks?.exit?.(event)      
     },
   })
 
