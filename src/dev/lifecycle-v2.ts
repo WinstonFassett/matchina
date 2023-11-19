@@ -94,24 +94,6 @@ type On<
                     >[SK][StateEventKey]
                   >
                 >
-                // StateMachineEvent<
-                //   TC,
-                //   SF,
-                //   Event, // should constrain params
-                //   StateFromFactory<SF, SK>,
-                //   ReturnType<
-                //     StateEventTransitionFuncs<
-                //       TC,
-                //       SF
-                //     >[SK][Event]
-                //   >,
-                //   Parameters<
-                //     StateEventTransitionFuncs<
-                //       TC,
-                //       SF
-                //     >[SK][Event]
-                //   >
-                // >
               >
             : never
           : // wildcard event
@@ -122,17 +104,7 @@ type On<
                 StateFromFactory<SF, SK>,
                 any[]
               >
-              // StateMachineEvent<
-              //   TC,
-              //   SF,
-              //   EK,
-              //   StateFromFactory<SF, SK>,
-              //   StateFromFactory<SF>, // could be limited
-              //   any[]
-              // >
             >;
-        // specific event returns keyof states
-        // fix this. we need to transform transitionconfig above to StatesToEventsToStates
       }
     : // wildcard state
       {
@@ -154,52 +126,6 @@ type On<
             >,
             any[]
           >
-
-          // StateMachineEvent<
-          //   TC,
-          //   SF,
-          //   AnyStateEvent extends "*"
-          //     ? EK
-          //     : AnyStateEvent,
-          //   // Source State
-          //   StateFromFactory<
-          //     SF,
-          //     keyof {
-          //       [K in keyof TC]: AnyStateEvent extends keyof TC[K]
-          //         ? Extract<K, string>
-          //         : Extract<keyof TC, string>;
-          //     } &
-          //       keyof SF
-          //   >,
-          //   // Target State
-          //   AnyStateEvent extends "*"
-          //     ? // wildcard event
-          //       FlatExitStates<
-          //         TC,
-          //         SF
-          //       > extends StateFromFactory<SF>
-          //       ? FlatExitStates<TC, SF>
-          //       : never
-          //     : // not wildcard event
-          //     // if valid exit state
-          //     AnyStateEvent extends keyof EventExitStatesIntersection<
-          //         TC,
-          //         SF
-          //       >
-          //     ? // and returns state from factory
-          //       EventExitStatesIntersection<
-          //         TC,
-          //         SF
-          //       >[AnyStateEvent] extends StateFromFactory<SF>
-          //       ? // then return the union of all possible exit states for that event key
-          //         EventExitStatesIntersection<
-          //           TC,
-          //           SF
-          //         >[AnyStateEvent]
-          //       : never
-          //     : never,
-          //   any[] // could be union of all possible params lol I'm tired
-          // >
         >;
       };
 
