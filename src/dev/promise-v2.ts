@@ -1,24 +1,13 @@
 
 import { States, defineStates } from "../states";
-import { AnyStatesFactory, createStateChangeMachine } from "./machine-v2";
+import { createStateChangeMachine } from "./machine-v2";
 
-// export type PromiseStates<
-//   T = any,
-//   A extends any[] = unknown[],
-//   E extends Error = Error,
-// > = States<{
-//   Idle: undefined;
-//   Pending: (...params: A) => A;
-//   Rejected: (error: E) => E;
-//   Resolved: (data: T) => T;
-// }>;
-
-// type PromiseStates<T, A extends any[], E extends Error = Error> = States<{
-//   Idle: undefined;
-//   Pending: (...params: A) => A;
-//   Rejected: (error: E) => E;
-//   Resolved: (data: T) => T;
-// }>
+export type PromiseStates<T,A,E> = States<{    
+  Idle: undefined,
+  Pending: <P extends any[]>(...params: P) => P,
+  Rejected: (error: any) => E,
+  Resolved: (data: any) => T,
+}>
 
 const promiseStates = defineStates({
   Idle: undefined,
@@ -36,38 +25,15 @@ const promiseTransitions = {
   Resolved: {},
   Rejected: {},
 } as const;
-type PromiseTransitions = typeof promiseTransitions;
 
-
-
-export function createThing<
-  T,
-  P extends any[],
->(makePromise: (...params: P) => Promise<T>) {
-  function testFunc(...params: P): T {
-    // Your logic here
-    return {} as T
-  }
-
-  const result = testFunc(...([undefined] as P));
-  return result;
-}
-
-
-
+export type PromiseTransitions = typeof promiseTransitions;
 
 export function createPromiseMachine<
   T,
   P extends any[] = any[],
   E extends Error = Error,
 >(makePromise?: (...args: P) => Promise<T>) {
-  const states = definePromiseStates<T, P, E>();
-  // const states = defineStates({
-  //   Idle: undefined,
-  //   Pending: (...params: any[]) => params,
-  //   Rejected: (error: E) => error,
-  //   Resolved: (data: any) => data,
-  // });
+  const states = promiseStates as PromiseStates<T,P,E>
   const machine = createStateChangeMachine(
     states, 
     promiseTransitions, {
@@ -83,7 +49,6 @@ export function createPromiseMachine<
     }
   });
   const initialState = states.Idle();
-
   const promiseMachine = Object.assign(machine, {
     // should this go on context?
     promise: undefined as undefined | Promise<T>,
@@ -91,18 +56,8 @@ export function createPromiseMachine<
   });
   return promiseMachine;
 }
-// export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
-// export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
-// // export type PromiseContextStates = PromiseMachine["context"]["states"];
-// // export type PromiseTransitions = PromiseMachine["context"]["transitions"];
-// export type PromiseContextStateKey = keyof PromiseContextStates;
-// export type PromiseStateKey = keyof PromiseStates;
+export type PromiseStateKey = keyof PromiseStates<any,any, any>;
 
 export function definePromiseStates<T, A extends any[], E extends Error = Error>() {
-  return promiseStates as States<{    
-    Idle: undefined,
-    Pending: <P extends any[]>(...params: P) => P,
-    Rejected: (error: any) => E,
-    Resolved: (data: any) => T,
-  }>
+  return promiseStates as PromiseStates<T,A,E>
 }
