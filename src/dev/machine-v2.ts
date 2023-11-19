@@ -667,23 +667,39 @@ export function ensureHookInternals<
       }
     },
     handle: (event) => {
-      let result: E | undefined = event;
-      let handle = baseInternals.handle ?? defaultInternals.handle;
-      internals.hooks?.handle?.(
+      let result: E | undefined = undefined;
+      let handle = originals.handle ?? defaultInternals.handle;
+      runWithHooksMaybe2(
+        internals.hooks?.handle,
         event,
-        (nextEvent) => (result = nextEvent && handle(nextEvent)),
-      );
-      return result;
+        ev => {
+          if (ev) {
+            result = handle(ev)
+          }
+        }
+      )
+      // internals.hooks?.handle?.(
+      //   event,
+      //   (nextEvent) => (result = nextEvent && handle(nextEvent)),
+      // );
+      if (result) {
+        return result
+      }
     },
     enter: (event) => {
       const key = 'enter'
-      runWithHooksMaybe<Options, E>(internals, key, event, originals);
+      runWithHooksMaybe2(
+        internals.hooks?.enter,
+        event,
+        originals.enter ?? defaultInternals.enter,
+      );
     },
     exit: (event) => {
-      runWithHooksMaybe<Options, E>(internals, 'exit', event, originals);
-      // internals.hooks?.exit?.(event, (nextEvent) =>
-      //   (internals.exit ?? defaultInternals.exit)(nextEvent ?? event),
-      // );
+      runWithHooksMaybe2(
+        internals.hooks?.exit,
+        event,
+        originals.exit ?? defaultInternals.exit,
+      );      
     },
   })
 
@@ -695,32 +711,35 @@ export function ensureHookInternals<
 
 
 
-function runWithHooksMaybe2(hook: any, event: any, original: ((event: any) => boolean) | undefined) {
+function runWithHooksMaybe2(
+  hook: any,
+  event: any,
+  original?: ((event: any) => void) | undefined,
+) {
   if (hook) {
     hook(event, original);
-  }
-  else {
+  } else {
     original?.(event);
   }
 }
 
-function runWithHooksMaybe<
-  Options extends CreateStateChangeMachineProps<any>,
-  E extends AnyMachineChangeEvent
->(
-    internals: Options, 
-    key: string, 
-    event: any, 
-    originals: Options
-  ) {
-  const hook = (internals as any).hooks?.[key];
-  if (hook) {
-    hook(event, (nextEvent) => {
-      originals[key]?.(event);
-    });
-  }
-  else {
-    originals[key]?.(event);
-  }
-}
+// function runWithHooksMaybe<
+//   Options extends CreateStateChangeMachineProps<any>,
+//   E extends AnyMachineChangeEvent
+// >(
+//     internals: Options, 
+//     key: string, 
+//     event: any, 
+//     originals: Options
+//   ) {
+//   const hook = (internals as any).hooks?.[key];
+//   if (hook) {
+//     hook(event, (nextEvent) => {
+//       originals[key]?.(event);
+//     });
+//   }
+//   else {
+//     originals[key]?.(event);
+//   }
+// }
 
