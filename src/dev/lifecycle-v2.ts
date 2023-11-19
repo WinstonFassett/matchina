@@ -35,14 +35,14 @@ export type StateTransitionHooks<
     StateChangeMachineEvent<
       Event['type'],
       Event['to'],
-      Event['from'] & { key: StateKey },
+      Event['from'],// & { key: StateKey },
       Event['params']
     >
   >;
   enter: Middleware<
   StateChangeMachineEvent<
       Event['type'],
-      Event['to'] & { key: StateKey },
+      Event['to'],
       Event['from'],
       Event['params']
     >
@@ -79,8 +79,8 @@ type On<
             ? TransitionHookConfig<
                 StateChangeMachineEvent<
                   StateEventKey,
-                  StateFromFactory<SF, SK>,
                   StateFromFactory<SF>,
+                  StateFromFactory<SF, SK>,
                   Parameters<
                     StateEventTransitionFuncs<
                       TC,
@@ -112,8 +112,8 @@ type On<
             TransitionHookConfig<
               StateChangeMachineEvent<
                 EK,
-                StateFromFactory<SF, SK>,
                 StateFromFactory<SF>,
+                StateFromFactory<SF, SK>,
                 any[]
               >
               // StateMachineEvent<
@@ -135,9 +135,17 @@ type On<
           | "*"]?: TransitionHookConfig<
 
           StateChangeMachineEvent<
-            EK,
-            StateFromFactory<SF>,
-            StateFromFactory<SF>,
+            AnyStateEvent extends '*' ? EK : AnyStateEvent,
+            AnyStateEvent extends keyof EventExitStatesIntersection<TC,SF>
+              ? EventExitStatesIntersection<TC,SF>[AnyStateEvent] extends StateFromFactory<SF>
+                ? EventExitStatesIntersection<TC,SF>[AnyStateEvent]
+                : never
+              : never,
+            StateFromFactory<SF,
+              AnyStateEvent extends keyof TC[SK]
+                ? Extract<SK, string>
+                : Extract<keyof TC, string>
+            >,
             any[]
           >
 
