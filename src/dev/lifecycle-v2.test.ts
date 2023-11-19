@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "./promise-v2";
-import { onLifecycle } from "./lifecycle-v2";
+import { onLifecycle, withLifecycle } from "./lifecycle-v2";
 // import { withEvents } from "../src/extras/with-events";
 import { listen } from "../extras/middleware/listen";
 
@@ -21,7 +21,14 @@ describe("onLifecycle usage", () => {
     function add (a: number, b: number) { return a+b}
 
     // Create machine WITHOUT a promise to drive it
-    const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(), {
+    let machineInternals;
+    const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(
+      undefined,
+      internals => {
+        console.log('lifecycle promiss', { internals })
+        machineInternals = internals; 
+      }
+    ), {
       reset () {}
     });
     // machine.send('execute', 1, 1)
@@ -91,7 +98,7 @@ describe("onLifecycle usage", () => {
         },
       });
 
-    const removeLifecycle = onLifecycle(machine, {
+    const removeLifecycle = withLifecycle(machineInternals, {
       Rejected: {
         enter(change, next) {
           console.log("something Rejected from", change.from.key);

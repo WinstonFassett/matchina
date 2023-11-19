@@ -144,7 +144,7 @@ interface ChangeMachineInternals<Event extends AnyMachineChangeEvent>
 export interface StateChangeMachineInternals<
   TC extends TransitionConfig<States>,
   States extends AnyStatesFactory,
-  Event extends ChangeMachineEvent<any, StateFromFactory<States>, StateFromFactory<States>, any>,
+  Event extends ChangeMachineEvent<any, StateFromFactory<States>, StateFromFactory<States>, any> = ChangeMachineEvent<any, StateFromFactory<States>, StateFromFactory<States>, any>,
 > extends ChangeMachineInternals<Event>,
     StateChangeNotifyInternals<Event>,
     StateChangeMachineTransitionContext<TC, States> {
@@ -401,15 +401,15 @@ export function createStateChangeMachine<
   let kernelInit = {  } as Props;
   let kernel: StateChangeMachineInternals<TC, SF, E> = kernelInit as any;
   if (init) {
-    console.log('INIT')
-    init(kernelInit, (enhanced) => {
+    console.log('INIT', init)
+    init(kernelInit, (enhanced) => {  
       console.log({ enhanced })
       if (enhanced && enhanced !== kernelInit) {
         kernelInit = enhanced as Props;
         console.log("something replaced the internals");
       }
-      ensureKernel(kernelInit);
     });
+    ensureKernel(kernelInit);
   } else {
     ensureKernel(kernelInit);
   }
@@ -444,6 +444,7 @@ export function createStateChangeMachine<
       const handled = internals.handle(nextEvent);
       if (!handled) return;
       internals.store.set(handled);
+      console.log('running effects')
       internals.exit(handled);
       internals.enter(handled);
     },
@@ -526,7 +527,7 @@ export function createMachineWithHooks<
     initialState,
     transitions,
     (props, next) => {
-      hookInternals(props, hooks);
+      ensureHookInternals(props, hooks);
       next(props) // could replace or not call next at all
       console.log('after init internals should be complete')
       const internals = props as MachineInternalsWithHooks<SF, StateFromFactory<SF>, E, T>;
@@ -535,22 +536,132 @@ export function createMachineWithHooks<
   );
 }
 
-export function hookInternals<
+type HasHooks<E extends AnyMachineChangeEvent> = {
+  hooks: StateMachineHooks<E>;
+}
+
+export function withHooks<
+  Options extends CreateStateChangeMachineProps<any>,
+  E extends AnyMachineChangeEvent,
+>(  
+  options: Options & Partial<HasHooks<E>>,
+  hooks: StateMachineHooks<E>
+) {
+
+  // check if hooks present
+  ensureHookInternals(options)
+  if (options.hooks) { 
+    console.log('Extending hooks')   
+    return extendHooks(options.hooks, hooks)
+  } 
+  // first time to add hooks to this context
+  else {
+    console.log('adding hooks registry')
+    options.hooks = hooks
+    return () => {
+      delete options.hooks
+    }  
+  }
+}
+
+export function extendHooks<E extends AnyMachineChangeEvent>(
+  innerHooks: StateMachineHooks<E>, 
+  newHooks: StateMachineHooks<E>) {
+    // return Object.assign(innerHooks, newHooks)
+    const originals = {} as StateMachineHooks<E>;
+    for (const key in newHooks) {
+      const hook = newHooks[key];
+      const original = innerHooks[key];
+      if (original) {
+        innerHooks[key] = (event, next) => {
+          original(event, (nextEvent) => {
+            hook(nextEvent ?? event, next);
+          });
+        }
+        originals[key] = original;
+      } else {
+        innerHooks[key] = hook
+      }
+    }
+    return () => {
+      for (const key in originals) {
+        innerHooks[key] = originals[key];
+      }
+    }
+}
+
+// export function extendInternals<I extends ChangeMachineInternals<any>>(
+//   baseInternals: I, 
+//   extensions: Partial<I>) {
+//     // return Object.assign(innerHooks, newHooks)
+//     const originals = {} as I;
+//     for (const key in extensions) {
+//       const hook = extensions[key];
+//       const original = baseInternals[key];
+//       if (original) {
+//         baseInternals[key] = (event, next) => {
+//           original(event, (nextEvent) => {
+//             hook(nextEvent ?? event, next);
+//           });
+//         }
+//         originals[key] = original;
+//       } else {
+//         baseInternals[key] = hook
+//       }
+//     }
+//     return () => {
+//       for (const key in originals) {
+//         baseInternals[key] = originals[key];
+//       }
+//     }
+// }
+
+
+const HooksMarker = Symbol('HooksMarker')
+
+/**
+ * Adapts internals to support hook arrays
+ * Registered on internals at hooks.internals
+ * This should only be needed once per internals
+ * @param baseInternals 
+ * @param hooks 
+ * @returns 
+ */
+export function ensureHookInternals<
   Options extends CreateStateChangeMachineProps<any>,
   E extends AnyMachineChangeEvent,
 >(
-  baseInternals = {} as Options, hooks: StateMachineHooks<E>) {
+  baseInternals = {} as Options, hooks: StateMachineHooks<E>={}) {
+  if (baseInternals[HooksMarker]) return
+  const originals = {...baseInternals}
+    
   const internals = Object.assign(baseInternals, {
+    [HooksMarker]: true,
     hooks,
     // resolve: undefined as any,
     guard: (event) => {
-      let result = true;
-      let guard = baseInternals.guard ?? defaultInternals.guard;
-      internals.hooks?.guard?.(
-        event,
-        (nextEvent) => (result = !!nextEvent && guard(nextEvent)),
-      );
-      return result;
+      const innerGuard = (originals.guard ?? defaultInternals.guard)
+      if (hooks.guard) {
+        let guardResult = false;
+        let guardRan = false
+        hooks.guard(event, (nextEvent) => {
+          if (nextEvent) {
+            guardResult = innerGuard(nextEvent ?? event);
+            console.log('guard ran', guardResult)
+            guardRan = true
+          } else {
+            console.log('guard skipped')
+          }
+        });
+        if (!guardRan) {
+          console.log('guard was short-circuited')
+        }
+        if (!guardResult) return false;
+        console.log('GUARD PASSED')
+      } else {
+        console.log('guard without hook')
+        return innerGuard(event)
+      }
     },
     handle: (event) => {
       let result: E | undefined = event;
@@ -562,18 +673,51 @@ export function hookInternals<
       return result;
     },
     enter: (event) => {
-      internals.hooks?.enter?.(event, (nextEvent) =>
-        (internals.enter ?? defaultInternals.enter)(nextEvent ?? event),
-      );
+      const key = 'enter'
+      runWithHooksMaybe<Options, E>(internals, key, event, originals);
     },
     exit: (event) => {
-      internals.hooks?.exit?.(event, (nextEvent) =>
-        (internals.exit ?? defaultInternals.exit)(nextEvent ?? event),
-      );
+      runWithHooksMaybe<Options, E>(internals, 'exit', event, originals);
+      // internals.hooks?.exit?.(event, (nextEvent) =>
+      //   (internals.exit ?? defaultInternals.exit)(nextEvent ?? event),
+      // );
     },
   })
+
+
   internals.resolve ??= createResolver(internals as any);  
 
   return internals;
+}
+
+
+
+function runWithHooksMaybe2(hook: any, event: any, original: ((event: any) => boolean) | undefined) {
+  if (hook) {
+    hook(event, original);
+  }
+  else {
+    original?.(event);
+  }
+}
+
+function runWithHooksMaybe<
+  Options extends CreateStateChangeMachineProps<any>,
+  E extends AnyMachineChangeEvent
+>(
+    internals: Options, 
+    key: string, 
+    event: any, 
+    originals: Options
+  ) {
+  const hook = (internals as any).hooks?.[key];
+  if (hook) {
+    hook(event, (nextEvent) => {
+      originals[key]?.(event);
+    });
+  }
+  else {
+    originals[key]?.(event);
+  }
 }
 

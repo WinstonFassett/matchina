@@ -10,7 +10,10 @@ import {
   EventExitStatesIntersection,
   StateMachine,
   StateChangeMachineInternals,
-  AnyMachineChangeEvent
+  AnyMachineChangeEvent,
+  extendHooks,
+  withHooks,
+  ensureHookInternals
 } from "./machine-v2";
 import { KeyedChangeEventFilter } from '../extras/typeguards'
 import { Middleware, composeMiddleware, runMiddleware } from "../extras/middleware";
@@ -223,37 +226,57 @@ type PhaseInternals<E> = {
 // then we replace the hooks
 // oh right but the idea here is we are getting the internals,
 // not the machine itself
-export function onPhase<E>(
-  machineInternals,
+export function enhancePhase<E>(
+  machineInternals: StateChangeMachineInternals<any, any, any>,
   phase: Phase,
-  middleware: Middleware<E>
+  ...middlewares: Middleware<E>[]
 ): () => void {
-  const internals = machineInternals as PhaseInternals<E>;
+  console.log('onPhase', phase)
+  const internals = machineInternals as typeof machineInternals & PhaseInternals<E>;
+
+  // const u = withHooks(internals, {
+  //   [phase]: middlewares
+  // })
+
+  // requires hooks to be mounted and extendable
+  // just call withHooks and let it handle this
 
   internals.phases ??= {} as any;
   if (!internals.phases.__cleanup) {
-    // register our internals hook
-    const originals = {...internals};
+    const hookAdapters = {}
+    for (const phase of Phases) {
+      hookAdapters[phase] = (event, next) => {
+        console.log('hook adapter', phase)
+        const phaseHooks = internals.phases[phase] ?? [];
+        // console.group()
+        runMiddleware(phaseHooks, event, next);
+        // console.group()
+        console.log(`/${phase}`)
+      }
+    }
     
+    const u = withHooks(internals, hookAdapters)
+    console.log('setup hook middleware')
     internals.phases.__cleanup = () => {
-      // cleanup our internals hook
+      u()
+      console.log('cleaned up hook middleware')
     };
   }
-  const phaseHooks = internals.phases[phase] ??= [];
-  phaseHooks.push(middleware);
+  const phaseHooks = internals.phases[phase] ??= [];  
+  phaseHooks.splice(phaseHooks.length, 0, ...middlewares);
   return () => {
-    phaseHooks.splice(phaseHooks.indexOf(middleware), 1);
+    phaseHooks.splice(phaseHooks.indexOf(middlewares[0]), middlewares.length);
     if (internals.phases[phase]?.length === 0) {
       delete internals.phases[phase];
     }
   };
 }
 
-export function onLifecycle<
+export function withLifecycle<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
 >(
-  machine: StateMachine<Transitions, States>,
+  machineInternals: StateChangeMachineInternals<any, any, any>,
   config: StateEventHookConfig<Transitions, States>,
 ) {
   for (const stateKey in config) {
@@ -264,15 +287,15 @@ export function onLifecycle<
     const { enter, leave } = fromStateConfig;
 
     if (enter) {
-      onPhase(
-        machine,
+      enhancePhase(
+        machineInternals,
         "enter",
         hookware(enter as any, { to: stateKey as any }),
       );
     }
     if (leave) {
-      onPhase(
-        machine,
+      enhancePhase(
+        machineInternals,
         "leave",
         hookware(leave as any, { from: stateKey as any }),
       );
@@ -287,8 +310,8 @@ export function onLifecycle<
         for (const phase of ["guard", "handle", "before", "after"] as const) {
           const hook = eventConfig[phase];
           if (hook) {
-            onPhase(
-              machine,
+            enhancePhase(
+              machineInternals,
               phase,
               hookware(hook as any, {
                 from: stateKey as any,

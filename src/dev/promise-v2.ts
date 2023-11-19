@@ -1,6 +1,6 @@
 
 import { States, defineStates } from "../states";
-import { createStateChangeMachine } from "./machine-v2";
+import { StateChangeMachineInternals, createStateChangeMachine } from "./machine-v2";
 
 export type PromiseStates<T,A,E> = States<{    
   Idle: undefined,
@@ -32,24 +32,33 @@ export function createPromiseMachine<
   T,
   P extends any[] = any[],
   E extends Error = Error,
->(makePromise?: (...args: P) => Promise<T>) {
+>(
+  makePromise?: (...args: P) => Promise<T>, 
+  init?: (internals: Partial<StateChangeMachineInternals<
+    PromiseTransitions, 
+    PromiseStates<T,P,E>
+  >>)=> void
+) {
   const states = promiseStates as PromiseStates<T,P,E>
   const machine = createStateChangeMachine(
     states, 
     states.Idle(),
     promiseTransitions, 
-    internals => Object.assign(internals, {
-      handle: (event) => {
-        if (makePromise && event.type === "execute") {
-          const promise = makePromise(...(event.params as P));
+    internals => {
+      if (makePromise) {
+        const _makePromise = makePromise;
+        internals.exit = (event) => {
+          if (event.type === "execute") {
+            const promise = _makePromise(...(event.params as P));
             promiseMachine.promise = promise;
             promiseMachine.done = promise
               .then((res) => promiseMachine.send("resolve", res))
               .catch((error) => promiseMachine.send("reject", error));
+          }
         }
-        return event
       }
-    })
+      init?.(internals)
+    }
   );
   const initialState = states.Idle();
   const promiseMachine = Object.assign(machine, {
