@@ -37,18 +37,20 @@ export function createPromiseMachine<
   const machine = createStateChangeMachine(
     states, 
     states.Idle(),
-    promiseTransitions, {
-    handle: (event) => {
-      if (makePromise && event.type === "execute") {
-        const promise = makePromise(...(event.params as P));
-          promiseMachine.promise = promise;
-          promiseMachine.done = promise
-            .then((res) => promiseMachine.send("resolve", res))
-            .catch((error) => promiseMachine.send("reject", error));
+    promiseTransitions, 
+    internals => Object.assign(internals, {
+      handle: (event) => {
+        if (makePromise && event.type === "execute") {
+          const promise = makePromise(...(event.params as P));
+            promiseMachine.promise = promise;
+            promiseMachine.done = promise
+              .then((res) => promiseMachine.send("resolve", res))
+              .catch((error) => promiseMachine.send("reject", error));
+        }
+        return event
       }
-      return event
-    }
-  });
+    })
+  );
   const initialState = states.Idle();
   const promiseMachine = Object.assign(machine, {
     // should this go on context?

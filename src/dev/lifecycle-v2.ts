@@ -12,7 +12,9 @@ import {
   StateChangeMachineInternals,
   AnyMachineChangeEvent
 } from "./machine-v2";
-import { Middleware, runMiddleware } from "../extras/middleware";
+import { KeyedChangeEventFilter } from '../extras/typeguards'
+import { Middleware, composeMiddleware, runMiddleware } from "../extras/middleware";
+import { when } from "../extras/middleware/when";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
@@ -177,7 +179,7 @@ So we need some sort of lifecycle internals concept right?
 */
 
 function lifecycleInternals <
-  I extends StateChangeMachineInternals<any, any, any, any>,
+  I extends StateChangeMachineInternals<any, any, any>,
 >(inner: I, config: StateEventHookConfig<I['transitions'], I['states']>): I {
 
 
@@ -238,7 +240,7 @@ export function onPhase<E>(
     };
   }
   const phaseHooks = internals.phases[phase] ??= [];
-  phaseHooks[phase].push(middleware);
+  phaseHooks.push(middleware);
   return () => {
     phaseHooks.splice(phaseHooks.indexOf(middleware), 1);
     if (internals.phases[phase]?.length === 0) {
@@ -298,4 +300,19 @@ export function onLifecycle<
       }
     }
   }
+}
+
+type HookFunc<E> = (ev: E) => void | E;
+
+function hookware<E>(
+  hook: HookFunc<E> | HookFunc<E>[],
+  filter: KeyedChangeEventFilter<E> = {},
+): Middleware<E> {
+  const runHook = Array.isArray(hook) ? composeMiddleware(...hook) : hook;
+
+  // console.log('composing', hook.length)
+  if (hook.length === 6) {
+    throw new Error("wtf!!");
+  }
+  return when(filter)(runHook);
 }

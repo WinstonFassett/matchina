@@ -32,7 +32,9 @@ const transitions = {
 
 type Transitions = typeof transitions;
 
-const machine = createStateChangeMachine(states, states.Idle(), transitions, {});
+const machine = createStateChangeMachine(states, states.Idle(), transitions, internals => {
+  console.log({ internals })
+});
 const change = machine.getChange();
 const type = change.type;
 change.from.key;
