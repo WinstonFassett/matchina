@@ -1,5 +1,7 @@
 import { defineStates } from "../states";
 import {
+  FilterEmptyRecordKeys,
+  FlatEntryStates,
   StateEventTransitionSenders,
   TransitionRecordParameters,
   TransitionRecordParametersForEvent,
@@ -87,6 +89,9 @@ type ESP = TransitionRecordParametersForEvent<S, "reject">;
 type RSP = TransitionRecordParametersForEvent<S, "resolve">;
 const f = <K>(k: K, ...x: SP) => {};
 
+type EntryKeys = FilterEmptyRecordKeys<Transitions>
+type EntryStates = FlatEntryStates<Transitions, States>
+
 const machine2 = createMachineWithHooks(states, transitions, {
   enter(event) {
     console.log("enter", event);
@@ -109,3 +114,7 @@ const machine2 = createMachineWithHooks(states, transitions, {
     },
   },
 });
+
+
+machine2.getChange().to.key = 'Idle'
+machine2.getChange().from.key = 'Resolved'
