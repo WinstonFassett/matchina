@@ -53,7 +53,7 @@ interface ChangeMachineEvent<Type, To, From, Params extends any[] = any[]> {
   from: From;
   params: Params;
 }
-type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>;
+export type AnyMachineChangeEvent = ChangeMachineEvent<any, any, any, any>;
 
 export interface StateChangeMachineEvent<
   Type extends string,
@@ -83,6 +83,16 @@ interface StateChangeMachineTransitionContext<
   SF extends AnyStatesFactory,
 > {
   states: SF;
+  transitions: TC;
+}
+
+export interface MinimalMachineContext<
+  SF extends AnyStatesFactory,
+  I extends StateFromFactory<SF>, 
+  TC extends TransitionConfig<SF>, 
+> {
+  states: SF;
+  initialState: I;
   transitions: TC;
 }
 
@@ -131,7 +141,7 @@ interface ChangeMachineInternals<Event extends AnyMachineChangeEvent>
   transition?: (event: Event) => Event | undefined;
 }
 
-interface StateChangeMachineInternals<
+export interface StateChangeMachineInternals<
   States extends AnyStatesFactory,
   S extends StateFromFactory<States>,
   Event extends ChangeMachineEvent<any, S, S, any>,
@@ -363,25 +373,50 @@ function createResolver<
 export type CreateStateChangeMachineProps<SF extends AnyStatesFactory> =
   Partial<StateChangeMachineInternals<any, any, any, any>>;
 
+
+// hmm I think I need something like middleware for initing internals
+// maybe an init middleare hook instead of passing in internals. yes. 
+type Effect<E> = (event: E) => void
+
 export function createStateChangeMachine<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
   Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
->(states: SF, initialState: StateFromFactory<SF>, transitions: TC, options?: Props): StateMachine<TC, SF> {
-  const internals = {
-    ...defaultInternals,
-    ...options,
-    store: options?.store || atom<E>({} as E),
-    resolve: options?.resolve || createResolver({ states, transitions }),
-  } as ChangeMachineInternals<E>;
+>(
+  states: SF,
+  initialState: StateFromFactory<SF>,
+  transitions: TC,
+  init?: Middleware<Props>,
+): StateMachine<TC, SF> {
+  const ensureKernel = (props: Props): StateChangeMachineInternals<SF, StateFromFactory<SF>, E, TC> => {
+    return Object.assign(props, {
+      ...defaultInternals,    
+      states,
+      transitions,
+      store: props.store ?? atom<E>({} as E),
+      resolve: props.resolve ?? createResolver({ states, transitions }),
+    })
+  }
+  let kernelInit = {  } as Props;
+  let kernel: StateChangeMachineInternals<SF, StateFromFactory<SF>, E, TC> = kernelInit as any
+  if (init){ init(kernelInit, (enhanced) => {
+    if (enhanced && enhanced!==kernelInit){
+      kernelInit = enhanced
+      console.log('something replaced the internals')
+    }
+    ensureKernel(kernelInit)
+  }); } else {
+    ensureKernel(kernelInit)
+  }
+  const internals = kernel; // as ChangeMachineInternals<E>;
   if (!internals.store) internals.store = atom<E>({} as E);
   internals.store.set({
     type: "__init",
     from: undefined,
     to: initialState,
     params: [] as any[],
-  } as E)
+  } as E);
   const machine = {
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
@@ -425,30 +460,77 @@ type StateMachineHooks<E extends AnyMachineChangeEvent> = {
   exit?: Middleware<E>;
 };
 
+export function internalsToHooks<
+  States extends AnyStatesFactory,
+  S extends StateFromFactory<States>,
+  Event extends ChangeMachineEvent<any, S, S, any>,
+  TC extends TransitionConfig<States>
+>(
+  internals: StateChangeMachineInternals<States, S, Event, TC>,
+): StateMachineHooks<Event> {
+  return {
+    resolve: (event, next) => { next(internals.resolve(event) as any) },      
+    guard: (event, next) => { if (internals.guard(event)) next(event) },
+    handle: (event, next) => { next(internals.handle(event)) },
+    exit: (event, next) => { internals.exit(event); next() },
+    enter: (event, next) => { internals.enter(event); next() },    
+  };
+}
+
+export type MachineWithHooks<
+  States extends AnyStatesFactory,
+  S extends StateFromFactory<States>,
+  Event extends StateTransitionEvent<TC, States>, //ChangeMachineEvent<any, S, S, any>,
+  TC extends TransitionConfig<States>,
+> = StateMachine<TC, States, Event> & {
+  hooks: StateMachineHooks<Event>;
+};
+
+export type MachineInternalsWithHooks<
+  States extends AnyStatesFactory,
+  S extends StateFromFactory<States>,
+  Event extends ChangeMachineEvent<any, S, S, any>,
+  TC extends TransitionConfig<States>,
+> = StateChangeMachineInternals<States, S, Event, TC> & {
+  hooks: StateMachineHooks<Event>;
+};
+
 export function createMachineWithHooks<
   SF extends AnyStatesFactory,
   T extends TransitionConfig<SF>,
-  C extends CreateStateChangeMachineProps<any> & {
-    hooks?: StateMachineHooks<E>;
+  PI extends CreateStateChangeMachineProps<any> & {
+    hooks: StateMachineHooks<E>;
   },
   E extends MachineContextEvent<
     StateChangeMachineTransitionContext<T, SF>
   > = MachineContextEvent<StateChangeMachineTransitionContext<T, SF>>,
->(states: SF, initialState: StateFromFactory<SF>, transitions: T, options: C) {
-  const internals: C & { hooks?: StateMachineHooks<E> } = {
+>(states: SF, initialState: StateFromFactory<SF>, transitions: T, options: PI) {
+  // compose internals
+  const { hooks, ...partialInternals } = options;
+  const internals: PI = {
     ...options,
-    resolve: (event) => {
-      let result: E | undefined = undefined;
-      let resolve = options.resolve ?? createResolver({ states, transitions });
-      internals.hooks?.resolve?.(
-        event,
-        (nextEvent) => (result = nextEvent && resolve(nextEvent)),
-      );
-      return result;
-    },
+    
+    // minimal machine context
+    states,
+    transitions,
+    initialState,
+
+  };
+  const hookedInternals = hookInternals(internals, hooks);
+  return createStateChangeMachine(states, initialState, transitions, internals);
+}
+
+export function hookInternals<
+  Options extends CreateStateChangeMachineProps<any>,
+  E extends AnyMachineChangeEvent,
+>(
+  baseInternals = {} as Options, hooks: StateMachineHooks<E>) {
+  const internals = Object.assign(baseInternals, {
+    hooks,
+    // resolve: undefined as any,
     guard: (event) => {
       let result = true;
-      let guard = options.guard ?? defaultInternals.guard;
+      let guard = baseInternals.guard ?? defaultInternals.guard;
       internals.hooks?.guard?.(
         event,
         (nextEvent) => (result = !!nextEvent && guard(nextEvent)),
@@ -457,7 +539,7 @@ export function createMachineWithHooks<
     },
     handle: (event) => {
       let result: E | undefined = event;
-      let handle = options.handle ?? defaultInternals.handle;
+      let handle = baseInternals.handle ?? defaultInternals.handle;
       internals.hooks?.handle?.(
         event,
         (nextEvent) => (result = nextEvent && handle(nextEvent)),
@@ -474,6 +556,9 @@ export function createMachineWithHooks<
         (internals.exit ?? defaultInternals.exit)(nextEvent ?? event),
       );
     },
-  };
-  return createStateChangeMachine(states, initialState, transitions, internals);
+  })
+  internals.resolve ??= createResolver(internals);  
+
+  return internals;
 }
+

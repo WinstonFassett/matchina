@@ -7,6 +7,7 @@ import {
   TransitionRecordParametersForEvent,
   createMachineWithHooks,
   createStateChangeMachine,
+  hookInternals,
 } from "./machine-v2";
 
 const states = defineStates({
@@ -92,7 +93,7 @@ const f = <K>(k: K, ...x: SP) => {};
 type EntryKeys = FilterEmptyRecordKeys<Transitions>
 type EntryStates = FlatEntryStates<Transitions, States>
 
-const machine2 = createMachineWithHooks(states, transitions, {
+const machine2 = createMachineWithHooks(states, states.Idle(), transitions, {
   enter(event) {
     console.log("enter", event);
   },
@@ -118,3 +119,29 @@ const machine2 = createMachineWithHooks(states, transitions, {
 
 machine2.getChange().to.key = 'Resolved'
 machine2.getChange().from.key = 'Pending'
+
+const m3 = createStateChangeMachine(
+  states, 
+  states.Idle(), 
+  transitions, 
+  (internals => {
+    hookInternals(internals, {
+      enter(event) {
+        console.log("enter hook");
+      },
+      guard(event, next) {
+        console.log("guard hook");
+        next();
+      },
+      handle(event, next) {
+        console.log("handle hook");
+        event.from.match({
+          _() {},
+          Rejected(error) {},
+        });
+        next();
+      },
+    })
+  })
+);
+
