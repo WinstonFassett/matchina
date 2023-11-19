@@ -24,7 +24,7 @@ describe("onLifecycle usage", () => {
     const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(), {
       reset () {}
     });
-    machine.api.execute(1, 1)
+    // machine.send('execute', 1, 1)
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {
@@ -172,8 +172,8 @@ describe("onLifecycle usage", () => {
               }
               machine.promise = delayed(num, num);
               machine.done = machine.promise
-                .then(machine.api.resolve)
-                .catch(machine.api.reject);
+                .then((x) => machine.send('resolve', x)) 
+                .catch((err) => machine.send('reject', err)) ;
               didHandleExecute ||= ++count;
               console.log("handler accepting");
               next(event);
@@ -221,7 +221,7 @@ describe("onLifecycle usage", () => {
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     console.log("test guard reject");
-    machine.api.execute(1);
+    machine.send('execute', 1);
     checkState();
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
@@ -230,14 +230,14 @@ describe("onLifecycle usage", () => {
 
     expect(didGuardAccept).toBeFalsy();
     console.log("test guard accept, handler reject");
-    machine.api.execute(99);
+    machine.send('execute', 99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log("BEFORE FAIL", machine.getState().key);
     console.log("***test handler accept");
-    machine.api.execute(100);
+    machine.send('execute', 100);
     console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
@@ -250,9 +250,9 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.api.execute(100);
+    machine.send('execute', 100);
     expectState("Pending");
-    machine.api.reject(new Error("test"));
+    machine.send('reject', new Error("test"));
     expectState("Rejected");
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
@@ -266,10 +266,10 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.api.execute(1000);
+    machine.send('execute', 1000);
     expectState("Pending");
 
-    machine.api.resolve(1);
+    machine.send('resolve', 1);
     expectState("Resolved");
     expectStateData().toBe(1);
 
