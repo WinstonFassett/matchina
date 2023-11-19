@@ -25,7 +25,7 @@ describe("onLifecycle usage", () => {
     const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(
       undefined,
       internals => {
-        console.log('lifecycle promiss', { internals })
+        // console.log('lifecycle promiss', { internals })
         machineInternals = internals; 
       }
     ), {

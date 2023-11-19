@@ -352,7 +352,7 @@ function createResolver<
   C extends StateChangeMachineTransitionContext<any, any>,
   E extends MachineContextEvent<C> = MachineContextEvent<C>,
 >(context: C): ResolveTransition<E> {
-  console.log('createResolver', context)
+  // console.log('createResolver', context)
   const { states, transitions } = context;
   return ({ from, type, params, machine }) => {
     console.log('resolve', {from, type, params, machine})
@@ -389,7 +389,7 @@ export function createStateChangeMachine<
   init?: Middleware<CreateStateChangeMachineProps<SF>>,
 ): StateMachine<TC, SF> {
   const ensureKernel = (props: Props): StateChangeMachineInternals<TC, SF, E> => {
-    console.log('ensureKernel', props)
+    // console.log('ensureKernel', props)
     return Object.assign(props, {
       ...defaultInternals,    
       states,
@@ -425,12 +425,13 @@ export function createStateChangeMachine<
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
     send: (type, ...params) => {
-      console.log('send', { internals })
+      console.log('send', { type, params })
       const lastEvent = internals.store.get();
       const nextState = internals.resolve({
         ...lastEvent,
         from: lastEvent.to,
         type,
+        params,
         machine,
       });
       if (!nextState) return;
@@ -439,6 +440,7 @@ export function createStateChangeMachine<
         type,
         from: lastEvent.to,
         to: nextState,
+        params
       };
       if (!internals.guard(nextEvent)) return;
       const handled = internals.handle(nextEvent);
@@ -658,6 +660,7 @@ export function ensureHookInternals<
         }
         if (!guardResult) return false;
         console.log('GUARD PASSED')
+        return true
       } else {
         console.log('guard without hook')
         return innerGuard(event)
