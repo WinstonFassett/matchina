@@ -8,11 +8,11 @@ export function composeMiddleware<E>(
     if (!finalNext) {
       throw new Error("finalNext is required");
     }
-    console.log(`run ${middlewares.length} middlewares`)
+    // console.log(`run ${middlewares.length} middlewares`)
     function next(index: number, event: E): void {
       if (index >= middlewares.length) {
         finalNext(event);
-        console.log('done')
+        // console.log('done')
         return;
       }
       middlewares[index](event, (nextEvent) => {

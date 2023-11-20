@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createPromiseMachine } from "./promise-v2";
-import {  withLifecycle } from "./lifecycle-v2";
+import { createPromiseMachine } from "../promise-v2";
+import {  withLifecycle } from "../v2/lifecycle-v2";
 // import { withEvents } from "../src/extras/with-events";
-import { listen } from "../extras/middleware/listen";
+import { listen } from "../../extras/middleware/listen";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {

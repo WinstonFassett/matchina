@@ -71,9 +71,7 @@ type On<
       {
         [Event in
           | keyof TransitionsRawConfig[StateKey]
-          | "*"]?: 
-          // specific event
-          Event extends FlatEventKeys<TransitionsRawConfig, States> // specific event
+          | "*"]?: Event extends FlatEventKeys<TransitionsRawConfig, States> // specific event // specific event
           ? ReturnType<
               StateEventTransitionFuncs<
                 TransitionsRawConfig,

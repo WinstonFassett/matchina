@@ -1,4 +1,4 @@
-import { defineStates } from "../states";
+import { defineStates } from "../../states";
 import {
   FilterEmptyRecordKeys,
   FlatEntryStates,

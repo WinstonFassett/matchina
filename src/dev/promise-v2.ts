@@ -1,13 +1,15 @@
-
 import { States, defineStates } from "../states";
-import { StateChangeMachineInternals, createStateChangeMachine } from "./machine-v2";
+import {
+  createStateChangeMachine,
+} from "./v2/machine-v2";
+import { StateChangeMachineInternals } from "./v2/machine-types-v2";
 
-export type PromiseStates<T,A,E> = States<{    
-  Idle: undefined,
-  Pending: <P extends any[]>(...params: P) => P,
-  Rejected: (error: any) => E,
-  Resolved: (data: any) => T,
-}>
+export type PromiseStates<T, A, E> = States<{
+  Idle: undefined;
+  Pending: <P extends any[]>(...params: P) => P;
+  Rejected: (error: any) => E;
+  Resolved: (data: any) => T;
+}>;
 
 const promiseStates = defineStates({
   Idle: undefined,
@@ -33,18 +35,19 @@ export function createPromiseMachine<
   P extends any[] = any[],
   E extends Error = Error,
 >(
-  makePromise?: (...args: P) => Promise<T>, 
-  init?: (internals: Partial<StateChangeMachineInternals<
-    PromiseTransitions, 
-    PromiseStates<T,P,E>
-  >>)=> void
+  makePromise?: (...args: P) => Promise<T>,
+  init?: (
+    internals: Partial<
+      StateChangeMachineInternals<PromiseTransitions, PromiseStates<T, P, E>>
+    >,
+  ) => void,
 ) {
-  const states = promiseStates as PromiseStates<T,P,E>
+  const states = promiseStates as PromiseStates<T, P, E>;
   const machine = createStateChangeMachine(
-    states, 
+    states,
     states.Idle(),
-    promiseTransitions, 
-    internals => {
+    promiseTransitions,
+    (internals) => {
       if (makePromise) {
         const _makePromise = makePromise;
         internals.exit = (event) => {
@@ -55,10 +58,10 @@ export function createPromiseMachine<
               .then((res) => promiseMachine.send("resolve", res))
               .catch((error) => promiseMachine.send("reject", error));
           }
-        }
+        };
       }
-      init?.(internals)
-    }
+      init?.(internals);
+    },
   );
   const initialState = states.Idle();
   const promiseMachine = Object.assign(machine, {
@@ -68,8 +71,12 @@ export function createPromiseMachine<
   });
   return promiseMachine;
 }
-export type PromiseStateKey = keyof PromiseStates<any,any, any>;
+export type PromiseStateKey = keyof PromiseStates<any, any, any>;
 
-export function definePromiseStates<T, A extends any[], E extends Error = Error>() {
-  return promiseStates as PromiseStates<T,A,E>
+export function definePromiseStates<
+  T,
+  A extends any[],
+  E extends Error = Error,
+>() {
+  return promiseStates as PromiseStates<T, A, E>;
 }
