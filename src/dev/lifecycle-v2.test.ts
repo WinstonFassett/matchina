@@ -52,7 +52,7 @@ describe("onLifecycle usage", () => {
     // For testing types with hover and autocomplete in IDE
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const fakeLifecycle = () =>
-      onLifecycle(machine, {
+      withLifecycle(machineInternals, {
         Idle: {
           on: {
             execute: {
@@ -75,8 +75,7 @@ describe("onLifecycle usage", () => {
             change.from.data = new Error("test"); // must be Error type
             change.from.data.message = "test"; // Error properties autocomplete
             change.from.key = "Rejected"; // must be Rejected
-            // TODO: filter out Idle
-            change.to.key = "Resolved"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+            // change.to.key = "Resolved"; // never
           },
           on: {
             // execute: {}, // Error. "execute" event not allowed in "Rejected" state
