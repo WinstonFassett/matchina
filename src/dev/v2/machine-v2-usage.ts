@@ -1,14 +1,8 @@
 import { defineStates } from "../../states";
-import {
-  FilterEmptyRecordKeys,
-  FlatEntryStates,
-  StateEventTransitionSenders,
-  TransitionRecordParameters,
-  TransitionRecordParametersForEvent,
-  createMachineWithHooks,
-  createStateChangeMachine,
-  hookInternals,
-} from "./machine-v2";
+import { TransitionRecordParameters, TransitionRecordParametersForEvent, StateEventTransitionSenders, FilterEmptyRecordKeys, FlatEntryStates } from "./machine-types-v2";
+import { createStateChangeMachine } from "./machine-v2";
+import { withHooks } from "./withHooks";
+
 
 const states = defineStates({
   Idle: {},
@@ -95,11 +89,11 @@ const f = <K>(k: K, ...x: SP) => {};
 type EntryKeys = FilterEmptyRecordKeys<Transitions>
 type EntryStates = FlatEntryStates<Transitions, States>
 
-const machine2 = createMachineWithHooks(states, states.Idle(), transitions, {
-  enter(event) {
+const machine2 = createStateChangeMachine(states, states.Idle(), transitions, internals => {
+  internals.enter = (event) => {
     console.log("enter", event);
-  },
-  hooks: {
+  }
+  withHooks(internals, {
     enter(event) {
       console.log("enter hook");
     },
@@ -115,7 +109,7 @@ const machine2 = createMachineWithHooks(states, states.Idle(), transitions, {
       });
       next();
     },
-  },
+  })
 });
 
 
@@ -127,7 +121,7 @@ const m3 = createStateChangeMachine(
   states.Idle(), 
   transitions, 
   (internals => {
-    hookInternals(internals, {
+    withHooks(internals, {
       enter(event) {
         console.log("enter hook");
       },

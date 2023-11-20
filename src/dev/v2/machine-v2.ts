@@ -1,6 +1,6 @@
 import { Middleware } from "../../extras/middleware";
 import { AnyMachineChangeEvent, StateChangeMachineTransitionContext, MachineContextEvent, ResolveTransition, TransitionConfig, AnyStatesFactory, CreateStateChangeMachineProps, StateFromFactory, StateMachine, StateChangeMachineInternals, ChangeMachineEvent } from "./machine-types-v2";
-import { emptyEffect, atom } from "./emptyEffect";
+import { emptyEffect, atom } from "./bootstrap";
 
 export const defaultInternals = {
   guard: (event: AnyMachineChangeEvent) => true,

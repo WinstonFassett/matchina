@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createPromiseMachine } from "../promise-v2";
-import {  withLifecycle } from "../v2/lifecycle-v2";
+import { createPromiseMachine } from "./promise-v2";
+import {  onLifecycle } from "./on-lifecycle-v2";
 // import { withEvents } from "../src/extras/with-events";
 import { listen } from "../../extras/middleware/listen";
 
@@ -106,7 +106,7 @@ describe("onLifecycle usage", () => {
         },
       });
 
-    const removeLifecycle = withLifecycle(machineInternals, {
+    const removeLifecycle = onLifecycle(machineInternals, {
       Rejected: {
         enter(change, next) {
           console.log("something Rejected from", change.from.key);

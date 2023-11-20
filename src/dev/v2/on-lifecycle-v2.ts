@@ -1,4 +1,4 @@
-import { StateEventHookConfig } from "./lifecycle-types-v2";
+import { StateEventHookConfig } from "./on-lifecycle-types-v2";
 import { enhancePhase } from "./enhancePhase";
 import { hookware } from "./hookware";
 import {
@@ -7,7 +7,7 @@ import {
   TransitionConfig
 } from "./machine-types-v2";
 
-export function withLifecycle<
+export function onLifecycle<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
 >(

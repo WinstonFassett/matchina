@@ -1,4 +1,5 @@
-import { AnyMachineChangeEvent, CreateStateChangeMachineProps, StateMachineHooks, HasHooks, HooksMarker } from "./machine-types-v2";
+
+import { CreateStateChangeMachineProps, AnyMachineChangeEvent, StateMachineHooks } from "./machine-types-v2";
 import { defaultInternals, createResolver } from "./machine-v2";
 
 // export function internalsToHooks<
@@ -17,7 +18,6 @@ import { defaultInternals, createResolver } from "./machine-v2";
 //     enter: (event) => { internals.enter(event); },    
 //   };
 // }
-
 
 export function withHooks<
   Options extends CreateStateChangeMachineProps<any>,
@@ -161,4 +161,8 @@ function runThruHooks(
   } else {
     original?.(event);
   }
-}
+}export const HooksMarker = Symbol('HooksMarker');
+export type HasHooks<E extends AnyMachineChangeEvent> = {
+  hooks: StateMachineHooks<E>;
+};
+

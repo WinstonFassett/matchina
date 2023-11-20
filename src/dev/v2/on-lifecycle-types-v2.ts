@@ -8,18 +8,20 @@ import {
   TransitionConfig
 } from "./machine-types-v2";
 
-type HookConfig<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
+export type StateEventHookConfig<
+  TC extends TransitionConfig<SF>,
+  SF extends AnyStatesFactory
+> = {
+    [SK in (keyof TC & keyof SF) | "*"]?: {
+      on?: On<TC, SF, SK>;
+    } & StateTransitionHookConfig<TC, SF, SK>;
+  };
 
-export type TransitionHookExtensions<T> = {
-  guard: Middleware<T>;
-  before: Middleware<T>;
-  handle: Middleware<T>;
-  after: Middleware<T>;
-};
-
-export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
+export type StateTransitionHookConfig<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+  StateKey extends keyof States | "*"
+> = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
 
 export type StateTransitionHooks<
   Transitions extends TransitionConfig<States>,
@@ -39,11 +41,19 @@ export type StateTransitionHooks<
   >;
 };
 
-export type StateTransitionHookConfig<
-  Transitions extends TransitionConfig<States>,
-  States extends AnyStatesFactory,
-  StateKey extends keyof States | "*"
-> = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
+export type TransitionHookExtensions<T> = {
+  guard: Middleware<T>;
+  before: Middleware<T>;
+  handle: Middleware<T>;
+  after: Middleware<T>;
+};
+
+type HookConfig<T> = {
+  [K in keyof T]?: T[K] | T[K][];
+};
+
+export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
+
 type On<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
@@ -89,21 +99,3 @@ type On<
     >;
   };
 
-export type StateEventHookConfig<
-  TC extends TransitionConfig<SF>,
-  SF extends AnyStatesFactory
-> = {
-    [SK in (keyof TC & keyof SF) | "*"]?: {
-      on?: On<TC, SF, SK>;
-    } & StateTransitionHookConfig<TC, SF, SK>;
-  };
-export type Phase = "guard" | "handle" | "enter" | "exit";
-export const Phases = ["guard", "handle", "enter", "exit"];
-export type PhaseInternals<E> = {
-  phases: {
-    [P in Phase]?: Middleware<E>[];
-  } & {
-    __cleanup: () => void;
-
-  };
-};

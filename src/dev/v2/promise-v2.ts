@@ -1,8 +1,8 @@
-import { States, defineStates } from "../states";
+import { States, defineStates } from "../../states";
 import {
   createStateChangeMachine,
-} from "./v2/machine-v2";
-import { StateChangeMachineInternals } from "./v2/machine-types-v2";
+} from "./machine-v2";
+import { StateChangeMachineInternals } from "./machine-types-v2";
 
 export type PromiseStates<T, A, E> = States<{
   Idle: undefined;
