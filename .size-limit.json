@@ -113,6 +113,10 @@
   {
     "name": "hookware",
     "path": "src/dev/v2/hookware.ts"
+  },
+  {
+    "name": "promise-v2",
+    "path": "src/dev/v2/promise-v2.ts"
   }
-
+  
 ]
