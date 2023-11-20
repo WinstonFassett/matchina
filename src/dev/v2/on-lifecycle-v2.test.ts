@@ -52,7 +52,7 @@ describe("onLifecycle usage", () => {
     // For testing types with hover and autocomplete in IDE
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const fakeLifecycle = () =>
-      withLifecycle(machineInternals, {
+      onLifecycle(machineInternals, {
         Idle: {
           on: {
             execute: {
