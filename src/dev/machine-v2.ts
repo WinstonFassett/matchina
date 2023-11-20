@@ -355,7 +355,7 @@ function createResolver<
   // console.log('createResolver', context)
   const { states, transitions } = context;
   return ({ from, type, params, machine }) => {
-    console.log('resolve', {from, type, params, machine})
+    // console.log('resolve', {from, type, params, machine})
     const to = transitions[from.key][type];
     if (!to) return undefined;
     if (typeof to === "function") {

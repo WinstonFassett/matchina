@@ -31,7 +31,7 @@ describe("onLifecycle usage", () => {
     ), {
       reset () {
         const current = machineInternals.store.get()
-        console.log('RESET', { current, machineInternals })
+        console.log('RESET')
         machineInternals.store.set({
           ...current,
           from: current.to, 
@@ -211,6 +211,8 @@ describe("onLifecycle usage", () => {
         on: {
           resolve: {
             before: (ev, next) => {
+              console.log('** BEFORE***')
+              // expect(didAfterResolve).toBe(0)
               didBeforeResolve ||= ++count;
               console.log("In Pending before resolve");
               expect(ev.type).toBe("resolve");
@@ -220,6 +222,11 @@ describe("onLifecycle usage", () => {
               console.log("done before resolve");
             },
             after: (ev, next) => {
+              console.log('**AFTER***')
+              expect(didBeforeResolve).toBeTruthy()
+              // if (didBeforeResolve === 0) {
+              //   throw new Error("before not called");
+              // }
                 didAfterResolve ||= ++count;
                 console.log("Resolved from Pending");
               next(ev)

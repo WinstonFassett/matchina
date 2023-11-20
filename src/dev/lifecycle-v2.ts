@@ -246,13 +246,15 @@ export function enhancePhase<E>(
     const hookAdapters = {}
     for (const phase of Phases) {
       hookAdapters[phase] = (event, next) => {
-        console.log('hook adapter', phase, event.to.key, internals.phases)
+        console.log('hook adapter', phase, 
+          // event.to.key, internals.phases
+        )
         const phaseHooks = internals.phases[phase] ?? [];
         // console.group()
         if (['enter', 'exit'].includes(phase)) {
           console.log(phase, phaseHooks.length, 'hooks')
           for (const hook of phaseHooks) {
-            console.log('run', hook)
+            // console.log('run', hook)
             hook(event, (x) => {
               // console.log('done', { x })
             });
@@ -324,8 +326,8 @@ export function withLifecycle<
             enhancePhase(
               machineInternals,
               {
-                after: "exit",
-                before: "enter"
+                after: "enter", // after the event is the entry phase
+                before: "exit" // before the event is the exit phase
               }[phase] ?? phase,
               hookware(hook as any, {
                 ['from']: stateKey as any,
