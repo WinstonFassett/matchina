@@ -1,8 +1,13 @@
 import { defineStates } from "../../states";
-import { TransitionRecordParameters, TransitionRecordParametersForEvent, StateEventTransitionSenders, FilterEmptyRecordKeys, FlatEntryStates } from "./machine-types-v2";
+import {
+  TransitionRecordParameters,
+  TransitionRecordParametersForEvent,
+  StateEventTransitionSenders,
+  FilterEmptyRecordKeys,
+  FlatEntryStates,
+} from "./machine-types-v2";
 import { createStateChangeMachine } from "./machine-v2";
 import { withHooks } from "./withHooks";
-
 
 const states = defineStates({
   Idle: {},
@@ -26,9 +31,14 @@ const transitions = {
 
 type Transitions = typeof transitions;
 
-const machine = createStateChangeMachine(states, states.Idle(), transitions, internals => {
-  console.log({ internals })
-});
+const machine = createStateChangeMachine(
+  states,
+  states.Idle(),
+  transitions,
+  (internals) => {
+    console.log({ internals });
+  },
+);
 const change = machine.getChange();
 const type = change.type;
 change.from.key;
@@ -86,41 +96,17 @@ type ESP = TransitionRecordParametersForEvent<S, "reject">;
 type RSP = TransitionRecordParametersForEvent<S, "resolve">;
 const f = <K>(k: K, ...x: SP) => {};
 
-type EntryKeys = FilterEmptyRecordKeys<Transitions>
-type EntryStates = FlatEntryStates<Transitions, States>
+type EntryKeys = FilterEmptyRecordKeys<Transitions>;
+type EntryStates = FlatEntryStates<Transitions, States>;
 
-const machine2 = createStateChangeMachine(states, states.Idle(), transitions, internals => {
-  internals.enter = (event) => {
-    console.log("enter", event);
-  }
-  withHooks(internals, {
-    enter(event) {
-      console.log("enter hook");
-    },
-    guard(event, next) {
-      console.log("guard hook");
-      next();
-    },
-    handle(event, next) {
-      console.log("handle hook");
-      event.from.match({
-        _() {},
-        Rejected(error) {},
-      });
-      next();
-    },
-  })
-});
-
-
-machine2.getChange().to.key = 'Resolved'
-machine2.getChange().from.key = 'Pending'
-
-const m3 = createStateChangeMachine(
-  states, 
-  states.Idle(), 
-  transitions, 
-  (internals => {
+const machine2 = createStateChangeMachine(
+  states,
+  states.Idle(),
+  transitions,
+  (internals) => {
+    internals.enter = (event) => {
+      console.log("enter", event);
+    };
     withHooks(internals, {
       enter(event) {
         console.log("enter hook");
@@ -137,7 +123,34 @@ const m3 = createStateChangeMachine(
         });
         next();
       },
-    })
-  })
+    });
+  },
 );
 
+machine2.getChange().to.key = "Resolved";
+machine2.getChange().from.key = "Pending";
+
+const m3 = createStateChangeMachine(
+  states,
+  states.Idle(),
+  transitions,
+  (internals) => {
+    withHooks(internals, {
+      enter(event) {
+        console.log("enter hook");
+      },
+      guard(event, next) {
+        console.log("guard hook");
+        next();
+      },
+      handle(event, next) {
+        console.log("handle hook");
+        event.from.match({
+          _() {},
+          Rejected(error) {},
+        });
+        next();
+      },
+    });
+  },
+);

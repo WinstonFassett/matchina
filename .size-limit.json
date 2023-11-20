@@ -15,6 +15,16 @@
     "import": "{ methodwareEnhancer }"
   },
   {
+    "name": "middleware",
+    "path": "src/extras/middleware/middleware.ts",
+    "import": "{ runMiddleware }"
+  },
+  {
+    "name": "when and listen",
+    "path": "src/extras/middleware/index.ts",
+    "import": "{ when, listen }"
+  },
+  {
     "name": "nanosubscriber",
     "path": "dist/index.mjs",
     "import": "{ nanosubscriber }"
@@ -83,5 +93,26 @@
   {
     "name": "full",
     "path": "dist/index.mjs"
+  },
+  {
+    "name": "v2 usage",
+    "path": "src/dev/v2/machine-v2-usage.ts"
+  },  
+  {
+    "name": "machine-v2",
+    "path": "src/dev/v2/machine-v2.ts"
+  },
+  {
+    "name": "lifecycle-v2",
+    "path": "src/dev/v2/on-lifecycle-v2.ts"
+  },
+  {
+    "name": "on-phase",
+    "path": "src/dev/v2/on-phase.ts"
+  },
+  {
+    "name": "hookware",
+    "path": "src/dev/v2/hookware.ts"
   }
+
 ]

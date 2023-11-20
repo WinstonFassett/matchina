@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "./promise-v2";
-import {  onLifecycle } from "./on-lifecycle-v2";
+import { onLifecycle } from "./on-lifecycle-v2";
 // import { withEvents } from "../src/extras/with-events";
 import { listen } from "../../extras/middleware/listen";
 
@@ -18,28 +18,33 @@ describe("onLifecycle usage", () => {
     let didEnterRejected = 0;
     let count = 0;
 
-    function add (a: number, b: number) { return a+b}
+    function add(a: number, b: number) {
+      return a + b;
+    }
 
     // Create machine WITHOUT a promise to drive it
     let machineInternals;
-    const machine = Object.assign(createPromiseMachine<number, Parameters<typeof add>>(
-      undefined,
-      internals => {
-        // console.log('lifecycle promiss', { internals })
-        machineInternals = internals; 
-      }
-    ), {
-      reset () {
-        const current = machineInternals.store.get()
-        console.log('RESET')
-        machineInternals.store.set({
-          ...current,
-          from: current.to, 
-          to: machineInternals.states.Idle(),
-          type: 'reset',
-        })
-      }
-    });
+    const machine = Object.assign(
+      createPromiseMachine<number, Parameters<typeof add>>(
+        undefined,
+        (internals) => {
+          // console.log('lifecycle promiss', { internals })
+          machineInternals = internals;
+        },
+      ),
+      {
+        reset() {
+          const current = machineInternals.store.get();
+          console.log("RESET");
+          machineInternals.store.set({
+            ...current,
+            from: current.to,
+            to: machineInternals.states.Idle(),
+            type: "reset",
+          });
+        },
+      },
+    );
     // machine.send('execute', 1, 1)
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
@@ -119,8 +124,8 @@ describe("onLifecycle usage", () => {
           console.log("* leaving", change.from.key);
         }),
         enter: listen((change) => {
-          change.from.key
-          change.to
+          change.from.key;
+          change.to;
           console.log("* entering", change.to.key);
         }),
         on: {
@@ -187,8 +192,8 @@ describe("onLifecycle usage", () => {
               }
               machine.promise = delayed(num, num);
               machine.done = machine.promise
-                .then((x) => machine.send('resolve', x)) 
-                .catch((err) => machine.send('reject', err)) ;
+                .then((x) => machine.send("resolve", x))
+                .catch((err) => machine.send("reject", err));
               didHandleExecute ||= ++count;
               console.log("handler accepting");
               next(event);
@@ -210,7 +215,7 @@ describe("onLifecycle usage", () => {
         on: {
           resolve: {
             before: (ev, next) => {
-              console.log('** BEFORE***')
+              console.log("** BEFORE***");
               // expect(didAfterResolve).toBe(0)
               didBeforeResolve ||= ++count;
               console.log("In Pending before resolve");
@@ -221,14 +226,14 @@ describe("onLifecycle usage", () => {
               console.log("done before resolve");
             },
             after: (ev, next) => {
-              console.log('**AFTER***')
-              expect(didBeforeResolve).toBeTruthy()
+              console.log("**AFTER***");
+              expect(didBeforeResolve).toBeTruthy();
               // if (didBeforeResolve === 0) {
               //   throw new Error("before not called");
               // }
-                didAfterResolve ||= ++count;
-                console.log("Resolved from Pending");
-              next(ev)
+              didAfterResolve ||= ++count;
+              console.log("Resolved from Pending");
+              next(ev);
             },
             // after: listen((ev) => {
             // }),
@@ -243,7 +248,7 @@ describe("onLifecycle usage", () => {
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     console.log("test guard reject");
-    machine.send('execute', 1);
+    machine.send("execute", 1);
     checkState();
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
@@ -252,14 +257,14 @@ describe("onLifecycle usage", () => {
 
     expect(didGuardAccept).toBeFalsy();
     console.log("test guard accept, handler reject");
-    machine.send('execute', 99);
+    machine.send("execute", 99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log("BEFORE FAIL", machine.getState().key);
     console.log("***test handler accept");
-    machine.send('execute', 100);
+    machine.send("execute", 100);
     console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
@@ -272,9 +277,9 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.send('execute', 100);
+    machine.send("execute", 100);
     expectState("Pending");
-    machine.send('reject', new Error("test"));
+    machine.send("reject", new Error("test"));
     expectState("Rejected");
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
@@ -288,10 +293,10 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.send('execute', 1000);
+    machine.send("execute", 1000);
     expectState("Pending");
 
-    machine.send('resolve', 1);
+    machine.send("resolve", 1);
     expectState("Resolved");
     expectStateData().toBe(1);
 

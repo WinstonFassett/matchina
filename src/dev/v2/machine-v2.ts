@@ -1,5 +1,17 @@
 import { Middleware } from "../../extras/middleware";
-import { AnyMachineChangeEvent, StateChangeMachineTransitionContext, MachineContextEvent, ResolveTransition, TransitionConfig, AnyStatesFactory, CreateStateChangeMachineProps, StateFromFactory, StateMachine, StateChangeMachineInternals, ChangeMachineEvent } from "./machine-types-v2";
+import {
+  AnyMachineChangeEvent,
+  StateChangeMachineTransitionContext,
+  MachineContextEvent,
+  ResolveTransition,
+  TransitionConfig,
+  AnyStatesFactory,
+  CreateStateChangeMachineProps,
+  StateFromFactory,
+  StateMachine,
+  StateChangeMachineInternals,
+  ChangeMachineEvent,
+} from "./machine-types-v2";
 import { emptyEffect, atom } from "./bootstrap";
 
 export const defaultInternals = {
@@ -33,7 +45,7 @@ export function createResolver<
 export function createStateChangeMachine<
   TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
-  Props extends CreateStateChangeMachineProps<SF>, 
+  Props extends CreateStateChangeMachineProps<SF>,
   E extends MachineContextEvent<StateChangeMachineTransitionContext<TC, SF>>,
 >(
   states: SF,
@@ -41,22 +53,24 @@ export function createStateChangeMachine<
   transitions: TC,
   init?: Middleware<CreateStateChangeMachineProps<SF>>,
 ): StateMachine<TC, SF> {
-  const ensureKernel = (props: Props): StateChangeMachineInternals<TC, SF, E> => {
+  const ensureKernel = (
+    props: Props,
+  ): StateChangeMachineInternals<TC, SF, E> => {
     // console.log('ensureKernel', props)
     return Object.assign(props, {
-      ...defaultInternals,    
+      ...defaultInternals,
       states,
       transitions,
       store: props.store ?? atom<E>({} as E),
       resolve: props.resolve ?? createResolver({ states, transitions }),
-    })
-  }
-  let kernelInit = {  } as Props;
+    });
+  };
+  let kernelInit = {} as Props;
   let kernel: StateChangeMachineInternals<TC, SF, E> = kernelInit as any;
   if (init) {
-    console.log('INIT', init)
-    init(kernelInit, (enhanced) => {  
-      console.log({ enhanced })
+    console.log("INIT", init);
+    init(kernelInit, (enhanced) => {
+      console.log({ enhanced });
       if (enhanced && enhanced !== kernelInit) {
         kernelInit = enhanced as Props;
         console.log("something replaced the internals");
@@ -78,7 +92,7 @@ export function createStateChangeMachine<
     getChange: () => internals.store.get(),
     getState: () => internals.store.get().to,
     send: (type, ...params) => {
-      console.log('send', { type, params })
+      console.log("send", { type, params });
       const lastEvent = internals.store.get();
       const nextState = internals.resolve({
         ...lastEvent,
@@ -93,16 +107,16 @@ export function createStateChangeMachine<
         type,
         from: lastEvent.to,
         to: nextState,
-        params
+        params,
       };
       if (!internals.guard(nextEvent)) return;
       const handled = internals.handle(nextEvent);
       if (!handled) return;
       internals.store.set(handled);
-      console.log('running effects')
-      console.log('EXIT', handled.from?.key)
+      console.log("running effects");
+      console.log("EXIT", handled.from?.key);
       internals.exit(handled);
-      console.log('ENTER', handled.to.key)
+      console.log("ENTER", handled.to.key);
       internals.enter(handled);
     },
     api: {} as any, // stubs,
@@ -110,6 +124,3 @@ export function createStateChangeMachine<
   };
   return machine;
 }
-
-
-

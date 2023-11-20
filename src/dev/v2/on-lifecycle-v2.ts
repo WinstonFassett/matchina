@@ -1,10 +1,10 @@
 import { StateEventHookConfig } from "./on-lifecycle-types-v2";
-import { enhancePhase } from "./enhancePhase";
+import { enhancePhase } from "./on-phase";
 import { hookware } from "./hookware";
 import {
   AnyStatesFactory,
   StateChangeMachineInternals,
-  TransitionConfig
+  TransitionConfig,
 } from "./machine-types-v2";
 
 export function onLifecycle<
@@ -45,15 +45,15 @@ export function onLifecycle<
         for (const phase of ["guard", "handle", "before", "after"] as const) {
           const hook = eventConfig[phase];
           if (hook) {
-            console.log(`on ${phase} ${stateKey}=>${eventKey}`)
+            // console.log(`on ${phase} ${stateKey}=>${eventKey}`);
             enhancePhase(
               machineInternals,
               {
                 after: "enter", // after the event is the entry phase
-                before: "exit" // before the event is the exit phase
+                before: "exit", // before the event is the exit phase
               }[phase] ?? phase,
               hookware(hook as any, {
-                ['from']: stateKey as any,
+                ["from"]: stateKey as any,
                 type: eventKey as any,
               }),
             );
@@ -63,5 +63,3 @@ export function onLifecycle<
     }
   }
 }
-
-

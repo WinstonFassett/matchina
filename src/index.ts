@@ -8,6 +8,7 @@ export * from "./extras/lifecycle";
 export * from "./extras/effects";
 export * from "./extras/zen";
 export * from "./extras/methodware";
+export * from "./extras/middleware";
 export * from "./extras/delay";
 export * from "./extras/nanosubscriber";
 export * from "./extras/with-subscribe";

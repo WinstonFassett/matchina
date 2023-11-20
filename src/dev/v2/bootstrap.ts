@@ -11,4 +11,4 @@ export const atom = <T>(initial: T): StoreInternals<T> => {
     },
   };
 };
-export const emptyEffect = <E>(event: E) => { };
+export const emptyEffect = <E>(event: E) => {};
