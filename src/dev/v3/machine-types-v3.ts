@@ -4,7 +4,7 @@ import { StateMachineImpl } from "./StateMachineImpl"
 
 type Effect<T> = (value: T) => void
 
-interface Change<T> {
+export interface Change<T> {
   from: T,
   to: T
 }
