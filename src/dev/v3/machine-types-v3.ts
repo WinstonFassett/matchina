@@ -95,6 +95,8 @@ interface Machine<T> {
   update(value: T): void,
 }
 
+
+
 export interface Extender<T, X> {
   extend(value: T): X & T,
 }

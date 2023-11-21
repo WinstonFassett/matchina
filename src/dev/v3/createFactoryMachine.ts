@@ -2,7 +2,8 @@ import { StateFromFactory } from "../v2/machine-types-v2";
 import { createStateMachine } from "./machine-funcs";
 import {
   AnyStatesFactory,
-  ChangeCommandEvent
+  ChangeCommandEvent,
+  Guarder
 } from "./machine-types-v3";
 
 
@@ -12,14 +13,13 @@ export function createFactoryMachine<
   TC extends FactoryTransitionConfig<SF>,
 >(states: SF, transitions: TC, initialState: StateFromFactory<SF>) {
   const machine = createStateMachine<E>(transitions, initialState);  
-  const factoryMachine = Object.assign(machine, {
+  return Object.assign(machine, {
     states,
     resolve (ev: E) {
       const to = factoryResolveNextState(transitions, states, ev);
       if (to) return { ...ev, to } as E;
     }
   })
-  return factoryMachine
 }
 
 export type FactoryTransitionConfig<
@@ -53,3 +53,4 @@ function factoryResolveNextState<
     return states[to as keyof typeof states](...ev.params) as any;
   }
 }
+
