@@ -55,17 +55,6 @@ export interface Commander<T,P extends any[]> {
   send: (type: T, ...params: P) => void,
 }
 
-function resolveChange<S,T extends string,P extends any[], C extends ChangeCommandEvent<T,P>>(from: S, type: T, ...params: P): 
-  ResolveEvent<ChangeEvent<T,S,S>> &
-  CommandEvent<T,P> {
-  return {
-    from,
-    type,
-    params,  
-  }
-}
-
-
 export interface Handler<T> {
   handle: (value: T) => T,
 }
@@ -78,9 +67,11 @@ export interface Guarder<T> {
   guard: (value: T) => boolean,
 }
 
-export type ResolveEvent<C> = Omit<C, 'to'>
+export type ResolveEvent<C> = C & {
+  to?: never
+}
 
-export interface Resolver<C extends ChangeEvent> {
+export interface Resolver<C extends ChangeEvent<any, any, any>> {
   resolve: (value: ResolveEvent<C>) => C,
 }
 

@@ -1,10 +1,10 @@
 import { StateFromFactory } from "../v2/machine-types-v2";
 import { ChangeCommandEvent, AnyStatesFactory, Resolver, TransitionRecord, ResolveEvent, TransitionContext, EventEffects, Transitioner, Guarder, Notifier, ChangeMachine, Handler, Effecter, Updater, Commander } from "./machine-types-v3";
 
-type StateMachinery<E extends ChangeCommandEvent, T extends string = string, P extends any[] = any[]> = 
+type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
   & TransitionContext 
   & ChangeMachine<E>
-  & Commander<any, any> 
+  & Commander<E['type'], E['params']> 
   & Resolver<E> 
   & Transitioner<E> 
   & Guarder<E> 
@@ -24,6 +24,7 @@ export function createStateMachine<
  
   const machine = {
     transitions,
+    
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
       return { ...ev, to } as E;
@@ -35,14 +36,12 @@ export function createStateMachine<
       return lastChange.to;
     },
 
-    send(type, ...params) {
-      if (typeof type === 'string') {
-        type = { params } as ResolveEvent<E>;
-      }
-      if (params) {
-        type.params = (type.params ?? []).concat(params);
-      }
-      const resolved = machine.resolve(type as ResolveEvent<E>);
+    send(type, ...params) {      
+      const resolved = machine.resolve({
+        type,
+        params,
+        from: lastChange.to
+      } as ResolveEvent<E>);
       if (resolved) machine.transition(resolved);
     },
 
