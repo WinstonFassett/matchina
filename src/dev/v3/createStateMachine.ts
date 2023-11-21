@@ -1,5 +1,5 @@
 import { ChangeCommandEvent, ChangeMachine, Commander, Effecter, EventEffects, Guarder, Handler, Notifier, ResolveEvent, Resolver, TransitionContext, TransitionRecord, Transitioner, Updater } from "./machine-types-v3";
-import { useOn } from "./use-on";
+// import { useOn } from "./use-on";
 
 type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
   & TransitionContext 
@@ -16,9 +16,10 @@ type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
 type AnyStateMachinery = StateMachinery<any>
 
 export function createStateMachine<
+  T extends TransitionRecord,
   E extends ChangeCommandEvent,
   S extends any = any
->(transitions: TransitionRecord, initialState: S) {
+>(transitions: T, initialState: S) {
   let lastChange = {
     type: 'init',
     to: initialState
@@ -80,14 +81,36 @@ export function createStateMachine<
   return machine;
 }
 
-export const useGuard = useOn('guard');
-export const useHandle = useOn('handle');
-export const useEffect = useOn('effect');
-export const useBefore = useOn('before');
-export const useAfter = useOn('after');
-export const useNotify = useOn('notify');
-export const useSend = useOn('send');
-export const useTransition = useOn('transition');
+type HasMethod<K extends string> = {
+  [key in K]: (...args: any[]) => any;
+};
+export function use<K extends string, T extends HasMethod<K> = HasMethod<K>>(methodName: K, target: T, fn: T[K]) {
+  const original = target[methodName];
+  target[methodName] = (fn) as T[K];
+  return () => {
+    target[methodName] = original;
+  };
+}
+
+// export const useOn =
+//   <K extends string>(methodName: K) =>
+//   <T extends HasMethod<K>>(target: T, fn: T[K]) =>
+//     use(methodName, target, fn);
+
+export const user =
+  <K extends string>(methodName: K) =>
+  <T extends HasMethod<K>>(fn: T[K]) => (target: T) =>
+    use(methodName, target, fn);    
+
+const guard = user('guard')
+const handle = user('handle')
+const effect = user('effect')
+const before = user('before')
+const after = user('after')
+const notify = user('notify')
+const send = user('send')
+const transition = user('transition')
+
 
 export function useCleanup (...fns:((...args: any[]) => any) []) {
   return () => {
@@ -96,6 +119,18 @@ export function useCleanup (...fns:((...args: any[]) => any) []) {
     }
   }
 }
+
+function machineSetup<M>(...extenders: ((machine:M)=>()=>void)[]) {
+  return function setupMachine(machine:M) {
+    return useCleanup(...extenders.map(fn => fn(machine)))
+  }  
+}
+
+function setupMachine<M>(machine:M) {
+  return function (...extenders: ((machine:M)=>()=>void)[]) {
+    return useCleanup(...extenders.map(fn => fn(machine)))
+  }  
+}  
 
 const m1 = createStateMachine({
   Idle: {
@@ -106,22 +141,22 @@ const m1 = createStateMachine({
   }
 }, { key: 'Idle', data: undefined })
 
-useCleanup(
-  useGuard(m1, (ev) => { 
-    console.log('guard', ev);  
-    return true;
-  }),
-
-  useHandle(m1, (ev) => { 
-    console.log('handle', ev); 
-    return ev;
-  }),
-
-  useEffect(m1, (ev) => { 
-    console.log('effect', ev); 
-  }),
-
-  useBefore(m1, (ev) => { 
-    console.log('before', ev); 
-  }),
+setupMachine(m1)(
+  guard(ev=> true),
+  before(ev=> console.log('before', ev)),
 )
+
+const m2 = createStateMachine({
+  Idle: {
+    'start': 'Running'
+  },
+  Running: {
+    'stop': 'Idle'
+  }
+}, { key: 'Idle', data: undefined })
+
+machineSetup<typeof m2>(
+  guard(ev=> true),
+  before(ev=> console.log('before', ev)),
+)(m2)
+
