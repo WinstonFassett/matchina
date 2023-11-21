@@ -121,12 +121,10 @@ interface Eventware<E> {
 
 interface FactoryTransitionMachine {}
 
-export type TransitionRecord = Record<
+export type TransitionRecord<T = any> = Record<
   string,
-  Record<string, (...args: any[]) => any>
+  Record<string, T>
 >;
-
-
 
 interface State<K extends string = string, D = any> {
   key: K;

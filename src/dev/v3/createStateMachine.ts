@@ -1,7 +1,7 @@
 import { StateFromFactory } from "../v2/machine-types-v2";
 import { ChangeCommandEvent, AnyStatesFactory, Resolver, TransitionRecord, ResolveEvent, TransitionContext, EventEffects, Transitioner, Guarder, Notifier, ChangeMachine, Handler, Effecter, Updater, Commander } from "./machine-types-v3";
 
-function createStateMachine<
+export function createStateMachine<
   E extends ChangeCommandEvent,
   SF extends AnyStatesFactory
 >(transitions: TransitionRecord, initialState: StateFromFactory<SF>) {

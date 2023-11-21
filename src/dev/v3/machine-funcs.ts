@@ -1,5 +1,4 @@
 import {
-  AnyStatesFactory,
   ChangeCommandEvent,
   ChangeMachine,
   Commander,
@@ -13,21 +12,16 @@ import {
   TransitionContext,
   TransitionRecord,
   Transitioner,
-  Updater,
+  Updater
 } from "./machine-types-v3";
 
 function transitionMachine<
-  E extends ChangeCommandEvent,
-  SF extends AnyStatesFactory,
+  E extends ChangeCommandEvent  
 >(transitions: TransitionRecord, lastChange: E) {
   // let lastChange = state;
 
   const machine = {
     transitions,
-    resolve(ev) {
-      const to = machine.transitions[ev.from.key][ev.type];
-      return { ...ev, to } as E;
-    },
 
     getChange() {
       return lastChange;
@@ -35,6 +29,11 @@ function transitionMachine<
 
     getState() {
       return lastChange.to;
+    },
+
+    resolve(ev) {
+      const to = machine.transitions[ev.from.key][ev.type];
+      return { ...ev, to } as E;
     },
 
     guard(ev: E) {
@@ -93,7 +92,7 @@ interface StateMachine<E extends ChangeCommandEvent>
   send(type: string | ResolveEvent<E>, ...params: any[]): void;
 }
 
-function createStateMachine<E extends ChangeCommandEvent>(
+export function createStateMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   initialState: E["from"],
 ): StateMachine<E> {
@@ -116,4 +115,17 @@ function createStateMachine<E extends ChangeCommandEvent>(
     },
   };
   return machine;
+}
+
+interface PureStateMachine<E extends ChangeCommandEvent<string, any[]>> 
+extends Pick<StateMachine<E>, 'getState' | 'send'> {}
+
+export function pure<E extends ChangeCommandEvent<string, any[]>>(
+  machine: StateMachine<E>
+): PureStateMachine<E>  {
+  const { getState, send } = machine;
+  return {
+    getState, 
+    send
+  } 
 }

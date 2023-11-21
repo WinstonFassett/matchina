@@ -120,7 +120,11 @@
   },
   {
     "name": "v3",
-    "path": "src/dev/v3/machine-types-v3.ts"
+    "path": "src/dev/v3/createStateMachine.ts"
+  },
+  {
+    "name": "v3-funcs",
+    "path": "src/dev/v3/machine-funcs.ts"
   }
   
 ]
