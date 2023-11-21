@@ -1,4 +1,5 @@
 import { ChangeCommandEvent, ChangeMachine, Commander, Effecter, EventEffects, Guarder, Handler, Notifier, ResolveEvent, Resolver, TransitionContext, TransitionRecord, Transitioner, Updater } from "./machine-types-v3";
+import { useOn } from "./use-on";
 
 type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
   & TransitionContext 
@@ -79,27 +80,14 @@ export function createStateMachine<
   return machine;
 }
 
-export function onMethod<
-  K extends string
->(methodName: K) {
-  return function extend<T extends {
-    [key in K]: (...args: any[]) => any
-  }>(target: T, fn: T[K]) {
-    const original = target[methodName];
-    target[methodName] = (fn) as T[K];
-    return () => {
-      target[methodName] = original;
-    };
-  }
-}
-
-export const onGuard = onMethod('guard');
-export const onHandle = onMethod('handle');
-export const onEffect = onMethod('effect');
-export const onBefore = onMethod('before');
-export const onAfter = onMethod('after');
-export const onNotify = onMethod('notify');
-export const onSend = onMethod('send');
+export const useGuard = useOn('guard');
+export const useHandle = useOn('handle');
+export const useEffect = useOn('effect');
+export const useBefore = useOn('before');
+export const useAfter = useOn('after');
+export const useNotify = useOn('notify');
+export const useSend = useOn('send');
+export const useTransition = useOn('transition');
 
 const m1 = createStateMachine({
   Idle: {
@@ -110,7 +98,20 @@ const m1 = createStateMachine({
   }
 }, { key: 'Idle', data: undefined })
 
-onGuard(m1, (ev) => { 
+useGuard(m1, (ev) => { 
   console.log('guard', ev);  
   return true;
+})
+
+useHandle(m1, (ev) => { 
+  console.log('handle', ev); 
+  return ev;
+})
+
+useEffect(m1, (ev) => { 
+  console.log('effect', ev); 
+})
+
+useBefore(m1, (ev) => { 
+  console.log('before', ev); 
 })
