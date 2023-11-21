@@ -119,8 +119,8 @@
     "path": "src/dev/v2/promise-v2.ts"
   },
   {
-    "name": "v3",
-    "path": "src/dev/v3/createStateMachine.ts"
+    "name": "v3 transitionMachine",
+    "path": "src/dev/v3/transition-machine.ts"
   },
   {
     "name": "v3 method",
@@ -128,11 +128,15 @@
   },
   {
     "name": "v3 factory",
-    "path": "src/dev/v3/createFactoryMachine.ts"
+    "path": "src/dev/v3/factory-machine.ts"
   },
   {
-    "name": "v3-funcs",
-    "path": "src/dev/v3/machine-funcs.ts"
+    "name": "v3-machinery",
+    "path": "src/dev/v3/state-machine.ts"
+  },
+  {
+    "name": "v3-machine setup",
+    "path": "src/dev/v3/machine-setup.ts"
   },
   {
     "name": "v3-usage",

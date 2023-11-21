@@ -1,10 +1,10 @@
 import { FlatEventKeys } from "../v2/machine-types-v2";
-import { createStateMachine } from "./machine-funcs";
+import { createStateMachine } from "./state-machine";
 import {
   AnyStatesFactory,
   ChangeCommandEvent,
   StateFromFactory
-} from "./machine-types-v3";
+} from "./types";
 
 
 export function createFactoryMachine<

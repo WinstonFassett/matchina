@@ -1,8 +1,7 @@
-import { createStateMachine } from "./machine-funcs";
-import { before, guard, machineSetup, setupMachine } from "./machineSetup";
 import { defineStates } from '../../states';
-import { StateFromFactory } from "./machine-types-v3";
-import { createFactoryMachine } from "./createFactoryMachine";
+import { createFactoryMachine } from "./factory-machine";
+import { after, before, guard, machineSetup, setupMachine } from "./machine-setup";
+import { createStateMachine } from "./state-machine";
 
 const m1 = createStateMachine({
   Idle: {
@@ -39,8 +38,6 @@ const states = defineStates({
   Rejected: (err: Error) => ({ err })
 });
 
-type State = StateFromFactory<typeof states>;
-
 const m4 = createFactoryMachine(states, {
   Idle: { execute: 'Pending'},
   Pending: { resolve: 'Resolved', reject: 'Rejected' },
@@ -48,11 +45,15 @@ const m4 = createFactoryMachine(states, {
   Rejected: {}
 }, states.Idle())
 
-setupMachine(m4)(guard(ev => !!ev.to.match<any>({
-  Pending: (ev) => ev.s,
-  Resolved: (ev) => ev.ok,
-  Rejected: (ev) => ev.err,
-  _: () => false
-})))
+setupMachine(m4)(
+  guard(ev => ev.type !== 'execute' || ev.params[0] > 0),
+  before(ev => { if(ev.type == 'execute'){ console.log('executing') } }),
+  after(ev => console.log(ev.to.match<any>({
+    Pending: (ev) => ev.s,
+    Resolved: (ev) => ev.ok,
+    Rejected: (ev) => ev.err,
+    _: () => false
+  }))),
+)
 
 m4.send('execute', 1)
