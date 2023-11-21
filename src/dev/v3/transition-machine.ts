@@ -27,7 +27,6 @@ export function transitionMachine<
     },
 
     resolve(ev) {
-      console.log('resolve', ev)
       const to = machine.transitions[ev.from.key][ev.type];
       if (to) return { ...ev, to } as E;
     },
@@ -37,17 +36,13 @@ export function transitionMachine<
     },
 
     transition(ev: E) {
-      console.log('transition', ev)
       if (!machine.guard(ev)) return;
       const handled = machine.handle(ev);
-      console.log({ handled })
       if (handled) (machine as unknown as Updater<E>).update(handled);
-      // return handled;
     },
 
     update(ev: E) {
       lastChange = ev;
-      console.log('updated', ev)
       machine.effect(ev);
     },
 

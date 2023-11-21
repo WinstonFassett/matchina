@@ -46,7 +46,6 @@ export function createStateMachine<E extends ChangeCommandEvent>(
         params,
         from: lastChange.to
       } as ResolveEvent<E>);
-      console.log({ resolved, type, current: machine.getState() })
       if (resolved) machine.transition(resolved);
     },
   };
