@@ -1,5 +1,4 @@
 import { ChangeCommandEvent, ChangeMachine, Commander, Effecter, EventEffects, Guarder, Handler, Notifier, ResolveEvent, Resolver, State, TransitionContext, TransitionRecord, Transitioner, Updater } from "./machine-types-v3";
-// import { useOn } from "./use-on";
 
 type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
   & TransitionContext 
@@ -13,7 +12,7 @@ type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
   & EventEffects<E> 
   & Notifier<E> 
 
-type AnyStateMachinery = StateMachinery<any>
+export type AnyStateMachinery = StateMachinery<any>
 
 export function createStateMachine<
   S extends State = State,
@@ -81,78 +80,5 @@ export function createStateMachine<
   return machine;
 }
 
-type HasMethod<K extends string> = {
-  [key in K]: (...args: any[]) => any;
-};
-export function use<K extends string, T extends HasMethod<K> = HasMethod<K>>(methodName: K, target: T, fn: T[K]) {
-  const original = target[methodName];
-  target[methodName] = (fn) as T[K];
-  return () => {
-    target[methodName] = original;
-  };
-}
-
-export const user =
-  <K extends string>(methodName: K) =>
-  <T extends HasMethod<K>>(fn: T[K]) => (target: T) =>
-    use(methodName, target, fn);    
-
-export const guard = user('guard')
-export const handle = user('handle')
-export const effect = user('effect')
-export const before = user('before')
-export const after = user('after')
-export const notify = user('notify')
-export const send = user('send')
-export const transition = user('transition')
 
 
-export function useCleanup (...fns:((...args: any[]) => any) []) {
-  return () => {
-    for (const fn of fns) {
-      fn();
-    }
-  }
-}
-
-function machineSetup<M>(...extenders: ((machine:M)=>()=>void)[]) {
-  return function setupMachine(machine:M) {
-    return useCleanup(...extenders.map(fn => fn(machine)))
-  }  
-}
-
-function setupMachine<M>(machine:M) {
-  return function (...extenders: ((machine:M)=>()=>void)[]) {
-    return useCleanup(...extenders.map(fn => fn(machine)))
-  }  
-}  
-
-const m1 = createStateMachine({
-  Idle: {
-    'start': 'Running'
-  },
-  Running: {
-    'stop': 'Idle'
-  }
-}, { key: 'Idle', data: undefined })
-
-setupMachine(m1)(
-  guard(ev=> true),
-  before(ev=> console.log('before', ev)),
-)
-
-const m2 = createStateMachine({
-  Idle: {
-    'start': 'Running'
-  },
-  Running: {
-    'stop': 'Idle'
-  }
-}, { key: 'Idle', data: undefined } as {key: 'Idle' | 'Pending' | 'Done', data: undefined})
-
-machineSetup<typeof m2>(
-  guard(ev=> true),
-  before(ev=> console.log('before', ev)),
-)(m2)
-
-// m2.getChange().
