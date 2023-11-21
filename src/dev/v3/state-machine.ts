@@ -37,8 +37,8 @@ export function createStateMachine<E extends ChangeCommandEvent>(
     type: "init",
     to: initialState,
   } as E);
-  const machine: StateMachinery<E> = {
-    ...transitioner,
+  const machine: StateMachinery<E> = Object.assign(transitioner, {
+    
     send(type, ...params) {
       const lastChange = machine.getChange();
       const resolved = machine.resolve({
@@ -48,6 +48,6 @@ export function createStateMachine<E extends ChangeCommandEvent>(
       } as ResolveEvent<E>);
       if (resolved) machine.transition(resolved);
     },
-  };
+  });
   return machine;
 }
