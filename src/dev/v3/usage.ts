@@ -1,3 +1,12 @@
+// This file needs a usage.test.ts in same dir
+// It should use vitess, i.e. describe, it, and vi.fn (NOT jest)
+// It should have suites corresponding to m1,m2 and m4 
+// the names are meaningless. 
+// m1 and m2 are the same test but with different setup methods
+// m4 is a test of using the factory machine with defineStates
+// it should call send(type,...params) to move through states
+// it should use expect(...).toBe(...) to assert state key matches
+
 import { defineStates } from '../../states';
 import { createFactoryMachine } from "./factory-machine";
 import { after, before, guard, machineSetup, setupMachine } from "./machine-setup";

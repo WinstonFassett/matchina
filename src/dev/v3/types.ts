@@ -1,7 +1,5 @@
 import { Middleware } from "../../extras/middleware"
 
-import { StateMachineImpl } from "./StateMachineImpl"
-
 type Effect<T> = (value: T) => void
 
 export interface Change<T> {
@@ -163,19 +161,6 @@ extends StatesContext<S>
   // change: ChangeMachine<T>,
 }
 
-class FactoryMachineImpl<
-  E extends ChangeCommandEvent<string, any[]>,
-  S extends AnyStatesFactory,
-> extends StateMachineImpl<E, S> {
-
-  public states: S;
-
-  constructor(states: S, transitions: TransitionRecord, initialState: StateFromFactory<S>) {
-    super(transitions, initialState)
-    this.states = states
-  }
-
-}
 
 class ExtensionImpl<E> {
   use (mw: Middleware<E>) {
