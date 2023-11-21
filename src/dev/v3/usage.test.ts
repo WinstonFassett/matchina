@@ -13,27 +13,29 @@ const states = defineStates({
 });
 
 describe('setupMachine', () => {
-  const m1 = createStateMachine({
-    Idle: {
-      'start': 'Running'
-    },
-    Running: {
-      'stop': 'Idle'
-    }
-  }, { key: 'Idle', data: undefined });
+  const create = () =>
+  {
+    const m = createStateMachine({
+      Idle: {
+        'start': { key: 'Running' }
+      },
+      Running: {
+        'stop': { key: 'Idle'}
+      }
+    }, { key: 'Idle', data: undefined });
+  
+    setupMachine(m)(
+      guard(ev => true),
+      before(ev => console.log('before', ev))
+    );
+    return m
+  } 
 
-  setupMachine(m1)(
-    guard(ev => true),
-    before(ev => console.log('before', ev))
-  );
-
-  it('should transition from Idle to Running when started', () => {
+  it('should transition', () => {
+    const m1 = create()
+    expect(m1.getState().key).toBe('Idle');    
     m1.send('start');
     expect(m1.getState().key).toBe('Running');
-  });
-
-  it('should transition from Running to Idle when stopped', () => {
-    m1.send('start');
     m1.send('stop');
     expect(m1.getState().key).toBe('Idle');
   });
@@ -42,10 +44,10 @@ describe('setupMachine', () => {
 describe('machineSetup', () => {
   const m2 = createStateMachine({
     Idle: {
-      'start': 'Running'
+      'start': { key: 'Running' }
     },
     Running: {
-      'stop': 'Idle'
+      'stop': { key: 'Idle'}
     }
   }, { key: 'Idle', data: undefined } as { key: 'Idle' | 'Pending' | 'Done'; data: undefined; });
 

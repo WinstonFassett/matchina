@@ -33,19 +33,20 @@ export function createStateMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   initialState: E["from"]
 ): StateMachinery<E> {
-  let lastChange = {
+  const transitioner = transitionMachine(transitions, {
     type: "init",
     to: initialState,
-  } as E;
-  const transitioner = transitionMachine(transitions, lastChange);
+  } as E);
   const machine: StateMachinery<E> = {
     ...transitioner,
     send(type, ...params) {
+      const lastChange = machine.getChange();
       const resolved = machine.resolve({
         type,
         params,
         from: lastChange.to
       } as ResolveEvent<E>);
+      console.log({ resolved, type, current: machine.getState() })
       if (resolved) machine.transition(resolved);
     },
   };
