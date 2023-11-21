@@ -78,39 +78,38 @@ function transitionMachine<
   return machine;
 }
 
-interface StateMachine<E extends ChangeCommandEvent>
-  extends TransitionContext,
-    ChangeMachine<E>,
-    Commander<any, any>,
-    Resolver<E>,
-    Transitioner<E>,
-    Guarder<E>,
-    Handler<E>,
-    Effecter<E>,
-    EventEffects<E>,
-    Notifier<E> {
-  send(type: E['type'] | ResolveEvent<E>, ...params: E['params']): void;
-}
+type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
+  & TransitionContext 
+  & ChangeMachine<E>
+  & Commander<E['type'], E['params']> 
+  & Resolver<E> 
+  & Transitioner<E> 
+  & Guarder<E> 
+  & Handler<E> 
+  & Effecter<E> 
+  & EventEffects<E> 
+  & Notifier<E> 
+
+export type AnyStateMachinery = StateMachinery<any>
+
 
 export function createStateMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   initialState: E["from"],
-): StateMachine<E> {
+): StateMachinery<E> {
   let lastChange = {
     type: "init",
     to: initialState,
   } as E;
   const transitioner = transitionMachine(transitions, lastChange);
-  const machine: StateMachine<E> = {
+  const machine: StateMachinery<E> = {
     ...transitioner,
-    send(type, ...params) {
-      if (typeof type === "string") {
-        type = { params } as ResolveEvent<E>;
-      }
-      if (params) {
-        type.params = (type.params ?? []).concat(params);
-      }
-      const resolved = machine.resolve(type as ResolveEvent<E>);
+    send(type, ...params) {      
+      const resolved = machine.resolve({
+        type,
+        params,
+        from: lastChange.to
+      } as ResolveEvent<E>);
       if (resolved) machine.transition(resolved);
     },
   };
@@ -118,10 +117,10 @@ export function createStateMachine<E extends ChangeCommandEvent>(
 }
 
 interface PureStateMachine<E extends ChangeCommandEvent<string, any[]>> 
-extends Pick<StateMachine<E>, 'getState' | 'send'> {}
+extends Pick<StateMachinery<E>, 'getState' | 'send'> {}
 
 export function pure<E extends ChangeCommandEvent<string, any[]>>(
-  machine: StateMachine<E>
+  machine: StateMachinery<E>
 ): PureStateMachine<E>  {
   const { getState, send } = machine;
   return {

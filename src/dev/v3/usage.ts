@@ -1,4 +1,4 @@
-import { createStateMachine } from "./createStateMachine";
+import { createStateMachine } from "./machine-funcs";
 import { before, guard, machineSetup, setupMachine } from "./machineSetup";
 import { defineStates } from '../../states';
 import { StateFromFactory } from "./machine-types-v3";
