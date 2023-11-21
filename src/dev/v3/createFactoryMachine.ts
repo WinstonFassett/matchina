@@ -1,16 +1,21 @@
+import { FlatEventKeys } from "../v2/machine-types-v2";
 import { createStateMachine } from "./machine-funcs";
 import {
   AnyStatesFactory,
   ChangeCommandEvent,
-  Guarder,
   StateFromFactory
 } from "./machine-types-v3";
 
 
 export function createFactoryMachine<
-  E extends ChangeCommandEvent,
   SF extends AnyStatesFactory,
   TC extends FactoryTransitionConfig<SF>,
+  E extends ChangeCommandEvent<
+    string & FlatEventKeys<TC>,
+    any[],
+    StateFromFactory<SF>,
+    StateFromFactory<SF>
+  >,
 >(states: SF, transitions: TC, initialState: StateFromFactory<SF>) {
   const machine = createStateMachine<E>(transitions, initialState);  
   return Object.assign(machine, {

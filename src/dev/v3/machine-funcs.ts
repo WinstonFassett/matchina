@@ -89,7 +89,7 @@ interface StateMachine<E extends ChangeCommandEvent>
     Effecter<E>,
     EventEffects<E>,
     Notifier<E> {
-  send(type: string | ResolveEvent<E>, ...params: any[]): void;
+  send(type: E['type'] | ResolveEvent<E>, ...params: E['params']): void;
 }
 
 export function createStateMachine<E extends ChangeCommandEvent>(

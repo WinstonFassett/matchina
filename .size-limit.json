@@ -123,8 +123,20 @@
     "path": "src/dev/v3/createStateMachine.ts"
   },
   {
+    "name": "v3 method",
+    "path": "src/dev/v3/method.ts"
+  },
+  {
+    "name": "v3 factory",
+    "path": "src/dev/v3/createFactoryMachine.ts"
+  },
+  {
     "name": "v3-funcs",
     "path": "src/dev/v3/machine-funcs.ts"
+  },
+  {
+    "name": "v3-usage",
+    "path": "src/dev/v3/usage.ts"
   }
   
 ]
