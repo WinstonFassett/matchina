@@ -1,7 +1,5 @@
-import { StateMachinery } from "./StateMachinery";
-import { ChangeCommandEvent } from "./machine-types-v3";
-
-
+import { StateMachinery } from "./state-machine";
+import { ChangeCommandEvent } from "./types";
 
 export function pure<E extends ChangeCommandEvent<string, any[]>>(
   machine: StateMachinery<E>

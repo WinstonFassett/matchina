@@ -141,6 +141,10 @@
   {
     "name": "v3-usage",
     "path": "src/dev/v3/usage.ts"
+  },
+  {
+    "name": "v3-pure",
+    "path": "src/dev/v3/pure-state-machine.ts"
   }
   
 ]

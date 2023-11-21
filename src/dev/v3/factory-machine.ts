@@ -21,7 +21,7 @@ export function createFactoryMachine<
   return Object.assign(machine, {
     states,
     resolve (ev: E) {
-      const to = factoryResolveNextState(transitions, states, ev);
+      const to = nextFactoryState(transitions, states, ev);
       if (to) return { ...ev, to } as E;
     }
   })
@@ -39,7 +39,7 @@ export type FactoryTransitionConfig<
   };
 };
 
-function factoryResolveNextState<
+export function nextFactoryState<
   SF extends AnyStatesFactory,
   TC extends FactoryTransitionConfig<SF>,
 >(
@@ -50,10 +50,10 @@ function factoryResolveNextState<
   const to = transitions[ev.from.key][ev.type];
   if (!to) return undefined;
   if (typeof to === "function") {
-    const targetStateOrFunc = to(...ev.params);
-    return typeof targetStateOrFunc === "function"
-      ? targetStateOrFunc(ev.from, ev.type, states, transitions)
-      : targetStateOrFunc;
+    const stateOrFn = to(...ev.params);
+    return typeof stateOrFn === "function"
+      ? stateOrFn(ev.from, ev.type, states, transitions)
+      : stateOrFn;
   } else {
     return states[to as keyof typeof states](...ev.params) as any;
   }
