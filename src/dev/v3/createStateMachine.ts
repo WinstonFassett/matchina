@@ -89,6 +89,14 @@ export const useNotify = useOn('notify');
 export const useSend = useOn('send');
 export const useTransition = useOn('transition');
 
+export function useCleanup (...fns:((...args: any[]) => any) []) {
+  return () => {
+    for (const fn of fns) {
+      fn();
+    }
+  }
+}
+
 const m1 = createStateMachine({
   Idle: {
     'start': 'Running'
@@ -98,20 +106,22 @@ const m1 = createStateMachine({
   }
 }, { key: 'Idle', data: undefined })
 
-useGuard(m1, (ev) => { 
-  console.log('guard', ev);  
-  return true;
-})
+useCleanup(
+  useGuard(m1, (ev) => { 
+    console.log('guard', ev);  
+    return true;
+  }),
 
-useHandle(m1, (ev) => { 
-  console.log('handle', ev); 
-  return ev;
-})
+  useHandle(m1, (ev) => { 
+    console.log('handle', ev); 
+    return ev;
+  }),
 
-useEffect(m1, (ev) => { 
-  console.log('effect', ev); 
-})
+  useEffect(m1, (ev) => { 
+    console.log('effect', ev); 
+  }),
 
-useBefore(m1, (ev) => { 
-  console.log('before', ev); 
-})
+  useBefore(m1, (ev) => { 
+    console.log('before', ev); 
+  }),
+)
