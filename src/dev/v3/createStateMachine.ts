@@ -1,4 +1,4 @@
-import { StateFromFactory } from "../v2/machine-types-v2";
+import { StateFromFactory, StateMachine } from "../v2/machine-types-v2";
 import { ChangeCommandEvent, AnyStatesFactory, Resolver, TransitionRecord, ResolveEvent, TransitionContext, EventEffects, Transitioner, Guarder, Notifier, ChangeMachine, Handler, Effecter, Updater, Commander } from "./machine-types-v3";
 
 type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
@@ -13,6 +13,8 @@ type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
   & EventEffects<E> 
   & Notifier<E> 
 
+type AnyStateMachinery = StateMachinery<any>
+
 export function createStateMachine<
   E extends ChangeCommandEvent,
   SF extends AnyStatesFactory
@@ -24,7 +26,7 @@ export function createStateMachine<
  
   const machine = {
     transitions,
-    
+
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
       return { ...ev, to } as E;
@@ -79,8 +81,8 @@ export function createStateMachine<
 }
 
 export function onMethod<
-  K extends keyof T,
-  T extends Record<string, (...params: any[]) => any> = Record<string, (...params: any[]) => any>,
+  T, 
+  K extends keyof T = keyof T
 >(methodName: K) {
   return function extend(target: T, fn: T[K]) {
     const original = target[methodName];
@@ -91,11 +93,11 @@ export function onMethod<
   }
 }
 
-export const onGuard = onMethod('guard');
-export const onHandle = onMethod('handle');
-export const onEffect = onMethod('effect');
-export const onBefore = onMethod('before');
-export const onAfter = onMethod('after');
-export const onNotify = onMethod('notify');
-export const onSend = onMethod('send');
+export const onGuard = onMethod<AnyStateMachinery>('guard');
+export const onHandle = onMethod<AnyStateMachinery>('handle');
+export const onEffect = onMethod<AnyStateMachinery>('effect');
+export const onBefore = onMethod<AnyStateMachinery>('before');
+export const onAfter = onMethod<AnyStateMachinery>('after');
+export const onNotify = onMethod<AnyStateMachinery>('notify');
+export const onSend = onMethod<AnyStateMachinery>('send');
 
