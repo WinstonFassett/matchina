@@ -49,7 +49,13 @@ interface CommandEvent<T, P extends any[]> {
   params: P
 }
 
-export interface ChangeCommandEvent<T extends string=string,P extends any[]=any[]> extends ChangeEvent<T>, CommandEvent<T,P> {}
+export interface ChangeCommandEvent<
+  T extends string = string,
+  P extends any[] = any[],
+  To extends any = any,
+  From extends any = To
+> extends ChangeEvent<T, To, From>,
+    CommandEvent<T, P> {}
 
 export interface Commander<T,P extends any[]> {
   send: (type: T, ...params: P) => void,

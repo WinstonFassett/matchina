@@ -1,5 +1,4 @@
-import { StateFromFactory, StateMachine } from "../v2/machine-types-v2";
-import { ChangeCommandEvent, AnyStatesFactory, Resolver, TransitionRecord, ResolveEvent, TransitionContext, EventEffects, Transitioner, Guarder, Notifier, ChangeMachine, Handler, Effecter, Updater, Commander } from "./machine-types-v3";
+import { ChangeCommandEvent, ChangeMachine, Commander, Effecter, EventEffects, Guarder, Handler, Notifier, ResolveEvent, Resolver, TransitionContext, TransitionRecord, Transitioner, Updater } from "./machine-types-v3";
 
 type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> = 
   & TransitionContext 
@@ -17,8 +16,8 @@ type AnyStateMachinery = StateMachinery<any>
 
 export function createStateMachine<
   E extends ChangeCommandEvent,
-  SF extends AnyStatesFactory
->(transitions: TransitionRecord, initialState: StateFromFactory<SF>) {
+  S extends any = any
+>(transitions: TransitionRecord, initialState: S) {
   let lastChange = {
     type: 'init',
     to: initialState
@@ -81,10 +80,11 @@ export function createStateMachine<
 }
 
 export function onMethod<
-  T, 
-  K extends keyof T = keyof T
+  K extends string
 >(methodName: K) {
-  return function extend(target: T, fn: T[K]) {
+  return function extend<T extends {
+    [key in K]: (...args: any[]) => any
+  }>(target: T, fn: T[K]) {
     const original = target[methodName];
     target[methodName] = (fn) as T[K];
     return () => {
@@ -93,11 +93,24 @@ export function onMethod<
   }
 }
 
-export const onGuard = onMethod<AnyStateMachinery>('guard');
-export const onHandle = onMethod<AnyStateMachinery>('handle');
-export const onEffect = onMethod<AnyStateMachinery>('effect');
-export const onBefore = onMethod<AnyStateMachinery>('before');
-export const onAfter = onMethod<AnyStateMachinery>('after');
-export const onNotify = onMethod<AnyStateMachinery>('notify');
-export const onSend = onMethod<AnyStateMachinery>('send');
+export const onGuard = onMethod('guard');
+export const onHandle = onMethod('handle');
+export const onEffect = onMethod('effect');
+export const onBefore = onMethod('before');
+export const onAfter = onMethod('after');
+export const onNotify = onMethod('notify');
+export const onSend = onMethod('send');
 
+const m1 = createStateMachine({
+  Idle: {
+    'start': 'Running'
+  },
+  Running: {
+    'stop': 'Idle'
+  }
+}, { key: 'Idle', data: undefined })
+
+onGuard(m1, (ev) => { 
+  console.log('guard', ev);  
+  return true;
+})
