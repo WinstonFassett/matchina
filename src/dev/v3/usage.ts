@@ -34,7 +34,7 @@ machineSetup<typeof m2>(
 
 const states = defineStates({
   Idle: undefined,
-  Pending: (x: number) => { s: `#${x}` },
+  Pending: (x: number) => ({ s: `#${x}` }),
   Resolved: (ok: boolean) => ({ ok }),
   Rejected: (err: Error) => ({ err })
 });
@@ -48,6 +48,11 @@ const m4 = createFactoryMachine(states, {
   Rejected: {}
 }, states.Idle())
 
-setupMachine(m4)(guard(ev => !!ev.to))
+setupMachine(m4)(guard(ev => !!ev.to.match<any>({
+  Pending: (ev) => ev.s,
+  Resolved: (ev) => ev.ok,
+  Rejected: (ev) => ev.err,
+  _: () => false
+})))
 
 m4.send('execute', 1)
