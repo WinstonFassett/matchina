@@ -117,6 +117,10 @@
   {
     "name": "promise-v2",
     "path": "src/dev/v2/promise-v2.ts"
+  },
+  {
+    "name": "v3",
+    "path": "src/dev/v3/machine-types-v3.ts"
   }
   
 ]

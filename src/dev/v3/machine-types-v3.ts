@@ -1,0 +1,203 @@
+import { Middleware } from "../../extras/middleware"
+import { StateFromFactory } from "../v2/machine-types-v2"
+import { StateMachineImpl } from "./StateMachineImpl"
+
+type Effect<T> = (value: T) => void
+
+interface Change<T> {
+  from: T,
+  to: T
+}
+
+export interface ChangeMachine<T> {
+  getState(): T
+  getChange(): Change<T>
+  update(value: T): void 
+}
+
+interface Setter<T> {
+  set: (value: T) => void,
+}
+export interface Notifier<T> {
+  notify: (value: T) => void,
+}
+
+export interface Updater<T> {
+  update: (value: T) => void,
+}
+
+interface ChangeNotifier<T> {
+  exit<T>(value: T): void,
+  enter<T>(value: T): void,
+}
+
+interface TEvent<T extends string> {
+  type: T,
+}
+
+interface ChangeEvent<Type extends string = string, To=any, From=any> 
+extends TEvent<Type>
+  {
+  type: Type;
+  to: To;
+  from: From;
+}
+
+
+interface CommandEvent<T, P extends any[]> {
+  type: T,
+  params: P
+}
+
+export interface ChangeCommandEvent<T extends string=string,P extends any[]=any[]> extends ChangeEvent<T>, CommandEvent<T,P> {}
+
+export interface Commander<T,P extends any[]> {
+  send: (type: T, ...params: P) => void,
+}
+
+function resolveChange<S,T extends string,P extends any[], C extends ChangeCommandEvent<T,P>>(from: S, type: T, ...params: P): 
+  ResolveEvent<ChangeEvent<T,S,S>> &
+  CommandEvent<T,P> {
+  return {
+    from,
+    type,
+    params,  
+  }
+}
+
+
+export interface Handler<T> {
+  handle: (value: T) => T,
+}
+
+export interface Effecter<T> {
+  effect: (value: T) => void,
+}
+
+export interface Guarder<T> {
+  guard: (value: T) => boolean,
+}
+
+export type ResolveEvent<C> = Omit<C, 'to'>
+
+export interface Resolver<C extends ChangeEvent> {
+  resolve: (value: ResolveEvent<C>) => C,
+}
+
+type Dispose = () => void
+
+interface Usable<T> {
+  use(mw: Middleware<T>): Dispose,
+}
+
+interface Machine<T> {
+  getState(): T,
+  update(value: T): void,
+}
+
+export interface Extender<T, X> {
+  extend(value: T): X & T,
+}
+
+export interface Transitioner<T> {
+  transition: (value: T) => T,
+}
+
+
+export interface EventEffects<T> {
+  before: (value: T) => void,
+  after: (value: T) => void,
+}
+
+interface StateAfterEffects<T> {
+  leave : (value: T) => void,
+  enter: (value: T) => void,
+}
+
+interface Eventware<E> {
+  before: (m: Middleware<E>) => void,
+  after: (m: Effect<E>) => void,
+}
+
+interface FactoryTransitionMachine {}
+
+export type TransitionRecord = Record<
+  string,
+  Record<string, (...args: any[]) => any>
+>;
+
+
+
+interface State<K extends string = string, D = any> {
+  key: K;
+  data: D; // TODO: make data optional
+}
+export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+
+class StateTransitionResolverImpl {
+  public states: AnyStatesFactory
+  public transitions: TransitionRecord
+  
+  resolve (ev: ResolveEvent<ChangeEvent>) {
+    const to = this.transitions[ev.from.key][ev.type]
+    return {...ev, to }
+  }
+}
+
+interface StatesContext<S> {
+  states: S
+}
+
+export interface TransitionContext {
+  transitions: TransitionRecord
+}
+
+interface StateTransitionContext<S, T> 
+extends StatesContext<S>
+, TransitionContext
+{
+  // change: ChangeMachine<T>,
+}
+
+class FactoryMachineImpl<
+  E extends ChangeCommandEvent<string, any[]>,
+  S extends AnyStatesFactory,
+> extends StateMachineImpl<E, S> {
+
+  public states: S;
+
+  constructor(states: S, transitions: TransitionRecord, initialState: StateFromFactory<S>) {
+    super(transitions, initialState)
+    this.states = states
+  }
+
+}
+
+class ExtensionImpl<E> {
+  use (mw: Middleware<E>) {
+    return () => {}
+  }
+
+  extend<T>(fn: (it: this) => T) {
+    return fn(this)
+  }
+}
+
+class EventSubscriberImpl<E> {
+  events: Record<string, Effect<E>[]>
+  constructor() {
+    this.events = {}
+  }
+  on (type: string, ...effects: Effect<E>[]) {
+    this.events[type] = (this.events[type] ?? []).concat(effects)
+    return () => {
+      this.events[type] = this.events[type].filter(x => !effects.includes(x))
+    }
+  }
+  notify (ev: E) {
+    const effects = this.events[(ev as any).type]
+    if (effects) {
+      effects.forEach(effect => effect(ev))
+    }
+  }
+}
