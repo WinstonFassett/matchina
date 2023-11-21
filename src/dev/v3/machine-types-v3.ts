@@ -1,5 +1,5 @@
 import { Middleware } from "../../extras/middleware"
-import { StateFromFactory } from "../v2/machine-types-v2"
+
 import { StateMachineImpl } from "./StateMachineImpl"
 
 type Effect<T> = (value: T) => void
@@ -9,10 +9,10 @@ export interface Change<T> {
   to: T
 }
 
-export interface ChangeMachine<T> {
-  getState(): T
-  getChange(): Change<T>
-  update(value: T): void 
+export interface ChangeMachine<E extends Change<any>> {
+  getState(): E['to']|E['from']
+  getChange(): E
+  update(change: E): void 
 }
 
 interface Setter<T> {
@@ -125,11 +125,18 @@ export type TransitionRecord<T = any> = Record<
   Record<string, T>
 >;
 
-interface State<K extends string = string, D = any> {
+export interface State<K extends string = string, D = any> {
   key: K;
-  data: D; // TODO: make data optional
+  data?: D; // TODO: make data optional
 }
 export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+
+
+export type StateFromFactory<
+  States extends AnyStatesFactory,
+  StateKey extends keyof States = keyof States,
+> = ReturnType<States[StateKey]>;
+
 
 class StateTransitionResolverImpl {
   public states: AnyStatesFactory

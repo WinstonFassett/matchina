@@ -1,9 +1,9 @@
-import { StateFromFactory } from "../v2/machine-types-v2";
 import { createStateMachine } from "./machine-funcs";
 import {
   AnyStatesFactory,
   ChangeCommandEvent,
-  Guarder
+  Guarder,
+  StateFromFactory
 } from "./machine-types-v3";
 
 
