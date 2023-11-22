@@ -145,6 +145,10 @@
   {
     "name": "v3-pure",
     "path": "src/dev/v3/pure-state-machine.ts"
+  },
+  {
+    "name": "v3-listenTo",
+    "path": "src/dev/v3/registrants.ts"
   }
   
 ]
