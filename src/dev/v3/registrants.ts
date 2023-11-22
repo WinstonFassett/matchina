@@ -25,7 +25,7 @@ export function listenTo<T>(target: T, kind = LISTENERS) {
 function runRegistrants<T>(target: T, kind: string, type: any, params: any[]) {
   runEffects(target[kind]?.[type], params);
 }
-function register(target, fn, type = DEFAULT, kind = LISTENERS) {
+function register<F extends (...params: any[]) => any>(target: any, fn: F, type = DEFAULT, kind = LISTENERS) {
   target[kind] ??= {};
   target[kind][type] = (target[kind][type] ?? []).concat(fn);
   return () => {

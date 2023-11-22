@@ -51,6 +51,8 @@
     "eslint-config-unjs": "^0.2.1",
     "knip": "^2.38.6",
     "koa-compose": "^4.1.0",
+    "nanoevents": "^8.0.0",
+    "nanostores": "^0.9.5",
     "prettier": "^3.0.3",
     "react": "^18.2.0",
     "shx": "^0.3.4",
