@@ -76,7 +76,7 @@ export type ResolveEvent<C> = C & {
 }
 
 export interface Resolver<C extends ChangeEvent<any, any, any>> {
-  resolve: (value: ResolveEvent<C>) => C,
+  resolve: (value: ResolveEvent<C>) => C | undefined,
 }
 
 type Dispose = () => void
