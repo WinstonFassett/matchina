@@ -76,3 +76,4 @@ function withNanoSubscribe<T>(target:T & Partial<{ subscribe: any }>) {
 
 const api = createApi(m4)
 api.execute(1)
+api.reject(new Error('nope'))
