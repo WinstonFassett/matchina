@@ -4,7 +4,28 @@ import { AnyStatesFactory, StateFromFactory } from "./types";
 
 
 export function createApi<M extends FactoryMachine<any, any>>(machine: M): FactoryMachineApi<M> {
-  return {} as any;
+  const { states, transitions } = machine;
+  const createSender =
+    (eventKey: any) =>
+    (...params: any[]) => {
+      return machine.send(eventKey, ...(params as any));
+    };
+
+  const transitioners: any = {};
+  const events: any = {};
+  for (const stateKey in states) {
+    const transitionKey = stateKey as keyof typeof transitions;
+    const stateTransitions = transitions[transitionKey];
+    transitioners[transitionKey] = {};
+    if (stateTransitions) {
+      for (const eventKey in stateTransitions) {
+        const sender = createSender(eventKey);
+        transitioners[transitionKey][eventKey] = sender;
+        events[eventKey] ||= sender;
+      }
+    }
+  }  
+  return events
 }
 
 type FactoryMachineApi<M extends FactoryMachine<any, any>> = Simplify<
