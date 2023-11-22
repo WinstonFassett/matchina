@@ -3,10 +3,18 @@ import { FactoryMachine, FactoryTransitionConfig as TransitionConfig } from "./f
 import { AnyStatesFactory, StateFromFactory } from "./types";
 
 
+export function createApi<M extends FactoryMachine<any, any>>(machine: M): FactoryMachineApi<M> {
+  return {} as any;
+}
+
+type FactoryMachineApi<M extends FactoryMachine<any, any>> = Simplify<
+  FlatEventSenders<M["transitions"], M["states"]>
+>;
+
 type WithApi<
   M extends FactoryMachine<any,any>,    
 > = M & {
-  api: Simplify<FlatEventSenders<M['transitions'], M['states']>>;
+  api: FactoryMachineApi<M>;
 };
 
 export function withApi<
@@ -16,8 +24,7 @@ export function withApi<
 ) {
   const enhanced = target as WithApi<M>
   if (enhanced.api) return enhanced;
-  enhanced.api = {} as any;
-  return enhanced
+  return createApi<M>(enhanced);
 }
 
 export type FlatEventSenders<

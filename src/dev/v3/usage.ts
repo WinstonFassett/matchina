@@ -4,7 +4,7 @@ import { after, before, guard, machineSetup, setupMachine } from "./machine-setu
 import { createStateMachine } from "./state-machine";
 import { nanosubscriber } from '../../extras/nanosubscriber'
 import { listenTo } from './registrants';
-import { withApi } from './factory-event-api';
+import { createApi, withApi } from './factory-event-api';
 const m1 = createStateMachine({
   Idle: {
     'start': 'Running'
@@ -74,5 +74,5 @@ function withNanoSubscribe<T>(target:T & Partial<{ subscribe: any }>) {
   })
 }
 
-const m5 = withApi(m4)
-m5.api.execute(1)
+const api = createApi(m4)
+api.execute(1)
