@@ -1,14 +1,31 @@
 import { setup } from "./setup";
-import { methodUse } from "./method";
+import { HasMethod, methodListen, methodUse, methodUseV2, methodV2 } from "./method";
+import { AnyStateMachinery, StateMachinery } from "./state-machine";
+import { ChangeCommandEvent } from "./types";
 
-export const guard = methodUse('guard');
-export const handle = methodUse('handle');
-export const effect = methodUse('effect');
-export const before = methodUse('before');
-export const after = methodUse('after');
-export const notify = methodUse('notify');
+//#region interceptors
 export const send = methodUse('send');
 export const transition = methodUse('transition');
+export const guard =
+  <T extends HasMethod<'guard'>>(
+    fn: T['guard']
+  ) => methodUseV2('guard')(inner => (...params) => {
+    return inner(...params) && fn(inner)(...params)
+  }); 
+export const handle = <E extends ChangeCommandEvent>(
+  fn: StateMachinery<E>["handle"],
+) =>
+  methodUseV2("handle")<AnyStateMachinery>(
+    inner => ev => fn(inner(ev)),
+  );     
+//#endregion
+
+//#region effects
+export const effect = methodListen('effect');
+export const before = methodListen('before');
+export const after = methodListen('after');
+export const notify = methodListen('notify');
+//#endregion
 
 export function machineSetup<M>(...extenders: ((machine: M) => () => void)[]) {
   return function setupMachine(machine: M) {
