@@ -19,7 +19,8 @@ describe('setupMachine', () => {
   
     setupMachine(machine)(
       guard(ev => true),
-      before(ev => console.log('before', ev))
+      before(ev => console.log('before', ev.type)),
+      after(ev => console.log('after', ev.type))
     );
     expect(machine.getState().key).toBe('Idle');    
     machine.send('start');
@@ -43,7 +44,7 @@ describe('machineSetup', () => {
   
     machineSetup<typeof machine>(
       guard(ev => true),
-      before(ev => console.log('before', ev))
+      before(ev => console.log('before', ev.type))
     )(machine);
     machine.send('start');
     expect(machine.getState().key).toBe('Running');
@@ -73,10 +74,10 @@ describe('factory-machine', () => {
     setupMachine(machine)(
       guard(ev => ev.type !== 'execute' || ev.params[0] > 0),
       before(ev => { if (ev.type == 'execute') { console.log('executing') } }),
-      after(ev => console.log(ev.to.match<any>({
+      after(ev => console.log(ev.type, ev.to.match<any>({
         Pending: (ev) => ev.s,
         Resolved: (ev) => ev.ok,
-        Rejected: (ev) => ev.err,
+        Rejected: (ev) => ev.err.message,
         _: () => false
       }))),
     );
