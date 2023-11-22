@@ -1,4 +1,3 @@
-import { FlatEventKeys } from "../v2/machine-types-v2";
 import { createStateMachine } from "./state-machine";
 import {
   AnyStatesFactory,
@@ -58,4 +57,8 @@ export function nextFactoryState<
     return states[to as keyof typeof states](...ev.params) as any;
   }
 }
+
+export type FlatEventKeys<T> = {
+  [K in keyof T]: keyof T[K];
+}[keyof T];
 
