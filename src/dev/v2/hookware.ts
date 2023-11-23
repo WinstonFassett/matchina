@@ -6,8 +6,6 @@ type HookFunc<E> = (ev: E) => void | E;
 export function hookware<E>(
   hook: HookFunc<E> | HookFunc<E>[],
   filter: KeyedChangeEventFilter<E> = {},
-): Middleware<E> {  
-  return when(filter)(
-    Array.isArray(hook) ? composeMiddleware(...hook) : hook
-  );
+): Middleware<E> {
+  return when(filter)(Array.isArray(hook) ? composeMiddleware(...hook) : hook);
 }

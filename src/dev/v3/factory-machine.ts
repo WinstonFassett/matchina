@@ -3,42 +3,41 @@ import {
   AnyStatesFactory,
   ChangeCommandEvent,
   ResolveEvent,
-  StateFromFactory
+  StateFromFactory,
 } from "./types";
-
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,
   TC extends FactoryTransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF>,
->(states: SF, transitions: TC, initialState: StateFromFactory<SF>) 
-// : FactoryMachine<TC,SF> & 
-: FactoryMachine<TC, SF>
-{
-  const machine = createStateMachine<E>(transitions, initialState);    
+>(
+  states: SF,
+  transitions: TC,
+  initialState: StateFromFactory<SF>, // : FactoryMachine<TC,SF> &
+): FactoryMachine<TC, SF> {
+  const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
     states,
-    resolve: (ev: ResolveEvent<E>): E| undefined => {
+    resolve: (ev: ResolveEvent<E>): E | undefined => {
       const to = nextFactoryState(transitions, states, ev);
       if (to) return { ...ev, to };
-    }  
-  })
-  return machine as any
+    },
+  });
+  return machine as any;
 }
 
 export function nextFactoryState<
   SF extends AnyStatesFactory,
   TC extends FactoryTransitionConfig<SF>,
->(
-  transitions: TC,
-  states: SF,
-  ev: ChangeCommandEvent,
-) {
+>(transitions: TC, states: SF, ev: ChangeCommandEvent) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) return undefined;
   if (typeof to === "function") {
     const stateOrFn = to(...ev.params);
     return typeof stateOrFn === "function"
+    // consider changing fn to accept AnyStateMachinery
+    // from and type as separate, nah. use event
+    // maybe only use event. event and machine if not on it
       ? stateOrFn(ev.from, ev.type, states, transitions)
       : stateOrFn;
   } else {
@@ -59,12 +58,12 @@ export type FactoryTransitionConfig<
 };
 
 export interface FactoryMachine<
-  TC extends FactoryTransitionConfig<SF, any[]>, 
+  TC extends FactoryTransitionConfig<SF, any[]>,
   SF extends AnyStatesFactory,
   E extends FactoryMachineEvent<TC, SF> = FactoryMachineEvent<TC, SF>,
 > extends StateMachinery<E> {
-  states: SF,
-  transitions: TC,
+  states: SF;
+  transitions: TC;
 }
 
 type FactoryMachineEvent<
@@ -75,7 +74,7 @@ type FactoryMachineEvent<
   to: StateFromFactory<SF>;
   from: StateFromFactory<SF>;
   params: any[];
-} 
+};
 // ChangeCommandEvent<
 //   string & FlatEventKeys<TC>,
 //   any[],
@@ -93,4 +92,3 @@ type FactoryMachineEvent<
 export type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
-

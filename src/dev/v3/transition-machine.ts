@@ -1,19 +1,22 @@
 import {
   ChangeCommandEvent,
-  ChangeMachine, Effecter,
+  ChangeMachine,
+  Effecter,
   EventEffects,
   Guarder,
   Handler,
-  Notifier, Resolver,
+  Notifier,
+  Resolver,
   TransitionContext,
   TransitionRecord,
   Transitioner,
-  Updater
+  Updater,
 } from "./types";
 
-export function transitionMachine<
-  E extends ChangeCommandEvent
->(transitions: TransitionRecord, lastChange: E) {
+export function transitionMachine<E extends ChangeCommandEvent>(
+  transitions: TransitionRecord,
+  lastChange: E,
+) {
   // let lastChange = state;
   const machine = {
     transitions,
@@ -56,9 +59,9 @@ export function transitionMachine<
       machine.notify(ev);
     },
 
-    before(ev: E) { },
-    after(ev: E) { },
-    notify(ev: E) { },
+    before(ev: E) {},
+    after(ev: E) {},
+    notify(ev: E) {},
   } as TransitionContext &
     Resolver<E> &
     EventEffects<E> &

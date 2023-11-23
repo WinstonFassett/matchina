@@ -1,9 +1,13 @@
-import { Simplify, FlatMemberUnionToIntersection } from "../../types"
-import { FactoryMachine, FactoryTransitionConfig as TransitionConfig } from "./factory-machine";
+import { Simplify, FlatMemberUnionToIntersection } from "../../types";
+import {
+  FactoryMachine,
+  FactoryTransitionConfig as TransitionConfig,
+} from "./factory-machine";
 import { AnyStatesFactory, StateFromFactory } from "./types";
 
-
-export function createApi<M extends FactoryMachine<any, any>>(machine: M): FactoryMachineApi<M> {
+export function createApi<M extends FactoryMachine<any, any>>(
+  machine: M,
+): FactoryMachineApi<M> {
   const { states, transitions } = machine;
   const createSender =
     (eventKey: any) =>
@@ -24,26 +28,20 @@ export function createApi<M extends FactoryMachine<any, any>>(machine: M): Facto
         events[eventKey] ||= sender;
       }
     }
-  }  
-  return events
+  }
+  return events;
 }
 
 type FactoryMachineApi<M extends FactoryMachine<any, any>> = Simplify<
   FlatEventSenders<M["transitions"], M["states"]>
 >;
 
-type WithApi<
-  M extends FactoryMachine<any,any>,    
-> = M & {
+type WithApi<M extends FactoryMachine<any, any>> = M & {
   api: FactoryMachineApi<M>;
 };
 
-export function withApi<
-  M extends FactoryMachine<any,any>,
->(
-  target: M
-) {
-  const enhanced = target as WithApi<M>
+export function withApi<M extends FactoryMachine<any, any>>(target: M) {
+  const enhanced = target as WithApi<M>;
   if (enhanced.api) return enhanced;
   return createApi<M>(enhanced);
 }
@@ -93,16 +91,16 @@ export type StateEventTransitionFunc<
         ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
       ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
     : Transitions[TransitionStateKey][EventKey] extends (
-        ...args: infer A
-      ) => (...innerArgs: any[]) => infer R
-    ? (...args: A) => R
-    : Transitions[TransitionStateKey][EventKey] extends (
-        ...any: []
-      ) => StateFromFactory<States>
-    ? (
-        ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
-      ) => StateFromFactory<States> & {
-        key: Transitions[TransitionStateKey][EventKey];
-      }
-    : never;
+          ...args: infer A
+        ) => (...innerArgs: any[]) => infer R
+      ? (...args: A) => R
+      : Transitions[TransitionStateKey][EventKey] extends (
+            ...any: []
+          ) => StateFromFactory<States>
+        ? (
+            ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
+          ) => StateFromFactory<States> & {
+            key: Transitions[TransitionStateKey][EventKey];
+          }
+        : never;
 };

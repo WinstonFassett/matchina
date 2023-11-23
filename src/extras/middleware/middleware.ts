@@ -31,10 +31,13 @@ export function runMiddleware<E>(
   composeMiddleware(...middlewares)(initialValue, finalCallback);
 }
 
-export function extendMiddleware<E>(inner: Middleware<E>, outer: Middleware<E>): Middleware<E> {
+export function extendMiddleware<E>(
+  inner: Middleware<E>,
+  outer: Middleware<E>,
+): Middleware<E> {
   return (event: E, finalNext: (event?: E) => void) => {
-      outer(event, (nextEvent?: E) => {
-          inner(nextEvent ?? event, finalNext);
-      });
+    outer(event, (nextEvent?: E) => {
+      inner(nextEvent ?? event, finalNext);
+    });
   };
 }

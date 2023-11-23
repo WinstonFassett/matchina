@@ -37,8 +37,8 @@ export type FuncEnhancer<F extends Func> = F extends (
 ) => infer R
   ? (original: F, ...args: A) => R
   : F extends (...args: infer A) => void
-  ? (original: F, ...args: A) => void
-  : never; // (original: Func, ...args: any[]) => unknown;
+    ? (original: F, ...args: A) => void
+    : never; // (original: Func, ...args: any[]) => unknown;
 
 export type MethodEnhancer<S, K extends keyof S> = FuncEnhancer<
   S[K] extends Func ? S[K] : never
@@ -49,8 +49,8 @@ export type Method<S, K extends keyof S> = S[K] extends (
 ) => infer R
   ? (...args: A) => R
   : S[K] extends (...args: any[]) => void
-  ? (...args: any[]) => void
-  : never;
+    ? (...args: any[]) => void
+    : never;
 
 export const methodwareEnhancer = <
   S,

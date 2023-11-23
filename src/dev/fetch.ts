@@ -37,8 +37,8 @@ type MatchboxConfigForContextAwareStatesConfig<
   ) => (context: Context) => infer R
     ? (context: Context, ...args: A) => R
     : StatesConfig[Key] extends undefined
-    ? (context: Context) => Context
-    : (context: Context) => Context;
+      ? (context: Context) => Context
+      : (context: Context) => Context;
 };
 //  & { [key: string]: ((context: Context, ...args: any[]) => any) | undefined };
 

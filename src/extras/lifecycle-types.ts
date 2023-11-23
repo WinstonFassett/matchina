@@ -144,23 +144,23 @@ type On<
                 ? FlatExitStates<TransitionsRawConfig, States>
                 : never
               : // not wildcard event
-              // if valid exit state
-              AnyStateEvent extends keyof EventExitStatesIntersection<
-                  TransitionsRawConfig,
-                  States
-                >
-              ? // and returns state from factory
-                EventExitStatesIntersection<
-                  TransitionsRawConfig,
-                  States
-                >[AnyStateEvent] extends StateFromFactory<States>
-                ? // then return the union of all possible exit states for that event key
+                // if valid exit state
+                AnyStateEvent extends keyof EventExitStatesIntersection<
+                    TransitionsRawConfig,
+                    States
+                  >
+                ? // and returns state from factory
                   EventExitStatesIntersection<
                     TransitionsRawConfig,
                     States
-                  >[AnyStateEvent]
-                : never
-              : never,
+                  >[AnyStateEvent] extends StateFromFactory<States>
+                  ? // then return the union of all possible exit states for that event key
+                    EventExitStatesIntersection<
+                      TransitionsRawConfig,
+                      States
+                    >[AnyStateEvent]
+                  : never
+                : never,
             any[] // could be union of all possible params lol I'm tired
           >
         >;
