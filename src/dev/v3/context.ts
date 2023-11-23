@@ -30,8 +30,8 @@ type FetchContext = {
 const fetchStatesFromScratch = defineStates({
   Idle: undefined,
   Pending: (context: FetchContext) => context,
-  Rejected: (context: FetchContext, error: Error) => ({...context, error}),
-  Resolved: (context: FetchContext, data: any) => ({...context,  data }),
+  Rejected: (pendingContext: FetchContext, error: Error) => ({...pendingContext, error}),
+  Resolved: (pendingContext: FetchContext, data: any) => ({...pendingContext,  data }),
 })
 
 const m2 = createFactoryMachine(fetchStatesFromScratch, {
@@ -39,7 +39,8 @@ const m2 = createFactoryMachine(fetchStatesFromScratch, {
     execute: 'Pending'
   },
   Pending: {
-    resolve: 'Resolved',
+    // resolve: 'Resolved',
+    resolve: (data: any) => (pending: FetchContext) => fetchStatesFromScratch.Resolved(pending, data),
     reject: 'Rejected',
   },
   Rejected: {},
@@ -47,8 +48,8 @@ const m2 = createFactoryMachine(fetchStatesFromScratch, {
 }, fetchStatesFromScratch.Idle())
 const m2Api = createApi(m2)
 
-m2Api.reject({ tries: 12, url: ''}, new Error(''))
-m2Api.resolve({ data: 123, url: '', tries: 12 }, new Error('hi'))
+// m2Api.reject({ tries: 12, url: ''}, new Error(''))
+// m2Api.resolve({ data: 123, url: '', tries: 12 }, new Error('hi'))
 
 const counterStates = defineStates({
   Idle: ({count = 0} = {}) => ({ count })

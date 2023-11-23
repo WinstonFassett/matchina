@@ -37,8 +37,8 @@ type MatchboxConfigForContextAwareStatesConfig<
   ) => (context: Context) => infer R
     ? (context: Context, ...args: A) => R
     : StatesConfig[Key] extends undefined
-      ? (context: Context) => Context
-      : (context: Context) => Context;
+    ? (context: Context) => Context
+    : (context: Context) => Context;
 };
 //  & { [key: string]: ((context: Context, ...args: any[]) => any) | undefined };
 
@@ -171,7 +171,7 @@ export function createFetchMachine(
 
   const unguard = machine.guard.Idle.execute((context) => context.tries < fullConfig.maxRetries)
   const unhandle = handle.Idle.execute((change) => {})
-    
+
   How would I implement this?
 
   If I want individual lifecycle methods, would each of them call onLifecycle?
@@ -183,7 +183,7 @@ export function createFetchMachine(
   these guards are like machine-level
   machine.guards = [stateKey, eventKey, guardFn][]
   hey that's not bad.
-  
+
   */
 
   onLifecycle(promiseMachine, {
@@ -232,20 +232,20 @@ function testFetchMachine() {
   const m = makeZen(machine);
   m.execute({ foo: "bar" });
   m.another(new Error("test"));
-  type PromiseMachine = typeof machine;
-  type PromiseTransitionExits = EventExitStatesIntersection<
-    typeof machine.config.states,
-    typeof machine.config.transitions
-  >;
-  type PromiseExitKeys = FlatExitStateKeys<
-    typeof machine.config.states,
-    typeof machine.config.transitions
-  >; // Idle. Should have everything
-  type PromiseTransitionFuncs = StateEventTransitionFuncs<
-    typeof machine.config.states,
-    typeof machine.config.transitions
-  >; // Idle. Should have everything
-  type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
-  type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending
+  // type PromiseMachine = typeof machine;
+  // type PromiseTransitionExits = EventExitStatesIntersection<
+  // typeof machine.context.states,
+  // typeof machine.context.transitions
+  // >;
+  // type PromiseExitKeys = FlatExitStateKeys<
+  //   typeof machine.context.states,
+  //   typeof machine.context.transitions
+  // >; // Idle. Should have everything
+  // type PromiseTransitionFuncs = StateEventTransitionFuncs<
+  //   typeof machine.context.states,
+  //   typeof machine.context.transitions
+  // >; // Idle. Should have everything
+  // type IdleTransitionFuncs = PromiseTransitionFuncs["Idle"]; // Idle. Should have everything
+  // type IdleExecute = ReturnType<IdleTransitionFuncs["execute"]>["key"]; // Pending
 }
 testFetchMachine();

@@ -1,5 +1,4 @@
 import { defineMachine } from "../machine";
-import { UpdateEnhancer } from "../machine-types";
 import { States, defineStates } from "../states";
 
 export type PromiseStates<
