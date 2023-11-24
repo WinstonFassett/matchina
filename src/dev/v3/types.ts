@@ -1,3 +1,5 @@
+import { ChangeEvent } from "./transition-machine";
+
 export interface Notifier<T> {
   notify: (value: T) => void;
 }
@@ -6,13 +8,6 @@ export interface Updater<T> {
   update: (value: T) => void;
 }
 
-
-export interface ChangeEvent<Type extends string = string, To = any, From = any>
-{
-  type: Type;
-  to: To;
-  from: From;
-}
 
 interface CommandEvent<T, P extends any[]> {
   type: T;

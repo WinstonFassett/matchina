@@ -12,7 +12,7 @@ import {
 } from "./types";
 import { Resolver } from "./transition-machine";
 import { ChangeMachine } from "./transition-machine";
-import { ChangeEvent } from "./types";
+import { ChangeEvent } from "./transition-machine";
 import { ResolveEvent } from "./transition-machine";
 
 export function transitionMachine<E extends ChangeCommandEvent>(
@@ -91,4 +91,9 @@ export interface ChangeMachine<E extends Change<any>> {
 export type ResolveEvent<C> = C & {
   to?: never;
 };
+export interface ChangeEvent<Type extends string = string, To = any, From = any> {
+  type: Type;
+  to: To;
+  from: From;
+}
 
