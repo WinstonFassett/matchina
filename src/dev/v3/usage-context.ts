@@ -1,7 +1,7 @@
 import { defineStates } from "../../states";
-import { MachineContextEvent } from "../v2/machine-types-v2";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
+import { forwardData, updateState, setInState } from "./update-state";
 import { createPromiseMachine } from "./promise";
 
 const machine = createPromiseMachine((x: number) => new Promise(resolve => setTimeout(resolve, x)))
@@ -15,11 +15,13 @@ type FetchContext = {
   data?: any;
 };
 
+const assign = (...args: any[]) => Object.assign({}, ...args)
+
 const { Idle, Pending, Rejected, Resolved } = defineStates({
   Idle: undefined,
   Pending: (context: FetchContext) => context,
-  Rejected: (context: FetchContext, error:Error) => ({...context, error}),
-  Resolved: (context: FetchContext, data: any) => ({...context, data }),
+  Rejected: (context: FetchContext, error:Error) => assign(context, { error }),
+  Resolved: (context: FetchContext, data: any) => assign(context, { data }),
 })
 
 const m2 = createFactoryMachine({ Idle, Pending, Rejected, Resolved }, {
@@ -34,16 +36,6 @@ const m2 = createFactoryMachine({ Idle, Pending, Rejected, Resolved }, {
   Resolved: {}
 }, Idle())
 
-function forwardData<
-  StateFunc extends (current: any, updates: any) => any,
-  DataFunc extends (...args: any[]) => Parameters<StateFunc>[1],
->(stateFunc: StateFunc, getData: DataFunc) {
-  return (...params: Parameters<DataFunc>) => {
-    return (ev: MachineContextEvent<any>) => {
-      return stateFunc(ev.from.data, getData(...params))
-    }
-  }
-}
 const m2Api = createApi(m2)
 m2Api.execute('https://google.com')
 m2Api.reject(new Error(''))
@@ -77,16 +69,3 @@ const m5 = createFactoryMachine(oneState, {
   }
 }, oneState.State({ count: 0 }))
 
-function updateState<E extends MachineContextEvent<any>>(fn: (state: E['from']['data']) => Partial<E['to']['data']>) {
-  return (previous: E) => {
-    return {...previous.from, data: fn(previous)}
-  }
-}
-
-function setInState<
-  E extends MachineContextEvent<any>
->(state: Partial<E['to']['data']>) {
-  return (ev: E) => {
-    return {...ev.from.data, ...state}
-  }
-}
