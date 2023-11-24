@@ -31,7 +31,7 @@ type FetchContext = {
 const fetchStatesFromScratch = defineStates({
   Idle: undefined,
   Pending: (context: FetchContext) => context,
-  Rejected: (error: Error, context: FetchContext, ) => ({...context, error}),
+  Rejected: (context: FetchContext, error:Error) => ({...context, error}),
   Resolved: (context: FetchContext, data: any) => ({...context, data }),
 })
 
@@ -40,14 +40,24 @@ const m2 = createFactoryMachine(fetchStatesFromScratch, {
     execute: 'Pending'
   },
   Pending: {
-    // resolve: 'Resolved',
-    resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data as any, data),
-    reject: (error: Error) => transitionTo(fetchStatesFromScratch.Rejected, { error }),
-    // reject: (error: Error) => setInState({ error })
+    resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data, data),
+    reject: forwardData(fetchStatesFromScratch.Rejected, (error: Error) => error),
   },
   Rejected: {},
   Resolved: {}
 }, fetchStatesFromScratch.Idle())
+
+function forwardData<
+  StateFunc extends (current: any, updates: any) => any,
+  DataFunc extends (...args: any[]) => Parameters<StateFunc>[1],
+>(stateFunc: StateFunc, getData: DataFunc) {
+  return (...params: Parameters<DataFunc>) => {
+    return (ev: MachineContextEvent<any>) => {
+      return stateFunc(ev.from.data, getData(...params))
+    }
+  }
+}
+
 const m2Api = createApi(m2)
 
 // m2Api.reject({ tries: 12, url: ''}, new Error(''))
