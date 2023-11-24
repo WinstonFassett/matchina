@@ -53,7 +53,7 @@ export type FactoryTransitionConfig<
     [EventKey in string]:
       | keyof SF
       | ((...params: any[]) => StateFromFactory<SF>)
-      | ((...params: any[]) => (ev: FactoryMachineEvent<any,SF>) => StateFromFactory<SF>);
+      | ((...params: any[]) => (ev: FactoryMachineEvent<any,SF> & { from: StateFromFactory<SF, FromStateKey> }) => StateFromFactory<SF>);
   };
 };
 

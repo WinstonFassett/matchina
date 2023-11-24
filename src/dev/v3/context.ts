@@ -42,7 +42,7 @@ const m2 = createFactoryMachine(fetchStatesFromScratch, {
   Pending: {
     // resolve: 'Resolved',
     resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data as any, data),
-    reject: (error: Error) => ({ from }) => fetchStatesFromScratch.Rejected(error, from.data),
+    reject: (error: Error) => transitionTo(fetchStatesFromScratch.Rejected, { error }),
     // reject: (error: Error) => setInState({ error })
   },
   Rejected: {},
