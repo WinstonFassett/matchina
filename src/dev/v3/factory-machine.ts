@@ -38,7 +38,7 @@ export function nextFactoryState<
     // consider changing fn to accept AnyStateMachinery
     // from and type as separate, nah. use event
     // maybe only use event. event and machine if not on it
-      ? stateOrFn(ev.from, ev.type, states, transitions)
+      ? stateOrFn(ev)
       : stateOrFn;
   } else {
     return states[to as keyof typeof states](...ev.params) as any;
@@ -47,18 +47,18 @@ export function nextFactoryState<
 
 export type FactoryTransitionConfig<
   SF extends AnyStatesFactory,
-  CP extends any[] = any[],
+  // CP extends any[] = any[],
 > = {
   [FromStateKey in string & keyof SF]: {
     [EventKey in string]:
       | keyof SF
       | ((...params: any[]) => StateFromFactory<SF>)
-      | ((...params: any[]) => (...context: CP) => StateFromFactory<SF>);
+      | ((...params: any[]) => (ev: FactoryMachineEvent<any,SF>) => StateFromFactory<SF>);
   };
 };
 
 export interface FactoryMachine<
-  TC extends FactoryTransitionConfig<SF, any[]>,
+  TC extends FactoryTransitionConfig<SF>,
   SF extends AnyStatesFactory,
   E extends FactoryMachineEvent<TC, SF> = FactoryMachineEvent<TC, SF>,
 > extends StateMachinery<E> {

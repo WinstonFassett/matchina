@@ -1,4 +1,5 @@
 import { defineStates } from "../../states";
+import { MachineContextEvent } from "../v2/machine-types-v2";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { createPromiseMachine } from "./promise";
@@ -30,8 +31,8 @@ type FetchContext = {
 const fetchStatesFromScratch = defineStates({
   Idle: undefined,
   Pending: (context: FetchContext) => context,
-  Rejected: (pendingContext: FetchContext, error: Error) => ({...pendingContext, error}),
-  Resolved: (pendingContext: FetchContext, data: any) => ({...pendingContext,  data }),
+  Rejected: (error: Error, context: FetchContext, ) => ({...context, error}),
+  Resolved: (context: FetchContext, data: any) => ({...context, data }),
 })
 
 const m2 = createFactoryMachine(fetchStatesFromScratch, {
@@ -40,8 +41,9 @@ const m2 = createFactoryMachine(fetchStatesFromScratch, {
   },
   Pending: {
     // resolve: 'Resolved',
-    resolve: (data: any) => (pending: FetchContext) => fetchStatesFromScratch.Resolved(pending, data),
-    reject: 'Rejected',
+    resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data as any, data),
+    reject: (error: Error) => ({ from }) => fetchStatesFromScratch.Rejected(error, from.data),
+    // reject: (error: Error) => setInState({ error })
   },
   Rejected: {},
   Resolved: {}
@@ -57,8 +59,8 @@ const counterStates = defineStates({
 
 const counter = createFactoryMachine(counterStates, {
   Idle: {
-    increment: (inc=1) => (state) => ({ ...state, count: state.count + inc }),
-    decrement: (dec=1) => (state) => ({ ...state, count: state.count - dec }),
+    increment: (inc=1) => (ev) => counterStates.Idle({ ...ev.to, count: ev.from.data.count + inc }),
+    decrement: (dec=1) => (ev) => counterStates.Idle({ ...ev.to, count: ev.from.data.count - dec }),
   }
 }, counterStates.Idle())
 
@@ -72,13 +74,28 @@ const oneState = defineStates({
 
 const m5 = createFactoryMachine(oneState, {
   State: {
-    increment: (inc = 1) => updateState(state => ({ count: state.count+inc })),
-    decrement: (dec=1) => updateState(state => ({ count: state.count - dec })),
+    increment: (inc = 1) => updateState(({ count }) => ({ count: count+inc })),
+    decrement: (dec=1) => updateState(({ count }) => ({ count: count-dec })),
+    setCount: (count: number) => setInState({ count })
   }
 }, oneState.State({ count: 0 }))
 
-function updateState<T>(fn: (state: T) => Partial<T>) {
-  return (target: T) => {
-    return {...target, ...fn(target)}
+function updateState<E extends MachineContextEvent<any>>(fn: (state: E['from']['data']) => Partial<E['to']['data']>) {
+  return (previous: E) => {
+    return {...previous.from, data: fn(previous)}
+  }
+}
+
+function transformState<E extends MachineContextEvent<any>>(fn: (state: E['from']['data']) => Partial<E['to']['data']>) {
+  return (previous: E) => {
+    return {...previous.from, data: fn(previous)}
+  }
+}
+
+function setInState<
+  E extends MachineContextEvent<any>
+>(state: Partial<E['to']['data']>) {
+  return (ev: E) => {
+    return {...ev.from.data, ...state}
   }
 }
