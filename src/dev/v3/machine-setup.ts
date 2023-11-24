@@ -1,11 +1,9 @@
-import { setup } from "./setup";
 import {
   HasMethod,
   methodListen,
-  methodUse,
-  methodUseV2,
-  methodV2,
+  methodUse
 } from "./method";
+import { setup } from "./setup";
 import { AnyStateMachinery, StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
@@ -13,12 +11,12 @@ import { ChangeCommandEvent } from "./types";
 export const send = methodUse("send");
 export const transition = methodUse("transition");
 export const guard = <T extends HasMethod<"guard">>(fn: T["guard"]) =>
-  methodUseV2("guard")((inner) => (...params) => {
+  methodUse("guard")((inner) => (...params) => {
     return inner(...params) && fn(inner)(...params);
   });
 export const handle = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["handle"],
-) => methodUseV2("handle")<AnyStateMachinery>((inner) => (ev) => fn(inner(ev)));
+) => methodUse("handle")<AnyStateMachinery>((inner) => (ev) => fn(inner(ev)));
 //#endregion
 
 //#region effects
