@@ -1,10 +1,9 @@
 import { StateMachinery, createStateMachine } from "./state-machine";
 import {
-  AnyStatesFactory,
   ChangeCommandEvent,
-  ResolveEvent,
-  StateFromFactory,
 } from "./types";
+import { ResolveEvent } from "./transition-machine";
+import { State } from "./types";
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,
@@ -35,9 +34,6 @@ export function nextFactoryState<
   if (typeof to === "function") {
     const stateOrFn = to(...ev.params);
     return typeof stateOrFn === "function"
-    // consider changing fn to accept AnyStateMachinery
-    // from and type as separate, nah. use event
-    // maybe only use event. event and machine if not on it
       ? stateOrFn(ev)
       : stateOrFn;
   } else {
@@ -75,20 +71,12 @@ type FactoryMachineEvent<
   from: StateFromFactory<SF>;
   params: any[];
 };
-// ChangeCommandEvent<
-//   string & FlatEventKeys<TC>,
-//   any[],
-//   StateFromFactory<SF>,
-//   StateFromFactory<SF>
-// >;
-
-// export interface StateChangeMachineEvent<
-//   Type extends string,
-//   To extends State,
-//   From extends State,
-//   Params extends any[] = any[],
-// > extends ChangeMachineEvent<Type, To, From, Params> {}
 
 export type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];
-}[keyof T];
+}[keyof T];export type StateFromFactory<
+  States extends AnyStatesFactory,
+  StateKey extends keyof States = keyof States
+> = ReturnType<States[StateKey]>;
+export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+

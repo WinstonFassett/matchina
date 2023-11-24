@@ -1,17 +1,19 @@
 import {
   ChangeCommandEvent,
-  ChangeMachine,
   Effecter,
   EventEffects,
   Guarder,
   Handler,
   Notifier,
-  Resolver,
   TransitionContext,
   TransitionRecord,
   Transitioner,
   Updater,
 } from "./types";
+import { Resolver } from "./transition-machine";
+import { ChangeMachine } from "./transition-machine";
+import { ChangeEvent } from "./types";
+import { ResolveEvent } from "./transition-machine";
 
 export function transitionMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
@@ -74,3 +76,19 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     ChangeMachine<E>;
   return machine;
 }
+interface Change<T> {
+  from: T;
+  to: T;
+}
+
+export interface ChangeMachine<E extends Change<any>> {
+  getState(): E["to"] | E["from"];
+  getChange(): E;
+  update(change: E): void;
+}export interface Resolver<C extends ChangeEvent<any, any, any>> {
+  resolve: (value: ResolveEvent<C>) => C | undefined;
+}
+export type ResolveEvent<C> = C & {
+  to?: never;
+};
+
