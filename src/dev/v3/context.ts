@@ -4,22 +4,9 @@ import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { createPromiseMachine } from "./promise";
 
-type Context = any;
-
-const states = defineStates({});
-
-function defineContext<C, K extends string = "context">(initialContext: C) {
-  return {
-    defineStates() {},
-    defineTransitions() {},
-  };
-}
-
-
 const machine = createPromiseMachine((x: number) => new Promise(resolve => setTimeout(resolve, x)))
 const api = createApi(machine)
 api.execute(1100)
-
 
 type FetchContext = {
   url: string;
@@ -28,24 +15,24 @@ type FetchContext = {
   data?: any;
 };
 
-const fetchStatesFromScratch = defineStates({
+const { Idle, Pending, Rejected, Resolved } = defineStates({
   Idle: undefined,
   Pending: (context: FetchContext) => context,
   Rejected: (context: FetchContext, error:Error) => ({...context, error}),
   Resolved: (context: FetchContext, data: any) => ({...context, data }),
 })
 
-const m2 = createFactoryMachine(fetchStatesFromScratch, {
+const m2 = createFactoryMachine({ Idle, Pending, Rejected, Resolved }, {
   Idle: {
-    execute: (url: string) => fetchStatesFromScratch.Pending({ url, tries: 0 })
+    execute: (url: string) => Pending({ url, tries: 0 })
   },
   Pending: {
-    resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data, data),
-    reject: forwardData(fetchStatesFromScratch.Rejected, (error: Error) => error),
+    resolve: forwardData(Resolved, (data: any) => data),
+    reject: forwardData(Rejected, (error: Error) => error),
   },
   Rejected: {},
   Resolved: {}
-}, fetchStatesFromScratch.Idle())
+}, Idle())
 
 function forwardData<
   StateFunc extends (current: any, updates: any) => any,
@@ -61,6 +48,7 @@ const m2Api = createApi(m2)
 m2Api.execute('https://google.com')
 m2Api.reject(new Error(''))
 m2Api.resolve(1)
+
 
 const counterStates = defineStates({
   Idle: ({count = 0} = {}) => ({ count })
