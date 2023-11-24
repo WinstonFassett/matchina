@@ -17,9 +17,9 @@ This code shows how to:
 - Trigger an event using `machine.event[type](...args)`
 - Reset the machine using `machine.reset()`
 
-### Code 
+### Code
 
-```tsx twoslash
+```tsx
 import { createPromiseMachine, withSubscribe } from "matchina";
 import { useMachine } from "matchina/extras/react";
 
@@ -28,7 +28,7 @@ const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000, name = 'unna
 
 const machine = withSubscribe(
   createPromiseMachine(
-    slowlyAddTwoNumbers 
+    slowlyAddTwoNumbers
   )
 )
 
@@ -43,8 +43,8 @@ export function ReactMachineDemo({}) {
         </button>
       </>,
         Pending: ([x, y, duration, name]) => <span>
-          Waiting {duration?.toString() ?? 'default=1000'}ms 
-          to add {x} + {y} 
+          Waiting {duration?.toString() ?? 'default=1000'}ms
+          to add {x} + {y}
           {!!name && `(aka ${name})`}
         </span>,
         _: () => <>Done! <button onClick={machine.reset}>Reset</button></>

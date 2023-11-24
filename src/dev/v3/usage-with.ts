@@ -35,14 +35,15 @@ m4.send('execute', 1)
 
 const it = createNanoEvents()
 setupMachine(m4)(
-  m => { 
+  m => {
     Object.assign(m, {
       emit: v => it.emit(v),
       subscribe: (t,l) => it.on(t, l)
     })
     return () => {
-      delete m.emit
-      delete m.subscribe
+      const target = m as any
+      delete target.emit
+      delete target.subscribe
     }
   },
   notify((m4 as any).emit)

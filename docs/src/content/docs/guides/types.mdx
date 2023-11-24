@@ -6,10 +6,7 @@ import MachineDemo from '@components/MachineDemo.astro';
 
 ## States
 
-```tsx twoslash
-
-import { defineStates } from "matchina";
-// ---cut---
+```tsx
 const states = defineStates({
   Idle: undefined,
   Pending: (x: number, s: string, options?: { delay: number }) => ({ x, s, options }),
@@ -31,13 +28,12 @@ const resolvedData = resolved.data
 
 ```
 
-## Promise Machine 
+## Promise Machine
 
-```tsx twoslash
+```tsx
 import { createPromiseMachine, withSubscribe } from "matchina";
 import { useMachine } from "matchina/extras/react";
 
-// ---cut---
 type MakeAPromise = (x: number, s:string, options?: { delay: number }) => Promise<{ result: string }>
 const promiseMachine = createPromiseMachine(null as unknown as MakeAPromise)
 

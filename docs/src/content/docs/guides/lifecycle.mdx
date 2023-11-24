@@ -5,10 +5,7 @@ import {LifecycleDemo} from '@components/LifecycleDemo';
 
 Check it:
 
-```tsx twoslash
-import { defineStates, onLifecycle, createPromiseMachine } from "matchina";
-const machine = createPromiseMachine();
-// ---cut---
+```tsx
 onLifecycle(machine, {
   Idle: {
     on: {
@@ -40,12 +37,12 @@ onLifecycle(machine, {
       reject: {
         after: ({ type, from, to }) => {
           const { name, stack, message } = to.data // can only be Error type
-          console.log(        
-            "Any reject event:\n",    
+          console.log(
+            "Any reject event:\n",
             type, // MUST be 'reject'
             "from", from.key, // any valid state b/c wildcard state
             "with data", from.data, // any valid state data b/c wildcard state
-            "to", to.key, // MUST equal and autocomplete to 'Rejected'            
+            "to", to.key, // MUST equal and autocomplete to 'Rejected'
             "Error", name, message, stack, // Error properties
           )
         },
