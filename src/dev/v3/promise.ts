@@ -1,9 +1,6 @@
 import { States, defineStates } from "../../states";
 import { createFactoryMachine } from "./factory-machine";
-import { guard, setupMachine } from "./machine-setup";
-import { createStateMachine } from "./state-machine";
-
-
+import { after, setupMachine } from "./machine-setup";
 
 export type PromiseStates<
   F extends PromiseCallback,
@@ -15,14 +12,14 @@ export type PromiseStates<
   Resolved: (data: Awaited<F>) =>  Awaited<F>;
 }>;
 
-const promiseStates = defineStates({
+export const PromiseStates = defineStates({
   Idle: undefined,
   Pending: (...params: any[]) => params,
   Rejected: (error: any) => error,
   Resolved: (data: any) => data,
 });
 
-const promiseTransitions = {
+export const PromiseTransitions = {
   Idle: { execute: "Pending" },
   Pending: {
     resolve: "Resolved",
@@ -32,20 +29,18 @@ const promiseTransitions = {
   Rejected: {},
 } as const;
 
-
-type AnyStatesFactory = Record<string, (...params: unknown[]) => any>;
 type PromiseCallback = (...args: any[]) => Promise<any>
 
 export function createPromiseMachine<
   F extends PromiseCallback
 >(makePromise?: (...args: Parameters<F>) => ReturnType<F>) {
-  const states = definePromiseStates<F>();
+  const states = PromiseStates;
   const machine = createFactoryMachine(
-    states, promiseTransitions, states.Idle()
+    states, PromiseTransitions, states.Idle()
   )
   if (makePromise) {
     setupMachine(machine)(
-      guard(ev => {
+      after(ev => {
         if (ev.type === "execute") {
           const promise = makePromise(...(ev.params as Parameters<F>));
           promiseMachine.promise = promise;
@@ -59,21 +54,15 @@ export function createPromiseMachine<
   }
   machine.transitions
   const promiseMachine = Object.assign(machine, {
-    // should this go on context?
     promise: undefined as undefined | ReturnType<F>,
     done: undefined as undefined | Promise<void>,
   });
   return promiseMachine;
 }
 
-function definePromiseStates<F extends PromiseCallback, E = unknown>() {
-  return promiseStates //as PromiseStates<F,E>;
-}
-
-
-export type PromiseMachine = ReturnType<typeof createPromiseMachine>;
-export type PromiseMachineEvent = ReturnType<PromiseMachine["getChange"]>;
-export type PromiseContextStates = PromiseMachine["states"];
-export type PromiseTransitions = PromiseMachine["transitions"];
-export type PromiseContextStateKey = keyof PromiseContextStates;
+export type PromiseMachine<F extends PromiseCallback> = ReturnType<typeof createPromiseMachine<F>>;
+export type PromiseMachineEvent<F extends PromiseCallback> = ReturnType<PromiseMachine<F>["getChange"]>;
+export type PromiseContextStates<F extends PromiseCallback> = PromiseMachine<F>["states"];
+export type PromiseTransitions = PromiseMachine<any>["transitions"];
+export type PromiseContextStateKey = keyof PromiseContextStates<any>;
 export type PromiseStateKey = keyof PromiseStates<any>;
