@@ -37,7 +37,7 @@ const fetchStatesFromScratch = defineStates({
 
 const m2 = createFactoryMachine(fetchStatesFromScratch, {
   Idle: {
-    execute: 'Pending'
+    execute: (url: string) => fetchStatesFromScratch.Pending({ url, tries: 0 })
   },
   Pending: {
     resolve: (data: any) => (ev) => fetchStatesFromScratch.Resolved(ev.from.data, data),
@@ -57,11 +57,10 @@ function forwardData<
     }
   }
 }
-
 const m2Api = createApi(m2)
-
-// m2Api.reject({ tries: 12, url: ''}, new Error(''))
-// m2Api.resolve({ data: 123, url: '', tries: 12 }, new Error('hi'))
+m2Api.execute('https://google.com')
+m2Api.reject(new Error(''))
+m2Api.resolve(1)
 
 const counterStates = defineStates({
   Idle: ({count = 0} = {}) => ({ count })
@@ -91,12 +90,6 @@ const m5 = createFactoryMachine(oneState, {
 }, oneState.State({ count: 0 }))
 
 function updateState<E extends MachineContextEvent<any>>(fn: (state: E['from']['data']) => Partial<E['to']['data']>) {
-  return (previous: E) => {
-    return {...previous.from, data: fn(previous)}
-  }
-}
-
-function transformState<E extends MachineContextEvent<any>>(fn: (state: E['from']['data']) => Partial<E['to']['data']>) {
   return (previous: E) => {
     return {...previous.from, data: fn(previous)}
   }

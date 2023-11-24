@@ -87,15 +87,18 @@ export type StateEventTransitionFunc<
 > = {
   [EventKey in keyof Transitions[TransitionStateKey] &
     string]: Transitions[TransitionStateKey][EventKey] extends keyof States
+    // if state key
     ? (
         ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
       ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
     : Transitions[TransitionStateKey][EventKey] extends (
           ...args: infer A
         ) => (...innerArgs: any[]) => infer R
+      // if 2-stage function
       ? (...args: A) => R
+      // if 1-stage function
       : Transitions[TransitionStateKey][EventKey] extends (
-            ...any: []
+            ...args: any[]
           ) => StateFromFactory<States>
         ? (
             ...args: Parameters<Transitions[TransitionStateKey][EventKey]>

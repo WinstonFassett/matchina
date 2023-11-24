@@ -47,13 +47,13 @@ export function nextFactoryState<
 
 export type FactoryTransitionConfig<
   SF extends AnyStatesFactory,
-  CP extends any[] = any[],
+  // CP extends any[] = any[],
 > = {
   [FromStateKey in string & keyof SF]: {
     [EventKey in string]:
       | keyof SF
-      | ((...params: CP) => StateFromFactory<SF>)
-      | ((...params: CP) => (ev: FactoryMachineEvent<any,SF> & { from: StateFromFactory<SF, FromStateKey> }) => StateFromFactory<SF>);
+      | ((...params: any[]) => StateFromFactory<SF>)
+      | ((...params: any[]) => (ev: FactoryMachineEvent<any,SF> & { from: StateFromFactory<SF, FromStateKey> }) => StateFromFactory<SF>);
   };
 };
 
