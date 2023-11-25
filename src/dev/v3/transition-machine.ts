@@ -45,6 +45,7 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     update(ev: E) {
       lastChange = ev;
       machine.effect(ev);
+      machine.notify(ev);
     },
 
     handle(ev: E) {
@@ -52,9 +53,8 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     },
 
     effect(ev: E) {
-      machine.before(ev);
-      machine.after(ev);
-      machine.notify(ev);
+      machine.before(ev); // left previous
+      machine.after(ev); // entered next
     },
 
     before(ev: E) {},
