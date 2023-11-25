@@ -5,7 +5,9 @@ import {
   before,
   guard,
   machineSetup,
+  notify,
   setupMachine,
+  when,
 } from "./machine-setup";
 import { createStateMachine } from "./state-machine";
 import { nanosubscriber } from "../../extras/nanosubscriber";
@@ -22,6 +24,9 @@ const m1 = createStateMachine(
   },
   { key: "Idle", data: undefined },
 );
+
+when(m1, (ev) => ev.type === "start", (ev) => (ev) => {})
+// m1.send('start')
 
 setupMachine(m1)(
   guard((ev) => true),
@@ -66,13 +71,14 @@ const m4 = createFactoryMachine(
   states.Idle(),
 );
 m4.getChange().to;
+m4.send('execute', 1)
 
 setupMachine(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   before((ev) => {
     if (ev.type == "execute") {
       console.log("executing");
-    }
+    }    
   }),
   after((ev) =>
     console.log(
@@ -84,7 +90,17 @@ setupMachine(m4)(
       }),
     ),
   ),
+  
 );
+when(m4, ev=> true, (ev) => (ev) => {})
+// when(ev => true, ev => {
+//   console.log('enter', ev)
+//   return ev => {
+//     console.log('exit', ev)
+//   }
+// }),
+
+
 
 m4.send("execute", 1);
 
@@ -103,3 +119,5 @@ function withNanoSubscribe<T>(target: T & Partial<{ subscribe: any }>) {
 const api = createApi(m4);
 api.execute(1);
 api.reject(new Error("nope"));
+
+const unsub = notify((ev) => console.log(ev))(m4);

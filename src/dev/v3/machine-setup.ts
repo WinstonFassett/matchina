@@ -16,7 +16,7 @@ export const guard = <T extends HasMethod<"guard">>(fn: T["guard"]) =>
   });
 export const handle = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["handle"],
-) => methodUse("handle")<AnyStateMachinery>((inner) => (ev) => fn(inner(ev)));
+) => methodUse("handle")<StateMachinery<E>>((inner) => (ev) => fn(inner(ev)));
 //#endregion
 
 //#region effects
@@ -26,18 +26,39 @@ export const after = methodListen("after");
 export const notify = methodListen("notify");
 //#endregion
 
-export const when = <E>(test: (fn: E) => boolean, enterListener: (ev: E) => (ev: E) => void) => <T>(target: HasMethod<'before'> & HasMethod<'after'>) => {
-  let exitListener: void | ((ev: E) => void);
-  before(ev => {
-    if (test(ev)) return; // not an exit(?)
-    exitListener?.(ev);
-    exitListener = undefined;
-  })(target);
-  after(ev => {
-    if (test(ev)) exitListener = enterListener(ev)
-  })(target);
-}
+// export const methodUse =
+//   <K extends string>(methodName: K) =>
+//   <T extends HasMethod<K>>(fn: (inner: T[K]) => T[K]) =>
+//   (target: T) =>
+//     methodExtend(methodName, target, fn(target[methodName]));
 
+
+export const when =
+  <
+    E extends ChangeCommandEvent,
+    T extends StateMachinery<E> = StateMachinery<E>,    
+  >(
+    target: T,
+    test: (ev: E) => boolean,
+    enterListener: (ev: E) => (ev: E) => void,
+  ) =>
+  () => {
+    let exitListener: void | ((ev: E) => void);
+    const unbefore = before((ev) => {
+      if (test(ev)) return; // not an exit(?)
+      exitListener?.(ev);
+      exitListener = undefined;
+    })(target);
+    const unafter = after((ev) => {
+      if (test(ev)) exitListener = enterListener(ev);
+    })(target);
+    return () => {
+      unbefore();
+      unafter();
+    };
+  };
+
+// These are pretty generic, could be named so
 export function machineSetup<M>(...extenders: ((machine: M) => () => void)[]) {
   return function setupMachine(machine: M) {
     return setup(...extenders.map((fn) => fn(machine)));
