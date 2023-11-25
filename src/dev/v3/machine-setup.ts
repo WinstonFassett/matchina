@@ -10,10 +10,17 @@ import { ChangeCommandEvent } from "./types";
 //#region interceptors
 export const send = methodUse("send");
 export const transition = methodUse("transition");
-export const guard = <T extends HasMethod<"guard">>(fn: T["guard"]) =>
-  methodUse("guard")((inner) => (...params) => {
-    return inner(...params) && fn(inner)(...params);
-  });
+// export const guard = <T extends HasMethod<"guard">>(fn: T["guard"]) =>
+//   methodUse("guard")((inner) => (...params) => {
+//     return inner(...params) && fn(inner)(...params);
+//   });
+
+export const guard = <E extends ChangeCommandEvent>(
+  fn: StateMachinery<E>["guard"],
+) => methodUse("guard")<StateMachinery<E>>((inner) => (ev) => {
+  return inner(ev) && fn(ev)
+});
+
 export const handle = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["handle"],
 ) => methodUse("handle")<StateMachinery<E>>((inner) => (ev) => fn(inner(ev)));

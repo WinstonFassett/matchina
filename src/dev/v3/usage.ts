@@ -4,6 +4,7 @@ import {
   after,
   before,
   guard,
+  handle,
   machineSetup,
   notify,
   setupMachine,
@@ -90,7 +91,9 @@ setupMachine(m4)(
       }),
     ),
   ),
-  
+  handle((ev) => {
+    return ev
+  })
 );
 const unwhen = when(m4, ev=> ev.to.key == 'Idle', (ev) => {
   unwhen()
