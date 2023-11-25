@@ -3,6 +3,7 @@ import { createFactoryMachine } from "./factory-machine";
 import {
   after,
   before,
+  effect,
   guard,
   handle,
   machineSetup,
@@ -14,6 +15,7 @@ import { createStateMachine } from "./state-machine";
 import { nanosubscriber } from "../../extras/nanosubscriber";
 import { listenTo } from "./registrants";
 import { createApi, withApi } from "./factory-event-api";
+import { condition } from "./method";
 const m1 = createStateMachine(
   {
     Idle: {
@@ -99,7 +101,18 @@ setupMachine(m4)(
     return (ev) => {
       console.log('after execute')
     }
-  })
+  }),
+  effect(condition((ev) => ev.type === "execute", ev => {
+    ev
+  })),
+  after(
+    condition(ev => ev.type == 'execute', ev => {
+      console.log('entered condition')
+      return ev => {
+        console.log('exited condition')
+      }
+    })
+  )
 );
 const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
   unwhen()

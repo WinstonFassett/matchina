@@ -1,5 +1,6 @@
 import {
   HasMethod,
+  filteredMethodListenTo,
   methodListenTo,
   methodUse
 } from "./method";
@@ -33,12 +34,19 @@ export const after = methodListenTo("after");
 export const notify = methodListenTo("notify");
 //#endregion
 
+export const effectWhen = filteredMethodListenTo("effect");
+
 // export const methodUse =
 //   <K extends string>(methodName: K) =>
 //   <T extends HasMethod<K>>(fn: (inner: T[K]) => T[K]) =>
 //   (target: T) =>
 //     methodExtend(methodName, target, fn(target[methodName]));
 
+function whenEventSetup () {
+  return function forMachine(machine) {
+    // map over
+  }
+}
 
 export const when =
   <

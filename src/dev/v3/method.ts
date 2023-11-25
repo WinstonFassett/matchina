@@ -29,3 +29,32 @@ export const methodListenTo =
       return res;
     })(target);
   };
+
+  export const filteredMethodListenTo = 
+  <K extends string>(methodName: K) =>
+  <T extends HasMethod<K>>(test: (...params: Parameters<T[K]>)=>boolean, fn: T[K]) =>
+  (target: T) => {
+    let exitListener: void | T[K];
+    return methodListenTo(methodName)((...params) => {
+      exitListener?.(...params);
+      exitListener = undefined;
+      if (test(...params as any)) {
+        exitListener = fn(...params);
+      }
+    })
+  };
+
+  export function condition<E>(
+    test: (ev: E)=>boolean,     
+    entryListener: (ev: E)=> (void | ((ev: E) => void))
+  ) {
+    let exitListener: void | ((ev: E)=>void);
+    return (ev: E) => {
+      if (test(ev)) {
+        exitListener = entryListener(ev);
+      } else {
+        exitListener?.(ev);
+        exitListener = undefined;
+      }
+    }
+  }
