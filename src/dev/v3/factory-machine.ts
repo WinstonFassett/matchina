@@ -13,7 +13,7 @@ export function createFactoryMachine<
   states: SF,
   transitions: TC,
   initialState: StateFromFactory<SF>,
-): FactoryMachine<TC, SF> {
+): FactoryMachine<SF, TC> {
   const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
     states,
@@ -53,8 +53,8 @@ export type FactoryTransitionConfig<
 };
 
 export interface FactoryMachine<
-  TC extends FactoryTransitionConfig<SF>,
   SF extends AnyStatesFactory,
+  TC extends FactoryTransitionConfig<SF> = FactoryTransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF> = FactoryMachineEvent<TC, SF>,
 > extends StateMachinery<E> {
   states: SF;
@@ -64,12 +64,7 @@ export interface FactoryMachine<
 type FactoryMachineEvent<
   TC extends FactoryTransitionConfig<SF>,
   SF extends AnyStatesFactory,
-> = {
-  type: string & FlatEventKeys<TC>;
-  to: StateFromFactory<SF>;
-  from: StateFromFactory<SF>;
-  params: any[];
-};
+> = ChangeCommandEvent<string & FlatEventKeys<TC>, any[], StateFromFactory<SF>, StateFromFactory<SF>>
 
 export type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];

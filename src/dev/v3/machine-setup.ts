@@ -36,13 +36,11 @@ export const notify = methodListen("notify");
 export const when =
   <
     E extends ChangeCommandEvent,
-    T extends StateMachinery<E> = StateMachinery<E>,    
   >(
-    target: T,
+    target: StateMachinery<E>,
     test: (ev: E) => boolean,
     enterListener: (ev: E) => (ev: E) => void,
-  ) =>
-  () => {
+  ) => {
     let exitListener: void | ((ev: E) => void);
     const unbefore = before((ev) => {
       if (test(ev)) return; // not an exit(?)
