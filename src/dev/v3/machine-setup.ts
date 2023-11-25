@@ -4,7 +4,7 @@ import {
   methodUse
 } from "./method";
 import { setup } from "./setup";
-import { AnyStateMachinery, StateMachinery } from "./state-machine";
+import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
 //#region interceptors
@@ -37,9 +37,9 @@ export const when =
   <
     E extends ChangeCommandEvent,
   >(
-    target: StateMachinery<E>,
+    target: HasMethod<'before'> & HasMethod<'after'>,
     test: (ev: E) => boolean,
-    enterListener: (ev: E) => (ev: E) => void,
+    enterListener: (ev: E) => void | ((ev: E) => void),
   ) => {
     let exitListener: void | ((ev: E) => void);
     const unbefore = before((ev) => {

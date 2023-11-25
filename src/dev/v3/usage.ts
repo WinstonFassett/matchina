@@ -92,7 +92,10 @@ setupMachine(m4)(
   ),
   
 );
-when(m4, ev=> true, (ev) => (ev) => {})
+const unwhen = when(m4, ev=> ev.to.key == 'Idle', (ev) => {
+  unwhen()
+})
+
 // when(ev => true, ev => {
 //   console.log('enter', ev)
 //   return ev => {
