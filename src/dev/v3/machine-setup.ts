@@ -26,6 +26,18 @@ export const after = methodListen("after");
 export const notify = methodListen("notify");
 //#endregion
 
+export const when = <E>(test: (fn: E) => boolean, enterListener: (ev: E) => (ev: E) => void) => <T>(target: HasMethod<'before'> & HasMethod<'after'>) => {
+  let exitListener: void | ((ev: E) => void);
+  before(ev => {
+    if (test(ev)) return; // not an exit(?)
+    exitListener?.(ev);
+    exitListener = undefined;
+  })(target);
+  after(ev => {
+    if (test(ev)) exitListener = enterListener(ev)
+  })(target);
+}
+
 export function machineSetup<M>(...extenders: ((machine: M) => () => void)[]) {
   return function setupMachine(machine: M) {
     return setup(...extenders.map((fn) => fn(machine)));
