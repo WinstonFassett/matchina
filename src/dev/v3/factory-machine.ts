@@ -12,7 +12,7 @@ export function createFactoryMachine<
 >(
   states: SF,
   transitions: TC,
-  initialState: StateFromFactory<SF>, // : FactoryMachine<TC,SF> &
+  initialState: StateFromFactory<SF>,
 ): FactoryMachine<TC, SF> {
   const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
@@ -43,7 +43,6 @@ export function nextFactoryState<
 
 export type FactoryTransitionConfig<
   SF extends AnyStatesFactory,
-  // CP extends any[] = any[],
 > = {
   [FromStateKey in string & keyof SF]: {
     [EventKey in string]:
