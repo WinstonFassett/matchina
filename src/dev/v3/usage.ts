@@ -26,7 +26,7 @@ const m1 = createStateMachine(
   { key: "Idle", data: undefined },
 );
 
-when(m1, (ev) => ev.type === "start", (ev) => (ev) => {})
+when((ev) => ev.type === "start", (ev) => (ev) => {})(m1)
 // m1.send('start')
 
 setupMachine(m1)(
@@ -93,11 +93,17 @@ setupMachine(m4)(
   ),
   handle((ev) => {
     return ev
+  }),
+  when((ev) => ev.type === "execute", (ev) => {
+    console.log('before execute')
+    return (ev) => {
+      console.log('after execute')
+    }
   })
 );
-const unwhen = when(m4, ev=> ev.to.key == 'Idle', (ev) => {
+const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
   unwhen()
-})
+})(m4)
 
 // when(ev => true, ev => {
 //   console.log('enter', ev)

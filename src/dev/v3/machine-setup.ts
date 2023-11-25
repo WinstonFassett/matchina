@@ -43,11 +43,10 @@ export const notify = methodListenTo("notify");
 export const when =
   <
     E extends ChangeCommandEvent,
-  >(
-    target: HasMethod<'before'> & HasMethod<'after'>,
+  >(    
     test: (ev: E) => boolean,
     enterListener: (ev: E) => void | ((ev: E) => void),
-  ) => {
+  ) => (target: HasMethod<'before'> & HasMethod<'after'>) =>  {
     let exitListener: void | ((ev: E) => void);
     const unbefore = before((ev) => {
       if (test(ev)) return; // not an exit(?)
