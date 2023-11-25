@@ -1,6 +1,6 @@
 import {
   HasMethod,
-  methodListen,
+  methodListenTo,
   methodUse
 } from "./method";
 import { setup } from "./setup";
@@ -20,10 +20,10 @@ export const handle = <E extends ChangeCommandEvent>(
 //#endregion
 
 //#region effects
-export const effect = methodListen("effect");
-export const before = methodListen("before");
-export const after = methodListen("after");
-export const notify = methodListen("notify");
+export const effect = methodListenTo("effect");
+export const before = methodListenTo("before");
+export const after = methodListenTo("after");
+export const notify = methodListenTo("notify");
 //#endregion
 
 // export const methodUse =

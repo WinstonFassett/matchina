@@ -3,10 +3,11 @@ export type HasMethod<K extends string> = {
 };
 
 export function methodExtend<
-  K extends string,
-  T extends HasMethod<K> = HasMethod<K>,
->(methodName: K, target: T, extend: (inner: T[K]) => T[K]) {
-  const original = target[methodName];
+  T,  
+  K extends keyof T,
+  M extends T[K] extends (...args: any[]) => any ? T[K] : never  
+>(target: T, methodName: K, extend: (inner: M) => M) {
+  const original = target[methodName] as M;
   target[methodName] = extend(original.bind(target));
   return () => {
     target[methodName] = original;
@@ -16,9 +17,9 @@ export const methodUse =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: (inner: T[K]) => T[K]) =>
   (target: T) =>
-    methodExtend(methodName, target, fn(target[methodName]));
+    methodExtend(target, methodName, fn(target[methodName]));
 
-export const methodListen =
+export const methodListenTo =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: T[K]) =>
   (target: T) => {
