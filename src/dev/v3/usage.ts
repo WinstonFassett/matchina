@@ -6,10 +6,9 @@ import {
   effect,
   guard,
   handle,
-  machineSetup,
   notify,
-  setupMachine,
 } from "./machine-setup";
+import { createSetup, setup } from "./setup";
 import { createStateMachine } from "./state-machine";
 import { nanosubscriber } from "../../extras/nanosubscriber";
 import { listenTo } from "./registrants";
@@ -29,7 +28,7 @@ const m1 = createStateMachine(
 
 // m1.send('start')
 
-setupMachine(m1)(
+setup(m1)(
   guard((ev) => true),
   leave((ev) => console.log("before", ev)),
   notify(condition((ev) => ev.type === "start", (ev) => (ev) => {})),
@@ -50,7 +49,7 @@ const m2 = createStateMachine(
   },
 );
 
-machineSetup<typeof m2>(
+createSetup<typeof m2>(
   guard((ev) => true),
   leave((ev) => console.log("before", ev)),
 )(m2);
@@ -75,7 +74,7 @@ const m4 = createFactoryMachine(
 m4.getChange().to;
 m4.send('execute', 1)
 
-setupMachine(m4)(
+setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   leave((ev) => {
     if (ev.type == "execute") {
