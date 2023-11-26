@@ -24,8 +24,8 @@ export const handle = <E extends ChangeCommandEvent>(
 
 //#region effects
 export const effect = methodListenTo("effect");
-export const before = methodListenTo("before");
-export const after = methodListenTo("after");
+export const leave = methodListenTo("exit");
+export const enter = methodListenTo("enter");
 export const notify = methodListenTo("notify");
 //#endregion
 

@@ -1,15 +1,14 @@
 import { defineStates } from "../../states";
 import { createFactoryMachine } from "./factory-machine";
 import {
-  after,
-  before,
+  enter,
+  leave,
   effect,
   guard,
   handle,
   machineSetup,
   notify,
   setupMachine,
-  when,
 } from "./machine-setup";
 import { createStateMachine } from "./state-machine";
 import { nanosubscriber } from "../../extras/nanosubscriber";
@@ -28,12 +27,12 @@ const m1 = createStateMachine(
   { key: "Idle", data: undefined },
 );
 
-when((ev) => ev.type === "start", (ev) => (ev) => {})(m1)
 // m1.send('start')
 
 setupMachine(m1)(
   guard((ev) => true),
-  before((ev) => console.log("before", ev)),
+  leave((ev) => console.log("before", ev)),
+  notify(condition((ev) => ev.type === "start", (ev) => (ev) => {})),
 );
 
 const m2 = createStateMachine(
@@ -53,7 +52,7 @@ const m2 = createStateMachine(
 
 machineSetup<typeof m2>(
   guard((ev) => true),
-  before((ev) => console.log("before", ev)),
+  leave((ev) => console.log("before", ev)),
 )(m2);
 
 const states = defineStates({
@@ -78,12 +77,12 @@ m4.send('execute', 1)
 
 setupMachine(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
-  before((ev) => {
+  leave((ev) => {
     if (ev.type == "execute") {
       console.log("executing");
     }    
   }),
-  after((ev) =>
+  enter((ev) =>
     console.log(
       ev.to.match<any>({
         Pending: (ev) => ev.s,
@@ -96,16 +95,16 @@ setupMachine(m4)(
   handle((ev) => {
     return ev
   }),
-  when((ev) => ev.type === "execute", (ev) => {
-    console.log('entered execute')
-    return (ev) => {
-      console.log('left execute')
-    }
-  }),
+  // when((ev) => ev.type === "execute", (ev) => {
+  //   console.log('entered execute')
+  //   return (ev) => {
+  //     console.log('left execute')
+  //   }
+  // }),
   effect(condition((ev) => ev.type === "execute", ev => {
     ev
   })),
-  after(
+  enter(
     condition(ev => ev.type == 'execute', ev => {
       console.log('entered condition')
       return ev => {
@@ -114,9 +113,9 @@ setupMachine(m4)(
     })
   )
 );
-const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
-  unwhen()
-})(m4)
+// const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
+//   unwhen()
+// })(m4)
 
 // when(ev => true, ev => {
 //   console.log('enter', ev)

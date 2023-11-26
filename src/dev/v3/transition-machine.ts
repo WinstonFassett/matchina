@@ -35,13 +35,14 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     guard(ev: E) {
       return true;
     },
-
+    /** Guard, handle and update */
     transition(ev: E) {
       if (!machine.guard(ev)) return;
       const handled = machine.handle(ev);
       if (handled) (machine as unknown as Updater<E>).update(handled);
     },
 
+    /** effect then notify */
     update(ev: E) {
       lastChange = ev;
       machine.effect(ev);
@@ -53,12 +54,12 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     },
 
     effect(ev: E) {
-      machine.before(ev); // left previous
-      machine.after(ev); // entered next
+      machine.exit(ev); // left previous
+      machine.enter(ev); // entered next
     },
 
-    before(ev: E) {},
-    after(ev: E) {},
+    exit(ev: E) {},
+    enter(ev: E) {},
     notify(ev: E) {},
   } as TransitionContext &
     Resolver<E> &
