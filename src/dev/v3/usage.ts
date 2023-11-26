@@ -160,34 +160,39 @@ const unsub = notify((ev) => console.log(ev))(m4);
 
 // onPhase('exit', (ev, next) => {})
 
-enhance<ReturnType<typeof m4.getChange>>({
-  guard: [
-    (ev, next) => {
-      if (ev.to.key === "Pending") next(ev);
-    },
-  ],
-  handle: [
-    (ev, next) => {
-      if (ev.to.key === "Pending") next(ev);
-    },
-  ],
-  update: (ev, next) => {}
-})(m4)
 
-listen<ReturnType<typeof m4.getChange>>({
-  exit: [
-    (ev) => {
-      
-    },
-  ],
-  enter: [
-    (ev) => {
-      
-    },
-  ],
-  effect: [
-    (ev) => {
-      
-    },
-  ],
-})(m4)
+
+// listen<ReturnType<typeof m4.getChange>>()(m4)
+
+setup(m4)(
+  enhance({
+    guard: [
+      (ev, next) => {
+        if (ev.to.key === "Pending") next(ev);
+      },
+    ],
+    handle: [
+      (ev, next) => {
+        if (ev.to.key === "Pending") next(ev);
+      },
+    ],
+    update: (ev, next) => {}
+  }),
+  listen({
+    exit: [
+      condition((ev) => ev.to.key === "Pending", (ev) => {
+        
+      })
+    ],
+    enter: [
+      (ev) => {
+        
+      },
+    ],
+    effect: [
+      (ev) => {
+        
+      },
+    ],
+  })
+)
