@@ -107,6 +107,62 @@ export function listen <E extends ChangeCommandEvent>(
 
 }
 
+type PhaseTarget<E, MiddlewareKeys extends string, EffectKeys extends string> = {
+  [K in MiddlewareKeys]: (ev: E) => E;
+} & {
+  [K in EffectKeys]: (ev: E) => void;
+}
+
+function phases<MiddlewareKeys extends string, EffectKeys extends string>(
+  middlewareKeys: MiddlewareKeys[],
+  effectKeys: EffectKeys[],
+){
+  return <T extends PhaseTarget<E, MiddlewareKeys, EffectKeys>, E>(target: T) => {
+    return registrar<Middleware<E> | Effectware<E>, PhaseKeys, T>(
+      target,
+      function initRegistrar(record) {
+        return disposers(
+          ...middlewareKeys.map((key: any) => {
+            return methodExtend(target, key, (inner) => {
+              return ((...params: Parameters<typeof inner>) => {
+                // run in middleware
+                let result = undefined as ReturnType<typeof inner>;
+                runMiddleware(
+                  getRegistrants<Middleware<E>, typeof PHASES, T>(
+                    target,
+                    PHASES,
+                    key,
+                  ),
+                  result as any,
+                  (...params) => {
+                    result = inner(...params);
+                  },
+                );
+                return result;
+              }) as typeof inner;
+            });
+          }),
+          ...effectKeys.map((key: any) => {
+            return methodExtend(target, key, (inner) => {
+              return ((...params: Parameters<typeof inner>) => {
+                inner(...params);
+                runEffects(
+                  getRegistrants<Effectware<E>, typeof PHASES, T>(
+                    target,
+                    PHASES,
+                    key,
+                  ),
+                  params,
+                );
+              }) as typeof inner;
+            });
+          }),
+        );
+      },
+    );
+  }
+}
+
 function phased<
   E extends ChangeCommandEvent,
   T extends StateMachinery<E> = StateMachinery<E>,
