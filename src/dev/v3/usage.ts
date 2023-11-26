@@ -97,9 +97,9 @@ setupMachine(m4)(
     return ev
   }),
   when((ev) => ev.type === "execute", (ev) => {
-    console.log('before execute')
+    console.log('entered execute')
     return (ev) => {
-      console.log('after execute')
+      console.log('left execute')
     }
   }),
   effect(condition((ev) => ev.type === "execute", ev => {

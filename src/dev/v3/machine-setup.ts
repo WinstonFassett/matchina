@@ -34,8 +34,6 @@ export const after = methodListenTo("after");
 export const notify = methodListenTo("notify");
 //#endregion
 
-export const effectWhen = filteredMethodListenTo("effect");
-
 // export const methodUse =
 //   <K extends string>(methodName: K) =>
 //   <T extends HasMethod<K>>(fn: (inner: T[K]) => T[K]) =>

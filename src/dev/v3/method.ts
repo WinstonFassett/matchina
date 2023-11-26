@@ -19,6 +19,10 @@ export const methodUse =
   (target: T) =>
     methodExtend(target, methodName, fn(target[methodName]));
 
+export type ExitListener<P extends any[]> = (...params: P) => void;
+export type EntryListener<P extends any[]> = (...params: P) => void | ExitListener<P>;
+    
+
 export const methodListenTo =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: T[K]) =>
@@ -30,23 +34,9 @@ export const methodListenTo =
     })(target);
   };
 
-  export const filteredMethodListenTo = 
-  <K extends string>(methodName: K) =>
-  <T extends HasMethod<K>>(test: (...params: Parameters<T[K]>)=>boolean, fn: T[K]) =>
-  (target: T) => {
-    let exitListener: void | T[K];
-    return methodListenTo(methodName)((...params) => {
-      exitListener?.(...params);
-      exitListener = undefined;
-      if (test(...params as any)) {
-        exitListener = fn(...params);
-      }
-    })
-  };
-
-  export function condition<E>(
+export function condition<E>(
     test: (ev: E)=>boolean,     
-    entryListener: (ev: E)=> (void | ((ev: E) => void))
+    entryListener: EntryListener<[E]>
   ) {
     let exitListener: void | ((ev: E)=>void);
     return (ev: E) => {
