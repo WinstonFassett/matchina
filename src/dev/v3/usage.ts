@@ -14,6 +14,7 @@ import { nanosubscriber } from "../../extras/nanosubscriber";
 import { listenTo } from "./registrants";
 import { createApi, withApi } from "./factory-event-api";
 import { condition } from "./method";
+import { phased } from "./machineware";
 const m1 = createStateMachine(
   {
     Idle: {
@@ -144,3 +145,12 @@ api.execute(1);
 api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
+
+
+
+const onPhase = phased<ReturnType<typeof m4.getChange>>(m4);
+
+onPhase('guard', (ev, next) => {
+  if (ev.to.key === 'Pending') next(ev)
+})
+

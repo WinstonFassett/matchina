@@ -4,6 +4,7 @@ import { CLEANUP, getRegistrants, listenTo, register, registrar, runEffects } fr
 import { disposers } from "./setup";
 import { methodExtend } from "./method";
 import { StateMachinery } from "./state-machine";
+import { ChangeCommandEvent } from "./types";
 const EffectKeys = ['effect', 'enter', 'exit', 'notify'] as const;
 type EffectKeys = typeof EffectKeys[number]
 
@@ -67,7 +68,7 @@ export function phaseware<T>(ware: Machineware<T>): Machineware<T> {
 }
 const PHASES = '_phase';
 
-export function onPhases<T extends StateMachinery<any>, E extends ReturnType<T['getChange']>>(target: T) {
+export function phased<E extends ChangeCommandEvent, T extends StateMachinery<E>>(target: T) {
   const registerPhaseHandler = registrar<Middleware<E>|Effectware<E>, PhaseKeys, T>(target, (record) => {
     return disposers(
       ...MiddlewareKeys.map((key: any) => {
