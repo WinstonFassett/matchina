@@ -5,14 +5,14 @@ import { disposers } from "./setup";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
-
-const EffectKeys = ['effect', 'enter', 'exit', 'notify'] as const;
-type EffectKeys = typeof EffectKeys[number]
-
 const MiddlewareKeys = ['begin', 'guard', 'before', 'handle', 'update', 'end'] as const;
 type MiddlewareKeys = typeof MiddlewareKeys[number]
 
-const PhaseKeys = [...MiddlewareKeys, ...EffectKeys]
+const EffectKeys = ['effect', 'enter', 'exit', 'notify', ...MiddlewareKeys] as const;
+type EffectKeys = typeof EffectKeys[number]
+
+
+const PhaseKeys = EffectKeys
 type PhaseKeys = typeof PhaseKeys[number]
 
 type Effectware<T> = (ev: T) => void;
@@ -31,6 +31,23 @@ type Machineware<T> = {
   notify: Effectware<T>;
   end: Effectware<T>;
 } 
+
+// type Targetware<M,E> = {
+//   [K in keyof M]: WaresFor<M[K],E>;
+// }
+// type M = AnyStateMachinery
+
+// type WaresFor<T, E> = 
+//   T extends (event: E) => E ? Middleware<E> : 
+//   T extends (event: E) => void ?  Effectware<E> :
+//   never;  
+
+// type X2 = WaresFor<(ev: number) => number, number>
+
+// type X = Targetware<AnyStateMachinery,ReturnType<AnyStateMachinery['getChange']>>
+
+
+// type Y = WaresFor<(ev: number) => void, number>
 
 export const filter = <T>(fn: (value: T) => boolean): Middleware<T> => {
   return (target: T, next) => {
