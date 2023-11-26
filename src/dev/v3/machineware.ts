@@ -57,7 +57,7 @@ export const filter = <T>(fn: (value: T) => boolean): Middleware<T> => {
 
 const PHASES = '_phase';
 
-export function enhance <E extends ChangeCommandEvent>(enhancers: HookConfig<{
+export function middlewareSetup <E extends ChangeCommandEvent>(enhancers: HookConfig<{
   transition: Middleware<E>,
   begin: Middleware<E>,
   guard: Middleware<E>, // require completion of all guards
@@ -93,7 +93,11 @@ function phaseSetup<E extends ChangeCommandEvent>(
   };
 }
 
-export function listen <E extends ChangeCommandEvent>(
+// function listenware() {}
+
+// function 
+
+export function listenerSetup <E extends ChangeCommandEvent>(
   listeners: HookConfig<{
     effect: Effectware<E>,
     exit: Effectware<E>,
