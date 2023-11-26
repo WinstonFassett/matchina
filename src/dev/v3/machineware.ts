@@ -68,7 +68,57 @@ export function phaseware<T>(ware: Machineware<T>): Machineware<T> {
 }
 const PHASES = '_phase';
 
-export function phased<E extends ChangeCommandEvent, T extends StateMachinery<E>>(target: T) {
+export function enhance <E extends ChangeCommandEvent>(enhancers: HookConfig<{
+  transition: Middleware<E>,
+  begin: Middleware<E>,
+  guard: Middleware<E>, // require completion of all guards
+  before: Middleware<E>,
+  handle: Middleware<E>,
+  update: Middleware<E>,
+}>) {
+  return phaseSetup<E>(enhancers)
+}
+
+type HookConfig<T> = {
+  [K in keyof T]?: T[K] | T[K][];
+};
+
+function phaseSetup<E extends ChangeCommandEvent>(
+  record: HookConfig<Machineware<E>>,
+) {
+  return (target: StateMachinery<E>) => {
+    const onPhase = phased<E>(target);
+    return disposers(
+      ...Object.keys(record).map((key) => {
+        const listener = record[key];
+        if (!listener) return () => {};
+        return Array.isArray(listener)
+          ? disposers(
+              ...listener.map((listener) =>
+                onPhase(key as PhaseKeys, listener),
+              ),
+            )
+          : onPhase(key as PhaseKeys, listener);
+      }),
+    );
+  };
+}
+
+export function listen <E extends ChangeCommandEvent>(
+  listeners: HookConfig<{
+    effect: Effectware<E>,
+    exit: Effectware<E>,
+    enter: Effectware<E>,
+    after: Effectware<E>,
+    notify: Effectware<E>,
+    end: Effectware<E>,
+  }>
+) {
+  return phaseSetup<E>(listeners)
+
+}
+
+function phased<E extends ChangeCommandEvent, T extends StateMachinery<E> = StateMachinery<E>>(target: T) {
   const registerPhaseHandler = registrar<Middleware<E>|Effectware<E>, PhaseKeys, T>(target, (record) => {
     return disposers(
       ...MiddlewareKeys.map((key: any) => {
