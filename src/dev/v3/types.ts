@@ -46,10 +46,12 @@ export interface Transitioner<T> {
 }
 
 export interface EventLifecycle<T> {
-  before: (value: T) => T;
+  begin: (value: T) => T | undefined;
+  before: (value: T) => T | undefined;
   exit: (value: T) => void;
   enter: (value: T) => void;
   after: (value: T) => void;
+  end: (value: T) => void;
 }
 
 export type TransitionRecord<T = any> = Record<string, Record<string, T>>;

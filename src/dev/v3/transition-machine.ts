@@ -35,18 +35,22 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     guard(ev: E) {
       return true;
     },
-    /** Guard, handle, before and update */
+    /** begin (guard, before), handle, update (effect(exit, enter, after, notify)), end */
     transition(ev: E) {
-      let change = machine.guard(ev) ? machine.before(ev) : undefined
+      let change = machine.begin(ev)
       if (!change) return;      
       change = machine.handle(change);
       if (change) (machine as unknown as Updater<E>).update(change);
+      machine.end(ev)
     },
-
+    begin (ev: E) {
+      return machine.guard(ev) ? machine.before(ev) : undefined;      
+    },
+    end(ev: E) {},
     /** before, apply, effect */
-    update(ev: E) {
+    update(ev: E, runEffects = true) {
       lastChange = ev;
-      machine.effect(ev);
+      if(runEffects) machine.effect(ev);
     },
 
     handle(ev: E) {
