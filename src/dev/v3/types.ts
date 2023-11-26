@@ -45,9 +45,11 @@ export interface Transitioner<T> {
   transition: (value: T) => T;
 }
 
-export interface EventEffects<T> {
+export interface EventLifecycle<T> {
+  before: (value: T) => T;
   exit: (value: T) => void;
   enter: (value: T) => void;
+  after: (value: T) => void;
 }
 
 export type TransitionRecord<T = any> = Record<string, Record<string, T>>;

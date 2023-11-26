@@ -2,7 +2,7 @@ import {
   ChangeCommandEvent,
   Commander,
   Effecter,
-  EventEffects,
+  EventLifecycle,
   Guarder,
   Handler,
   Notifier,
@@ -24,7 +24,7 @@ export type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
     Guarder<E> &
     Handler<E> &
     Effecter<E> &
-    EventEffects<E> &
+    EventLifecycle<E> &
     Notifier<E>;
 
 export type AnyStateMachinery = StateMachinery<any>;

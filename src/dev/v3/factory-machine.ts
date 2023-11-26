@@ -61,14 +61,21 @@ export interface FactoryMachine<
   transitions: TC;
 }
 
-type FactoryMachineEvent<
+export type FactoryMachineEvent<
   TC extends FactoryTransitionConfig<SF>,
   SF extends AnyStatesFactory,
-> = ChangeCommandEvent<string & FlatEventKeys<TC>, any[], StateFromFactory<SF>, StateFromFactory<SF>>
+> = ChangeCommandEvent<
+  string & FlatEventKeys<TC>,
+  any[],
+  StateFromFactory<SF>,
+  StateFromFactory<SF>
+>;
 
 export type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];
-}[keyof T];export type StateFromFactory<
+}[keyof T];
+
+export type StateFromFactory<
   States extends AnyStatesFactory,
   StateKey extends keyof States = keyof States
 > = ReturnType<States[StateKey]>;

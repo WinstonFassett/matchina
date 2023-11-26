@@ -1,7 +1,7 @@
 import {
   ChangeCommandEvent,
   Effecter,
-  EventEffects,
+  EventLifecycle,
   Guarder,
   Handler,
   Notifier,
@@ -35,18 +35,18 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     guard(ev: E) {
       return true;
     },
-    /** Guard, handle and update */
+    /** Guard, handle, before and update */
     transition(ev: E) {
-      if (!machine.guard(ev)) return;
-      const handled = machine.handle(ev);
-      if (handled) (machine as unknown as Updater<E>).update(handled);
+      let change = machine.guard(ev) ? machine.before(ev) : undefined
+      if (!change) return;      
+      change = machine.handle(change);
+      if (change) (machine as unknown as Updater<E>).update(change);
     },
 
-    /** effect then notify */
+    /** before, apply, effect */
     update(ev: E) {
       lastChange = ev;
       machine.effect(ev);
-      machine.notify(ev);
     },
 
     handle(ev: E) {
@@ -56,14 +56,17 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     effect(ev: E) {
       machine.exit(ev); // left previous
       machine.enter(ev); // entered next
+      machine.after(ev) // did transition
+      machine.notify(ev); // notify consumers
     },
-
+    before(ev: E) { return ev as E|undefined },
+    after(ev: E) {},
     exit(ev: E) {},
     enter(ev: E) {},
     notify(ev: E) {},
   } as TransitionContext &
     Resolver<E> &
-    EventEffects<E> &
+    EventLifecycle<E> &
     Transitioner<E> &
     Guarder<E> &
     Handler<E> &
