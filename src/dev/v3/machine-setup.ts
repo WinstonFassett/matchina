@@ -1,6 +1,5 @@
 import {
   HasMethod,
-  filteredMethodListenTo,
   methodListenTo,
   methodUse
 } from "./method";
@@ -11,11 +10,7 @@ import { ChangeCommandEvent } from "./types";
 //#region interceptors
 export const send = methodUse("send");
 export const transition = methodUse("transition");
-// export const guard = <T extends HasMethod<"guard">>(fn: T["guard"]) =>
-//   methodUse("guard")((inner) => (...params) => {
-//     return inner(...params) && fn(inner)(...params);
-//   });
-
+export const resolve = methodUse("resolve");
 export const guard = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["guard"],
 ) => methodUse("guard")<StateMachinery<E>>((inner) => (ev) => {
