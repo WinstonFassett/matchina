@@ -1,16 +1,11 @@
 import { defineStates } from "../../states";
 import { createFactoryMachine } from "./factory-machine";
-import {
-  after,
-  before,
-  guard,
-  machineSetup,
-  setupMachine,
-} from "./machine-setup";
+import { guard, enter, leave } from "./machine-setup";
+import { createSetup, setup } from "./setup";
 import { createStateMachine } from "./state-machine";
 import { expect, describe, it } from "vitest";
 
-describe("setupMachine", () => {
+describe("setup", () => {
   it("should transition correctly", () => {
     const machine = createStateMachine(
       {
@@ -24,10 +19,10 @@ describe("setupMachine", () => {
       { key: "Idle", data: undefined },
     );
 
-    setupMachine(machine)(
+    setup(machine)(
       guard((ev) => true),
-      before((ev) => console.log("before", ev.type)),
-      after((ev) => console.log("after", ev.type)),
+      leave((ev) => console.log("leave", ev.type)),
+      enter((ev) => console.log("enter", ev.type)),
     );
     expect(machine.getState().key).toBe("Idle");
     machine.send("start");
@@ -37,7 +32,7 @@ describe("setupMachine", () => {
   });
 });
 
-describe("machineSetup", () => {
+describe("createSetup", () => {
   it("should transition correctly", () => {
     const machine = createStateMachine(
       {
@@ -54,9 +49,9 @@ describe("machineSetup", () => {
       },
     );
 
-    machineSetup<typeof machine>(
+    createSetup<typeof machine>(
       guard((ev) => true),
-      before((ev) => console.log("before", ev.type)),
+      leave((ev) => console.log("leave", ev.type)),
     )(machine);
     machine.send("start");
     expect(machine.getState().key).toBe("Running");
@@ -85,14 +80,14 @@ describe("factory-machine", () => {
       states.Idle(),
     );
 
-    setupMachine(machine)(
+    setup(machine)(
       guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
-      before((ev) => {
+      leave((ev) => {
         if (ev.type == "execute") {
           console.log("executing");
         }
       }),
-      after((ev) =>
+      enter((ev) =>
         console.log(
           ev.type,
           ev.to.match<any>({
