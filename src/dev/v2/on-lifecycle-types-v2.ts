@@ -33,22 +33,12 @@ export type StateTransitionHooks<
     States
   > = StateTransitionEvent<Transitions, States>,
 > = {
-  leave: Middleware<
-    StateChangeMachineEvent<
-      Event["type"],
-      Event["to"],
-      StateFromFactory<States, StateKey>,
-      Event["params"]
-    >
-  >;
-  enter: Middleware<
-    StateChangeMachineEvent<
-      Event["type"],
-      StateFromFactory<States, StateKey>,
-      Event["from"],
-      Event["params"]
-    >
-  >;
+  leave: Middleware<Event & {    
+    from: StateFromFactory<States, StateKey>,    
+  }>;
+  enter: Middleware<Event & {    
+    to: StateFromFactory<States, StateKey>,    
+  }>;
 };
 
 export type TransitionHookExtensions<T> = {

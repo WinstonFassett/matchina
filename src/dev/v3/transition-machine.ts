@@ -89,7 +89,8 @@ export interface ChangeMachine<E extends Change<any>> {
   getState(): E["to"] | E["from"];
   getChange(): E;
   update(change: E): void;
-}export interface Resolver<C extends ChangeEvent<any, any, any>> {
+}
+export interface Resolver<C extends ChangeEvent<any, any, any>> {
   resolve: (value: ResolveEvent<C>) => C | undefined;
 }
 export type ResolveEvent<C> = C & {

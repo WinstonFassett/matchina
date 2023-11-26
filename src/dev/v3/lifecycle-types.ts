@@ -1,19 +1,8 @@
 import { Middleware } from "../../extras/middleware";
-import { AnyStatesFactory, FactoryTransitionConfig, FactoryMachineEvent, StateFromFactory } from "./factory-machine";
-import {  ChangeCommandEvent,
-  Effecter,
-  EventLifecycle,
-  Guarder,
-  Handler,
-  Notifier,
-  TransitionContext,
-  TransitionRecord,
-  Transitioner,
-  Updater,
-} from './types'
+import { AnyStatesFactory, FactoryMachineEvent, FactoryTransitionConfig, StateFromFactory } from "./factory-machine";
 
-import { StateEventTransitionFuncs } from './factory-event-api'
 import { FlatMemberUnion, TUnionToIntersection } from "../../types";
+import { StateEventTransitionFuncs } from './factory-event-api';
 
 export type StateEventHookConfig<
   TC extends FactoryTransitionConfig<SF>,
@@ -39,22 +28,12 @@ export type StateTransitionHooks<
     States
   > = FactoryMachineEvent<Transitions, States>,
 > = {
-  leave: Middleware<
-    StateChangeMachineEvent<
-      Event["type"],
-      Event["to"],
-      StateFromFactory<States, StateKey>,
-      Event["params"]
-    >
-  >;
-  enter: Middleware<
-    StateChangeMachineEvent<
-      Event["type"],
-      StateFromFactory<States, StateKey>,
-      Event["from"],
-      Event["params"]
-    >
-  >;
+  leave: Middleware<Event & {    
+    from: StateFromFactory<States, StateKey>,    
+  }>;
+  enter: Middleware<Event & {    
+    to: StateFromFactory<States, StateKey>,    
+  }>;
 };
 
 export type TransitionHookExtensions<T> = {
