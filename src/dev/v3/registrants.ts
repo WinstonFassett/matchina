@@ -1,5 +1,8 @@
 import { notify } from "./machine-setup";
 
+export type Disposer = () => void;
+
+
 const LISTENERS = "_l";
 export const CLEANUP = "_c";
 const DEFAULT = "_d";
@@ -28,12 +31,53 @@ export function registrar<
   F extends (...params: any[]) => any,
   K extends string = string,
   T = any
->(target: T, init:(records: Record<K,F>) => void, kind = LISTENERS) {
+>(target: any, init:(records: Record<K,F>) => void, kind = LISTENERS as K) {
   if (!target[kind]) {
     target[kind] = {};
     init?.(target[kind]);     
   }
-  return (type: K, fn: F) => register(target, fn, type, kind);
+  return {
+    register: <Type extends string>(type: Type, fn: F) => register(target, fn, type, kind),
+    getRegistrants: <Type extends string>(type: Type) => getRegistrants<F,K,T>(target, kind, type),
+  } 
+}
+
+// add _use: { [key]: [count, value]] } to target
+const USES = '_uses'
+const USE = '_use'
+
+const usePropertiesOf = (target: any) => {
+  return useProperty(USE, () => {
+    let record = {} // consider exposing / returning        
+    target[USES] = record
+    return [use, dispose]
+    function use(key: string, fn: (target, key) => any) {
+      if (record[key]) {
+        record[key][0]++
+      } else {
+        record[key] = [1, fn(target,key)]
+      }
+      return record[key][1]
+    }
+    function dispose () {}
+  })(target);
+}
+
+/*
+Use key once. Use ref count to clean up when no more uses.
+ */
+const useProperty = <T,K extends string,R>(key: K, fn: () => [T, Disposer]) => (target: R) => {
+  // get or create property on target
+  // const uses = registrar(target, (record) => {}, '_uses');
+  // if property exists, use it
+  let property = target[key as any] = target[key as any] ?? fn();
+  // let use = property[USE]
+  // do ref count
+  return () => {
+    // if ref count is 0, clean up
+    // if ref count is 1, delete property
+  }
+
 }
 
 export function register<F extends (...params: any[]) => any>(target: any, fn: F, type = DEFAULT, kind = LISTENERS) {

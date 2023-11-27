@@ -6,7 +6,7 @@ type Setup<T> = (target: T) => Disposer;
  * @param fns 
  * @returns 
  */
-export function disposers(...fns: Disposer[]) {
+export function disposers(fns: Disposer[]) {
   return () => {
     for (let i = fns.length - 1; i >= 0; i--) {
       fns[i]();
@@ -18,14 +18,14 @@ export function createSetup<T>(
   ...setups: Setup<T>[]
 ): Setup<T> {
   return function applySetup(target: T) {
-    return disposers(...setups.map((fn) => fn(target)));
+    return disposers(setups.map((fn) => fn(target)));
   };
 }
 
 export function setup<T>(target: T)
 : (...setups: Setup<T>[]) => Disposer {
   return function (...setups: Setup<T>[]) {
-    return disposers(...setups.map((fn) => fn(target)));
+    return disposers(setups.map((fn) => fn(target)));
   };
 }
 
