@@ -1,4 +1,4 @@
-import { Disposer } from "./registrants";
+import { Disposer, registrar } from "./registrants";
 
 /**
  *
@@ -6,9 +6,14 @@ import { Disposer } from "./registrants";
  * @param record to use for ref counts
  * @returns use(key, fn) => [value, unuse]
  */
-const useRefCounts = <T, R>(record: Record<string, [count: number, value: R, dispose: Disposer]> = {}) => {
-  return [useKey, disposeAll];
-  function useKey<K extends string>(key: K, fn: (key: K) => [R, Disposer]) {
+export const useRefCounts = <V>(
+  record: Record<string, [count: number, value: V, dispose: Disposer]> = {},
+) => {
+  return useKey //[useKey, disposeAll];
+  function useKey<K extends string, R extends V>(
+    key: K,
+    fn: (key: K) => [value: R, dispose: Disposer],
+  ) {
     if (record[key]) {
       record[key][0]++;
     } else {
@@ -23,17 +28,17 @@ const useRefCounts = <T, R>(record: Record<string, [count: number, value: R, dis
           delete record[key];
           cleanup();
         }
-      }
-    ];
+      },
+    ] as [value: R, unuse: () => void];
   }
   function disposeAll() {
-    Object.keys(record).forEach(key => {
+    Object.keys(record).forEach((key) => {
       record[key][2]();
     });
   }
 };
 const x = {};
-useRefCounts(x)[0]('someProperty', (key) => {
+const [property, unsub] = useRefCounts(x)('someProperty', (key) => {
   const target = x;
   const orig = target[key];
   target[key] = 'some value';
@@ -41,3 +46,23 @@ useRefCounts(x)[0]('someProperty', (key) => {
     target[key] = orig;
   }];
 });
+
+const REFS = '_refs'
+
+export const useRefCountsOn = <T extends object>(target: T) => {
+  target[REFS] ??= {}
+  const useKey = useRefCounts(target[REFS])
+  return function useOnTarget(key, fn) {
+    const [useKeyFn, disposeUseKey] = useKey('useKey', (key) => {
+      console.log('first useKey')
+      return [useKey, () => {
+        console.log('last useKey')        
+      }]
+    })
+    const [value, unuseKey] = useKeyFn(key, fn)
+    return [value, () => {
+      unuseKey()
+      disposeUseKey()
+    }]
+  }
+}
