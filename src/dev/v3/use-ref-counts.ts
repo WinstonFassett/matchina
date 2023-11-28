@@ -5,9 +5,9 @@ type RefState = Record<string, [count: number, value: any]>;
 
 /**
  *
- * @param target - n/a
- * @param record to use for ref counts
- * @returns use(key, fn) => [value, unuse]
+ * @param target - any object to use for ref counts
+ * @param init entry/exit callback
+ * @returns use(key, fn) => unuse
  */
 const SELF = 'useRefCounts'
 export const useKeyedRefCounts = (
@@ -71,12 +71,7 @@ function dynamicProperty<T, K extends string, V>(target: T, key: K, create: () =
 }
 const PROPERTIES = '_p'
 
-// if property does not exist create it
-// if property reffx does not exist create it
-// where to create it? _refs._p[key]
-// use property reffx
-// when none left, delete property
-function useProperty<T extends object, K extends string, V>(target: T, key: K, init?: () => Disposer) {
+function useProperties<T extends object, K extends string, V>(target: T) {
   const [refs, unuseRefs] = useRefsRoot(target)
   if (!refs[PROPERTIES]) refs[PROPERTIES] = {}
   const usePropertiesKey = useKeyedRefCounts(refs[PROPERTIES], () => {
@@ -87,13 +82,26 @@ function useProperty<T extends object, K extends string, V>(target: T, key: K, i
       delete refs[PROPERTIES]
     }
   })
+  return [usePropertiesKey, disposers([unuseRefs])] as [use: typeof usePropertiesKey, unuse: () => void]
+}
+
+// if property does not exist create it
+// if property reffx does not exist create it
+// where to create it? _refs._p[key]
+// use property reffx
+// when none left, delete property
+function useProperty<T extends object, K extends string, V>(target: T, key: K, init?: () => Disposer) {
+  const [refs, unuseRefs] = useRefsRoot(target)
+  if (!refs[PROPERTIES]) refs[PROPERTIES] = {}
+  const [usePropertiesKey, unuseProperties] = useProperties(target)
+  // const [usePropertiesKey, unuseProperties] = useRefsRootKey(refs, PROPERTIES)
   const unuseProperty = usePropertiesKey(key, () => {
     console.log('first use of property', key)
     return () => {
       console.log('last use of property', key)
     }
   })
-  return disposers([unuseRefs, unuseProperty])
+  return disposers([unuseRefs, unuseProperties, unuseProperty])
 }
 
 function useRefsRoot<T extends object>(target: T) {
@@ -109,53 +117,52 @@ function useRefsRoot<T extends object>(target: T) {
 
 }
 
+function useRefsRootKey<T extends object, K extends string>(target: T, key: K) {
+  const [refs, unuseRefs] = useRefsRoot(target)
+  if (!refs[key]) refs[key] = {}
+  const useKey = useKeyedRefCounts(refs[key], () => {
+    console.log('create refs key', key)
+    return () => {
+      console.log('cleanup refs key', key)
+      // should be safe to delete now
+      delete refs[key]
+    }
+  })
+  return [useKey, unuseRefs]
+}
+
 function useDynamicProperty<T extends object, K extends string, V>(target: T, key: K, create: () => [value: V, dispose: Disposer]) {  
   return useProperty(target, key, () => {
-    const store = target as any
-    const orig = store[key]
-    const [value, dispose] = create()
-    store[key] = value
-    return dispose
+    return dynamicProperty(target, key, create)
   })
 }
 
-const TEMP = '_temp'
+const TEMP = '_'
 
-// function useTempProperties(target: any, kind = TEMP) {
-//   return function useTempProperty<K extends string, V>(key: K, create: () => [value: V, dispose: Disposer]) {
-//     const unuseTemp = useDynamicProperty(target, kind, () => [{}, () => {
-//       console.log('cleanup temp property')
-//     }])
-//     const temps = target[kind]
-//     if (temps[key]) return temps[key]
-//     // const temp = target[kind]
-//     // if (temp[key]) return temp[key]
-//     temps[key] = create()
-//     return () => {
-//       delete temps[key]
-//       unuseTemp()
-//     }
-//   }  
+function useTempProperty<T extends object, K extends string, V>(target: T, key: K, create: () => [value: V, dispose: Disposer]) {
+  const [refs, unuseRefs] = useRefsRoot(target)
+  const unuseTemp = useDynamicProperty(refs, TEMP, () => [{}, () => {
+    console.log('cleanup temp property')
+  }])  
+  const unuseProperty = useDynamicProperty(target[TEMP], key, create)
+  return disposers([unuseRefs, unuseTemp, unuseProperty])
+}
+
+// function useRefsRootPath<T extends object, K extends string, V>(target: T, path: K[], create: () => [value: V, dispose: Disposer]) {
+//   const [refs, unuseRefs] = useRefsRoot(target)
+//   let current = refs
+//   const unuseParts = path.map((key, i) => {
+//     if (i === path.length-1) return useDynamicProperty(current, key, create)
+//     return useDynamicProperty(current, key, () => {
+//       current = current[key]
+//       return [{}, () => {
+//       console.log('cleanup refs path', path.slice(0, i))
+//     }]})    
+//   })
+//   return disposers([unuseRefs, ...unuseParts])
 // }
+
 const noop = () => {}
-// export function useRefCountsOn<T extends object>(target: T) {
-//   target[REFS] ??= {};
-//   const useKey = useKeyedRefCounts(target[REFS]);
-//   return function useOnTarget<R>(key: string, fn: (key: string) => R) {
-//     const disposeUseKey = useKey('useKey', (key) => {
-//       console.log('first useKey');
-//       return () => {
-//         console.log('last useKey');
-//       };
-//     });
-//     const unuseKey = useKey(key, fn);
-//     return () => {
-//       unuseKey();
-//       disposeUseKey();
-//     };
-//   };
-// }
-
 
 export function reffx(effect: () => Disposer) {
   let count = 0
