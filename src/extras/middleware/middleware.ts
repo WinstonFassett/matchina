@@ -26,7 +26,7 @@ export function composeMiddleware<E>(
 export function runMiddleware<E>(
   middlewares: Middleware<E>[],
   initialValue: E,
-  finalCallback: (finalValue?: E) => void,
+  finalCallback: (finalValue: E) => void,
 ): void {
   composeMiddleware(...middlewares)(initialValue, finalCallback);
 }
