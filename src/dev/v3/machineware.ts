@@ -113,6 +113,7 @@ export function effectwareExtension <Type extends string, Kind extends string, E
   }
 }
 
+// type Funcware<P extends any[], R> = (invocation: [params: P, result: R], next: (invocation: [params: P, result: R]) => void) => void;
 
 
 type HookConfig<T> = {

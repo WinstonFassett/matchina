@@ -1,4 +1,4 @@
-export type Middleware<E> = (event: E, next: (event?: E) => void) => void;
+export type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
 export function composeMiddleware<E>(
   ...middlewares: Middleware<E>[]
@@ -35,7 +35,7 @@ export function extendMiddleware<E>(
   inner: Middleware<E>,
   outer: Middleware<E>,
 ): Middleware<E> {
-  return (event: E, finalNext: (event?: E) => void) => {
+  return (event: E, finalNext: (event: E) => void) => {
     outer(event, (nextEvent?: E) => {
       inner(nextEvent ?? event, finalNext);
     });
