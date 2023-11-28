@@ -22,68 +22,69 @@ export function methodware<T, K extends keyof T, F extends FunctionType<T,K>>(
   };
 }
 
-export function methodwares<T, K extends keyof T, F extends FunctionType<T,K>>(
-  target: T,
-  methodName: K,
-  middlewares: Funcware<Parameters<F>, ReturnType<F>>[] //(inner: FunctionType<T, K>) => FunctionType<T, K>
-) {
-  const store = target as any;
-  const original = store[methodName] as FunctionType<T, K>;
-  store[methodName] = funcwares(original.bind(target), ...middlewares)  
-  return () => {
-    target[methodName] = original;
-  };
-}
+// export function methodwares<T, K extends keyof T, F extends FunctionType<T,K>>(
+//   target: T,
+//   methodName: K,
+//   middlewares: Funcware<Parameters<F>, ReturnType<F>>[] //(inner: FunctionType<T, K>) => FunctionType<T, K>
+// ) {
+//   const store = target as any;
+//   const original = store[methodName] as FunctionType<T, K>;
+//   if (original[MIDDLEWARES]) {
+//     middlewares = middlewares.concat(original[MIDDLEWARES])
+
+//   } else {
+
+//   }
+//   store[methodName] = funcwares(original.bind(target), ...middlewares)  
+//   return () => {
+//     target[methodName] = original;
+//   };
+// }
 
 
-const EMPTY = {}
-const MIDDLEWARE = 'mw'
+const VOID = {}
+
 export function funcware<P extends any[], R>(
   next: (...params: P) => R,
   middleware: Funcware<P, R>
 ) {
-  const fn = (...params: P) => {
-    let result = EMPTY as R; 
-    ((fn as any).middleware as typeof middleware)([params, undefined as any], ([params, value]) => {
+  return (...params: P) => {
+    let result = VOID as R; 
+    middleware([params, undefined as any], ([params, value]) => {
       // early return if value
-      if (value !== EMPTY) return [params, value]
+      if (value !== VOID) return [params, value]
       return [params, next(...params)]
     });
-    return result === EMPTY ? undefined : result;
+    if (result !== VOID) return result;
   }
-  Object.assign(fn, {
-    mw: middleware,
-    next
-  })
-  return fn
 }
 
 [].unshift()
 
 const MIDDLEWARES = 'mws'
 
-// like funcware but supports concatenating chains of middleware
-// depends on runMiddleware
-export function funcwares<P extends any[], R>(
-  next: (...params: P) => R,
-  ...wares: Funcware<P, R>[]
-) {
-  const nextStore = next as any
-  const orig = nextStore.orig || next
-  const existing = nextStore[MIDDLEWARES] as typeof wares
-  if (existing) {
-    wares = wares.concat(existing)
-  }
-  const fn = (...params: P) => {
-    let result = EMPTY as R; 
-    runMiddleware((fn as any)[MIDDLEWARES] as typeof wares, [params, undefined as any], (invocation) => {      
-      result = invocation[1] as R      
-    })
-    return result === EMPTY ? undefined : result;
-  }
-  Object.assign(fn, {
-    MIDDLEWARES: wares,
-    orig
-  })
-  return fn
-}
+// // like funcware but supports concatenating chains of middleware
+// // depends on runMiddleware
+// export function funcwares<P extends any[], R>(
+//   next: (...params: P) => R,
+//   ...wares: Funcware<P, R>[]
+// ) {
+//   const nextStore = next as any
+//   const orig = nextStore.orig || next
+//   const existing = nextStore[MIDDLEWARES] as typeof wares
+//   if (existing) {
+//     wares = wares.concat(existing)
+//   }
+//   const fn = (...params: P) => {
+//     let result = VOID as R; 
+//     runMiddleware((fn as any)[MIDDLEWARES] as typeof wares, [params, result], (invocation) => {      
+//       result = invocation[1] as R      
+//     })
+//     if (result !== VOID) return result    
+//   }
+//   Object.assign(fn, {
+//     MIDDLEWARES: wares,
+//     orig
+//   })
+//   return fn
+// }
