@@ -1,39 +1,9 @@
 import { Middleware } from "../../extras/middleware";
-import { AnyStatesFactory, FactoryMachineEvent, FactoryTransitionConfig, StateFromFactory } from "./factory-machine";
+import { } from './types'
+import { AnyStatesFactory, FactoryTransitionConfig } from './factory-machine'
 
-import { FlatMemberUnion, TUnionToIntersection } from "../../types";
-import { StateEventTransitionFuncs } from './factory-event-api';
-
-export type StateEventHookConfig<
-  TC extends FactoryTransitionConfig<SF>,
-  SF extends AnyStatesFactory,
-> = {
-  [SK in (keyof TC & keyof SF) | "*"]?: {
-    on?: On<TC, SF, SK>;
-  } & StateTransitionHookConfig<TC, SF, SK>;
-};
-
-export type StateTransitionHookConfig<
-  Transitions extends FactoryTransitionConfig<States>,
-  States extends AnyStatesFactory,
-  StateKey extends keyof States | "*",
-> = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
-
-export type StateTransitionHooks<
-  Transitions extends FactoryTransitionConfig<States>,
-  States extends AnyStatesFactory,
-  StateKey extends keyof States | "*",
-  Event extends FactoryMachineEvent<
-    Transitions,
-    States
-  > = FactoryMachineEvent<Transitions, States>,
-> = {
-  leave: Middleware<Event & {    
-    from: StateFromFactory<States, StateKey>,    
-  }>;
-  enter: Middleware<Event & {    
-    to: StateFromFactory<States, StateKey>,    
-  }>;
+type HookConfig<T> = {
+  [K in keyof T]?: T[K] | T[K][];
 };
 
 export type TransitionHookExtensions<T> = {
@@ -43,89 +13,156 @@ export type TransitionHookExtensions<T> = {
   after: Middleware<T>;
 };
 
-type HookConfig<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
-
 export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
 
+export type StateTransitionHooks<
+  Transitions extends FactoryTransitionConfig<States>,
+  States extends AnyStatesFactory,
+  StateKey extends keyof Transitions | "*",
+> = {
+  leave: Middleware<
+    StateMachineEvent<
+      Transitions,
+      States,
+      FlatEventKeys<Transitions, States>,
+      StateFromFactory<
+        States,
+        StateKey extends keyof States ? StateKey : keyof States
+      >,
+      StateFromFactory<States>
+    >
+  >;
+  enter: Middleware<
+    StateMachineEvent<
+      Transitions,
+      States,
+      FlatEventKeys<Transitions, States>,
+      StateFromFactory<States>,
+      StateFromFactory<
+        States,
+        StateKey extends keyof States ? StateKey : keyof States
+      >
+    >
+  >;
+};
+
+export type StateTransitionHookConfig<
+  Transitions extends FactoryTransitionConfig<States>,
+  States extends AnyStatesFactory,
+  StateKey extends keyof Transitions | "*",
+> = HookConfig<StateTransitionHooks<Transitions, States, StateKey>>;
+
 type On<
-  TC extends FactoryTransitionConfig<SF>,
-  SF extends AnyStatesFactory,
-  SK extends keyof TC | "*",
-  E extends FactoryMachineEvent<TC, SF> = FactoryMachineEvent<TC, SF>,
-  EK extends E["type"] = E["type"],
+  TransitionsRawConfig extends FactoryTransitionConfig<States>,
+  States extends AnyStatesFactory,
+  StateKey extends keyof TransitionsRawConfig | "*",
 > =
   // regular state
-  SK extends keyof SF
-    ? {
-        [StateEventKey in keyof TC[SK] | "*"]?: StateEventKey extends EK //FlatEventKeys<E> // specific event
+  StateKey extends keyof States
+    ? // specific state
+      {
+        [Event in
+          | keyof TransitionsRawConfig[StateKey]
+          | "*"]?: Event extends FlatEventKeys<TransitionsRawConfig, States> // specific event // specific event
           ? ReturnType<
-              StateEventTransitionFuncs<TC, SF>[SK][StateEventKey]
-            > extends StateFromFactory<SF>
+              StateEventTransitionFuncs<
+                TransitionsRawConfig,
+                States
+              >[StateKey][Event]
+            > extends StateFromFactory<States>
             ? TransitionHookConfig<
-                StateChangeMachineEvent<
-                  StateEventKey,
-                  // StateFromFactory<SF>,
+                StateMachineEvent<
+                  TransitionsRawConfig,
+                  States,
+                  Event, // should constrain params
+                  StateFromFactory<States, StateKey>,
                   ReturnType<
-                    StateEventTransitionFuncs<TC, SF>[SK][StateEventKey]
+                    StateEventTransitionFuncs<
+                      TransitionsRawConfig,
+                      States
+                    >[StateKey][Event]
                   >,
-                  StateFromFactory<SF, SK>,
                   Parameters<
-                    StateEventTransitionFuncs<TC, SF>[SK][StateEventKey]
+                    StateEventTransitionFuncs<
+                      TransitionsRawConfig,
+                      States
+                    >[StateKey][Event]
                   >
                 >
               >
             : never
-          : TransitionHookConfig<
-              StateChangeMachineEvent<
-                EK,
-                StateFromFactory<SF>,
-                StateFromFactory<SF, SK>,
+          : // wildcard event
+            TransitionHookConfig<
+              StateMachineEvent<
+                TransitionsRawConfig,
+                States,
+                FlatEventKeys<TransitionsRawConfig, States>,
+                StateFromFactory<States, StateKey>,
+                StateFromFactory<States>, // could be limited
                 any[]
               >
             >;
+        // specific event returns keyof states
+        // fix this. we need to transform transitionconfig above to StatesToEventsToStates
       }
-    : {
-        [AnyStateEvent in EK | "*"]?: TransitionHookConfig<
-          StateChangeMachineEvent<
-            AnyStateEvent extends "*" ? EK : AnyStateEvent,
-            AnyStateEvent extends keyof EventExitStatesIntersection<TC, SF>
-              ? EventExitStatesIntersection<
-                  TC,
-                  SF
-                >[AnyStateEvent] extends StateFromFactory<SF>
-                ? EventExitStatesIntersection<TC, SF>[AnyStateEvent]
-                : StateFromFactory<SF>
-              : StateFromFactory<SF>,
+    : // wildcard state
+      {
+        [AnyStateEvent in
+          | FlatEventKeys<TransitionsRawConfig, States>
+          | "*"]?: TransitionHookConfig<
+          StateMachineEvent<
+            TransitionsRawConfig,
+            States,
+            AnyStateEvent extends "*"
+              ? FlatEventKeys<TransitionsRawConfig, States>
+              : AnyStateEvent,
+            // Source State
             StateFromFactory<
-              SF,
-              AnyStateEvent extends keyof TC[SK]
-                ? Extract<SK, string>
-                : Extract<keyof TC, string>
+              States,
+              keyof {
+                [K in keyof TransitionsRawConfig]: AnyStateEvent extends keyof TransitionsRawConfig[K]
+                  ? Extract<K, string>
+                  : Extract<keyof TransitionsRawConfig, string>;
+              } &
+                keyof States
             >,
-            any[]
+            // Target State
+            AnyStateEvent extends "*"
+              ? // wildcard event
+                FlatExitStates<
+                  TransitionsRawConfig,
+                  States
+                > extends StateFromFactory<States>
+                ? FlatExitStates<TransitionsRawConfig, States>
+                : never
+              : // not wildcard event
+                // if valid exit state
+                AnyStateEvent extends keyof EventExitStatesIntersection<
+                    TransitionsRawConfig,
+                    States
+                  >
+                ? // and returns state from factory
+                  EventExitStatesIntersection<
+                    TransitionsRawConfig,
+                    States
+                  >[AnyStateEvent] extends StateFromFactory<States>
+                  ? // then return the union of all possible exit states for that event key
+                    EventExitStatesIntersection<
+                      TransitionsRawConfig,
+                      States
+                    >[AnyStateEvent]
+                  : never
+                : never,
+            any[] // could be union of all possible params lol I'm tired
           >
         >;
       };
 
-export type EventExitStatesIntersection<
-  Transitions extends FactoryTransitionConfig<States>,
-  States extends AnyStatesFactory,
-> = TUnionToIntersection<
-  FlatMemberUnion<StatesToEventsToStates<Transitions, States>>
->;
-
-export type StatesToEventsToStates<
+export type StateEventHookConfig<
   Transitions extends FactoryTransitionConfig<States>,
   States extends AnyStatesFactory,
 > = {
-  [StateKey in keyof StateEventTransitionFuncs<Transitions, States>]: {
-    [EventKey in keyof StateEventTransitionFuncs<
-      Transitions,
-      States
-    >[StateKey]]: ReturnType<
-      StateEventTransitionFuncs<Transitions, States>[StateKey][EventKey]
-    >;
-  };
+  [StateKey in keyof Transitions | "*"]?: {
+    on?: On<Transitions, States, StateKey>;
+  } & StateTransitionHookConfig<Transitions, States, StateKey>;
 };
