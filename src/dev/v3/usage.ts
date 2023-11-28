@@ -10,7 +10,6 @@ import {
   leave,
   notify,
 } from "./machine-setup";
-import { middlewareSetup, listenerSetup } from "./machineware";
 import { condition } from "./method";
 import { listenTo } from "./registrants";
 import { createSetup, setup } from "./setup";
@@ -164,35 +163,31 @@ const unsub = notify((ev) => console.log(ev))(m4);
 
 // listen<ReturnType<typeof m4.getChange>>()(m4)
 
-setup(m4)(
-  middlewareSetup({
-    guard: [
-      (ev, next) => {
-        if (ev.to.key === "Pending") next(ev);
-      },
-    ],
-    handle: [
-      (ev, next) => {
-        if (ev.to.key === "Pending") next(ev);
-      },
-    ],
-    update: (ev, next) => {}
-  }),
-  listenerSetup({
-    exit: [
-      condition((ev) => ev.to.key === "Pending", (ev) => {
+// setup(m4)(
+//   middlewareSetup({
+//     guard: (ev, next) => {
+//       if (ev.to.key === "Pending") next(ev);
+//     },
+//     handle: (ev, next) => {
+//       if (ev.to.key === "Pending") next(ev);
+//     },
+//     update: (ev, next) => {}
+//   }),
+//   listenerSetup({
+//     exit: [
+//       condition((ev) => ev.to.key === "Pending", (ev) => {
 
-      })
-    ],
-    enter: [
-      (ev) => {
+//       })
+//     ],
+//     enter: [
+//       (ev) => {
         
-      },
-    ],
-    effect: [
-      (ev) => {
+//       },
+//     ],
+//     effect: [
+//       (ev) => {
         
-      },
-    ],
-  })
-)
+//       },
+//     ],
+//   })
+// )
