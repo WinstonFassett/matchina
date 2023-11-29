@@ -10,8 +10,7 @@ import {
   leave,
   notify,
 } from "./machine-setup";
-import { condition } from "./method";
-import { listenTo } from "./registrants";
+import { condition } from "./condition";
 import { createSetup, setup } from "./setup";
 import { createStateMachine } from "./state-machine";
 const m1 = createStateMachine(
@@ -127,7 +126,7 @@ setup(m4)(
 
 m4.send("execute", 1);
 
-listenTo(m4)("click", (ev) => {});
+// listenTo(m4)("click", (ev) => {});
 
 function withNanoSubscribe<T>(target: T & Partial<{ subscribe: any }>) {
   if (target.subscribe) return target;

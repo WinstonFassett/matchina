@@ -1,5 +1,5 @@
 import {
-  methodListenTo,
+  methodTap,
   methodUse
 } from "./method";
 import { StateMachinery } from "./state-machine";
@@ -20,11 +20,11 @@ export const handle = <E extends ChangeCommandEvent>(
 //#endregion
 
 //#region effects
-export const effect = methodListenTo("effect");
-export const leave = methodListenTo("exit");
-export const enter = methodListenTo("enter");
-export const notify = methodListenTo("notify");
-export const end = methodListenTo("end");
+export const effect = methodTap("effect");
+export const leave = methodTap("exit");
+export const enter = methodTap("enter");
+export const notify = methodTap("notify");
+export const end = methodTap("end");
 
 function composeHandlers<E extends ChangeCommandEvent>(outer: (value: E) => E, inner: (value: E) => E): (value: E) => E {
   return (ev) => outer(inner(ev));

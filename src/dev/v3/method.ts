@@ -2,23 +2,23 @@ export type HasMethod<K extends string> = {
   [key in K]: (...args: any[]) => any;
 };
 
-type FunctionType<T, K extends keyof T> = T[K] extends (...args: any[]) => any
+type MethodOf<T, K extends keyof T> = T[K] extends (...args: any[]) => any
   ? T[K]
   : never;
 
-export function addUnique<T extends Record<string,any>,K extends string,V>(target: T, k:K, fn: (target: T) => V): T & { [key: K]: V }{
-  const store = target as any;
-  if (store[k]) return store[k];
-  store[k] = fn(target);
-  
-}
+type Funcware<F extends (...params: any[]) => any> = (
+  inner: F,
+) => F;
+type Methodware<T, K extends keyof T, M extends MethodOf<T, K> = MethodOf<T, K>> = 
+  Funcware<M>
+  // (inner: MethodOf<T, K>) => MethodOf<T, K>;
 
 export function methodExtend<T, K extends keyof T>(
   target: T,
   methodName: K,
-  extend: (inner: FunctionType<T, K>) => FunctionType<T, K>
+  extend: Methodware<T, K>
 ) {
-  const original = target[methodName] as FunctionType<T, K>;
+  const original = target[methodName] as MethodOf<T, K>;
   target[methodName] = extend((original??noop).bind(target));
   return () => {
     target[methodName] = original;
@@ -30,39 +30,45 @@ const noop = () => {};
 export const methodUse =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(
-    fn: (inner: FunctionType<T, K>) => FunctionType<T, K>
+    fn: Funcware<MethodOf<T,K>>
   ) =>
   (target: T) => {
     return methodExtend(target, methodName, fn);
   } 
 
 
-export type ExitListener<P extends any[]> = (...params: P) => void;
-export type EntryListener<P extends any[]> = (...params: P) => void | ExitListener<P>;
-    
-
-export const methodListenTo =
+export const methodTap =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: T[K]) =>
   (target: T) => {
-    return methodUse(methodName)(inner => (...params) => {
-      const res = inner(...params);
-      fn(...params);
-      return res;
-    })(target);
+    return methodUse(methodName)(functionTap<K, T>(fn))(target);
   };
 
-export function condition<E>(
-    test: (ev: E)=>boolean,     
-    entryListener: EntryListener<[E]>
-  ) {
-    let exitListener: void | ((ev: E)=>void);
-    return (ev: E) => {
-      if (test(ev)) {
-        exitListener = entryListener(ev);
-      } else {
-        exitListener?.(ev);
-        exitListener = undefined;
-      }
+export function functionTap<K extends string, T extends HasMethod<K>>(fn: T[K]): Funcware<MethodOf<HasMethod<K>, K>> {
+  return inner => (...params) => {
+    const res = inner(...params);
+    fn(...params);
+    return res;
+  };
+}
+
+export function composeFuncware<F extends (...params: any[]) => any>(
+  fns: Funcware<F>[]
+): Funcware<F> {
+  // return (inner) => fns.reduce((acc, fn) => fn(acc), inner);  
+  // return inner => fns.reduceRight((next, fn) => fn(next), inner);
+  return (inner) => {
+    function next(index: number, ...params: Parameters<F>): ReturnType<F> {
+      if (index === fns.length) return inner(...params);
+      return fns[index](next.bind(null, index + 1))(...params);
     }
-  }
+    return next.bind(null, 0)
+  };
+}
+
+export function extendFunction<F extends (...params: any[]) => any>(
+  inner: F,
+  fns: Funcware<F>[],
+): F {
+  return composeFuncware(fns)(inner) as F;  
+}

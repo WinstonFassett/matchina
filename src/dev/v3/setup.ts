@@ -1,4 +1,4 @@
-type Disposer = () => void;
+export type Disposer = () => void;
 type Setup<T> = (target: T) => Disposer;
 
 /**
