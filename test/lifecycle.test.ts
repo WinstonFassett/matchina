@@ -112,7 +112,7 @@ describe("onLifecycle usage", () => {
             },
             after: (event, next) => {
               console.log("* after", event.type);
-              next();
+              next(event);
             },
           },
         },
@@ -141,16 +141,17 @@ describe("onLifecycle usage", () => {
               }
               console.log("GUARD accept?", accept);
               if (accept) {
-                next();
+                next(change);
               }
               console.groupEnd();
               // return accept;
             },
-            before: ({ params: [amount] }, next) => {
+            before: (change, next) => {
+              const { params: [amount] } = change;
               didBeforeExecute ||= ++count;
               // console.log("executing", amount);
               // console.group()
-              next();
+              next(change);
               // console.groupEnd()
               // console.log('done executing')
             },
@@ -192,7 +193,7 @@ describe("onLifecycle usage", () => {
               console.log("In Pending before resolve");
               expect(ev.type).toBe("resolve");
               console.group();
-              next();
+              next(ev);
               console.groupEnd();
               console.log("done before resolve");
             },
