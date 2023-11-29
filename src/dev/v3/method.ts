@@ -76,6 +76,12 @@ export function extendFunction<F extends (...params: any[]) => any>(
   return composeFuncware(fns)(inner) as F;  
 }
 
+export function functionExtender<F extends (...params: any[]) => any>(
+  fns: Funcware<F>[],
+): Funcware<F> {
+  return (inner) => extendFunction(inner, fns);
+}
+
 type FuncMiddleware<F extends (...args: any) => any> = Middleware<[params: Parameters<F>, result: ReturnType<F>]>
 const VOID = {}
 
