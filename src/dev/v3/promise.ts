@@ -1,6 +1,7 @@
 import { States, defineStates } from "../../states";
 import { createFactoryMachine } from "./factory-machine";
-import { after, setupMachine } from "./machine-setup";
+import { after } from "./machine-setup";
+import { setup } from "./setup";
 
 export type PromiseStates<
   F extends PromiseCallback,
@@ -39,7 +40,7 @@ export function createPromiseMachine<
     states, PromiseTransitions, states.Idle()
   )
   if (makePromise) {
-    setupMachine(machine)(
+    setup(machine)(
       after(ev => {
         if (ev.type === "execute") {
           const promise = makePromise(...(ev.params as Parameters<F>));
