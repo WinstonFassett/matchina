@@ -5,12 +5,12 @@ import { setup } from "./setup";
 
 export type PromiseStates<
   F extends PromiseCallback,
-  E = unknown
+  E = Error
 > = States<{
   Idle: undefined;
   Pending: (...params: Parameters<F>) => Parameters<F>;
   Rejected: (error: E) => E;
-  Resolved: (data: Awaited<F>) =>  Awaited<F>;
+  Resolved: (data: Awaited<ReturnType<F>>) =>  Awaited<ReturnType<F>>;
 }>;
 
 export const PromiseStates = defineStates({

@@ -1,9 +1,10 @@
-import { Middleware, runMiddleware } from "../../extras/middleware";
+import { Middleware, listen, runMiddleware } from "../../extras/middleware";
 import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
 import { StateEventHookConfig } from "./lifecycle-types";
 import { describe, it, expect } from 'vitest'
 import { createPromiseMachine } from "./promise";
 import { createApi, withApi } from "./factory-event-api";
+import { onLifecycle } from "./lifecycle";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -22,7 +23,12 @@ describe("onLifecycle usage", () => {
     const pm = createPromiseMachine<(x: number) => Promise<number>>();
     // Create machine WITHOUT a promise to drive it
     const api = createApi(pm)
-    const machine = withApi(pm);
+    // api.resolve(1)
+    const machine = Object.assign(withApi(pm), {
+      reset() {
+        console.log('todo: reset')
+      }
+    });
     
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
@@ -40,6 +46,7 @@ describe("onLifecycle usage", () => {
           on: {
             execute: {
               before(change) {
+                change.type = 'execute'; // can only be execute
                 change.from.key = "Idle"; // can only be Idle
                 change.to.key = "Pending"; // can only be Pending
               },
@@ -116,7 +123,7 @@ describe("onLifecycle usage", () => {
             },
             after: (event, next) => {
               console.log("* after", event.type);
-              next();
+              next(event);
             },
           },
         },
@@ -145,16 +152,17 @@ describe("onLifecycle usage", () => {
               }
               console.log("GUARD accept?", accept);
               if (accept) {
-                next();
+                next(change);
               }
               console.groupEnd();
               // return accept;
             },
-            before: ({ params: [amount] }, next) => {
+            before: (ev, next) => {
+              const { params: [amount] } = ev
+              console.log("executing", amount);
               didBeforeExecute ||= ++count;
-              // console.log("executing", amount);
               // console.group()
-              next();
+              next(ev);
               // console.groupEnd()
               // console.log('done executing')
             },
@@ -169,8 +177,8 @@ describe("onLifecycle usage", () => {
               }
               machine.promise = delayed(num, num);
               machine.done = machine.promise
-                .then(machine.event.resolve)
-                .catch(machine.event.reject);
+                .then(machine.api.resolve)
+                .catch(machine.api.reject);
               didHandleExecute ||= ++count;
               console.log("handler accepting");
               next(event);
@@ -196,14 +204,15 @@ describe("onLifecycle usage", () => {
               console.log("In Pending before resolve");
               expect(ev.type).toBe("resolve");
               console.group();
-              next();
+              next(ev);
               console.groupEnd();
               console.log("done before resolve");
             },
-            after: listen(() => {
+            after: (ev) => {
+              ev.type = 'resolve'
               didAfterResolve ||= ++count;
               console.log("Resolved from Pending");
-            }),
+            },
           },
         },
       },
@@ -215,7 +224,7 @@ describe("onLifecycle usage", () => {
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     console.log("test guard reject");
-    machine.event.execute(1);
+    machine.api.execute(1);
     checkState();
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
@@ -224,14 +233,14 @@ describe("onLifecycle usage", () => {
 
     expect(didGuardAccept).toBeFalsy();
     console.log("test guard accept, handler reject");
-    machine.event.execute(99);
+    machine.api.execute(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log("BEFORE FAIL", machine.getState().key);
     console.log("***test handler accept");
-    machine.event.execute(100);
+    machine.api.execute(100);
     console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
@@ -244,9 +253,9 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.event.execute(100);
+    machine.api.execute(100);
     expectState("Pending");
-    machine.event.reject(new Error("test"));
+    machine.api.reject(new Error("test"));
     expectState("Rejected");
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
@@ -260,10 +269,10 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.event.execute(1000);
+    machine.api.execute(1000);
     expectState("Pending");
 
-    machine.event.resolve(1);
+    machine.api.resolve(1);
     expectState("Resolved");
     expectStateData().toBe(1);
 
