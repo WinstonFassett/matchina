@@ -6,8 +6,9 @@ import { ResolveEvent } from "./transition-machine";
 import { State } from "./types";
 
 export function createFactoryMachine<
-  SF extends AnyStatesFactory,
-  TC extends FactoryTransitionConfig<SF>,
+  // S extends State,
+  SF extends AnyStatesFactory, //StatesFactory<S>,
+  TC extends TransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF>,
 >(
   states: SF,
@@ -26,8 +27,9 @@ export function createFactoryMachine<
 }
 
 export function nextFactoryState<
+  // S extends State,
   SF extends AnyStatesFactory,
-  TC extends FactoryTransitionConfig<SF>,
+  TC extends TransitionConfig<SF>,
 >(transitions: TC, states: SF, ev: ChangeCommandEvent) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) return undefined;
@@ -41,7 +43,7 @@ export function nextFactoryState<
   }
 }
 
-export type FactoryTransitionConfig<
+export type TransitionConfig<
   SF extends AnyStatesFactory,
 > = {
   [FromStateKey in string & keyof SF]: {
@@ -54,7 +56,7 @@ export type FactoryTransitionConfig<
 
 export interface FactoryMachine<
   SF extends AnyStatesFactory,
-  TC extends FactoryTransitionConfig<SF> = FactoryTransitionConfig<SF>,
+  TC extends TransitionConfig<SF> = TransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF> = FactoryMachineEvent<TC, SF>,
 > extends StateMachinery<E> {
   states: SF;
@@ -62,7 +64,7 @@ export interface FactoryMachine<
 }
 
 export type FactoryMachineEvent<
-  TC extends FactoryTransitionConfig<SF>,
+  TC extends TransitionConfig<SF>,
   SF extends AnyStatesFactory,
 > = ChangeCommandEvent<
   string & FlatEventKeys<TC>,
@@ -79,5 +81,15 @@ export type StateFromFactory<
   States extends AnyStatesFactory,
   StateKey extends keyof States = keyof States
 > = ReturnType<States[StateKey]>;
-export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
 
+
+export type AnyStatesFactory = Record<string, (...params: any) => State>;
+
+// export type AnyStatesFactory<
+//   S extends State = State,
+//   F extends (...args: any[]) => State = (...args: any[]) => State
+// > = Record<string, (...params: any[]) => State>;
+
+export type StatesFactory<T, F extends (...args: any[]) => T> = {
+  [key: string]: (...args: any[]) => T;
+};

@@ -1,3 +1,9 @@
+import { Middleware, runMiddleware } from "../../extras/middleware";
+import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
+import { StateEventHookConfig } from "./lifecycle-types";
+import { describe, it, expect } from 'vitest'
+import { createPromiseMachine } from "./promise";
+import { createApi, withApi } from "./factory-event-api";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -13,8 +19,11 @@ describe("onLifecycle usage", () => {
     let didEnterRejected = 0;
     let count = 0;
 
+    const pm = createPromiseMachine<(x: number) => Promise<number>>();
     // Create machine WITHOUT a promise to drive it
-    const machine = withEvents(createPromiseMachine<number, [number]>());
+    const api = createApi(pm)
+    const machine = withApi(pm);
+    
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {

@@ -2,12 +2,11 @@ import { FlatMemberUnionToIntersection, Simplify } from "../../types";
 import {
   AnyStatesFactory,
   FactoryMachine,
-  FactoryTransitionConfig,
+  TransitionConfig,
   StateFromFactory,
-  FactoryTransitionConfig as TransitionConfig,
 } from "./factory-machine";
 
-export function createApi<SF extends AnyStatesFactory, TC extends FactoryTransitionConfig<SF>>(
+export function createApi<SF extends AnyStatesFactory, TC extends TransitionConfig<SF>>(
   machine: FactoryMachine<SF, TC>,
 ): FactoryMachineApi<TC, SF> {
   const { states, transitions } = machine;
@@ -34,18 +33,20 @@ export function createApi<SF extends AnyStatesFactory, TC extends FactoryTransit
   return events;
 }
 
-type FactoryMachineApi<T extends FactoryTransitionConfig<S>, S extends AnyStatesFactory> = Simplify<
+type FactoryMachineApi<T extends TransitionConfig<S>, S extends AnyStatesFactory> = Simplify<
   FlatEventSenders<T, S>
 >;
 
-type WithApi<T extends FactoryTransitionConfig<S>, S extends AnyStatesFactory, M> = M & {
+type WithApi<T extends TransitionConfig<S>, S extends AnyStatesFactory, M> = M & {
   api: FactoryMachineApi<T, S>;
 };
 
-export function withApi<T extends FactoryTransitionConfig<S>, S extends AnyStatesFactory, M extends FactoryMachine<any, any>>(target: M) {
-  const enhanced = target as WithApi<T,S, M>;
+export function withApi<M extends FactoryMachine<any, any, any>>(target: M) {
+  const enhanced = target as WithApi<M['transitions'],M['states'], M>;
   if (enhanced.api) return enhanced;
-  return createApi<S,T>(enhanced);
+  return Object.assign(target,  {
+    api: createApi<M['states'],M['transitions']>(enhanced)
+  }) as WithApi<M['transitions'], M['states'], M>;
 }
 
 export type FlatEventSenders<

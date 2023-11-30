@@ -27,8 +27,6 @@ export type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
     EventLifecycle<E> &
     Notifier<E>;
 
-export type AnyStateMachinery = StateMachinery<any>;
-
 export function createStateMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   initialState: E["from"],

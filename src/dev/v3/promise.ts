@@ -35,7 +35,13 @@ type PromiseCallback = (...args: any[]) => Promise<any>
 export function createPromiseMachine<
   F extends PromiseCallback
 >(makePromise?: (...args: Parameters<F>) => ReturnType<F>) {
-  const states = PromiseStates;
+  const states = PromiseStates as unknown as PromiseStates<F>;
+  // const states = defineStates({
+  //   Idle: undefined,
+  //   Pending: (...params: Parameters<F>) => params,
+  //   Rejected: (error: any) => error,
+  //   Resolved: (data: any) => data,
+  // });
   const machine = createFactoryMachine(
     states, PromiseTransitions, states.Idle()
   )
