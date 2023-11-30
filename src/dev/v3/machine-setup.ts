@@ -22,6 +22,7 @@ export const handle = <E extends ChangeCommandEvent>(
 //#region effects
 export const effect = methodTap("effect");
 export const leave = methodTap("exit");
+export const after = methodTap("after");
 export const enter = methodTap("enter");
 export const notify = methodTap("notify");
 export const end = methodTap("end");
