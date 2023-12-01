@@ -16,7 +16,6 @@ type Effect<E> = (ev: E) => void;
 type Handle<E> = (ev: E) => E | void;
 
 export type TransitionHookExtensions<E> = {
-  // before: Middleware<T>;
   // send: Funcware<StateMachinery<E>['send']>
   begin: Abortware<E>;
   resolve: Funcware<(ev: Partial<E>) => E>;
@@ -46,16 +45,6 @@ export type StateTransitionHooks<
         StateKey extends keyof States ? StateKey : keyof States
       >;
     }
-    // StateMachineEvent<
-    //   Transitions,
-    //   States,
-    //   FlatEventKeys<Transitions, States>,
-    //   StateFromFactory<
-    //     States,
-    //     StateKey extends keyof States ? StateKey : keyof States
-    //   >,
-    //   StateFromFactory<States>
-    // >
   >;
   enter: Middleware<
     FactoryMachineEvent<Transitions, States> & {
@@ -86,7 +75,7 @@ type On<
           | keyof Transitions[StateKey]
           | "*"]?: 
           //specific event
-          Event extends FlatEventKeys<Transitions, States> // specific event // specific event
+          Event extends FlatEventKeys<Transitions, States>
           ? ReturnType<
               StateEventTransitionFuncs<
                 Transitions,
@@ -110,24 +99,6 @@ type On<
                     States
                   >[StateKey][Event]>
                 }
-                // StateMachineEvent<
-                //   TransitionsRawConfig,
-                //   States,
-                //   Event, // should constrain params
-                //   StateFromFactory<States, StateKey>,
-                //   ReturnType<
-                //     StateEventTransitionFuncs<
-                //       TransitionsRawConfig,
-                //       States
-                //     >[StateKey][Event]
-                //   >,
-                //   Parameters<
-                //     StateEventTransitionFuncs<
-                //       TransitionsRawConfig,
-                //       States
-                //     >[StateKey][Event]
-                //   >
-                // >
               >
             : never
           : // wildcard event
@@ -139,8 +110,6 @@ type On<
                 >;
               }
             >;
-        // specific event returns keyof states
-        // fix this. we need to transform transitionconfig above to StatesToEventsToStates
       }
     : // wildcard state
       {
@@ -165,52 +134,7 @@ type On<
                   States
                 >[StateKey][AnyStateEvent]
               >;
-            }
-          // StateMachineEvent<
-          //   Transitions,
-          //   States,
-          //   AnyStateEvent extends "*"
-          //     ? FlatEventKeys<Transitions, States>
-          //     : AnyStateEvent,
-          //   // Source State
-          //   StateFromFactory<
-          //     States,
-          //     keyof {
-          //       [K in keyof Transitions]: AnyStateEvent extends keyof Transitions[K]
-          //         ? Extract<K, string>
-          //         : Extract<keyof Transitions, string>;
-          //     } &
-          //       keyof States
-          //   >,
-          //   // Target State
-          //   AnyStateEvent extends "*"
-          //     ? // wildcard event
-          //       FlatExitStates<
-          //         Transitions,
-          //         States
-          //       > extends StateFromFactory<States>
-          //       ? FlatExitStates<Transitions, States>
-          //       : never
-          //     : // not wildcard event
-          //       // if valid exit state
-          //       AnyStateEvent extends keyof EventExitStatesIntersection<
-          //           Transitions,
-          //           States
-          //         >
-          //       ? // and returns state from factory
-          //         EventExitStatesIntersection<
-          //           Transitions,
-          //           States
-          //         >[AnyStateEvent] extends StateFromFactory<States>
-          //         ? // then return the union of all possible exit states for that event key
-          //           EventExitStatesIntersection<
-          //             Transitions,
-          //             States
-          //           >[AnyStateEvent]
-          //         : never
-          //       : never,
-          //   any[] // could be union of all possible params lol I'm tired
-          // >
+            }         
         >;
       };
 
@@ -278,4 +202,3 @@ export type FlatEventKeys<
       States
     >]: keyof StateEventTransitionFuncs<Transitions, States>[StateKey];
   }[keyof StateEventTransitionFuncs<Transitions, States>];
-// provides the return types of all state-event transitions
