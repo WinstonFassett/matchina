@@ -115,13 +115,12 @@ describe("onLifecycle usage", () => {
             before: (event, next) => {
               console.log("* before", event.type);
               console.group();
-              next(event);
+              // next(event);
               console.groupEnd();
               console.log("* before done");
             },
-            after: (event, next) => {
+            after: (event) => {
               console.log("* after", event.type);
-              next(event);
             },
           },
         },
@@ -129,7 +128,7 @@ describe("onLifecycle usage", () => {
       Idle: {
         on: {
           execute: {
-            guard(change, next) {
+            guard(change) {
               console.log('GUARD', arguments)
               const {
                 type: event,
@@ -150,22 +149,19 @@ describe("onLifecycle usage", () => {
                 didGuardReject ||= ++count;
               }
               console.log("GUARD accept?", accept);
-              if (accept) {
-                next(change);
-              }
+              
               console.groupEnd();
-              // return accept;
+              return accept;
             },
-            before: (ev, next) => {
+            before: (ev) => {
               const { params: [amount] } = ev
               console.log("executing", amount);
               didBeforeExecute ||= ++count;
               // console.group()
-              next(ev);
               // console.groupEnd()
               // console.log('done executing')
             },
-            handle: (event, next) => {
+            handle: (event) => {
               const num = event.params[0];
               const accept = event.params[0] >= 100;
               if (!accept) {
@@ -180,7 +176,7 @@ describe("onLifecycle usage", () => {
                 .catch(machine.api.reject);
               didHandleExecute ||= ++count;
               console.log("handler accepting");
-              next(event);
+              return event
             },
           },
         },
@@ -198,12 +194,11 @@ describe("onLifecycle usage", () => {
         }),
         on: {
           resolve: {
-            before: (ev, next) => {
+            before: (ev) => {
               didBeforeResolve ||= ++count;
               console.log("In Pending before resolve");
               expect(ev.type).toBe("resolve");
               console.group();
-              next(ev);
               console.groupEnd();
               console.log("done before resolve");
             },

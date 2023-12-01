@@ -12,14 +12,14 @@ export type MethodOf<T, K extends keyof T> = T[K] extends (...args: any[]) => an
 export type Funcware<F extends (...params: any[]) => any> = (
   inner: F,
 ) => F;
-type Methodware<T, K extends keyof T, M extends MethodOf<T, K> = MethodOf<T, K>> = 
-  Funcware<M>
+// type Methodware<T, K extends keyof T, M extends MethodOf<T, K> = MethodOf<T, K>> = 
+//   Funcware<M>
   // (inner: MethodOf<T, K>) => MethodOf<T, K>;
 
 export function methodExtend<T, K extends keyof T>(
   target: T,
   methodName: K,
-  extend: Methodware<T, K>
+  extend: Funcware<MethodOf<T, K>>
 ) {
   const original = target[methodName] as MethodOf<T, K>;
   target[methodName] = extend((original??noop).bind(target));
@@ -59,7 +59,8 @@ export const methodTap =
   }
   
   
-  
+  type Guardware<F extends (...args: any) => any> = (test: (...params: Parameters<F>) => boolean) => (inner: F) => F;
+
   export function guardware<E>(
     fn: (ev: E) => boolean
   ) {

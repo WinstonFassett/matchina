@@ -1,18 +1,35 @@
 import { Middleware } from "../../extras/middleware";
-import { } from './types'
-import { AnyStatesFactory, FactoryMachine, FactoryMachineEvent, TransitionConfig as TransitionConfig, StateFromFactory } from './factory-machine'
-import { StateEventTransitionFuncs } from "./factory-event-api";
 import { FlatMemberUnion, Members, TUnionToIntersection } from "../../types";
+import { Abortware } from "./Abortware";
+import { StateEventTransitionFuncs } from "./factory-event-api";
+import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
+import { Funcware } from "./method";
+import { } from './types';
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
-export type TransitionHookExtensions<T> = {
-  guard: Middleware<T>;
-  before: Middleware<T>;
-  handle: Middleware<T>;
-  after: Middleware<T>;
+// export type Guard<F extends (...args: any) => any> = (...params: Parameters<F>) => boolean;
+type Guard<E> = (ev: E) => boolean;
+type Effect<E> = (ev: E) => void;
+type Handle<E> = (ev: E) => E | void;
+
+export type TransitionHookExtensions<E> = {
+  // before: Middleware<T>;
+  // send: Funcware<StateMachinery<E>['send']>
+  begin: Abortware<E>;
+  resolve: Funcware<(ev: Partial<E>) => E>;
+  transition: Abortware<E>;
+  guard: Guard<E>;  
+  handle: Handle<E>;
+  before: Abortware<E>;
+  effect: Effect<E>;
+  leave: Effect<E>;
+  enter: Effect<E>;
+  notify: Effect<E>;
+  after: Effect<E>;
+  end: Effect<E>
 };
 
 export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;

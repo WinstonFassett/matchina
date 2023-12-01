@@ -2,7 +2,7 @@ import { Middleware } from "../../extras/middleware";
 import { Func } from "../../types";
 import { Funcware } from "./method";
 
-type Abortware<E> = (event: E, abort: () => void) => void;
+export type Abortware<E> = (event: E, abort: () => void) => void;
 function abortableFuncware<E>(
   wares: Abortware<E>
 ): Funcware<Func<E, any>> {
