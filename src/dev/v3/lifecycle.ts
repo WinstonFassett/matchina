@@ -1,96 +1,9 @@
-import { Middleware } from "../../extras/middleware";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "../../extras/typeguards";
 import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
-import { StateEventHookConfig } from "./lifecycle-types";
-import { StateMachinery } from "./state-machine";
+import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
+import { methodExtend, whenware } from "./method";
+import { Disposer, disposers } from "./setup";
 import { ChangeCommandEvent } from "./types";
-
-const LIFECYCLE = [
-  "guard",
-  "handle",
-  "leave",
-  "before",
-  "enter",
-  "after",
-] as const;
-
-const CLEANUP_OFFSET = "_cleanup" as const;
-
-export function onPhase<E extends ChangeCommandEvent>(
-  machine: StateMachinery<E>,
-  eventKey: string,
-  listener: Middleware<E>,
-) {
-  // const subject = machine as any;
-  // if (!subject.$on) {
-  //   subject.$on = {};
-  //   // enhance machine
-  //   const unenhance = enhanceMachine(machine)((event, next) => {
-  //     let phaseEvent = event;
-  //     // console.log('onPhase')
-  //     // console.group()
-  //     for (const phase of LIFECYCLE) {
-  //       // console.log('PHASE', phase)
-  //       // console.group()
-  //       let ran = false;
-  //       dispatchware(subject, phase)(event, (result) => {
-  //         // console.log('inside dispatchware', phase, result.type)
-  //         phaseEvent = result as any;
-  //         ran = true;
-  //       });
-  //       // console.groupEnd()
-  //       // console.log('DONE PHASE', phase)
-  //       if (!ran) {
-  //         console.log("BREAKING at", phase);
-  //         phaseEvent = undefined as any;
-  //         break;
-  //       }
-  //     }
-  //     if (phaseEvent) {
-  //       // console.log('NEXT', phaseEvent.type)
-  //       // console.group()
-  //       next(phaseEvent);
-  //       // console.groupEnd()
-  //       // console.log('DONE NEXT')
-  //     }
-
-  //     // console.groupEnd()
-  //     // console.log('END onPhase')
-  //   });
-  //   subject.$on[CLEANUP_OFFSET] = [
-  //     () => {
-  //       console.log("UNENHANCING");
-  //       unenhance();
-  //     },
-  //   ];
-  // }
-  // if (!subject.$on[eventKey]) {
-  //   subject.$on[eventKey] = [];
-  // }
-  // subject.$on[eventKey].push(listener);
-  // // Cleanup function to remove the listener
-  // return function cleanup() {
-  //   const listeners = subject.$on[eventKey];
-  //   const index = listeners.indexOf(listener);
-  //   if (index !== -1) {
-  //     listeners.splice(index, 1);
-  //   }
-  //   // If no more listeners for this phase, clean up
-  //   if (listeners.length === 0) {
-  //     delete subject.$on[eventKey];
-  //     const cleanupPhase = eventKey + CLEANUP_OFFSET;
-  //     if (subject.$on[cleanupPhase]) {
-  //       subject.$on[cleanupPhase]();
-  //       delete subject.$on[cleanupPhase];
-  //     }
-  //   }
-  //   if (Object.keys(subject.$on).length === 1 && subject.$on[CLEANUP_OFFSET]) {
-  //     for (const fn of subject.$on[CLEANUP_OFFSET]) {
-  //       fn();
-  //     }
-  //     delete subject.$on;
-  //   }
-  // };
-}
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -99,63 +12,47 @@ export function onLifecycle<
   machine: FactoryMachine<States, Transitions>,
   config: StateEventHookConfig<Transitions, States>,
 ) {
-  // for (const stateKey in config) {
-  //   const fromStateConfig = config[stateKey];
-  //   if (!fromStateConfig) {
-  //     continue;
-  //   }
-  //   const { enter, leave } = fromStateConfig;
+  const d = [] as Disposer[]
 
-  //   if (enter) {
-  //     onPhase(
-  //       machine,
-  //       "enter",
-  //       hookware(enter as any, { to: stateKey as any }),
-  //     );
-  //   }
-  //   if (leave) {
-  //     onPhase(
-  //       machine,
-  //       "leave",
-  //       hookware(leave as any, { from: stateKey as any }),
-  //     );
-  //   }
-  //   const { on } = fromStateConfig;
-  //   if (on) {
-  //     for (const eventKey in on) {
-  //       const eventConfig = on[eventKey];
-  //       if (!eventConfig) {
-  //         continue;
-  //       }
-  //       for (const phase of ["guard", "handle", "before", "after"] as const) {
-  //         const hook = eventConfig[phase];
-  //         if (hook) {
-  //           onPhase(
-  //             machine,
-  //             phase,
-  //             hookware(hook as any, {
-  //               from: stateKey as any,
-  //               type: eventKey as any,
-  //             }),
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+  for (const stateKey in config) {
+    
+    const fromStateConfig = config[stateKey];
+    if (!fromStateConfig) {
+      continue;
+    }
+    useFilteredEventConfigs(machine, { from: stateKey}, ['enter', 'leave'], config, d)
+    
+    const { on } = fromStateConfig;
+    if (on) {
+      for (const eventKey in on) {
+        
+        const eventConfig = on[eventKey];
+        if (!eventConfig) {
+          continue;
+        }
+        useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, ['guard', 'handle', 'before', 'after'], eventConfig, d)        
+      
+      }
+    }
+    return disposers(d)
+  }
 }
 
-type HookFunc<E> = (ev: E) => void | E;
-
-// function hookware<E>(
-//   hook: HookFunc<E> | HookFunc<E>[],
-//   filter: KeyedChangeEventFilter<E> = {},
-// ): Middleware<E> {
-//   const runHook = Array.isArray(hook) ? composeMiddleware(...hook) : hook;
-
-//   // console.log('composing', hook.length)
-//   if (hook.length === 6) {
-//     throw new Error("wtf!!");
-//   }
-//   return when(filter)(runHook);
-// }
+function useFilteredEventConfigs<
+  Transitions extends TransitionConfig<States>,
+  States extends AnyStatesFactory,
+>(
+  machine: FactoryMachine<States, Transitions>,
+  filter: KeyedChangeEventFilter<ChangeCommandEvent>,
+  phases: (keyof StateEventHookConfig<Transitions, States>)[],
+  config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
+  d: Disposer[]
+) {  
+  for (const phase of phases) {
+    const hook = config[phase as any]
+    if (hook) {
+      d.push(methodExtend(machine, phase as any, whenware(ev => isKeyedChangeEvent(ev, filter), hook)))
+    }
+  }
+  return d
+}

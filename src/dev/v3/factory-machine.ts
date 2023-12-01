@@ -6,8 +6,7 @@ import { ResolveEvent } from "./transition-machine";
 import { State } from "./types";
 
 export function createFactoryMachine<
-  // S extends State,
-  SF extends AnyStatesFactory, //StatesFactory<S>,
+  SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF>,
 >(
@@ -27,7 +26,6 @@ export function createFactoryMachine<
 }
 
 export function nextFactoryState<
-  // S extends State,
   SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
 >(transitions: TC, states: SF, ev: ChangeCommandEvent) {
@@ -85,11 +83,6 @@ export type StateFromFactory<
 
 export type AnyStatesFactory = Record<string, (...params: any) => State>;
 
-// export type AnyStatesFactory<
-//   S extends State = State,
-//   F extends (...args: any[]) => State = (...args: any[]) => State
-// > = Record<string, (...params: any[]) => State>;
-
-export type StatesFactory<T, F extends (...args: any[]) => T> = {
+export type StatesFactory<T> = {
   [key: string]: (...args: any[]) => T;
 };

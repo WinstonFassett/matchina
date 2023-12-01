@@ -1,3 +1,4 @@
+import { Func } from "../../types";
 import { functionTap } from "./functionTap";
 
 export type HasMethod<K extends string> = {
@@ -47,3 +48,33 @@ export const methodTap =
   };
 
 
+
+
+  export function filtered<P extends any[], R, F extends Func<P, R>>(
+    fn: (...params: Parameters<F>) => boolean
+  ) {
+    return (inner: F) => (...params: Parameters<F>) => {
+      if (fn(...params)) return inner(...params)
+    }
+  }
+  
+  
+  
+  export function filtered2<E>(
+    fn: (ev: E) => boolean
+  ) {
+    return (inner: (ev: E) => any) => (ev: E) => {
+      if (fn(ev)) return inner(ev)
+    }
+  }
+  
+  
+  export const whenware = <F extends (...params: any[]) => any>(
+    test: (...params: Parameters<F>) => boolean,
+    ware: Funcware<F>
+  ) => {
+    return (inner: F) => (...params: Parameters<F>) => {
+      if (test(...params)) return ware(inner)(...params);
+      return inner(...params);
+    }
+  };

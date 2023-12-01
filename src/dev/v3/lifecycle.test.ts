@@ -1,10 +1,8 @@
-import { Middleware, listen, runMiddleware } from "../../extras/middleware";
-import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
-import { StateEventHookConfig } from "./lifecycle-types";
-import { describe, it, expect } from 'vitest'
-import { createPromiseMachine } from "./promise";
+import { describe, expect, it } from 'vitest';
+import { listen } from "../../extras/middleware";
 import { createApi, withApi } from "./factory-event-api";
 import { onLifecycle } from "./lifecycle";
+import { createPromiseMachine } from "./promise";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { condition, methodExtend, methodListenTo, methodUse } from "./method";
+import {  methodExtend, methodTap, methodUse } from "./method";
+import { condition } from "./condition";
 
 describe("methodExtend", () => {
   it("should extend the method correctly", () => {
@@ -73,12 +74,12 @@ describe("methodUse", () => {
   });
 });
 
-describe('methodListenTo', () => {
+describe('methodTap', () => {
   it('should listen to the method and call the provided function', () => {
     const obj = { method: (value: string) => value.toUpperCase() };
     const mockFn = vi.fn((value: string) => `Hello, ${value}`);
 
-    methodListenTo('method')(mockFn)(obj);
+    methodTap('method')(mockFn)(obj);
     const result = obj.method('world');
 
     expect(mockFn).toHaveBeenCalled();
