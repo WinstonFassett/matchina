@@ -13,15 +13,15 @@ export function onLifecycle<
   config: StateEventHookConfig<Transitions, States>,
 ) {
   const d = [] as Disposer[]
-
+  console.log('onLifecycle', config)
   for (const stateKey in config) {
-    
+    console.log({ stateKey })
     const fromStateConfig = config[stateKey];
     if (!fromStateConfig) {
       continue;
     }
-    useFilteredEventConfigs(machine, { from: stateKey}, ['enter', 'leave'], config, d)
-    
+    useFilteredEventConfigs(machine, { from: stateKey}, ['enter', 'leave'], fromStateConfig, d)
+    console.log('proceeding')
     const { on } = fromStateConfig;
     if (on) {
       for (const eventKey in on) {
@@ -34,8 +34,8 @@ export function onLifecycle<
       
       }
     }
-    return disposers(d)
   }
+  return disposers(d)
 }
 
 function useFilteredEventConfigs<
@@ -48,9 +48,11 @@ function useFilteredEventConfigs<
   config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
   d: Disposer[]
 ) {  
+  console.log('useFilteredEventConfigs', { phases, filter, config })
   for (const phase of phases) {
     const hook = config[phase as any]
     if (hook) {
+      console.log('hook', phase)
       d.push(methodExtend(machine, phase as any, whenware(ev => isKeyedChangeEvent(ev, filter), hook)))
     }
   }

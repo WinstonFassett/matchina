@@ -130,6 +130,7 @@ describe("onLifecycle usage", () => {
         on: {
           execute: {
             guard(change, next) {
+              console.log('GUARD', arguments)
               const {
                 type: event,
                 params,
