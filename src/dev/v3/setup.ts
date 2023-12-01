@@ -1,5 +1,5 @@
 export type Disposer = () => void;
-type Setup<T> = (target: T) => Disposer;
+export type Setup<T> = (target: T) => Disposer;
 
 /**
  * Run cleanup functions in reverse order

@@ -60,7 +60,7 @@ export const methodTap =
   
   
   
-  export function filtered2<E>(
+  export function guardware<E>(
     fn: (ev: E) => boolean
   ) {
     return (inner: (ev: E) => any) => (ev: E) => {
@@ -70,7 +70,7 @@ export const methodTap =
   
   
   export const whenware = <F extends (...params: any[]) => any>(
-    test: (...params: Parameters<F>) => boolean,
+    test: (...params: Parameters<F>) => boolean | void,
     ware: Funcware<F>
   ) => {
     return (inner: F) => (...params: Parameters<F>) => {
