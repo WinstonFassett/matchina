@@ -63,4 +63,7 @@ export interface State<K extends string = string, D = any> {
 export interface TransitionContext {
   transitions: TransitionRecord;
 }
+export type Guard<E> = (ev: E) => boolean;
+export type Effect<E> = (ev: E) => void;
+export type Handle<E> = (ev: E) => E | void;
 

@@ -4,19 +4,14 @@ import { Abortware } from "./Abortware";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
 import { Funcware } from "./method";
+import { Guard, Handle, Effect } from "./types";
 import { } from './types';
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
-// export type Guard<F extends (...args: any) => any> = (...params: Parameters<F>) => boolean;
-type Guard<E> = (ev: E) => boolean;
-type Effect<E> = (ev: E) => void;
-type Handle<E> = (ev: E) => E | void;
-
 export type TransitionHookExtensions<E> = {
-  // send: Funcware<StateMachinery<E>['send']>
   begin: Abortware<E>;
   resolve: Funcware<(ev: Partial<E>) => E>;
   transition: Abortware<E>;
