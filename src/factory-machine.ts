@@ -81,7 +81,7 @@ export type StateFromFactory<
   StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
 
-export type AnyStatesFactory = Record<string, (...params: any) => State>;
+export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
 
 export type StatesFactory<T> = {
   [key: string]: (...args: any[]) => T;
