@@ -1,6 +1,6 @@
-import { HasMethod } from "./methodExtend";
-import { MethodOf } from "./methodExtend";
-import { Funcware } from "./Funcware";
+import { HasMethod } from "../methodware/extend-method";
+import { MethodOf } from "../methodware/extend-method";
+import { Funcware } from "./funcware";
 
 
 export function functionTap<K extends string, T extends HasMethod<K>>(fn: T[K]): Funcware<MethodOf<HasMethod<K>, K>> {

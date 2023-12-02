@@ -1,8 +1,8 @@
-import { Funcware } from "./Funcware";
+import { Funcware } from "./funcware";
 
 
 
-export const whenware = <F extends (...params: any[]) => any>(
+export const iff = <F extends (...params: any[]) => any>(
   test: (...params: Parameters<F>) => boolean | void,
   ware: Funcware<F>
 ) => {

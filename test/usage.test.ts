@@ -1,8 +1,8 @@
-import { defineStates } from "./states";
-import { createFactoryMachine } from "./factory-machine";
-import { guard, enter, leave } from "./machine-setup";
-import { createSetup, setup } from "./setup";
-import { createStateMachine } from "./state-machine";
+import { defineStates } from "../src/states";
+import { createFactoryMachine } from "../src/factory-machine";
+import { guard, enter, leave } from "../src/machine-setup";
+import { createSetup, setup } from "../src/ext/setup";
+import { createStateMachine } from "../src/state-machine";
 import { expect, describe, it } from "vitest";
 
 describe("setup", () => {

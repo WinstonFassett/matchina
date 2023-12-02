@@ -1,7 +1,7 @@
 import { States, defineStates } from "./states";
 import { after } from "./machine-setup";
 import { createFactoryMachine } from "./factory-machine";
-import { setup } from "./setup";
+import { setup } from "./ext/setup";
 
 export type PromiseStates<
   F extends PromiseCallback,

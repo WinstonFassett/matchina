@@ -1,7 +1,7 @@
 import { Middleware } from "./dev/v1/middleware";
 import { FlatMemberUnion, Members, TUnionToIntersection } from "./utility-types";
-import { Funcware } from "./ext/Funcware";
-import { AbortableEventware } from "./ext/abortableEventware";
+import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventware } from "./ext/funcware/abortable";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
 import { Guard, Handle, Effect } from "./types";

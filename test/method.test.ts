@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { condition, methodExtend, methodTap, methodUse } from "../src/ext";
+import { condition, extendMethod, tapMethod, methodExtender } from "../src/ext";
 
 
 describe("methodExtend", () => {
@@ -8,7 +8,7 @@ describe("methodExtend", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    methodExtend(obj, "method", (inner) => {
+    extendMethod(obj, "method", (inner) => {
       return (value: string) => {
         const result = inner(value);
         return result + "!";
@@ -23,7 +23,7 @@ describe("methodExtend", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const restore = methodExtend(obj, "method", (inner) => {
+    const restore = extendMethod(obj, "method", (inner) => {
       return (value: string) => {
         const result = inner(value);
         return result + "!";
@@ -42,7 +42,7 @@ describe("methodUse", () => {
       method: (value: string) => value.toUpperCase(),
     };
     
-    const use = methodUse("method");
+    const use = methodExtender("method");
 
     use((inner) => {
       return (value: string) => {
@@ -59,7 +59,7 @@ describe("methodUse", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const use = methodUse("method");
+    const use = methodExtender("method");
 
     const restore = use((inner) => {
       return (value: string) => {
@@ -79,7 +79,7 @@ describe('methodTap', () => {
     const obj = { method: (value: string) => value.toUpperCase() };
     const mockFn = vi.fn((value: string) => `Hello, ${value}`);
 
-    methodTap('method')(mockFn)(obj);
+    tapMethod('method')(mockFn)(obj);
     const result = obj.method('world');
 
     expect(mockFn).toHaveBeenCalled();

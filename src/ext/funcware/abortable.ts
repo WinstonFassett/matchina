@@ -1,5 +1,5 @@
-import { Func } from "../utility-types";
-import { Funcware } from "./Funcware";
+import { Func } from "../../utility-types";
+import { Funcware } from "./funcware";
 
 // export type Abortware<F extends (...args: any[]) => any> = (params: Parameters<F>, abort: () => void) => void;
 

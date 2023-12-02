@@ -1,28 +1,28 @@
-import { abortableEventware } from "./ext/abortableEventware";
-import { methodUse } from "./ext/methodUse";
-import { methodTap } from "./ext/methodTap";
+import { abortableEventware } from "./ext/funcware/abortable";
+import { methodExtender } from "./ext/methodware/method-extender";
+import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
 //#region interceptors
-export const send = methodUse("send");
-export const before = methodUse("before");
-export const transition = methodUse("transition");
-export const resolve = methodUse("resolve");
+export const send = methodExtender("send");
+export const before = methodExtender("before");
+export const transition = methodExtender("transition");
+export const resolve = methodExtender("resolve");
 export const guard = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["guard"],
-) => methodUse("guard")<StateMachinery<E>>((inner) => combineGuards<E>(inner, fn));
+) => methodExtender("guard")<StateMachinery<E>>((inner) => combineGuards<E>(inner, fn));
 export const handle = <E extends ChangeCommandEvent>(
   outer: StateMachinery<E>["handle"],
-) => methodUse("handle")<StateMachinery<E>>((inner) => composeHandlers<E>(outer, inner));
+) => methodExtender("handle")<StateMachinery<E>>((inner) => composeHandlers<E>(outer, inner));
 //#endregion
 
 //#region effects
-export const effect = methodTap("effect");
-export const leave = methodTap("leave");
-export const after = methodTap("after");
-export const enter = methodTap("enter");
-export const notify = methodTap("notify");
+export const effect = tapMethod("effect");
+export const leave = tapMethod("leave");
+export const after = tapMethod("after");
+export const enter = tapMethod("enter");
+export const notify = tapMethod("notify");
 
 const effectHook = name => handler => inner => (...args) => {
   console.log('EFFECT', name);

@@ -4,7 +4,7 @@ import {
   hasKeyValue,
   isChangeTypeToFrom,
   isKeyedChangeEvent,
-} from "../extras/typeguards";
+} from "../src/typeguards";
 
 describe("typeguards", () => {
   describe("isKeyedChangeEvent", () => {

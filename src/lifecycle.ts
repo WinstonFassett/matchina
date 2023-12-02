@@ -1,8 +1,8 @@
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
-import { methodExtend, whenware } from "./ext";
-import { Disposer, disposers } from "./setup";
+import { extendMethod, iff } from "./ext";
+import { Disposer, disposers } from "./ext/setup";
 import { ChangeCommandEvent } from "./types";
 import { Hooks } from './machine-setup'
 
@@ -58,10 +58,10 @@ function useFilteredEventConfigs<
       const hookHandler = Hooks[phase as any]
       console.log('add hook', phase, filter)
       d.push(
-        methodExtend(
+        extendMethod(
           machine,
           phase as any,
-          whenware(
+          iff(
             (ev) => isKeyedChangeEvent(ev, filter), 
             hookHandler?.(hook) ?? hook
           ),
