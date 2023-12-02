@@ -11,7 +11,6 @@ import { ChangeCommandEvent } from "./types";
 
 //#region interceptors
 export const send = methodUse("send");
-export const begin = methodUse("begin");// (fn)(target)
 export const before = methodUse("before");
 export const transition = methodUse("transition");
 export const resolve = methodUse("resolve");
@@ -29,36 +28,10 @@ export const leave = methodTap("exit");
 export const after = methodTap("after");
 export const enter = methodTap("enter");
 export const notify = methodTap("notify");
-export const end = methodTap("end");
-
-// export const abortableEventware2 = 
-// (handlerMachineSetup, name) =>
-// <E>(
-//   wares: AbortableEventware<E>
-// ):(<T>(target: T) => Funcware<Func<E, any>>) => {
-//   console.log('bind abortableFuncware')
-
-//   return (target) => {    
-//     return handlerMachineSetup(
-//       (inner) => {
-//         // console.log("abortableFuncware inner", { inner });
-//         return (ev) => {
-//           // console.log("abortableFuncware inner", { inner, ev });
-//           let aborted = false;
-//           wares(ev, () => {
-//             aborted = true;
-//           });
-//           if (!aborted) return inner(ev);
-//         };
-//       }
-//     )
-//   }
-// }
 
 
 export const Hooks = {
   // send,
-  begin: abortware => abortableEventware(abortware),
   before: abortware => abortableEventware(abortware),  //abortableEventware2(before, 'before'),
   transition,
   resolve,
@@ -69,7 +42,6 @@ export const Hooks = {
   after,
   enter,
   notify,
-  end,
 };
 
 

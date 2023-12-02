@@ -11,6 +11,20 @@ import {
   Updater,
 } from "./types";
 
+/*
+Flow:
+send
+  resolve
+  transition
+    guard
+    handle
+    update
+    effect (move out of update into transition)
+      exit
+      enter    
+    notify
+*/
+
 export function transitionMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   lastChange: E,
@@ -18,56 +32,45 @@ export function transitionMachine<E extends ChangeCommandEvent>(
   // let lastChange = state;
   const machine = {
     transitions,
-
     getChange() {
       return lastChange;
     },
-
     getState() {
       return lastChange.to;
     },
-
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
       if (to) return { ...ev, to } as E;
     },
-
     guard(ev: E) {
       return true;
     },
-    /** begin (guard, before), handle, update (effect(exit, enter, after, notify)), end */
     transition(ev: E) {
-      let change = machine.begin(ev)
-      if (!change) return;      
-      change = machine.handle(change);
-      if (change) (machine as unknown as Updater<E>).update(change);
-      machine.end(ev)
+      if (!machine.guard(ev)) return;      
+      let change = machine.handle(ev); // process change      
+      if (!change) return;    
+      change = machine.before(change);
+      if (!change) return
+      machine.update(change); 
+      machine.effect(change) // internal effects
+      machine.notify(ev); // notify consumers
+      machine.after(change)      
     },
-    begin (ev: E) {
-      return machine.guard(ev) ? machine.before(ev) : undefined;      
+    before(ev: E) { return ev },
+    update(ev: E) {
+      lastChange = ev;      
     },
-    end(ev: E) {},
-    /** before, apply, effect */
-    update(ev: E, runEffects = true) {
-      lastChange = ev;
-      if(runEffects) machine.effect(ev);
-    },
-
     handle(ev: E) {
       return ev;
     },
-
     effect(ev: E) {
       machine.exit(ev); // left previous
       machine.enter(ev); // entered next
-      machine.after(ev) // did transition
-      machine.notify(ev); // notify consumers
     },
-    before(ev: E) { return ev as E|undefined },
-    after(ev: E) {},
     exit(ev: E) {},
     enter(ev: E) {},
     notify(ev: E) {},
+    after(ev: E) {},
   } as TransitionContext &
     Resolver<E> &
     EventLifecycle<E> &

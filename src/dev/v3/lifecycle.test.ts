@@ -157,6 +157,7 @@ describe("onLifecycle usage", () => {
             },
             before: (ev, ...rest) => {
               console.log("BEFORE", ev.type)
+              expect(ev.type).toBe("execute");
               const { params: [amount] } = ev
               console.log("executing", amount);
               didBeforeExecute ||= ++count;

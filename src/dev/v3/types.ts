@@ -26,7 +26,7 @@ export type Commander<T, P extends any[]> = {
 };
 
 export interface Handler<T> {
-  handle: (value: T) => T;
+  handle: (value: T) => T | undefined;
 }
 
 export interface Effecter<T> {
@@ -46,7 +46,6 @@ export interface Transitioner<T> {
 }
 
 export interface EventLifecycle<T> {
-  begin: (value: T) => T | undefined;
   before: (value: T) => T | undefined;
   exit: (value: T) => void;
   enter: (value: T) => void;
