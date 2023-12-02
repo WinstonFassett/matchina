@@ -281,8 +281,8 @@ describe("onLifecycle usage", () => {
       didGuardAccept,
       didHandlerReject,
       didHandleExecute,
-      didLeaveIdle,
       didBeforeExecute,
+      didLeaveIdle,
       didEnterPending,
       didBeforeResolve,
       didAfterResolve,
@@ -293,8 +293,8 @@ describe("onLifecycle usage", () => {
     expect(didGuardAccept).toBe(2);
     expect(didHandlerReject).toBe(3);
     expect(didHandleExecute).toBe(4);
-    expect(didLeaveIdle).toBe(5);
-    expect(didBeforeExecute).toBe(6);
+    expect(didBeforeExecute).toBe(5);
+    expect(didLeaveIdle).toBe(6);
     expect(didEnterPending).toBe(7);
     expect(didBeforeResolve).toBe(8);
     expect(didAfterResolve).toBe(9);
