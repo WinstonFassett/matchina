@@ -5,29 +5,8 @@
     "import": "{ matchboxFactory }"
   },
   {
-    "name": "wrap-method",
-    "path": "dist/index.mjs",
-    "import": "{ wrapMethod }"
-  },
-  {
-    "name": "methodware",
-    "path": "dist/index.mjs",
-    "import": "{ methodwareEnhancer }"
-  },
-  {
-    "name": "middleware",
-    "path": "src/extras/middleware/middleware.ts",
-    "import": "{ runMiddleware }"
-  },
-  {
-    "name": "when and listen",
-    "path": "src/extras/middleware/index.ts",
-    "import": "{ when, listen }"
-  },
-  {
-    "name": "nanosubscriber",
-    "path": "dist/index.mjs",
-    "import": "{ nanosubscriber }"
+    "name": "transition-machine",
+    "path": "src/transition-machine.ts"
   },
   {
     "name": "states",
@@ -36,119 +15,54 @@
   },
   {
     "name": "machine",
-    "path": "dist/index.mjs",
-    "import": "{ defineMachine }"
+    "path": "src/state-machine.ts",
+    "import": "*"
   },
   {
-    "name": "states+machine",
-    "path": "dist/index.mjs",
-    "import": "{ defineStates, defineMachine }"
+    "name": "factory-machine",
+    "path": "src/factory-machine.ts",
+    "import": "*"
   },
   {
-    "name": "on-update",
-    "path": "dist/index.mjs",
-    "import": "{ onUpdate }"
+    "name": "typeguards",
+    "path": "src/typeguards.ts",
+    "import": "{ isKeyedChangeEvent }"
   },
   {
-    "name": "on-lifecycle",
-    "path": "dist/index.mjs",
-    "import": "{ onLifecycle }"
-  },
-  {
-    "name": "with-subscribe",
-    "path": "dist/index.mjs",
-    "import": "{ withSubscribe }"
-  },
-  {
-    "name": "with-events",
-    "path": "dist/index.mjs",
-    "import": "{ withEvents }"
+    "name": "events-api",
+    "path": "src/factory-event-api.ts",
+    "import": "*"
   },
   {
     "name": "promise",
-    "path": "dist/index.mjs",
-    "import": "{ createPromiseMachine }"
+    "path": "src/promise.ts"
   },
   {
-    "name": "react-dist",
-    "path": "dist/extras/react.mjs",
-    "import": "{ useMachine }",
-    "ignore": ["react"]
+    "name": "ext",
+    "path": "src/ext/index.ts",
+    "import": "*"
   },
   {
-    "name": "effects",
-    "path": "dist/index.mjs",
-    "import": "{ defineEffects, bindEffects }"
+    "name": "machine setup",
+    "path": "src/machine-setup.ts"
   },
   {
-    "name": "zen",
-    "path": "dist/index.mjs",
-    "import": "{ makeZen }"
-  },
-  {
-    "name": "machine promise lifecycle zen",
-    "path": "dist/index.mjs",
-    "import": "{ createPromiseMachine, onLifecycle, makeZen }"
+    "name": "lifecycle",
+    "path": "src/lifecycle.ts",
+    "import": "*"
   },
   {
     "name": "full",
     "path": "dist/index.mjs"
   },
-  {
-    "name": "v2 usage",
-    "path": "src/dev/v2/machine-v2-usage.ts"
-  },  
-  {
-    "name": "machine-v2",
-    "path": "src/dev/v2/machine-v2.ts"
+    {
+    "name": "pure",
+    "path": "src/pure-state-machine.ts"
   },
   {
-    "name": "lifecycle-v2",
-    "path": "src/dev/v2/on-lifecycle-v2.ts"
-  },
-  {
-    "name": "on-phase",
-    "path": "src/dev/v2/on-phase.ts"
-  },
-  {
-    "name": "hookware",
-    "path": "src/dev/v2/hookware.ts"
-  },
-  {
-    "name": "promise-v2",
-    "path": "src/dev/v2/promise-v2.ts"
-  },
-  {
-    "name": "v3 transitionMachine",
-    "path": "src/dev/v3/transition-machine.ts"
-  },
-  {
-    "name": "v3 method",
-    "path": "src/dev/v3/method.ts"
-  },
-  {
-    "name": "v3 factory",
-    "path": "src/dev/v3/factory-machine.ts"
-  },
-  {
-    "name": "v3-machinery",
-    "path": "src/dev/v3/state-machine.ts"
-  },
-  {
-    "name": "v3-machine setup",
-    "path": "src/./machine-setup.ts"
-  },
-  {
-    "name": "v3-usage",
-    "path": "src/dev/v3/usage.ts"
-  },
-  {
-    "name": "v3-pure",
-    "path": "src/dev/v3/pure-state-machine.ts"
-  },
-  {
-    "name": "v3-listenTo",
-    "path": "src/dev/v3/registrants.ts"
+    "name": "react-dist",
+    "path": "dist/integrations/react.mjs",
+    "import": "{ useMachine }",
+    "ignore": ["react"]
   }
-  
 ]

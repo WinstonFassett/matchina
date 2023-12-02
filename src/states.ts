@@ -1,6 +1,6 @@
 import { matchboxFactory, UnionSpec, MemberExtensions } from "./matchbox";
 
-export type State<Tag extends keyof Specs, Specs> = {
+export type FactoryState<Tag extends keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;
 } & MemberExtensions<Specs, "key">;
@@ -12,8 +12,8 @@ export type States<Specs extends UnionSpec> = {
 type CreateState<Specs, Tag extends keyof Specs> = Specs[Tag] extends (
   ...args: infer P
 ) => infer R
-  ? (...args: P) => State<Tag, Specs>
-  : () => State<Tag, Specs>;
+  ? (...args: P) => FactoryState<Tag, Specs>
+  : () => FactoryState<Tag, Specs>;
 
 type StateData<Spec> = Spec extends (...args: any[]) => any
   ? ReturnType<Spec>

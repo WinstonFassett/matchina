@@ -2,7 +2,7 @@ import {
   matchboxFactory,
   UnionSpec,
   MemberExtensions,
-} from "../../matchboxatchbox";
+} from "../../matchbox";
 
 export type State<Tag extends keyof Specs, Specs> = {
   key: Tag;

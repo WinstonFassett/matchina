@@ -1,7 +1,5 @@
 import { States, defineStates } from "./states";
-import { after } from "./machine-setup";
 import { createFactoryMachine } from "./factory-machine";
-import { setup } from "./ext/setup";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;
@@ -33,30 +31,22 @@ export function createPromiseMachine<F extends PromiseCallback>(
   makePromise?: (...args: Parameters<F>) => ReturnType<F>,
 ) {
   const states = PromiseStates as unknown as PromiseStates<F>;
-  // const states = defineStates({
-  //   Idle: undefined,
-  //   Pending: (...params: Parameters<F>) => params,
-  //   Rejected: (error: any) => error,
-  //   Resolved: (data: any) => data,
-  // });
   const machine = createFactoryMachine(
     states,
     PromiseTransitions,
     states.Idle(),
   );
   if (makePromise) {
-    setup(machine)(
-      after((ev) => {
-        if (ev.type === "execute") {
-          const promise = makePromise(...(ev.params as Parameters<F>));
-          promiseMachine.promise = promise;
-          promiseMachine.done = promise
-            .then((res) => promiseMachine.send("resolve", res))
-            .catch((error) => promiseMachine.send("reject", error));
-        }
-        return true;
-      }),
-    );
+    machine.leave = (ev) => {
+      if (ev.type === "execute") {
+        const promise = makePromise(...(ev.params as Parameters<F>));
+        promiseMachine.promise = promise;
+        promiseMachine.done = promise
+          .then((res) => promiseMachine.send("resolve", res))
+          .catch((error) => promiseMachine.send("reject", error));
+      }
+      return true;
+    }    
   }
   const promiseMachine = Object.assign(machine, {
     promise: undefined as undefined | ReturnType<F>,
