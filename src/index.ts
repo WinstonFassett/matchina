@@ -9,3 +9,4 @@ export * from "./factory-event-api";
 export * from "./matchbox";
 export * from "./states";
 export * from './machine-setup'
+export * from './lifecycle'

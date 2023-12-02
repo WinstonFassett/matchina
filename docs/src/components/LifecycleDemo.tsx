@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   createPromiseMachine,
-  withSubscribe,
-  withEvents,
+  withApi,
   onLifecycle,
 } from "matchina";
 import { useMachine } from "matchina/extras/react";
@@ -16,8 +15,8 @@ const slowlyAddTwoNumbers = (
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 createPromiseMachine();
 
-const machine = withEvents(
-  withSubscribe(createPromiseMachine(slowlyAddTwoNumbers)),
+const machine = withApi(
+  createPromiseMachine(slowlyAddTwoNumbers)
 );
 
 export function LifecycleDemo({}) {
@@ -94,7 +93,7 @@ export function LifecycleDemo({}) {
               or{" "}
               <button
                 onClick={() =>
-                  machine.event.execute(2, 2, 2000, "Test two plus two")
+                  machine.api.execute(2, 2, 2000, "Test two plus two")
                 }
               >
                 Add 2+2
@@ -108,7 +107,7 @@ export function LifecycleDemo({}) {
               {!!name && `(aka ${name})`}
               <button
                 onClick={() =>
-                  machine.event.reject(new Error("User rejected!"))
+                  machine.api.reject(new Error("User rejected!"))
                 }
               >
                 REJECT!
