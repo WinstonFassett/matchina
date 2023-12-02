@@ -74,8 +74,9 @@ type On<
   StateKey extends keyof States
     ? // specific state
       {
-        [Event in keyof Transitions[StateKey] | "*"]?: // specific event
-        Event extends FlatEventKeys<Transitions, States>
+        [Event in
+          | keyof Transitions[StateKey]
+          | "*"]?: Event extends FlatEventKeys<Transitions, States> // specific event
           ? ReturnType<
               StateEventTransitionFuncs<Transitions, States>[StateKey][Event]
             > extends StateFromFactory<States>
