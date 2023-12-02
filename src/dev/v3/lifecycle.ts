@@ -21,9 +21,11 @@ export function onLifecycle<
     if (!fromStateConfig) {
       continue;
     }
-    const { on, ...stateConfig } = fromStateConfig;
-    useFilteredEventConfigs(machine, { _:'state', from: stateKey}, stateConfig, d)
-    
+    const { on, enter, leave } = fromStateConfig;
+    console.log({ enter, leave })
+    // useFilteredEventConfigs(machine, { _:'state', from: stateKey}, stateConfig, d)
+    if (enter) { useFilteredEventConfigs(machine, { to: stateKey}, {enter}, d) } 
+    if (leave) { useFilteredEventConfigs(machine, { from: stateKey}, {leave}, d) }  
     if (on) {
       for (const onKey in on) {
     
@@ -49,12 +51,12 @@ function useFilteredEventConfigs<
   config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
   d: Disposer[]
 ) {  
-  console.log('useFilteredEventConfigs', { filter })
+  // console.log('useFilteredEventConfigs', { filter })
   for (const phase in config) {
     const hook = config[phase as any]
     if (hook) {
       const hookHandler = Hooks[phase as any]
-      console.log('add hook', phase, hookHandler)
+      console.log('add hook', phase, filter)
       d.push(
         methodExtend(
           machine,

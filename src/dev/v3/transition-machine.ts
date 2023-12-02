@@ -40,11 +40,11 @@ export function transitionMachine<E extends ChangeCommandEvent>(
       if (to) return { ...ev, to } as E;
     },
     guard: (ev: E) => true,
-    transition(ev: E) {
-      if (!machine.guard(ev)) return;      
-      const change = machine.handle(ev); // process change      
-      if (!change) return;    
-      const update = machine.before(change); // prepare update
+    transition(change: E) {
+      if (!machine.guard(change)) return;      
+      let update = machine.handle(change); // process change      
+      if (!update) return;    
+      update = machine.before(update); // prepare update
       if (!update) return
       machine.update(update); // apply update
       machine.effect(update) // internal effects
@@ -52,14 +52,14 @@ export function transitionMachine<E extends ChangeCommandEvent>(
       machine.after(update) // cleanup
     },
     handle: (change: E) => change,
-    before: (change: E) => change,
-    update: (change: E) => { lastChange = change },
+    before: (update: E) => update,
+    update: (update: E) => { lastChange = update },
     effect(ev: E) {
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
     leave(ev: E) {
-      console.log('exited', ev.from.key)
+      console.log('left', ev.from.key)
     },
     enter(ev: E) {
       console.log('entered', ev.to.key)

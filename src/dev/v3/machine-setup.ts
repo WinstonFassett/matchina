@@ -27,7 +27,7 @@ export const enter = methodTap("enter");
 export const notify = methodTap("notify");
 
 const effectHook = name => handler => inner => (...args) => {
-  console.log('LEAVE HOOK');
+  console.log('EFFECT', name);
   inner(...args); handler(...args);
 };
 //#endregion

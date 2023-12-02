@@ -99,10 +99,10 @@ describe("onLifecycle usage", () => {
 
     const removeLifecycle = onLifecycle(machine, {
       Rejected: {
-        enter(change, next) {
+        enter(change) {
           console.log("something Rejected from", change.from.key);
           didEnterRejected ||= ++count;
-          next(change);
+          // next(change);
         },
       },
       "*": {
