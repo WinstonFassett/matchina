@@ -1,4 +1,4 @@
-import { Middleware } from "../../extras/middleware";
+import { Middleware } from "../v1/extras/middleware";
 import {
   AnyStatesFactory,
   EventExitStatesIntersection,

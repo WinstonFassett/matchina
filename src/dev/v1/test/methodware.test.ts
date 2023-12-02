@@ -9,8 +9,8 @@ import {
   methodwareEnhancer,
   timingEnhancer,
   wrapMethod,
-} from "../src/extras/methodware";
-import { Func } from "../src/types";
+} from "../extras/methodware";
+import { Func } from "../types";
 
 const doubler = (original: Func, ...args: any[]) => {
   original(...args);

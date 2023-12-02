@@ -1,8 +1,8 @@
-import { defineMachine } from "../src/machine";
-import { createPromiseMachine } from "../src/extras/promise";
-import { defineStates as states } from "../src/states";
-import { delayer } from "../src/extras/delay";
-import { withEvents } from "../src/extras/with-events";
+import { defineMachine } from "../machine";
+import { createPromiseMachine } from "../extras/promise";
+import { defineStates as states } from "../states";
+import { delayer } from "../extras/delay";
+import { withEvents } from "../extras/with-events";
 
 const promise = (fn: any) => ({ machine: createPromiseMachine(fn) });
 const submachine = (statesConfig: any, transitionsConfig: any) => ({

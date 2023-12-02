@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { composeMiddleware } from "../src/extras/middleware/middleware";
+import { composeMiddleware } from "../middleware/middleware";
 
 // Define a mock middleware for testing
 function mockMiddleware<E>(event: E, next: (nextEvent: E) => void) {

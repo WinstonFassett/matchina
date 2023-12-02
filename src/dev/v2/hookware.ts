@@ -1,6 +1,5 @@
-import { Middleware, composeMiddleware } from "../../extras/middleware";
-import { when } from "../../extras/middleware/when";
-import { KeyedChangeEventFilter } from "../../extras/typeguards";
+import { Middleware, composeMiddleware, when } from "../v1";
+import { KeyedChangeEventFilter } from "../v1/extras/typeguards";
 
 type HookFunc<E> = (ev: E) => void | E;
 export function hookware<E>(

@@ -1,4 +1,4 @@
-import { Middleware } from "../../../extras/middleware";
+import { Middleware } from "../../v1/middleware";
 
 export type Funcware<P extends any[], R> = Middleware<[params: P, result: R]>
 

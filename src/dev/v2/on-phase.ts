@@ -1,7 +1,7 @@
-import { Middleware, runMiddleware } from "../../extras/middleware";
 import { Phase, PhaseInternals, Phases } from "./machine-types-v2";
 import { withHooks } from "./withHooks";
 import { StateChangeMachineInternals } from "./machine-types-v2";
+import { Middleware, runMiddleware } from "../v1";
 
 export function enhancePhase<E>(
   machineInternals: StateChangeMachineInternals<any, any, any>,

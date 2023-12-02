@@ -3,10 +3,10 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
-import { when } from "./middleware/when";
-import { Middleware } from "./middleware";
-import { enhanceMachine } from "./middleware/enhance-machine";
-import { composeMiddleware, runMiddleware } from "./middleware/middleware";
+import { when } from "../middleware/when";
+import { Middleware } from "../middleware";
+import { enhanceMachine } from "../middleware/enhance-machine";
+import { composeMiddleware, runMiddleware } from "../middleware/middleware";
 import { StateEventHookConfig } from "./lifecycle-types";
 import { KeyedChangeEventFilter } from "./typeguards";
 

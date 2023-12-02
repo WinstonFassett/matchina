@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listen } from "../../extras/middleware";
+import { listen } from "../v1/middleware";
 import { createApi, withApi } from "./factory-event-api";
 import { onLifecycle } from "./lifecycle";
 import { createPromiseMachine } from "./promise";

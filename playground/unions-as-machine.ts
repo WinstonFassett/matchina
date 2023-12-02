@@ -1,4 +1,4 @@
-import { UnionSpec, MemberOf, matchboxFactory } from "../src/matchbox";
+import { UnionSpec, MemberOf, matchboxFactory } from "../matchbox";
 // ---cut---
 const states = matchboxFactory({
   Idle: () => ({}),

@@ -1,5 +1,5 @@
-import { Middleware } from "../../extras/middleware";
-import { Func } from "../../types";
+import { Middleware } from "../v1/middleware";
+import { Func } from "../v1/types";
 import { HasMethod, Funcware, MethodOf } from "./method";
 
 

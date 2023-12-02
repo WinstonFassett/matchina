@@ -1,7 +1,7 @@
-import { delayed } from "../src/extras/delay";
-import { onLifecycle } from "../src/extras/lifecycle";
-import { createPromiseMachine } from "../src/extras/promise";
-import { withEvents } from "../src/extras/with-events";
+import { delayed } from "../extras/delay";
+import { onLifecycle } from "../extras/lifecycle";
+import { createPromiseMachine } from "../extras/promise";
+import { withEvents } from "../extras/with-events";
 
 async function promiseLifecycleUsage () {
   // promise machine WITHOUT a promise to drive it

@@ -1,4 +1,4 @@
-import { Middleware } from "./dev/v1/middleware";
+import { Middleware } from "./middleware";
 import {
   ChangeEventMatchers,
   StateEventTransitionFuncs,
@@ -9,7 +9,7 @@ import {
   StateMachineEvent,
   StatesFactory,
   TransitionConfig,
-} from "./dev/v1/machine-types";
+} from "./machine-types";
 import { RemainingProperties } from "./types";
 export const InitializeMachine = "__init";
 

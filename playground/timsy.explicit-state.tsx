@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { StateFromFactory } from "../src";
-import { defineStates } from "../src/states";
+import { StateFromFactory } from "..";
+import { defineStates } from "../states";
 // ---cut---
 const states = defineStates({
   NOT_LOADED: () => ({}),

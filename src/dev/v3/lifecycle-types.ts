@@ -1,5 +1,5 @@
-import { Middleware } from "../../extras/middleware";
-import { FlatMemberUnion, Members, TUnionToIntersection } from "../../types";
+import { Middleware } from "../v1/middleware";
+import { FlatMemberUnion, Members, TUnionToIntersection } from "../v1/types";
 import { AbortableEventware } from "./Abortware";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';

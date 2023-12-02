@@ -1,4 +1,4 @@
-import { hasKeyValue, ChangeEvent, isKeyedChangeEvent, isChangeTypeToFrom, asChangeTypeToFrom } from "../src/extras/typeguards";
+import { hasKeyValue, ChangeEvent, isKeyedChangeEvent, isChangeTypeToFrom, asChangeTypeToFrom } from "../extras/typeguards";
 
 export {}
 

@@ -1,5 +1,5 @@
-import { defineMachine, defineStates } from "../src";
-import { withEvents } from "../src/extras/with-events";
+import { defineMachine, defineStates } from "..";
+import { withEvents } from "../extras/with-events";
 // ---cut---
 const states = defineStates({
   IDLE: () => ({}),

@@ -1,4 +1,4 @@
-import { withEvents } from "../extras/with-events";
+import { withEvents } from "../v1/extras/with-events";
 
 export {};
 

@@ -1,5 +1,5 @@
-import { UpdateEnhancer } from "../src";
-import { Func, RemainingProperties, Simplify } from "../src/types";
+import { UpdateEnhancer } from "..";
+import { Func, RemainingProperties, Simplify } from "../types";
 import { Extend, ExtendBuilder } from "./extender.usage";
 
 export {};
