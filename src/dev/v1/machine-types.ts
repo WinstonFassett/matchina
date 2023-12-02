@@ -1,15 +1,12 @@
 import { FuncEnhancer } from "./extras/methodware";
 import { Middleware } from "./middleware";
-import {
-  ChangeEvent,
-  CreateFunc,
-  SwapFunc,
-} from "./types";
+import { ChangeEvent, CreateFunc, SwapFunc } from "./types";
 import {
   FlatMemberUnion,
   FlatMemberUnionToIntersection,
   Func,
-  Members, TUnionToIntersection
+  Members,
+  TUnionToIntersection,
 } from "../../utility-types";
 
 // #region Transition Config
@@ -193,18 +190,18 @@ export type StateEventTransitionFunc<
         ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
       ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
     : Transitions[TransitionStateKey][EventKey] extends (
-          ...args: infer A
-        ) => (...innerArgs: any[]) => infer R
-      ? (...args: A) => R
-      : Transitions[TransitionStateKey][EventKey] extends CreateFunc<
-            StateFromFactory<States>
-          >
-        ? (
-            ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
-          ) => StateFromFactory<States> & {
-            key: Transitions[TransitionStateKey][EventKey];
-          }
-        : never;
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer R
+    ? (...args: A) => R
+    : Transitions[TransitionStateKey][EventKey] extends CreateFunc<
+        StateFromFactory<States>
+      >
+    ? (
+        ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
+      ) => StateFromFactory<States> & {
+        key: Transitions[TransitionStateKey][EventKey];
+      }
+    : never;
 };
 export type StateEventTransitionFuncs<
   Transitions extends TransitionConfig<States>,

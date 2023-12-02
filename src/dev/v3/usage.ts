@@ -2,14 +2,7 @@ import { nanosubscriber } from "../v1/extras/nanosubscriber";
 import { defineStates } from "../v1/states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
-import {
-  effect,
-  enter,
-  guard,
-  handle,
-  leave,
-  notify,
-} from "./machine-setup";
+import { effect, enter, guard, handle, leave, notify } from "./machine-setup";
 import { condition } from "./condition";
 import { createSetup, setup } from "./setup";
 import { createStateMachine } from "./state-machine";
@@ -30,7 +23,12 @@ const m1 = createStateMachine(
 setup(m1)(
   guard((ev) => true),
   leave((ev) => console.log("before", ev)),
-  notify(condition((ev) => ev.type === "start", (ev) => (ev) => {})),
+  notify(
+    condition(
+      (ev) => ev.type === "start",
+      (ev) => (ev) => {},
+    ),
+  ),
 );
 
 const m2 = createStateMachine(
@@ -71,14 +69,14 @@ const m4 = createFactoryMachine(
   states.Idle(),
 );
 m4.getChange().to;
-m4.send('execute', 1)
+m4.send("execute", 1);
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   leave((ev) => {
     if (ev.type == "execute") {
       console.log("executing");
-    }    
+    }
   }),
   enter((ev) =>
     console.log(
@@ -91,7 +89,7 @@ setup(m4)(
     ),
   ),
   handle((ev) => {
-    return ev
+    return ev;
   }),
   // when((ev) => ev.type === "execute", (ev) => {
   //   console.log('entered execute')
@@ -99,17 +97,25 @@ setup(m4)(
   //     console.log('left execute')
   //   }
   // }),
-  effect(condition((ev) => ev.type === "execute", ev => {
-    ev
-  })),
+  effect(
+    condition(
+      (ev) => ev.type === "execute",
+      (ev) => {
+        ev;
+      },
+    ),
+  ),
   enter(
-    condition(ev => ev.type == 'execute', ev => {
-      console.log('entered condition')
-      return ev => {
-        console.log('exited condition')
-      }
-    })
-  )
+    condition(
+      (ev) => ev.type == "execute",
+      (ev) => {
+        console.log("entered condition");
+        return (ev) => {
+          console.log("exited condition");
+        };
+      },
+    ),
+  ),
 );
 // const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
 //   unwhen()
@@ -121,8 +127,6 @@ setup(m4)(
 //     console.log('exit', ev)
 //   }
 // }),
-
-
 
 m4.send("execute", 1);
 
@@ -144,8 +148,6 @@ api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
 
-
-
 // const onPhase = phased<ReturnType<typeof m4.getChange>>(m4);
 
 // onPhase('guard', (ev, next) => {
@@ -157,8 +159,6 @@ const unsub = notify((ev) => console.log(ev))(m4);
 // })
 
 // onPhase('exit', (ev, next) => {})
-
-
 
 // listen<ReturnType<typeof m4.getChange>>()(m4)
 
@@ -180,12 +180,12 @@ const unsub = notify((ev) => console.log(ev))(m4);
 //     ],
 //     enter: [
 //       (ev) => {
-        
+
 //       },
 //     ],
 //     effect: [
 //       (ev) => {
-        
+
 //       },
 //     ],
 //   })

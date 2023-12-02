@@ -8,8 +8,8 @@ type Disposer = () => void;
  * @param effect
  */
 export function reffx(effect: () => Disposer) {
-  let count = 0
-  let disposer: Disposer|undefined = undefined;
+  let count = 0;
+  let disposer: Disposer | undefined = undefined;
 
   /**
    * Adds a reference to the maintained effect. If this is the first reference,
@@ -21,8 +21,8 @@ export function reffx(effect: () => Disposer) {
 
     return function removeRef() {
       if (count === 0) return;
-      count--;      
-      if (count===0) {
+      count--;
+      if (count === 0) {
         const dispose = disposer;
         disposer = undefined;
         dispose?.();
@@ -33,8 +33,6 @@ export function reffx(effect: () => Disposer) {
 
 function noop() {}
 
-
-
 export interface MapInterface<K, T> {
   set(key: K, value: T): void;
   delete(key: K): void;
@@ -44,13 +42,13 @@ export interface MapInterface<K, T> {
 class ObjectMap<K extends string, T> implements MapInterface<K, T> {
   constructor(private obj: Record<K, T>) {}
   set(key: K, value: T) {
-    this.obj[key] =  value;
+    this.obj[key] = value;
   }
   delete(key: K) {
-    delete this.obj[key]
+    delete this.obj[key];
   }
   get(key: K) {
-    return this.obj[key]
+    return this.obj[key];
   }
 }
 
@@ -60,7 +58,7 @@ export interface MapConstructor<K> {
 
 export function keyedReffx<T>(
   effect: (key: T) => Disposer,
-  fxs = new Map() as MapInterface<T, () => Disposer>
+  fxs = new Map() as MapInterface<T, () => Disposer>,
 ) {
   return function addRef(key: T, meta?: unknown): Disposer {
     const fx =
@@ -72,9 +70,7 @@ export function keyedReffx<T>(
     fxs.set(key, fx);
     return fx(meta);
   };
-
 }
-
 
 /**
  * Like `keyedReffx` but the effect can return a referentially stable object that
@@ -84,8 +80,8 @@ export function keyedReffx<T>(
 export function keyedObjectReffx<K, T, U = readonly [T, Disposer]>(
   effect: (key: K) => readonly [T, Disposer],
   decorate: (value: T, disposer: Disposer) => U = (value, disposer) =>
-    ([value, disposer] as unknown) as U,
-  MapImpl: MapConstructor<K> = Map
+    [value, disposer] as unknown as U,
+  MapImpl: MapConstructor<K> = Map,
 ) {
   const valueMap = new MapImpl<T>();
   const fx = keyedReffx((key: K) => {

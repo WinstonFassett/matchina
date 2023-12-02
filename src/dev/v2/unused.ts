@@ -12,10 +12,10 @@ type ConfiguredTransitions<Config, SR> = {
     [E in keyof Config[S]]: Config[S][E] extends keyof SR // state key
       ? SR[Config[S][E]]
       : Config[S][E] extends (...params: any[]) => (...params: any[]) => any
-        ? ReturnType<ReturnType<Config[S][E]>>
-        : Config[S][E] extends (...params: any[]) => any
-          ? ReturnType<Config[S][E]>
-          : never;
+      ? ReturnType<ReturnType<Config[S][E]>>
+      : Config[S][E] extends (...params: any[]) => any
+      ? ReturnType<Config[S][E]>
+      : never;
   };
 };
 type AnyChangeEvent = ChangeEvent<any, any, any>;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import { createApi, withApi } from "../src/factory-event-api";
 import { onLifecycle } from "../src/lifecycle";
 import { createPromiseMachine } from "../src/promise";
@@ -19,16 +19,20 @@ describe("onLifecycle usage", () => {
 
     const pm = createPromiseMachine<(x: number) => Promise<number>>();
     // Create machine WITHOUT a promise to drive it
-    const api = createApi(pm)
+    const api = createApi(pm);
     // api.resolve(1)
     const machine = Object.assign(withApi(pm), {
       reset() {
-        console.log('resetting')
-        const before = machine.getChange()
-        machine.update({ from: before.to, type: 'reset', to: machine.states.Idle() } as any)
-      }
+        console.log("resetting");
+        const before = machine.getChange();
+        machine.update({
+          from: before.to,
+          type: "reset",
+          to: machine.states.Idle(),
+        } as any);
+      },
     });
-    
+
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
     const expectStateData = () => {
@@ -45,7 +49,7 @@ describe("onLifecycle usage", () => {
           on: {
             execute: {
               before(change) {
-                change.type = 'execute'; // can only be execute
+                change.type = "execute"; // can only be execute
                 change.from.key = "Idle"; // can only be Idle
                 change.to.key = "Pending"; // can only be Pending
               },
@@ -130,7 +134,7 @@ describe("onLifecycle usage", () => {
         on: {
           execute: {
             guard(change) {
-              console.log('GUARD', change.type)
+              console.log("GUARD", change.type);
               const {
                 type: event,
                 params,
@@ -150,14 +154,16 @@ describe("onLifecycle usage", () => {
                 didGuardReject ||= ++count;
               }
               console.log("GUARD accept?", accept);
-              
+
               console.groupEnd();
               return accept;
             },
             before: (ev, ...rest) => {
-              console.log("BEFORE", ev.type)
+              console.log("BEFORE", ev.type);
               expect(ev.type).toBe("execute");
-              const { params: [amount] } = ev
+              const {
+                params: [amount],
+              } = ev;
               console.log("executing", amount);
               didBeforeExecute ||= ++count;
               // console.group()
@@ -165,7 +171,7 @@ describe("onLifecycle usage", () => {
               // console.log('done executing')
             },
             handle: (event) => {
-              console.log('*** HANDLE')
+              console.log("*** HANDLE");
               const num = event.params[0];
               const accept = event.params[0] >= 100;
               if (!accept) {
@@ -180,17 +186,20 @@ describe("onLifecycle usage", () => {
                 .catch(machine.api.reject);
               didHandleExecute ||= ++count;
               console.log("handler accepting");
-              return event
+              return event;
             },
           },
         },
         leave: (ev) => {
-          console.log('LLLLLEEEAAAVVVIIINNNGGGG', ev)
+          console.log("LLLLLEEEAAAVVVIIINNNGGGG", ev);
           didLeaveIdle ||= ++count;
-          const { type: event, from: { key: from }, to: { key: to } } = ev
+          const {
+            type: event,
+            from: { key: from },
+            to: { key: to },
+          } = ev;
           console.log(`leaving ${from} to ${event} to ${to}`);
         },
-        
       },
       Pending: {
         enter: (e) => {
@@ -208,7 +217,7 @@ describe("onLifecycle usage", () => {
               console.log("done before resolve");
             },
             after: (ev) => {
-              ev.type = 'resolve'
+              ev.type = "resolve";
               didAfterResolve ||= ++count;
               console.log("Resolved from Pending");
             },

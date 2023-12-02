@@ -1,10 +1,19 @@
 import { Middleware } from "./dev/v1/middleware";
-import { FlatMemberUnion, Members, TUnionToIntersection } from "./utility-types";
+import {
+  FlatMemberUnion,
+  Members,
+  TUnionToIntersection,
+} from "./utility-types";
 import { Funcware } from "./ext/funcware/funcware";
 import { AbortableEventware } from "./ext/funcware/abortable";
 import { StateEventTransitionFuncs } from "./factory-event-api";
-import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
-import { Guard, Handle, Effect  } from "./types";
+import {
+  AnyStatesFactory,
+  FactoryMachineEvent,
+  StateFromFactory,
+  TransitionConfig,
+} from "./factory-machine";
+import { Guard, Handle, Effect } from "./types";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
@@ -14,7 +23,7 @@ export type TransitionHookExtensions<E> = {
   begin: AbortableEventware<E>;
   resolve: Funcware<(ev: Partial<E>) => E>;
   transition: AbortableEventware<E>;
-  guard: Guard<E>;  
+  guard: Guard<E>;
   handle: Handle<E>;
   before: AbortableEventware<E>;
   effect: Effect<E>;
@@ -22,7 +31,7 @@ export type TransitionHookExtensions<E> = {
   enter: Effect<E>;
   notify: Effect<E>;
   after: Effect<E>;
-  end: Effect<E>
+  end: Effect<E>;
 };
 
 export type TransitionHookConfig<T> = HookConfig<TransitionHookExtensions<T>>;
@@ -65,16 +74,10 @@ type On<
   StateKey extends keyof States
     ? // specific state
       {
-        [Event in
-          | keyof Transitions[StateKey]
-          | "*"]?: 
-          // specific event
-          Event extends FlatEventKeys<Transitions, States>
+        [Event in keyof Transitions[StateKey] | "*"]?: // specific event
+        Event extends FlatEventKeys<Transitions, States>
           ? ReturnType<
-              StateEventTransitionFuncs<
-                Transitions,
-                States
-              >[StateKey][Event]
+              StateEventTransitionFuncs<Transitions, States>[StateKey][Event]
             > extends StateFromFactory<States>
             ? TransitionHookConfig<
                 FactoryMachineEvent<Transitions, States> & {
@@ -87,11 +90,14 @@ type On<
                     StateEventTransitionFuncs<
                       Transitions,
                       States
-                    >[StateKey][Event]>;
-                  params: Parameters< StateEventTransitionFuncs<
-                    Transitions,
-                    States
-                  >[StateKey][Event]>
+                    >[StateKey][Event]
+                  >;
+                  params: Parameters<
+                    StateEventTransitionFuncs<
+                      Transitions,
+                      States
+                    >[StateKey][Event]
+                  >;
                 }
               >
             : never
@@ -110,28 +116,29 @@ type On<
         [AnyStateEvent in
           | FlatEventKeys<Transitions, States>
           | "*"]?: TransitionHookConfig<
-            FactoryMachineEvent<Transitions, States> & {
-              type: AnyStateEvent extends "*" ? FlatEventKeys<Transitions, States> : AnyStateEvent;
-              from: StateFromFactory<
-                States,
-                StateKey extends keyof States ? StateKey : keyof States
-              >;
-              to: ReturnType<
-                StateEventTransitionFuncs<
-                  Transitions,
-                  States
-                >[StateKey][AnyStateEvent]
-              >;
-              params: Parameters<
-                StateEventTransitionFuncs<
-                  Transitions,
-                  States
-                >[StateKey][AnyStateEvent]
-              >;
-            }         
+          FactoryMachineEvent<Transitions, States> & {
+            type: AnyStateEvent extends "*"
+              ? FlatEventKeys<Transitions, States>
+              : AnyStateEvent;
+            from: StateFromFactory<
+              States,
+              StateKey extends keyof States ? StateKey : keyof States
+            >;
+            to: ReturnType<
+              StateEventTransitionFuncs<
+                Transitions,
+                States
+              >[StateKey][AnyStateEvent]
+            >;
+            params: Parameters<
+              StateEventTransitionFuncs<
+                Transitions,
+                States
+              >[StateKey][AnyStateEvent]
+            >;
+          }
         >;
       };
-
 
 export type FlatExitStates<
   Transitions extends TransitionConfig<States>,
@@ -154,14 +161,13 @@ export type FlatExitStates<
   }[keyof StateEventTransitionFuncs<Transitions, States>[StateKey]];
 }>;
 
-
 export type EventExitStatesIntersection<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
 > = TUnionToIntersection<
   FlatMemberUnion<StatesToEventsToStates<Transitions, States>>
 >;
-    
+
 export type StatesToEventsToStates<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
@@ -184,7 +190,6 @@ export type StateEventHookConfig<
     on?: On<Transitions, States, StateKey>;
   } & StateTransitionHookConfig<Transitions, States, StateKey>;
 };
-
 
 export type FlatEventKeys<
   Transitions extends TransitionConfig<States>,

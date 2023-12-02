@@ -2,9 +2,8 @@ import { Middleware } from "../../v1/middleware";
 import { Func } from "../../types";
 import { Funcware } from "../../../ext/Funcware";
 
-
 function funcwareFromMiddleware<E>(
-  middleware: Middleware<E>
+  middleware: Middleware<E>,
 ): Funcware<Func<[E], any>> {
   return (inner) => (ev) => {
     let result = VOID as E;
@@ -15,7 +14,7 @@ function funcwareFromMiddleware<E>(
   };
 }
 function middlewareFromFuncware<E, P extends any[], R>(
-  fw: Funcware<Func<[...P], R>>
+  fw: Funcware<Func<[...P], R>>,
 ): Middleware<[params: P, result: R]> {
   return ([params, _], next) => {
     return fw(([...args]) => {
@@ -25,5 +24,7 @@ function middlewareFromFuncware<E, P extends any[], R>(
     })([...params]);
   };
 }
-type FuncMiddleware<F extends (...args: any) => any> = Middleware<[params: Parameters<F>, result: ReturnType<F>]>;
+type FuncMiddleware<F extends (...args: any) => any> = Middleware<
+  [params: Parameters<F>, result: ReturnType<F>]
+>;
 const VOID = {};

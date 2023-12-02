@@ -1,4 +1,8 @@
-import { matchboxFactory, UnionSpec, MemberExtensions } from "../../matchboxatchbox";
+import {
+  matchboxFactory,
+  UnionSpec,
+  MemberExtensions,
+} from "../../matchboxatchbox";
 
 export type State<Tag extends keyof Specs, Specs> = {
   key: Tag;

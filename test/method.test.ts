@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { condition, extendMethod, tapMethod, methodExtender } from "../src/ext";
 
-
 describe("methodExtend", () => {
   it("should extend the method correctly", () => {
     const obj = {
@@ -41,7 +40,7 @@ describe("methodUse", () => {
     const obj = {
       method: (value: string) => value.toUpperCase(),
     };
-    
+
     const use = methodExtender("method");
 
     use((inner) => {
@@ -74,21 +73,21 @@ describe("methodUse", () => {
   });
 });
 
-describe('methodTap', () => {
-  it('should listen to the method and call the provided function', () => {
+describe("methodTap", () => {
+  it("should listen to the method and call the provided function", () => {
     const obj = { method: (value: string) => value.toUpperCase() };
     const mockFn = vi.fn((value: string) => `Hello, ${value}`);
 
-    tapMethod('method')(mockFn)(obj);
-    const result = obj.method('world');
+    tapMethod("method")(mockFn)(obj);
+    const result = obj.method("world");
 
     expect(mockFn).toHaveBeenCalled();
-    expect(result).toBe('WORLD');
+    expect(result).toBe("WORLD");
   });
 });
 
-describe('condition', () => {
-  it('should call the entryListener when the test passes', () => {
+describe("condition", () => {
+  it("should call the entryListener when the test passes", () => {
     const mockTest = vi.fn((value: number) => value > 0);
     const mockEntryListener = vi.fn((value: number) => {});
 
@@ -99,7 +98,7 @@ describe('condition', () => {
     expect(mockEntryListener).toHaveBeenCalled();
   });
 
-  it('should not call the entryListener when the test fails', () => {
+  it("should not call the entryListener when the test fails", () => {
     const mockTest = vi.fn((value: number) => value > 0);
     const mockEntryListener = vi.fn((value: number) => {});
 

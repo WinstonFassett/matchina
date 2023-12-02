@@ -1,12 +1,14 @@
 import {
-  ChangeCommandEvent, ChangeEvent, Effecter,
+  ChangeCommandEvent,
+  ChangeEvent,
+  Effecter,
   EventLifecycle,
   Guarder,
   Handler,
   Notifier,
   TransitionContext,
   TransitionRecord,
-  Transitioner
+  Transitioner,
 } from "./types";
 
 /*
@@ -23,9 +25,6 @@ send
     notify
 */
 
-
-
-
 export function transitionMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   lastChange: E,
@@ -36,32 +35,42 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     getState: () => lastChange.to,
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
-      if (to) { return { ...ev, to } as E; }
+      if (to) {
+        return { ...ev, to } as E;
+      }
     },
     guard: (ev: E) => true,
     transition(change: E) {
-      if (!machine.guard(change)) { return; }      
-      let update = machine.handle(change); // process change      
-      if (!update) { return; }    
+      if (!machine.guard(change)) {
+        return;
+      }
+      let update = machine.handle(change); // process change
+      if (!update) {
+        return;
+      }
       update = machine.before(update); // prepare update
-      if (!update) { return }
+      if (!update) {
+        return;
+      }
       machine.update(update); // apply update
-      machine.effect(update) // internal effects
+      machine.effect(update); // internal effects
       machine.notify(update); // notify consumers
-      machine.after(update) // cleanup
+      machine.after(update); // cleanup
     },
     handle: (change: E) => change,
     before: (update: E) => update,
-    update: (update: E) => { lastChange = update },
+    update: (update: E) => {
+      lastChange = update;
+    },
     effect(ev: E) {
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
     leave(ev: E) {
-      console.log('left', ev.from.key)
+      console.log("left", ev.from.key);
     },
     enter(ev: E) {
-      console.log('entered', ev.to.key)
+      console.log("entered", ev.to.key);
     },
     notify(ev: E) {},
     after(ev: E) {},
@@ -69,17 +78,15 @@ export function transitionMachine<E extends ChangeCommandEvent>(
   return machine;
 }
 
-type TransitionMachine<E extends ChangeCommandEvent> = 
-  & TransitionContext 
-  & Resolver<E> 
-  & EventLifecycle<E> 
-  & Transitioner<E> 
-  & Guarder<E> 
-  & Handler<E> 
-  & Effecter<E> 
-  & Notifier<E> 
-  & ChangeMachine<E>;
-
+type TransitionMachine<E extends ChangeCommandEvent> = TransitionContext &
+  Resolver<E> &
+  EventLifecycle<E> &
+  Transitioner<E> &
+  Guarder<E> &
+  Handler<E> &
+  Effecter<E> &
+  Notifier<E> &
+  ChangeMachine<E>;
 
 interface Change<T> {
   from: T;

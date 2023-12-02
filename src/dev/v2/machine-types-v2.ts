@@ -198,18 +198,18 @@ export type StateEventTransitionFunc<
         ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
       ) => StateFromFactory<States, Transitions[TransitionStateKey][EventKey]>
     : Transitions[TransitionStateKey][EventKey] extends (
-          ...args: infer A
-        ) => (...innerArgs: any[]) => infer R
-      ? (...args: A) => R
-      : Transitions[TransitionStateKey][EventKey] extends (
-            ...any: []
-          ) => StateFromFactory<States>
-        ? (
-            ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
-          ) => StateFromFactory<States> & {
-            key: Transitions[TransitionStateKey][EventKey];
-          }
-        : never;
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer R
+    ? (...args: A) => R
+    : Transitions[TransitionStateKey][EventKey] extends (
+        ...any: []
+      ) => StateFromFactory<States>
+    ? (
+        ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
+      ) => StateFromFactory<States> & {
+        key: Transitions[TransitionStateKey][EventKey];
+      }
+    : never;
 };
 
 export type StateEventTransitionFuncs<
@@ -256,8 +256,8 @@ export type FlatEntryStates<
   [K in keyof Transitions]: keyof Transitions[K] extends never
     ? never
     : K extends keyof States
-      ? ReturnType<States[K]>
-      : never;
+    ? ReturnType<States[K]>
+    : never;
 }[keyof Transitions];
 
 export type StatesToEventsToStates<

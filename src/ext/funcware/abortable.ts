@@ -4,7 +4,7 @@ import { Funcware } from "./funcware";
 // export type Abortware<F extends (...args: any[]) => any> = (params: Parameters<F>, abort: () => void) => void;
 
 export function abortableEventware<E>(
-  wares: AbortableEventware<E>
+  wares: AbortableEventware<E>,
 ): Funcware<Func<E, any>> {
   // console.log('abortableFuncware')
   return (inner) => {
@@ -15,10 +15,11 @@ export function abortableEventware<E>(
       wares(ev, () => {
         aborted = true;
       });
-      if (!aborted) { return inner(ev); }
+      if (!aborted) {
+        return inner(ev);
+      }
     };
   };
 }
-
 
 export type AbortableEventware<E> = (event: E, abort: () => void) => void;

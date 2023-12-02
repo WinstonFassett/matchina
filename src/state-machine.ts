@@ -1,4 +1,9 @@
-import { ChangeMachine, ResolveEvent, Resolver, transitionMachine } from "./transition-machine";
+import {
+  ChangeMachine,
+  ResolveEvent,
+  Resolver,
+  transitionMachine,
+} from "./transition-machine";
 import {
   ChangeCommandEvent,
   Commander,
@@ -40,7 +45,9 @@ export function createStateMachine<E extends ChangeCommandEvent>(
         params,
         from: lastChange.to,
       } as ResolveEvent<E>);
-      if (resolved) { machine.transition(resolved); }
+      if (resolved) {
+        machine.transition(resolved);
+      }
     },
   });
   return machine;

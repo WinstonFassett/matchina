@@ -147,7 +147,9 @@ describe("onLifecycle usage", () => {
               // return accept;
             },
             before: (change, next) => {
-              const { params: [amount] } = change;
+              const {
+                params: [amount],
+              } = change;
               didBeforeExecute ||= ++count;
               // console.log("executing", amount);
               // console.group()

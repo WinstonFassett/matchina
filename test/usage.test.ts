@@ -61,6 +61,7 @@ describe("createSetup", () => {
 });
 
 describe("factory-machine", () => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const create = () => {
     const states = defineStates({
       Idle: undefined,
@@ -83,7 +84,7 @@ describe("factory-machine", () => {
     setup(machine)(
       guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
       leave((ev) => {
-        if (ev.type == "execute") {
+        if (ev.type === "execute") {
           console.log("executing");
         }
       }),

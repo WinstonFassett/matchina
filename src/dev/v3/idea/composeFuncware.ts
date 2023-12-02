@@ -1,9 +1,9 @@
 import { Funcware } from "../../../ext/Funcware";
 
 export function composeFuncware<F extends (...params: any[]) => any>(
-  fns: Funcware<F>[]
+  fns: Funcware<F>[],
 ): Funcware<F> {
-  // return (inner) => fns.reduce((acc, fn) => fn(acc), inner);  
+  // return (inner) => fns.reduce((acc, fn) => fn(acc), inner);
   // return inner => fns.reduceRight((next, fn) => fn(next), inner);
   return (inner) => {
     function next(index: number, ...params: Parameters<F>): ReturnType<F> {
