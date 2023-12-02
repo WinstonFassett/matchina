@@ -16,7 +16,7 @@ export function extendMethod<T, K extends keyof T>(
     target[methodName] = original;
   };
 }export type MethodOf<T, K extends keyof T> = T[K] extends (...args: any[]) => any ? T[K] : never;
-export const noop = () => { };
+export const noop = () => {};
 export type HasMethod<K extends string> = {
   [key in K]: (...args: any[]) => any;
 };

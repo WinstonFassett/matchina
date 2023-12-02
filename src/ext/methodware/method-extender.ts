@@ -1,7 +1,5 @@
 import { Funcware } from "../funcware/funcware";
-import { extendMethod } from "./extend-method";
-import { HasMethod } from "./extend-method";
-import { MethodOf } from "./extend-method";
+import { extendMethod , HasMethod , MethodOf } from "./extend-method";
 
 
 export const methodExtender = <K extends string>(methodName: K) => <T extends HasMethod<K>>(

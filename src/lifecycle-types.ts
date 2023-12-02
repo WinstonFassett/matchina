@@ -4,8 +4,7 @@ import { Funcware } from "./ext/funcware/funcware";
 import { AbortableEventware } from "./ext/funcware/abortable";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
-import { Guard, Handle, Effect } from "./types";
-import { } from './types';
+import { Guard, Handle, Effect  } from "./types";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
@@ -69,7 +68,7 @@ type On<
         [Event in
           | keyof Transitions[StateKey]
           | "*"]?: 
-          //specific event
+          // specific event
           Event extends FlatEventKeys<Transitions, States>
           ? ReturnType<
               StateEventTransitionFuncs<

@@ -1,6 +1,5 @@
-import { extendMethod } from "./extend-method";
 import { functionTap } from "../funcware/tap-function";
-import { HasMethod } from "./extend-method";
+import { extendMethod , HasMethod } from "./extend-method";
 
 
 

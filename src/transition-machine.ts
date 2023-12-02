@@ -36,15 +36,15 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     getState: () => lastChange.to,
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
-      if (to) return { ...ev, to } as E;
+      if (to) { return { ...ev, to } as E; }
     },
     guard: (ev: E) => true,
     transition(change: E) {
-      if (!machine.guard(change)) return;      
+      if (!machine.guard(change)) { return; }      
       let update = machine.handle(change); // process change      
-      if (!update) return;    
+      if (!update) { return; }    
       update = machine.before(update); // prepare update
-      if (!update) return
+      if (!update) { return }
       machine.update(update); // apply update
       machine.effect(update) // internal effects
       machine.notify(update); // notify consumers

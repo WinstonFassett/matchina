@@ -15,7 +15,7 @@ export function abortableEventware<E>(
       wares(ev, () => {
         aborted = true;
       });
-      if (!aborted) return inner(ev);
+      if (!aborted) { return inner(ev); }
     };
   };
 }

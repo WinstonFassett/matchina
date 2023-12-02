@@ -105,12 +105,12 @@ describe("onLifecycle usage", () => {
         },
       },
       "*": {
-        leave: ((change) => {
+        leave: (change) => {
           console.log("* leaving", change.from.key);
-        }),
-        enter: ((change) => {
+        },
+        enter: (change) => {
           console.log("* entering", change.to.key);
-        }),
+        },
         on: {
           "*": {
             before: (event, next) => {
@@ -193,10 +193,10 @@ describe("onLifecycle usage", () => {
         
       },
       Pending: {
-        enter: ((e) => {
+        enter: (e) => {
           didEnterPending ||= ++count;
           console.log("entering Pending via", e.type);
-        }),
+        },
         on: {
           resolve: {
             before: (ev) => {

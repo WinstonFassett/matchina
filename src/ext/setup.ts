@@ -12,7 +12,7 @@ export function disposers(fns: Disposer[]) {
       fns[i]();
     }
   };
-}//#endregion
+}// #endregion
 
 export function createSetup<T>(
   ...setups: Setup<T>[]

@@ -43,7 +43,7 @@ type WithApi<T extends TransitionConfig<S>, S extends AnyStatesFactory, M> = M &
 
 export function withApi<M extends FactoryMachine<any, any, any>>(target: M) {
   const enhanced = target as WithApi<M['transitions'],M['states'], M>;
-  if (enhanced.api) return enhanced;
+  if (enhanced.api) { return enhanced; }
   return Object.assign(target,  {
     api: createApi<M['states'],M['transitions']>(enhanced)
   }) as WithApi<M['transitions'], M['states'], M>;

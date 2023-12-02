@@ -15,7 +15,6 @@ export function onLifecycle<
 ) {
   const d = [] as Disposer[]
   for (const key in config) {
-    
     const stateKey = key === '*' ? undefined : key
     const fromStateConfig = config[key];
     if (!fromStateConfig) {
@@ -24,18 +23,16 @@ export function onLifecycle<
     const { on, enter, leave } = fromStateConfig;
     console.log({ enter, leave })
     // useFilteredEventConfigs(machine, { _:'state', from: stateKey}, stateConfig, d)
-    if (enter) { useFilteredEventConfigs(machine, { to: stateKey}, {enter}, d) } 
-    if (leave) { useFilteredEventConfigs(machine, { from: stateKey}, {leave}, d) }  
+    if (enter) { useFilteredEventConfigs(machine, { to: stateKey }, { enter }, d) } 
+    if (leave) { useFilteredEventConfigs(machine, { from: stateKey }, { leave }, d) }  
     if (on) {
       for (const onKey in on) {
-    
         const eventKey = onKey === '*' ? undefined : onKey
         const eventConfig = on[onKey];        
         if (!eventConfig) {
           continue;
         }
-        useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, eventConfig, d)        
-    
+        useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, eventConfig, d)
       }
     }
   }

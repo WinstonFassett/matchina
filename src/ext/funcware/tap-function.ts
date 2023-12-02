@@ -1,5 +1,4 @@
-import { HasMethod } from "../methodware/extend-method";
-import { MethodOf } from "../methodware/extend-method";
+import { HasMethod , MethodOf } from "../methodware/extend-method";
 import { Funcware } from "./funcware";
 
 

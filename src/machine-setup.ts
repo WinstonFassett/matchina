@@ -4,7 +4,7 @@ import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
-//#region interceptors
+// #region interceptors
 export const send = methodExtender("send");
 export const before = methodExtender("before");
 export const transition = methodExtender("transition");
@@ -15,9 +15,9 @@ export const guard = <E extends ChangeCommandEvent>(
 export const handle = <E extends ChangeCommandEvent>(
   outer: StateMachinery<E>["handle"],
 ) => methodExtender("handle")<StateMachinery<E>>((inner) => composeHandlers<E>(outer, inner));
-//#endregion
+// #endregion
 
-//#region effects
+// #region effects
 export const effect = tapMethod("effect");
 export const leave = tapMethod("leave");
 export const after = tapMethod("after");
@@ -28,7 +28,7 @@ const effectHook = name => handler => inner => (...args) => {
   console.log('EFFECT', name);
   inner(...args); handler(...args);
 };
-//#endregion
+// #endregion
 
 
 export const Hooks = {
@@ -37,7 +37,7 @@ export const Hooks = {
   resolve,
   guard: guardFn => (inner) => combineGuards(inner, guardFn),
   handle: handleFn => (inner) => composeHandlers(handleFn, inner),
-  before: abortware => abortableEventware(abortware),  //abortableEventware2(before, 'before'),
+  before: abortware => abortableEventware(abortware),  // abortableEventware2(before, 'before'),
   leave: effectHook('leave'),  
   after: effectHook('after'),
   enter: effectHook('enter'),
