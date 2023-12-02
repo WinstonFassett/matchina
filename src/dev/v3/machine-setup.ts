@@ -31,39 +31,39 @@ export const enter = methodTap("enter");
 export const notify = methodTap("notify");
 export const end = methodTap("end");
 
-export const abortableEventware2 = 
-(handlerMachineSetup) =>
-<E>(
-  wares: AbortableEventware<E>
-):(<T>(target: T) => Funcware<Func<E, any>>) => {
-  console.log('bund abortableFuncware')
+// export const abortableEventware2 = 
+// (handlerMachineSetup, name) =>
+// <E>(
+//   wares: AbortableEventware<E>
+// ):(<T>(target: T) => Funcware<Func<E, any>>) => {
+//   console.log('bind abortableFuncware')
 
-  return (target) => {    
-    return handlerMachineSetup(
-      (inner) => {
-        console.log("abortableFuncware inner", { inner });
-        return (ev) => {
-          console.log("abortableFuncware inner", { inner, ev });
-          let aborted = false;
-          wares(ev, () => {
-            aborted = true;
-          });
-          if (!aborted) return inner(ev);
-        };
-      }
-    )
-  }
-}
+//   return (target) => {    
+//     return handlerMachineSetup(
+//       (inner) => {
+//         // console.log("abortableFuncware inner", { inner });
+//         return (ev) => {
+//           // console.log("abortableFuncware inner", { inner, ev });
+//           let aborted = false;
+//           wares(ev, () => {
+//             aborted = true;
+//           });
+//           if (!aborted) return inner(ev);
+//         };
+//       }
+//     )
+//   }
+// }
 
 
 export const Hooks = {
   // send,
-  begin: fn => it => begin(abortableEventware2(fn))(it),
-  before: abortableEventware2(before),
+  begin: abortware => abortableEventware(abortware),
+  before: abortware => abortableEventware(abortware),  //abortableEventware2(before, 'before'),
   transition,
   resolve,
   guard: guardFn => (inner) => combineGuards(inner, guardFn),
-  handle: abortableEventware2(handle),
+  handle: handleFn => (inner) => composeHandlers(handleFn, inner),
   effect,
   leave,
   after,

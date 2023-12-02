@@ -75,12 +75,12 @@ export const methodTap =
     ware: Funcware<F>
   ) => {
     return (inner: F) => (...params: Parameters<F>) => {
-      console.log('whenware')
+      // console.log('whenware')
       if (test(...params)) { 
-        console.log('PASSED')
+        // console.log('PASSED')
         return ware(inner)(...params);
       }
-      console.log('FAILED')
+      // console.log('FAILED')
       return inner(...params);
     }
   };

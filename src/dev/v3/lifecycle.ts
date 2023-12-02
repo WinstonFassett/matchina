@@ -14,9 +14,10 @@ export function onLifecycle<
   config: StateEventHookConfig<Transitions, States>,
 ) {
   const d = [] as Disposer[]
-  for (const stateKey in config) {
+  for (const key in config) {
+    const stateKey = key === '*' ? undefined : key
     // console.log({ stateKey })
-    const fromStateConfig = config[stateKey];
+    const fromStateConfig = config[key];
     if (!fromStateConfig) {
       continue;
     }
@@ -25,9 +26,9 @@ export function onLifecycle<
     // console.log('proceeding')
     
     if (on) {
-      for (const eventKey in on) {
-        
-        const eventConfig = on[eventKey];
+      for (const onKey in on) {
+        const eventKey = onKey === '*' ? undefined : onKey
+        const eventConfig = on[onKey];
         if (!eventConfig) {
           continue;
         }
@@ -59,23 +60,27 @@ function useFilteredEventConfigs<
       // take hook and wrap with funcware handler
       // wrap funcware handler with whenware
       // apply to machine using methodExtend
-      const hookFunc = hookHandler?.(hook) //(machine)
-      console.log('hook', phase, hookFunc)
+      // const hookFunc = hookHandler?.(hook) //(machine)
+      console.log('add hook', phase, hookHandler)
       d.push(
-        hookFunc ? 
-        methodExtend(machine, phase as any, whenware((ev) => isKeyedChangeEvent(ev, filter), (inner => {
-          console.log('inner', { phase, inner})
-          return (...params: any ) => {
-            console.log('hookfunc', params)
-            return hookFunc(inner)(...params)
-          }
-        
-        })))
-        :
+        // hookHandler ?
+        // hookHandler(hook)(machine)
+        // methodExtend(machine, phase as any, whenware((ev) => isKeyedChangeEvent(ev, filter), (inner => {
+        //   console.log('inner', { phase, inner})
+        //   return (...params: any ) => {
+        //     console.log('hookfunc', params)
+        //     return hookFunc(inner)(...params)
+        //   }
+
+        // })))
+        // :
         methodExtend(
           machine,
-          phase as any,          
-          whenware((ev) => isKeyedChangeEvent(ev, filter), hook),
+          phase as any,
+          whenware(
+            (ev) => isKeyedChangeEvent(ev, filter), 
+            hookHandler?.(hook) ?? hook
+          ),
         ),
       );
     }

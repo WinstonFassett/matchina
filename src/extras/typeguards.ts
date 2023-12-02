@@ -82,7 +82,7 @@ export function isKeyedChangeEvent<
     matchKey(filter.to, subject?.to?.key) &&
     matchKey(filter.type, subject?.type) &&
     matchKey(filter.from, subject?.from?.key);
-  console.log('match?', matched, filter)
+  // console.log('match?', matched, filter, event.type)
   return matched;
 }
 export function isChangeTypeToFrom<

@@ -24,7 +24,9 @@ describe("onLifecycle usage", () => {
     // api.resolve(1)
     const machine = Object.assign(withApi(pm), {
       reset() {
-        console.log('todo: reset')
+        console.log('resetting')
+        const before = machine.getChange()
+        machine.update({ from: before.to, type: 'reset', to: machine.states.Idle() } as any)
       }
     });
     
@@ -129,7 +131,7 @@ describe("onLifecycle usage", () => {
         on: {
           execute: {
             guard(change) {
-              console.log('GUARD', arguments)
+              console.log('GUARD', change.type)
               const {
                 type: event,
                 params,
@@ -154,7 +156,7 @@ describe("onLifecycle usage", () => {
               return accept;
             },
             before: (ev, ...rest) => {
-              console.log("BEFORE", ev, ...rest)
+              console.log("BEFORE", ev.type)
               const { params: [amount] } = ev
               console.log("executing", amount);
               didBeforeExecute ||= ++count;
@@ -163,6 +165,7 @@ describe("onLifecycle usage", () => {
               // console.log('done executing')
             },
             handle: (event) => {
+              console.log('*** HANDLE')
               const num = event.params[0];
               const accept = event.params[0] >= 100;
               if (!accept) {
