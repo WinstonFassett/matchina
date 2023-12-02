@@ -1,4 +1,4 @@
-import { createPromiseMachine, withSubscribe, withEvents } from "matchina";
+import { createPromiseMachine, withApi, notify } from "matchina";
 import { useMachine } from "matchina/extras/react";
 
 const slowlyAddTwoNumbers = (
@@ -8,7 +8,7 @@ const slowlyAddTwoNumbers = (
   name = "unnamed",
 ) => new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
-const machine = withSubscribe(withEvents(createPromiseMachine(slowlyAddTwoNumbers)));
+const machine = withApi(createPromiseMachine(slowlyAddTwoNumbers));
 
 export function ReactMachineDemo({}) {
   const [change] = useMachine(machine);
@@ -26,7 +26,7 @@ export function ReactMachineDemo({}) {
               or{" "}
               <button
                 onClick={() =>
-                  machine.event.execute(2, 2, 2000, "Test two plus two")
+                  machine.api.execute(2, 2, 2000, "Test two plus two")
                 }
               >
                 Add 2+2
