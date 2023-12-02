@@ -1,11 +1,8 @@
-import { Func } from "../../types";
-import { AbortableEventware, abortableEventware, makeAbortable } from "./Abortware";
+import { abortableEventware } from "./Abortware";
 import {
-  Funcware,
   methodTap,
   methodUse
 } from "./method";
-import { Setup } from "./setup";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
@@ -24,24 +21,30 @@ export const handle = <E extends ChangeCommandEvent>(
 
 //#region effects
 export const effect = methodTap("effect");
-export const leave = methodTap("exit");
+export const leave = methodTap("leave");
 export const after = methodTap("after");
 export const enter = methodTap("enter");
 export const notify = methodTap("notify");
 
+const effectHook = name => handler => inner => (...args) => {
+  console.log('LEAVE HOOK');
+  inner(...args); handler(...args);
+};
+//#endregion
+
 
 export const Hooks = {
   // send,
-  before: abortware => abortableEventware(abortware),  //abortableEventware2(before, 'before'),
   transition,
   resolve,
   guard: guardFn => (inner) => combineGuards(inner, guardFn),
   handle: handleFn => (inner) => composeHandlers(handleFn, inner),
-  effect,
-  leave,
-  after,
-  enter,
-  notify,
+  before: abortware => abortableEventware(abortware),  //abortableEventware2(before, 'before'),
+  leave: effectHook('leave'),  
+  after: effectHook('after'),
+  enter: effectHook('enter'),
+  effect: effectHook('effect'),
+  notify: effectHook('notify'),
 };
 
 
@@ -56,4 +59,3 @@ function combineGuards<E extends ChangeCommandEvent>(first: (value: E) => boolea
     return res
   };
 }
-//#endregion

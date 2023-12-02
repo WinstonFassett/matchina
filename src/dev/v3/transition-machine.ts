@@ -7,8 +7,7 @@ import {
   Notifier,
   TransitionContext,
   TransitionRecord,
-  Transitioner,
-  Updater,
+  Transitioner
 } from "./types";
 
 /*
@@ -32,8 +31,6 @@ export function transitionMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   lastChange: E,
 ) {
-
-  // let lastChange = state;
   const machine: TransitionMachine<E> = {
     transitions,
     getChange: () => lastChange,
@@ -54,15 +51,19 @@ export function transitionMachine<E extends ChangeCommandEvent>(
       machine.notify(update); // notify consumers
       machine.after(update) // cleanup
     },
-    before: (ev: E) => ev,
-    update: (ev: E) => { lastChange = ev },
-    handle: (ev: E) => ev,
+    handle: (change: E) => change,
+    before: (change: E) => change,
+    update: (change: E) => { lastChange = change },
     effect(ev: E) {
-      machine.exit(ev); // left previous
+      machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
-    exit(ev: E) {},
-    enter(ev: E) {},
+    leave(ev: E) {
+      console.log('exited', ev.from.key)
+    },
+    enter(ev: E) {
+      console.log('entered', ev.to.key)
+    },
     notify(ev: E) {},
     after(ev: E) {},
   };

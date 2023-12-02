@@ -106,10 +106,10 @@ describe("onLifecycle usage", () => {
         },
       },
       "*": {
-        leave: listen((change) => {
+        leave: ((change) => {
           console.log("* leaving", change.from.key);
         }),
-        enter: listen((change) => {
+        enter: ((change) => {
           console.log("* entering", change.to.key);
         }),
         on: {
@@ -185,15 +185,16 @@ describe("onLifecycle usage", () => {
             },
           },
         },
-        leave: listen(
-          ({ type: event, from: { key: from }, to: { key: to } }) => {
-            didLeaveIdle ||= ++count;
-            console.log(`leaving ${from} to ${event} to ${to}`);
-          },
-        ),
+        leave: (ev) => {
+          console.log('LLLLLEEEAAAVVVIIINNNGGGG', ev)
+          didLeaveIdle ||= ++count;
+          const { type: event, from: { key: from }, to: { key: to } } = ev
+          console.log(`leaving ${from} to ${event} to ${to}`);
+        },
+        
       },
       Pending: {
-        enter: listen((e) => {
+        enter: ((e) => {
           didEnterPending ||= ++count;
           console.log("entering Pending via", e.type);
         }),

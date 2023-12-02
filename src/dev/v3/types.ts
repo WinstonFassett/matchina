@@ -47,7 +47,7 @@ export interface Transitioner<T> {
 
 export interface EventLifecycle<T> {
   before: (value: T) => T | undefined;
-  exit: (value: T) => void;
+  leave: (value: T) => void;
   enter: (value: T) => void;
   after: (value: T) => void;
 }

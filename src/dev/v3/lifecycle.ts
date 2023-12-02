@@ -22,7 +22,7 @@ export function onLifecycle<
       continue;
     }
     const { on, ...stateConfig } = fromStateConfig;
-    useFilteredEventConfigs(machine, { from: stateKey}, stateConfig, d)
+    useFilteredEventConfigs(machine, { _:'state', from: stateKey}, stateConfig, d)
     
     if (on) {
       for (const onKey in on) {
@@ -49,7 +49,7 @@ function useFilteredEventConfigs<
   config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
   d: Disposer[]
 ) {  
-  // consolelog('useFilteredEventConfigs', { filter, config })
+  console.log('useFilteredEventConfigs', { filter })
   for (const phase in config) {
     const hook = config[phase as any]
     if (hook) {
