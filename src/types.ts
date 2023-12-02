@@ -60,7 +60,7 @@ export interface TransitionContext {
 }
 export type Guard<E> = (ev: E) => boolean;
 export type Effect<E> = (ev: E) => void;
-export type Handle<E> = (ev: E) => E | void;
+export type Handle<E> = (ev: E) => E | undefined;
 export interface ChangeEvent<
   Type extends string = string,
   To = any,

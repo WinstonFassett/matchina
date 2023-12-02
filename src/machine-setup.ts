@@ -1,8 +1,8 @@
-import { abortableEventware } from "./ext/funcware/abortable";
+import { AbortableEventware, abortableEventware } from "./ext/funcware/abortable";
 import { methodExtender } from "./ext/methodware/method-extender";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
-import { ChangeCommandEvent } from "./types";
+import { ChangeCommandEvent, Effect, Guard, Handle } from "./types";
 
 // #region interceptors
 export const send = methodExtender("send");
@@ -31,10 +31,10 @@ export const enter = tapMethod("enter");
 export const notify = tapMethod("notify");
 
 const effectHook =
-  (name) =>
-  (handler) =>
-  (inner) =>
-  (...args) => {
+  (name: string) =>
+  <E, F extends (...args: any[]) => any>(handler: (...params: Parameters<F>) => void) =>
+  (inner: F) =>
+  (...args: Parameters<F>) => {
     console.log("EFFECT", name);
     inner(...args);
     handler(...args);
@@ -45,9 +45,9 @@ export const Hooks = {
   // send,
   transition,
   resolve,
-  guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
-  handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
-  before: (abortware) => abortableEventware(abortware), // abortableEventware2(before, 'before'),
+  guard: <T extends ChangeCommandEvent>(guardFn: Guard<T>) => (inner: Guard<T>) => combineGuards<T>(inner, guardFn),
+  handle: <E extends ChangeCommandEvent>(handleFn: Handle<E>) => (inner: Handle<E>) => composeHandlers(handleFn as Handle<E>, inner),
+  before: <E>(abortware: AbortableEventware<E>) => abortableEventware(abortware), // abortableEventware2(before, 'before'),
   leave: effectHook("leave"),
   after: effectHook("after"),
   enter: effectHook("enter"),
@@ -56,10 +56,10 @@ export const Hooks = {
 };
 
 function composeHandlers<E extends ChangeCommandEvent>(
-  outer: (value: E) => E,
-  inner: (value: E) => E,
-): (value: E) => E {
-  return (ev) => outer(inner(ev));
+  outer: (value: E) => E | undefined,
+  inner: (value: E) => E | undefined,
+): (value: E) => E | undefined {
+  return (ev) => outer(inner(ev) as any);
 }
 
 function combineGuards<E extends ChangeCommandEvent>(
