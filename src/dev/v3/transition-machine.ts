@@ -25,44 +25,38 @@ send
     notify
 */
 
+
+
+
 export function transitionMachine<E extends ChangeCommandEvent>(
   transitions: TransitionRecord,
   lastChange: E,
 ) {
+
   // let lastChange = state;
-  const machine = {
+  const machine: TransitionMachine<E> = {
     transitions,
-    getChange() {
-      return lastChange;
-    },
-    getState() {
-      return lastChange.to;
-    },
+    getChange: () => lastChange,
+    getState: () => lastChange.to,
     resolve(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
       if (to) return { ...ev, to } as E;
     },
-    guard(ev: E) {
-      return true;
-    },
+    guard: (ev: E) => true,
     transition(ev: E) {
       if (!machine.guard(ev)) return;      
-      let change = machine.handle(ev); // process change      
+      const change = machine.handle(ev); // process change      
       if (!change) return;    
-      change = machine.before(change);
-      if (!change) return
-      machine.update(change); 
-      machine.effect(change) // internal effects
-      machine.notify(ev); // notify consumers
-      machine.after(change)      
+      const update = machine.before(change); // prepare update
+      if (!update) return
+      machine.update(update); // apply update
+      machine.effect(update) // internal effects
+      machine.notify(update); // notify consumers
+      machine.after(update) // cleanup
     },
-    before(ev: E) { return ev },
-    update(ev: E) {
-      lastChange = ev;      
-    },
-    handle(ev: E) {
-      return ev;
-    },
+    before: (ev: E) => ev,
+    update: (ev: E) => { lastChange = ev },
+    handle: (ev: E) => ev,
     effect(ev: E) {
       machine.exit(ev); // left previous
       machine.enter(ev); // entered next
@@ -71,18 +65,22 @@ export function transitionMachine<E extends ChangeCommandEvent>(
     enter(ev: E) {},
     notify(ev: E) {},
     after(ev: E) {},
-  } as TransitionContext &
-    Resolver<E> &
-    EventLifecycle<E> &
-    Transitioner<E> &
-    Guarder<E> &
-    Handler<E> &
-    Effecter<E> &
-    Notifier<E> &
-    // & Commander<any,any>
-    ChangeMachine<E>;
+  };
   return machine;
 }
+
+type TransitionMachine<E extends ChangeCommandEvent> = 
+  & TransitionContext 
+  & Resolver<E> 
+  & EventLifecycle<E> 
+  & Transitioner<E> 
+  & Guarder<E> 
+  & Handler<E> 
+  & Effecter<E> 
+  & Notifier<E> 
+  & ChangeMachine<E>;
+
+
 interface Change<T> {
   from: T;
   to: T;

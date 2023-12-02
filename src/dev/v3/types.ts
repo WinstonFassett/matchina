@@ -42,7 +42,7 @@ interface Extender<T, X> {
 }
 
 export interface Transitioner<T> {
-  transition: (value: T) => T;
+  transition: (value: T) => void;
 }
 
 export interface EventLifecycle<T> {
@@ -50,7 +50,6 @@ export interface EventLifecycle<T> {
   exit: (value: T) => void;
   enter: (value: T) => void;
   after: (value: T) => void;
-  end: (value: T) => void;
 }
 
 export type TransitionRecord<T = any> = Record<string, Record<string, T>>;
