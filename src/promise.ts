@@ -46,7 +46,7 @@ export function createPromiseMachine<F extends PromiseCallback>(
           .catch((error) => promiseMachine.send("reject", error));
       }
       return true;
-    }    
+    };
   }
   const promiseMachine = Object.assign(machine, {
     promise: undefined as undefined | ReturnType<F>,

@@ -6,5 +6,5 @@ export * from "./ext/setup";
 export * from "./promise";
 export * from "./factory-machine";
 export * from "./factory-event-api";
-export * from './matchbox'
-export * from './states'
+export * from "./matchbox";
+export * from "./states";
