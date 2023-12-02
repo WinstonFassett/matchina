@@ -1,4 +1,4 @@
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "../extras/typeguards";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "../../../typeguards";
 import { Middleware } from "./middleware";
 import { conditionware } from "./conditionware";
 

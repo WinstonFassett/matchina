@@ -8,7 +8,7 @@ import {
   ChangeEventType,
   KeyedChangeEvent,
   isKeyedChangeEvent,
-} from "./typeguards";
+} from "../../../typeguards";
 
 export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
   type Event = ReturnType<M["getChange"]>;

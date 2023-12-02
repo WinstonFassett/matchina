@@ -8,7 +8,7 @@ import { Middleware } from "../middleware";
 import { enhanceMachine } from "../middleware/enhance-machine";
 import { composeMiddleware, runMiddleware } from "../middleware/middleware";
 import { StateEventHookConfig } from "./lifecycle-types";
-import { KeyedChangeEventFilter } from "./typeguards";
+import { KeyedChangeEventFilter } from "../../../typeguards";
 
 const LIFECYCLE = [
   "guard",

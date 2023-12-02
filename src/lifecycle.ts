@@ -1,4 +1,4 @@
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./dev/v1/extras/typeguards";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 import { AnyStatesFactory, FactoryMachine, TransitionConfig } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { methodExtend, whenware } from "./ext";
