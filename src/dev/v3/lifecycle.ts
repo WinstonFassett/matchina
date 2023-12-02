@@ -15,25 +15,25 @@ export function onLifecycle<
 ) {
   const d = [] as Disposer[]
   for (const key in config) {
+    
     const stateKey = key === '*' ? undefined : key
-    // console.log({ stateKey })
     const fromStateConfig = config[key];
     if (!fromStateConfig) {
       continue;
     }
     const { on, ...stateConfig } = fromStateConfig;
     useFilteredEventConfigs(machine, { from: stateKey}, stateConfig, d)
-    // console.log('proceeding')
     
     if (on) {
       for (const onKey in on) {
+    
         const eventKey = onKey === '*' ? undefined : onKey
-        const eventConfig = on[onKey];
+        const eventConfig = on[onKey];        
         if (!eventConfig) {
           continue;
         }
         useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, eventConfig, d)        
-      
+    
       }
     }
   }
@@ -46,34 +46,16 @@ function useFilteredEventConfigs<
 >(
   machine: FactoryMachine<States, Transitions>,
   filter: KeyedChangeEventFilter<ChangeCommandEvent>,
-  // phases: (keyof StateEventHookConfig<Transitions, States>)[],
   config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
   d: Disposer[]
 ) {  
-  // console.log('useFilteredEventConfigs', { filter, config })
-
-
+  // consolelog('useFilteredEventConfigs', { filter, config })
   for (const phase in config) {
     const hook = config[phase as any]
     if (hook) {
       const hookHandler = Hooks[phase as any]
-      // take hook and wrap with funcware handler
-      // wrap funcware handler with whenware
-      // apply to machine using methodExtend
-      // const hookFunc = hookHandler?.(hook) //(machine)
       console.log('add hook', phase, hookHandler)
       d.push(
-        // hookHandler ?
-        // hookHandler(hook)(machine)
-        // methodExtend(machine, phase as any, whenware((ev) => isKeyedChangeEvent(ev, filter), (inner => {
-        //   console.log('inner', { phase, inner})
-        //   return (...params: any ) => {
-        //     console.log('hookfunc', params)
-        //     return hookFunc(inner)(...params)
-        //   }
-
-        // })))
-        // :
         methodExtend(
           machine,
           phase as any,
