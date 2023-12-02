@@ -136,7 +136,7 @@
   },
   {
     "name": "v3-machine setup",
-    "path": "src/dev/v3/machine-setup.ts"
+    "path": "src/./machine-setup.ts"
   },
   {
     "name": "v3-usage",

@@ -1,4 +1,4 @@
-import { Func } from "../types";
+import { Func } from "../../../utility-types";
 
 export function wrapMethod<S, K extends keyof S>(
   subject: S,

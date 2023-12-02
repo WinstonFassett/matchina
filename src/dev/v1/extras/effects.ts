@@ -11,7 +11,7 @@ import {
   MatchCases,
   Member,
   matchboxFactory,
-} from "../matchbox";
+} from "../../../matchbox";
 
 export type AnyEffect = Member<any, any, "effect">;
 

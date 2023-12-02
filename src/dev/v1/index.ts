@@ -1,5 +1,5 @@
-export * from "./matchbox";
-export * from "./states";
+export * from "../../matchbox";
+export * from "../../states";
 export * from "./machine";
 export * from "./machine-types";
 export * from "./extras/on-update";

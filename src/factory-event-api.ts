@@ -1,4 +1,4 @@
-import { FlatMemberUnionToIntersection, Simplify } from "../v1/types";
+import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 import {
   AnyStatesFactory,
   FactoryMachine,

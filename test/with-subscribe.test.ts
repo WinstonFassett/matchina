@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineStates } from "../../../states";
-import { defineMachine } from "../machine";
-import { withSubscribe } from "../extras/with-subscribe";
-import { withEvents } from "..";
+import { defineStates } from "../src/states";
+import { defineMachine } from "../src/dev/v1/machine";
+import { withSubscribe } from "../src/dev/v1/extras/with-subscribe";
+import { withEvents } from "../src/dev/v1";
 
 describe("withSubscribe", () => {
   it("adds subscribe, when, and dispose methods to the machine", () => {

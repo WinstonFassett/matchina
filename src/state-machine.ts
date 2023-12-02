@@ -1,3 +1,4 @@
+import { ChangeMachine, ResolveEvent, Resolver, transitionMachine } from "./transition-machine";
 import {
   ChangeCommandEvent,
   Commander,
@@ -10,10 +11,6 @@ import {
   TransitionRecord,
   Transitioner,
 } from "./types";
-import { ResolveEvent } from "./transition-machine";
-import { Resolver } from "./transition-machine";
-import { ChangeMachine } from "./transition-machine";
-import { transitionMachine } from "./transition-machine";
 
 export type StateMachinery<E extends ChangeCommandEvent = ChangeCommandEvent> =
   TransitionContext &

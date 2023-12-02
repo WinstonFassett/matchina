@@ -1,4 +1,4 @@
-import { defineStates } from "../../states";
+import { defineStates } from "./states";
 import { createFactoryMachine } from "./factory-machine";
 import { guard, enter, leave } from "./machine-setup";
 import { createSetup, setup } from "./setup";

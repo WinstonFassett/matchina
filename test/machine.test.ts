@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineMachine } from "../machine";
-import { defineStates } from "../../../states";
-import { withEvents } from "../extras/with-events";
+import { defineMachine } from "../src/dev/v1/machine";
+import { defineStates } from "../src/states";
+import { withEvents } from "../src/dev/v1/extras/with-events";
 
 const makeStates = () =>
   defineStates({

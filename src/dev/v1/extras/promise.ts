@@ -1,5 +1,5 @@
 import { defineMachine } from "../machine";
-import { States, defineStates } from "../states";
+import { States, defineStates } from "../../../states";
 
 export type PromiseStates<
   T = any,

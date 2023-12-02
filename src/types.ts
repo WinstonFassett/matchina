@@ -1,5 +1,3 @@
-import { ChangeEvent } from "./transition-machine";
-
 export interface Notifier<T> {
   notify: (value: T) => void;
 }
@@ -64,4 +62,9 @@ export interface TransitionContext {
 export type Guard<E> = (ev: E) => boolean;
 export type Effect<E> = (ev: E) => void;
 export type Handle<E> = (ev: E) => E | void;
+export interface ChangeEvent<Type extends string = string, To = any, From = any> {
+  type: Type;
+  to: To;
+  from: From;
+}
 

@@ -1,6 +1,5 @@
 import {
-  ChangeCommandEvent,
-  Effecter,
+  ChangeCommandEvent, ChangeEvent, Effecter,
   EventLifecycle,
   Guarder,
   Handler,
@@ -98,9 +97,3 @@ export interface Resolver<C extends ChangeEvent<any, any, any>> {
 export type ResolveEvent<C> = C & {
   to?: never;
 };
-export interface ChangeEvent<Type extends string = string, To = any, From = any> {
-  type: Type;
-  to: To;
-  from: From;
-}
-

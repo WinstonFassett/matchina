@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { defineEffects, bindEffects } from "../extras/effects";
-import { defineMachine } from "../machine";
-import { defineStates } from "../../../states";
-import { withEvents } from "../extras/with-events";
+import { defineEffects, bindEffects } from "../src/dev/v1/extras/effects";
+import { defineMachine } from "../src/dev/v1/machine";
+import { defineStates } from "../src/states";
+import { withEvents } from "../src/dev/v1/extras/with-events";
 
 const effectsConfig = {
   Notify: (msg: string) => ({ msg }),

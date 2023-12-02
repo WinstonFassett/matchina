@@ -3,13 +3,14 @@ import { Middleware } from "./middleware";
 import {
   ChangeEvent,
   CreateFunc,
+  SwapFunc,
+} from "./types";
+import {
   FlatMemberUnion,
   FlatMemberUnionToIntersection,
   Func,
-  Members,
-  SwapFunc,
-  TUnionToIntersection,
-} from "./types";
+  Members, TUnionToIntersection
+} from "../../utility-types";
 
 // #region Transition Config
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { defineStates } from "../../../states";
+import { defineStates } from "../src/states";
 
 describe("createStates", () => {
   const config = {

@@ -1,6 +1,6 @@
-import { States, defineStates } from "../v1/states";
-import { createFactoryMachine } from "./factory-machine";
+import { States, defineStates } from "./states";
 import { after } from "./machine-setup";
+import { createFactoryMachine } from "./factory-machine";
 import { setup } from "./setup";
 
 export type PromiseStates<

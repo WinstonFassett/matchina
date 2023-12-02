@@ -10,7 +10,7 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
-import { RemainingProperties } from "./types";
+import { RemainingProperties } from "../../utility-types";
 export const InitializeMachine = "__init";
 
 export function defineMachine<

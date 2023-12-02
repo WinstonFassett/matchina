@@ -1,8 +1,6 @@
-import { abortableEventware } from "./Abortware";
-import {
-  methodTap,
-  methodUse
-} from "./method";
+import { abortableEventware } from "./ext/abortableEventware";
+import { methodUse } from "./ext/methodUse";
+import { methodTap } from "./ext/methodTap";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
