@@ -2,18 +2,41 @@ import { Middleware } from "../../extras/middleware";
 import { Func } from "../../types";
 import { Funcware } from "./method";
 
-export type Abortware<E> = (event: E, abort: () => void) => void;
-function abortableFuncware<E>(
-  wares: Abortware<E>
+// export type Abortware<F extends (...args: any[]) => any> = (params: Parameters<F>, abort: () => void) => void;
+export type AbortableEventware<E> = (event: E, abort: () => void) => void;
+export function abortableEventware<E>(
+  wares: AbortableEventware<E>
 ): Funcware<Func<E, any>> {
-  return (inner) => (ev) => {
-    let aborted = false;
-    wares(ev, () => { aborted = true; });
-    if (!aborted) return inner(ev);
+  console.log('abortableFuncware')
+  return (inner) => {
+    console.log("abortableFuncware inner", { inner });
+    return (ev) => {
+      console.log("abortableFuncware inner", { inner, ev });
+      let aborted = false;
+      wares(ev, () => {
+        aborted = true;
+      });
+      if (!aborted) return inner(ev);
+    };
   };
 }
-function abortableMiddleware<E>(
-  wares: Abortware<E>
+
+export function makeAbortable<
+  F extends (...params: any[]) => any
+>(fw: Funcware<F>) {
+  return (aw: AbortableEventware<Parameters<F>[0]>) => {
+    return (inner: F) => {
+      return (...params: Parameters<F>) => {
+        let aborted = false;
+        aw(params[0], () => { aborted = true; });
+        if (!aborted) return fw(inner)(...params);
+      }
+    }
+  }
+}
+
+export function abortableMiddleware<E>(
+  wares: AbortableEventware<E>
 ): Middleware<E> {
   return (event, next) => {
     let aborted = false;
@@ -21,9 +44,9 @@ function abortableMiddleware<E>(
     if (!aborted) next(event);
   };
 }
-function composeAbortware<E>(
-  wares: Abortware<E>[]
-): Abortware<E> {
+export function composeAbortware<E>(
+  wares: AbortableEventware<E>[]
+): AbortableEventware<E> {
   return (event, abort) => {
     let aborted = false;
     for (const listener of wares) {

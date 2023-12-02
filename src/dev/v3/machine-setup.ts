@@ -1,13 +1,17 @@
+import { Func } from "../../types";
+import { AbortableEventware, abortableEventware, makeAbortable } from "./Abortware";
 import {
+  Funcware,
   methodTap,
   methodUse
 } from "./method";
+import { Setup } from "./setup";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent } from "./types";
 
 //#region interceptors
 export const send = methodUse("send");
-export const begin = methodUse("begin");
+export const begin = methodUse("begin");// (fn)(target)
 export const before = methodUse("before");
 export const transition = methodUse("transition");
 export const resolve = methodUse("resolve");
@@ -27,13 +31,57 @@ export const enter = methodTap("enter");
 export const notify = methodTap("notify");
 export const end = methodTap("end");
 
+export const abortableEventware2 = 
+(handlerMachineSetup) =>
+<E>(
+  wares: AbortableEventware<E>
+):(<T>(target: T) => Funcware<Func<E, any>>) => {
+  console.log('bund abortableFuncware')
+
+  return (target) => {    
+    return handlerMachineSetup(
+      (inner) => {
+        console.log("abortableFuncware inner", { inner });
+        return (ev) => {
+          console.log("abortableFuncware inner", { inner, ev });
+          let aborted = false;
+          wares(ev, () => {
+            aborted = true;
+          });
+          if (!aborted) return inner(ev);
+        };
+      }
+    )
+  }
+}
+
+
+export const Hooks = {
+  // send,
+  begin: fn => it => begin(abortableEventware2(fn))(it),
+  before: abortableEventware2(before),
+  transition,
+  resolve,
+  guard: guardFn => (inner) => combineGuards(inner, guardFn),
+  handle: abortableEventware2(handle),
+  effect,
+  leave,
+  after,
+  enter,
+  notify,
+  end,
+};
+
+
 function composeHandlers<E extends ChangeCommandEvent>(outer: (value: E) => E, inner: (value: E) => E): (value: E) => E {
   return (ev) => outer(inner(ev));
 }
 
 function combineGuards<E extends ChangeCommandEvent>(first: (value: E) => boolean, next: (value: E) => boolean): (value: E) => boolean {
   return (ev) => {
-    return first(ev) && next(ev);
+    const res = first(ev) && next(ev);
+    console.log('combined guards', res)
+    return res
   };
 }
 //#endregion

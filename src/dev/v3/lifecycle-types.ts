@@ -1,6 +1,6 @@
 import { Middleware } from "../../extras/middleware";
 import { FlatMemberUnion, Members, TUnionToIntersection } from "../../types";
-import { Abortware } from "./Abortware";
+import { AbortableEventware } from "./Abortware";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import { AnyStatesFactory, FactoryMachineEvent, StateFromFactory, TransitionConfig } from './factory-machine';
 import { Funcware } from "./method";
@@ -12,12 +12,12 @@ type HookConfig<T> = {
 };
 
 export type TransitionHookExtensions<E> = {
-  begin: Abortware<E>;
+  begin: AbortableEventware<E>;
   resolve: Funcware<(ev: Partial<E>) => E>;
-  transition: Abortware<E>;
+  transition: AbortableEventware<E>;
   guard: Guard<E>;  
   handle: Handle<E>;
-  before: Abortware<E>;
+  before: AbortableEventware<E>;
   effect: Effect<E>;
   leave: Effect<E>;
   enter: Effect<E>;

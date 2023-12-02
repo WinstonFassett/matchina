@@ -4,6 +4,7 @@ import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { methodExtend, whenware } from "./method";
 import { Disposer, disposers } from "./setup";
 import { ChangeCommandEvent } from "./types";
+import { Hooks } from './machine-setup'
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -13,16 +14,16 @@ export function onLifecycle<
   config: StateEventHookConfig<Transitions, States>,
 ) {
   const d = [] as Disposer[]
-  console.log('onLifecycle', config)
   for (const stateKey in config) {
-    console.log({ stateKey })
+    // console.log({ stateKey })
     const fromStateConfig = config[stateKey];
     if (!fromStateConfig) {
       continue;
     }
-    useFilteredEventConfigs(machine, { from: stateKey}, ['enter', 'leave'], fromStateConfig, d)
-    console.log('proceeding')
-    const { on } = fromStateConfig;
+    const { on, ...stateConfig } = fromStateConfig;
+    useFilteredEventConfigs(machine, { from: stateKey}, stateConfig, d)
+    // console.log('proceeding')
+    
     if (on) {
       for (const eventKey in on) {
         
@@ -30,7 +31,7 @@ export function onLifecycle<
         if (!eventConfig) {
           continue;
         }
-        useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, ['guard', 'handle', 'before', 'after'], eventConfig, d)        
+        useFilteredEventConfigs(machine, { from: stateKey, type: eventKey }, eventConfig, d)        
       
       }
     }
@@ -44,16 +45,39 @@ function useFilteredEventConfigs<
 >(
   machine: FactoryMachine<States, Transitions>,
   filter: KeyedChangeEventFilter<ChangeCommandEvent>,
-  phases: (keyof StateEventHookConfig<Transitions, States>)[],
+  // phases: (keyof StateEventHookConfig<Transitions, States>)[],
   config: StateEventHookConfig<Transitions, States> | TransitionHookConfig<Transitions>,
   d: Disposer[]
 ) {  
-  console.log('useFilteredEventConfigs', { phases, filter, config })
-  for (const phase of phases) {
+  // console.log('useFilteredEventConfigs', { filter, config })
+
+
+  for (const phase in config) {
     const hook = config[phase as any]
     if (hook) {
-      console.log('hook', phase)
-      d.push(methodExtend(machine, phase as any, whenware(ev => isKeyedChangeEvent(ev, filter), hook)))
+      const hookHandler = Hooks[phase as any]
+      // take hook and wrap with funcware handler
+      // wrap funcware handler with whenware
+      // apply to machine using methodExtend
+      const hookFunc = hookHandler?.(hook) //(machine)
+      console.log('hook', phase, hookFunc)
+      d.push(
+        hookFunc ? 
+        methodExtend(machine, phase as any, whenware((ev) => isKeyedChangeEvent(ev, filter), (inner => {
+          console.log('inner', { phase, inner})
+          return (...params: any ) => {
+            console.log('hookfunc', params)
+            return hookFunc(inner)(...params)
+          }
+        
+        })))
+        :
+        methodExtend(
+          machine,
+          phase as any,          
+          whenware((ev) => isKeyedChangeEvent(ev, filter), hook),
+        ),
+      );
     }
   }
   return d

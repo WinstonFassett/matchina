@@ -44,7 +44,7 @@ export const methodTap =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: T[K]) =>
   (target: T) => {
-    return methodUse(methodName)(functionTap<K, T>(fn))(target);
+    return methodExtend(target, methodName, functionTap<K, T>(fn));
   };
 
 
@@ -75,7 +75,12 @@ export const methodTap =
     ware: Funcware<F>
   ) => {
     return (inner: F) => (...params: Parameters<F>) => {
-      if (test(...params)) return ware(inner)(...params);
+      console.log('whenware')
+      if (test(...params)) { 
+        console.log('PASSED')
+        return ware(inner)(...params);
+      }
+      console.log('FAILED')
       return inner(...params);
     }
   };

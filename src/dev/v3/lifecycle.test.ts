@@ -153,7 +153,8 @@ describe("onLifecycle usage", () => {
               console.groupEnd();
               return accept;
             },
-            before: (ev) => {
+            before: (ev, ...rest) => {
+              console.log("BEFORE", ev, ...rest)
               const { params: [amount] } = ev
               console.log("executing", amount);
               didBeforeExecute ||= ++count;
