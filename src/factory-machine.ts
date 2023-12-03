@@ -11,12 +11,14 @@ export function createFactoryMachine<
   states: SF,
   transitions: TC,
   // initialState: StateFromFactory<SF>,
-  init: KeysWithZeroArgs<SF> | StateFromFactory<SF>
-  // FunctionWithParameters<T> extends true 
+  init: KeysWithZeroArgs<SF> | StateFromFactory<SF>,
+  // FunctionWithParameters<T> extends true
   //     ? { key: string }
   //     : keyof T | undefined
 ): FactoryMachine<SF, TC> {
-  const initialState = (typeof init === "string" ? states[init]({}) : init) as StateFromFactory<SF>;
+  const initialState = (
+    typeof init === "string" ? states[init]({}) : init
+  ) as StateFromFactory<SF>;
   const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
     states,
@@ -31,8 +33,8 @@ export function createFactoryMachine<
 }
 
 type FunctionWithParameters<F> = F extends (...args: infer Args) => any
-  ? Args extends [] 
-    ? false 
+  ? Args extends []
+    ? false
     : true
   : false;
 

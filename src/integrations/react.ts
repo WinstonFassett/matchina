@@ -6,17 +6,16 @@ export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
   getChange: () => Change;
 }) {
-  
   const onSubscribe = useCallback(
     (listener: Listen<Change>) => {
-      const orig = machine.notify
-      machine.notify = (ev)=> {
+      const orig = machine.notify;
+      machine.notify = (ev) => {
         orig(ev);
         listener(ev);
-      }
+      };
       return () => {
-        machine.notify = orig
-      }      
+        machine.notify = orig;
+      };
     },
     [machine],
   );

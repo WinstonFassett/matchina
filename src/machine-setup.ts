@@ -1,4 +1,7 @@
-import { AbortableEventware, abortableEventware } from "./ext/funcware/abortable";
+import {
+  AbortableEventware,
+  abortableEventware,
+} from "./ext/funcware/abortable";
 import { methodExtender } from "./ext/methodware/method-extender";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
@@ -32,7 +35,9 @@ export const notify = tapMethod("notify");
 
 const effectHook =
   (name: string) =>
-  <E, F extends (...args: any[]) => any>(handler: (...params: Parameters<F>) => void) =>
+  <E, F extends (...args: any[]) => any>(
+    handler: (...params: Parameters<F>) => void,
+  ) =>
   (inner: F) =>
   (...args: Parameters<F>) => {
     console.log("EFFECT", name);
@@ -45,9 +50,16 @@ export const Hooks = {
   // send,
   transition,
   resolve,
-  guard: <T extends ChangeCommandEvent>(guardFn: Guard<T>) => (inner: Guard<T>) => combineGuards<T>(inner, guardFn),
-  handle: <E extends ChangeCommandEvent>(handleFn: Handle<E>) => (inner: Handle<E>) => composeHandlers(handleFn as Handle<E>, inner),
-  before: <E>(abortware: AbortableEventware<E>) => abortableEventware(abortware), // abortableEventware2(before, 'before'),
+  guard:
+    <T extends ChangeCommandEvent>(guardFn: Guard<T>) =>
+    (inner: Guard<T>) =>
+      combineGuards<T>(inner, guardFn),
+  handle:
+    <E extends ChangeCommandEvent>(handleFn: Handle<E>) =>
+    (inner: Handle<E>) =>
+      composeHandlers(handleFn as Handle<E>, inner),
+  before: <E>(abortware: AbortableEventware<E>) =>
+    abortableEventware(abortware), // abortableEventware2(before, 'before'),
   leave: effectHook("leave"),
   after: effectHook("after"),
   enter: effectHook("enter"),

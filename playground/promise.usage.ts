@@ -1,10 +1,10 @@
 // @noErrors
 import { TransitionConfig } from "..";
-import { delay } from "../extras/delay";
-import { createPromiseMachine } from "../extras/promise";
-import { withEvents } from "../extras/with-events";
-import { makeZen } from "../extras/zen";
-import { isChangeTypeToFrom, isKeyedChangeEvent } from "../extras/typeguards";
+import { delay } from "../src/dev/v1/extras/delay";
+import { createPromiseMachine } from "../src/dev/v1/extras/promise";
+import { withEvents } from "../src/dev/v1/extras/with-events";
+import { makeZen } from "../src/dev/v1/extras/zen";
+import { isChangeTypeToFrom, isKeyedChangeEvent } from "../src/typeguards";
 // ---cut---
 async function promiseUsage () {
   const machine = withEvents(createPromiseMachine(async (x: number) => {

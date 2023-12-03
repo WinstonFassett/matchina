@@ -75,7 +75,7 @@ function useFilteredEventConfigs<
           phase as keyof FactoryMachine<States, Transitions>,
           iff(
             (ev: ChangeCommandEvent) => isKeyedChangeEvent(ev, filter),
-            (hookHandler as Function)?.(hook, machine) ?? hook,
+            (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),
       );

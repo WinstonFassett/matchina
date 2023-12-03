@@ -8,6 +8,6 @@ export * from "./factory-machine";
 export * from "./factory-event-api";
 export * from "./matchbox";
 export * from "./states";
-export * from './machine-setup'
-export * from './lifecycle'
-export * from './matchina'
+export * from "./machine-setup";
+export * from "./lifecycle";
+export * from "./matchina";

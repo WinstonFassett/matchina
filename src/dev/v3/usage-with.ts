@@ -19,7 +19,7 @@ const m4 = createFactoryMachine(
     Resolved: {},
     Rejected: {},
   },
-  'Idle'
+  "Idle",
 );
 m4.getChange().to;
 

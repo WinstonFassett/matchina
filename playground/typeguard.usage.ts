@@ -4,7 +4,7 @@ import {
   isKeyedChangeEvent,
   isChangeTypeToFrom,
   asChangeTypeToFrom,
-} from "../src/dev/v1/extras/typeguards";
+} from "../src/typeguards";
 
 export {};
 

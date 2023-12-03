@@ -38,8 +38,8 @@ type FactoryMachineApi<
   T extends TransitionConfig<S>,
   S extends AnyStatesFactory,
 > = object &
-// Simplify<
-FlatEventSenders<T, S>
+  // Simplify<
+  FlatEventSenders<T, S>;
 // >;
 
 type WithApi<
