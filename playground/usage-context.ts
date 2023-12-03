@@ -1,7 +1,7 @@
 import { defineStates } from "../src/states";
 import { createApi } from "../src/factory-event-api";
 import { createFactoryMachine } from "../src/factory-machine";
-import { forwardData, updateState, setInState } from "../src/dev/v3/update-state";
+import { forwardData, updateState, setInState } from "../src/transition-helpers";
 import { createPromiseMachine } from "../src/promise";
 
 // ---cut---

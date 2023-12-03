@@ -1,13 +1,13 @@
-import { MachineContextEvent } from "../v2/machine-types-v2";
+import { ChangeCommandEvent } from "./types";
 
-export function updateState<E extends MachineContextEvent<any>>(
+export function updateState<E extends ChangeCommandEvent>(
   fn: (state: E["from"]["data"]) => Partial<E["to"]["data"]>,
 ) {
   return (previous: E) => {
     return { ...previous.from, data: fn(previous) };
   };
 }
-export function setInState<E extends MachineContextEvent<any>>(
+export function setInState<E extends ChangeCommandEvent>(
   state: Partial<E["to"]["data"]>,
 ) {
   return (ev: E) => {
@@ -19,7 +19,7 @@ export function forwardData<
   DataFunc extends (...args: any[]) => Parameters<StateFunc>[1],
 >(stateFunc: StateFunc, getData: DataFunc) {
   return (...params: Parameters<DataFunc>) => {
-    return (ev: MachineContextEvent<any>) => {
+    return (ev: ChangeCommandEvent) => {
       return stateFunc(ev.from.data, getData(...params));
     };
   };
