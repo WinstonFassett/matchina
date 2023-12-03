@@ -20,7 +20,7 @@ export function onLifecycle<
   const d = [] as Disposer[];
   for (const key in config) {
     const stateKey = key === "*" ? undefined : key;
-    const fromStateConfig = config[key];
+    const fromStateConfig = config[key as keyof typeof config];
     if (!fromStateConfig) {
       continue;
     }
@@ -28,15 +28,15 @@ export function onLifecycle<
     console.log({ enter, leave });
     // useFilteredEventConfigs(machine, { _:'state', from: stateKey}, stateConfig, d)
     if (enter) {
-      useFilteredEventConfigs(machine, { to: stateKey }, { enter }, d);
+      useFilteredEventConfigs(machine, { to: stateKey }, { enter } as any, d);
     }
     if (leave) {
-      useFilteredEventConfigs(machine, { from: stateKey }, { leave }, d);
+      useFilteredEventConfigs(machine, { from: stateKey }, { leave } as any, d);
     }
     if (on) {
       for (const onKey in on) {
         const eventKey = onKey === "*" ? undefined : onKey;
-        const eventConfig = on[onKey];
+        const eventConfig = on[onKey as keyof typeof on];
         if (!eventConfig) {
           continue;
         }
@@ -65,9 +65,9 @@ function useFilteredEventConfigs<
 ) {
   // console.log('useFilteredEventConfigs', { filter })
   for (const phase in config) {
-    const hook = config[phase as any];
+    const hook = config[phase as keyof typeof config];
     if (hook) {
-      const hookHandler = Hooks[phase as any];
+      const hookHandler = (Hooks as typeof Hooks)[phase as keyof typeof Hooks];
       console.log("add hook", phase, filter);
       d.push(
         extendMethod(
