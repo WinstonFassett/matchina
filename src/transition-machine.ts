@@ -101,4 +101,6 @@ export interface ChangeMachine<E extends Change<any>> {
 export interface Resolver<C extends ChangeEvent<any, any, any>> {
   resolve: (value: ResolveEvent<C>) => C | undefined;
 }
-export type ResolveEvent<C> = Omit<C, 'to'>
+export type ResolveEvent<C> = C & {
+  to?: never;
+};
