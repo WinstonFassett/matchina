@@ -1,5 +1,5 @@
-import { defineMachine, defineStates, withSubscribe } from ".."
-import { withEvents } from "../extras/with-events"
+import { defineMachine, defineStates, withSubscribe } from "../src/dev/v1/"
+import { withEvents } from "../src/dev/v1/extras/with-events"
 
 // ---cut---
 const states = defineStates({

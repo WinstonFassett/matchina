@@ -1,5 +1,5 @@
-import { defineMachine, defineStates, onLifecycle } from ".."
-import { withEvents } from "../extras/with-events"
+import { defineMachine, defineStates, onLifecycle } from "../src/dev/v1"
+import { withEvents } from "../src/dev/v1/extras/with-events"
 
 const states = defineStates({
   Idle: undefined, 
