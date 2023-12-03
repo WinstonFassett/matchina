@@ -21,7 +21,7 @@ This code shows how to:
 
 ```tsx
 import { createPromiseMachine, withSubscribe } from "matchina";
-import { useMachine } from "matchina/extras/react";
+import { useMachine } from "matchina/integrations/react";
 
 const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000, name = 'unnamed') =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));

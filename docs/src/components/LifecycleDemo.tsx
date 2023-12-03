@@ -9,7 +9,7 @@ import {
   guard,
   extendMethod
 } from "matchina";
-import { useMachine } from "matchina/extras/react";
+import { useMachine } from "matchina/integrations/react";
 
 const slowlyAddTwoNumbers = (
   x: number,

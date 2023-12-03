@@ -12,10 +12,10 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./extras/react": {
-      "types": "./dist/extras/react.d.ts",
-      "import": "./dist/extras/react.mjs",
-      "require": "./dist/extras/react.js"
+    "./integrations/react": {
+      "types": "./dist/integrations/react.d.ts",
+      "import": "./dist/integrations/react.mjs",
+      "require": "./dist/integrations/react.js"
     }
   },
   "main": "./dist/index.js",
@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "build": "unbuild && size-limit",
-    "shim-docs": "cp ./src/extras/react.ts ./extras/react/index.ts",
+    "shim-docs": "cp ./src/integrations/react.ts ./integrations/react/index.ts",
     "dev": "vitest dev",
     "play": "shx ls ./playground | xargs -I {} bun run ./playground/{}",
     "play:watch": "nodemon --watch src --watch playground -e js,mjs,cjs,json,ts,tsx --exec \"bun run play\"",

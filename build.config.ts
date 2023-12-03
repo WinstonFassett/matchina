@@ -20,8 +20,8 @@ export default defineBuildConfig({
       format: "cjs",      
     },    
     {
-      input: 'src/extras/react/',
-      outDir: "./dist/extras/react",
+      input: 'src/integrations/react/',
+      outDir: "./dist/integrations/react",
       builder: 'mkdist'
     }
   ],
