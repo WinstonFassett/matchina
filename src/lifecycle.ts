@@ -14,7 +14,7 @@ export function onLifecycle<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
 >(
-  machine: FactoryMachine<States, Transitions>,
+  machine: FactoryMachine<States, Transitions> ,
   config: StateEventHookConfig<Transitions, States>,
 ) {
   const d = [] as Disposer[];
