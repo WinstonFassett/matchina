@@ -151,7 +151,7 @@ export function LifecycleDemo({}) {
           {JSON.stringify(
             {
               "Current State Key": change.to.key,
-              "Current State Data": change.from.data,
+              "Current State Data": change.from?.data,
               "Last Change": change,
             },
             null,
