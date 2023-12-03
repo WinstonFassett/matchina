@@ -37,10 +37,10 @@ export function createApi<
 type FactoryMachineApi<
   T extends TransitionConfig<S>,
   S extends AnyStatesFactory,
-> = object &
-  // Simplify<
-  FlatEventSenders<T, S>;
-// >;
+> = Simplify<
+  object &
+  FlatEventSenders<T, S>
+>;
 
 type WithApi<
   T extends TransitionConfig<S>,
