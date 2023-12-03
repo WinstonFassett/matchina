@@ -1,5 +1,6 @@
 import { States, defineStates } from "./states";
 import { createFactoryMachine } from "./factory-machine";
+import { StateEventTransitionFuncs } from "./factory-event-api";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;
@@ -66,3 +67,4 @@ export type PromiseContextStates<F extends PromiseCallback> =
 export type PromiseTransitions = PromiseMachine<any>["transitions"];
 export type PromiseContextStateKey = keyof PromiseContextStates<any>;
 export type PromiseStateKey = keyof PromiseStates<any>;
+type X = StateEventTransitionFuncs<PromiseTransitions, PromiseStates<any,any>>

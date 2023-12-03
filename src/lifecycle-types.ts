@@ -187,7 +187,7 @@ export type StateEventHookConfig<
   Transitions extends TransitionConfig<States>,
   States extends AnyStatesFactory,
 > = {
-  [StateKey in keyof Transitions | "*"]?: {
+  [StateKey in string & (keyof Transitions | "*")]?: {
     on?: On<Transitions, States, StateKey>;
   } & StateTransitionHookConfig<Transitions, States, StateKey>;
 };
