@@ -3,7 +3,7 @@ import {
   StateMachine,
   StatesFactory,
   TransitionConfig,
-} from "../machine-types";
+} from "../dev/v1/machine-types";
 import {
   UnionSpec,
   MatchboxFactory,
@@ -11,7 +11,7 @@ import {
   MatchCases,
   Member,
   matchboxFactory,
-} from "../../../matchbox";
+} from "../dev/v1/matchbox";
 
 export type AnyEffect = Member<any, any, "effect">;
 

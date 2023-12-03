@@ -4,7 +4,7 @@ import {
   createPromiseMachine,
   PromiseTransitions,
 } from "../src/promise";
-import { delay, delayer } from "../src/dev/v1/extras/delay";
+import { delay, delayer } from "../src/extras/delay";
 import { createApi, createFactoryMachine, withApi } from "../src";
 
 describe("createPromiseMachine", () => {
