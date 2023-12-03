@@ -1,9 +1,6 @@
-import { States, defineStates } from "./states";
-import { createFactoryMachine } from "./factory-machine";
 import { StateEventTransitionFuncs } from "./factory-event-api";
-import { TransitionContext } from "./types";
-import { extendMethod } from "./ext";
-import { handle } from "./machine-setup";
+import { createFactoryMachine } from "./factory-machine";
+import { States, defineStates } from "./states";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;

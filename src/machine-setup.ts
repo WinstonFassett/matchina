@@ -5,7 +5,7 @@ import {
 import { methodExtender } from "./ext/methodware/method-extender";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
-import { ChangeCommandEvent, Effect, Guard, Handle } from "./types";
+import { ChangeCommandEvent, Guard, Handle } from "./types";
 
 // #region interceptors
 export const send = methodExtender("send");

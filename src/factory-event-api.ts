@@ -1,10 +1,10 @@
-import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 import {
   AnyStatesFactory,
   FactoryMachine,
-  TransitionConfig,
   StateFromFactory,
+  TransitionConfig,
 } from "./factory-machine";
+import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
 export function createApi<
   SF extends AnyStatesFactory,

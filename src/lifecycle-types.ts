@@ -1,11 +1,6 @@
 import { Middleware } from "./dev/v1/middleware";
-import {
-  FlatMemberUnion,
-  Members,
-  TUnionToIntersection,
-} from "./utility-types";
-import { Funcware } from "./ext/funcware/funcware";
 import { AbortableEventware } from "./ext/funcware/abortable";
+import { Funcware } from "./ext/funcware/funcware";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import {
   AnyStatesFactory,
@@ -13,7 +8,12 @@ import {
   StateFromFactory,
   TransitionConfig,
 } from "./factory-machine";
-import { Guard, Handle, Effect } from "./types";
+import { Effect, Guard, Handle } from "./types";
+import {
+  FlatMemberUnion,
+  Members,
+  TUnionToIntersection,
+} from "./utility-types";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];

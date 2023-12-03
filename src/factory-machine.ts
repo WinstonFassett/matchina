@@ -1,6 +1,6 @@
 import { StateMachinery, createStateMachine } from "./state-machine";
-import { ChangeCommandEvent, State } from "./types";
 import { ResolveEvent } from "./transition-machine";
+import { ChangeCommandEvent, State } from "./types";
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,

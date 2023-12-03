@@ -1,9 +1,5 @@
-// type Methodware<T, K extends keyof T, M extends MethodOf<T, K> = MethodOf<T, K>> =
-//   Funcware<M>
-
 import { Funcware } from "../funcware/funcware";
 
-// (inner: MethodOf<T, K>) => MethodOf<T, K>;
 export function extendMethod<T, K extends keyof T>(
   target: T,
   methodName: K,

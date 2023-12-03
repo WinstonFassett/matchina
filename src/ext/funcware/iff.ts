@@ -6,12 +6,9 @@ export const iff = <F extends (...params: any[]) => any>(
 ) => {
   return (inner: F) =>
     (...params: Parameters<F>) => {
-      // console.log('whenware')
       if (test(...params)) {
-        // console.log('PASSED')
         return ware(inner)(...params);
       }
-      // console.log('FAILED')
       return inner(...params);
     };
 };
