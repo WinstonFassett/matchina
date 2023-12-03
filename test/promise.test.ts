@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { PromiseStates, createPromiseMachine, PromiseTransitions } from "../src/promise";
+import {
+  PromiseStates,
+  createPromiseMachine,
+  PromiseTransitions,
+} from "../src/promise";
 import { delay, delayer } from "../src/dev/v1/extras/delay";
 import { createApi, createFactoryMachine, withApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const machine = withApi(
-      createPromiseMachine(delayer(1, "Resolved Data")),
-    );
+    const machine = withApi(createPromiseMachine(delayer(1, "Resolved Data")));
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
@@ -47,17 +49,21 @@ describe("createPromiseMachine", () => {
   });
 
   describe("with extended transitions", () => {
-    it("should allow enhancing the transition config",  () => {
-      const machine = createFactoryMachine(PromiseStates, {
-        ...PromiseTransitions, 
-        Pending: { ...PromiseTransitions.Pending, cancel: 'Idle' }
-      }, 'Idle')
-      const api = createApi(machine)
-      expect(machine.getState().key).toBe('Idle')
-      api.execute()
-      expect(machine.getState().key).toBe('Pending')
-      api.cancel()
-      expect(machine.getState().key).toBe('Idle')
-    })
-  })
+    it("should allow enhancing the transition config", () => {
+      const machine = createFactoryMachine(
+        PromiseStates,
+        {
+          ...PromiseTransitions,
+          Pending: { ...PromiseTransitions.Pending, cancel: "Idle" },
+        },
+        "Idle",
+      );
+      const api = createApi(machine);
+      expect(machine.getState().key).toBe("Idle");
+      api.execute();
+      expect(machine.getState().key).toBe("Pending");
+      api.cancel();
+      expect(machine.getState().key).toBe("Idle");
+    });
+  });
 });

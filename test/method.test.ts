@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { condition, extendMethod, tapMethod, methodExtender } from "../src/ext";
+import { extendMethod, tapMethod, methodExtender } from "../src/ext";
+import { condition } from "../src/extras/condition";
 
 describe("methodExtend", () => {
   it("should extend the method correctly", () => {

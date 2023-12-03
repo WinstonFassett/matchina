@@ -118,10 +118,9 @@ export function extendFactory<
   factory: UnionFactory<Config>,
   config: Config2,
 ): UnionFactory<Config & Config2> {
-  return Object.assign(
-    factory, 
-    matchboxFactory(config)
-  ) as UnionFactory<Config & Config2>;
+  return Object.assign(factory, matchboxFactory(config)) as UnionFactory<
+    Config & Config2
+  >;
 }
 
 export function matchbox<

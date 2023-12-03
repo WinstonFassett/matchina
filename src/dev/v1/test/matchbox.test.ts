@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MatchboxFactory, extendFactory, matchboxFactory } from "../../../matchbox";
+import {
+  MatchboxFactory,
+  extendFactory,
+  matchboxFactory,
+} from "../../../matchbox";
 
 describe("matchboxFactory", () => {
   const testConfig = {

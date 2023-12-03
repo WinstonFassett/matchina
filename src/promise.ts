@@ -33,7 +33,7 @@ export type PromiseCallback = (...args: any[]) => Promise<any>;
 
 export function createPromiseMachine<F extends PromiseCallback>(
   makePromise?: (...args: Parameters<F>) => ReturnType<F>,
-  init? : () => void
+  init?: () => void,
 ) {
   // const [states, transitions] = init ? init(states, transitions, initialState)
   const states = PromiseStates as unknown as PromiseStates<F>;

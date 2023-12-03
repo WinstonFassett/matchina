@@ -26,6 +26,7 @@ setup(m1)(
   notify(
     condition(
       (ev) => ev.type === "start",
+      // eslint-disable-next-line unicorn/consistent-function-scoping
       (ev) => (ev) => {},
     ),
   ),
@@ -47,7 +48,7 @@ const m2 = createStateMachine(
 );
 
 createSetup<typeof m2>(
-  guard((ev) => true),
+  guard((ev) => !!ev),
   leave((ev) => console.log("before", ev)),
 )(m2);
 
@@ -68,13 +69,13 @@ const m4 = createFactoryMachine(
   },
   states.Idle(),
 );
-m4.getChange().to;
+// m4.getChange().to.key ;
 m4.send("execute", 1);
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   leave((ev) => {
-    if (ev.type == "execute") {
+    if (ev.type === "execute") {
       console.log("executing");
     }
   }),
@@ -101,13 +102,13 @@ setup(m4)(
     condition(
       (ev) => ev.type === "execute",
       (ev) => {
-        ev;
+        console.log({ ev });
       },
     ),
   ),
   enter(
     condition(
-      (ev) => ev.type == "execute",
+      (ev) => ev.type === "execute",
       (ev) => {
         console.log("entered condition");
         return (ev) => {
@@ -133,7 +134,9 @@ m4.send("execute", 1);
 // listenTo(m4)("click", (ev) => {});
 
 function withNanoSubscribe<T>(target: T & Partial<{ subscribe: any }>) {
-  if (target.subscribe) { return target; }
+  if (target.subscribe) {
+    return target;
+  }
   const [subscribe, emit, listeners] = nanosubscriber();
   return Object.assign(target, {
     subscribe,
@@ -151,7 +154,7 @@ const unsub = notify((ev) => console.log(ev))(m4);
 // add a global reset transition
 
 // setup(m4)(
-//   addTransitions('*', {    
+//   addTransitions('*', {
 //     reset: 'Idle'
 //   })
 // )
