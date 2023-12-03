@@ -1,9 +1,10 @@
-import { defineStates } from "../../states";
+import { defineStates } from "../src/states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
-import { forwardData, updateState, setInState } from "./update-state";
+import { forwardData, updateState, setInState } from "../src/dev/v3/update-state";
 import { createPromiseMachine } from "./promise";
 
+// ---cut---
 const machine = createPromiseMachine(
   (x: number) => new Promise((resolve) => setTimeout(resolve, x)),
 );

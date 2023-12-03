@@ -75,6 +75,10 @@ export default defineConfig({
               label: "Timsy Compatibility",
               link: "/guides/timsy/",
             },
+            {
+              label: "Context", 
+              link: "/guides/context/"
+            },
           ],
         },
         // {
