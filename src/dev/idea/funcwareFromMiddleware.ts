@@ -1,4 +1,4 @@
-import { Middleware } from "../v1/middleware";
+import { Middleware } from "../../types";
 import { Func } from "../types";
 import { Funcware } from "../../ext/funcware/funcware";
 

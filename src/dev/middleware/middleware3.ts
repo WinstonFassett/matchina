@@ -1,4 +1,4 @@
-import { Func } from "../v1/types";
+import { Func } from "../../utility-types";
 
 export {};
 

@@ -1,4 +1,4 @@
-import { Middleware } from "../v1/middleware";
+import { Middleware } from "../../types";
 import { AbortableEventware } from "../../ext/funcware/abortable";
 
 export function abortableMiddleware<E>(

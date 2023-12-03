@@ -10,6 +10,6 @@ export * from "./extras/zen";
 export * from "./extras/methodware";
 export * from "./middleware";
 export * from "./extras/delay";
-export * from "./extras/nanosubscriber";
+export * from "../../extras/nanosubscriber";
 export * from "./extras/with-subscribe";
 export * from "./extras/with-events";

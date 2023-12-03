@@ -1,4 +1,4 @@
-import { nanosubscriber } from "./dev/v1/extras/nanosubscriber";
+import { nanosubscriber } from "./extras/nanosubscriber";
 import { defineStates } from "./states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";

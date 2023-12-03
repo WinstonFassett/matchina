@@ -1,5 +1,4 @@
-import { Middleware } from "../v1/middleware";
-
+import { Middleware } from "../../types";
 export type Funcware<P extends any[], R> = Middleware<[params: P, result: R]>;
 
 const noop = () => {};

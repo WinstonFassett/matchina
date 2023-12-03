@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineMachine } from "../src/dev/v1/machine";
 import { defineStates } from "../src/states";
-import { withEvents } from "../src/dev/v1/extras/with-events";
+import { createFactoryMachine, withApi } from "../src";
+
 
 const makeStates = () =>
   defineStates({
@@ -10,65 +10,49 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  return withEvents(
-    defineMachine(states, {
-      Initial: {
-        done: "Done",
-        doneFunc: (done: number) =>
-          states[done === 100 ? "Done" : "Initial"](true),
-        doneAdvFunc: (done: string) => (_, event, def) => {
-          return states[done === "DONE" ? "Done" : "Initial"](
-            event === "doneAdvFunc",
-          );
-        },
+  const m = createFactoryMachine(states, {
+    Initial: {
+      done: "Done",
+      doneFunc: (done: number) =>
+        states[done === 100 ? "Done" : "Initial"](true),
+      doneAdvFunc: (done: string) => ({ type }) => {
+        return states[done === "DONE" ? "Done" : "Initial"](
+          type === 'doneAdvFunc',
+        );
       },
-      Done: {},
-    }).create("Initial"),
-  );
+    },
+    Done: {},
+  }, 'Initial')
+  const m2 = withApi(m)    
+  return m2
 };
 
-describe("defineMachine", () => {
-  it("exposes its states and transitions", () => {
-    const states = defineStates({});
-    const transitions = {};
-    const Machine = defineMachine(states, transitions);
-    expect(Machine.states).toBe(states);
-    expect(Machine.transitions).toBe(transitions);
-  });
-});
-
-describe("machine instance", () => {
-  it("exposes its config with initialState", () => {
-    const states = defineStates({});
-    const transitions = {};
-    const machine = defineMachine(states, transitions).create(1 as never);
-    expect(machine.context.initialState).toBe(1);
-  });
+describe("createFactoryMachine", () => {
 
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {
       expect(
-        machine.context.states.Initial().match({
+        machine.states.Initial().match({
           Initial: () => 100,
           _: () => 0,
         }),
       ).toBe(100);
 
       expect(
-        machine.context.states.Initial().match({
+        machine.states.Initial().match({
           _: () => 1,
         }),
       ).toBe(1);
 
       expect(() =>
-        machine.context.states.Initial().match({
+        machine.states.Initial().match({
           InvalidKey: () => 1,
         } as any),
       ).toThrow();
 
       expect(
-        machine.context.states.Done(true, "test message").match(
+        machine.states.Done(true, "test message").match(
           {
             Done: (ok) => ok,
           },
@@ -77,30 +61,30 @@ describe("machine instance", () => {
       ).toStrictEqual({ ok: true, msg: "test message" });
     });
   });
-  describe("update()", () => {
-    describe("updater", () => {
-      it("receives current event as context", () => {
-        const machine = makeMachine();
-        machine.update((context) => {
-          const event = machine.getChange();
-          expect(context.from).toEqual(event.from);
-          return context;
-        });
-      });
-      it("returns new context", () => {
-        const machine = makeMachine();
-        machine.update((context) => {
-          return context;
-        });
-      });
-      it("new context may update state", () => {
-        const machine = makeMachine();
-        machine.update((context) => {
-          return context;
-        });
-      });
-    });
-  });
+  // describe("update()", () => {
+  //   describe("updater", () => {
+  //     it("receives current event as context", () => {
+  //       const machine = makeMachine();
+  //       machine.update((context) => {
+  //         const event = machine.getChange();
+  //         expect(context.from).toEqual(event.from);
+  //         return context;
+  //       });
+  //     });
+  //     it("returns new context", () => {
+  //       const machine = makeMachine();
+  //       machine.update((context) => {
+  //         return context;
+  //       });
+  //     });
+  //     it("new context may update state", () => {
+  //       const machine = makeMachine();
+  //       machine.update((context) => {
+  //         return context;
+  //       });
+  //     });
+  //   });
+  // });
   // describe("getChange", () => {
   //   it("ignores invalid transitions", () => {
   //     const machine = makeMachine();
@@ -111,18 +95,18 @@ describe("machine instance", () => {
   describe("events transitioners", () => {
     it("handles string targets", () => {
       const machine = makeMachine();
-      machine.event.done(true);
+      machine.api.done(true);
       expect(machine.getChange().to.key).toBe("Done");
     });
     it("handles function targets", () => {
       const machine = makeMachine();
-      machine.event.doneFunc(100);
+      machine.api.doneFunc(100);
       expect(machine.getChange().to.key).toBe("Done");
     });
     it("handles advanced function targets", () => {
       const machine = makeMachine();
-      // machine.event
-      machine.event.doneAdvFunc("DONE");
+      // machine.api
+      machine.api.doneAdvFunc("DONE");
       expect(machine.getChange().to.key).toBe("Done");
     });
   });
@@ -132,21 +116,21 @@ describe("machine instance", () => {
   describe("events", () => {
     it("invoke send", () => {});
   });
-  it("events can match", () => {
-    const machine = makeMachine();
-    machine.event.done(true);
-    const mustBeOk = machine.getChange().match({
-      done: (ok) => {
-        console.log("ok?", ok);
-        return "ok" as const;
-      },
-    });
-    console.log({ mustBeOk });
-    const mustBeThing = machine.getChange().match({
-      _: () => {
-        return "thing" as const;
-      },
-    });
-    console.log({ mustBeThing });
-  });
+  // it("events can match", () => {
+  //   const machine = makeMachine();
+  //   machine.api.done(true);
+  //   const mustBeOk = machine.getChange().match({
+  //     done: (ok) => {
+  //       console.log("ok?", ok);
+  //       return "ok" as const;
+  //     },
+  //   });
+  //   console.log({ mustBeOk });
+  //   const mustBeThing = machine.getChange().match({
+  //     _: () => {
+  //       return "thing" as const;
+  //     },
+  //   });
+  //   console.log({ mustBeThing });
+  // });
 });

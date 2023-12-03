@@ -1,5 +1,5 @@
 import { StateMachine } from "../machine-types";
-import { nanosubscriber } from "./nanosubscriber";
+import { nanosubscriber } from "../../../extras/nanosubscriber";
 import { onUpdate } from "./on-update";
 import {
   ChangeEventFilter,
