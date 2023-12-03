@@ -1,9 +1,8 @@
 import { createNanoEvents } from "nanoevents";
-import { atom } from "nanostores";
+import { setup } from "../../ext/setup";
+import { createFactoryMachine } from "../../factory-machine";
+import { enter, guard, leave, notify } from "../../machine-setup";
 import { defineStates } from "../../states";
-import { createFactoryMachine } from "./factory-machine";
-import { guard, leave, enter, notify } from "./machine-setup";
-import { setup } from "./setup";
 
 const states = defineStates({
   Idle: undefined,
@@ -20,7 +19,7 @@ const m4 = createFactoryMachine(
     Resolved: {},
     Rejected: {},
   },
-  states.Idle(),
+  'Idle'
 );
 m4.getChange().to;
 

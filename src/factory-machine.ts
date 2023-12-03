@@ -6,11 +6,17 @@ export function createFactoryMachine<
   SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
   E extends FactoryMachineEvent<TC, SF>,
+  // I extends StateFromFactory<SF>
 >(
   states: SF,
   transitions: TC,
-  initialState: StateFromFactory<SF>,
+  // initialState: StateFromFactory<SF>,
+  init: KeysWithZeroArgs<SF> | StateFromFactory<SF>
+  // FunctionWithParameters<T> extends true 
+  //     ? { key: string }
+  //     : keyof T | undefined
 ): FactoryMachine<SF, TC> {
+  const initialState = (typeof init === "string" ? states[init]({}) : init) as StateFromFactory<SF>;
   const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
     states,
@@ -23,6 +29,16 @@ export function createFactoryMachine<
   });
   return machine as any;
 }
+
+type FunctionWithParameters<F> = F extends (...args: infer Args) => any
+  ? Args extends [] 
+    ? false 
+    : true
+  : false;
+
+type KeysWithZeroArgs<T> = {
+  [K in keyof T]: FunctionWithParameters<T[K]> extends true ? never : K;
+}[keyof T];
 
 export function nextFactoryState<
   SF extends AnyStatesFactory,
@@ -81,7 +97,7 @@ export type StateFromFactory<
   StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
 
-export type AnyStatesFactory = Record<string, (...params: any[]) => State>;
+export type AnyStatesFactory = Record<string, (...params: any) => State>;
 
 export type StatesFactory<T> = {
   [key: string]: (...args: any[]) => T;
