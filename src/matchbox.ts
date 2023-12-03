@@ -111,6 +111,19 @@ export function matchboxFactory<
   return createObj;
 }
 
+export function extendFactory<
+  Config extends UnionSpec,
+  Config2 extends UnionSpec,
+>(
+  factory: UnionFactory<Config>,
+  config: Config2,
+): UnionFactory<Config & Config2> {
+  return Object.assign(
+    factory, 
+    matchboxFactory(config)
+  ) as UnionFactory<Config & Config2>;
+}
+
 export function matchbox<
   Config,
   Tag extends keyof Config,

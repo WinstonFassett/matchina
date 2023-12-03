@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MatchboxFactory, matchboxFactory } from "../../../matchbox";
+import { MatchboxFactory, extendFactory, matchboxFactory } from "../../../matchbox";
 
 describe("matchboxFactory", () => {
   const testConfig = {
@@ -94,5 +94,41 @@ describe("matchboxFactory", () => {
       const box = Box.A();
       expect(box.is("B")).toBe(false);
     });
+  });
+});
+
+describe("extendFactory", () => {
+  const testConfig = {
+    A: undefined,
+    B: { id: 1 },
+    C: (data: string) => ({ data }),
+  } as const;
+  let Box: MatchboxFactory<typeof testConfig, "tag">;
+  beforeEach(() => {
+    Box = matchboxFactory(testConfig, "tag");
+  });
+
+  it("should extend the factory with the given config", () => {
+    const extendedFactory = extendFactory(Box, {
+      D: { name: "John" },
+      E: (age: number) => ({ age }),
+    });
+
+    expect(Object.keys(extendedFactory)).toEqual(["A", "B", "C", "D", "E"]);
+  });
+
+  it("should return a factory with combined config", () => {
+    const extendedFactory = extendFactory(Box, {
+      D: { name: "John" },
+      E: (age: number) => ({ age }),
+    });
+
+    const d = extendedFactory.D();
+    expect(d.tag).toBe("D");
+    expect(d.data).toEqual({ name: "John" });
+
+    const e = extendedFactory.E(25);
+    expect(e.tag).toBe("E");
+    expect(e.data).toEqual({ age: 25 });
   });
 });
