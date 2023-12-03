@@ -1,13 +1,14 @@
 import { PromiseCallback, PromiseMachine } from "./promise";
 
 
-export function onPromise<F extends PromiseCallback, Type = 'execute', Resolve = 'resolve', Reject = 'reject'>(
-  machine: PromiseMachine<F>,
+export const handlePromise = <F extends PromiseCallback, Type = 'execute', Resolve = 'resolve', Reject = 'reject'>(
   makePromise: F,
   trigger = 'execute' as Type,
   resolve = 'resolve' as Resolve,
   reject = 'reject' as Reject
-) {
+  ) => (
+  machine: PromiseMachine<F>,
+) => {
   const next = machine.handle;
   machine.handle = (ev) => {
     if (ev.type === trigger) {
