@@ -1,6 +1,6 @@
-import { Middleware } from "../../v1/middleware";
-import { Func } from "../../types";
-import { Funcware } from "../../../ext/Funcware";
+import { Middleware } from "../v1/middleware";
+import { Func } from "../types";
+import { Funcware } from "../../ext/funcware/funcware";
 
 function funcwareFromMiddleware<E>(
   middleware: Middleware<E>,
@@ -17,11 +17,11 @@ function middlewareFromFuncware<E, P extends any[], R>(
   fw: Funcware<Func<[...P], R>>,
 ): Middleware<[params: P, result: R]> {
   return ([params, _], next) => {
-    return fw(([...args]) => {
+    return fw((...args) => {
       const invocation = [args, undefined as R] as [P, R];
       next([args, invocation[1]]);
       return invocation[1];
-    })([...params]);
+    })(...params);
   };
 }
 type FuncMiddleware<F extends (...args: any) => any> = Middleware<

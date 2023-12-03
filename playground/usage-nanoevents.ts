@@ -1,8 +1,8 @@
 import { createNanoEvents } from "nanoevents";
-import { setup } from "../../ext/setup";
-import { createFactoryMachine } from "../../factory-machine";
-import { enter, guard, leave, notify } from "../../machine-setup";
-import { defineStates } from "../../states";
+import { setup } from "../src/ext/setup";
+import { createFactoryMachine } from "../src/factory-machine";
+import { enter, guard, leave, notify } from "../src/machine-setup";
+import { defineStates } from "../src/states";
 
 const states = defineStates({
   Idle: undefined,

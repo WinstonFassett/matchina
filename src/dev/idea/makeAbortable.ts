@@ -1,5 +1,5 @@
-import { Funcware } from "../../../ext/Funcware";
-import { AbortableEventware } from "../../../ext/abortableEventware";
+import { Funcware } from "../../ext/funcware/funcware";
+import { AbortableEventware } from "../../ext/funcware/abortable";
 
 export function makeAbortable<F extends (...params: any[]) => any>(
   fw: Funcware<F>,

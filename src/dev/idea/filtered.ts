@@ -1,4 +1,4 @@
-import { Func } from "../../types";
+import { Func } from "../types";
 
 export function filtered<P extends any[], R, F extends Func<P, R>>(
   fn: (...params: Parameters<F>) => boolean,

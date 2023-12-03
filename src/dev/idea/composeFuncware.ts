@@ -1,4 +1,4 @@
-import { Funcware } from "../../../ext/Funcware";
+import { Funcware } from "../../ext/funcware/funcware";
 
 export function composeFuncware<F extends (...params: any[]) => any>(
   fns: Funcware<F>[],

@@ -1,4 +1,4 @@
-import { AbortableEventware } from "../../../ext/abortableEventware";
+import { AbortableEventware } from "../../ext/funcware/abortable";
 
 export function composeAbortware<E>(
   wares: AbortableEventware<E>[],
