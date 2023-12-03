@@ -1,8 +1,8 @@
-import { defineStates } from "../src/dev/v1";
-import { onLifecycle } from "../src/dev/v1/extras/lifecycle";
-import { withEvents } from "../src/dev/v1/extras/with-events";
-import { makeZen } from "../src/dev/v1/extras/zen";
-import { defineMachine } from "../src/dev/v1/machine";
+import { defineStates } from ".";
+import { onLifecycle } from "./extras/lifecycle";
+import { withEvents } from "./extras/with-events";
+import { makeZen } from "./extras/zen";
+import { defineMachine } from "./machine";
 
 type FetchConfig = {
   key: string;

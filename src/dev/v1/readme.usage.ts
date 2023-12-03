@@ -1,4 +1,4 @@
-import { defineMachine, defineStates } from "../src/dev/v1/";
+import { defineMachine, defineStates } from ".";
 // ---cut---
 const states = defineStates({
   Red: 'means stop',

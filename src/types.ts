@@ -70,3 +70,5 @@ export interface ChangeEvent<
   to: To;
   from: From;
 }
+
+export type Middleware<E> = (event: E, next: (event: E) => void) => void;

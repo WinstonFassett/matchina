@@ -1,5 +1,5 @@
 import { nanosubscriber } from "./dev/v1/extras/nanosubscriber";
-import { defineStates } from "./dev/v1/states";
+import { defineStates } from "./states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify } from "./machine-setup";

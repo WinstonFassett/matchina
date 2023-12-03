@@ -1,7 +1,7 @@
-import { defineStates } from "../src/states";
-import { defineMachine } from "../src/dev/v1/machine";
-import { defineEffects, bindEffects } from "../src/dev/v1/extras/effects";
-import { withEvents } from "../src/dev/v1/extras/with-events";
+import { defineStates } from "./states";
+import { defineMachine } from "./machine";
+import { defineEffects, bindEffects } from "./extras/effects";
+import { withEvents } from "./extras/with-events";
 
 const myEffects = defineEffects({
   LoadRemote: undefined,

@@ -1,7 +1,7 @@
 import React from "react";
-import { defineMachine } from "../src/dev/v1/";
-import { defineStates } from "../src/dev/v1/states";
-import { withEvents } from "../src/dev/v1/extras/with-events";
+import { defineMachine } from ".";
+import { defineStates } from "./states";
+import { withEvents } from "./extras/with-events";
 // ---cut---
 type Data = { whatever: true };
 

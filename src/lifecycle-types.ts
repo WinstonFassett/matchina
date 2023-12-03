@@ -1,4 +1,3 @@
-import { Middleware } from "./dev/v1/middleware";
 import { AbortableEventware } from "./ext/funcware/abortable";
 import { Funcware } from "./ext/funcware/funcware";
 import { StateEventTransitionFuncs } from "./factory-event-api";
@@ -8,7 +7,7 @@ import {
   StateFromFactory,
   TransitionConfig,
 } from "./factory-machine";
-import { Effect, Guard, Handle } from "./types";
+import { Effect, Guard, Handle, Middleware } from "./types";
 import {
   FlatMemberUnion,
   Members,
