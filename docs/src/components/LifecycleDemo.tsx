@@ -3,6 +3,11 @@ import {
   createPromiseMachine,
   withApi,
   onLifecycle,
+  setup,
+  resolve,
+  handle,
+  guard,
+  extendMethod
 } from "matchina";
 import { useMachine } from "matchina/extras/react";
 
@@ -13,12 +18,32 @@ const slowlyAddTwoNumbers = (
   name = "unnamed",
 ) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
-createPromiseMachine();
 
 const machine = withApi(
   createPromiseMachine(slowlyAddTwoNumbers)
 );
+type X = typeof machine.resolve
+type Y = typeof resolve
 
+
+
+setup(machine)(
+  resolve(next => ev => 
+    ev.type as any === 'reset' ? {...ev, to: machine.states.Idle()} : next(ev)
+  ),
+  machine => {
+    const store = machine as any
+    if (store.reset) return () => {};
+    store.reset = () => {
+      console.log('RESET!')
+      store.send('reset')
+    }
+    return () => {
+      delete store.reset      
+    }
+  }
+)
+console.log('machine', machine)
 export function LifecycleDemo({}) {
   const [state] = useMachine(machine);
   const [logs, setLogs] = useState<string[]>(["Log:"]);

@@ -6,3 +6,4 @@ export * from "./methodware/extend-method";
 export * from "./methodware/tap-method";
 export * from "./methodware/method-extender";
 export * from "./funcware/iff";
+export * from './setup'
