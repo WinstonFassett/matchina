@@ -44,13 +44,14 @@ setup(m4)(
 
 m4.send("execute", 1);
 
-const it = createNanoEvents();
-
+const it = createNanoEvents<{
+  [event: string]: (ev: ReturnType<typeof m4.getChange>) => void;
+}>();
 setup(m4)(
   (m) => {
     Object.assign(m, {
-      emit: (v) => it.emit(v),
-      subscribe: (t, l) => it.on(t, l),
+      emit: it.emit.bind(it),
+      subscribe: it.on.bind(it),
     });
     return () => {
       const target = m as any;
