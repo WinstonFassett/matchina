@@ -1,10 +1,10 @@
-import { nanosubscriber } from "../v1/extras/nanosubscriber";
-import { defineStates } from "../v1/states";
+import { nanosubscriber } from "./dev/v1/extras/nanosubscriber";
+import { defineStates } from "./dev/v1/states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify } from "./machine-setup";
-import { condition } from "./condition";
-import { createSetup, setup } from "./setup";
+import { condition } from "./extras/condition";
+import { createSetup, setup } from "./ext/setup";
 import { createStateMachine } from "./state-machine";
 const m1 = createStateMachine(
   {
@@ -147,6 +147,18 @@ api.execute(1);
 api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
+
+// add a global reset transition
+
+// setup(m4)(
+//   addTransitions('*', {    
+//     reset: 'Idle'
+//   })
+// )
+
+const m5 = withTransitions(m4, {
+  reset: 'Idle'
+})
 
 // const onPhase = phased<ReturnType<typeof m4.getChange>>(m4);
 
