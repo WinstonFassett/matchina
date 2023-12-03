@@ -79,6 +79,10 @@ export default defineConfig({
               label: "Context", 
               link: "/guides/context/"
             },
+            {
+              label: "Type Guards", 
+              link: "/guides/typeguards/"
+            },
           ],
         },
         // {

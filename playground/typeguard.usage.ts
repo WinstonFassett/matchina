@@ -9,7 +9,7 @@ import {
 export {};
 
 // usage
-
+// ---cut---
 const a: unknown = {};
 if (hasKeyValue(a, "foo", "bar" as const)) {
   a.foo;
