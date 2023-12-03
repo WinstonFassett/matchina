@@ -156,9 +156,9 @@ const unsub = notify((ev) => console.log(ev))(m4);
 //   })
 // )
 
-const m5 = withTransitions(m4, {
-  reset: 'Idle'
-})
+// const m5 = withTransitions(m4, {
+//   reset: 'Idle'
+// })
 
 // const onPhase = phased<ReturnType<typeof m4.getChange>>(m4);
 
