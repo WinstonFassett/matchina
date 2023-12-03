@@ -1,13 +1,8 @@
+import { defineStates } from "../src/dev/v1";
 import { onLifecycle } from "../src/dev/v1/extras/lifecycle";
 import { withEvents } from "../src/dev/v1/extras/with-events";
 import { makeZen } from "../src/dev/v1/extras/zen";
 import { defineMachine } from "../src/dev/v1/machine";
-import {
-  EventExitStatesIntersection,
-  FlatExitStateKeys,
-  StateEventTransitionFuncs,
-} from "../src/dev/v1/machine-types";
-import { defineStates } from "../src/dev/v1";
 
 type FetchConfig = {
   key: string;

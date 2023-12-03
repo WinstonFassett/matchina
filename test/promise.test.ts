@@ -47,21 +47,17 @@ describe("createPromiseMachine", () => {
   });
 
   describe("with extended transitions", () => {
-    it("should allow enhancing the transition config", async () => {
+    it("should allow enhancing the transition config",  () => {
       const machine = createFactoryMachine(PromiseStates, {
         ...PromiseTransitions, 
-        Pending: {...PromiseTransitions.Pending, cancel: 'Idle'}
+        Pending: { ...PromiseTransitions.Pending, cancel: 'Idle' }
       }, 'Idle')
       const api = createApi(machine)
-      
-      // // let's add a new Pending.cancel transition to the machine
-      // const machine = withApi(
-      //   createPromiseMachine(delayer(1, "Resolved Data"), {
-      //     Pending: {
-      //       cancel: "Idle",
-      //     },
-      //   }),
-      // );
+      expect(machine.getState().key).toBe('Idle')
+      api.execute()
+      expect(machine.getState().key).toBe('Pending')
+      api.cancel()
+      expect(machine.getState().key).toBe('Idle')
     })
   })
 });

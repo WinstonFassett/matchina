@@ -133,7 +133,7 @@ m4.send("execute", 1);
 // listenTo(m4)("click", (ev) => {});
 
 function withNanoSubscribe<T>(target: T & Partial<{ subscribe: any }>) {
-  if (target.subscribe) return target;
+  if (target.subscribe) { return target; }
   const [subscribe, emit, listeners] = nanosubscriber();
   return Object.assign(target, {
     subscribe,
