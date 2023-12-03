@@ -43,7 +43,7 @@ export function onLifecycle<
         useFilteredEventConfigs(
           machine,
           { from: stateKey, type: eventKey },
-          { begin: eventConfig } as StateEventHookConfig<Transitions, States>,
+          eventConfig as StateEventHookConfig<Transitions, States>,
           d,
         );
       }
