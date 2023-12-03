@@ -45,7 +45,7 @@ setup(machine)(
 )
 console.log('machine', machine)
 export function LifecycleDemo({}) {
-  const [state] = useMachine(machine);
+  const [change] = useMachine(machine);
   const [logs, setLogs] = useState<string[]>(["Log:"]);
   const log = (msg: string) => setLogs((logs) => [...logs, msg]);
   useEffect(() => {
@@ -150,9 +150,9 @@ export function LifecycleDemo({}) {
         <pre className="flex-1">
           {JSON.stringify(
             {
-              "Current State Key": state.key,
-              "Current State Data": state.data,
-              "Last Change": machine.getChange(),
+              "Current State Key": change.to.key,
+              "Current State Data": change.from.data,
+              "Last Change": change,
             },
             null,
             2,
