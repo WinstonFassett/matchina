@@ -43,7 +43,7 @@ export function onLifecycle<
         useFilteredEventConfigs(
           machine,
           { from: stateKey, type: eventKey },
-          eventConfig,
+          { begin: eventConfig } as StateEventHookConfig<Transitions, States>,
           d,
         );
       }
@@ -72,11 +72,11 @@ function useFilteredEventConfigs<
       d.push(
         extendMethod(
           machine,
-          phase as any,
+          phase as keyof FactoryMachine<States, Transitions>,
           iff(
-            (ev) => isKeyedChangeEvent(ev, filter),
-            hookHandler?.(hook) ?? hook,
-          ),
+            (ev: ChangeCommandEvent) => isKeyedChangeEvent(ev, filter),
+            (hookHandler as Function)?.(hook, machine) ?? hook,
+          ) as any,
         ),
       );
     }
