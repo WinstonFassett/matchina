@@ -1,6 +1,9 @@
 import { States, defineStates } from "./states";
 import { createFactoryMachine } from "./factory-machine";
 import { StateEventTransitionFuncs } from "./factory-event-api";
+import { TransitionContext } from "./types";
+import { extendMethod } from "./ext";
+import { handle } from "./machine-setup";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;
@@ -26,11 +29,13 @@ export const PromiseTransitions = {
   Rejected: {},
 } as const;
 
-type PromiseCallback = (...args: any[]) => Promise<any>;
+export type PromiseCallback = (...args: any[]) => Promise<any>;
 
 export function createPromiseMachine<F extends PromiseCallback>(
   makePromise?: (...args: Parameters<F>) => ReturnType<F>,
+  init? : () => void
 ) {
+  // const [states, transitions] = init ? init(states, transitions, initialState)
   const states = PromiseStates as unknown as PromiseStates<F>;
   const machine = createFactoryMachine(
     states,

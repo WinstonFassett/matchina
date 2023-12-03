@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createPromiseMachine } from "../src/promise";
+import { PromiseStates, createPromiseMachine, PromiseTransitions } from "../src/promise";
 import { delay, delayer } from "../src/dev/v1/extras/delay";
-import { withApi } from "../src";
+import { createApi, createFactoryMachine, withApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
@@ -45,4 +45,23 @@ describe("createPromiseMachine", () => {
     expect(rejectedState.key).toBe("Rejected");
     // expect((rejectedState.data as any).message).toBe("custom error");
   });
+
+  describe("with extended transitions", () => {
+    it("should allow enhancing the transition config", async () => {
+      const machine = createFactoryMachine(PromiseStates, {
+        ...PromiseTransitions, 
+        Pending: {...PromiseTransitions.Pending, cancel: 'Idle'}
+      }, 'Idle')
+      const api = createApi(machine)
+      
+      // // let's add a new Pending.cancel transition to the machine
+      // const machine = withApi(
+      //   createPromiseMachine(delayer(1, "Resolved Data"), {
+      //     Pending: {
+      //       cancel: "Idle",
+      //     },
+      //   }),
+      // );
+    })
+  })
 });
