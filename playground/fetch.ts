@@ -1,13 +1,13 @@
-import { onLifecycle } from "../extras/lifecycle";
-import { withEvents } from "../extras/with-events";
-import { makeZen } from "../extras/zen";
-import { defineMachine } from "../machine";
+import { onLifecycle } from "../src/dev/v1/extras/lifecycle";
+import { withEvents } from "../src/dev/v1/extras/with-events";
+import { makeZen } from "../src/dev/v1/extras/zen";
+import { defineMachine } from "../src/dev/v1/machine";
 import {
   EventExitStatesIntersection,
   FlatExitStateKeys,
   StateEventTransitionFuncs,
-} from "../machine-types";
-import { defineStates } from "../states";
+} from "../src/dev/v1/machine-types";
+import { defineStates } from "../src/dev/v1";
 
 type FetchConfig = {
   key: string;

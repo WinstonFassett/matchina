@@ -1,8 +1,8 @@
 import { defineStates } from "../src/states";
-import { createApi } from "./factory-event-api";
-import { createFactoryMachine } from "./factory-machine";
+import { createApi } from "../src/factory-event-api";
+import { createFactoryMachine } from "../src/factory-machine";
 import { forwardData, updateState, setInState } from "../src/dev/v3/update-state";
-import { createPromiseMachine } from "./promise";
+import { createPromiseMachine } from "../src/promise";
 
 // ---cut---
 const machine = createPromiseMachine(
