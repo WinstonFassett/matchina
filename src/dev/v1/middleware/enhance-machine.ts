@@ -1,5 +1,5 @@
+import { Middleware } from "../../../types";
 import { StateChangeMachine } from "../machine-types";
-import { Middleware } from "./middleware";
 
 type Disposer = () => void;
 

@@ -1,4 +1,4 @@
-import { Middleware } from "./middleware";
+import { Middleware } from "../../types";
 
 function interleaveMiddleware<E>(
   middlewares: Middleware<E>[],

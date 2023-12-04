@@ -2,7 +2,7 @@ import {
   KeyedChangeEventFilter,
   isKeyedChangeEvent,
 } from "../../../typeguards";
-import { Middleware } from "./middleware";
+import { Middleware } from "../../../types";
 import { conditionware } from "./conditionware";
 
 export const when =

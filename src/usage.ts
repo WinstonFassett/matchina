@@ -4,8 +4,11 @@ import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify } from "./machine-setup";
 import { condition } from "./extras/condition";
+import { when } from "./extras/when";
 import { createSetup, setup } from "./ext/setup";
 import { createStateMachine } from "./state-machine";
+import { ChangeCommandEvent } from "./types";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 const m1 = createStateMachine(
   {
     Idle: {
@@ -20,6 +23,13 @@ const m1 = createStateMachine(
 
 // m1.send('start')
 
+const whenChange = 
+  <E extends ChangeCommandEvent>(filter: KeyedChangeEventFilter<E>) => when(
+    (ev: E) => isKeyedChangeEvent(ev, filter)
+  );
+
+const whenStart = whenChange({ type: "start" });
+
 setup(m1)(
   guard((ev) => true),
   leave((ev) => console.log("before", ev)),
@@ -30,6 +40,12 @@ setup(m1)(
       (ev) => (ev) => {},
     ),
   ),
+  notify(whenStart(ev => {
+    console.log('entered start state')
+    return (ev) => {
+      console.log('exited start state')
+    }
+  })),  
 );
 
 const m2 = createStateMachine(

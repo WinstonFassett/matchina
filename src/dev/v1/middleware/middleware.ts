@@ -1,4 +1,4 @@
-export type Middleware<E> = (event: E, next: (event: E) => void) => void;
+import { Middleware } from "../../../types";
 
 export function composeMiddleware<E>(
   ...middlewares: Middleware<E>[]
