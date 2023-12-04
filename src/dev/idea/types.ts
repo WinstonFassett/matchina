@@ -2,8 +2,8 @@
 /* eslint-disable unicorn/no-abusive-eslint-disable */
 /* eslint-disable */
 
-import { StatesMatchboxFactory } from "../states";
-import { FlatMemberUnionToIntersection } from "../types";
+import { StatesMatchboxFactory } from "../../states";
+import { FlatMemberUnionToIntersection } from "../../types";
 import {
   TransitionConfig,
   StateEventTransitionSenders,

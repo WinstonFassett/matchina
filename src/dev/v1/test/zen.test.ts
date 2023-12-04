@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine } from "../extras/promise";
 import { makeZen } from "../extras/zen";
-import { delayer } from "../extras/delay";
+import { delayer } from "../../../extras/delay";
 
 function makeMachine() {
   return createPromiseMachine((ms: number) => {
