@@ -55,9 +55,13 @@
     "name": "full",
     "path": "dist/index.mjs"
   },
-    {
+  {
     "name": "pure",
     "path": "src/pure-state-machine.ts"
+  },
+  {
+    "name": "nanosubscriber",
+    "path": "src/extras/nanosubscriber.ts"
   },
   {
     "name": "react-dist",
