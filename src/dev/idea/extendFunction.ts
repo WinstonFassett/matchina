@@ -1,5 +1,5 @@
+import { Funcware } from "../../ext/types";
 import { composeFuncware } from "./composeFuncware";
-import { Funcware } from "../../ext/funcware/funcware";
 
 export function extendFunction<F extends (...params: any[]) => any>(
   inner: F,

@@ -1,6 +1,6 @@
+import { Funcware } from "../../ext/types";
 import { Middleware } from "../../types";
 import { Func } from "../types";
-import { Funcware } from "../../ext/funcware/funcware";
 
 function funcwareFromMiddleware<E>(
   middleware: Middleware<E>,

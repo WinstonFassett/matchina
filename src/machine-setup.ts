@@ -1,7 +1,7 @@
 import {
-  AbortableEventware,
   abortableEventware,
 } from "./ext/funcware/abortable";
+import { AbortableEventHandler } from "./ext/types";
 import { methodExtender } from "./ext/methodware/method-extender";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
@@ -58,7 +58,7 @@ export const Hooks = {
     <E extends ChangeCommandEvent>(handleFn: Handle<E>) =>
     (inner: Handle<E>) =>
       composeHandlers(handleFn as Handle<E>, inner),
-  before: <E>(abortware: AbortableEventware<E>) =>
+  before: <E>(abortware: AbortableEventHandler<E>) =>
     abortableEventware(abortware), // abortableEventware2(before, 'before'),
   leave: effectHook("leave"),
   after: effectHook("after"),

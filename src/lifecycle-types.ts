@@ -1,5 +1,5 @@
-import { AbortableEventware } from "./ext/funcware/abortable";
-import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventHandler } from "./ext/types";
+import { Funcware } from "./ext/types";
 import { StateEventTransitionFuncs } from "./factory-event-api";
 import {
   AnyStatesFactory,
@@ -19,12 +19,12 @@ type HookConfig<T> = {
 };
 
 export type TransitionHookExtensions<E> = {
-  begin: AbortableEventware<E>;
+  begin: AbortableEventHandler<E>;
   resolve: Funcware<(ev: Partial<E>) => E>;
-  transition: AbortableEventware<E>;
+  transition: AbortableEventHandler<E>;
   guard: Guard<E>;
   handle: Handle<E>;
-  before: AbortableEventware<E>;
+  before: AbortableEventHandler<E>;
   effect: Effect<E>;
   leave: Effect<E>;
   enter: Effect<E>;

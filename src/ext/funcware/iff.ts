@@ -1,4 +1,4 @@
-import { Funcware } from "./funcware";
+import { Funcware } from "../types";
 
 export const iff = <F extends (...params: any[]) => any>(
   test: (...params: Parameters<F>) => boolean | void,

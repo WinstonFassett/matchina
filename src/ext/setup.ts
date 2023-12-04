@@ -1,5 +1,4 @@
-export type Disposer = () => void;
-export type Setup<T> = (target: T) => Disposer;
+import { Disposer, Setup } from "./types";
 
 /**
  * Run cleanup functions in reverse order
@@ -12,7 +11,7 @@ export function disposers(fns: Disposer[]) {
       fns[i]();
     }
   };
-} // #endregion
+}
 
 export function createSetup<T>(...setups: Setup<T>[]): Setup<T> {
   return function applySetup(target: T) {

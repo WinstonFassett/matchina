@@ -1,4 +1,5 @@
-import { Disposer, disposers } from "../../ext/setup";
+import { disposers } from "../../ext/setup";
+import { Disposer } from "../../ext/types";
 
 type RefState = Record<string, [count: number, value: any]>;
 

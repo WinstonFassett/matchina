@@ -1,6 +1,6 @@
 import { defineStates } from "./states";
 import { defineMachine } from "./machine";
-import { defineEffects, bindEffects } from "./extras/effects";
+import { defineEffects, bindEffects } from "../../extras/effects";
 import { withEvents } from "./extras/with-events";
 
 const myEffects = defineEffects({

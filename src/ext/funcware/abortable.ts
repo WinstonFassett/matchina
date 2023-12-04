@@ -1,18 +1,14 @@
 import { Func } from "../../utility-types";
-import { Funcware } from "./funcware";
-
-// export type Abortware<F extends (...args: any[]) => any> = (params: Parameters<F>, abort: () => void) => void;
+import { AbortableEventHandler } from "../types";
+import { Funcware } from "../types";
 
 export function abortableEventware<E>(
-  wares: AbortableEventware<E>,
+  abortable: AbortableEventHandler<E>,
 ): Funcware<Func<E, any>> {
-  // console.log('abortableFuncware')
   return (inner) => {
-    // console.log("abortableFuncware inner", { inner });
     return (ev) => {
-      // console.log("abortableFuncware inner", { inner, ev });
       let aborted = false;
-      wares(ev, () => {
+      abortable(ev, () => {
         aborted = true;
       });
       if (!aborted) {
@@ -21,5 +17,3 @@ export function abortableEventware<E>(
     };
   };
 }
-
-export type AbortableEventware<E> = (event: E, abort: () => void) => void;

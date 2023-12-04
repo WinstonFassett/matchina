@@ -6,7 +6,8 @@ import {
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { extendMethod, iff } from "./ext";
-import { Disposer, disposers } from "./ext/setup";
+import { disposers } from "./ext/setup";
+import { Disposer } from "./ext/types";
 import { ChangeCommandEvent } from "./types";
 import { Hooks } from "./machine-setup";
 

@@ -1,8 +1,8 @@
 import { Middleware } from "../../types";
-import { AbortableEventware } from "../../ext/funcware/abortable";
+import { AbortableEventHandler } from "../../ext/types";
 
 export function abortableMiddleware<E>(
-  wares: AbortableEventware<E>,
+  wares: AbortableEventHandler<E>,
 ): Middleware<E> {
   return (event, next) => {
     let aborted = false;

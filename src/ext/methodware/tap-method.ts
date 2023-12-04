@@ -1,5 +1,6 @@
 import { functionTap } from "../funcware/tap-function";
-import { extendMethod, HasMethod } from "./extend-method";
+import { HasMethod } from "../types";
+import { extendMethod } from "./extend-method";
 
 export const tapMethod =
   <K extends string>(methodName: K) =>
