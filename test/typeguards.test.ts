@@ -15,11 +15,11 @@ describe("typeguards", () => {
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(event, {
+        isKeyedChangeEvent({
           type: "change",
           to: "b",
           from: "a",
-        }),
+        }, event),
       ).toBe(true);
     });
     it("matches on multiple values", () => {
@@ -29,11 +29,11 @@ describe("typeguards", () => {
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(event, {
+        isKeyedChangeEvent({
           type: "change",
           to: ["b", "c"],
           from: ["a", "d"],
-        }),
+        }, event),
       ).toBe(true);
     });
     it("matches on undefined values", () => {
@@ -43,11 +43,11 @@ describe("typeguards", () => {
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(event, {
+        isKeyedChangeEvent({
           type: "change",
           to: undefined,
           from: undefined,
-        }),
+        }, event),
       ).toBe(true);
     });
   });

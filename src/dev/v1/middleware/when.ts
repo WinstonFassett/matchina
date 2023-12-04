@@ -8,4 +8,4 @@ import { conditionware } from "./conditionware";
 export const when =
   <E>(filter: KeyedChangeEventFilter<E>) =>
   (...middleware: Middleware<E>[]) =>
-    conditionware((ev) => isKeyedChangeEvent(ev, filter), ...middleware);
+    conditionware((ev) => isKeyedChangeEvent(filter, ev), ...middleware);

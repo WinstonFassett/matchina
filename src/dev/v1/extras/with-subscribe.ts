@@ -48,7 +48,7 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
   ) {
     let exitListener: void | (() => void);
     return subscribe((event) => {
-      if (isKeyedChangeEvent(event, filter)) {
+      if (isKeyedChangeEvent(filter, event)) {
         exitListener?.();
         exitListener = subscriber(event as any);
       }

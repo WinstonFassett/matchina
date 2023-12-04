@@ -74,8 +74,8 @@ export function isKeyedChangeEvent<
   ToKey extends ChangeEventToKey<E>,
   FromKey extends ChangeEventFromKey<E>,
 >(
-  event: E,
   filter: KeyedChangeEventFilter<E>,
+  event: E,
 ): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
   const subject = event as any;
   const matched =
