@@ -7,6 +7,7 @@ import { effect, enter, guard, handle, leave, notify } from "./machine-setup";
 import { createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import { ChangeCommandEvent } from "./types";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 const m1 = createStateMachine(
   {
     Idle: {
@@ -75,9 +76,11 @@ const m4 = createFactoryMachine(
 // m4.getChange().to.key ;
 m4.send("execute", 1);
 
-const change = () => {
-  return () => {}
-}
+const isChange =
+  <E>(filter: KeyedChangeEventFilter<E>) =>
+  (ev: E) =>
+    isKeyedChangeEvent(filter, ev);
+
 
 
 setup(m4)(
@@ -116,7 +119,7 @@ setup(m4)(
   ),
   enter(
     when(
-      (ev) => ev.type === "execute",
+      isChange({ type: 'execute'}),
       (ev) => {
         console.log("entered condition");
         return (ev) => {
