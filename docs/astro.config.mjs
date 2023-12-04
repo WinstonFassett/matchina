@@ -90,7 +90,7 @@ export default defineConfig({
         //   autogenerate: { directory: "reference" },
         // },
       ],
-      customCss: ["./src/styles/tailwind.css", "./src/styles/shiki-twoslash.css"],
+      customCss: ["./src/styles/tailwind.css", "./src/styles/starlight.css", "./src/styles/shiki-twoslash.css"],
     }),
     tailwind({ applyBaseStyles: false }),
     react(),
