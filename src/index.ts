@@ -1,5 +1,5 @@
 export * from "./ext";
-export * from "./extras/condition";
+export * from "./extras/when";
 export * from "./factory-event-api";
 export * from "./factory-machine";
 export * from "./handle-promise";

@@ -1,5 +1,5 @@
 import { iff } from "./ext";
-import { condition } from "./extras/condition";
+import { when } from "./extras/when";
 import { notify } from "./machine-setup";
 import {
   KeyedChangeEventFilter,
@@ -23,5 +23,5 @@ import {
 export const when = <E>(
   filter: KeyedChangeEventFilter<E>,
 ) => {
-  return condition((ev:E) => isKeyedChangeEvent(ev, filter), 
+  return when((ev:E) => isKeyedChangeEvent(ev, filter), 
 }

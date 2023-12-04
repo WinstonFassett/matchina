@@ -1,14 +1,12 @@
+import { createSetup, setup } from "./ext/setup";
+import { EntryListener, when } from "./extras/when";
 import { nanosubscriber } from "./extras/nanosubscriber";
-import { defineStates } from "./states";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify } from "./machine-setup";
-import { condition } from "./extras/condition";
-import { when } from "./extras/when";
-import { createSetup, setup } from "./ext/setup";
 import { createStateMachine } from "./state-machine";
+import { defineStates } from "./states";
 import { ChangeCommandEvent } from "./types";
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 const m1 = createStateMachine(
   {
     Idle: {
@@ -23,29 +21,18 @@ const m1 = createStateMachine(
 
 // m1.send('start')
 
-const whenChange = 
-  <E extends ChangeCommandEvent>(filter: KeyedChangeEventFilter<E>) => when(
-    (ev: E) => isKeyedChangeEvent(ev, filter)
-  );
+// const whenChange = 
+//   <E extends ChangeCommandEvent>(filter: KeyedChangeEventFilter<E>) => when(
+//     (ev: E) => isKeyedChangeEvent(ev, filter)
+//   );
 
-const whenStart = whenChange({ type: "start" });
+// const whenStart = whenChange({ type: "start" });
+const whenStart = <E extends ChangeCommandEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
 
 setup(m1)(
   guard((ev) => true),
   leave((ev) => console.log("before", ev)),
-  notify(
-    condition(
-      (ev) => ev.type === "start",
-      // eslint-disable-next-line unicorn/consistent-function-scoping
-      (ev) => (ev) => {},
-    ),
-  ),
-  notify(whenStart(ev => {
-    console.log('entered start state')
-    return (ev) => {
-      console.log('exited start state')
-    }
-  })),  
+  
 );
 
 const m2 = createStateMachine(
@@ -88,6 +75,11 @@ const m4 = createFactoryMachine(
 // m4.getChange().to.key ;
 m4.send("execute", 1);
 
+const change = () => {
+  return () => {}
+}
+
+
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   leave((ev) => {
@@ -115,7 +107,7 @@ setup(m4)(
   //   }
   // }),
   effect(
-    condition(
+    when(
       (ev) => ev.type === "execute",
       (ev) => {
         console.log({ ev });
@@ -123,7 +115,7 @@ setup(m4)(
     ),
   ),
   enter(
-    condition(
+    when(
       (ev) => ev.type === "execute",
       (ev) => {
         console.log("entered condition");
@@ -133,6 +125,19 @@ setup(m4)(
       },
     ),
   ),
+  notify(
+    when(
+      (ev) => ev.type === 'reject',
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      (ev) => (ev) => {},
+    ),
+  ),
+  notify(whenStart(ev => {
+    console.log('entered start state')
+    return (ev) => {
+      console.log('exited start state')
+    }
+  })),
 );
 // const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
 //   unwhen()

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { extendMethod, tapMethod, methodExtender } from "../src/ext";
-import { condition } from "../src/extras/condition";
+import { when } from "../src/extras/when";
 
 describe("methodExtend", () => {
   it("should extend the method correctly", () => {
@@ -92,7 +92,7 @@ describe("condition", () => {
     const mockTest = vi.fn((value: number) => value > 0);
     const mockEntryListener = vi.fn((value: number) => {});
 
-    const conditionFn = condition(mockTest, mockEntryListener);
+    const conditionFn = when(mockTest, mockEntryListener);
     conditionFn(1);
 
     expect(mockTest).toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe("condition", () => {
     const mockTest = vi.fn((value: number) => value > 0);
     const mockEntryListener = vi.fn((value: number) => {});
 
-    const conditionFn = condition(mockTest, mockEntryListener);
+    const conditionFn = when(mockTest, mockEntryListener);
     conditionFn(-1);
 
     expect(mockTest).toHaveBeenCalled();

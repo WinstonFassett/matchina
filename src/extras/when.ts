@@ -1,7 +1,10 @@
-import { EntryListener } from "./condition";
+export type ExitListener<E> = (event: E) => void;
+export type EntryListener<E> = (event: E) => void | ExitListener<E>;
 
-
-export const when = <E>(test: (ev: E) => boolean) => (entryListener: EntryListener<E>) => {
+export function when<E>(
+  test: (ev: E) => boolean,
+  entryListener: EntryListener<E>,
+) {
   let exitListener: void | ((ev: E) => void);
   return (ev: E) => {
     if (test(ev)) {
@@ -11,4 +14,4 @@ export const when = <E>(test: (ev: E) => boolean) => (entryListener: EntryListen
       exitListener = undefined;
     }
   };
-};
+}
