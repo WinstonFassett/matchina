@@ -17,7 +17,7 @@ export const handlePromise =
     machine.handle = (ev) => {
       if (ev.type === trigger) {
         const promise = makePromise(...(ev.params as Parameters<F>));
-        const store = machine as any;
+        const store = ev as any;
         store.promise = promise;
         store.done = promise
           .then((res) => machine.send(resolve as any, res))
