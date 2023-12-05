@@ -33,7 +33,7 @@ export const after = tapMethod("after");
 export const enter = tapMethod("enter");
 export const notify = tapMethod("notify");
 
-const effectHook =
+export const effectHook =
   (name: string) =>
   <E, F extends (...args: any[]) => any>(
     handler: (...params: Parameters<F>) => void,
@@ -45,28 +45,6 @@ const effectHook =
     handler(...args);
   };
 // #endregion
-
-export const Hooks = {
-  // send,
-  transition,
-  resolve,
-  guard:
-    <T extends ChangeCommandEvent>(guardFn: Guard<T>) =>
-    (inner: Guard<T>) =>
-      combineGuards<T>(inner, guardFn),
-  handle:
-    <E extends ChangeCommandEvent>(handleFn: Handle<E>) =>
-    (inner: Handle<E>) =>
-      composeHandlers(handleFn as Handle<E>, inner),
-  before: <E>(abortware: AbortableEventHandler<E>) =>
-    abortableEventware(abortware), // abortableEventware2(before, 'before'),
-  leave: effectHook("leave"),
-  after: effectHook("after"),
-  enter: effectHook("enter"),
-  effect: effectHook("effect"),
-  notify: effectHook("notify"),
-};
-
 function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
   inner: (value: E) => E | undefined,
