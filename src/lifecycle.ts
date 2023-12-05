@@ -5,11 +5,11 @@ import {
   TransitionConfig,
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
-import { extendMethod, iff } from "./ext";
+import { abortableEventware, extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
-import { Disposer } from "./ext/types";
-import { ChangeCommandEvent } from "./types";
-import { Hooks } from "./machine-setup";
+import { AbortableEventHandler, Disposer } from "./ext/types";
+import { ChangeCommandEvent, Guard, Handle } from "./types";
+import { combineGuards, composeHandlers, effectHook } from "./machine-setup";
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -68,7 +68,7 @@ function useFilteredEventConfigs<
   for (const phase in config) {
     const hook = config[phase as keyof typeof config];
     if (hook) {
-      const hookHandler = (Hooks as typeof Hooks)[phase as keyof typeof Hooks];
+      const hookHandler = (HookAdapters as typeof HookAdapters)[phase as keyof typeof HookAdapters];
       console.log("add hook", phase, filter);
       d.push(
         extendMethod(
@@ -83,4 +83,18 @@ function useFilteredEventConfigs<
     }
   }
   return d;
-}
+}// #endregion
+const HookAdapters = {
+  // send,
+  // transition,
+  // resolve,
+  guard: <T extends ChangeCommandEvent>(guardFn: Guard<T>) => (inner: Guard<T>) => combineGuards<T>(inner, guardFn),
+  handle: <E extends ChangeCommandEvent>(handleFn: Handle<E>) => (inner: Handle<E>) => composeHandlers(handleFn as Handle<E>, inner),
+  before: <E>(abortware: AbortableEventHandler<E>) => abortableEventware(abortware),
+  leave: effectHook("leave"),
+  after: effectHook("after"),
+  enter: effectHook("enter"),
+  effect: effectHook("effect"),
+  notify: effectHook("notify"),
+};
+
