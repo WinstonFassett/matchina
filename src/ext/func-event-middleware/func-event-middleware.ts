@@ -18,7 +18,9 @@ export function methodMiddleware<T, K extends keyof T>(
   const original = target[methodName] as MethodOf<T, K>;
   const next = original.bind(target)
   target[methodName] = ((...params: Parameters<MethodOf<T, K>>) => {    
-    return mw([params, next(...params)], (ev) => ev[1]);
+    let result = undefined as undefined | ReturnType<MethodOf<T, K>>;
+    mw([params, undefined as any], (ev) => (result = ev[1]));
+    return result ?? next(...params);    
   }) as T[K]; 
   return () => {
     target[methodName] = original;
@@ -29,6 +31,7 @@ export function effectware<K extends string, T extends HasMethod<K>>(
   fn: T[K],
 ): FuncEventMiddleware<MethodOf<T, K>> {
   return (ev, next) => {
+    console.log('run effectware', arguments)
     next(ev);
     fn(ev);    
   };
@@ -58,6 +61,17 @@ export const methodHook =
   <T extends HasMethod<K>>(fn: FuncEventMiddleware<MethodOf<T, K>>) =>
   (target: T) => {
     return methodMiddleware(target, methodName, fn);
+  };
+
+export const methodEventHook =
+  <K extends string>(methodName: K) =>
+  <T extends HasMethod<K>, E extends Parameters<MethodOf<T, K>>[0] = Parameters<MethodOf<T, K>>[0]>(mw: Middleware<E>) =>
+  (target: T) => {
+    return methodMiddleware(target, methodName, (funcEvent, next) => {      
+      mw(funcEvent[0][0], (ev) => {
+        next([funcEvent[0], ev] as FuncEvent<MethodOf<T, K>>)
+      })
+    });
   };
 
 export const toEnhancer =

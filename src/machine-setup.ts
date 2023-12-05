@@ -6,24 +6,33 @@ import { methodExtender } from "./ext/methodware/method-extender";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
 import { ChangeCommandEvent, Guard, Handle } from "./types";
+import { methodEventHook, methodHook, methodMiddleware } from "./ext/func-event-middleware/func-event-middleware";
 
 // #region interceptors
-export const send = methodExtender("send");
-export const before = methodExtender("before");
-export const transition = methodExtender("transition");
-export const resolve = methodExtender("resolve");
+export const send = methodHook("send");
+export const before = methodEventHook("before");
+export const transition = methodEventHook("transition");
+export const resolve = methodEventHook("resolve");
+export const guard1 = methodHook("guard");
 export const guard = <E extends ChangeCommandEvent>(
   fn: StateMachinery<E>["guard"],
 ) =>
-  methodExtender("guard")<StateMachinery<E>>((inner) =>
-    combineGuards<E>(inner, fn),
+  methodEventHook("guard")((
+    ev, next    
+  ) => {    
+    console.log('guarding', ev)
+    if (fn(ev)) {
+      next(ev)
+    }
+  }
   );
 export const handle = <E extends ChangeCommandEvent>(
-  outer: StateMachinery<E>["handle"],
+  fn: StateMachinery<E>["handle"],
 ) =>
-  methodExtender("handle")<StateMachinery<E>>((inner) =>
-    composeHandlers<E>(outer, inner),
-  );
+  methodHook("handle")<StateMachinery<E>>((ev, next) => {
+    fn(...ev[0]);
+    next(ev)
+  })
 // #endregion
 
 // #region effects
