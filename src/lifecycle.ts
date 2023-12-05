@@ -9,7 +9,7 @@ import { abortableEventware, extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
 import { AbortableEventHandler, Disposer } from "./ext/types";
 import { ChangeCommandEvent, Guard, Handle } from "./types";
-import { combineGuards, composeHandlers, effectHook } from "./machine-setup";
+import { combineGuards, composeHandlers } from "./machine-setup";
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -84,6 +84,16 @@ function useFilteredEventConfigs<
   }
   return d;
 }// #endregion
+
+export const effectHook = (name: string) => <E, F extends (...args: any[]) => any>(
+  handler: (...params: Parameters<F>) => void
+) => (inner: F) => (...args: Parameters<F>) => {
+  console.log("EFFECT", name);
+  inner(...args);
+  handler(...args);
+};
+
+
 const HookAdapters = {
   // send,
   // transition,
@@ -97,4 +107,3 @@ const HookAdapters = {
   effect: effectHook("effect"),
   notify: effectHook("notify"),
 };
-

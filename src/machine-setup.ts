@@ -33,17 +33,6 @@ export const after = tapMethod("after");
 export const enter = tapMethod("enter");
 export const notify = tapMethod("notify");
 
-export const effectHook =
-  (name: string) =>
-  <E, F extends (...args: any[]) => any>(
-    handler: (...params: Parameters<F>) => void,
-  ) =>
-  (inner: F) =>
-  (...args: Parameters<F>) => {
-    console.log("EFFECT", name);
-    inner(...args);
-    handler(...args);
-  };
 // #endregion
 export function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
