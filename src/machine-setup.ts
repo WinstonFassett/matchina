@@ -45,14 +45,14 @@ export const effectHook =
     handler(...args);
   };
 // #endregion
-function composeHandlers<E extends ChangeCommandEvent>(
+export function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
   inner: (value: E) => E | undefined,
 ): (value: E) => E | undefined {
   return (ev) => outer(inner(ev) as any);
 }
 
-function combineGuards<E extends ChangeCommandEvent>(
+export function combineGuards<E extends ChangeCommandEvent>(
   first: (value: E) => boolean,
   next: (value: E) => boolean,
 ): (value: E) => boolean {
