@@ -96,7 +96,7 @@ export type MemberOf<
 export function matchboxFactory<
   Config extends UnionSpec,
   TagProp extends string = "tag",
->(config: Config, tagKey = "tag" as TagProp): UnionFactory<Config, TagProp> {
+>(config: Config, tagProp = "tag" as TagProp): UnionFactory<Config, TagProp> {
   const createObj: any = {};
   for (const tag in config) {
     const spec = config[tag];
@@ -104,7 +104,7 @@ export function matchboxFactory<
       return matchbox<Config, any, TagProp>(
         tag,
         typeof spec === "function" ? spec(...args) : spec,
-        tagKey,
+        tagProp,
       );
     };
   }
@@ -140,38 +140,35 @@ class MemberImpl<
   Tag extends keyof Config = keyof Config,
   TagProp extends string = "tag",
 > {
-  // implements UnionMember<Tag, Config, TagKey>
   [key: string]: any;
 
   constructor(
     tag: Tag,
-    value: Config[Tag],
-    public tagProp: TagProp = "tag" as TagProp,
+    data: Config[Tag],
+    tagProp: TagProp = "tag" as TagProp,
   ) {
-    this.tagProp = tagProp;
-    Object.assign(this, { [tagProp]: tag, tagKey: tagProp, data: value });
+    Object.assign(this, { [tagProp]: tag, data: data, getTag: () => this[tagProp], getTagProp: () => tagProp });
   }
 
   as(expectedTag: keyof Config) {
     if (!this.is(expectedTag)) {
-      const tag = this[this.tagProp];
+      const tag = this.getTag();
       throw new Error(
-        `Attempted to cast ${this[this.tagProp]} as ${expectedTag.toString()}`,
+        `Attempted to cast ${tag} as ${expectedTag.toString()}`,
       );
     }
     return this;
   }
 
   is(tag: keyof Config) {
-    return this[this.tagProp] === tag;
+    return this.getTag() === tag;
   }
 
   match<A>(
     casesObj: MatchCases<MemberData<Config>, MemberData<Config>, A>,
     exhaustive = true,
-  ): any {
-    const { tagProp } = this;
-    const tag = this[tagProp];
+  ): any {    
+    const tag = this.getTag();
     const data = this.data;
     const handler = (casesObj as any)[tag];
     if (handler) {
@@ -179,7 +176,7 @@ class MemberImpl<
     } else if (casesObj._) {
       return casesObj._(data);
     } else if (exhaustive) {
-      throw new Error(`Match did not handle ${tagProp}: '${tag.toString()}'`);
+      throw new Error(`Match did not handle ${this.getTagProp()}: '${tag.toString()}'`);
     }
   }
 }
