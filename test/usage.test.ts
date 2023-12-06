@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { defineStates } from "../src/states";
 import { createFactoryMachine } from "../src/factory-machine";
-import { guard, enter, leave } from "../src/machine-setup";
+import { guard, enter, leave } from "../src/machine-hooks";
 import { createSetup, setup } from "../src/ext/setup";
 import { createStateMachine } from "../src/state-machine";
 

@@ -4,7 +4,7 @@ export * from "./factory-event-api";
 export * from "./factory-machine";
 export * from "./handle-promise";
 export * from "./lifecycle";
-export * from "./machine-setup";
+export * from "./machine-hooks";
 export * from "./matchbox";
 export * from "./matchina";
 export * from "./promise";

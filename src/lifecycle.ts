@@ -1,4 +1,4 @@
-import { HookAdapters } from "./alt";
+import { HookAdapters } from "./machine-hooks";
 import { extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
 import { Disposer } from "./ext/types";
