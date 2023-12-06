@@ -1,16 +1,16 @@
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { abortableEventware, extendMethod, iff } from "./ext";
+import { disposers } from "./ext/setup";
+import { AbortableEventHandler, Disposer, Funcware } from "./ext/types";
 import {
   AnyStatesFactory,
   FactoryMachine,
   TransitionConfig,
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
-import { abortableEventware, extendMethod, iff } from "./ext";
-import { disposers } from "./ext/setup";
-import { AbortableEventHandler, Disposer, Funcware } from "./ext/types";
-import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
 import { combineGuards, composeHandlers } from "./machine-setup";
 import { Resolver } from "./transition-machine";
+import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -26,7 +26,7 @@ export function onLifecycle<
     if (!fromStateConfig) {
       continue;
     }
-    const { on, enter, leave } = fromStateConfig;
+    const { on, enter , leave } = fromStateConfig;
     if (enter) {
       useFilteredEventConfigs(machine, { to: stateKey }, { enter } as any, d);
     }
@@ -82,8 +82,6 @@ function useFilteredEventConfigs<
   }
   return d;
 }
-
-
 
 type Transform<I, O = I> = (source: I) => O;
 
