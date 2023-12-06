@@ -2,6 +2,7 @@ import { abortableEventware, functionTap } from "./ext";
 import { AbortableEventHandler, Funcware } from './ext/types';
 import { Resolver } from "./transition-machine";
 import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
+import { Func } from "./utility-types";
 
 // type X = FactoryMachine<any>
 
@@ -48,7 +49,11 @@ const fromMiddleware = <E>(middleware: Middleware<E>):
     (next) => (ev) => { middleware(ev, next) }
 
 type Transform<I, O = I> = (source: I) => O;
-type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = {
+export type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = 
+{
+  [key: string]: Func
+} &
+{
   transition: (middleware: Middleware<E>) => Funcware<Transitioner<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<Updater<E>["update"]>;
   resolve: <F extends Resolver<E>["resolve"]>(resolveFn: F) => Funcware<F>;
