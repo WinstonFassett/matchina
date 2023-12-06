@@ -64,14 +64,14 @@ K extends string & keyof Adapters,
   ) as (target: T) => () => void;
 }
 
-export function composeHandlers<E extends ChangeCommandEvent>(
+function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
   inner: (value: E) => E | undefined
 ): (value: E) => E | undefined {
   return (ev) => outer(inner(ev) as any);
 }
 
-export function combineGuards<E extends ChangeCommandEvent>(
+function combineGuards<E extends ChangeCommandEvent>(
   first: (value: E) => boolean,
   next: (value: E) => boolean
 ): (value: E) => boolean {
