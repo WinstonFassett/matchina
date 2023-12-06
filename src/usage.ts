@@ -128,6 +128,7 @@ setup(m4)(
       },
     ),
   ),
+  // notify(),
   notify(
     when(
       (ev) => ev.type === 'reject',
@@ -159,7 +160,26 @@ onNotify(m4, ev => {
   console.log('notify', ev)
 })
 
-onGuard(m4, ev => ev.to.is('Pending'))
+onNotify(m4, when(ev => ev.type === 'execute', ev => {}))
+
+// onNotify(m4, )
+
+// onNotify(
+//   m4, 
+//   when(x=> true, x=> {})
+//   // eventThing(x => true, y => y)
+//   // when2(x => true, x => {})
+//   // ev => {
+    
+//   //   thing(ev => {})(ev)
+//   //  (ev)
+//   // }
+//   // filtered(ev => true)(ev => {})
+//   // fx(ev => true, console.log)
+//   // thing(ev => {
+    
+//   // })
+// )
 
 // listenTo(m4)("click", (ev) => {});
 

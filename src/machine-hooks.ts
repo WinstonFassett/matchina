@@ -66,6 +66,7 @@ export const onEnter = machineHook("enter");
 export const onAfter = machineHook("after");
 export const onNotify = machineHook("notify");
 
+
 function machineHook<
   K extends string & keyof Adapters,  
 >(
@@ -73,9 +74,9 @@ function machineHook<
   ) {
   return <
   T extends HasMethod<K>,
-  F extends Parameters<Adapters<Parameters<MethodOf<T,K>>[0]>[K]>[0]>(
+  P extends Parameters<Adapters<Parameters<MethodOf<T,K>>[0]>[K]>>(
     machine: T,
-    fn: F
+    fn: MethodOf<T,K>
   ) =>
   (
     methodExtender<K>(key)(HookAdapters[key](fn))
