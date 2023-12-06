@@ -4,68 +4,6 @@ import { Resolver } from "./transition-machine";
 import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
 import { Func } from "./utility-types";
 
-// type X = FactoryMachine<any>
-
-// const effectNames = [
-//   "effect",
-//   "leave",
-//   "enter",
-//   "notify",
-//   "after",
-// ] as const;
-
-// type Effects = Pick<
-//   FactoryMachine<any>,  
-//   typeof effectNames[number]
-// >;
-
-// const enhancerNames = [
-//   "guard",
-//   "handle",
-//   "update",
-// ] as const;
-
-
-// type EventEnhancers = Pick<
-//   FactoryMachine<any>,  
-//   typeof enhancerNames[number]
-//   >;
-  
-// const handlerNames = [ 
-//   "resolve",
-//   "before",
-//   "transition",
-//   "handle"
-// ] as const;
-
-//   type EventTransforms = Pick<
-//   FactoryMachine<any>,  
-//   typeof handlerNames[number]
-// >;
-
-
-const fromMiddleware = <E>(middleware: Middleware<E>): 
-  Funcware<Transitioner<E>["transition"]> => 
-    (next) => (ev) => { middleware(ev, next) }
-
-type Transform<I, O = I> = (source: I) => O;
-export type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = 
-{
-  [key: string]: Func
-} &
-{
-  transition: (middleware: Middleware<E>) => Funcware<Transitioner<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<Updater<E>["update"]>;
-  resolve: <F extends Resolver<E>["resolve"]>(resolveFn: F) => Funcware<F>;
-  guard: (guardFn: Guard<E>) => Funcware<Guard<E>>;
-  handle: (handleFn: Handle<E>) => Funcware<Handle<E>>;
-  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
-  leave: Transform<Effect<E>, Funcware<Effect<E>>>;
-  after: Transform<Effect<E>, Funcware<Effect<E>>>;
-  enter: Transform<Effect<E>, Funcware<Effect<E>>>;
-  effect: Transform<Effect<E>, Funcware<Effect<E>>>;
-  notify: Transform<Effect<E>, Funcware<Effect<E>>>;
-};
 export const HookAdapters = {
   transition: (middleware) => (next) => (ev) => { middleware(ev, next); },
   update: (middleware) => (next) => (ev) => { middleware(ev, next); },
@@ -79,7 +17,6 @@ export const HookAdapters = {
   effect: functionTap,
   notify: functionTap,
 } as Adapters;
-// #endregion
 
 export function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
@@ -99,12 +36,22 @@ export function combineGuards<E extends ChangeCommandEvent>(
   };
 }
 
-// export function effectHook{
-//   return <E, F extends (...args: any[]) => any>(
-//     handler: (...params: Parameters<F>) => void
-//   ) => (source: F) => (...args: Parameters<F>) => {
-//     source(...args);
-//     handler(...args);
-//   };
-// }
-  
+type Transform<I, O = I> = (source: I) => O;
+
+export type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = 
+{
+  [key: string]: Func
+} &
+{
+  transition: (middleware: Middleware<E>) => Funcware<Transitioner<E>["transition"]>;
+  update: (middleware: Middleware<E>) => Funcware<Updater<E>["update"]>;
+  resolve: <F extends Resolver<E>["resolve"]>(resolveFn: F) => Funcware<F>;
+  guard: (guardFn: Guard<E>) => Funcware<Guard<E>>;
+  handle: (handleFn: Handle<E>) => Funcware<Handle<E>>;
+  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
+  leave: Transform<Effect<E>, Funcware<Effect<E>>>;
+  after: Transform<Effect<E>, Funcware<Effect<E>>>;
+  enter: Transform<Effect<E>, Funcware<Effect<E>>>;
+  effect: Transform<Effect<E>, Funcware<Effect<E>>>;
+  notify: Transform<Effect<E>, Funcware<Effect<E>>>;
+};
