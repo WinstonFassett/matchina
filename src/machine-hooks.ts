@@ -66,49 +66,36 @@ export const onEnter = machineHook("enter");
 export const onAfter = machineHook("after");
 export const onNotify = machineHook("notify");
 
-
-function machineHook<
-  K extends string & keyof Adapters,  
->(
-  key: K,
-  ) {
-  return <
-  T extends HasMethod<K>,
-  P extends Parameters<Adapters<Parameters<MethodOf<T,K>>[0]>[K]>>(
+function machineHook<K extends string & keyof Adapters>(key: K) {
+  return <T extends HasMethod<K>>(
     machine: T,
     fn: MethodOf<T,K>
-  ) =>
-  (
-    methodExtender<K>(key)(HookAdapters[key](fn))
-  )  
-  (machine)
-  // as (target: T) => () => void;
+  ) => methodExtender<K>(key)
+    (HookAdapters[key](fn))(machine)  
 }
 
-function hookSetup<
-K extends string & keyof Adapters,
->(
-  key: K
-) {
-  return <T extends HasMethod<K>>(...config: Parameters<Adapters<Parameters<MethodOf<T,K>>[0]>[K]>) => (
-    methodExtender<K>(key)(HookAdapters[key](...config))    
-  ) as (target: T) => () => void;
+function hookSetup<K extends string & keyof Adapters>(key: K) {
+  return <T extends HasMethod<K>>(
+    ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
+  ) =>
+    methodExtender<K>(key)(HookAdapters[key](...config)) as (
+      target: T,
+    ) => () => void;
 }
 
 function composeHandlers<E extends ChangeCommandEvent>(
   outer: (value: E) => E | undefined,
-  inner: (value: E) => E | undefined
+  inner: (value: E) => E | undefined,
 ): (value: E) => E | undefined {
   return (ev) => outer(inner(ev) as any);
 }
 
 function combineGuards<E extends ChangeCommandEvent>(
   first: (value: E) => boolean,
-  next: (value: E) => boolean
+  next: (value: E) => boolean,
 ): (value: E) => boolean {
   return (ev) => {
     const res = first(ev) && next(ev);
-    console.log("combined guards", res);
     return res;
   };
 }

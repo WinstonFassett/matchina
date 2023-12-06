@@ -160,7 +160,9 @@ onNotify(m4, ev => {
   console.log('notify', ev)
 })
 
-onNotify(m4, when(ev => ev.type === 'execute', ev => {}))
+onNotify(m4, when(ev => ev.type === 'execute', ev => {
+  console.log(ev.to.as('Pending'))
+}))
 
 // onNotify(m4, )
 
