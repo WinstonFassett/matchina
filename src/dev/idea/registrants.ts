@@ -1,4 +1,4 @@
-import { notify } from "../../machine-setup";
+import { notify } from "../../machine-hooks";
 
 export type Disposer = () => void;
 

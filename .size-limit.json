@@ -43,8 +43,8 @@
     "import": "*"
   },
   {
-    "name": "machine setup",
-    "path": "src/machine-setup.ts"
+    "name": "machine hooks",
+    "path": "src/machine-hooks.ts"
   },
   {
     "name": "lifecycle",
