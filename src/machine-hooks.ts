@@ -38,23 +38,53 @@ export const HookAdapters = {
 
 // #region Interceptors
 // export const send = methodHook("send");
-export const before = machineHook("before");
-export const transition = machineHook("transition");
-export const resolve = machineHook("resolve");
-export const guard = machineHook('guard')
-export const update = machineHook("update");
-export const handle = machineHook("handle");
+export const before = hookSetup("before");
+export const transition = hookSetup("transition");
+export const resolve = hookSetup("resolve");
+export const guard = hookSetup('guard')
+export const update = hookSetup("update");
+export const handle = hookSetup("handle");
 //#endregion
 
 // #region Effects
-export const effect = machineHook("effect");
-export const leave = machineHook('leave')
-export const enter = machineHook("enter");
-export const after = machineHook("after");
-export const notify = machineHook("notify");
+export const effect = hookSetup("effect");
+export const leave = hookSetup('leave')
+export const enter = hookSetup("enter");
+export const after = hookSetup("after");
+export const notify = hookSetup("notify");
 //#endregion
 
+export const onBefore = machineHook("before");
+export const onTransition = machineHook("transition");
+export const onResolve = machineHook("resolve");
+export const onGuard = machineHook("guard");
+export const onUpdate = machineHook("update");
+export const onHandle = machineHook("handle");
+export const onEffect = machineHook("effect");
+export const onLeave = machineHook("leave");
+export const onEnter = machineHook("enter");
+export const onAfter = machineHook("after");
+export const onNotify = machineHook("notify");
+
 function machineHook<
+  K extends string & keyof Adapters,  
+>(
+  key: K,
+  ) {
+  return <
+  T extends HasMethod<K>,
+  F extends Parameters<Adapters<Parameters<MethodOf<T,K>>[0]>[K]>[0]>(
+    machine: T,
+    fn: F
+  ) =>
+  (
+    methodExtender<K>(key)(HookAdapters[key](fn))
+  )  
+  (machine)
+  // as (target: T) => () => void;
+}
+
+function hookSetup<
 K extends string & keyof Adapters,
 >(
   key: K

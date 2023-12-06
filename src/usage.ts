@@ -3,7 +3,7 @@ import { EntryListener, when } from "./extras/when";
 import { nanosubscriber } from "./extras/nanosubscriber";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
-import { effect, enter, guard, handle, leave, notify } from "./machine-hooks";
+import { effect, enter, guard, handle, leave, notify, onGuard, onNotify } from "./machine-hooks";
 import { createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import { ChangeCommandEvent } from "./types";
@@ -154,6 +154,12 @@ setup(m4)(
 // }),
 
 m4.send("execute", 1);
+
+onNotify(m4, ev => {
+  console.log('notify', ev)
+})
+
+onGuard(m4, ev => ev.to.is('Pending'))
 
 // listenTo(m4)("click", (ev) => {});
 
