@@ -1,3 +1,5 @@
+import { HookAdapters } from "./alt";
+import { HasMethod, extendMethod } from "./ext";
 import { methodEventHook, methodHook } from "./ext/func-event-middleware/func-event-middleware";
 import { tapMethod } from "./ext/methodware/tap-method";
 import { StateMachinery } from "./state-machine";
@@ -24,28 +26,27 @@ export const handle = <E extends ChangeCommandEvent>(
 // #endregion
 
 // #region effects
-export const effect = tapMethod("effect");
-export const leave = tapMethod("leave");
-export const after = tapMethod("after");
+export const effect = machineHook("effect");
+// export const leave = tapMethod("leave");
+export const leave = machineHook('leave')
+export const after = machineHook("after");
 export const enter = tapMethod("enter");
-export const notify = tapMethod("notify");
+export const notify = machineHook("notify");
 
-// #endregion
 
-export function composeHandlers<E extends ChangeCommandEvent>(
-  outer: (value: E) => E | undefined,
-  inner: (value: E) => E | undefined,
-): (value: E) => E | undefined {
-  return (ev) => outer(inner(ev) as any);
-}
 
-export function combineGuards<E extends ChangeCommandEvent>(
-  first: (value: E) => boolean,
-  next: (value: E) => boolean,
-): (value: E) => boolean {
-  return (ev) => {
-    const res = first(ev) && next(ev);
-    console.log("combined guards", res);
-    return res;
-  };
+export const guard2 = machineHook('guard')
+
+
+// <K extends string>(methodName: K) =>
+// <T extends HasMethod<K>>(fn: T[K]) =>
+
+function machineHook<  
+  K extends keyof typeof HookAdapters,  
+>(
+  key: K,  
+) {
+  return (...config: Parameters<(typeof HookAdapters)[K]>) =>
+    <T extends HasMethod<K>>(target: T) =>
+      extendMethod(target, key, (HookAdapters[key] as any)(...config) as any);  
 }

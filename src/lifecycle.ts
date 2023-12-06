@@ -1,16 +1,15 @@
-import { abortableEventware, extendMethod, iff } from "./ext";
+import { HookAdapters } from "./alt";
+import { extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
-import { AbortableEventHandler, Disposer, Funcware } from "./ext/types";
+import { Disposer } from "./ext/types";
 import {
   AnyStatesFactory,
   FactoryMachine,
   TransitionConfig,
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
-import { combineGuards, composeHandlers } from "./machine-setup";
-import { Resolver } from "./transition-machine";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
-import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
+import { ChangeCommandEvent } from "./types";
 
 export function onLifecycle<
   Transitions extends TransitionConfig<States>,
@@ -83,41 +82,3 @@ function useFilteredEventConfigs<
   return d;
 }
 
-type Transform<I, O = I> = (source: I) => O;
-
-type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = {
-  transition: (middleware: Middleware<E>) => Funcware<Transitioner<E>["transition"]>
-  update: (middleware: Middleware<E>) => Funcware<Updater<E>["update"]>;
-  resolve: <F extends Resolver<E>["resolve"]>(resolveFn: F) => Funcware<F>;
-  guard: (guardFn: Guard<E>) => Funcware<Guard<E>>;
-  handle: (handleFn: Handle<E>) => Funcware<Handle<E>>;
-  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
-  leave: Transform<Effect<E>, Funcware<Effect<E>>>;
-  after: Transform<Effect<E>, Funcware<Effect<E>>>
-  enter: Transform<Effect<E>, Funcware<Effect<E>>>
-  effect: Transform<Effect<E>, Funcware<Effect<E>>>
-  notify: Transform<Effect<E>, Funcware<Effect<E>>>
-};
-
-const HookAdapters = {
-  transition: (middleware) => (next) => (ev) => { middleware(ev, next) }, 
-  update: (middleware) => (next) => (ev) => { middleware(ev, next) },    
-  resolve:(resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
-  guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
-  handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
-  before: (abortware) => abortableEventware(abortware),
-  leave: effectHook("leave"),
-  after: effectHook("after"),
-  enter: effectHook("enter"),
-  effect: effectHook("effect"),
-  notify: effectHook("notify"),
-} as Adapters;
-
-export function effectHook(name: string) {
-  return <E, F extends (...args: any[]) => any>(
-    handler: (...params: Parameters<F>) => void
-  ) => (source: F) => (...args: Parameters<F>) => {
-    source(...args);
-    handler(...args);
-  };
-}
