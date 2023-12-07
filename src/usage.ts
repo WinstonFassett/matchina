@@ -10,7 +10,7 @@ import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 import { ChangeCommandEvent, Notifier } from "./types";
 
 
-const m1 = createStateMachine<ChangeCommandEvent & { type: 'start' | 'stop' }>(
+const m1 = createStateMachine<ChangeCommandEvent & ({ type: 'start', params: [nickname: 'Bob'|'Pat'] } | { type: 'stop', params: [{forever: boolean}] })>(
   {
     Idle: {
       start: "Running",
@@ -22,12 +22,13 @@ const m1 = createStateMachine<ChangeCommandEvent & { type: 'start' | 'stop' }>(
   { key: "Idle", data: undefined },
 );
 
-m1.send('start')
+m1.send('start', 'Bob')
+m1.send('stop', { forever: true})
 
 const whenStart = <E extends ChangeCommandEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
 
 setup(m1)(
-  guard((ev) => true),
+  guard((ev) => ev.type === 'start'),
   leave((ev) => console.log("before", ev)),
   
 );
