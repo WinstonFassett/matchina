@@ -6,9 +6,10 @@ import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify, onGuard, onNotify } from "./machine-hooks";
 import { createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { ChangeCommandEvent } from "./types";
+import { ChangeCommandEvent, Notifier } from "./types";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
-const m1 = createStateMachine(
+import { HasMethod } from "./ext";
+const m1 = createStateMachine<ChangeCommandEvent & { type: 'start' | 'stop' }>(
   {
     Idle: {
       start: "Running",
@@ -20,7 +21,7 @@ const m1 = createStateMachine(
   { key: "Idle", data: undefined },
 );
 
-// m1.send('start')
+m1.send('start')
 
 // const whenChange = 
 //   <E extends ChangeCommandEvent>(filter: KeyedChangeEventFilter<E>) => when(
@@ -103,12 +104,6 @@ setup(m4)(
   handle((ev) => {
     return ev;
   }),
-  // when((ev) => ev.type === "execute", (ev) => {
-  //   console.log('entered execute')
-  //   return (ev) => {
-  //     console.log('left execute')
-  //   }
-  // }),
   effect(
     when(
       (ev) => ev.type === "execute",
@@ -128,7 +123,6 @@ setup(m4)(
       },
     ),
   ),
-  // notify(),
   notify(
     when(
       (ev) => ev.type === 'reject',
@@ -137,22 +131,13 @@ setup(m4)(
     ),
   ),
   notify(whenStart(ev => {
-    console.log('entered start state')
+    console.log('entered start state', ev.to.key)
     return (ev) => {
       console.log('exited start state')
     }
   })),
 );
-// const unwhen = when(ev=> ev.to.key == 'Idle', (ev) => {
-//   unwhen()
-// })(m4)
 
-// when(ev => true, ev => {
-//   console.log('enter', ev)
-//   return ev => {
-//     console.log('exit', ev)
-//   }
-// }),
 
 m4.send("execute", 1);
 
@@ -164,37 +149,17 @@ onNotify(m4, when(ev => ev.type === 'execute', ev => {
   console.log(ev.to.as('Pending'))
 }))
 
-// onNotify(m4, )
-
-// onNotify(
-//   m4, 
-//   when(x=> true, x=> {})
-//   // eventThing(x => true, y => y)
-//   // when2(x => true, x => {})
-//   // ev => {
-    
-//   //   thing(ev => {})(ev)
-//   //  (ev)
-//   // }
-//   // filtered(ev => true)(ev => {})
-//   // fx(ev => true, console.log)
-//   // thing(ev => {
-    
-//   // })
-// )
-
-// listenTo(m4)("click", (ev) => {});
-
-function withNanoSubscribe<T>(target: T & Partial<{ subscribe: any }>) {
+function withNanoSubscribe<T extends Notifier<any>>(target: T & Partial<{ subscribe: any }>) {
   if (target.subscribe) {
-    return target;
+    return target as T & { subscribe: typeof subscribe };
   }
-  const [subscribe, emit, listeners] = nanosubscriber();
+  const [subscribe, emit, listeners] = nanosubscriber<Parameters<T['notify']>[0]>();
+  onNotify(target, emit as any);
   return Object.assign(target, {
     subscribe,
     emit,
     listeners,
-  });
+  }) //as T & { subscribe: typeof subscribe };
 }
 
 const api = createApi(m4);
@@ -202,6 +167,43 @@ api.execute(1);
 api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
+
+const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
+type EE = ReturnType<typeof m5.getChange>
+const subscribeWhen = (filter: KeyedChangeEventFilter<EE>, listener: EntryListener<EE>) =>
+m5.subscribe(when(
+  (ev) => isKeyedChangeEvent(ev as any, filter),
+  listener as any
+));
+
+const unsub2 = m5.subscribe(
+  when(x=>true, x=>{
+    console.log('enter')
+    return (x) => {
+      console.log('exit', x.to.key)
+      unsub2()
+    }    
+  })
+)
+
+const onLeaveState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
+  { from: key },
+  listener
+);
+
+onLeaveState('Pending', ev => {})
+
+const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
+  { to: key },
+  listener
+);
+
+onEnterState('Pending', ev => {
+  console.log('entered pending state')
+  return (ev) => {
+    console.log('left pending', ev.to.key)
+  }
+})
 
 // add a global reset transition
 
