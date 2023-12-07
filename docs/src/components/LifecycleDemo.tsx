@@ -25,7 +25,10 @@ const machine = withApi(
 type X = typeof machine.resolve
 type Y = typeof resolve
 
-
+const reset = () => {
+  console.log('RESET!')
+  machine.send('reset' as any)
+}
 
 setup(machine)(
   resolve(ev => 
@@ -34,10 +37,7 @@ setup(machine)(
   machine => {
     const store = machine as any
     if (store.reset) return () => {};
-    store.reset = () => {
-      console.log('RESET!')
-      store.send('reset')
-    }
+    store.reset = reset
     return () => {
       delete store.reset      
     }
@@ -141,7 +141,7 @@ export function LifecycleDemo({}) {
           ),
           _: () => (
             <span>
-              Done! <button onClick={() => machine.reset()}>Reset</button>
+              Done! <button onClick={() => reset()}>Reset</button>
             </span>
           ),
         })}
