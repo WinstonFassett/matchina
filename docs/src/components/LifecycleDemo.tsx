@@ -28,8 +28,8 @@ type Y = typeof resolve
 
 
 setup(machine)(
-  resolve(next => ev => 
-    ev.type as any === 'reset' ? {...ev, to: machine.states.Idle()} : next(ev)
+  resolve(ev => 
+    ev.type as any === 'reset' ? {...ev, to: machine.states.Idle()} : undefined
   ),
   machine => {
     const store = machine as any
