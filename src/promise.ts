@@ -30,32 +30,28 @@ export type PromiseCallback = (...args: any[]) => Promise<any>;
 
 export function createPromiseMachine<F extends PromiseCallback>(
   makePromise?: (...args: Parameters<F>) => ReturnType<F>,
-  init?: () => void,
 ) {
-  // const [states, transitions] = init ? init(states, transitions, initialState)
   const states = PromiseStates as unknown as PromiseStates<F>;
   const machine = createFactoryMachine(
     states,
     PromiseTransitions,
-    states.Idle(),
+    'Idle',
   );
   if (makePromise) {
-    machine.leave = (ev) => {
+    machine.before = (ev) => {
       if (ev.type === "execute") {
         const promise = makePromise(...(ev.params as Parameters<F>));
-        promiseMachine.promise = promise;
-        promiseMachine.done = promise
-          .then((res) => promiseMachine.send("resolve", res))
-          .catch((error) => promiseMachine.send("reject", error));
+        Object.assign(ev, {
+          promise,
+          done: promise
+            .then((res) => machine.send("resolve", res))
+            .catch((error) => machine.send("reject", error))
+        });
       }
-      return true;
+      return ev
     };
   }
-  const promiseMachine = Object.assign(machine, {
-    promise: undefined as undefined | ReturnType<F>,
-    done: undefined as undefined | Promise<void>,
-  });
-  return promiseMachine;
+  return machine;
 }
 
 export type PromiseMachine<F extends PromiseCallback> = ReturnType<

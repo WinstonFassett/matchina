@@ -180,10 +180,13 @@ describe("onLifecycle usage", () => {
                 // reject by returning
                 return;
               }
-              machine.promise = delayed(num, num);
-              machine.done = machine.promise
-                .then(machine.api.resolve)
-                .catch(machine.api.reject);
+              const promise = delayed(num, num);
+              Object.assign(event, {
+                promise,
+                done: promise
+                  .then(machine.api.resolve)
+                  .catch(machine.api.reject)
+              })              
               didHandleExecute ||= ++count;
               console.log("handler accepting");
               return event;
