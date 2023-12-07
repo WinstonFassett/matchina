@@ -1,14 +1,15 @@
 import { createSetup, setup } from "./ext/setup";
-import { EntryListener, when } from "./extras/when";
 import { nanosubscriber } from "./extras/nanosubscriber";
+import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
-import { effect, enter, guard, handle, leave, notify, onGuard, onNotify } from "./machine-hooks";
+import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
 import { createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { ChangeCommandEvent, Notifier } from "./types";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
-import { HasMethod } from "./ext";
+import { ChangeCommandEvent, Notifier } from "./types";
+
+
 const m1 = createStateMachine<ChangeCommandEvent & { type: 'start' | 'stop' }>(
   {
     Idle: {
@@ -23,12 +24,6 @@ const m1 = createStateMachine<ChangeCommandEvent & { type: 'start' | 'stop' }>(
 
 m1.send('start')
 
-// const whenChange = 
-//   <E extends ChangeCommandEvent>(filter: KeyedChangeEventFilter<E>) => when(
-//     (ev: E) => isKeyedChangeEvent(ev, filter)
-//   );
-
-// const whenStart = whenChange({ type: "start" });
 const whenStart = <E extends ChangeCommandEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
 
 setup(m1)(
