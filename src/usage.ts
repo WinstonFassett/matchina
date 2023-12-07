@@ -1,10 +1,11 @@
+import { HasMethod } from "./ext";
 import { createSetup, setup } from "./ext/setup";
 import { nanosubscriber } from "./extras/nanosubscriber";
 import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
-import { createFactoryMachine } from "./factory-machine";
+import { AnyStatesFactory, FactoryMachine, createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
-import { createStateMachine } from "./state-machine";
+import { StateMachinery, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 import { ChangeCommandEvent, Notifier } from "./types";
@@ -182,12 +183,24 @@ const unsub2 = m5.subscribe(
   })
 )
 
-const onLeaveState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
+const onLeaveState = <
+  M extends StateMachinery<any>,
+  SK extends ReturnType<M["getState"]>["key"],
+  E extends ReturnType<M["getChange"]>
+>(machine: M, key: SK, listener: EntryListener<E>) => subscribeWhen(
+  { from: key },
+  listener as any
+);
+
+const onLeaveStateM5 = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
   { from: key },
   listener
 );
+m4.send
 
-onLeaveState('Pending', ev => {})
+onLeaveState(m4, 'Pending', ev => {
+  ev.to.key = 'Idle'
+})
 
 const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
   { to: key },

@@ -25,7 +25,7 @@ export function createFactoryMachine<
     resolve: (ev: ResolveEvent<E>): E | undefined => {
       const to = nextFactoryState(transitions, states, ev);
       if (to) {
-        return { ...ev, to };
+        return { ...ev, to } as E;
       }
     },
   });
@@ -45,7 +45,7 @@ type KeysWithZeroArgs<T> = {
 export function nextFactoryState<
   SF extends AnyStatesFactory,
   TC extends TransitionConfig<SF>,
->(transitions: TC, states: SF, ev: ChangeCommandEvent) {
+>(transitions: TC, states: SF, ev: ResolveEvent<FactoryMachineEvent<TC, SF>>) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
     return undefined;
@@ -64,7 +64,7 @@ export type TransitionConfig<SF extends AnyStatesFactory> = {
       | keyof SF
       | ((...params: any[]) => StateFromFactory<SF>)
       | ((...params: any[]) => (
-          ev: FactoryMachineEvent<any, SF> & {
+          ev: ResolveEvent<FactoryMachineEvent<any, SF>> & {
             from: StateFromFactory<SF, FromStateKey>;
           },
         ) => StateFromFactory<SF>);
