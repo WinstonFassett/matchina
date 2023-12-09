@@ -1,7 +1,7 @@
 import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender, iff, setup } from "../ext";
 import { FlatMemberUnionToIntersection, Func, Simplify } from "../utility-types";
 import { Effect, Middleware } from "../types";
-import { EntryListener, when } from '../extras/when'
+import { EntryListener, ExitListener, when } from '../extras/when'
 // primitive theoretical types. do not use lol
 
 // interface Change<T> {
@@ -656,6 +656,22 @@ const enteredState = <E extends AltFactoryMachineEvent<any>, K extends keyof E['
 onNotify(m, leftState('Idle', (ev) => {  
   ev.from.key = 'Idle'
 }))
+
+setup(m)(
+  notify(leftState('Idle', ev => {
+    ev.from.key = 'Idle'
+  }))
+)
+
+const onLeftState = <E extends AltFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(
+  m: StateMachinery<E>,
+  stateKey: K, fn: ExitListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => setup(m)(
+  leave(leftState(stateKey, fn))
+)
+
+onLeftState(m, 'Rejected', ev => {
+  ev.from.key = 'Rejected'
+})
 
 type E = ReturnType<typeof m.getChange>
 type I = E['machine']['states']['Idle']
