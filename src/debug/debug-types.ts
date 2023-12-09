@@ -1,5 +1,5 @@
-import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender, iff, setup } from "../ext";
-import { FlatMemberUnionToIntersection, Func, Simplify } from "../utility-types";
+import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender, iff, setup, Disposer, disposers, extendMethod } from "../ext";
+import { FlatMemberUnion, FlatMemberUnionToIntersection, Func, Members, Simplify, TUnionToIntersection } from "../utility-types";
 import { Effect, Middleware } from "../types";
 import { EntryListener, ExitListener, when } from '../extras/when'
 
@@ -502,10 +502,14 @@ function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
     : keyOrKeys === value;
 }
 
-export type KeyedChangeEventFilter<E> = Filters<AnyKeyedChangeEvent>
+export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
+  type: E['type'],
+  to: E['to']['key'],
+  from: E['from']['key']
+}>
 
 export function isKeyedChangeEvent<
-  E
+  E extends AnyKeyedChangeEvent
 >(
   filter: KeyedChangeEventFilter<E>,
   event: E,
@@ -694,3 +698,227 @@ onAfterEvent(m, 'execute', ev => {
 // interface SimpleMachineContext<T> {  
 //   transitions: TransitionRecord<T>;
 // }
+
+export type TransitionHookConfig<E extends StateMachineEvent<any, any>> = Filters<TransitionHookExtensions<E>>;
+
+export type StateTransitionHooks<
+  FC extends FactoryMachineContext,  
+  StateKey extends keyof FC['transitions'] | "*",
+> = {
+  leave: Middleware<
+    FactoryMachineEvent<FC> & {
+      from: AnyFactoryState<
+        FC['states'],
+        StateKey extends keyof FC['states'] ? StateKey : keyof FC['states']
+      >;
+    }
+  >;
+  enter: Middleware<
+    FactoryMachineEvent<FC> & {
+      to: AnyFactoryState<
+        FC['states'],
+        StateKey extends keyof FC['states'] ? StateKey : keyof FC['states']
+      >;
+    }
+  >;
+};
+
+export type StateTransitionHookConfig<
+  FC extends FactoryMachineContext,
+  StateKey extends keyof FC['transitions'] | "*",
+> = Filters<StateTransitionHooks<FC, StateKey>>;
+
+type On<
+  FC extends FactoryMachineContext,
+  StateKey extends keyof FC['transitions'] | "*",
+  Transitions extends FC['transitions'] = FC['transitions'],
+  States extends FC['states'] = FC['states'],
+> =
+  // regular state
+  StateKey extends keyof States
+    ? // specific state
+      {
+        [Event in
+          | keyof Transitions[StateKey]
+          | "*"]?: Event extends FlatFactoryEventKeys<FC> // specific event
+          ? ReturnType<
+              StateEventTransitionFuncs<FC>[StateKey][Event]
+            > extends AnyFactoryState<States>
+            ? TransitionHookConfig<
+                FactoryMachineEvent<FC> & {
+                  type: Event;
+                  from: AnyFactoryState<
+                    States,
+                    StateKey extends keyof States ? StateKey : keyof States
+                  >;
+                  to: ReturnType<
+                    StateEventTransitionFuncs<
+                      FC
+                    >[StateKey][Event]
+                  >;
+                  params: Parameters<
+                    StateEventTransitionFuncs<
+                      FC
+                    >[StateKey][Event]
+                  >;
+                }
+              >
+            : never
+          : // wildcard event
+            TransitionHookConfig<
+              FactoryMachineEvent<FC> & {
+                from: AnyFactoryState<
+                  States,
+                  StateKey extends keyof States ? StateKey : keyof States
+                >;
+              }
+            >;
+      }
+    : // wildcard state
+      {
+        [AnyStateEvent in
+          | FlatFactoryEventKeys<FC>
+          | "*"]?: TransitionHookConfig<
+          FactoryMachineEvent<FC> & {
+            type: AnyStateEvent extends "*"
+              ? FlatFactoryEventKeys<FC>
+              : AnyStateEvent;
+            from: AnyFactoryState<
+              States,
+              StateKey extends keyof States ? StateKey : keyof States
+            >;
+            to: ReturnType<
+              StateEventTransitionFuncs<
+                FC
+              >[StateKey][AnyStateEvent]
+            >;
+            params: Parameters<
+              StateEventTransitionFuncs<
+                FC
+              >[StateKey][AnyStateEvent]
+            >;
+          }
+        >;
+      };
+
+export type FlatExitStates<
+  FC extends FactoryMachineContext,
+  States extends FC['states'] = FC['states']
+> = Members<{
+  [StateKey in keyof StateEventTransitionFuncs<FC>]: {
+    [EventKey in keyof StateEventTransitionFuncs<
+      FC
+    >[StateKey]]: StateEventTransitionFuncs<
+      FC
+    >[StateKey][EventKey] extends (...args: any[]) => infer TargetState
+      ? TargetState extends AnyFactoryState<States, infer TargetStateKey>
+        ? TargetStateKey extends keyof States
+          ? TargetState
+          : never
+        : never
+      : never;
+  }[keyof StateEventTransitionFuncs<FC>[StateKey]];
+}>;
+
+export type EventExitStatesIntersection<
+FC extends FactoryMachineContext,
+> = TUnionToIntersection<
+  FlatMemberUnion<StatesToEventsToStates<FC>>
+>;
+
+export type StatesToEventsToStates<
+  FC extends FactoryMachineContext,
+> = {
+  [StateKey in keyof StateEventTransitionFuncs<FC>]: {
+    [EventKey in keyof StateEventTransitionFuncs<FC>[StateKey]]: ReturnType<
+      StateEventTransitionFuncs<FC>[StateKey][EventKey]
+    >;
+  };
+};
+
+export type StateEventHookConfig<
+FC extends FactoryMachineContext,
+> = {
+  [StateKey in string & (keyof FC['transitions'] | "*")]?: {
+    on?: On<FC, StateKey>;
+  } & StateTransitionHookConfig<FC, StateKey>;
+};
+
+export type FlatFactoryEventKeys<
+  FC extends FactoryMachineContext,
+> = string &
+  {
+    [StateKey in keyof StateEventTransitionFuncs<
+      FC
+    >]: keyof StateEventTransitionFuncs<FC>[StateKey];
+  }[keyof StateEventTransitionFuncs<FC>];
+
+
+export function onLifecycle<
+FC extends FactoryMachineContext,
+>(
+machine: FactoryMachine<FC>,
+config: StateEventHookConfig<FC>,
+) {
+const d = [] as Disposer[];
+for (const key in config) {
+  const stateKey = key === "*" ? undefined : key;
+  const fromStateConfig = config[key as keyof typeof config];
+  if (!fromStateConfig) {
+    continue;
+  }
+  const { on, enter , leave } = fromStateConfig;
+  if (enter) {
+    useFilteredEventConfigs(machine, { to: stateKey }, { enter } as any, d);
+  }
+  if (leave) {
+    useFilteredEventConfigs(machine, { from: stateKey }, { leave } as any, d);
+  }
+  if (on) {
+    for (const onKey in on) {
+      const eventKey = onKey === "*" ? undefined : onKey;
+      const eventConfig = on[onKey as keyof typeof on];
+      if (!eventConfig) {
+        continue;
+      }
+      useFilteredEventConfigs(
+        machine,
+        { from: stateKey, type: eventKey },
+        eventConfig as StateEventHookConfig<FC>,
+        d,
+      );
+    }
+  }
+}
+return disposers(d);
+}
+
+function useFilteredEventConfigs<
+  FC extends FactoryMachineContext,
+>(
+machine: FactoryMachine<FC>,
+filter: KeyedChangeEventFilter<FactoryMachineEvent<FC>>,
+config:
+  | StateEventHookConfig<FC>
+  | TransitionHookConfig<FactoryMachineEvent<FC>>,
+d: Disposer[],
+) {
+for (const phase in config) {
+  const hook = config[phase as keyof typeof config];
+  if (hook) {
+    const hookHandler = (HookAdapters as typeof HookAdapters)[phase as keyof typeof HookAdapters];
+    console.log("add hook", phase, filter);
+    d.push(
+      extendMethod(
+        machine,
+        phase as keyof FactoryMachine<FC>,
+        iff(
+          (ev: FactoryMachineEvent<FC>) => isKeyedChangeEvent(filter, ev),
+          (hookHandler as any)?.(hook, machine) ?? hook,
+        ) as any,
+      ),
+    );
+  }
+}
+return d;
+}
