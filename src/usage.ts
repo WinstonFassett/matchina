@@ -164,10 +164,11 @@ if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
   e.from.key = 'Idle'
 
 }
-if (isFactoryMachineEvent(e, { from: 'Idle', type: 'execute', to: 'Pending' } as const)) {
+if (isFactoryMachineEvent(e, { from: 'Idle', type: 'execute', to: 'Rejected' } as const)) {
   e.from.key = 'Idle'
   e.type = 'execute'
-  e.to.key = 'Pending'
+  e.to.key = 'Rejected'
+  e.to.data.err
 }
 
 
