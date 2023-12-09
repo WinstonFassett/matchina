@@ -1,4 +1,4 @@
-import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender } from "../ext";
+import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender, iff, setup } from "../ext";
 import { FlatMemberUnionToIntersection, Func, Simplify } from "../utility-types";
 import { Effect, Middleware } from "../types";
 import { EntryListener, when } from '../extras/when'
@@ -650,6 +650,8 @@ export type TransitionHookExtensions<E extends StateMachineEvent> = {
 // }>) => when<FactoryMachineEvent<FC['transitions'], FC['states']>>(ev => ev.from.key === stateKey, fn)
 
 const leftState = <E extends AltFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
+const enteredState = <E extends AltFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ to: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
+
 
 onNotify(m, leftState('Idle', (ev) => {  
   ev.from.key = 'Idle'
@@ -658,3 +660,70 @@ onNotify(m, leftState('Idle', (ev) => {
 type E = ReturnType<typeof m.getChange>
 type I = E['machine']['states']['Idle']
 // type EventOf<E> = M extends StateMachineContext<infer E> ? E : never;
+
+const beforeEvent = <E extends AltFactoryMachineEvent<any>, K extends E['type']>(
+  type: K,
+  fn: AbortableEventHandler<E & { type: K }>,
+) => before<StateMachinery<E>>(
+  (ev, abort) => {
+    if (ev.type === type) {
+      fn(ev as any, abort);
+    }
+  }
+)
+
+const afterEvent = <E extends AltFactoryMachineEvent<any>, K extends E['type']>(
+  type: K,
+  fn: Effect<E & { type: K }>,
+) => after<StateMachinery<E>>(
+  (ev) => {
+    if (ev.type === type) {
+      fn(ev as any);
+    }
+  }
+)
+
+//when<E>(ev => ev.type === type, HookAdapters.before(fn))
+
+setup(m)(
+  beforeEvent('reject', (ev, abort) => {
+    ev.type = 'reject'
+  }),
+  afterEvent('reject', ev => {
+    ev.type = 'reject'    
+  })
+)
+
+// const onBeforeEvent = <FC extends FactoryMachineContext, Type extends AltFactoryMachineEvent<FC>['type']>(
+//   machine: AltFactoryMachine<FC>,
+//   type: Type,
+//   fn: AbortableEventHandler<AltFactoryMachineEvent<FC> & { type: AltFactoryMachineEvent<FC>['type'] }>,
+// ) => {
+//   return beforeEvent(type, fn)(machine)
+// }
+
+
+const onBeforeEvent = <E extends AltFactoryMachineEvent<any>, K extends E['type']>(
+  m: StateMachinery<E>,
+  type: E['type'],
+  fn: AbortableEventHandler<E & { type: E["type"]; }>,
+) => setup(m)(
+  beforeEvent(type, fn)
+)
+
+
+onBeforeEvent(m, 'reject', ev => {
+  ev.type = 'reject'  
+})
+
+const onAfterEvent = <E extends AltFactoryMachineEvent<any>, K extends E['type']>(
+  m: StateMachinery<E>,
+  type: K,
+  fn: Effect<E & { type: K; }>,
+) => setup(m)(
+  afterEvent<E,K>(type, fn)
+)
+
+onAfterEvent(m, 'execute', ev => {
+  ev.type = 'execute'
+})
