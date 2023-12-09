@@ -38,7 +38,7 @@ export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
 }>
 
 export function isKeyedChangeEvent<
-  E extends AnyKeyedChangeEvent
+  E extends AnyKeyedChangeEvent,
 >(
   filter: KeyedChangeEventFilter<E>,
   event: E,

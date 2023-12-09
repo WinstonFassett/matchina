@@ -1,13 +1,13 @@
 import { createSetup, setup } from "./ext/setup";
-import { nanosubscriber } from "./extras/nanosubscriber";
 import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
-import { leftState, onLeftState } from "./factory-machine-hooks";
+import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
-import { StateMachineEvent, StateMachinery, createStateMachine } from "./state-machine";
+import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { withNanoSubscribe } from "./withNanoSubscribe";
 
 
 const m1 = createStateMachine<StateMachineEvent & ({ type: 'start', params: [nickname: 'Bob'|'Pat'] } | { type: 'stop', params: [{forever: boolean}] })>(
@@ -147,19 +147,6 @@ onNotify(m4, when(ev => ev.type === 'execute', ev => {
   console.log(ev.to.as('Pending'))
 }))
 
-function withNanoSubscribe<T extends StateMachinery<any>>(target: T & Partial<{ subscribe: any }>) {
-  if (target.subscribe) {
-    return target as T & { subscribe: typeof subscribe };
-  }
-  const [subscribe, emit, listeners] = nanosubscriber<Parameters<T['notify']>[0]>();
-  onNotify(target, emit as any);
-  return Object.assign(target, {
-    subscribe,
-    emit,
-    listeners,
-  }) //as T & { subscribe: typeof subscribe };
-}
-
 const api = createApi(m4);
 
 api.execute(1);
@@ -170,13 +157,18 @@ const unsub = notify((ev) => console.log(ev))(m4);
 const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>
 
+m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
+
+m5.subscribe(whenEvent({ type: 'execute' }, ev => {
+  ev.type = 'resolve'
+}))
+
 setup(m4)(
   notify(leftState('Rejected', ev => {
 
   }))
 )
 
-onLeftState
 
 // const subscribeWhen = (filter: KeyedChangeEventFilter<any>, listener: EntryListener<EE>) =>
 // m5.subscribe(when(
