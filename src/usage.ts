@@ -3,6 +3,7 @@ import { nanosubscriber } from "./extras/nanosubscriber";
 import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
+import { leftState, onLeftState } from "./factory-machine-hooks";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
 import { StateMachineEvent, StateMachinery, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
@@ -169,6 +170,13 @@ const unsub = notify((ev) => console.log(ev))(m4);
 const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>
 
+setup(m4)(
+  notify(leftState('Rejected', ev => {
+
+  }))
+)
+
+onLeftState
 
 // const subscribeWhen = (filter: KeyedChangeEventFilter<any>, listener: EntryListener<EE>) =>
 // m5.subscribe(when(
