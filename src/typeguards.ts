@@ -38,12 +38,20 @@ export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
 }>
 
 export type KeyedChangeEventFromFilter<
-  F extends KeyedChangeEventFilter<any>> = 
-KeyedChangeEvent<
-    FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
-    FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
-    FilterValues<F>['from'] extends string ? FilterValues<F>['from'] : string
-  >
+  F extends KeyedChangeEventFilter<any>,
+  FromKey = FilterValues<F>['from'] extends string ? FilterValues<F>['from'] : string,
+  Type = FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
+  ToKey = FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
+  > = {
+    type: Type
+    from: { key: FromKey }  
+    to: { key: ToKey }
+  }
+// KeyedChangeEvent<
+//     FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
+//     FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
+//     FilterValues<F>['from'] extends string ? FilterValues<F>['from'] : string
+//   >
 
 export function isKeyedChangeEvent<
   E extends AnyKeyedChangeEvent,
