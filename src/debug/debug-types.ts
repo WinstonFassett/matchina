@@ -957,3 +957,11 @@ onGuardEvent(m, 'execute', ev => ev.type === 'execute')
 function defineStates<Config extends UnionSpec>(config: Config) {
   return matchboxFactory(config, "key") as States<Config>;
 }
+
+const states = defineStates({
+  Idle: undefined, 
+  Pending: (x: number, y: number) => ({ x, y }),
+  Rejected: (error: Error) => ({ error }),
+  Resolved: (data: number) => ({ data }),
+})
+
