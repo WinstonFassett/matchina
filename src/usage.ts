@@ -6,7 +6,7 @@ import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
 import { withNanoSubscribe } from "./withNanoSubscribe";
 
 
@@ -164,6 +164,12 @@ if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
   e.from.key = 'Idle'
 
 }
+if (isFactoryMachineEvent(e, { from: 'Idle', type: 'execute', to: 'Pending' } as const)) {
+  e.from.key = 'Idle'
+  e.type = 'execute'
+  e.to.key = 'Pending'
+}
+
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 

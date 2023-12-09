@@ -1,3 +1,4 @@
+import { FactoryMachine, FactoryMachineEvent } from "./factory-machine"
 
 export type AnyKeyedChangeEvent = {
   type: string
@@ -47,6 +48,19 @@ export type KeyedChangeEventFromFilter<
     from: { key: FromKey }  
     to: { key: ToKey }
   }
+
+export type FactoryChangeEventFromFilter<
+  E extends FactoryMachineEvent<any>,
+  F extends KeyedChangeEventFilter<E>,
+  M extends E['machine'] = E['machine'],  
+  // ToKey = FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,  
+  > = {
+    f: F,    
+    type: FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string
+    from: FilterValues<F>['from'] extends keyof M['states'] ? ReturnType<M['states'][FilterValues<F>['from']]> : ReturnType<M['getState']>
+    to: FilterValues<F>['to'] extends keyof M['states'] ? ReturnType<M['states'][FilterValues<F>['to']]> : ReturnType<M['getState']>,
+  }
+
 // KeyedChangeEvent<
 //     FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
 //     FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
@@ -68,6 +82,15 @@ export function isKeyedChangeEvent<
   // console.log('match?', matched, filter, event.type)
   return matched;
 }
+
+export const isFactoryMachineEvent: <
+  E extends FactoryMachineEvent<any>,
+  F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
+  >(
+    event: E,
+    filter: F,
+  ) => event is (E & FactoryChangeEventFromFilter<E, F>) = isKeyedChangeEvent as any
+
 export function isChangeTypeToFrom<
   E,
   Type extends string,
