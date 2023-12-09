@@ -28,9 +28,9 @@ interface StateMachinery<E extends StateMachineEvent = StateMachineEvent> {
   after(ev: E): void;
 }
 
-interface FactoryMachineContext {
-  states: AnyStatesFactory;
-  transitions: TransitionRecord;
+interface FactoryMachineContext<SF extends AnyStatesFactory = AnyStatesFactory> {
+  states: SF;
+  transitions: FactoryMachineTransitions<SF>;
 }
 
 interface FactoryMachine<
@@ -922,3 +922,33 @@ for (const phase in config) {
 }
 return d;
 }
+
+
+onLifecycle(m, {
+  Idle: {
+    on: {
+       execute: {
+        guard: ev => ev.type === 'execute'
+       }
+    }
+  }
+})
+
+const onGuardEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+  m: StateMachinery<E>,
+  type: K,
+  fn: StateMachinery<E & { type: K }>['guard'],
+) => setup(m)(
+  guard((ev) => {
+    if (ev.type === type) {
+      return fn(ev as any)
+    }
+    return true
+  })
+)
+
+onGuardEvent(m, 'execute', ev => ev.type === 'execute')
+
+// setup(m)(
+//   guard(ev => )
+// )
