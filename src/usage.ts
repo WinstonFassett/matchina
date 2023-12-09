@@ -167,8 +167,9 @@ if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 
-m5.subscribe(whenEvent({ type: 'reject' }, ev => {
-  
+m5.subscribe(whenEvent({ from: 'Idle', type: 'reject' }, ev => {
+  ev.type = 'reject'
+  ev.to.key = 'Idle'
 }))
 
 setup(m4)(

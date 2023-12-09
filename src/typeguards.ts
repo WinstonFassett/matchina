@@ -44,13 +44,10 @@ KeyedChangeEvent<
     FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
     FilterValues<F>['from'] extends string ? FilterValues<F>['from'] : string
   >
-// FilterValues<F>['from']
-
 
 export function isKeyedChangeEvent<
   E extends AnyKeyedChangeEvent,
   F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
-  FV extends FilterValues<F> = FilterValues<F>
 >(
   filter: F,
   event: E,
