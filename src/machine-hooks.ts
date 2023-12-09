@@ -1,17 +1,18 @@
 import { AbortableEventHandler, Funcware, HasMethod, MethodOf, abortableEventware, functionTap, methodExtender } from "./ext";
-import { Resolver } from "./transition-machine";
-import { ChangeCommandEvent, Effect, Guard, Handle, Middleware, Transitioner, Updater } from "./types";
+import { StateMachineEvent, StateMachinery } from "./state-machine";
+import { Effect, Middleware } from "./types";
 import { Func } from "./utility-types";
 
+
 //#region Adapters
-export type Adapters<E extends ChangeCommandEvent = ChangeCommandEvent> = {
+export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   [key: string]: Func;
 } & {
-  transition: (middleware: Middleware<E>) => Funcware<Transitioner<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<Updater<E>["update"]>;
-  resolve: <F extends Resolver<E>["resolve"]>(resolveFn: F) => Funcware<F>;
-  guard: (guardFn: Guard<E>) => Funcware<Guard<E>>;
-  handle: (handleFn: Handle<E>) => Funcware<Handle<E>>;
+  transition: (middleware: Middleware<E>) => Funcware<StateMachinery<E>["transition"]>;
+  update: (middleware: Middleware<E>) => Funcware<StateMachinery<E>["update"]>;
+  resolve: <F extends StateMachinery<E>["resolve"]>(resolveFn: F) => Funcware<F>;
+  guard: (guardFn: StateMachinery<E>['guard']) => Funcware<StateMachinery<E>['guard']>;
+  handle: (handleFn: StateMachinery<E>['handle']) => Funcware<StateMachinery<E>['handle']>;
   before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
   leave: Transform<Effect<E>, Funcware<Effect<E>>>;
   after: Transform<Effect<E>, Funcware<Effect<E>>>;
@@ -83,14 +84,14 @@ function hookSetup<K extends string & keyof Adapters>(key: K) {
     ) => () => void;
 }
 
-function composeHandlers<E extends ChangeCommandEvent>(
+function composeHandlers<E extends StateMachineEvent>(
   outer: (value: E) => E | undefined,
   inner: (value: E) => E | undefined,
 ): (value: E) => E | undefined {
   return (ev) => outer(inner(ev) as any);
 }
 
-function combineGuards<E extends ChangeCommandEvent>(
+function combineGuards<E extends StateMachineEvent>(
   first: (value: E) => boolean,
   next: (value: E) => boolean,
 ): (value: E) => boolean {

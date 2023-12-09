@@ -29,27 +29,27 @@ interface StateMachinery<E extends StateMachineEvent = StateMachineEvent> {
   after(ev: E): void;
 }
 
-interface FactoryMachineContext<SF extends AnyStatesFactory = AnyStatesFactory> {
-  states: SF;
-  transitions: FactoryMachineTransitions<SF>;
+interface FactoryMachineContext<S extends AnyStatesFactory = AnyStatesFactory> {
+  states: S;
+  transitions: FactoryMachineTransitions<S>;
 }
 
 interface FactoryMachine<
-    FC extends FactoryMachineContext,    
+    FC extends FactoryMachineContext<any>,    
   > extends StateMachinery<FactoryMachineEvent<FC>> {
     states: FC['states'];
     transitions: FC['transitions'];
   }
   
-interface FactoryMachineEvent<FC extends FactoryMachineContext> extends StateMachineEvent {
-  type: string & FlatEventKeys<FC['transitions']>;
+interface FactoryMachineEvent<FC extends FactoryMachineContext<any>> extends StateMachineEvent {
+  type: string & FlatKeys<FC['transitions']>;
   params: any[];
   from: AnyFactoryState<FC['states']>;
   to: AnyFactoryState<FC['states']>;
   get machine(): FactoryMachine<FC> & StateMachinery<FactoryMachineEvent<FC>>;
 }
 
-type FlatEventKeys<T> = {
+type FlatKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
 
@@ -148,11 +148,13 @@ export function createStateMachine<E extends StateMachineEvent>(
 }
 
 export function createFactoryMachine<
-  FC extends FactoryMachineContext,
+  SF extends AnyStatesFactory,
+  TC extends FactoryMachineTransitions<SF>,
+  FC extends FactoryMachineContext<SF> = { states: SF, transitions: TC },
   E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
 >(
-  states: FC['states'],
-  transitions: FC['transitions'],
+  states: SF,
+  transitions: TC,
   init: KeysWithZeroArgs<FC['states']> | AnyFactoryState<FC['states']>,
 ): FactoryMachine<FC> {
   const initialState = (
@@ -172,7 +174,7 @@ export function createFactoryMachine<
 }
 
 export function nextFactoryState<
-  FC extends FactoryMachineContext
+  FC extends FactoryMachineContext<any>
 >(transitions: FC['transitions'], states: FC['states'], ev: ResolveEvent<FactoryMachineEvent<FC>>) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
@@ -580,29 +582,11 @@ export type TransitionHookExtensions<E extends StateMachineEvent> = {
 const leftState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
 const enteredState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ to: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
 
-
-onNotify(m, leftState('Idle', (ev) => {  
-  ev.from.key = 'Idle'
-}))
-
-setup(m)(
-  notify(leftState('Idle', ev => {
-    ev.from.key = 'Idle'
-  })),
-  notify(enteredState('Pending', ev => {
-    ev.to.key = 'Pending'
-  }))
-)
-
 const onLeftState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(
   m: StateMachinery<E>,
   stateKey: K, fn: ExitListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => setup(m)(
   leave(leftState(stateKey, fn))
 )
-
-onLeftState(m, 'Rejected', ev => {
-  ev.from.key = 'Rejected'
-})
 
 const beforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
   type: K,
@@ -625,6 +609,25 @@ const afterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
     }
   }
 )
+
+onNotify(m, leftState('Idle', (ev) => {  
+  ev.from.key = 'Idle'
+}))
+
+setup(m)(
+  notify(leftState('Idle', ev => {
+    ev.from.key = 'Idle'
+  })),
+  notify(enteredState('Pending', ev => {
+    ev.to.key = 'Pending'
+  }))
+)
+
+
+onLeftState(m, 'Rejected', ev => {
+  ev.from.key = 'Rejected'
+})
+
 
 setup(m)(
   beforeEvent('reject', (ev, abort) => {
@@ -958,10 +961,108 @@ function defineStates<Config extends UnionSpec>(config: Config) {
   return matchboxFactory(config, "key") as States<Config>;
 }
 
-const states = defineStates({
-  Idle: undefined, 
-  Pending: (x: number, y: number) => ({ x, y }),
-  Rejected: (error: Error) => ({ error }),
-  Resolved: (data: number) => ({ data }),
-})
 
+const states = defineStates({
+  Idle: undefined,
+  Pending: (x: number) => ({ s: `#${x}` }),
+  Resolved: (ok: boolean) => ({ ok }),
+  Rejected: (err: Error) => ({ err }),
+});
+
+
+
+
+
+const m4 = createFactoryMachine(
+  states,
+  {
+    Idle: { execute: "Pending" },
+    Pending: { resolve: "Resolved", reject: "Rejected" },
+    Resolved: {},
+    Rejected: {},
+  },
+  states.Idle(),
+);
+
+m4.send('execute')
+
+// m4.getChange().to.key ;
+m4.send("execute", 1);
+
+const isChange =
+  <E>(filter: KeyedChangeEventFilter<any>) =>
+  (ev: E) =>
+    isKeyedChangeEvent(filter, ev);
+
+
+// const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) => 
+//   when((ev) => ev.type === "start", fn);
+      
+setup(m4)(
+  m => {
+
+    return () => {}
+  },
+  guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
+  leave((ev) => {
+    if (ev.type === "execute") {
+      console.log("executing");
+    }
+  }),
+  enter((ev) =>
+    console.log(
+      ev.to.match<any>({
+        Pending: (ev) => ev.s,
+        Resolved: (ev) => ev.ok,
+        Rejected: (ev) => ev.err,
+        _: () => false,
+      }),
+    ),
+  ),
+  handle((ev) => {
+    return ev;
+  }),
+  effect(
+    when(
+      (ev) => ev.type === "execute",
+      (ev) => {
+        console.log({ ev });
+      },
+    ),
+  ),
+  enter(
+    when(
+      isChange({ type: 'execute'}),
+      (ev) => {
+        console.log("entered condition");
+        return (ev) => {
+          console.log("exited condition");
+        };
+      },
+    ),
+  ),
+  notify(
+    when(
+      (ev) => ev.type === 'reject',
+      // eslint-disable-next-line unicorn/consistent-function-scoping
+      (ev) => (ev) => {},
+    ),
+  ),
+  // notify(whenStart(ev => {
+  //   console.log('entered start state', ev.to.key)
+  //   return (ev) => {
+  //     console.log('exited start state')
+  //   }
+  // })),
+  notify(
+    when(ev => ev.type === 'execute', ev => {
+      console.log('entered execute state', ev.to.key)
+      return (ev) => {
+        console.log('exited execute state')
+      }    
+    })
+  )
+);
+
+
+m4.send("execute", 1);

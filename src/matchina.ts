@@ -1,7 +1,7 @@
 import { createApi } from "./factory-event-api";
 import {
+  FactoryMachineTransitions,
   StateFromFactory,
-  TransitionConfig,
   createFactoryMachine,
 } from "./factory-machine";
 import { UnionSpec } from "./matchbox";
@@ -9,7 +9,7 @@ import { States, defineStates } from "./states";
 
 export function matchina<
   S extends UnionSpec,
-  T extends TransitionConfig<States<S>>,
+  T extends FactoryMachineTransitions<States<S>>,
 >(
   stateConfig: S,
   transitionConfig: T | ((states: States<S>) => T),

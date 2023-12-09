@@ -1,12 +1,15 @@
-export type ChangeEvent<Type, To, From> = {
-  type: Type;
-  to: To;
-  from: From;
-};
 
-export type ChangeEventFilter<Type, To, From> = RecordFilter<
-  ChangeEvent<Type, To, From>
->;
+export type AnyKeyedChangeEvent = {
+  type: string
+  to: { key: string }
+  from: { key: string }  
+}
+
+export type KeyedChangeEvent<Type extends string, ToKey extends string, FromKey extends string> = {
+  type: Type
+  to: { key: ToKey }
+  from: { key: FromKey }  
+}
 
 export function hasKeyValue<T, K extends PropertyKey, V>(
   obj: T,
@@ -28,55 +31,18 @@ function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
     : keyOrKeys === value;
 }
 
-export type KeyedChangeEvent<Type, FromKey, ToKey> = ChangeEvent<
-  Type,
-  { key: ToKey },
-  { key: FromKey }
->;
-
-type RecordFilter<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
-export type ChangeEventType<E> = E extends ChangeEvent<infer T, any, any>
-  ? T
-  : string;
-export type ChangeEventToKey<E> = E extends ChangeEvent<
-  any,
-  { key: infer K },
-  any
->
-  ? K
-  : string;
-export type ChangeEventFromKey<E> = E extends ChangeEvent<
-  any,
-  any,
-  { key: infer K }
->
-  ? K
-  : string;
-
-// export type KeyedChangeEventFilter<E> = RecordFilter<
-//   KeyedChangeEvent<
-//     ChangeEventType<E>,
-//     ChangeEventToKey<E>,
-//     ChangeEventFromKey<E>
-//   >
-// >;
-export type KeyedChangeEventFilter<E> = {
-  type?: ChangeEventType<E> | ChangeEventType<E>[];
-  to?: ChangeEventToKey<E> | ChangeEventToKey<E>[];
-  from?: ChangeEventFromKey<E> | ChangeEventFromKey<E>[];
-};
+export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
+  type: E['type'],
+  to: E['to']['key'],
+  from: E['from']['key']
+}>
 
 export function isKeyedChangeEvent<
-  E,
-  Type extends ChangeEventType<E>,
-  ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>,
+  E extends AnyKeyedChangeEvent
 >(
   filter: KeyedChangeEventFilter<E>,
   event: E,
-): event is E & KeyedChangeEvent<Type, FromKey, ToKey> {
+): event is E & AnyKeyedChangeEvent {
   const subject = event as any;
   const matched =
     matchKey(filter.to, subject?.to?.key) &&
@@ -87,9 +53,9 @@ export function isKeyedChangeEvent<
 }
 export function isChangeTypeToFrom<
   E,
-  Type extends ChangeEventType<E>,
-  ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>,
+  Type extends string,
+  ToKey extends string,
+  FromKey extends string,
 >(
   event: E,
   type?: Type | Type[],
@@ -105,9 +71,9 @@ export function isChangeTypeToFrom<
 }
 export function asChangeTypeToFrom<
   E,
-  Type extends ChangeEventType<E>,
-  ToKey extends ChangeEventToKey<E>,
-  FromKey extends ChangeEventFromKey<E>,
+  Type extends string,
+  ToKey extends string,
+  FromKey extends string,
 >(
   event: E,
   type?: Type | Type[],
@@ -119,3 +85,6 @@ export function asChangeTypeToFrom<
   }
   throw new Error("not a match");
 }
+export type Filters<T> = object & {
+  [K in keyof T]?: T[K] | T[K][];
+};

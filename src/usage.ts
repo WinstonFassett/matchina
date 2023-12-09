@@ -1,17 +1,15 @@
-import { HasMethod } from "./ext";
 import { createSetup, setup } from "./ext/setup";
 import { nanosubscriber } from "./extras/nanosubscriber";
 import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
-import { AnyStatesFactory, FactoryMachine, createFactoryMachine } from "./factory-machine";
+import { createFactoryMachine } from "./factory-machine";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
-import { StateMachinery, createStateMachine } from "./state-machine";
+import { StateMachineEvent, StateMachinery, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
-import { ChangeCommandEvent, Notifier } from "./types";
 
 
-const m1 = createStateMachine<ChangeCommandEvent & ({ type: 'start', params: [nickname: 'Bob'|'Pat'] } | { type: 'stop', params: [{forever: boolean}] })>(
+const m1 = createStateMachine<StateMachineEvent & ({ type: 'start', params: [nickname: 'Bob'|'Pat'] } | { type: 'stop', params: [{forever: boolean}] })>(
   {
     Idle: {
       start: "Running",
@@ -26,7 +24,7 @@ const m1 = createStateMachine<ChangeCommandEvent & ({ type: 'start', params: [ni
 m1.send('start', 'Bob')
 m1.send('stop', { forever: true})
 
-const whenStart = <E extends ChangeCommandEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
+const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
 
 setup(m1)(
   guard((ev) => ev.type === 'start'),
@@ -75,7 +73,7 @@ const m4 = createFactoryMachine(
 m4.send("execute", 1);
 
 const isChange =
-  <E>(filter: KeyedChangeEventFilter<E>) =>
+  <E>(filter: KeyedChangeEventFilter<any>) =>
   (ev: E) =>
     isKeyedChangeEvent(filter, ev);
 
@@ -127,12 +125,14 @@ setup(m4)(
       (ev) => (ev) => {},
     ),
   ),
-  notify(whenStart(ev => {
-    console.log('entered start state', ev.to.key)
-    return (ev) => {
-      console.log('exited start state')
-    }
-  })),
+  notify(
+    when(ev => ev.type === 'execute', ev => {
+      console.log('entered execute state', ev.to.key)
+      return (ev) => {
+        console.log('exited execute state')
+      }    
+    })
+  )
 );
 
 
@@ -146,7 +146,7 @@ onNotify(m4, when(ev => ev.type === 'execute', ev => {
   console.log(ev.to.as('Pending'))
 }))
 
-function withNanoSubscribe<T extends Notifier<any>>(target: T & Partial<{ subscribe: any }>) {
+function withNanoSubscribe<T extends StateMachinery<any>>(target: T & Partial<{ subscribe: any }>) {
   if (target.subscribe) {
     return target as T & { subscribe: typeof subscribe };
   }
@@ -160,6 +160,7 @@ function withNanoSubscribe<T extends Notifier<any>>(target: T & Partial<{ subscr
 }
 
 const api = createApi(m4);
+
 api.execute(1);
 api.reject(new Error("nope"));
 
@@ -167,11 +168,13 @@ const unsub = notify((ev) => console.log(ev))(m4);
 
 const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>
-const subscribeWhen = (filter: KeyedChangeEventFilter<EE>, listener: EntryListener<EE>) =>
-m5.subscribe(when(
-  (ev) => isKeyedChangeEvent(ev as any, filter),
-  listener as any
-));
+
+
+// const subscribeWhen = (filter: KeyedChangeEventFilter<any>, listener: EntryListener<EE>) =>
+// m5.subscribe(when(
+//   (ev) => isKeyedChangeEvent(ev``, filter),
+//   listener as any
+// ));
 
 const unsub2 = m5.subscribe(
   when(x=>true, x=>{
@@ -183,36 +186,31 @@ const unsub2 = m5.subscribe(
   })
 )
 
-const onLeaveState = <
-  M extends StateMachinery<any>,
-  SK extends ReturnType<M["getState"]>["key"],
-  E extends ReturnType<M["getChange"]>
->(machine: M, key: SK, listener: EntryListener<E>) => subscribeWhen(
-  { from: key },
-  listener as any
-);
+// const onLeaveState = <
+//   M extends StateMachinery<any>,
+//   SK extends ReturnType<M["getState"]>["key"],
+//   E extends ReturnType<M["getChange"]>
+// >(machine: M, key: SK, listener: EntryListener<E>) => subscribeWhen(
+//   { from: key },
+//   listener as any
+// );
 
-const onLeaveStateM5 = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
-  { from: key },
-  listener
-);
-m4.send
 
-onLeaveState(m4, 'Pending', ev => {
-  ev.to.key = 'Idle'
-})
+// onLeaveState(m4, 'Pending', ev => {
+//   ev.to.key = 'Idle'
+// })
 
-const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
-  { to: key },
-  listener
-);
+// const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
+//   { to: key },
+//   listener
+// );
 
-onEnterState('Pending', ev => {
-  console.log('entered pending state')
-  return (ev) => {
-    console.log('left pending', ev.to.key)
-  }
-})
+// onEnterState('Pending', ev => {
+//   console.log('entered pending state')
+//   return (ev) => {
+//     console.log('left pending', ev.to.key)
+//   }
+// })
 
 // add a global reset transition
 

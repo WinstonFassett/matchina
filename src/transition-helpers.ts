@@ -1,13 +1,13 @@
-import { ChangeCommandEvent } from "./types";
+import { StateMachineEvent } from "./state-machine";
 
-export function updateState<E extends ChangeCommandEvent>(
+export function updateState<E extends StateMachineEvent>(
   fn: (state: E["from"]["data"]) => Partial<E["to"]["data"]>,
 ) {
   return (previous: E) => {
     return { ...previous.from, data: fn(previous) };
   };
 }
-export function setInState<E extends ChangeCommandEvent>(
+export function setInState<E extends StateMachineEvent>(
   state: Partial<E["to"]["data"]>,
 ) {
   return (ev: E) => {
@@ -19,7 +19,7 @@ export function forwardData<
   DataFunc extends (...args: any[]) => Parameters<StateFunc>[1],
 >(stateFunc: StateFunc, getData: DataFunc) {
   return (...params: Parameters<DataFunc>) => {
-    return (ev: ChangeCommandEvent) => {
+    return (ev: StateMachineEvent) => {
       return stateFunc(ev.from.data, getData(...params));
     };
   };
