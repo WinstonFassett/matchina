@@ -49,7 +49,7 @@ export type KeyedChangeEventFromFilter<
     to: { key: ToKey }
   }
 
-export type FactoryChangeEventFromFilter<
+export type FactoryChangeEventFromFilter1<
   E extends FactoryMachineEvent<any>,
   F extends KeyedChangeEventFilter<E>,
   M extends E['machine'] = E['machine'],  
@@ -60,6 +60,17 @@ export type FactoryChangeEventFromFilter<
     from: FilterValues<F>['from'] extends keyof M['states'] ? ReturnType<M['states'][FilterValues<F>['from']]> : ReturnType<M['getState']>
     to: FilterValues<F>['to'] extends keyof M['states'] ? ReturnType<M['states'][FilterValues<F>['to']]> : ReturnType<M['getState']>,
   }
+
+export type FactoryChangeEventFromFilter<
+  E extends FactoryMachineEvent<any>,
+  Type extends E['type'] | undefined,
+  FromKey extends E['from']['key'],
+  ToKey extends E['to']['key'],
+> = {
+ type: Type,
+ to: ReturnType<E['machine']['states'][ToKey]>,
+ from: ReturnType<E['machine']['states'][FromKey]>
+}
 
 // KeyedChangeEvent<
 //     FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
@@ -85,11 +96,17 @@ export function isKeyedChangeEvent<
 
 export const isFactoryMachineEvent: <
   E extends FactoryMachineEvent<any>,
-  F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
+  Type extends E['type'] | undefined,
+  FromKey extends E['from']['key'],
+  ToKey extends E['to']['key'],
   >(
     event: E,
-    filter: F,
-  ) => event is (E & FactoryChangeEventFromFilter<E, F>) = isKeyedChangeEvent as any
+    filter: KeyedChangeEventFilter<E> & {
+      type?: Type | Type[],
+      to?: ToKey | ToKey[],
+      from?: FromKey | FromKey[],
+    },
+  ) => event is (E & FactoryChangeEventFromFilter<E, Type, FromKey, ToKey>) = isKeyedChangeEvent as any
 
 export function isChangeTypeToFrom<
   E,
