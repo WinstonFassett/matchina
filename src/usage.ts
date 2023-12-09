@@ -194,19 +194,13 @@ const unsub2 = m5.subscribe(
   })
 )
 
-// const onLeaveState = <
-//   M extends StateMachinery<any>,
-//   SK extends ReturnType<M["getState"]>["key"],
-//   E extends ReturnType<M["getChange"]>
-// >(machine: M, key: SK, listener: EntryListener<E>) => subscribeWhen(
-//   { from: key },
-//   listener as any
-// );
 
 
-// onLeaveState(m4, 'Pending', ev => {
-//   ev.to.key = 'Idle'
-// })
+onLeftState(m4, 'Pending', ev => {
+  ev.from.key = 'Pending'
+  ev.type = 'execute'
+  // ev.to.key = 'Resolved'
+})
 
 // const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
 //   { to: key },
