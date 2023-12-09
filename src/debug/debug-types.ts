@@ -87,16 +87,6 @@ interface FactoryMachineEvent<FC extends FactoryMachineContext> extends StateMac
   get machine(): FactoryMachine<FC> & StateMachinery<FactoryMachineEvent<FC>>;
 }
 
-// type FactoryMachineEvent<
-//   TC extends FactoryMachineTransitions<SF>,
-//   SF extends AnyStatesFactory,
-// > = 
-//   StateMachineEvent<
-//     AnyFactoryState<SF>, 
-//     AnyFactoryState<SF>
-//   >;
-
-
 type FlatEventKeys<T> = {
   [K in keyof T]: keyof T[K];
 }[keyof T];
@@ -126,7 +116,6 @@ type  TransitionRecord<T = any> = Record<string, Record<string, T>>;
 interface TransitionContext {
   transitions: TransitionRecord;
 }
-
 
 export function createStateMachine<E extends StateMachineEvent>(
   transitions: TransitionRecord,
@@ -630,25 +619,6 @@ export type TransitionHookExtensions<E extends StateMachineEvent> = {
   end: Effect<E>;
 };
 
-
-// const leftState = onLeave(m, (ev) => {
-//   isKeyedChangeEvent({ from: stateKey })
-// })
-
-// const leftState2 = (m, stateKey) => onLeave(m, when(ev => ev.from.key === stateKey, ev => {
-//   console.log('left', ev.from.key)
-// }))
-
-// const leftState1 = <
-//   FC extends FactoryMachineContext,  
-//   K extends keyof FC['states']
-// >(
-//   stateKey: K, 
-//   fn: EntryListener<{ 
-//     from: ReturnType<FC['states'][K]>
-//   // from: AnyFactoryState<M['states'], K>
-// }>) => when<FactoryMachineEvent<FC['transitions'], FC['states']>>(ev => ev.from.key === stateKey, fn)
-
 const leftState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
 const enteredState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ to: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
 
@@ -660,6 +630,9 @@ onNotify(m, leftState('Idle', (ev) => {
 setup(m)(
   notify(leftState('Idle', ev => {
     ev.from.key = 'Idle'
+  })),
+  notify(enteredState('Pending', ev => {
+    ev.to.key = 'Pending'
   }))
 )
 
@@ -699,8 +672,6 @@ const afterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
   }
 )
 
-//when<E>(ev => ev.type === type, HookAdapters.before(fn))
-
 setup(m)(
   beforeEvent('reject', (ev, abort) => {
     ev.type = 'reject'
@@ -709,16 +680,6 @@ setup(m)(
     ev.type = 'reject'    
   })
 )
-
-// const onBeforeEvent = <FC extends FactoryMachineContext, Type extends AltFactoryMachineEvent<FC>['type']>(
-//   machine: AltFactoryMachine<FC>,
-//   type: Type,
-//   fn: AbortableEventHandler<AltFactoryMachineEvent<FC> & { type: AltFactoryMachineEvent<FC>['type'] }>,
-// ) => {
-//   return beforeEvent(type, fn)(machine)
-// }
-
-
 const onBeforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
   m: StateMachinery<E>,
   type: E['type'],
