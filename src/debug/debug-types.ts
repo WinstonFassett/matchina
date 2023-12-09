@@ -2,45 +2,6 @@ import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMe
 import { FlatMemberUnionToIntersection, Func, Simplify } from "../utility-types";
 import { Effect, Middleware } from "../types";
 import { EntryListener, ExitListener, when } from '../extras/when'
-// primitive theoretical types. do not use lol
-
-// interface Change<T> {
-//   from: T;
-//   to: T;
-// }
-
-// interface ChangeEvent<
-//   Type extends string = string,
-//   To = any,
-//   From = any,
-// > {
-//   type: Type;
-//   to: To;
-//   from: From;
-// }
-
-// interface CommandEvent<T, P extends any[]> {
-//   type: T;
-//   params: P;
-// }
-
-// type ChangeCommandEvent<
-//   Type extends string = string,
-//   Params extends any[] = any[],
-//   To = any,
-//   From = To,
-// > = ChangeEvent<Type, To, From> & CommandEvent<Type, Params>;
-
-
-// interface ChangeMachine<E extends Change<any>> {
-//   getState(): E["to"] | E["from"];
-//   getChange(): E;
-//   update(change: E): void;
-// }
-
-// interface SimpleMachineContext<T> {  
-//   transitions: TransitionRecord<T>;
-// }
 
 interface StateMachineEvent<To = any, From = To>  {
   type: string;
@@ -473,8 +434,6 @@ export const onEnter = machineHook("enter");
 export const onAfter = machineHook("after");
 export const onNotify = machineHook("notify");
 
-
-
 function machineHook<K extends string & keyof Adapters>(key: K) {
   return <T extends HasMethod<K>>(
     machine: T,
@@ -508,7 +467,6 @@ function combineGuards<E extends StateMachineEvent>(
     return res;
   };
 }
-
 
 // TYPEGUARDS
 
@@ -595,12 +553,7 @@ export function asChangeTypeToFrom<
   throw new Error("not a match");
 }
 
-
 type Filters<T> = object & {
-  [K in keyof T]?: T[K] | T[K][];
-};
-
-type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
@@ -646,10 +599,6 @@ onLeftState(m, 'Rejected', ev => {
   ev.from.key = 'Rejected'
 })
 
-type E = ReturnType<typeof m.getChange>
-type I = E['machine']['states']['Idle']
-// type EventOf<E> = M extends StateMachineContext<infer E> ? E : never;
-
 const beforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
   type: K,
   fn: AbortableEventHandler<E & { type: K }>,
@@ -689,8 +638,9 @@ const onBeforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
 )
 
 
-onBeforeEvent(m, 'reject', ev => {
+onBeforeEvent(m, 'reject', (ev, abort) => {
   ev.type = 'reject'  
+  abort()
 })
 
 const onAfterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
@@ -704,3 +654,43 @@ const onAfterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
 onAfterEvent(m, 'execute', ev => {
   ev.type = 'execute'
 })
+
+// primitive theoretical types. do not use lol
+
+// interface Change<T> {
+//   from: T;
+//   to: T;
+// }
+
+// interface ChangeEvent<
+//   Type extends string = string,
+//   To = any,
+//   From = any,
+// > {
+//   type: Type;
+//   to: To;
+//   from: From;
+// }
+
+// interface CommandEvent<T, P extends any[]> {
+//   type: T;
+//   params: P;
+// }
+
+// type ChangeCommandEvent<
+//   Type extends string = string,
+//   Params extends any[] = any[],
+//   To = any,
+//   From = To,
+// > = ChangeEvent<Type, To, From> & CommandEvent<Type, Params>;
+
+
+// interface ChangeMachine<E extends Change<any>> {
+//   getState(): E["to"] | E["from"];
+//   getChange(): E;
+//   update(change: E): void;
+// }
+
+// interface SimpleMachineContext<T> {  
+//   transitions: TransitionRecord<T>;
+// }
