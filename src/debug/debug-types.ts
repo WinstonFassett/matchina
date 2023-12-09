@@ -1,7 +1,7 @@
 import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMethod, MethodOf, methodExtender } from "../ext";
 import { FlatMemberUnionToIntersection, Func, Simplify } from "../utility-types";
 import { Effect, Middleware } from "../types";
-
+import { EntryListener, when } from '../extras/when'
 // primitive theoretical types. do not use lol
 
 // interface Change<T> {
@@ -47,6 +47,7 @@ interface StateMachineEvent<To = any, From = To>  {
   params: any[];
   to: To;
   from: From;
+  get machine(): StateMachinery<StateMachineEvent<To,From>>;
 }
 
 interface StateMachinery<E extends StateMachineEvent = StateMachineEvent> {
@@ -72,27 +73,28 @@ interface FactoryMachineContext {
 }
 
 interface AltFactoryMachine<
-    MC extends FactoryMachineContext,    
-  > extends StateMachinery<FactoryMachineEvent<MC['transitions'], MC['states']>> {
-    states: MC['states'];
-    transitions: MC['transitions'];
+    FC extends FactoryMachineContext,    
+  > extends StateMachinery<AltFactoryMachineEvent<FC>> {
+    states: FC['states'];
+    transitions: FC['transitions'];
   }
   
-interface AltFactoryMachineEvent<FC extends FactoryMachineContext> {
+interface AltFactoryMachineEvent<FC extends FactoryMachineContext> extends StateMachineEvent {
   type: string & FlatEventKeys<FC['transitions']>;
   params: any[];
   from: AnyFactoryState<FC['states']>;
   to: AnyFactoryState<FC['states']>;
+  get machine(): AltFactoryMachine<FC> & StateMachinery<AltFactoryMachineEvent<FC>>;
 }
 
-type FactoryMachineEvent<
-  TC extends FactoryMachineTransitions<SF>,
-  SF extends AnyStatesFactory,
-> = 
-  StateMachineEvent<
-    AnyFactoryState<SF>, 
-    AnyFactoryState<SF>
-  >;
+// type FactoryMachineEvent<
+//   TC extends FactoryMachineTransitions<SF>,
+//   SF extends AnyStatesFactory,
+// > = 
+//   StateMachineEvent<
+//     AnyFactoryState<SF>, 
+//     AnyFactoryState<SF>
+//   >;
 
 
 type FlatEventKeys<T> = {
@@ -112,7 +114,7 @@ type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
       | keyof SF
       | ((...params: any[]) => AnyFactoryState<SF>)
       | ((...params: any[]) => (
-          ev: ResolveEvent<FactoryMachineEvent<any, SF>> & {
+          ev: ResolveEvent<AltFactoryMachineEvent<{ states: SF, transitions: any }>> & {
             from: AnyFactoryState<SF, FromStateKey>;
           },
         ) => AnyFactoryState<SF>);
@@ -209,7 +211,7 @@ export function createFactoryMachine<
   Object.assign(machine, {
     states,
     resolve: (ev: ResolveEvent<E>): E | undefined => {
-      const to = nextFactoryState(transitions, states, ev);
+      const to = nextFactoryState<FC>(transitions, states, ev);
       if (to) {
         return { ...ev, to } as E;
       }
@@ -219,9 +221,8 @@ export function createFactoryMachine<
 }
 
 export function nextFactoryState<
-  SF extends AnyStatesFactory,
-  TC extends FactoryMachineTransitions<SF>,
->(transitions: TC, states: SF, ev: ResolveEvent<FactoryMachineEvent<TC, SF>>) {
+  FC extends FactoryMachineContext
+>(transitions: FC['transitions'], states: FC['states'], ev: ResolveEvent<AltFactoryMachineEvent<FC>>) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
     return undefined;
@@ -628,3 +629,32 @@ export type TransitionHookExtensions<E extends StateMachineEvent> = {
   after: Effect<E>;
   end: Effect<E>;
 };
+
+
+// const leftState = onLeave(m, (ev) => {
+//   isKeyedChangeEvent({ from: stateKey })
+// })
+
+// const leftState2 = (m, stateKey) => onLeave(m, when(ev => ev.from.key === stateKey, ev => {
+//   console.log('left', ev.from.key)
+// }))
+
+// const leftState1 = <
+//   FC extends FactoryMachineContext,  
+//   K extends keyof FC['states']
+// >(
+//   stateKey: K, 
+//   fn: EntryListener<{ 
+//     from: ReturnType<FC['states'][K]>
+//   // from: AnyFactoryState<M['states'], K>
+// }>) => when<FactoryMachineEvent<FC['transitions'], FC['states']>>(ev => ev.from.key === stateKey, fn)
+
+const leftState = <E extends AltFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
+
+onNotify(m, leftState('Idle', (ev) => {  
+  ev.from.key = 'Idle'
+}))
+
+type E = ReturnType<typeof m.getChange>
+type I = E['machine']['states']['Idle']
+// type EventOf<E> = M extends StateMachineContext<infer E> ? E : never;
