@@ -3,7 +3,7 @@ import { EntryListener, ExitListener, when } from "./extras/when";
 import { AnyFactoryState, FactoryMachineEvent } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachinery } from "./state-machine";
-import { KeyedChangeEvent, KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { FilterValues, KeyedChangeEvent, KeyedChangeEventFilter, KeyedChangeEventFromFilter, isKeyedChangeEvent } from "./typeguards";
 import { Effect } from "./types";
 
 
@@ -68,13 +68,12 @@ export const onGuardEvent = <E extends FactoryMachineEvent<any>, K extends E['ty
 
 export const whenEvent = <
   E extends FactoryMachineEvent<any>, 
-  Type extends E['type'],  
-  ToKey extends string,
-  FromKey extends string,
+  F extends KeyedChangeEventFilter<E>,
 >(
-  filter: KeyedChangeEventFilter<E>,
-  fn: Effect<E & KeyedChangeEvent<Type, FromKey, ToKey>>,
+  filter: F,
+  fn: Effect<E & KeyedChangeEventFromFilter<F>>,
 ) => when<E>(
   (ev) => isKeyedChangeEvent(filter, ev),
   fn as any
 ) 
+

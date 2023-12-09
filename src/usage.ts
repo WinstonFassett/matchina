@@ -6,7 +6,7 @@ import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
 import { withNanoSubscribe } from "./withNanoSubscribe";
 
 
@@ -74,9 +74,10 @@ const m4 = createFactoryMachine(
 m4.send("execute", 1);
 
 const isChange =
-  <E>(filter: KeyedChangeEventFilter<any>) =>
-  (ev: E) =>
-    isKeyedChangeEvent(filter, ev);
+  <E extends AnyKeyedChangeEvent>(
+    filter: KeyedChangeEventFilter<any>
+  ) => (ev: E) =>
+    isKeyedChangeEvent<E>(filter, ev);
 
 
 
@@ -157,10 +158,17 @@ const unsub = notify((ev) => console.log(ev))(m4);
 const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>
 
+const e = {} as ReturnType<typeof m4.getChange>
+if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
+  e.type = 'execute'
+  e.from.key = 'Idle'
+
+}
+
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 
 m5.subscribe(whenEvent({ type: 'execute' }, ev => {
-  ev.type = 'resolve'
+  ev.type = 'execute'
 }))
 
 setup(m4)(

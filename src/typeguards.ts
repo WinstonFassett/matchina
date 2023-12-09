@@ -37,12 +37,24 @@ export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
   from: E['from']['key']
 }>
 
+export type KeyedChangeEventFromFilter<
+  F extends KeyedChangeEventFilter<any>> = 
+KeyedChangeEvent<
+    FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,
+    FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
+    FilterValues<F>['from'] extends string ? FilterValues<F>['from'] : string
+  >
+// FilterValues<F>['from']
+
+
 export function isKeyedChangeEvent<
   E extends AnyKeyedChangeEvent,
+  F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
+  FV extends FilterValues<F> = FilterValues<F>
 >(
-  filter: KeyedChangeEventFilter<E>,
+  filter: F,
   event: E,
-): event is E & AnyKeyedChangeEvent {
+): event is E & KeyedChangeEventFromFilter<F> {
   const subject = event as any;
   const matched =
     matchKey(filter.to, subject?.to?.key) &&
@@ -88,3 +100,8 @@ export function asChangeTypeToFrom<
 export type Filters<T> = object & {
   [K in keyof T]?: T[K] | T[K][];
 };
+
+export type FilterValues<T> = {
+  [K in keyof T]: T[K] extends (infer U)[] ? U : T[K];
+};
+
