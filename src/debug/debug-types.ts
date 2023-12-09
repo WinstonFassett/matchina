@@ -2,6 +2,7 @@ import { Funcware, AbortableEventHandler, abortableEventware, functionTap, HasMe
 import { FlatMemberUnion, FlatMemberUnionToIntersection, Func, Members, Simplify, TUnionToIntersection } from "../utility-types";
 import { Effect, Middleware } from "../types";
 import { EntryListener, ExitListener, when } from '../extras/when'
+import { MemberExtensions, matchboxFactory } from "../matchbox";
 
 interface StateMachineEvent<To = any, From = To>  {
   type: string;
@@ -200,7 +201,7 @@ type ResolveEvent<C> = Omit<C, 'to'>;
 export type FactoryMachineState<Tag extends string & keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;
-} //& MemberExtensions<Specs, "key">;
+} & MemberExtensions<Specs, "key">;
 
 export type States<Specs extends UnionSpec> = {
   [T in string & keyof Specs]: CreateState<Specs, T>;
@@ -952,3 +953,7 @@ onGuardEvent(m, 'execute', ev => ev.type === 'execute')
 // setup(m)(
 //   guard(ev => )
 // )
+
+function defineStates<Config extends UnionSpec>(config: Config) {
+  return matchboxFactory(config, "key") as States<Config>;
+}
