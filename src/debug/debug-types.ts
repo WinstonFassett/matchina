@@ -370,7 +370,8 @@ export type StateEventTransitionFunc<
     : never;
 };
 
-export type StateEventTransitionEvent<
+
+export type ResolvedFactoryTransition<
   FC extends FactoryMachineContext,
   TransitionStateKey extends keyof FC['transitions'],
   Transitions extends FC['transitions'] = FC['transitions'],
@@ -407,6 +408,11 @@ export type StateEventTransitionEvent<
     : never)    
 };
 
+type PromiseContext = { states: PromiseStates<typeof slowlyAddTwoNumbers>, transitions: typeof PromiseTransitions }
+type X = ResolvedFactoryTransition<
+  PromiseContext,
+  'Pending'  
+>[keyof PromiseContext['transitions']['Pending']]
 
 // HOOKS:
 

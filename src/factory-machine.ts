@@ -4,7 +4,7 @@ export function createFactoryMachine<
   SF extends AnyStatesFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
+  E extends AnyFactoryMachineEvent<FC> = AnyFactoryMachineEvent<FC>,
 >(
   states: SF,
   transitions: TC,
@@ -40,7 +40,7 @@ type KeysWithZeroArgs<T> = {
 
 export function nextFactoryState<
   FC extends FactoryMachineContext<any>
->(transitions: FC['transitions'], states: FC['states'], ev: ResolveEvent<FactoryMachineEvent<FC>>) {
+>(transitions: FC['transitions'], states: FC['states'], ev: ResolveEvent<AnyFactoryMachineEvent<FC>>) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
     return undefined;
@@ -60,7 +60,7 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
       | keyof SF
       | ((...params: any[]) => AnyFactoryState<SF>)
       | ((...params: any[]) => (
-          ev: ResolveEvent<FactoryMachineEvent<{ states: SF, transitions: any }>> & {
+          ev: ResolveEvent<AnyFactoryMachineEvent<{ states: SF, transitions: any }>> & {
             from: AnyFactoryState<SF, FromStateKey>;
           },
         ) => AnyFactoryState<SF>);
@@ -75,7 +75,7 @@ export interface FactoryMachineContext<SF extends AnyStatesFactory = AnyStatesFa
 
 export interface FactoryMachine<
     FC extends FactoryMachineContext<any>,    
-  > extends StateMachinery<FactoryMachineEvent<FC>> {
+  > extends StateMachinery<AnyFactoryMachineEvent<FC>> {
     states: FC['states'];
     transitions: FC['transitions'];
   }
@@ -86,13 +86,13 @@ export interface FactoryMachine<
   }[keyof T];
 
   
-export interface FactoryMachineEvent<FC extends FactoryMachineContext<any>> extends StateMachineEvent {
+export interface AnyFactoryMachineEvent<FC extends FactoryMachineContext<any>> extends StateMachineEvent {
   // type: string & FlatKeys<FC['transitions']>;
   type: string & FlatEventKeys<FC>;
   params: any[];
   from: AnyFactoryState<FC['states']>;
   to: AnyFactoryState<FC['states']>;
-  get machine(): FactoryMachine<FC> & StateMachinery<FactoryMachineEvent<FC>>;
+  get machine(): FactoryMachine<FC> & StateMachinery<AnyFactoryMachineEvent<FC>>;
 }
 
 export type FlatEventKeys<
@@ -127,6 +127,45 @@ export type StateEventTransitionFuncs<
     >;
   };
 
+
+
+export type ResolvedFactoryTransition<
+  FC extends FactoryMachineContext,
+  TransitionStateKey extends keyof FC['transitions'],
+  Transitions extends FC['transitions'] = FC['transitions'],
+  States extends FC['states'] = FC['states'],
+> = {
+  [EventKey in keyof Transitions[TransitionStateKey] & string]: 
+  {
+    from: AnyFactoryState<States, TransitionStateKey extends keyof States ? TransitionStateKey : any>;
+    type: EventKey;
+  } &
+  (  Transitions[TransitionStateKey][EventKey] extends keyof States
+    ? // if state key
+      {
+        params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
+        to: AnyFactoryState<States, Transitions[TransitionStateKey][EventKey]>;
+      }      
+    : Transitions[TransitionStateKey][EventKey] extends (
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer R
+    ? // if 2-stage function
+      {
+        params: A;
+        to: R
+      }
+    : // if 1-stage function
+    Transitions[TransitionStateKey][EventKey] extends (
+        ...args: infer A
+      ) => infer R
+    ? 
+      {
+        params: A;
+        to: R 
+      }
+    : never)    
+};
+
 export type StateEventTransitionFunc<
   FC extends FactoryMachineContext,
   TransitionStateKey extends keyof FC['transitions'],
@@ -146,3 +185,15 @@ export type StateEventTransitionFunc<
       key: Transitions[TransitionStateKey][EventKey];
     } : never;
   };
+
+  export type StateEventTransitionFunc2<
+  FC extends FactoryMachineContext,
+  TransitionStateKey extends keyof FC['transitions'],  
+  > = 
+  // {
+  //   // [EventKey in keyof FC['transitions'][TransitionStateKey] &
+  //   // string]: 
+  // }
+  ResolvedFactoryTransition<FC, TransitionStateKey>
+  
+  

@@ -4,7 +4,7 @@ import { Disposer } from "./ext/types";
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineEvent
+  AnyFactoryMachineEvent
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
@@ -54,10 +54,10 @@ function useFilteredEventConfigs<
   FC extends FactoryMachineContext,
 >(
 machine: FactoryMachine<FC>,
-filter: KeyedChangeEventFilter<FactoryMachineEvent<FC>>,
+filter: KeyedChangeEventFilter<AnyFactoryMachineEvent<FC>>,
 config:
   | StateEventHookConfig<FC>
-  | TransitionHookConfig<FactoryMachineEvent<FC>>,
+  | TransitionHookConfig<AnyFactoryMachineEvent<FC>>,
 d: Disposer[],
 ) {
 for (const phase in config) {
@@ -70,7 +70,7 @@ for (const phase in config) {
         machine,
         phase as keyof FactoryMachine<FC>,
         iff(
-          (ev: FactoryMachineEvent<FC>) => isKeyedChangeEvent(filter, ev),
+          (ev: AnyFactoryMachineEvent<FC>) => isKeyedChangeEvent(filter, ev),
           (hookHandler as any)?.(hook, machine) ?? hook,
         ) as any,
       ),

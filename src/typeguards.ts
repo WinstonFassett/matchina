@@ -1,4 +1,4 @@
-import { FactoryMachine, FactoryMachineEvent } from "./factory-machine"
+import { FactoryMachine, AnyFactoryMachineEvent } from "./factory-machine"
 
 export type AnyKeyedChangeEvent = {
   type: string
@@ -50,7 +50,7 @@ export type KeyedChangeEventFromFilter<
   }
 
 export type FactoryChangeEventFromFilter1<
-  E extends FactoryMachineEvent<any>,
+  E extends AnyFactoryMachineEvent<any>,
   F extends KeyedChangeEventFilter<E>,
   M extends E['machine'] = E['machine'],  
   // ToKey = FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,  
@@ -62,7 +62,7 @@ export type FactoryChangeEventFromFilter1<
   }
 
 export type FactoryChangeEventFromFilter<
-  E extends FactoryMachineEvent<any>,
+  E extends AnyFactoryMachineEvent<any>,
   Type extends E['type'] | undefined,
   FromKey extends E['from']['key'],
   ToKey extends E['to']['key'],
@@ -95,7 +95,7 @@ export function isKeyedChangeEvent<
 }
 
 export const isFactoryMachineEvent: <
-  E extends FactoryMachineEvent<any>,
+  E extends AnyFactoryMachineEvent<any>,
   Type extends E['type'] | undefined,
   FromKey extends E['from']['key'],
   ToKey extends E['to']['key'],

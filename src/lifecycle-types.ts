@@ -2,7 +2,7 @@ import { AbortableEventHandler, Funcware } from "./ext";
 import {
   AnyFactoryState,
   FactoryMachineContext,
-  FactoryMachineEvent, StateEventTransitionFuncs
+  AnyFactoryMachineEvent, StateEventTransitionFuncs
 } from "./factory-machine";
 import { StateMachineEvent, StateMachinery } from "./state-machine";
 import { Filters } from "./typeguards";
@@ -39,7 +39,7 @@ export type StateTransitionHooks<
   StateKey extends keyof FC['transitions'] | "*",
 > = {
   leave: Middleware<
-    FactoryMachineEvent<FC> & {
+    AnyFactoryMachineEvent<FC> & {
       from: AnyFactoryState<
         FC['states'],
         StateKey extends keyof FC['states'] ? StateKey : keyof FC['states']
@@ -47,7 +47,7 @@ export type StateTransitionHooks<
     }
   >;
   enter: Middleware<
-    FactoryMachineEvent<FC> & {
+    AnyFactoryMachineEvent<FC> & {
       to: AnyFactoryState<
         FC['states'],
         StateKey extends keyof FC['states'] ? StateKey : keyof FC['states']
@@ -78,7 +78,7 @@ type On<
               StateEventTransitionFuncs<FC>[StateKey][Event]
             > extends AnyFactoryState<States>
             ? TransitionHookConfig<
-                FactoryMachineEvent<FC> & {
+                AnyFactoryMachineEvent<FC> & {
                   type: Event;
                   from: AnyFactoryState<
                     States,
@@ -99,7 +99,7 @@ type On<
             : never
           : // wildcard event
             TransitionHookConfig<
-              FactoryMachineEvent<FC> & {
+              AnyFactoryMachineEvent<FC> & {
                 from: AnyFactoryState<
                   States,
                   StateKey extends keyof States ? StateKey : keyof States
@@ -112,7 +112,7 @@ type On<
         [AnyStateEvent in
           | FlatFactoryEventKeys<FC>
           | "*"]?: TransitionHookConfig<
-          FactoryMachineEvent<FC> & {
+          AnyFactoryMachineEvent<FC> & {
             type: AnyStateEvent extends "*"
               ? FlatFactoryEventKeys<FC>
               : AnyStateEvent;

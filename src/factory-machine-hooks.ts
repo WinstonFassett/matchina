@@ -1,13 +1,13 @@
 import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
-import { AnyFactoryState, FactoryMachineEvent } from "./factory-machine";
+import { AnyFactoryState, AnyFactoryMachineEvent } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachinery } from "./state-machine";
 import { FilterValues, KeyedChangeEvent, KeyedChangeEventFilter, KeyedChangeEventFromFilter, isKeyedChangeEvent } from "./typeguards";
 import { Effect } from "./types";
 
 
-export const beforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+export const beforeEvent = <E extends AnyFactoryMachineEvent<any>, K extends E['type']>(
   type: K,
   fn: AbortableEventHandler<E & { type: K }>,
 ) => before<StateMachinery<E>>(
@@ -17,9 +17,9 @@ export const beforeEvent = <E extends FactoryMachineEvent<any>, K extends E['typ
     }
   }
 )
-export const leftState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<E &{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
-export const enteredState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<E & { to: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
-export const afterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+export const leftState = <E extends AnyFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<E &{ from: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
+export const enteredState = <E extends AnyFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(stateKey: K, fn: EntryListener<E & { to: AnyFactoryState<E['machine']['states'],K> }>) => when<E>(ev => ev.from.key === stateKey, fn)
+export const afterEvent = <E extends AnyFactoryMachineEvent<any>, K extends E['type']>(
   type: K,
   fn: Effect<E & { type: K }>,
 ) => after<StateMachinery<E>>(
@@ -30,7 +30,7 @@ export const afterEvent = <E extends FactoryMachineEvent<any>, K extends E['type
   }
 )
 
-export const onBeforeEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+export const onBeforeEvent = <E extends AnyFactoryMachineEvent<any>, K extends E['type']>(
   m: StateMachinery<E>,
   type: E['type'],
   fn: AbortableEventHandler<E & { type: E["type"]; }>,
@@ -38,13 +38,13 @@ export const onBeforeEvent = <E extends FactoryMachineEvent<any>, K extends E['t
   beforeEvent(type, fn)
 )
 
-export const onLeftState = <E extends FactoryMachineEvent<any>, K extends keyof E['machine']['states']>(
+export const onLeftState = <E extends AnyFactoryMachineEvent<any>, K extends keyof E['machine']['states']>(
   m: StateMachinery<E>,
   stateKey: K, fn: ExitListener<E & { from: AnyFactoryState<E['machine']['states'],K> }>) => setup(m)(
   leave(leftState(stateKey, fn))
 )
 
-export const onAfterEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+export const onAfterEvent = <E extends AnyFactoryMachineEvent<any>, K extends E['type']>(
   m: StateMachinery<E>,
   type: K,
   fn: Effect<E & { type: K; }>,
@@ -53,7 +53,7 @@ export const onAfterEvent = <E extends FactoryMachineEvent<any>, K extends E['ty
 )
 
 
-export const onGuardEvent = <E extends FactoryMachineEvent<any>, K extends E['type']>(
+export const onGuardEvent = <E extends AnyFactoryMachineEvent<any>, K extends E['type']>(
   m: StateMachinery<E>,
   type: K,
   fn: StateMachinery<E & { type: K }>['guard'],
@@ -67,7 +67,7 @@ export const onGuardEvent = <E extends FactoryMachineEvent<any>, K extends E['ty
 )
 
 export const whenEvent = <
-  E extends FactoryMachineEvent<any>, 
+  E extends AnyFactoryMachineEvent<any>, 
   F extends KeyedChangeEventFilter<E>,
 >(
   filter: F,
