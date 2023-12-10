@@ -370,6 +370,43 @@ export type StateEventTransitionFunc<
     : never;
 };
 
+export type StateEventTransitionEvent<
+  FC extends FactoryMachineContext,
+  TransitionStateKey extends keyof FC['transitions'],
+  Transitions extends FC['transitions'] = FC['transitions'],
+  States extends FC['states'] = FC['states'],
+> = {
+  [EventKey in keyof Transitions[TransitionStateKey] & string]: 
+  {
+    from: AnyFactoryState<States, TransitionStateKey extends keyof States ? TransitionStateKey : any>;
+    type: EventKey;
+  } &
+  (  Transitions[TransitionStateKey][EventKey] extends keyof States
+    ? // if state key
+      {
+        params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
+        to: AnyFactoryState<States, Transitions[TransitionStateKey][EventKey]>;
+      }      
+    : Transitions[TransitionStateKey][EventKey] extends (
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer R
+    ? // if 2-stage function
+      {
+        params: A;
+        to: R
+      }
+    : // if 1-stage function
+    Transitions[TransitionStateKey][EventKey] extends (
+        ...args: infer A
+      ) => infer R
+    ? 
+      {
+        params: A;
+        to: R 
+      }
+    : never)    
+};
+
 
 // HOOKS:
 
