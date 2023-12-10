@@ -417,6 +417,15 @@ type X = ResolvedFactoryTransition<
   PromiseContext
   // 'Pending'  
 >
+type FilterEvent<T, V> = T extends { type: infer It } ? 
+  It extends V ? T : never : never
+type FilterFrom<T, V> = T extends { from: { key: infer It } } ? 
+  It extends V ? T : never : never
+type FilterTo<T, V> = T extends { to: { key: infer It} } ? 
+  It extends V ? T : never : never
+
+type XX = FilterEvent<X, 'execute'>['to']['key']
+type XXX = FilterFrom<X, 'Idle'>['to']['key']
 
 //[keyof PromiseContext['transitions'][keyof PromiseContext['transitions']]]
 // type XX = X['params']
