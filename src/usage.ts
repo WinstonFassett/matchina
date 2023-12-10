@@ -164,11 +164,19 @@ if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
   e.from.key = 'Idle'
 
 }
-if (isFactoryMachineEvent(e, { from: 'Idle', type: 'execute', to: 'Rejected' } as const)) {
-  e.from.key = 'Idle'
-  e.type = 'execute'
+if (isFactoryMachineEvent(e, { type: 'reject' } as const)) {
+  e.from.key = 'Pending'
+  e.type = 'reject'
   e.to.key = 'Rejected'
-  e.to.data.err
+  e.to.data.err.message
+}
+
+if (isFactoryMachineEvent(e, { from: 'Pending' } as const)) {
+  e.from.key = 'Pending'
+}
+
+if (isFactoryMachineEvent(e, { to: 'Resolved' } as const)) {
+  e.to.key = 'Pending'
 }
 
 

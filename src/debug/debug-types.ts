@@ -375,7 +375,6 @@ export type ResolvedFactoryTransition<
 FC extends FactoryMachineContext,
 FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
 Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
-ToStateKey extends keyof FC['transitions'][FromStateKey][Type] = keyof FC['transitions'][FromStateKey][Type],
 Transitions extends FC["transitions"] = FC["transitions"],
 States extends FC["states"] = FC["states"],
 > = {
@@ -422,6 +421,19 @@ States extends FC["states"] = FC["states"],
   : never
 }[keyof Transitions];
 
+type AnyFactoryMachineTransition<
+  FC extends FactoryMachineContext<any>,
+  FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
+  Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
+  ToStateKey = keyof FC['transitions'][FromStateKey][Type],
+  RFT extends ResolvedFactoryTransition<FC, FromStateKey, Type> = ResolvedFactoryTransition<FC, FromStateKey, Type>,
+> =
+ RFT extends 
+ { to: { key: infer It } } 
+  ? It extends ToStateKey 
+    ? RFT
+    : never 
+  : never
 
 type SelectEventType<T, V> = T extends { type: infer It } ? 
   It extends V ? T : never : never
@@ -437,6 +449,13 @@ type X = ResolvedFactoryTransition<
   any
   
 >['to']['key']
+
+type X2 = AnyFactoryMachineTransition<
+  PromiseContext,
+  any,
+  any,
+  'Rejected'
+>['type']
 
 // type XX = SelectEventType<X, 'execute'>['to']['key']
 // type XXX = SelectFromKey<X, 'Idle'>['to']['key']
