@@ -1,4 +1,3 @@
-import { onNotify } from "../machine-hooks";
 import { StateMachinery } from "../state-machine";
 import { nanosubscriber } from "./nanosubscriber";
 
@@ -10,7 +9,11 @@ export function withNanoSubscribe<T extends StateMachinery<any>>(
   }
   const [subscribe, emit, listeners] =
     nanosubscriber<Parameters<T["notify"]>[0]>();
-  onNotify(target, emit as any);
+  const notify = target.notify;
+  target.notify = (ev) => {
+    notify(ev);
+    emit(ev);
+  };
   return Object.assign(target, {
     subscribe,
     emit,
