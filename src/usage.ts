@@ -6,7 +6,7 @@ import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
+import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isFactoryMachineChangeFromTypeTo, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
 import { withNanoSubscribe } from "./withNanoSubscribe";
 
 
@@ -189,6 +189,16 @@ if (isFactoryMachineEvent(e, {
 } as const)) {
   e.params[0].message
   e.to.data.err.message
+}
+
+if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
+  e.to.key = 'Resolved' 
+}
+
+if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
+  // e.from.key = 'Rejected'
+  e.type = 'execute'
+  e.to.key = 'Pending'
 }
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
