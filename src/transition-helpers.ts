@@ -1,17 +1,15 @@
 import { StateMachineEvent } from "./state-machine";
 
-const { assign } = Object
+const { assign } = Object;
 
-
-
-export const updateState = <E extends StateMachineEvent>(
-  updater: (fromData: E['from']['data']) => any
-) => (ev: {
-  from: { data: { count: any; meta?: { name: string } } };
-}) => ({ 
-  ...ev.from.data as any, 
-  ...updater(ev.from.data)
-});
+export const updateState =
+  <E extends StateMachineEvent>(
+    updater: (fromData: E["from"]["data"]) => any,
+  ) =>
+  (ev: { from: { data: { count: any; meta?: { name: string } } } }) => ({
+    ...(ev.from.data as any),
+    ...updater(ev.from.data),
+  });
 
 export function setInState<E extends StateMachineEvent>(
   state: Partial<E["to"]["data"]>,
