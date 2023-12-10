@@ -192,13 +192,13 @@ if (isFactoryMachineEvent(e, {
 }
 
 if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
-  e.to.key = 'Resolved' 
+  e.to.key = 'Rejected' 
 }
 
 if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
   // e.from.key = 'Rejected'
-  e.type = 'execute'
-  e.to.key = 'Pending'
+  e.type = 'reject'
+  e.to.key = 'Rejected'
 }
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
