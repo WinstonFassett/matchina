@@ -56,8 +56,12 @@
     "path": "src/pure-state-machine.ts"
   },
   {
-    "name": "nanosubscriber",
+    "name": "nanosubscribe",
     "path": "src/extras/nanosubscriber.ts"
+  },
+  {
+    "name": "with-nanosubscribe",
+    "path": "src/extras/with-nanosubscribe.ts"
   },
   {
     "name": "react-dist",
