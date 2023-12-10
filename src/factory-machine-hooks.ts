@@ -69,11 +69,17 @@ export const onGuardEvent = <E extends AnyFactoryMachineEvent<any>, K extends E[
 export const whenEvent = <
   E extends AnyFactoryMachineEvent<any>, 
   F extends FactoryChangeEventFilter<E>,
+  FV extends FilterValues<F> = FilterValues<F>,
 >(
   filter: F,
   fn: Effect<E & FactoryChangeEventFromFilter<E,F>>,
 ) => when<E>(
-  (ev) => isFactoryMachineEvent(ev, filter),
+  (ev) => isFactoryMachineEvent<E, 
+    // FV['from'], FV['type'], FV['to']
+    FV['from'] extends string ? FV['from'] : string,
+    FV['type'] extends string ? FV['type'] : string,
+    FV['to'] extends string ? FV['to'] : string
+  >(ev, filter as any),
   fn as any
 ) 
 

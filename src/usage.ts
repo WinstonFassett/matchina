@@ -159,7 +159,7 @@ const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>
 
 const e = {} as ReturnType<typeof m4.getChange>
-if (isKeyedChangeEvent({ from: 'Idle', type: 'execute' }, e)) {
+if (isKeyedChangeEvent({ from: 'Idle', 'type': 'execute' }, e)) {
   e.type = 'execute'
   e.from.key = 'Idle'
 
@@ -221,6 +221,13 @@ m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 m5.subscribe(whenEvent({ from: 'Pending', type: 'reject' }, ev => {
   ev.type = 'reject'
   ev.to.key = 'Rejected'
+}))
+
+m5.subscribe(whenEvent({ from: 'Pending', type: 'reject', to: 'Rejected'}, ev => {
+  ev.type = 'reject'
+  ev.from.key = 'Pending'
+  ev.to.key = 'Rejected'
+  ev.to.data.err.message = 'nope'
 }))
 
 setup(m4)(
