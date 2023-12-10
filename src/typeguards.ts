@@ -1,4 +1,4 @@
-import { FactoryMachine, AnyFactoryMachineEvent, AnyFactoryMachineTransition } from "./factory-machine"
+import { AnyFactoryMachineEvent, AnyFactoryMachineTransition } from "./factory-machine"
 
 export type AnyKeyedChangeEvent = {
   type: string
@@ -98,14 +98,6 @@ export function isKeyedChangeEvent<
   return matched;
 }
 
-// export const isFactoryMachineEvent: <
-//   E extends AnyFactoryMachineEvent<any>,
-//   F extends FactoryChangeEventFilter<E> 
-//   >(
-//     event: E,
-//     filter: F 
-//   ) => event is (E & FactoryChangeEventFromFilter<E, F>) = isKeyedChangeEvent as any
-
 export const isFactoryMachineEvent: <
   E extends AnyFactoryMachineEvent<any>,
   FromKey extends string & E['from']['key'], 
@@ -120,14 +112,6 @@ export const isFactoryMachineEvent: <
   }
 ) => event is (E & FactoryChangeEventFromFilter<E, { from: FromKey, type: Type, to: ToKey}>)
 = isKeyedChangeEvent as any
-//  {
-//   const subject = event as any;
-//   return (
-//     matchKey(to, subject?.to?.key) &&
-//     matchKey(type, subject?.type) &&
-//     matchKey(from, subject?.from?.key)
-//   )
-// }
 
 export function isFactoryMachineChangeFromTypeTo<
   E extends AnyFactoryMachineEvent<any>,

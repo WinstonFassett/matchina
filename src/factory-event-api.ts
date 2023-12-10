@@ -1,7 +1,6 @@
-import { StateEventTransitionFuncs } from "./factory-machine";
 import {
   FactoryMachine,
-  FactoryMachineContext
+  FactoryMachineContext, StateEventTransitionFuncs
 } from "./factory-machine";
 import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 

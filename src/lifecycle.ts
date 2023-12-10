@@ -2,9 +2,9 @@ import { extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
 import { Disposer } from "./ext/types";
 import {
+  AnyFactoryMachineEvent,
   FactoryMachine,
-  FactoryMachineContext,
-  AnyFactoryMachineEvent
+  FactoryMachineContext
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";

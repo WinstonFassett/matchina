@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
 import {
   createPromiseMachine,
-  withApi,
   onLifecycle,
-  setup,
   resolve,
-  handle,
-  guard,
-  extendMethod
+  setup,
+  withApi
 } from "matchina";
 import { useMachine } from "matchina/integrations/react";
+import { useEffect, useState } from "react";
 
 const slowlyAddTwoNumbers = (
   x: number,

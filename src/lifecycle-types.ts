@@ -1,8 +1,9 @@
 import { AbortableEventHandler, Funcware } from "./ext";
 import {
+  AnyFactoryMachineEvent,
   AnyFactoryState,
   FactoryMachineContext,
-  AnyFactoryMachineEvent, StateEventTransitionFuncs
+  StateEventTransitionFuncs
 } from "./factory-machine";
 import { StateMachineEvent, StateMachinery } from "./state-machine";
 import { Filters } from "./typeguards";
@@ -12,10 +13,6 @@ import {
   Members,
   TUnionToIntersection,
 } from "./utility-types";
-
-type HookConfig<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
 
 export type TransitionHookExtensions<E extends StateMachineEvent> = {
   begin: AbortableEventHandler<E>;

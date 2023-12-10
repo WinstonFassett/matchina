@@ -1,9 +1,9 @@
 import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
-import { AnyFactoryState, AnyFactoryMachineEvent, AnyFactoryMachineTransition } from "./factory-machine";
+import { AnyFactoryMachineEvent, AnyFactoryMachineTransition, AnyFactoryState } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachinery } from "./state-machine";
-import { FactoryChangeEventFilter, FactoryChangeEventFromFilter, FilterValues, KeyedChangeEvent, KeyedChangeEventFilter, KeyedChangeEventFromFilter, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
+import { FactoryChangeEventFromFilter, isFactoryMachineEvent } from "./typeguards";
 import { Effect } from "./types";
 
 

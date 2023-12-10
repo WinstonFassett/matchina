@@ -1,5 +1,4 @@
-import { StateEventTransitionFuncs } from "./factory-machine";
-import { createFactoryMachine } from "./factory-machine";
+import { StateEventTransitionFuncs, createFactoryMachine } from "./factory-machine";
 import { States, defineStates } from "./states";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{

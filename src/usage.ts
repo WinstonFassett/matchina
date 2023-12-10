@@ -236,13 +236,6 @@ setup(m4)(
   }))
 )
 
-
-// const subscribeWhen = (filter: KeyedChangeEventFilter<any>, listener: EntryListener<EE>) =>
-// m5.subscribe(when(
-//   (ev) => isKeyedChangeEvent(ev``, filter),
-//   listener as any
-// ));
-
 const unsub2 = m5.subscribe(
   when(x=>true, x=>{
     console.log('enter')
@@ -253,77 +246,8 @@ const unsub2 = m5.subscribe(
   })
 )
 
-
-
 onLeftState(m4, 'Pending', ev => {
   ev.from.key = 'Pending'
   ev.type = 'execute'
   // ev.to.key = 'Resolved'
 })
-
-// const onEnterState = (key: ReturnType<typeof m5.getState>['key'], listener: EntryListener<ReturnType<typeof m5.getChange>>) => subscribeWhen(
-//   { to: key },
-//   listener
-// );
-
-// onEnterState('Pending', ev => {
-//   console.log('entered pending state')
-//   return (ev) => {
-//     console.log('left pending', ev.to.key)
-//   }
-// })
-
-// add a global reset transition
-
-// setup(m4)(
-//   addTransitions('*', {
-//     reset: 'Idle'
-//   })
-// )
-
-// const m5 = withTransitions(m4, {
-//   reset: 'Idle'
-// })
-
-// const onPhase = phased<ReturnType<typeof m4.getChange>>(m4);
-
-// onPhase('guard', (ev, next) => {
-//   if (ev.to.key === 'Pending') next(ev)
-// })
-
-// onPhase('handle', (ev, next) => {
-//   if (ev.to.key === 'Pending') next(ev)
-// })
-
-// onPhase('exit', (ev, next) => {})
-
-// listen<ReturnType<typeof m4.getChange>>()(m4)
-
-// setup(m4)(
-//   middlewareSetup({
-//     guard: (ev, next) => {
-//       if (ev.to.key === "Pending") next(ev);
-//     },
-//     handle: (ev, next) => {
-//       if (ev.to.key === "Pending") next(ev);
-//     },
-//     update: (ev, next) => {}
-//   }),
-//   listenerSetup({
-//     exit: [
-//       condition((ev) => ev.to.key === "Pending", (ev) => {
-
-//       })
-//     ],
-//     enter: [
-//       (ev) => {
-
-//       },
-//     ],
-//     effect: [
-//       (ev) => {
-
-//       },
-//     ],
-//   })
-// )
