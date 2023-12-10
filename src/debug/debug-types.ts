@@ -422,7 +422,7 @@ States extends FC["states"] = FC["states"],
   : never
 };
 
-export type ResolvedFactoryTransition<
+export type FactoryTransitionFromContext<
 FC extends FactoryMachineContext,
 FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
 Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
@@ -435,7 +435,7 @@ type AnyFactoryMachineTransition<
   FromStateKey extends keyof FC['transitions'] = any,
   Type extends keyof FC['transitions'][FromStateKey] = any,
   ToStateKey extends keyof FC['transitions'][FromStateKey][Type] = any,
-  RFT extends ResolvedFactoryTransition<FC, FromStateKey, Type> = ResolvedFactoryTransition<FC, FromStateKey, Type>,
+  RFT extends FactoryTransitionFromContext<FC, FromStateKey, Type> = FactoryTransitionFromContext<FC, FromStateKey, Type>,
 > =
  RFT extends 
  { to: { key: infer It } } 
@@ -452,7 +452,7 @@ type SelectToKey<T, V> = T extends { to: { key: infer It} } ?
   It extends V ? T : never : never
 
 type PromiseContext = { states: PromiseStates<typeof slowlyAddTwoNumbers>, transitions: typeof PromiseTransitions }
-type X = ResolvedFactoryTransition<
+type X = FactoryTransitionFromContext<
   PromiseContext,
   any,
   any

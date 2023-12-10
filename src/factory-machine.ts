@@ -127,56 +127,78 @@ export type StateEventTransitionFuncs<
     >;
   };
 
-  export type ResolvedFactoryTransition<
-  FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
-  Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
-  ToStateKey extends keyof FC['transitions'][FromStateKey][Type] = keyof FC['transitions'][FromStateKey][Type],
-  Transitions extends FC["transitions"] = FC["transitions"],
-  States extends FC["states"] = FC["states"],
-  > = {
-  [TransitionStateKey in keyof Transitions]: 
-    TransitionStateKey extends FromStateKey ?
-    object & {
-      [EventKey in keyof Transitions[TransitionStateKey]]: 
-      EventKey extends Type ?
-      (
-      {
-        from: AnyFactoryState<
-          States,
-          TransitionStateKey extends keyof States ? TransitionStateKey : any
-        >;
-        type: EventKey;
-      } & (Transitions[TransitionStateKey][EventKey] extends keyof States
-        ? // if state key
-          {
-            params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
-            to: AnyFactoryState<
-              States,
-              Transitions[TransitionStateKey][EventKey]
-            >;
-          }
-        : Transitions[TransitionStateKey][EventKey] extends (
-            ...args: infer A
-          ) => (...innerArgs: any[]) => infer R
-        ? // if 2-stage function
-          {
-            params: A;
-            to: R;
-          }
-        : // if 1-stage function
-        Transitions[TransitionStateKey][EventKey] extends (
-            ...args: infer A
-          ) => infer R
-        ? {
-            params: A;
-            to: R;
-          }
-        : never)
-      ) : never;
-    }[keyof Transitions[TransitionStateKey]]
-    : never
-  }[keyof Transitions];
+  
+export type FactoryTransitionsFromContext<
+FC extends FactoryMachineContext,
+FromStateKey extends keyof FC['transitions'] = string,
+Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
+Transitions extends FC["transitions"] = FC["transitions"],
+States extends FC["states"] = FC["states"],
+> = {
+[TransitionStateKey in keyof Transitions]: 
+  TransitionStateKey extends FromStateKey ?
+  object & {
+    [EventKey in keyof Transitions[TransitionStateKey]]: 
+    EventKey extends Type ?
+    (
+    {
+      from: AnyFactoryState<
+        States,
+        TransitionStateKey extends keyof States ? TransitionStateKey : any
+      >;
+      type: EventKey;
+    } & (Transitions[TransitionStateKey][EventKey] extends keyof States
+      ? // if state key
+        {
+          params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
+          to: AnyFactoryState<
+            States,
+            Transitions[TransitionStateKey][EventKey]
+          >;
+        }
+      : Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => (...innerArgs: any[]) => infer R
+      ? // if 2-stage function
+        {
+          params: A;
+          to: R;
+        }
+      : // if 1-stage function
+      Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => infer R
+      ? {
+          params: A;
+          to: R;
+        }
+      : never)
+    ) : never;
+  }[keyof Transitions[TransitionStateKey]]
+  : never
+};
+
+export type FactoryTransitionFromContext<
+FC extends FactoryMachineContext,
+FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
+Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
+Transitions extends FC["transitions"] = FC["transitions"],
+States extends FC["states"] = FC["states"],
+> = FactoryTransitionsFromContext<FC, FromStateKey, Type>[keyof FC['transitions']];
+
+export type AnyFactoryMachineTransition<
+  FC extends FactoryMachineContext<any>,
+  FromStateKey extends keyof FC['transitions'] = any,
+  Type extends keyof FC['transitions'][FromStateKey] = any,
+  ToStateKey extends keyof FC['transitions'][FromStateKey][Type] = any,
+  RFT extends FactoryTransitionFromContext<FC, FromStateKey, Type> = FactoryTransitionFromContext<FC, FromStateKey, Type>,
+> =
+ RFT extends 
+ { to: { key: infer It } } 
+  ? It extends ToStateKey 
+    ? RFT
+    : never 
+  : never
 
   
 type SelectEventType<T, V> = T extends { type: infer It } ? 
@@ -214,6 +236,6 @@ export type StateEventTransitionFunc<
   //   // [EventKey in keyof FC['transitions'][TransitionStateKey] &
   //   // string]: 
   // }
-  ResolvedFactoryTransition<FC, TransitionStateKey>
+  FactoryTransitionsFromContext<FC, TransitionStateKey>
   
   

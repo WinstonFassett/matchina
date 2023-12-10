@@ -176,7 +176,7 @@ if (isFactoryMachineEvent(e, { from: 'Pending' } as const)) {
 }
 
 if (isFactoryMachineEvent(e, { to: 'Resolved' } as const)) {
-  e.to.key = 'Pending'
+  e.to.key = 'Resolved'
 }
 
 
