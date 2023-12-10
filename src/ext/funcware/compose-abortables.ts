@@ -9,8 +9,12 @@ export function composeAbortables<E>(
       listener(event, () => {
         aborted = true;
       });
-      if (aborted) break;
+      if (aborted) {
+        break;
+      }
     }
-    if (aborted) abort();
+    if (aborted) {
+      abort();
+    }
   };
 }

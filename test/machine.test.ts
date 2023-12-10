@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { defineStates } from "../src/states";
 import { createFactoryMachine, withApi } from "../src";
 
-
 const makeStates = () =>
   defineStates({
     Initial: { key: "initial" },
@@ -10,25 +9,30 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  const m = createFactoryMachine(states, {
-    Initial: {
-      done: "Done",
-      doneFunc: (done: number) =>
-        states[done === 100 ? "Done" : "Initial"](true),
-      doneAdvFunc: (done: string) => ({ type }) => {
-        return states[done === "DONE" ? "Done" : "Initial"](
-          type === 'doneAdvFunc',
-        );
+  const m = createFactoryMachine(
+    states,
+    {
+      Initial: {
+        done: "Done",
+        doneFunc: (done: number) =>
+          states[done === 100 ? "Done" : "Initial"](true),
+        doneAdvFunc:
+          (done: string) =>
+          ({ type }) => {
+            return states[done === "DONE" ? "Done" : "Initial"](
+              type === "doneAdvFunc",
+            );
+          },
       },
+      Done: {},
     },
-    Done: {},
-  }, 'Initial')
-  const m2 = withApi(m)    
-  return m2
+    "Initial",
+  );
+  const m2 = withApi(m);
+  return m2;
 };
 
 describe("createFactoryMachine", () => {
-
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {

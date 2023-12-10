@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defineEffects } from "../../../extras/effects";
-import { bindEffects } from "../bindEffects"
+import { bindEffects } from "../bindEffects";
 import { defineMachine } from "../machine";
 import { defineStates } from "../../../states";
 import { withEvents } from "../extras/with-events";

@@ -1,4 +1,7 @@
-import { StateEventTransitionFuncs, createFactoryMachine } from "./factory-machine";
+import {
+  StateEventTransitionFuncs,
+  createFactoryMachine,
+} from "./factory-machine";
 import { States, defineStates } from "./states";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
@@ -31,11 +34,7 @@ export function createPromiseMachine<F extends PromiseCallback>(
   makePromise?: (...args: Parameters<F>) => ReturnType<F>,
 ) {
   const states = PromiseStates as unknown as PromiseStates<F>;
-  const machine = createFactoryMachine(
-    states,
-    PromiseTransitions,
-    'Idle',
-  );
+  const machine = createFactoryMachine(states, PromiseTransitions, "Idle");
   if (makePromise) {
     machine.before = (ev) => {
       if (ev.type === "execute") {
@@ -44,10 +43,10 @@ export function createPromiseMachine<F extends PromiseCallback>(
           promise,
           done: promise
             .then((res) => machine.send("resolve", res))
-            .catch((error) => machine.send("reject", error))
+            .catch((error) => machine.send("reject", error)),
         });
       }
-      return ev
+      return ev;
     };
   }
   return machine;
@@ -64,4 +63,7 @@ export type PromiseContextStates<F extends PromiseCallback> =
 export type PromiseTransitions = PromiseMachine<any>["transitions"];
 export type PromiseContextStateKey = keyof PromiseContextStates<any>;
 export type PromiseStateKey = keyof PromiseStates<any>;
-type X = StateEventTransitionFuncs<{ transitions: PromiseTransitions, states: PromiseStates<any, any>}>;
+type X = StateEventTransitionFuncs<{
+  transitions: PromiseTransitions;
+  states: PromiseStates<any, any>;
+}>;

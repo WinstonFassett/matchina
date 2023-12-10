@@ -1,23 +1,21 @@
-import {
-  TransitionContext,
-  TransitionRecord
-} from "./types";
+import { TransitionContext, TransitionRecord } from "./types";
 
-export interface StateMachineEvent<To = any, From = To>  {
+export interface StateMachineEvent<To = any, From = To> {
   type: string;
   params: any[];
   to: To;
   from: From;
-  get machine(): StateMachinery<StateMachineEvent<To,From>>;
+  get machine(): StateMachinery<StateMachineEvent<To, From>>;
 }
 
+export type ResolveEvent<C> = Omit<C, "to">;
 
-export type ResolveEvent<C> = Omit<C, 'to'>;
-
-export interface StateMachinery<E extends StateMachineEvent = StateMachineEvent> {
+export interface StateMachinery<
+  E extends StateMachineEvent = StateMachineEvent,
+> {
   getState(): E["to"] | E["from"];
   getChange(): E;
-  send: (type: E['type'], ...params: E['params']) => void;
+  send: (type: E["type"], ...params: E["params"]) => void;
   resolve(ev: ResolveEvent<E>): E | undefined;
   transition(change: E): void;
   guard(ev: E): boolean;
@@ -33,12 +31,12 @@ export interface StateMachinery<E extends StateMachineEvent = StateMachineEvent>
 export function createStateMachine<E extends StateMachineEvent>(
   transitions: TransitionRecord,
   initialState: E["from"],
-) {  
+) {
   let lastChange = {
     type: "init",
     to: initialState,
   } as E;
-  const machine:  StateMachinery<E> & TransitionContext = {
+  const machine: StateMachinery<E> & TransitionContext = {
     transitions,
     getChange: () => lastChange,
     getState: () => lastChange.to,

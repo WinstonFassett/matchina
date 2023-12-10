@@ -17,18 +17,19 @@ const DataComponent: React.FC = () => {
   return (
     <div>
       {state.match({
-        NOT_LOADED: () => (
-          <button
-            onClick={() => {
-              fetch("/data")
-                .then((response) => response.json())
-                .then((data) => setState(states.LOADED(data)))
-                .catch((error) => setState(states.ERROR(error)));
-            }}
-          >
-            Load Data
-          </button>
-        ) as any,
+        NOT_LOADED: () =>
+          (
+            <button
+              onClick={() => {
+                fetch("/data")
+                  .then((response) => response.json())
+                  .then((data) => setState(states.LOADED(data)))
+                  .catch((error) => setState(states.ERROR(error)));
+              }}
+            >
+              Load Data
+            </button>
+          ) as any,
         LOADING: () => "Loading...",
         LOADED: ({ data }) => JSON.stringify(data),
         ERROR: ({ error }) => `ops, ${error.message}`,

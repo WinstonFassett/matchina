@@ -29,7 +29,7 @@ export function filtered<F extends Func>(
 // export function thing<T>(fn: (x: T) => any) {
 //   // return (x: T) => fn(x);
 //   return (x: T) => fn(x);
-// } 
+// }
 
 // // const filterware = <T>(fn: (value: T) => boolean) => (inner: (x: T) => any) => (x: T) => {
 // //   if (fn(x)) return inner(x);
@@ -41,7 +41,6 @@ export function filtered<F extends Func>(
 //   (x: T) => {
 //     if (fn(x)) return inner(x);
 //   };
-
 
 // const identityFn = <T>(x: T) => x;
 // type IdentityFn<T> = <T>(x: T) => T;

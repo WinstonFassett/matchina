@@ -3,11 +3,13 @@ import { createPromiseMachine } from ".";
 import { Expand } from "../../utility-types";
 import { withEvents } from "./extras/with-events";
 // ---cut---
-const machine = withEvents(createPromiseMachine((id: number) =>
-  fetch("/data").then((response) => response.json()),
-));
+const machine = withEvents(
+  createPromiseMachine((id: number) =>
+    fetch("/data").then((response) => response.json()),
+  ),
+);
 const state = machine.getState();
-type S = Expand<typeof state>
+type S = Expand<typeof state>;
 
 const DataComponent: React.FC = () => {
   const state = machine.getState();
@@ -19,15 +21,16 @@ const DataComponent: React.FC = () => {
   return (
     <div>
       {state.match({
-        Idle: () => (
-          <button
-            onClick={() => {
-              machine.event.execute(123)
-            }}
-          >
-            Load Data
-          </button>
-        ) as any,
+        Idle: () =>
+          (
+            <button
+              onClick={() => {
+                machine.event.execute(123);
+              }}
+            >
+              Load Data
+            </button>
+          ) as any,
         Pending: () => "Loading...",
         Resolved: (value) => JSON.stringify(value),
         Rejected: (error) => `ops, ${error.message}`,

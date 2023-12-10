@@ -1,5 +1,4 @@
 import { StateMachineEvent, StateMachinery } from "./state-machine";
-import { ChangeCommandEvent } from "./types";
 
 export function pure<E extends StateMachineEvent>(
   machine: StateMachinery<E>,

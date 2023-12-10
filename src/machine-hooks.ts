@@ -1,18 +1,33 @@
-import { AbortableEventHandler, Funcware, HasMethod, MethodOf, abortableEventware, functionTap, methodExtender } from "./ext";
+import {
+  AbortableEventHandler,
+  Funcware,
+  HasMethod,
+  MethodOf,
+  abortableEventware,
+  functionTap,
+  methodExtender,
+} from "./ext";
 import { StateMachineEvent, StateMachinery } from "./state-machine";
 import { Effect, Middleware } from "./types";
 import { Func } from "./utility-types";
 
-
-//#region Adapters
+// #region Adapters
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   [key: string]: Func;
 } & {
-  transition: (middleware: Middleware<E>) => Funcware<StateMachinery<E>["transition"]>;
+  transition: (
+    middleware: Middleware<E>,
+  ) => Funcware<StateMachinery<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<StateMachinery<E>["update"]>;
-  resolve: <F extends StateMachinery<E>["resolve"]>(resolveFn: F) => Funcware<F>;
-  guard: (guardFn: StateMachinery<E>['guard']) => Funcware<StateMachinery<E>['guard']>;
-  handle: (handleFn: StateMachinery<E>['handle']) => Funcware<StateMachinery<E>['handle']>;
+  resolve: <F extends StateMachinery<E>["resolve"]>(
+    resolveFn: F,
+  ) => Funcware<F>;
+  guard: (
+    guardFn: StateMachinery<E>["guard"],
+  ) => Funcware<StateMachinery<E>["guard"]>;
+  handle: (
+    handleFn: StateMachinery<E>["handle"],
+  ) => Funcware<StateMachinery<E>["handle"]>;
   before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
   leave: Transform<Effect<E>, Funcware<Effect<E>>>;
   after: Transform<Effect<E>, Funcware<Effect<E>>>;
@@ -23,8 +38,12 @@ export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
 type Transform<I, O = I> = (source: I) => O;
 
 export const HookAdapters = {
-  transition: (middleware) => (next) => (ev) => { middleware(ev, next); },
-  update: (middleware) => (next) => (ev) => { middleware(ev, next); },
+  transition: (middleware) => (next) => (ev) => {
+    middleware(ev, next);
+  },
+  update: (middleware) => (next) => (ev) => {
+    middleware(ev, next);
+  },
   resolve: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
   guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
   handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
@@ -35,25 +54,25 @@ export const HookAdapters = {
   effect: functionTap,
   notify: functionTap,
 } as Adapters;
-//#endregion
+// #endregion
 
 // #region Interceptors
 // export const send = methodHook("send");
 export const before = hookSetup("before");
 export const transition = hookSetup("transition");
 export const resolve = hookSetup("resolve");
-export const guard = hookSetup('guard')
+export const guard = hookSetup("guard");
 export const update = hookSetup("update");
 export const handle = hookSetup("handle");
-//#endregion
+// #endregion
 
 // #region Effects
 export const effect = hookSetup("effect");
-export const leave = hookSetup('leave')
+export const leave = hookSetup("leave");
 export const enter = hookSetup("enter");
 export const after = hookSetup("after");
 export const notify = hookSetup("notify");
-//#endregion
+// #endregion
 
 export const onBefore = machineHook("before");
 export const onTransition = machineHook("transition");
@@ -68,11 +87,8 @@ export const onAfter = machineHook("after");
 export const onNotify = machineHook("notify");
 
 function machineHook<K extends string & keyof Adapters>(key: K) {
-  return <T extends HasMethod<K>>(
-    machine: T,
-    fn: MethodOf<T,K>
-  ) => methodExtender<K>(key)
-    (HookAdapters[key](fn))(machine)  
+  return <T extends HasMethod<K>>(machine: T, fn: MethodOf<T, K>) =>
+    methodExtender<K>(key)(HookAdapters[key](fn))(machine);
 }
 
 function hookSetup<K extends string & keyof Adapters>(key: K) {

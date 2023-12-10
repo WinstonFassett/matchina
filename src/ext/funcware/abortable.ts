@@ -1,6 +1,5 @@
 import { Func } from "../../utility-types";
-import { AbortableEventHandler } from "../types";
-import { Funcware } from "../types";
+import { AbortableEventHandler, Funcware } from "../types";
 
 export function abortableEventware<E>(
   abortable: AbortableEventHandler<E>,

@@ -7,9 +7,11 @@ export function composeFuncware<F extends (...params: any[]) => any>(
   // return inner => fns.reduceRight((next, fn) => fn(next), inner);
   return (inner) => {
     function next(index: number, ...params: Parameters<F>): ReturnType<F> {
-      if (index === fns.length) return inner(...params);
-      return fns[index](next.bind(null, index + 1) as F)(...params);
+      if (index === fns.length) {
+        return inner(...params);
+      }
+      return fns[index](next.bind(undefined, index + 1) as F)(...params);
     }
-    return next.bind(null, 0) as F;
+    return next.bind(undefined, 0) as F;
   };
 }

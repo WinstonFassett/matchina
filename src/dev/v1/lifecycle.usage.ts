@@ -3,7 +3,7 @@ import { onLifecycle } from "./extras/lifecycle";
 import { createPromiseMachine } from "./extras/promise";
 import { withEvents } from "./extras/with-events";
 
-async function promiseLifecycleUsage () {
+async function promiseLifecycleUsage() {
   // promise machine WITHOUT a promise to drive it
   const machine = withEvents(createPromiseMachine<number, [number]>());
   machine.event.execute(1);
@@ -13,52 +13,56 @@ async function promiseLifecycleUsage () {
     Idle: {
       on: {
         execute: {
-          guard ({ type: event, params, from: { key: from }, to: { key: to } }) {
-            console.log(`${from} wants to ${event} to ${to} with params ${params.join(', ')}`)
-            const accept = params[0] > 1
-            console.log('GUARD accept?', accept)
-            return accept            
+          guard({ type: event, params, from: { key: from }, to: { key: to } }) {
+            console.log(
+              `${from} wants to ${event} to ${to} with params ${params.join(
+                ", ",
+              )}`,
+            );
+            const accept = params[0] > 1;
+            console.log("GUARD accept?", accept);
+            return accept;
           },
-          before ({ params: [amount] }) {
-            console.log('executing', amount)
+          before({ params: [amount] }) {
+            console.log("executing", amount);
           },
           handle: (event) => {
-            const num = event.params[0]
-            machine.promise = delayed(num, num)
+            const num = event.params[0];
+            machine.promise = delayed(num, num);
             machine.done = (machine.promise as Promise<any>)
               .then(machine.event.resolve)
-              .catch(machine.event.reject)            
-            return event
-          }
+              .catch(machine.event.reject);
+            return event;
+          },
         },
       },
       leave: ({ type: event, from: { key: from }, to: { key: to } }) => {
-        console.log(`leaving ${from} to ${event} to ${to}`)
-      }
+        console.log(`leaving ${from} to ${event} to ${to}`);
+      },
     },
   });
-  const checkState = () => console.log(machine.getState().key)
-  console.log('execute 1')
+  const checkState = () => console.log(machine.getState().key);
+  console.log("execute 1");
   machine.event.execute(1);
-  console.log('execute 1000')
+  console.log("execute 1000");
   machine.event.execute(1000);
-  checkState()
-  await machine.done
-  checkState()
+  checkState();
+  await machine.done;
+  checkState();
 
-  console.log('removing lifecycle')
+  console.log("removing lifecycle");
   // removeLifecycle()
-  machine.reset()
-  console.log('resetting')
-  checkState()
+  machine.reset();
+  console.log("resetting");
+  checkState();
 
   // without lifecycle, there is no delay implementation
-  machine.event.execute(1000)
+  machine.event.execute(1000);
   // state is pending
-  checkState()
+  checkState();
   // synchronously resolve
-  machine.event.resolve(1)
-  checkState()
+  machine.event.resolve(1);
+  checkState();
 }
 
-await promiseLifecycleUsage()
+await promiseLifecycleUsage();

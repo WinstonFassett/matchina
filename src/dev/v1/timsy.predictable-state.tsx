@@ -12,17 +12,19 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-const dataMachine = withEvents(defineMachine(states, {
-  NOT_LOADED: {
-    load: () => () => states.LOADING(),
-  },
-  LOADING: {
-    loadSuccess: (data: Data) => () => states.LOADED(data),
-    loadError: (error: Error) => () => states.ERROR(error),
-  },
-  LOADED: {},
-  ERROR: {},
-}).create(states.NOT_LOADED()));
+const dataMachine = withEvents(
+  defineMachine(states, {
+    NOT_LOADED: {
+      load: () => () => states.LOADING(),
+    },
+    LOADING: {
+      loadSuccess: (data: Data) => () => states.LOADED(data),
+      loadError: (error: Error) => () => states.ERROR(error),
+    },
+    LOADED: {},
+    ERROR: {},
+  }).create(states.NOT_LOADED()),
+);
 
 const DataComponent: React.FC = () => {
   // soon
@@ -46,15 +48,16 @@ const DataComponent: React.FC = () => {
   return (
     <div>
       {state.match({
-        NOT_LOADED: () => (
-          <button
-            onClick={() => {
-              event.load();
-            }}
-          >
-            Load Data
-          </button>
-        ) as any,
+        NOT_LOADED: () =>
+          (
+            <button
+              onClick={() => {
+                event.load();
+              }}
+            >
+              Load Data
+            </button>
+          ) as any,
         LOADING: () => "Loading...",
         LOADED: ({ data }) => JSON.stringify(data),
         ERROR: ({ error }) => `ops, ${error.message}`,

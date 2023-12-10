@@ -3,14 +3,33 @@ import { EntryListener, when } from "./extras/when";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
-import { effect, enter, guard, handle, leave, notify, onNotify } from "./machine-hooks";
+import {
+  effect,
+  enter,
+  guard,
+  handle,
+  leave,
+  notify,
+  onNotify,
+} from "./machine-hooks";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import { AnyKeyedChangeEvent, KeyedChangeEventFilter, isFactoryMachineChangeFromTypeTo, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
+import {
+  AnyKeyedChangeEvent,
+  KeyedChangeEventFilter,
+  isFactoryMachineChangeFromTypeTo,
+  isFactoryMachineEvent,
+  isKeyedChangeEvent,
+} from "./typeguards";
 import { withNanoSubscribe } from "./withNanoSubscribe";
 
-
-const m1 = createStateMachine<StateMachineEvent & ({ type: 'start', params: [nickname: 'Bob'|'Pat'] } | { type: 'stop', params: [{forever: boolean}] })>(
+const m1 = createStateMachine<
+  StateMachineEvent &
+    (
+      | { type: "start"; params: [nickname: "Bob" | "Pat"] }
+      | { type: "stop"; params: [{ forever: boolean }] }
+    )
+>(
   {
     Idle: {
       start: "Running",
@@ -22,15 +41,15 @@ const m1 = createStateMachine<StateMachineEvent & ({ type: 'start', params: [nic
   { key: "Idle", data: undefined },
 );
 
-m1.send('start', 'Bob')
-m1.send('stop', { forever: true})
+m1.send("start", "Bob");
+m1.send("stop", { forever: true });
 
-const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) => when((ev) => ev.type === "start", fn);
+const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) =>
+  when((ev) => ev.type === "start", fn);
 
 setup(m1)(
-  guard((ev) => ev.type === 'start'),
+  guard((ev) => ev.type === "start"),
   leave((ev) => console.log("before", ev)),
-  
 );
 
 const m2 = createStateMachine(
@@ -74,12 +93,9 @@ const m4 = createFactoryMachine(
 m4.send("execute", 1);
 
 const isChange =
-  <E extends AnyKeyedChangeEvent>(
-    filter: KeyedChangeEventFilter<any>
-  ) => (ev: E) =>
+  <E extends AnyKeyedChangeEvent>(filter: KeyedChangeEventFilter<any>) =>
+  (ev: E) =>
     isKeyedChangeEvent<E>(filter, ev);
-
-
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
@@ -110,43 +126,48 @@ setup(m4)(
     ),
   ),
   enter(
-    when(
-      isChange({ type: 'execute'}),
-      (ev) => {
-        console.log("entered condition");
-        return (ev) => {
-          console.log("exited condition");
-        };
-      },
-    ),
+    when(isChange({ type: "execute" }), (ev) => {
+      console.log("entered condition");
+      return (ev) => {
+        console.log("exited condition");
+      };
+    }),
   ),
   notify(
     when(
-      (ev) => ev.type === 'reject',
+      (ev) => ev.type === "reject",
       // eslint-disable-next-line unicorn/consistent-function-scoping
       (ev) => (ev) => {},
     ),
   ),
   notify(
-    when(ev => ev.type === 'execute', ev => {
-      console.log('entered execute state', ev.to.key)
-      return (ev) => {
-        console.log('exited execute state')
-      }    
-    })
-  )
+    when(
+      (ev) => ev.type === "execute",
+      (ev) => {
+        console.log("entered execute state", ev.to.key);
+        return (ev) => {
+          console.log("exited execute state");
+        };
+      },
+    ),
+  ),
 );
-
 
 m4.send("execute", 1);
 
-onNotify(m4, ev => {
-  console.log('notify', ev)
-})
+onNotify(m4, (ev) => {
+  console.log("notify", ev);
+});
 
-onNotify(m4, when(ev => ev.type === 'execute', ev => {
-  console.log(ev.to.as('Pending'))
-}))
+onNotify(
+  m4,
+  when(
+    (ev) => ev.type === "execute",
+    (ev) => {
+      console.log(ev.to.as("Pending"));
+    },
+  ),
+);
 
 const api = createApi(m4);
 
@@ -155,99 +176,112 @@ api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
 
-const m5 = withNanoSubscribe(m4) //.subscribe(ev => {})
-type EE = ReturnType<typeof m5.getChange>
+const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
+type EE = ReturnType<typeof m5.getChange>;
 
-const e = {} as ReturnType<typeof m4.getChange>
-if (isKeyedChangeEvent({ from: 'Idle', 'type': 'execute' }, e)) {
-  e.type = 'execute'
-  e.from.key = 'Idle'
-
+const e = {} as ReturnType<typeof m4.getChange>;
+if (isKeyedChangeEvent({ from: "Idle", type: "execute" }, e)) {
+  e.type = "execute";
+  e.from.key = "Idle";
 }
-if (isFactoryMachineEvent(e, { type: 'reject' } as const)) {
-  e.from.key = 'Pending'
-  e.type = 'reject'
-  e.to.key = 'Rejected'
-  e.to.data.err.message
-}
-
-if (isFactoryMachineEvent(e, { from: 'Pending' } as const)) {
-  e.from.key = 'Pending'
+if (isFactoryMachineEvent(e, { type: "reject" } as const)) {
+  e.from.key = "Pending";
+  e.type = "reject";
+  e.to.key = "Rejected";
+  e.to.data.err.message = "nope";
 }
 
-if (isFactoryMachineEvent(e, { to: 'Resolved' } as const)) {
-  e.to.key = 'Resolved'
+if (isFactoryMachineEvent(e, { from: "Pending" } as const)) {
+  e.from.key = "Pending";
 }
 
-if (isFactoryMachineEvent(e, { from: 'Pending', to: 'Rejected' } as const)) {
-  e.type = 'reject'
+if (isFactoryMachineEvent(e, { to: "Resolved" } as const)) {
+  e.to.key = "Resolved";
 }
 
-if (isFactoryMachineEvent(e, {
-  from: 'Pending',
-  type: 'reject'  
-} as const)) {
-  e.params[0].message
-  e.to.data.err.message
+if (isFactoryMachineEvent(e, { from: "Pending", to: "Rejected" } as const)) {
+  e.type = "reject";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject')) {
-  e.to.key = 'Rejected'
+if (
+  isFactoryMachineEvent(e, {
+    from: "Pending",
+    type: "reject",
+  } as const)
+) {
+  e.params[0].message = "nope";
+  e.to.data.err.message = "nope";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject',)) {
+if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
+  e.to.key = "Rejected";
+}
+
+if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
   // e.from.key = 'Rejected'
-  e.type = 'reject'
-  e.to.key = 'Rejected'
-  e.to.data.err.message = 'nope'
+  e.type = "reject";
+  e.to.key = "Rejected";
+  e.to.data.err.message = "nope";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Idle', 'execute')) {
-  e.type = 'execute'
+if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute")) {
+  e.type = "execute";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Idle', 'execute', 'Pending')) {
-  e.type = 'execute'
+if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute", "Pending")) {
+  e.type = "execute";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, undefined as any, undefined, 'Resolved')) {
-  e.from.key = 'Pending'
-  e.to.key = 'Resolved'
-  e.type = 'resolve'  
+if (
+  isFactoryMachineChangeFromTypeTo(e, undefined as any, undefined, "Resolved")
+) {
+  e.from.key = "Pending";
+  e.to.key = "Resolved";
+  e.type = "resolve";
 }
 
-m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
+m5.subscribe(
+  when(
+    (ev) => ev.type === "execute",
+    (ev1) => (ev2) => {
+      console.log("in", ev1, "out", ev2);
+    },
+  ),
+);
 
-m5.subscribe(whenEvent({ from: 'Pending', type: 'reject' }, ev => {
-  ev.type = 'reject'
-  ev.to.key = 'Rejected'
-}))
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject" }, (ev) => {
+    ev.type = "reject";
+    ev.to.key = "Rejected";
+  }),
+);
 
-m5.subscribe(whenEvent({ from: 'Pending', type: 'reject', to: 'Rejected'}, ev => {
-  ev.type = 'reject'
-  ev.from.key = 'Pending'
-  ev.to.key = 'Rejected'
-  ev.to.data.err.message = 'nope'
-}))
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
+    ev.type = "reject";
+    ev.from.key = "Pending";
+    ev.to.key = "Rejected";
+    ev.to.data.err.message = "nope";
+  }),
+);
 
-setup(m4)(
-  notify(leftState('Rejected', ev => {
-
-  }))
-)
+setup(m4)(notify(leftState("Rejected", (ev) => {})));
 
 const unsub2 = m5.subscribe(
-  when(x=>true, x=>{
-    console.log('enter')
-    return (x) => {
-      console.log('exit', x.to.key)
-      unsub2()
-    }    
-  })
-)
+  when(
+    (x) => true,
+    (x) => {
+      console.log("enter");
+      return (x) => {
+        console.log("exit", x.to.key);
+        unsub2();
+      };
+    },
+  ),
+);
 
-onLeftState(m4, 'Pending', ev => {
-  ev.from.key = 'Pending'
-  ev.type = 'execute'
+onLeftState(m4, "Pending", (ev) => {
+  ev.from.key = "Pending";
+  ev.type = "execute";
   // ev.to.key = 'Resolved'
-})
+});

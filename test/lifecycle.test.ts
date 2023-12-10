@@ -185,8 +185,8 @@ describe("onLifecycle usage", () => {
                 promise,
                 done: promise
                   .then(machine.api.resolve)
-                  .catch(machine.api.reject)
-              })              
+                  .catch(machine.api.reject),
+              });
               didHandleExecute ||= ++count;
               console.log("handler accepting");
               return event;

@@ -147,15 +147,18 @@ class MemberImpl<
     data: Config[Tag],
     tagProp: TagProp = "tag" as TagProp,
   ) {
-    Object.assign(this, { [tagProp]: tag, data: data, getTag: () => this[tagProp], getTagProp: () => tagProp });
+    Object.assign(this, {
+      [tagProp]: tag,
+      data,
+      getTag: () => this[tagProp],
+      getTagProp: () => tagProp,
+    });
   }
 
   as(expectedTag: keyof Config) {
     if (!this.is(expectedTag)) {
       const tag = this.getTag();
-      throw new Error(
-        `Attempted to cast ${tag} as ${expectedTag.toString()}`,
-      );
+      throw new Error(`Attempted to cast ${tag} as ${expectedTag.toString()}`);
     }
     return this;
   }
@@ -167,7 +170,7 @@ class MemberImpl<
   match<A>(
     casesObj: MatchCases<MemberData<Config>, MemberData<Config>, A>,
     exhaustive = true,
-  ): any {    
+  ): any {
     const tag = this.getTag();
     const data = this.data;
     const handler = (casesObj as any)[tag];
@@ -176,7 +179,9 @@ class MemberImpl<
     } else if (casesObj._) {
       return casesObj._(data);
     } else if (exhaustive) {
-      throw new Error(`Match did not handle ${this.getTagProp()}: '${tag.toString()}'`);
+      throw new Error(
+        `Match did not handle ${this.getTagProp()}: '${tag.toString()}'`,
+      );
     }
   }
 }

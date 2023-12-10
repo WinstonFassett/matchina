@@ -2,30 +2,28 @@ import {
   StateFromFactory,
   StateMachine,
   StatesFactory,
-  TransitionConfig
+  TransitionConfig,
 } from "./machine-types";
-import {
-  UnionSpec,
-  MatchboxFactory,
-  MemberOf,
-  MatchCases
-} from "./matchbox";
+import { UnionSpec, MatchboxFactory, MemberOf, MatchCases } from "./matchbox";
 import { handleEffects } from "../../extras/effects";
 
 export function bindEffects<
   States extends StatesFactory,
   Transitions extends TransitionConfig<States>,
   EffectsConfig extends UnionSpec,
-  Exhaustive extends boolean = false
+  Exhaustive extends boolean = false,
 >(
   machine: StateMachine<Transitions, States>,
   getEffects: (
-    state: StateFromFactory<States>
+    state: StateFromFactory<States>,
   ) => MemberOf<MatchboxFactory<EffectsConfig, "effect">>[] | undefined,
   matchers: MatchCases<
-    EffectsConfig, MemberOf<MatchboxFactory<EffectsConfig, "effect">>, any, Exhaustive
+    EffectsConfig,
+    MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
+    any,
+    Exhaustive
   >,
-  exhaustive = false as Exhaustive
+  exhaustive = false as Exhaustive,
 ) {
   const origUpdate = machine.update;
   machine.update = (updater) => {

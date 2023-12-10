@@ -12,8 +12,6 @@ export function extendMethod<T, K extends keyof T>(
   };
 }
 
-
-
 export function extendMethod2<T, K extends keyof T>(
   target: T,
   methodName: K,
@@ -25,4 +23,3 @@ export function extendMethod2<T, K extends keyof T>(
     target[methodName] = original;
   };
 }
-

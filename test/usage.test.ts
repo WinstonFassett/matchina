@@ -17,12 +17,12 @@ describe("setup", () => {
         },
       },
       { key: "Idle", data: undefined },
-    );      
+    );
     setup(machine)(
       guard((ev) => true),
       leave((ev) => console.log("leave", ev.type)),
       enter((ev) => console.log("enter", ev.type)),
-      enter(value => {})
+      enter((value) => {}),
     );
     expect(machine.getState().key).toBe("Idle");
     machine.send("start");
