@@ -1,6 +1,6 @@
 import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
-import { AnyFactoryState, AnyFactoryMachineEvent } from "./factory-machine";
+import { AnyFactoryState, AnyFactoryMachineEvent, AnyFactoryMachineTransition } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachinery } from "./state-machine";
 import { FactoryChangeEventFilter, FactoryChangeEventFromFilter, FilterValues, KeyedChangeEvent, KeyedChangeEventFilter, KeyedChangeEventFromFilter, isFactoryMachineEvent, isKeyedChangeEvent } from "./typeguards";
@@ -68,17 +68,23 @@ export const onGuardEvent = <E extends AnyFactoryMachineEvent<any>, K extends E[
 
 export const whenEvent = <
   E extends AnyFactoryMachineEvent<any>, 
-  F extends FactoryChangeEventFilter<E>,
-  FV extends FilterValues<F> = FilterValues<F>,
+  FromKey extends string & E['from']['key'], 
+  Type extends string & E['type'] & AnyFactoryMachineTransition<E['machine'], FromKey>['type'],
+  ToKey extends string & E['to']['key'] & AnyFactoryMachineTransition<E['machine'], FromKey, Type>['to']['key'],
+
 >(
-  filter: F,
-  fn: Effect<E & FactoryChangeEventFromFilter<E,F>>,
+  filter: {
+    from?: FromKey | FromKey[],
+    type?: Type | Type[],
+    to?: ToKey | ToKey[],
+  },
+  fn: Effect<E & FactoryChangeEventFromFilter<E, {
+    from: FromKey, type: Type, to: ToKey
+  }>>,
 ) => when<E>(
   (ev) => isFactoryMachineEvent<E, 
     // FV['from'], FV['type'], FV['to']
-    FV['from'] extends string ? FV['from'] : string,
-    FV['type'] extends string ? FV['type'] : string,
-    FV['to'] extends string ? FV['to'] : string
+    FromKey, Type, ToKey
   >(ev, filter as any),
   fn as any
 ) 
