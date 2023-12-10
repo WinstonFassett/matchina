@@ -179,6 +179,9 @@ if (isFactoryMachineEvent(e, { to: 'Resolved' } as const)) {
   e.to.key = 'Resolved'
 }
 
+if (isFactoryMachineEvent(e, { from: 'Pending', to: 'Rejected' } as const)) {
+  e.type = 'reject'
+}
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 
