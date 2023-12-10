@@ -135,15 +135,18 @@ export const isFactoryMachineEvent: <
 
 export function isFactoryMachineChangeFromTypeTo<
   E extends AnyFactoryMachineEvent<any>,
-  Type extends string,
-  ToKey extends string,
-  FromKey extends string,
+  FromKey extends string & E['from']['key'], 
+  Type extends string & E['type'],
+  ToKey extends string & E['to']['key'],
+  // FromKey extends AnyFactoryMachineEvent<E['machine']>['from']['key'],
+  // ToKey extends E['to'] = AnyFactoryMachineEvent<E['machine']>['to']['key'],
+  // Type extends E['type'] = AnyFactoryMachineEvent<E['machine']>['type'],
 >(
   event: E,
   from?: FromKey | FromKey[],
   type?: Type | Type[],
   to?: ToKey | ToKey[],
-): event is (E & FactoryChangeEventFromFilter<E, { from: FromKey, event: Type, to: ToKey}>)
+): event is (E & FactoryChangeEventFromFilter<E, { from: FromKey, type: Type, to: ToKey}>)
  {
   const subject = event as any;
   return isFactoryMachineEvent(event, { from, type, to } as const);

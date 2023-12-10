@@ -191,14 +191,23 @@ if (isFactoryMachineEvent(e, {
   e.to.data.err.message
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
-  e.to.key = 'Rejected' 
+if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject')) {
+  e.to.key = 'Rejected'
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject', 'Rejected')) {
+if (isFactoryMachineChangeFromTypeTo(e, 'Pending', 'reject',)) {
   // e.from.key = 'Rejected'
   e.type = 'reject'
   e.to.key = 'Rejected'
+  e.to.data.err.message = 'nope'
+}
+
+if (isFactoryMachineChangeFromTypeTo(e, 'Idle', 'execute')) {
+  e.type = 'execute'
+}
+
+if (isFactoryMachineChangeFromTypeTo(e, 'Idle', 'execute', 'Pending')) {
+  e.type = 'execute'
 }
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
