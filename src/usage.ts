@@ -193,9 +193,9 @@ if (isFactoryMachineEvent(e, {
 
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 
-m5.subscribe(whenEvent({ from: 'Idle', type: 'reject' }, ev => {
+m5.subscribe(whenEvent({ from: 'Pending', type: 'reject' }, ev => {
   ev.type = 'reject'
-  ev.to.key = 'Idle'
+  ev.to.key = 'Rejected'
 }))
 
 setup(m4)(
