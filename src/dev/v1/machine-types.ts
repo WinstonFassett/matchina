@@ -1,5 +1,4 @@
 import { FuncEnhancer } from "./extras/methodware";
-import { Middleware } from "./middleware";
 import { ChangeEvent, CreateFunc, SwapFunc } from "./types";
 import {
   FlatMemberUnion,
@@ -8,6 +7,7 @@ import {
   Members,
   TUnionToIntersection,
 } from "../../utility-types";
+import { Middleware } from "../../types";
 
 // #region Transition Config
 

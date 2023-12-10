@@ -1,3 +1,4 @@
+import { Middleware } from "../../../types";
 import {
   EventExitStatesIntersection,
   FlatEventKeys,
@@ -8,7 +9,6 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "../machine-types";
-import { Middleware } from "../middleware";
 
 type HookConfig<T> = {
   [K in keyof T]?: T[K] | T[K][];

@@ -4,11 +4,14 @@ import {
   TransitionConfig,
 } from "../machine-types";
 import { when } from "../middleware/when";
-import { Middleware } from "../middleware";
 import { enhanceMachine } from "../middleware/enhance-machine";
 import { composeMiddleware, runMiddleware } from "../middleware/middleware";
 import { StateEventHookConfig } from "./lifecycle-types";
-import { KeyedChangeEventFilter } from "../../../typeguards";
+import {
+  AnyKeyedChangeEvent,
+  KeyedChangeEventFilter,
+} from "../../../typeguards";
+import { Middleware } from "../../../types";
 
 const LIFECYCLE = [
   "guard",
@@ -174,7 +177,7 @@ export function onLifecycle<
 
 type HookFunc<E> = (ev: E) => void | E;
 
-function hookware<E>(
+function hookware<E extends AnyKeyedChangeEvent>(
   hook: HookFunc<E> | HookFunc<E>[],
   filter: KeyedChangeEventFilter<E> = {},
 ): Middleware<E> {

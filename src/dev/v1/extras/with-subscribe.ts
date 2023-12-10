@@ -1,14 +1,11 @@
-import { StateMachine } from "../machine-types";
 import { nanosubscriber } from "../../../extras/nanosubscriber";
-import { onUpdate } from "./on-update";
+import { StateMachine } from "../machine-types";
 import {
-  ChangeEventFilter,
-  ChangeEventFromKey,
-  ChangeEventToKey,
-  ChangeEventType,
-  KeyedChangeEvent,
+  KeyedChangeEventFilter,
+  KeyedChangeEventFromFilter,
   isKeyedChangeEvent,
-} from "../../../typeguards";
+} from "../typeguards";
+import { onUpdate } from "./on-update";
 
 export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
   type Event = ReturnType<M["getChange"]>;
@@ -30,22 +27,13 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
 
   type Subscriber<
     E extends Event,
-    Type extends ChangeEventType<E>,
-    FromKey extends ChangeEventFromKey<E>,
-    ToKey extends ChangeEventToKey<E>,
-  > = (
-    event: E & KeyedChangeEvent<Type, FromKey, ToKey>,
-  ) => void | (() => void);
+    F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
+  > = (event: E & KeyedChangeEventFromFilter<F>) => void | (() => void);
 
   function subscribeKey<
     E extends Event,
-    Type extends ChangeEventType<E>,
-    ToKey extends ChangeEventToKey<E>,
-    FromKey extends ChangeEventFromKey<E>,
-  >(
-    filter: ChangeEventFilter<Type, ToKey, FromKey>,
-    subscriber: Subscriber<E, Type, FromKey, ToKey>,
-  ) {
+    F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
+  >(filter: F, subscriber: Subscriber<E, F>) {
     let exitListener: void | (() => void);
     return subscribe((event) => {
       if (isKeyedChangeEvent(filter, event)) {

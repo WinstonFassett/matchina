@@ -1,7 +1,7 @@
-import { Middleware } from "./middleware";
+import { Middleware } from "../../types";
+import { RemainingProperties } from "../../utility-types";
 import {
   ChangeEventMatchers,
-  StateEventTransitionFuncs,
   StateFromFactory,
   StateMachine,
   StateMachineContext,
@@ -10,7 +10,6 @@ import {
   StatesFactory,
   TransitionConfig,
 } from "./machine-types";
-import { RemainingProperties } from "../../utility-types";
 export const InitializeMachine = "__init";
 
 export function defineMachine<

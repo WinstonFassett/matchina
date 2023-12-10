@@ -30,7 +30,7 @@ export function bindEffects<
     return origUpdate.call(machine, (current) => {
       const updated = updater(current);
       const effects = getEffects(updated.to);
-      handleEffects(effects, matchers, exhaustive);
+      handleEffects(effects as any, matchers, exhaustive);
       return updated;
     });
   };
