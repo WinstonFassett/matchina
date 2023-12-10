@@ -12,5 +12,4 @@ export * from "./pure-state-machine";
 export * from "./state-machine";
 export * from "./states";
 export * from "./transition-helpers";
-export * from "./transition-machine";
 export * from "./types";
