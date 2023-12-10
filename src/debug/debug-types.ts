@@ -426,6 +426,7 @@ type SelectToKey<T, V> = T extends { to: { key: infer It} } ?
 
 type XX = SelectEventType<X, 'execute'>['to']['key']
 type XXX = SelectFromKey<X, 'Idle'>['to']['key']
+type XXXX = SelectToKey<X, 'Pending'>['type']
 
 //[keyof PromiseContext['transitions'][keyof PromiseContext['transitions']]]
 // type XX = X['params']
