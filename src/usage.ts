@@ -183,6 +183,14 @@ if (isFactoryMachineEvent(e, { from: 'Pending', to: 'Rejected' } as const)) {
   e.type = 'reject'
 }
 
+if (isFactoryMachineEvent(e, {
+  from: 'Pending',
+  type: 'reject'  
+} as const)) {
+  e.params[0].message
+  e.to.data.err.message
+}
+
 m5.subscribe(when(ev => ev.type === 'execute', ev => ev => {}))
 
 m5.subscribe(whenEvent({ from: 'Idle', type: 'reject' }, ev => {

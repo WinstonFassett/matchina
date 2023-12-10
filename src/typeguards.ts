@@ -61,9 +61,29 @@ export type FactoryChangeEventFromFilter1<
     to: FilterValues<F>['to'] extends string ? FilterValues<F>['to'] : string,
   }
 
+export type FactoryChangeEventFilter<
+  E extends AnyFactoryMachineEvent<any>,
+  FromKey extends AnyFactoryMachineTransition<M>['from']['key'] = AnyFactoryMachineTransition<E['machine']>['from']['key'],
+  Type extends AnyFactoryMachineTransition<M>['type'] = AnyFactoryMachineTransition<E['machine']>['type'],
+  ToKey extends AnyFactoryMachineTransition<M>['to']['key'] = AnyFactoryMachineTransition<E['machine']>['to']['key'],
+  M extends E['machine'] = E['machine'],
+  // EF extends AnyKeyedChangeEvent
+> = {
+  from?: FromKey | FromKey[],
+  type?: Type | Type[],
+  to?: ToKey | ToKey[]
+} 
+// Filters<{
+//   from: FromKey
+//   type: Type,
+//   to: ToKey,
+// }>
+  
+
+
 export type FactoryChangeEventFromFilter<
   E extends AnyFactoryMachineEvent<any>,
-  F extends KeyedChangeEventFilter<E>,
+  F extends FactoryChangeEventFilter<E>,
   FV extends FilterValues<F> = FilterValues<F>,
   // FromKey extends E['from']['key'],
   // Type extends E['type'],
@@ -107,20 +127,10 @@ export function isKeyedChangeEvent<
 
 export const isFactoryMachineEvent: <
   E extends AnyFactoryMachineEvent<any>,
-  F extends KeyedChangeEventFilter<E> 
-  // & {
-  //   type?: string | string[],
-  //   to?: string | string[],
-  //   from?: string | string[],
-  // },
+  F extends FactoryChangeEventFilter<E> 
   >(
     event: E,
     filter: F 
-    // & {
-    //   type?: Type | Type[],
-    //   to?: ToKey | ToKey[],
-    //   from?: FromKey | FromKey[],
-    // },
   ) => event is (E & FactoryChangeEventFromFilter<E, F>) = isKeyedChangeEvent as any
 
 export function isChangeTypeToFrom<
