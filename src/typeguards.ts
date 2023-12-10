@@ -136,8 +136,8 @@ export const isFactoryMachineEvent: <
 export function isFactoryMachineChangeFromTypeTo<
   E extends AnyFactoryMachineEvent<any>,
   FromKey extends string & E['from']['key'], 
-  Type extends string & E['type'],
-  ToKey extends string & E['to']['key'],
+  Type extends string & E['type'] & AnyFactoryMachineTransition<E['machine'], FromKey>['type'],
+  ToKey extends string & E['to']['key'] & AnyFactoryMachineTransition<E['machine'], FromKey, Type>['to']['key'],
   // FromKey extends AnyFactoryMachineEvent<E['machine']>['from']['key'],
   // ToKey extends E['to'] = AnyFactoryMachineEvent<E['machine']>['to']['key'],
   // Type extends E['type'] = AnyFactoryMachineEvent<E['machine']>['type'],
