@@ -21,7 +21,7 @@ import {
   isFactoryMachineEvent,
   isKeyedChangeEvent,
 } from "./typeguards";
-import { withNanoSubscribe } from "./withNanoSubscribe";
+import { withNanoSubscribe } from "./with-nanosubscribe";
 
 const m1 = createStateMachine<
   StateMachineEvent &
