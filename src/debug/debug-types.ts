@@ -371,6 +371,57 @@ export type StateEventTransitionFunc<
 };
 
 
+
+export type FactoryTransitionsFromContext<
+FC extends FactoryMachineContext,
+FromStateKey extends keyof FC['transitions'] = string,
+Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
+Transitions extends FC["transitions"] = FC["transitions"],
+States extends FC["states"] = FC["states"],
+> = {
+[TransitionStateKey in keyof Transitions]: 
+  TransitionStateKey extends FromStateKey ?
+  object & {
+    [EventKey in keyof Transitions[TransitionStateKey]]: 
+    EventKey extends Type ?
+    (
+    {
+      from: AnyFactoryState<
+        States,
+        TransitionStateKey extends keyof States ? TransitionStateKey : any
+      >;
+      type: EventKey;
+    } & (Transitions[TransitionStateKey][EventKey] extends keyof States
+      ? // if state key
+        {
+          params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
+          to: AnyFactoryState<
+            States,
+            Transitions[TransitionStateKey][EventKey]
+          >;
+        }
+      : Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => (...innerArgs: any[]) => infer R
+      ? // if 2-stage function
+        {
+          params: A;
+          to: R;
+        }
+      : // if 1-stage function
+      Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => infer R
+      ? {
+          params: A;
+          to: R;
+        }
+      : never)
+    ) : never;
+  }[keyof Transitions[TransitionStateKey]]
+  : never
+};
+
 export type ResolvedFactoryTransition<
 FC extends FactoryMachineContext,
 FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
@@ -456,6 +507,13 @@ type X2 = AnyFactoryMachineTransition<
   any,
   'Rejected'
 >['type']
+
+type X3 = FactoryTransitionsFromContext<
+  PromiseContext,
+  'Pending',
+  'reject'
+>['Pending']['type']
+
 
 // type XX = SelectEventType<X, 'execute'>['to']['key']
 // type XXX = SelectFromKey<X, 'Idle'>['to']['key']
