@@ -5,10 +5,6 @@
     "import": "{ matchboxFactory }"
   },
   {
-    "name": "transition-machine",
-    "path": "src/transition-machine.ts"
-  },
-  {
     "name": "states",
     "path": "dist/index.mjs",
     "import": "{ defineStates }"
