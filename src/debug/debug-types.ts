@@ -373,47 +373,54 @@ export type StateEventTransitionFunc<
 
 export type ResolvedFactoryTransition<
   FC extends FactoryMachineContext,
-  TransitionStateKey extends keyof FC['transitions'],
-  Transitions extends FC['transitions'] = FC['transitions'],
-  States extends FC['states'] = FC['states'],
+  Transitions extends FC["transitions"] = FC["transitions"],
+  States extends FC["states"] = FC["states"],
 > = {
-  [EventKey in keyof Transitions[TransitionStateKey] & string]: 
-  {
-    from: AnyFactoryState<States, TransitionStateKey extends keyof States ? TransitionStateKey : any>;
-    type: EventKey;
-  } &
-  (  Transitions[TransitionStateKey][EventKey] extends keyof States
-    ? // if state key
-      {
-        params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
-        to: AnyFactoryState<States, Transitions[TransitionStateKey][EventKey]>;
-      }      
-    : Transitions[TransitionStateKey][EventKey] extends (
-        ...args: infer A
-      ) => (...innerArgs: any[]) => infer R
-    ? // if 2-stage function
-      {
-        params: A;
-        to: R
-      }
-    : // if 1-stage function
-    Transitions[TransitionStateKey][EventKey] extends (
-        ...args: infer A
-      ) => infer R
-    ? 
-      {
-        params: A;
-        to: R 
-      }
-    : never)    
-};
+  [TransitionStateKey in keyof Transitions]: object & {
+    [EventKey in keyof Transitions[TransitionStateKey]]: {
+      from: AnyFactoryState<
+        States,
+        TransitionStateKey extends keyof States ? TransitionStateKey : any
+      >;
+      type: EventKey;
+    } & (Transitions[TransitionStateKey][EventKey] extends keyof States
+      ? // if state key
+        {
+          params: Parameters<States[Transitions[TransitionStateKey][EventKey]]>;
+          to: AnyFactoryState<
+            States,
+            Transitions[TransitionStateKey][EventKey]
+          >;
+        }
+      : Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => (...innerArgs: any[]) => infer R
+      ? // if 2-stage function
+        {
+          params: A;
+          to: R;
+        }
+      : // if 1-stage function
+      Transitions[TransitionStateKey][EventKey] extends (
+          ...args: infer A
+        ) => infer R
+      ? {
+          params: A;
+          to: R;
+        }
+      : never);
+  }[keyof Transitions[TransitionStateKey]];
+}[keyof Transitions];
 
 type PromiseContext = { states: PromiseStates<typeof slowlyAddTwoNumbers>, transitions: typeof PromiseTransitions }
 type X = ResolvedFactoryTransition<
-  PromiseContext,
-  'Pending'  
->[keyof PromiseContext['transitions']['Pending']]
+  PromiseContext
+  // 'Pending'  
+>
 
+//[keyof PromiseContext['transitions'][keyof PromiseContext['transitions']]]
+// type XX = X['params']
+// type XXX = X['to']['key']
 // HOOKS:
 
 
