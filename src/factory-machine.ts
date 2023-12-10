@@ -200,32 +200,6 @@ export type AnyFactoryMachineTransition<
     : never
   : never;
 
-export type StateEventTransitionFunc1<
-  FC extends FactoryMachineContext,
-  TransitionStateKey extends keyof FC["transitions"],
-  Transitions extends FC["transitions"] = FC["transitions"],
-  States extends FC["states"] = FC["states"],
-> = {
-  [EventKey in keyof Transitions[TransitionStateKey] &
-    string]: Transitions[TransitionStateKey][EventKey] extends keyof States
-    ? (
-        ...args: Parameters<States[Transitions[TransitionStateKey][EventKey]]>
-      ) => AnyFactoryState<States, Transitions[TransitionStateKey][EventKey]>
-    : Transitions[TransitionStateKey][EventKey] extends (
-        ...args: infer A
-      ) => (...innerArgs: any[]) => infer R
-    ? (...args: A) => R
-    : Transitions[TransitionStateKey][EventKey] extends (
-        ...args: any[]
-      ) => AnyFactoryState<States>
-    ? (
-        ...args: Parameters<Transitions[TransitionStateKey][EventKey]>
-      ) => AnyFactoryState<States> & {
-        key: Transitions[TransitionStateKey][EventKey];
-      }
-    : never;
-};
-
 export type StateEventTransitionFunc<
   FC extends FactoryMachineContext,
   TransitionStateKey extends keyof FC["transitions"],
@@ -233,7 +207,6 @@ export type StateEventTransitionFunc<
 > = {
   [EventKey in keyof Transitions[TransitionStateKey] &
     string]: FactoryTransitionFromContext<
-    // Transitions[TransitionStateKey][EventKey]
     FC,
     TransitionStateKey,
     EventKey
@@ -246,15 +219,4 @@ export type StateEventTransitionFunc<
           EventKey
         >["params"]
       ) => FactoryTransitionFromContext<FC, TransitionStateKey, EventKey>["to"];
-  // // {}
-  // // needs to be a function
-  // EventKey extends keyof FactoryTransitionFromContext<FC, TransitionStateKey>[TransitionStateKey] ?
-  // (
-  //   ...params: FactoryTransitionsFromContext<FC, TransitionStateKey>[TransitionStateKey][EventKey]['params']
-  // ) => FactoryTransitionsFromContext<FC, TransitionStateKey>[TransitionStateKey][EventKey]['to']
-  // // {}
-  // : never
-
-  // (...params: FactoryTransitionsFromContext<FC, TransitionStateKey>[TransitionStateKey][EventKey]['params']) => anyFactoryTransitionsFromContext<FC, TransitionStateKey>[TransitionStateKey][EventKey]['to']
-  // FactoryTransitionsFromContext<FC, TransitionStateKey>[TransitionStateKey][EventKey]
 };
