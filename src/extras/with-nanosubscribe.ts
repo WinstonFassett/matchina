@@ -1,6 +1,6 @@
-import { nanosubscriber } from "./extras/nanosubscriber";
-import { onNotify } from "./machine-hooks";
-import { StateMachinery } from "./state-machine";
+import { onNotify } from "../machine-hooks";
+import { StateMachinery } from "../state-machine";
+import { nanosubscriber } from "./nanosubscriber";
 
 export function withNanoSubscribe<T extends StateMachinery<any>>(
   target: T & Partial<{ subscribe: any }>,
