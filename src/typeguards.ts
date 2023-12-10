@@ -149,7 +149,12 @@ export function isFactoryMachineChangeFromTypeTo<
 ): event is (E & FactoryChangeEventFromFilter<E, { from: FromKey, type: Type, to: ToKey}>)
  {
   const subject = event as any;
-  return isFactoryMachineEvent(event, { from, type, to } as const);
+  // return isFactoryMachineEvent(event, { from, type, to } as const);
+  return (
+    matchKey(to, subject?.to?.key) &&
+    matchKey(type, subject?.type) &&
+    matchKey(from, subject?.from?.key)
+  )
 }
 
 export function isChangeTypeToFrom<
