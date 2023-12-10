@@ -1,12 +1,12 @@
+import { StateMachineEvent } from "../src/state-machine";
 import {
-  hasKeyValue,
-  ChangeEvent,
-  isKeyedChangeEvent,
-  isChangeTypeToFrom,
   asChangeTypeToFrom,
+  hasKeyValue,
+  isChangeTypeToFrom,
+  isKeyedChangeEvent,
 } from "../src/typeguards";
 
-export {};
+export { };
 
 // usage
 // ---cut---
@@ -18,7 +18,7 @@ if (hasKeyValue(a, "foo", ["manchu" as const, "bar" as const])) {
   a.foo;
 }
 
-const ev = {} as ChangeEvent<unknown, unknown, unknown>;
+const ev = {} as StateMachineEvent;
 if (isKeyedChangeEvent({ to: "foo", from: "bar", type: "baz" } as const, ev)) {
   ev.to.key;
   ev.from.key;
@@ -39,28 +39,10 @@ const x = asChangeTypeToFrom(
   ["bar", "ball"] as ("bar" | "ball")[],
 );
 x.type = "baz";
-x.to.key = "foo";
-x.to.key = "foot";
-x.from.key = "bar";
-x.from.key = "ball";
+x.to.key = 'ball'
+x.from.key = 'foo'
+x.type = 'baz'
 
-type StateMachine = {
-  state: string;
-  transition: (action: string) => void;
-};
-
-// subscribeKeyedChangeEvent({
-//   type: ['baz', 'bake'],
-//   to: ['foo', 'foot'],
-//   from: ['bar', 'ball'],
-// }, (ev) => {
-//   ev.type = 'baz'
-//   ev.type = 'bake'
-//   ev.to.key = 'foo'
-//   ev.to.key = 'foot'
-//   ev.from.key = 'bar'
-//   ev.from.key = 'ball'
-// })
 
 type HasKeyAndValue<K extends PropertyKey, V> = {
   [key in K]: V;

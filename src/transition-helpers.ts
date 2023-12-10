@@ -1,12 +1,18 @@
 import { StateMachineEvent } from "./state-machine";
 
-export function updateState<E extends StateMachineEvent>(
-  fn: (state: E["from"]["data"]) => Partial<E["to"]["data"]>,
-) {
-  return (previous: E) => {
-    return { ...previous.from, data: fn(previous) };
-  };
-}
+const { assign } = Object
+
+
+
+export const updateState = <E extends StateMachineEvent>(
+  updater: (fromData: E['from']['data']) => any
+) => (ev: {
+  from: { data: { count: any; meta?: { name: string } } };
+}) => ({ 
+  ...ev.from.data as any, 
+  ...updater(ev.from.data)
+});
+
 export function setInState<E extends StateMachineEvent>(
   state: Partial<E["to"]["data"]>,
 ) {
@@ -17,10 +23,10 @@ export function setInState<E extends StateMachineEvent>(
 export function forwardData<
   StateFunc extends (current: any, updates: any) => any,
   DataFunc extends (...args: any[]) => Parameters<StateFunc>[1],
->(stateFunc: StateFunc, getData: DataFunc) {
+>(createState: StateFunc, getData: DataFunc) {
   return (...params: Parameters<DataFunc>) => {
     return (ev: StateMachineEvent) => {
-      return stateFunc(ev.from.data, getData(...params));
+      return createState(ev.from.data, getData(...params));
     };
   };
 }

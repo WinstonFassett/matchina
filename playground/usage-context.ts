@@ -3,6 +3,8 @@ import { createApi } from "../src/factory-event-api";
 import { createFactoryMachine } from "../src/factory-machine";
 import { forwardData, updateState, setInState } from "../src/transition-helpers";
 import { createPromiseMachine } from "../src/promise";
+import { StateMachineEvent } from "../src/state-machine";
+
 
 // ---cut---
 const machine = createPromiseMachine(
@@ -34,8 +36,8 @@ const m2 = createFactoryMachine(
       execute: (url: string) => Pending({ url, tries: 0 }),
     },
     Pending: {
-      resolve: forwardData(Resolved, (data: any) => data),
-      reject: forwardData(Rejected, (error: Error) => error),
+      resolve: (data) => ev => Resolved(ev.from.data, data),
+      reject: (error: Error) => ev => Rejected(ev.from.data, error)      
     },
     Rejected: {},
     Resolved: {},
@@ -59,11 +61,11 @@ const counter = createFactoryMachine(
       increment:
         (inc = 1) =>
         (ev) =>
-          counterStates.Idle({ ...ev.to, count: ev.from.data.count + inc }),
+          counterStates.Idle({ count: ev.from.data.count + inc }),
       decrement:
         (dec = 1) =>
         (ev) =>
-          counterStates.Idle({ ...ev.to, count: ev.from.data.count - dec }),
+          counterStates.Idle({ count: ev.from.data.count - dec }),
     },
   },
   counterStates.Idle(),
@@ -74,19 +76,25 @@ counterApi.increment(2);
 counterApi.decrement(1);
 
 const oneState = defineStates({
-  State: ({ count }: { count: number }) => ({ count }),
+  State: ({ count, meta }: { count: number, meta: { name: string } }) => ({ count, meta }),
 });
 
 const m5 = createFactoryMachine(
   oneState,
   {
     State: {
-      increment: (inc = 1) =>
-        updateState(({ count }) => ({ count: count + inc })),
-      decrement: (dec = 1) =>
-        updateState(({ count }) => ({ count: count - dec })),
-      setCount: (count: number) => setInState({ count }),
+      increment: (inc=1) => updateState(() => ({ count: inc })),
+      // increment2: (inc=1) => updateState(),
+      decrement: (dec=1) => (ev) => oneState.State({ ...ev.from.data, count: ev.from.data.count - dec }),
+      setCount: (count: number) => (ev) => oneState.State({ ...ev.from.data, count }),
+      
     },
   },
-  oneState.State({ count: 0 }),
+  oneState.State({ count: 0, meta: { name: 'howdy' } }),
 );
+
+const api5 = createApi(m5);
+api5.increment()
+api5.increment(2)
+
+m5.send('increment', 2)
