@@ -1,4 +1,4 @@
-import { FactoryMachine, AnyFactoryMachineEvent } from "./factory-machine"
+import { FactoryMachine, AnyFactoryMachineEvent, ResolvedFactoryTransition } from "./factory-machine"
 
 export type AnyKeyedChangeEvent = {
   type: string
@@ -63,14 +63,16 @@ export type FactoryChangeEventFromFilter1<
 
 export type FactoryChangeEventFromFilter<
   E extends AnyFactoryMachineEvent<any>,
+  F extends KeyedChangeEventFilter<E>,
   Type extends E['type'] | undefined,
   FromKey extends E['from']['key'],
   ToKey extends E['to']['key'],
-> = {
- type: Type,
- to: ReturnType<E['machine']['states'][ToKey]>,
- from: ReturnType<E['machine']['states'][FromKey]>
-}
+> = ResolvedFactoryTransition<E['machine']>
+// {
+//  type: Type,
+//  to: ReturnType<E['machine']['states'][ToKey]>,
+//  from: ReturnType<E['machine']['states'][FromKey]>
+// }
 
 // KeyedChangeEvent<
 //     FilterValues<F>['type'] extends string ? FilterValues<F>['type'] : string,

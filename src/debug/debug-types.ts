@@ -372,12 +372,20 @@ export type StateEventTransitionFunc<
 
 
 export type ResolvedFactoryTransition<
-  FC extends FactoryMachineContext,
-  Transitions extends FC["transitions"] = FC["transitions"],
-  States extends FC["states"] = FC["states"],
+FC extends FactoryMachineContext,
+FromStateKey extends keyof FC['transitions'] = keyof FC['transitions'],
+Type extends keyof FC['transitions'][FromStateKey] = keyof FC['transitions'][FromStateKey],
+ToStateKey extends keyof FC['transitions'][FromStateKey][Type] = keyof FC['transitions'][FromStateKey][Type],
+Transitions extends FC["transitions"] = FC["transitions"],
+States extends FC["states"] = FC["states"],
 > = {
-  [TransitionStateKey in keyof Transitions]: object & {
-    [EventKey in keyof Transitions[TransitionStateKey]]: {
+[TransitionStateKey in keyof Transitions]: 
+  TransitionStateKey extends FromStateKey ?
+  object & {
+    [EventKey in keyof Transitions[TransitionStateKey]]: 
+    EventKey extends Type ?
+    (
+    {
       from: AnyFactoryState<
         States,
         TransitionStateKey extends keyof States ? TransitionStateKey : any
@@ -408,15 +416,13 @@ export type ResolvedFactoryTransition<
           params: A;
           to: R;
         }
-      : never);
-  }[keyof Transitions[TransitionStateKey]];
+      : never)
+    ) : never;
+  }[keyof Transitions[TransitionStateKey]]
+  : never
 }[keyof Transitions];
 
-type PromiseContext = { states: PromiseStates<typeof slowlyAddTwoNumbers>, transitions: typeof PromiseTransitions }
-type X = ResolvedFactoryTransition<
-  PromiseContext
-  // 'Pending'  
->
+
 type SelectEventType<T, V> = T extends { type: infer It } ? 
   It extends V ? T : never : never
 type SelectFromKey<T, V> = T extends { from: { key: infer It } } ? 
@@ -424,9 +430,17 @@ type SelectFromKey<T, V> = T extends { from: { key: infer It } } ?
 type SelectToKey<T, V> = T extends { to: { key: infer It} } ? 
   It extends V ? T : never : never
 
-type XX = SelectEventType<X, 'execute'>['to']['key']
-type XXX = SelectFromKey<X, 'Idle'>['to']['key']
-type XXXX = SelectToKey<X, 'Pending'>['type']
+type PromiseContext = { states: PromiseStates<typeof slowlyAddTwoNumbers>, transitions: typeof PromiseTransitions }
+type X = ResolvedFactoryTransition<
+  PromiseContext,
+  any,
+  any
+  
+>['to']['key']
+
+// type XX = SelectEventType<X, 'execute'>['to']['key']
+// type XXX = SelectFromKey<X, 'Idle'>['to']['key']
+// type XXXX = SelectToKey<X, 'Pending'>['type']
 
 //[keyof PromiseContext['transitions'][keyof PromiseContext['transitions']]]
 // type XX = X['params']
