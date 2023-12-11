@@ -10,6 +10,9 @@ export interface StateMachineEvent<To = any, From = To> {
 
 export type ResolveEvent<C> = Omit<C, "to">;
 
+const EmptyTransform = <E>(event: E) => event
+const EmptyEffect = <E>(event: E) => {}
+
 export interface StateMachine<
   E extends StateMachineEvent = StateMachineEvent,
 > {
@@ -75,8 +78,8 @@ export function createStateMachine<E extends StateMachineEvent>(
       machine.notify(update); // notify consumers
       machine.after(update); // cleanup
     },
-    handle: Transform<E>,
-    before: Transform<E>,
+    handle: EmptyTransform<E>,
+    before: EmptyTransform<E>,
     update: (update: E) => {
       lastChange = update;
     },
@@ -84,13 +87,10 @@ export function createStateMachine<E extends StateMachineEvent>(
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
-    leave: Effect<E>,
-    enter: Effect<E>,
-    notify: Effect<E>,
-    after: Effect<E>
+    leave: EmptyEffect<E>,
+    enter: EmptyEffect<E>,
+    notify: EmptyEffect<E>,
+    after: EmptyEffect<E>
   };
   return machine;
 }
-
-const Transform = <E>(event: E) => event
-const Effect = <E>(event: E) => {}
