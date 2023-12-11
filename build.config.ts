@@ -4,7 +4,10 @@ const mkdistEntry = {
   input: "./src/",
   outDir: "./dist",
   builder: 'mkdist',
-  pattern: "**/!(*.stories).{js,jsx,ts,tsx}",
+  pattern: [
+    "**",
+    "!dev",
+  ],
 } as const
 
 export default defineBuildConfig({
