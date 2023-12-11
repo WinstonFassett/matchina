@@ -33,7 +33,7 @@ export function createStateMachine<E extends StateMachineEvent>(
   initialState: E["from"],
 ) {
   let lastChange = {
-    type: "init",
+    type: '__initialize',
     to: initialState,
   } as E;
   const machine: StateMachinery<E> & TransitionContext = {
@@ -75,8 +75,8 @@ export function createStateMachine<E extends StateMachineEvent>(
       machine.notify(update); // notify consumers
       machine.after(update); // cleanup
     },
-    handle: (change: E) => change,
-    before: (update: E) => update,
+    handle: Transform<E>,
+    before: Transform<E>,
     update: (update: E) => {
       lastChange = update;
     },
@@ -84,14 +84,13 @@ export function createStateMachine<E extends StateMachineEvent>(
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
-    leave(ev: E) {
-      console.log("left", ev.from.key);
-    },
-    enter(ev: E) {
-      console.log("entered", ev.to.key);
-    },
-    notify(ev: E) {},
-    after(ev: E) {},
+    leave: Effect<E>,
+    enter: Effect<E>,
+    notify: Effect<E>,
+    after: Effect<E>
   };
   return machine;
 }
+
+const Transform = <E>(event: E) => event
+const Effect = <E>(event: E) => {}

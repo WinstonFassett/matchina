@@ -61,7 +61,6 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
       const hookHandler = (HookAdapters as typeof HookAdapters)[
         phase as keyof typeof HookAdapters
       ];
-      console.log("add hook", phase, filter);
       d.push(
         extendMethod(
           machine,

@@ -1,4 +1,4 @@
-import { AbortableEventHandler } from "../types";
+import { AbortableEventHandler } from "../../ext/types";
 
 export function composeAbortables<E>(
   abortables: AbortableEventHandler<E>[],

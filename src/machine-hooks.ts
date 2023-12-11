@@ -56,6 +56,29 @@ export const HookAdapters = {
 } as Adapters;
 // #endregion
 
+const machineHook =
+  <K extends string & keyof Adapters>(key: K) =>
+  <T extends HasMethod<K>>(machine: T, fn: MethodOf<T, K>) =>
+    methodExtender<K>(key)(HookAdapters[key](fn))(machine);
+
+const hookSetup = <K extends string & keyof Adapters>(key: K) => <T extends HasMethod<K>>(
+  ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
+) =>
+  methodExtender<K>(key)(HookAdapters[key](...config)) as (target: T) => () => void;
+
+const composeHandlers = <E extends StateMachineEvent>(
+  outer: (value: E) => E | undefined,
+  inner: (value: E) => E | undefined,
+): (value: E) => E | undefined => (ev) => outer(inner(ev) as any);
+
+const combineGuards = <E extends StateMachineEvent>(
+  first: (value: E) => boolean,
+  next: (value: E) => boolean,
+): (value: E) => boolean => (ev) => {
+  const res = first(ev) && next(ev);
+  return res;
+};
+
 // #region Interceptors
 // export const send = methodHook("send");
 export const before = hookSetup("before");
@@ -85,34 +108,3 @@ export const onLeave = machineHook("leave");
 export const onEnter = machineHook("enter");
 export const onAfter = machineHook("after");
 export const onNotify = machineHook("notify");
-
-function machineHook<K extends string & keyof Adapters>(key: K) {
-  return <T extends HasMethod<K>>(machine: T, fn: MethodOf<T, K>) =>
-    methodExtender<K>(key)(HookAdapters[key](fn))(machine);
-}
-
-function hookSetup<K extends string & keyof Adapters>(key: K) {
-  return <T extends HasMethod<K>>(
-    ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
-  ) =>
-    methodExtender<K>(key)(HookAdapters[key](...config)) as (
-      target: T,
-    ) => () => void;
-}
-
-function composeHandlers<E extends StateMachineEvent>(
-  outer: (value: E) => E | undefined,
-  inner: (value: E) => E | undefined,
-): (value: E) => E | undefined {
-  return (ev) => outer(inner(ev) as any);
-}
-
-function combineGuards<E extends StateMachineEvent>(
-  first: (value: E) => boolean,
-  next: (value: E) => boolean,
-): (value: E) => boolean {
-  return (ev) => {
-    const res = first(ev) && next(ev);
-    return res;
-  };
-}

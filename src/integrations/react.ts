@@ -9,8 +9,9 @@ export function useMachine<Change>(machine: {
   const onSubscribe = useCallback(
     (listener: Listen<Change>) => {
       const orig = machine.notify;
+      const bound = orig.bind(machine);
       machine.notify = (ev) => {
-        orig(ev);
+        bound(ev);
         listener(ev);
       };
       return () => {

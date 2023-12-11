@@ -12,26 +12,31 @@
   {
     "name": "machine",
     "path": "src/state-machine.ts",
-    "import": "*"
+    "import": "{ createStateMachine }"
   },
   {
     "name": "factory-machine",
     "path": "src/factory-machine.ts",
-    "import": "*"
+    "import": "{ createFactoryMachine }"
   },
   {
     "name": "typeguards",
     "path": "src/typeguards.ts",
-    "import": "{ isKeyedChangeEvent }"
+    "import": "{ isFactoryMachineEvent }"
   },
   {
     "name": "events-api",
     "path": "src/factory-event-api.ts",
-    "import": "*"
+    "import": " { createApi }"
+  },
+  {
+    "name": "handle-promise",
+    "path": "src/handle-promise.ts"    
   },
   {
     "name": "promise",
-    "path": "src/promise.ts"
+    "path": "src/promise.ts",
+    "import": "{ createPromiseMachine }"
   },
   {
     "name": "ext",
@@ -39,17 +44,41 @@
     "import": "*"
   },
   {
+    "name": "setup",
+    "path": "src/ext/setup.ts",
+    "import": "*"
+  },
+  {
+    "name": "method extender",
+    "path": "src/ext/index.ts",
+    "import": "{ methodExtender }"
+  },
+  {
     "name": "machine hooks",
-    "path": "src/machine-hooks.ts"
+    "path": "src/machine-hooks.ts",
+    "import": "{notify}"
+  },
+  {
+    "name": "factory machine hooks",
+    "path": "src/factory-machine-hooks.ts",
+    "import": "{ whenEvent, onLeftState }"
   },
   {
     "name": "lifecycle",
     "path": "src/lifecycle.ts",
-    "import": "*"
+    "import": "{ onLifecycle}"
+  },
+  {
+    "name": "transition-helpers",
+    "path": "src/transition-helpers.ts"
   },
   {
     "name": "full",
     "path": "dist/index.mjs"
+  },
+  {
+    "name": "matchina",
+    "path": "src/matchina.ts"
   },
   {
     "name": "pure",
@@ -57,15 +86,17 @@
   },
   {
     "name": "nanosubscribe",
-    "path": "src/extras/nanosubscriber.ts"
+    "path": "src/extras/nanosubscriber.ts",
+    "import": "{ nanosubscriber }"
   },
   {
     "name": "with-nanosubscribe",
-    "path": "src/extras/with-nanosubscribe.ts"
+    "path": "src/extras/with-nanosubscribe.ts",
+    "import": "{ withNanoSubscribe }"
   },
   {
     "name": "react-dist",
-    "path": "dist/integrations/react.mjs",
+    "path": "src/integrations/react.ts",
     "import": "{ useMachine }",
     "ignore": ["react"]
   }

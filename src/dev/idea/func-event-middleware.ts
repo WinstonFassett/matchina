@@ -1,6 +1,6 @@
 import { Middleware } from "../../types";
 import { Func } from "../../utility-types";
-import { Funcware, HasMethod, MethodOf } from "../types";
+import { Funcware, HasMethod, MethodOf } from "../../ext/types";
 
 export type FuncEventMiddleware<F extends (...params: any[]) => any> =
   Middleware<FuncEvent<F>>;
