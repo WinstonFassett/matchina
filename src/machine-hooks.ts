@@ -3,8 +3,8 @@ import {
   Funcware,
   HasMethod,
   MethodOf,
-  abortableEventware,
-  functionTap,
+  abortable,
+  tap,
   methodExtender,
 } from "./ext";
 import { StateMachineEvent, StateMachine } from "./state-machine";
@@ -47,12 +47,12 @@ export const HookAdapters = {
   resolve: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
   guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
   handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
-  before: (abortware) => abortableEventware(abortware),
-  leave: functionTap,
-  after: functionTap,
-  enter: functionTap,
-  effect: functionTap,
-  notify: functionTap,
+  before: (abortware) => abortable(abortware),
+  leave: tap,
+  after: tap,
+  enter: tap,
+  effect: tap,
+  notify: tap,
 } as Adapters;
 // #endregion
 

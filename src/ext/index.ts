@@ -1,6 +1,6 @@
 export * from "./funcware/abortable";
 export * from "./funcware/iff";
-export * from "./funcware/tap-function";
+export * from "./funcware/tap";
 export * from "./methodware/extend-method";
 export * from "./methodware/method-extender";
 export * from "./setup";
