@@ -1,5 +1,5 @@
-import { UpdateEnhancer } from "../src/dev/v1/";
-import { Func, RemainingProperties, Simplify } from "../src/utility-types";
+import { UpdateEnhancer } from "../v1";
+import { Func, RemainingProperties, Simplify } from "../../utility-types";
 import { Extend, ExtendBuilder } from "./extender.usage";
 
 export {};
