@@ -7,7 +7,7 @@ import {
   functionTap,
   methodExtender,
 } from "./ext";
-import { StateMachineEvent, StateMachinery } from "./state-machine";
+import { StateMachineEvent, StateMachine } from "./state-machine";
 import { Effect, Middleware } from "./types";
 import { Func } from "./utility-types";
 
@@ -17,17 +17,17 @@ export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
 } & {
   transition: (
     middleware: Middleware<E>,
-  ) => Funcware<StateMachinery<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<StateMachinery<E>["update"]>;
-  resolve: <F extends StateMachinery<E>["resolve"]>(
+  ) => Funcware<StateMachine<E>["transition"]>;
+  update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
+  resolve: <F extends StateMachine<E>["resolve"]>(
     resolveFn: F,
   ) => Funcware<F>;
   guard: (
-    guardFn: StateMachinery<E>["guard"],
-  ) => Funcware<StateMachinery<E>["guard"]>;
+    guardFn: StateMachine<E>["guard"],
+  ) => Funcware<StateMachine<E>["guard"]>;
   handle: (
-    handleFn: StateMachinery<E>["handle"],
-  ) => Funcware<StateMachinery<E>["handle"]>;
+    handleFn: StateMachine<E>["handle"],
+  ) => Funcware<StateMachine<E>["handle"]>;
   before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
   leave: Transform<Effect<E>, Funcware<Effect<E>>>;
   after: Transform<Effect<E>, Funcware<Effect<E>>>;

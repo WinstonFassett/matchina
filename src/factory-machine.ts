@@ -1,7 +1,7 @@
 import {
   ResolveEvent,
   StateMachineEvent,
-  StateMachinery,
+  StateMachine,
   createStateMachine,
 } from "./state-machine";
 
@@ -81,7 +81,7 @@ export interface FactoryMachineContext<
 }
 
 export interface FactoryMachine<FC extends FactoryMachineContext<any>>
-  extends StateMachinery<AnyFactoryMachineEvent<FC>> {
+  extends StateMachine<AnyFactoryMachineEvent<FC>> {
   states: FC["states"];
   transitions: FC["transitions"];
 }
@@ -93,7 +93,7 @@ export interface AnyFactoryMachineEvent<FC extends FactoryMachineContext<any>>
   from: AnyFactoryState<FC["states"]>;
   to: AnyFactoryState<FC["states"]>;
   get machine(): FactoryMachine<FC> &
-    StateMachinery<AnyFactoryMachineEvent<FC>>;
+    StateMachine<AnyFactoryMachineEvent<FC>>;
 }
 
 export type FlatEventKeys<FC extends FactoryMachineContext> = string &

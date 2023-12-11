@@ -5,12 +5,12 @@ export interface StateMachineEvent<To = any, From = To> {
   params: any[];
   to: To;
   from: From;
-  get machine(): StateMachinery<StateMachineEvent<To, From>>;
+  get machine(): StateMachine<StateMachineEvent<To, From>>;
 }
 
 export type ResolveEvent<C> = Omit<C, "to">;
 
-export interface StateMachinery<
+export interface StateMachine<
   E extends StateMachineEvent = StateMachineEvent,
 > {
   getState(): E["to"] | E["from"];
@@ -36,7 +36,7 @@ export function createStateMachine<E extends StateMachineEvent>(
     type: '__initialize',
     to: initialState,
   } as E;
-  const machine: StateMachinery<E> & TransitionContext = {
+  const machine: StateMachine<E> & TransitionContext = {
     transitions,
     getChange: () => lastChange,
     getState: () => lastChange.to,

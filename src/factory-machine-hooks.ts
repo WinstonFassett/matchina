@@ -6,7 +6,7 @@ import {
   AnyFactoryState,
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
-import { StateMachinery } from "./state-machine";
+import { StateMachine } from "./state-machine";
 import {
   FactoryChangeEventFromFilter,
   isFactoryMachineEvent,
@@ -20,7 +20,7 @@ export const beforeEvent = <
   type: K,
   fn: AbortableEventHandler<E & { type: K }>,
 ) =>
-  before<StateMachinery<E>>((ev, abort) => {
+  before<StateMachine<E>>((ev, abort) => {
     if (ev.type === type) {
       fn(ev as any, abort);
     }
@@ -46,7 +46,7 @@ export const afterEvent = <
   type: K,
   fn: Effect<E & { type: K }>,
 ) =>
-  after<StateMachinery<E>>((ev) => {
+  after<StateMachine<E>>((ev) => {
     if (ev.type === type) {
       fn(ev as any);
     }
@@ -56,7 +56,7 @@ export const onBeforeEvent = <
   E extends AnyFactoryMachineEvent<any>,
   K extends E["type"],
 >(
-  m: StateMachinery<E>,
+  m: StateMachine<E>,
   type: E["type"],
   fn: AbortableEventHandler<E & { type: E["type"] }>,
 ) => setup(m)(beforeEvent(type, fn));
@@ -65,7 +65,7 @@ export const onLeftState = <
   E extends AnyFactoryMachineEvent<any>,
   K extends keyof E["machine"]["states"],
 >(
-  m: StateMachinery<E>,
+  m: StateMachine<E>,
   stateKey: K,
   fn: ExitListener<E & { from: AnyFactoryState<E["machine"]["states"], K> }>,
 ) => setup(m)(leave(leftState(stateKey, fn)));
@@ -74,7 +74,7 @@ export const onAfterEvent = <
   E extends AnyFactoryMachineEvent<any>,
   K extends E["type"],
 >(
-  m: StateMachinery<E>,
+  m: StateMachine<E>,
   type: K,
   fn: Effect<E & { type: K }>,
 ) => setup(m)(afterEvent<E, K>(type, fn));
@@ -83,9 +83,9 @@ export const onGuardEvent = <
   E extends AnyFactoryMachineEvent<any>,
   K extends E["type"],
 >(
-  m: StateMachinery<E>,
+  m: StateMachine<E>,
   type: K,
-  fn: StateMachinery<E & { type: K }>["guard"],
+  fn: StateMachine<E & { type: K }>["guard"],
 ) =>
   setup(m)(
     guard((ev) => {

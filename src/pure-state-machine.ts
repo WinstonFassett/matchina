@@ -1,7 +1,7 @@
-import { StateMachineEvent, StateMachinery } from "./state-machine";
+import { StateMachineEvent, StateMachine } from "./state-machine";
 
 export function pure<E extends StateMachineEvent>(
-  machine: StateMachinery<E>,
+  machine: StateMachine<E>,
 ): PureStateMachine<E> {
   const { getState, send } = machine;
   return {
@@ -10,4 +10,4 @@ export function pure<E extends StateMachineEvent>(
   };
 }
 interface PureStateMachine<E extends StateMachineEvent>
-  extends Pick<StateMachinery<E>, "getState" | "send"> {}
+  extends Pick<StateMachine<E>, "getState" | "send"> {}
