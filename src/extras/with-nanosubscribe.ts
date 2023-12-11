@@ -1,16 +1,16 @@
-import { StateMachinery } from "../state-machine";
+import type { StateMachinery } from "../state-machine";
 import { Subscribe, nanosubscriber } from "./nanosubscriber";
 
 export const withNanoSubscribe = <
-  T extends StateMachinery<any>,
+  T extends Pick<StateMachinery<any>, 'notify'>,
   E extends Parameters<T["notify"]>[0],
 >(
   target: T & Partial<{ subscribe: Subscribe<E> }>,
 ) => {
   if (!target.subscribe) {
-    const [subscribe, emit, listeners] =
-      nanosubscriber<Parameters<T["notify"]>[0]>();
     const notify = target.notify.bind(target);
+    const [subscribe, emit] =
+      nanosubscriber<Parameters<T["notify"]>[0]>();
     target.notify = (ev) => {
       notify(ev);
       emit(ev);
