@@ -41,7 +41,7 @@ export interface MemberExtensions<Specs, TagProp extends string> {
 
 interface Match<Specs> {
   <A, Exhaustive extends boolean = true>(
-    cases: MatchCases<MemberData<Specs>, MemberData<Specs>, A, Exhaustive>,
+    cases: MatchCases<MemberData<Specs>, A, Exhaustive>,
     exhaustive?: Exhaustive,
   ): A;
 }
@@ -54,24 +54,23 @@ export type MemberData<Specs> = {
 
 export type Cases<Record, A> = { [T in keyof Record]: (value: Record[T]) => A };
 
-type PartialCases<Record, A, Union> = Partial<Cases<Record, A>> & {
-  _: (variant: Union) => A;
+type PartialCases<Record, A> = Partial<Cases<Record, A>> & {
+  _: (variant: Record[keyof Record]) => A;
 };
 
-type AnyCases<Record, A, Union> = Partial<
+type AnyCases<Record, A> = Partial<
   Cases<Record, A> & {
-    _: (variant: Union) => A;
+    _: (variant: Record[keyof Record]) => A;
   }
 >;
 
 export type MatchCases<
   Record,
-  Union,
   A,
   Exhaustive extends boolean = true,
 > = Exhaustive extends true
-  ? (Cases<Record, A> & { _?: never }) | PartialCases<Record, A, Union>
-  : AnyCases<Record, A, Union>;
+  ? (Cases<Record, A> & { _?: never }) | PartialCases<Record, A>
+  : AnyCases<Record, A>;
 
 export type UnionSpec<Val = any> = {
   [k: string]: Val;
@@ -168,7 +167,7 @@ class MemberImpl<
   }
 
   match<A>(
-    casesObj: MatchCases<MemberData<Config>, MemberData<Config>, A>,
+    casesObj: MatchCases<MemberData<Config>, A>,
     exhaustive = true,
   ): any {
     const tag = this.getTag();

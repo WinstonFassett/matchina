@@ -21,7 +21,7 @@ export function handleEffects<
   effects: undefined | AnyEffect[],
   matchers: MatchCases<
     EffectsConfig,
-    MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
+    // MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
     any,
     Exhaustive
   >,
