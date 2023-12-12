@@ -161,7 +161,7 @@ class MemberImpl<
       return casesObj._(data);
     } else if (exhaustive) {
       throw new Error(
-        `Match did not handle ${this.getTagProp()}: '${tag.toString()}'`,
+        `Match did not handle key: '${tag}'`,
       );
     }
   }

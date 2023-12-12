@@ -55,7 +55,7 @@ describe("matchboxFactory", () => {
             B: () => "B",
           } as any),
         ).toThrowErrorMatchingInlineSnapshot(
-          `"Match did not handle testKey: 'C'"`,
+          `"Match did not handle key: 'C'"`,
         );
       });
     });

@@ -81,7 +81,7 @@ describe("runEffectsOnUpdate", () => {
     const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
     bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
     expect(() => machine.event.next()).toThrowErrorMatchingInlineSnapshot(
-      `"Match did not handle effect: 'Notify'"`,
+      `"Match did not handle key: 'Notify'"`,
     );
   });
   it("_ should match all unmatched effects regardless of whether match is exhaustive", () => {
