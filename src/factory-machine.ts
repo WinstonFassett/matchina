@@ -1,9 +1,12 @@
+import { FlatEventSenders, StateEventTransitionSenders } from "./factory-event-api";
+import { MatchInvocation } from "./match";
 import {
   ResolveEvent,
   StateMachineEvent,
   StateMachine,
   createStateMachine,
 } from "./state-machine";
+import { FlatMemberUnion, FlatMemberUnionToIntersection } from "./utility-types";
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,
@@ -94,6 +97,11 @@ export interface AnyFactoryMachineEvent<FC extends FactoryMachineContext<any>>
   to: AnyFactoryState<FC["states"]>;
   get machine(): FactoryMachine<FC> &
     StateMachine<AnyFactoryMachineEvent<FC>>;
+  match: MatchInvocation<
+    // FlatMemberUnion<StateEventTransitionFuncs<FC>>
+    // <StateEventTransitionFuncs<FC>[keyof StateEventTransitionFuncs<FC>]
+    FlatMemberUnion<StateEventTransitionSenders<FC>>
+  >
 }
 
 export type FlatEventKeys<FC extends FactoryMachineContext> = string &

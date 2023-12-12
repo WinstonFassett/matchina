@@ -18,7 +18,7 @@ export type MatchCases<
 > = Exhaustive extends true ? (Cases<Record, A> & { _?: never; }) | PartialCases<Record, A> : AnyCases<Record, A>;
 
 
-interface MatchInvocation<Specs extends FuncRecord> {
+export interface MatchInvocation<Specs extends FuncRecord> {
   <A, Exhaustive extends boolean = true>(
     cases: MatchInvocationCases<Specs, A, Exhaustive>,
     exhaustive?: Exhaustive,
@@ -43,4 +43,28 @@ type AnyInvocationCases<R extends FuncRecord, A> = Partial<
   }
 >;
 
-type FuncRecord = Record<string, (...args: any[]) => any>;
+export type FuncRecord = Record<string, (...args: any[]) => any>;
+
+export function match<
+  C extends MatchCases<any, A, Exhaustive>,
+  K extends string,
+  A,
+  Exhaustive extends boolean = true
+>(
+  exhaustive = true,
+  casesObj: C,
+  key: K,
+  ...params: any[]
+): A {
+  const handler = (casesObj as any)[key];
+  if (handler) {
+    return handler(...params) as A;
+  } else if (casesObj._) {
+    return (casesObj._ as any)(...params) as A;
+  } else if (exhaustive) {
+    throw new Error(
+      `Match did not handle key: '${key}'`
+    );
+  }
+  else return undefined as any;
+}

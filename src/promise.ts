@@ -1,8 +1,10 @@
+import { StateEventTransitionSenders } from "./factory-event-api";
 import {
   StateEventTransitionFuncs,
   createFactoryMachine,
 } from "./factory-machine";
 import { States, defineStates } from "./states";
+import { FlatMemberUnion, FlatMemberUnionToIntersection } from "./utility-types";
 
 export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;
@@ -63,7 +65,14 @@ export type PromiseContextStates<F extends PromiseCallback> =
 export type PromiseTransitions = PromiseMachine<any>["transitions"];
 export type PromiseContextStateKey = keyof PromiseContextStates<any>;
 export type PromiseStateKey = keyof PromiseStates<any>;
-type X = StateEventTransitionFuncs<{
+type PC = {
   transitions: PromiseTransitions;
-  states: PromiseStates<any, any>;
-}>;
+  states: PromiseStates<any>;
+}
+type X = StateEventTransitionFuncs<PC>;
+
+type X2 = FlatMemberUnion<StateEventTransitionSenders<PC>>
+type X3 = FlatMemberUnionToIntersection<StateEventTransitionSenders<PC>>
+
+const x2 = {} as X2
+const x3 = {} as X3

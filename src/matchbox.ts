@@ -1,6 +1,7 @@
 // export type Spec = ((...args: any[]) => any) | any;
 // export type Specs = Record<string, Spec>;
 
+import { match } from "./match";
 import { MatchCases } from "./match";
 
 export type UnionFactory<Specs, TagProp extends string = "tag"> = Creators<
@@ -154,15 +155,8 @@ class MemberImpl<
   ): any {
     const tag = this.getTag();
     const data = this.data;
-    const handler = (casesObj as any)[tag];
-    if (handler) {
-      return handler(data);
-    } else if (casesObj._) {
-      return casesObj._(data);
-    } else if (exhaustive) {
-      throw new Error(
-        `Match did not handle key: '${tag}'`,
-      );
-    }
+    return match(exhaustive, casesObj, tag, data);    
   }
 }
+
+

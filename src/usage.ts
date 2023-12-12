@@ -240,6 +240,14 @@ if (
   e.type = "resolve";
 }
 
+console.log(
+  e.match({
+    reject: err => err.message,
+    resolve: ok => ok.toString(),
+    execute: x => x.toString()
+  })
+)
+
 m5.subscribe(
   when(
     (ev) => ev.type === "execute",
