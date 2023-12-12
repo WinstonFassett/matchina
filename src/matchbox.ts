@@ -1,6 +1,8 @@
 // export type Spec = ((...args: any[]) => any) | any;
 // export type Specs = Record<string, Spec>;
 
+import { MatchCases } from "./match";
+
 export type UnionFactory<Specs, TagProp extends string = "tag"> = Creators<
   Specs,
   TagProp
@@ -36,10 +38,10 @@ export type Member<
 export interface MemberExtensions<Specs, TagProp extends string> {
   is: <T extends keyof Specs>(key: T) => this is Member<T, Specs, TagProp>;
   as: <T extends keyof Specs>(key: T) => Member<T, Specs, TagProp>;
-  match: Match<Specs>;
+  match: MatchMemberData<Specs>;
 }
 
-interface Match<Specs> {
+interface MatchMemberData<Specs> {
   <A, Exhaustive extends boolean = true>(
     cases: MatchCases<MemberData<Specs>, A, Exhaustive>,
     exhaustive?: Exhaustive,
@@ -51,26 +53,6 @@ export type MemberData<Specs> = {
     ? ReturnType<Specs[T]>
     : Specs[T];
 };
-
-export type Cases<Record, A> = { [T in keyof Record]: (value: Record[T]) => A };
-
-type PartialCases<Record, A> = Partial<Cases<Record, A>> & {
-  _: (variant: Record[keyof Record]) => A;
-};
-
-type AnyCases<Record, A> = Partial<
-  Cases<Record, A> & {
-    _: (variant: Record[keyof Record]) => A;
-  }
->;
-
-export type MatchCases<
-  Record,
-  A,
-  Exhaustive extends boolean = true,
-> = Exhaustive extends true
-  ? (Cases<Record, A> & { _?: never }) | PartialCases<Record, A>
-  : AnyCases<Record, A>;
 
 export type UnionSpec<Val = any> = {
   [k: string]: Val;

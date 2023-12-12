@@ -2,10 +2,10 @@ import {
   UnionSpec,
   MatchboxFactory,
   MemberOf,
-  MatchCases,
   Member,
   matchboxFactory,
 } from "../matchbox";
+import { MatchCases } from "../match";
 
 export type AnyEffect = Member<any, any, "effect">;
 
