@@ -103,8 +103,23 @@ export type FactoryChangeEventFromFilter<
 
 export function isKeyedChangeEvent<
   E extends AnyKeyedChangeEvent,
-  F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
->(filter: F, event: E): event is E & KeyedChangeEventFromFilter<F> {
+  Type extends string & E["type"] = string & E["type"],
+  ToKey extends string & E["to"]["key"] = string & E["to"]["key"],
+  FromKey extends string & E["from"]["key"] = string & E["from"]["key"],
+>(event: E, ...rest: 
+  [filter: KeyedChangeEventFilter<E>] | [
+    type?: KeyedChangeEventFilter<E>['type'],
+    from?: KeyedChangeEventFilter<E>['from'],
+    to?: KeyedChangeEventFilter<E>['type']
+  ]
+  ): event is E & KeyedChangeEventFromFilter<{
+    type: Type;
+    from: FromKey;
+    to: ToKey;
+  }> {
+  const filter = typeof rest[0] === 'string' 
+    ? { type: rest[0], from: rest[1], to: rest[2] }
+    : rest[0] as KeyedChangeEventFilter<E>;
   const subject = event as any;
   const matched =
     matchKey(filter.to, subject?.to?.key) &&

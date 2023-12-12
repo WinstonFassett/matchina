@@ -93,9 +93,9 @@ const m4 = createFactoryMachine(
 m4.send("execute", 1);
 
 const isChange =
-  <E extends AnyKeyedChangeEvent>(filter: KeyedChangeEventFilter<any>) =>
+  <E extends AnyKeyedChangeEvent>(filter: KeyedChangeEventFilter<E>) =>
   (ev: E) =>
-    isKeyedChangeEvent<E>(filter, ev);
+    isKeyedChangeEvent<E>(ev, filter);
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
@@ -180,7 +180,7 @@ const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>;
 
 const e = {} as ReturnType<typeof m4.getChange>;
-if (isKeyedChangeEvent({ from: "Idle", type: "execute" }, e)) {
+if (isKeyedChangeEvent(e, { from: "Idle", type: "execute" })) {
   e.type = "execute";
   e.from.key = "Idle";
 }

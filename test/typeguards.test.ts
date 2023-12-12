@@ -16,12 +16,12 @@ describe("typeguards", () => {
       };
       expect(
         isKeyedChangeEvent(
+          event,
           {
             type: "change",
             to: "b",
             from: "a",
           },
-          event,
         ),
       ).toBe(true);
     });
@@ -33,12 +33,12 @@ describe("typeguards", () => {
       };
       expect(
         isKeyedChangeEvent(
+          event,
           {
             type: "change",
             to: ["b", "c"],
             from: ["a", "d"],
           },
-          event,
         ),
       ).toBe(true);
     });
@@ -50,12 +50,12 @@ describe("typeguards", () => {
       };
       expect(
         isKeyedChangeEvent(
+          event,
           {
             type: "change",
             to: undefined,
             from: undefined,
           },
-          event,
         ),
       ).toBe(true);
     });
