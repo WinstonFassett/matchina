@@ -191,12 +191,17 @@ if (isFactoryMachineEvent(e, { type: "reject" } as const)) {
   e.to.data.err.message = "nope";
 }
 
+if (isFactoryMachineEvent(e, 'execute')) {}
+if (isFactoryMachineEvent(e, 'execute', 'Idle', 'Rejected')) {
+  e.type = 'execute'
+}
+
 if (isFactoryMachineEvent(e, { from: "Pending" } as const)) {
   e.from.key = "Pending";
 }
 
-if (isFactoryMachineEvent(e, { to: "Resolved" } as const)) {
-  e.to.key = "Resolved";
+if (isFactoryMachineEvent(e, { from: 'Idle', to: 'Pending' } as const)) {
+  e.to.key = 'Pending';
 }
 
 if (isFactoryMachineEvent(e, { from: "Pending", to: "Rejected" } as const)) {

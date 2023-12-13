@@ -159,4 +159,17 @@ class MemberImpl<
   }
 }
 
+class FuncBoxImpl<
+  Config,
+  Tag extends keyof Config = keyof Config,
+  TagProp extends string = "tag",
+  Exhaustive extends boolean = false,
+> extends MemberImpl<Config, Tag, TagProp> {
+  match <A>(
+    casesObj: MatchCases<MemberData<Config>, A>,
+    exhaustive = false as Exhaustive,
+  ) {
+    return match(exhaustive, casesObj, this.getTag(), ...this.data)
+  }
+}
 
