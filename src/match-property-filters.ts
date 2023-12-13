@@ -30,7 +30,7 @@ export function matchesPropertyFilters<T, C extends Filters<T>>(
   item: T,
   condition: C
 ): item is T & HasFilterValues<T, C> {
-  return Object.keys(condition).every(key => matchKey(condition[key as keyof C], item[key as any]));
+  return Object.keys(condition).every((key) => matchKey(condition[key as keyof C], (item as any)[key]));
 }
 
 function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
