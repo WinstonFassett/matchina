@@ -1,4 +1,4 @@
-import {  UnionValues, matchesPropertyFilters } from "./filters2";
+import { matchesPropertyFilters } from "./filters2";
 
 type PromiseTransitions = {
   Idle: { execute: "Pending"; };
@@ -23,7 +23,7 @@ type FlattenTransitions<T> = {
 type X = FlattenTransitions<PromiseTransitions>;
 const x = {} as X;
 // type Z = MatchesUnionPropertyFilter<FlattenTransitions<PromiseTransitions>, { to: 'Rejected'; }>;
-if (matchesPropertyFilters(x, {  })) {
+if (matchesPropertyFilters(x, { type: 'reject', to: 'Rejected', from: 'Pending'  })) {
   // narrowed type here
   x.from = 'Pending';
   x.to = 'Rejected';
@@ -33,7 +33,7 @@ if (matchesPropertyFilters(x, {  })) {
 }
 
 
-if (matchesPropertyFilters(x, { type: 'execute', to: 'Pending', from: 'Idle'} as const)) {
+if (matchesPropertyFilters(x, {  } as const)) {
   // narrowed type here
   x.from = 'Idle'
   x.type = 'execute'
@@ -43,7 +43,8 @@ if (matchesPropertyFilters(x, { type: 'execute', to: 'Pending', from: 'Idle'} as
 }
 
 if (matchesPropertyFilters(x, {
-  type: 'execute'
+  // type: 'execute', to: 'Pending'
+  // type: 'execute', to: 'Pending'
 } as const)){
   x.from = 'Idle'
   x.to = 'Pending'
@@ -51,13 +52,23 @@ if (matchesPropertyFilters(x, {
 }
 
 if (matchesPropertyFilters(x, {
-  from: ['Pending'], 
+  from: ['Idle', 'Pending'], 
   to: ['Rejected']
+  // to: ['Rejected']
 } as const)){
-  x.from = 'Pending'  
+  x.from = 'Pending'
+  x.type = 'reject'
 }
 
-type Y = UnionValues<X,'from'>
-const y: Y[] = ['Idle', 'Pending']
+if (matchesPropertyFilters(x, {
+  from: ['Idle', 'Pending'], 
+  // to: ['Rejected']
+} as const)){
+  x.from = 'Idle'
+  x.type = 'execute'
+}
+
+// type Y = UnionValues<X,'from'>
+// const y: Y[] = ['Idle', 'Pending']
 
 type Z = Extract<X, 'from'>

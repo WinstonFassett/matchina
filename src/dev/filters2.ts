@@ -1,22 +1,56 @@
 
-type UnionKeys<T> = T extends T ? keyof T : never;
+// type UnionKeys<T> = T extends T ? keyof T : never;
 
 // type Filters<T> = {
 //     [P in UnionKeys<T>]?: T extends Record<P, infer V> ? V | Array<V> : never;
 // };
 
 // export type Filters<T> = object & {
-//   [K in keyof T]?: T[K] | Array<T[K]>;
+//   [K in keyof T]?: T[K] 
+// };
+//| Array<T[K]>;
+
+// export type Filters<T> = {
+//   [K in keyof T]?: T[K] | Array<Extract<T[K], any>>;
 // };
 
-type UnionToIntersection<U> = 
-    (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+// export type Filters<T> = {
+//   [K in keyof T]?: T[K] | ReadonlyArray<T[K]> | T[K][];
+// };
 
-type AllowedValues<T, K extends keyof any> = UnionToIntersection<T extends any ? (K extends keyof T ? T[K] : never) : never>;
+// type UnionToIntersection<U> = 
+//     (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 
-type Filters<T> = {
-    [K in keyof UnionToIntersection<T>]?: AllowedValues<T, K> | Array<AllowedValues<T, K>>;
-};
+// export type AllowedValues<T, K extends keyof any> = UnionToIntersection<T extends any ? (K extends keyof T ? T[K] : never) : never>;
+
+// export type Filters<T> = {
+//     [K in keyof UnionToIntersection<T>]?: AllowedValues<T, K> | Array<AllowedValues<T, K>> | ReadonlyArray<AllowedValues<T, K>>;
+// };
+
+// export type Filters<T> = {
+//   [K in keyof T]?: T[K] | T[K][] | ReadonlyArray<T[K]>;
+// };
+
+
+type UnionKeys<T> = T extends T ? keyof T : never;
+type UnionValues<T, K extends keyof any> = T extends T ? (K extends keyof T ? T[K] : never) : never;
+
+type SingleFilter<T, K extends keyof T> = T[K];
+type ArrayFilter<T, K extends keyof T> = Array<UnionValues<T, K>> | ReadonlyArray<UnionValues<T, K>>;
+
+export type Filters<T> = 
+| {
+  [K in keyof T]?: SingleFilter<T, K>;
+} 
+| {
+    [K in UnionKeys<T>]?: ArrayFilter<T, K>;
+} 
+;
+
+
+// type Filters<T> = {
+//     [K in keyof UnionToIntersection<T>]?: AllowedValues<T, K> | Array<AllowedValues<T, K>>;
+// };
 
 
 export type FilterValues<T> = {
@@ -25,7 +59,7 @@ export type FilterValues<T> = {
 
 
 // Extracts all possible values for key K across the union T
-export type UnionValues<T, K extends keyof T> = T extends any ? (K extends keyof T ? T[K] : never) : never;
+// export type UnionValues<T, K extends keyof T> = T extends any ? (K extends keyof T ? T[K] : never) : never;
 
 // Modified ConditionRecord that allows for specifying criteria as an array of possible values across the union
 export type ConditionRecord<T> = {
