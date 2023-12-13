@@ -1,4 +1,4 @@
-import { matchesPropertyFilters } from "./filters2";
+import { matchesPropertyFilters } from "../match-property-filters";
 
 type PromiseTransitions = {
   Idle: { execute: "Pending"; };
