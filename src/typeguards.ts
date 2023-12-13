@@ -7,7 +7,7 @@ import { Filters, HasFilterValues, matchKey, matchesPropertyFilters } from "./ma
 
 export function isKeyedChangeEvent <E extends KeyedChangeEvent, F extends Filters<ChangeEventKeys<E>>>(
   ev: E, 
-  filter: F): ev is E  {
+  filter: F): ev is E & KeyedChangeEventFromFilter<E, F> {
     const {type, to: { key: to }, from: { key: from }} = ev
     return matchesPropertyFilters({
       type, to, from
