@@ -180,7 +180,7 @@ const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>;
 
 const e = {} as ReturnType<typeof m4.getChange>;
-if (isKeyedChangeEvent(e, { from: "Idle", type: "execute" })) {
+if (isKeyedChangeEvent(e, { from: "Idle", type: "execute" } as const)) {
   e.type = "execute";
   e.from.key = "Idle";
 }
@@ -192,21 +192,29 @@ if (isFactoryMachineEvent(e, { type: "reject" } as const)) {
 }
 
 if (isFactoryMachineEvent(e, 'execute')) {}
-if (isFactoryMachineEvent(e, 'execute', 'Idle', 'Rejected')) {
+if (isFactoryMachineEvent(e, 'execute', 'Idle', 'Pending')) {
   e.type = 'execute'
 }
 
-if (isFactoryMachineEvent(e, { from: "Pending" } as const)) {
-  e.from.key = "Pending";
+if (isFactoryMachineEvent(e, {  type: 'execute' } as const)) {
+  e.to.key = "Pending";
 }
 
-if (isFactoryMachineEvent(e, { from: 'Idle', to: 'Pending' } as const)) {
+if (isFactoryMachineEvent(e, { to: 'Pending', from: 'Idle'} as const)) {
   e.to.key = 'Pending';
 }
 
 if (isFactoryMachineEvent(e, { from: "Pending", to: "Rejected" } as const)) {
   e.type = "reject";
 }
+
+if (isFactoryMachineEvent(e, 'reject', 'Pending', 'Rejected')){
+
+}
+
+if (isFactoryMachineEvent(e, {
+  from: 'Pending',
+})) {}
 
 if (
   isFactoryMachineEvent(e, {

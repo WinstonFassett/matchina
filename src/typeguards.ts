@@ -159,29 +159,32 @@ export function isKeyedChangeEvent<
 
 export const isFactoryMachineEvent: <
   E extends AnyFactoryMachineEvent<any>,
-  Type extends string &
-    E["type"] &
-    AnyFactoryMachineTransition<E["machine"], FromKey>["type"],
-  FromKey extends string & E["from"]["key"] &
-    AnyFactoryMachineTransition<E["machine"], any>["from"]["key"],
-  ToKey extends string &
-    E["to"]["key"] &
-    AnyFactoryMachineTransition<E["machine"], FromKey, Type>["to"]["key"],
+  Type extends string &    
+    AnyFactoryMachineTransition<E["machine"]>["type"],
+  FromKey extends string & 
+    AnyFactoryMachineTransition<E["machine"], any, Type>["from"]["key"],
+  ToKey extends string &    
+    AnyFactoryMachineTransition<
+      E["machine"], 
+      FromKey extends never ? E['from'] : FromKey, 
+      Type extends never ? E['type'] : Type, 
+      any
+    >["to"]["key"],
 >(
   event: E,
   ...rest: [
     filter: {
-      from?: FromKey | FromKey[];
       type?: Type | Type[];
+      from?: FromKey | FromKey[];
       to?: ToKey | ToKey[];
     },
   ] | [
-    type?: KeyedChangeEventFilter<E>['type'],
-    from?: KeyedChangeEventFilter<E>['from'],
-    to?: KeyedChangeEventFilter<E>['to']
+    type?: Type | Type[],
+    from?: FromKey | FromKey[],
+    to?: ToKey | ToKey[]
   ]  
 ) => event is E &
-  FactoryChangeEventFromFilter<E, { from: FromKey; type: Type; to: ToKey }> =
+  FactoryChangeEventFromFilter<E, { from: FromKey extends never ? any : FromKey; type: Type extends never ? any : Type; to: ToKey extends never ? any : ToKey }> =
   isKeyedChangeEvent as any;
 
 export function isFactoryMachineChangeFromTypeTo<
