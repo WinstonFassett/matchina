@@ -18,7 +18,7 @@ import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import {
   isFactoryMachineChangeFromTypeTo,
-  isFactoryMachineEvent,
+  matchesChangeEventKeys,
   isKeyedChangeEvent
 } from "./typeguards";
 
@@ -194,40 +194,44 @@ if (isKeyedChangeEvent(e, { from: 'Idle' } as const)) {
   // e.from.key = "Idle";
   
 }
-if (isFactoryMachineEvent(e, { type: "reject" } as const)) {
+if (matchesChangeEventKeys(e, { type: "reject" } as const)) {
   e.from.key = "Pending";
   e.type = "reject";
   e.to.key = "Rejected";
   e.to.data.err.message = "nope";
 }
 
-if (isFactoryMachineEvent(e, 'execute')) {}
-if (isFactoryMachineEvent(e, 'execute', 'Idle', 'Pending')) {
+if (matchesChangeEventKeys(e, 'execute')) {}
+if (matchesChangeEventKeys(e, 'execute', 'Idle', 'Pending')) {
   e.type = 'execute'
 }
 
-if (isFactoryMachineEvent(e, {  type: 'execute' } as const)) {
+if (matchesChangeEventKeys(e, {  type: 'execute' } as const)) {
   e.to.key = "Pending";
 }
 
-if (isFactoryMachineEvent(e, { to: 'Pending', from: 'Idle'} as const)) {
+if (matchesChangeEventKeys(e, { to: 'Pending', from: 'Idle'} as const)) {
   e.to.key = 'Pending';
 }
 
-if (isFactoryMachineEvent(e, { from: "Pending", to: "Rejected" } as const)) {
+if (matchesChangeEventKeys(e, { from: "Pending", to: "Rejected" } as const)) {
   e.type = "reject";
 }
 
-if (isFactoryMachineEvent(e, 'reject', 'Pending', 'Rejected')){
+if (matchesChangeEventKeys(e, 'reject', 'Pending', 'Rejected')){
 
 }
 
-if (isFactoryMachineEvent(e, {
-  from: 'Pending',
-})) {}
+if (matchesChangeEventKeys(e, {
+  to: 'Rejected',
+  // type: 'execute'
+} as const)) {
+  // e.to.data.err.message = "nope";
+  e.type = 'reject'
+}
 
 if (
-  isFactoryMachineEvent(e, {
+  matchesChangeEventKeys(e, {
     from: "Pending",
     type: "reject",
   } as const)

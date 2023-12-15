@@ -9,7 +9,7 @@ import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachine } from "./state-machine";
 import {
   FactoryChangeEventFromFilter,
-  isFactoryMachineEvent,
+  matchesChangeEventKeys,
 } from "./typeguards";
 import { Effect } from "./types";
 
@@ -125,7 +125,7 @@ export const whenEvent = <
 ) =>
   when<E>(
     (ev) =>
-      isFactoryMachineEvent<
+      matchesChangeEventKeys<
         E,
         // FV['from'], FV['type'], FV['to']
         FromKey,

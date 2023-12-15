@@ -22,7 +22,7 @@
   {
     "name": "typeguards",
     "path": "src/typeguards.ts",
-    "import": "{ isFactoryMachineEvent }"
+    "import": "{ matchesChangeEventKeys }"
   },
   {
     "name": "events-api",

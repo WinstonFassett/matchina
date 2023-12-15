@@ -107,7 +107,7 @@ export function isKeyedChangeEvent1<
   return matched;
 }
 
-export const isFactoryMachineEvent: <
+export const matchesChangeEventKeys: <
   E extends AnyFactoryMachineEvent<any>,
   Type extends string &    
     AnyFactoryMachineTransition<E["machine"]>["type"],
