@@ -2,7 +2,7 @@ import { createSetup, setup } from "./ext/setup";
 import { EntryListener, when } from "./extras/when";
 import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
-import { createFactoryMachine } from "./factory-machine";
+import { AnyFactoryMachineTransition, createFactoryMachine } from "./factory-machine";
 import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import {
   effect,
@@ -13,6 +13,7 @@ import {
   notify,
   onNotify,
 } from "./machine-hooks";
+import { matchesPropertyFilters } from "./match-property-filters";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import {
@@ -176,6 +177,16 @@ const unsub = notify((ev) => console.log(ev))(m4);
 
 const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>;
+
+type X = AnyFactoryMachineTransition<typeof m4>
+const x = {} as X
+
+if (matchesPropertyFilters(x, {
+  type: 'execute'
+})){
+  // x.type = 'execute'
+  x.type = 'reject'
+}
 
 const e = {} as ReturnType<typeof m4.getChange>;
 if (isKeyedChangeEvent(e, { from: 'Idle' } as const)) {
