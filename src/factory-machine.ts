@@ -1,6 +1,5 @@
 import { StateEventTransitionSenders } from "./factory-event-api";
 import { MatchInvocation } from "./match";
-import { ExitPropKeys, ExitProps } from "./promise";
 import {
   ResolveEvent,
   StateMachine,
@@ -241,3 +240,24 @@ export type FactoryEvent<FC extends FactoryMachineContext> = {
     [E in keyof FC["transitions"][K]]: ExitProps<FC, K, E>;
   }[keyof FC["transitions"][K]];
 }[keyof FC['transitions']];
+export type ExitProps<
+  FC extends FactoryMachineContext,
+  FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
+  EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
+  ToKey extends FC['transitions'][FromKey][EventKey] = FC['transitions'][FromKey][EventKey]
+> =
+  AnyFactoryMachineEvent<FC> &
+  {
+    from: StateFromFactory<FC['states'], FromKey extends keyof FC['states'] ? FromKey : any>;
+    type: EventKey;
+  } &
+  (ToKey extends keyof FC['states'] ? {
+    params: Parameters<FC['states'][ToKey]>;
+    to: StateFromFactory<FC['states'], ToKey>;
+  } : ToKey extends (...args: infer A) => (...innerArgs: any[]) => infer R ? {
+    params: A;
+    to: R;
+  } : ToKey extends (...args: infer A) => infer R ? {
+    params: A;
+    to: R;
+  } : never);
