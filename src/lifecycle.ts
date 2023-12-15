@@ -8,7 +8,8 @@ import {
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
-import { KeyedChangeEventFilter, isKeyedChangeEvent } from "./typeguards";
+import { matchesChangeEventKeys } from "./match-property-filters";
+import { KeyedChangeEventFilter } from "./typeguards";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
@@ -66,7 +67,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           machine,
           phase as keyof FactoryMachine<FC>,
           iff(
-            (ev: AnyFactoryMachineEvent<FC>) => isKeyedChangeEvent(ev, filter as any),
+            (ev: AnyFactoryMachineEvent<FC>) => matchesChangeEventKeys(ev, filter as any),
             (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),

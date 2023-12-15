@@ -1,12 +1,13 @@
-import { FlatEventSenders, StateEventTransitionSenders } from "./factory-event-api";
+import { StateEventTransitionSenders } from "./factory-event-api";
 import { MatchInvocation } from "./match";
+import { ExitPropKeys, ExitProps } from "./promise";
 import {
   ResolveEvent,
-  StateMachineEvent,
   StateMachine,
+  StateMachineEvent,
   createStateMachine,
 } from "./state-machine";
-import { FlatMemberUnion, FlatMemberUnionToIntersection } from "./utility-types";
+import { FlatMemberUnion } from "./utility-types";
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,
@@ -130,7 +131,7 @@ export type StateEventTransitionFuncs<FC extends FactoryMachineContext> = {
 
 export type FactoryTransitionsFromContext<
   FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC["transitions"] = string,
+  FromStateKey extends keyof FC["transitions"] =  keyof FC["transitions"],
   Type extends
     keyof FC["transitions"][FromStateKey] = keyof FC["transitions"][FromStateKey],
   Transitions extends FC["transitions"] = FC["transitions"],
@@ -228,3 +229,15 @@ export type StateEventTransitionFunc<
         >["params"]
       ) => FactoryTransitionFromContext<FC, TransitionStateKey, EventKey>["to"];
 };
+
+export type FactoryEventTypeKeys<FC extends FactoryMachineContext> = {
+  [K in keyof FC["transitions"]]: {
+    [E in keyof FC["transitions"][K]]: ExitPropKeys<FC, K, E>;
+  }[keyof FC["transitions"][K]];
+}[keyof FC['transitions']];
+
+export type FactoryEvent<FC extends FactoryMachineContext> = {
+  [K in keyof FC["transitions"]]: {
+    [E in keyof FC["transitions"][K]]: ExitProps<FC, K, E>;
+  }[keyof FC["transitions"][K]];
+}[keyof FC['transitions']];

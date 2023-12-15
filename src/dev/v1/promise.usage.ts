@@ -1,10 +1,11 @@
 // @noErrors
-import { TransitionConfig } from "../../../dist";
-import { delay } from "./extras/delay";
 import { createPromiseMachine } from "./extras/promise";
 import { withEvents } from "./extras/with-events";
 import { makeZen } from "./extras/zen";
-import { isChangeTypeToFrom, isKeyedChangeEvent } from "../../typeguards";
+import { isChangeTypeToFrom } from "../../typeguards";
+import { TransitionConfig } from "./machine-types";
+import { delay } from "../../extras/delay";
+import { matchesChangeEventKeys } from "./typeguards";
 // ---cut---
 async function promiseUsage() {
   const machine = withEvents(
@@ -101,11 +102,11 @@ async function promiseUsage() {
   const change = machine.getChange();
 
   if (
-    isKeyedChangeEvent(change, {
+    matchesChangeEventKeys({
       to: "Idle",
       from: "Pending",
       type: "execute",
-    })
+    }, change)
   ) {
     change.from.key = "Pending";
     change.type = "execute";

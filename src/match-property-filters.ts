@@ -1,44 +1,26 @@
 
-export type FlatFilters<T> = 
-| { [K in keyof T]?: SingleValueFilter<T, K> } 
-;
-
-export type FilterValues<T> = {
-  [K in keyof T]: T[K] extends (infer U)[] ? U : T[K];
+export type FlatFilters<T> =  { 
+  [K in keyof T]?: SingleValueFilter<T, K> 
 };
 
-type UnionKeys<T> = T extends T ? keyof T : never;
-type UnionValues<T, K extends keyof any> = T extends T ? (K extends keyof T ? T[K] : never) : never;
+
 type SingleValueFilter<T, K extends keyof T> = T[K];
-type AnyValueFilter<T, K extends keyof T> = Array<UnionValues<T, K>> | ReadonlyArray<UnionValues<T, K>>;
 
 type NestedFilter<T> = { [K in keyof T]?: T[K] extends Record<string, any> ? NestableFilters<T[K]> : (SingleValueFilter<T, K>) }; 
 
 export type NestableFilters<T> = NestedFilter<T> & FlatFilters<T>;
 
+type FilterValues<F> = {
+  [K in keyof F]: F[K] extends (infer U)[] ? U : F[K];
+};
 
-export type HasFilterValues<T, C> = T extends T
+export type HasFilterValues<T, F> = T extends T
   ? {
-      [K in keyof T & keyof C]: 
-        C[K] extends ReadonlyArray<infer U>
-          ? T[K] extends U 
-            ? true 
-            : false
-          : T[K] extends C[K] 
-            ? true 
-            : false
-    } extends Record<keyof C, true>
-      ? T
-      : never
-  : never;
-
-type HasFilterValues2<T, C> = T extends T
-  ? {
-      [K in keyof T & keyof C]: 
-        T[K] extends C[K] 
+      [K in keyof T & keyof F]: 
+        T[K] extends F[K] 
           ? true 
           : false
-    } extends Record<keyof C, true>
+    } extends Record<keyof F, true>
       ? T
       : never
   : never;
@@ -47,14 +29,14 @@ type HasFilterValues2<T, C> = T extends T
 export function matchesPropertyFilters<T extends Record<string, any>, C extends NestableFilters<T>>(
   item: T,
   condition: C
-): item is T & HasFilterValues2<T, C> {
+): item is T & HasFilterValues<T, C> {
   return Object.keys(condition).every((key) => matchKey(condition[key as keyof C], (item)[key]));
 }
 
 export function asPropertyFilterMatch<T extends Record<string, any>, C extends NestableFilters<T>>(
   item: T,
   condition: C
-): T & HasFilterValues2<T, C> {
+): T & HasFilterValues<T, C> {
   if (matchesPropertyFilters(item, condition)) {
     return item;
   }
@@ -84,14 +66,19 @@ type ChangeEventKeyFilter<E extends StateChangeEvent> = FlatFilters<
   ChangeEventKeys<E>
 >;
 
-function matchesChangeEventKeys<
+type ChangeEventKeys<E extends StateChangeEvent> = 
+E extends { type: infer T, from: infer F, to: infer To }
+  ? { type: T, from: F extends State ? F['key'] : never, to: To extends State ? To['key'] : never }
+  : never;
+
+export function matchesChangeEventKeys<
   E extends StateChangeEvent,
   F extends ChangeEventKeyFilter<E>,
   FV extends FilterValues<F>
 >(
   changeEvent: E,
   filter: F
-): changeEvent is E & HasFilterValues2<E, {
+): changeEvent is E & HasFilterValues<E, {
   type: FV['type'];
   to: { key: FV['to'] };
   from: { key: FV['from'] };
@@ -126,23 +113,19 @@ type PromiseEvent =
 { type: 'resolve', from: PromiseStates['Pending'], to: PromiseStates['Resolved'] } | 
 { type: 'reject', from: PromiseStates['Pending'], to: PromiseStates['Rejected']}
 
-type ChangeEventKeys<E extends StateChangeEvent> = 
-E extends { type: infer T, from: infer F, to: infer To }
-  ? { type: T, from: F extends State ? F['key'] : never, to: To extends State ? To['key'] : never }
-  : never;
 
-type ChangeEvents<E extends StateChangeEvent> = 
-  E extends { type: infer T, from: infer F, to: infer To }
-    ? { type: T, from: F extends State ? { key: F['key']} : never, to: To extends State ? { key: To['key']} : never }
-    : never;  
+// type ChangeEvents<E extends StateChangeEvent> = 
+//   E extends { type: infer T, from: infer F, to: infer To }
+//     ? { type: T, from: F extends State ? { key: F['key']} : never, to: To extends State ? { key: To['key']} : never }
+//     : never;  
 
-type X = ChangeEventKeys<PromiseEvent>;
-type X2 = ChangeEvents<PromiseEvent>
+// type X = ChangeEventKeys<PromiseEvent>;
+// type X2 = ChangeEvents<PromiseEvent>
 
 
-type X3 = FilterValues<{ type: 'execute', from: PromiseStates['Idle'], to: PromiseStates['Pending'] }>
-type X4 = HasFilterValues2<PromiseEvent, { from: PromiseStates['Pending']}>
-type X5 = HasFilterValues2<PromiseEvent, { from: { key: 'Idle' }}>
+// type X3 = FilterValues<{ type: 'execute', from: PromiseStates['Idle'], to: PromiseStates['Pending'] }>
+// type X4 = HasFilterValues<PromiseEvent, { from: PromiseStates['Pending']}>
+// type X5 = HasFilterValues<PromiseEvent, { from: { key: 'Idle' }}>
  
 const e = {} as PromiseEvent
 

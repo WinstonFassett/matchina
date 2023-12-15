@@ -2,7 +2,7 @@ import { createSetup, setup } from "./ext/setup";
 import { EntryListener, when } from "./extras/when";
 import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
-import { AnyFactoryMachineTransition, createFactoryMachine } from "./factory-machine";
+import { AnyFactoryMachineTransition, FactoryEvent, createFactoryMachine } from "./factory-machine";
 import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import {
   effect,
@@ -13,13 +13,11 @@ import {
   notify,
   onNotify,
 } from "./machine-hooks";
-import { matchesPropertyFilters } from "./match-property-filters";
+import { matchesChangeEventKeys, matchesPropertyFilters } from "./match-property-filters";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import {
   isFactoryMachineChangeFromTypeTo,
-  matchesChangeEventKeys,
-  isKeyedChangeEvent
 } from "./typeguards";
 
 const m1 = createStateMachine<
@@ -94,7 +92,7 @@ m4.send("execute", 1);
 // const isChange =
 //   <E extends KeyedChangeEvent>(filter: KeyedChangeEventFilter<E>) =>
 //   (ev: E) =>
-//     isKeyedChangeEvent(ev, filter);
+//     matchesChangeEventKeys(ev, filter);
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
@@ -188,23 +186,26 @@ if (matchesPropertyFilters(x, {
   x.type = 'reject'
 }
 
-const e = {} as ReturnType<typeof m4.getChange>;
-if (isKeyedChangeEvent(e, { from: 'Idle' } as const)) {
+// const e = {} as ReturnType<typeof m4.getChange>;
+const e = {} as FactoryEvent<typeof m4>
+
+if (matchesChangeEventKeys(e, { from: 'Idle' } as const)) {
   // e.type = "execute";
   // e.from.key = "Idle";
   
 }
-if (matchesChangeEventKeys(e, { type: "reject" } as const)) {
-  e.from.key = "Pending";
-  e.type = "reject";
-  e.to.key = "Rejected";
-  e.to.data.err.message = "nope";
+if (matchesChangeEventKeys(e, { type: 'reject' } as const)) {
+  e
+  // e.from.key = "Pending";
+  // e.type = "reject";
+  // e.to.key = "Rejected";
+  // e.to.data.err.message = "nope";
 }
 
-if (matchesChangeEventKeys(e, 'execute')) {}
-if (matchesChangeEventKeys(e, 'execute', 'Idle', 'Pending')) {
-  e.type = 'execute'
-}
+// if (matchesChangeEventKeys(e, 'execute')) {}
+// if (matchesChangeEventKeys(e, 'execute', 'Idle', 'Pending')) {
+//   e.type = 'execute'
+// }
 
 if (matchesChangeEventKeys(e, {  type: 'execute' } as const)) {
   e.to.key = "Pending";
@@ -218,9 +219,9 @@ if (matchesChangeEventKeys(e, { from: "Pending", to: "Rejected" } as const)) {
   e.type = "reject";
 }
 
-if (matchesChangeEventKeys(e, 'reject', 'Pending', 'Rejected')){
+// if (matchesChangeEventKeys(e, 'reject', 'Pending', 'Rejected')){
 
-}
+// }
 
 if (matchesChangeEventKeys(e, {
   to: 'Rejected',
@@ -240,32 +241,33 @@ if (
   e.to.data.err.message = "nope";
 }
 
-if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
-  e.to.key = "Rejected";
-}
+// if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
+//   e.to.key = "Rejected";
+// }
 
-if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
-  // e.from.key = 'Rejected'
-  e.type = "reject";
-  e.to.key = "Rejected";
-  e.to.data.err.message = "nope";
-}
+// if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
+//   // e.from.key = 'Rejected'
+//   e.type = "reject";
+//   e.to.key = "Rejected";
+//   e.to.data.err.message = "nope";
+// }
 
-if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute")) {
-  e.type = "execute";
-}
+// if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute")) {
+//   e.type = "execute";
+// }
 
-if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute", "Pending")) {
-  e.type = "execute";
-}
+// if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute", "Pending")) {
+//   e.type = "execute";
+// }
 
-if (
-  isFactoryMachineChangeFromTypeTo(e, undefined as any, undefined, "Resolved")
-) {
-  e.from.key = "Pending";
-  e.to.key = "Resolved";
-  e.type = "resolve";
-}
+// if (
+//   isFactoryMachineChangeFromTypeTo(e, undefined as any, undefined, "Resolved")
+// ) {
+//   e.from.key = "Pending";
+//   e.to.key = "Resolved";
+//   e.type = "resolve";
+// }
+
 
 console.log(
   e.match({

@@ -2,17 +2,8 @@ import {
   AnyFactoryMachineEvent,
   AnyFactoryMachineTransition,
 } from "./factory-machine";
-import { FlatFilters, HasFilterValues, matchKey, matchesPropertyFilters } from "./match-property-filters";
+import { FlatFilters, HasFilterValues, matchKey } from "./match-property-filters";
 
-
-export function isKeyedChangeEvent <E extends KeyedChangeEvent, F extends FlatFilters<ChangeEventKeys<E>>>(
-  ev: E, 
-  filter: F): ev is E & KeyedChangeEventFromFilter<E, F> {
-    const {type, to: { key: to }, from: { key: from }} = ev
-    return matchesPropertyFilters({
-      type, to, from
-    }, filter)
-}
 
 
 export type KeyedChangeEvent<
@@ -79,63 +70,6 @@ export type FactoryChangeEventFromFilter<
 >;
 
 
-
-export function isKeyedChangeEvent1<
-  E extends KeyedChangeEvent,
-  Type extends string & E["type"] = string & E["type"],
-  ToKey extends string & E["to"]["key"] = string & E["to"]["key"],
-  FromKey extends string & E["from"]["key"] = string & E["from"]["key"],
->(event: E, ...rest: 
-  [filter: KeyedChangeEventFilter<E>] | [
-    type?: KeyedChangeEventFilter<E>['type'],
-    from?: KeyedChangeEventFilter<E>['from'],
-    to?: KeyedChangeEventFilter<E>['type']
-  ]
-  ): event is E & KeyedChangeEventFromFilter<E, {
-    type: Type;
-    from: FromKey;
-    to: ToKey;
-  }> {
-  const filter = typeof rest[0] === 'string' 
-    ? { type: rest[0], from: rest[1], to: rest[2] }
-    : rest[0] as KeyedChangeEventFilter<E>;
-  const subject = event as any;
-  const matched =
-    matchKey(filter.to, subject?.to?.key) &&
-    matchKey(filter.type, subject?.type) &&
-    matchKey(filter.from, subject?.from?.key);
-  return matched;
-}
-
-export const matchesChangeEventKeys: <
-  E extends AnyFactoryMachineEvent<any>,
-  Type extends string &    
-    AnyFactoryMachineTransition<E["machine"]>["type"],
-  FromKey extends string & 
-    AnyFactoryMachineTransition<E["machine"], any, Type>["from"]["key"],
-  ToKey extends string &    
-    AnyFactoryMachineTransition<
-      E["machine"], 
-      FromKey extends never ? E['from'] : FromKey, 
-      Type extends never ? E['type'] : Type, 
-      any
-    >["to"]["key"],
->(
-  event: E,
-  ...rest: [
-    filter: {
-      type?: Type | Type[];
-      from?: FromKey | FromKey[];
-      to?: ToKey | ToKey[];
-    },
-  ] | [
-    type?: Type | Type[],
-    from?: FromKey | FromKey[],
-    to?: ToKey | ToKey[]
-  ]  
-) => event is E &
-  FactoryChangeEventFromFilter<E, { from: FromKey extends never ? any : FromKey; type: Type extends never ? any : Type; to: ToKey extends never ? any : ToKey }> =
-  isKeyedChangeEvent as any;
 
 export function isFactoryMachineChangeFromTypeTo<
   E extends AnyFactoryMachineEvent<any>,

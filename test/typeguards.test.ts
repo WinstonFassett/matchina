@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   asChangeTypeToFrom,
   isChangeTypeToFrom,
-  isKeyedChangeEvent,
 } from "../src/typeguards";
+import { matchesChangeEventKeys } from "../src/match-property-filters";
 
 describe("typeguards", () => {
-  describe("isKeyedChangeEvent", () => {
+  describe("matchesChangeEventKeys", () => {
     it("matches on single values", () => {
       const event = {
         type: "change",
@@ -14,7 +14,7 @@ describe("typeguards", () => {
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(
+        matchesChangeEventKeys(
           event,
           {
             type: "change",
@@ -31,7 +31,7 @@ describe("typeguards", () => {
         to: { key: "b" as 'a' | 'b' | 'c' },
       } as const;
       expect(
-        isKeyedChangeEvent(
+        matchesChangeEventKeys(
           event,
           {
             type: "change",
@@ -48,7 +48,7 @@ describe("typeguards", () => {
         to: { key: "b" },
       };
       expect(
-        isKeyedChangeEvent(
+        matchesChangeEventKeys(
           event,
           {
             type: "change",

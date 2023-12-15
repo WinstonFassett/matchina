@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { matchina } from "../src/matchina";
-import { PromiseStates, PromiseTransitions } from "../src/promise";
+import { promiseStates, PromiseTransitions } from "../src/promise";
 
 function makeMachine() {
   // return createPromiseMachine((ms: number) => {

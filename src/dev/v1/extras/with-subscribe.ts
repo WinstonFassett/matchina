@@ -3,7 +3,7 @@ import { StateMachine } from "../machine-types";
 import {
   KeyedChangeEventFilter,
   KeyedChangeEventFromFilter,
-  isKeyedChangeEvent,
+  matchesChangeEventKeys,
 } from "../typeguards";
 import { onUpdate } from "./on-update";
 
@@ -36,7 +36,7 @@ export function withSubscribe<M extends StateMachine<any, any>>(machine: M) {
   >(filter: F, subscriber: Subscriber<E, F>) {
     let exitListener: void | (() => void);
     return subscribe((event) => {
-      if (isKeyedChangeEvent(filter, event)) {
+      if (matchesChangeEventKeys(filter, event)) {
         exitListener?.();
         exitListener = subscriber(event as any);
       }

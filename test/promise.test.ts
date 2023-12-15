@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  PromiseStates,
+  promiseStates,
   createPromiseMachine,
   PromiseTransitions,
 } from "../src/promise";
@@ -51,7 +51,7 @@ describe("createPromiseMachine", () => {
   describe("with extended transitions", () => {
     it("should allow enhancing the transition config", () => {
       const machine = createFactoryMachine(
-        PromiseStates,
+        promiseStates,
         {
           ...PromiseTransitions,
           Pending: { ...PromiseTransitions.Pending, cancel: "Idle" },

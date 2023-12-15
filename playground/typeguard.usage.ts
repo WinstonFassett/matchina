@@ -1,8 +1,8 @@
+import { matchesChangeEventKeys } from "../src/match-property-filters";
 import { StateMachineEvent } from "../src/state-machine";
 import {
   asChangeTypeToFrom,
   isChangeTypeToFrom,
-  isKeyedChangeEvent,
 } from "../src/typeguards";
 
 export { };
@@ -12,11 +12,11 @@ export { };
 const a: unknown = {};
 
 const ev = {} as StateMachineEvent;
-if (isKeyedChangeEvent(ev, { to: "foo", from: "bar", type: "baz" } as const)) {
-  ev.to.key;
-  ev.from.key;
-  ev.type;
-}
+// if (matchesChangeEventKeys(ev, { to: "foo", from: "bar", type: "baz" } as const)) {
+//   ev.to.key;
+//   ev.from.key;
+//   ev.type;
+// }
 
 const ev2 = {} as unknown; // ChangeEvent<unknown, unknown, unknown>
 if (isChangeTypeToFrom(ev2, "baz", "foo", "bar")) {

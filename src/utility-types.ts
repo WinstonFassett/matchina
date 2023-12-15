@@ -46,3 +46,9 @@ export type RemainingProperties<Required, Present, Match = any> = Pick<
         }[keyof Required]
       : never)
 >;
+
+type OmitNever<T> = { [K in keyof T as T[K] extends never ? never : K]: T[K] }
+
+type OmitEmpty<T> = {
+  [K in keyof T as (T[K] extends {} ? keyof T[K] extends never ? never : K : K)]: T[K];
+};

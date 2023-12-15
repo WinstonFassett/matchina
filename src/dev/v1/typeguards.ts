@@ -55,7 +55,7 @@ export type KeyedChangeEventFromFilter<
   to: { key: ToKey };
 };
 
-export function isKeyedChangeEvent<
+export function matchesChangeEventKeys<
   E extends AnyKeyedChangeEvent,
   F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
 >(filter: F, event: E): event is E & KeyedChangeEventFromFilter<F> {
