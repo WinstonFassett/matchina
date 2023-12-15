@@ -1,18 +1,7 @@
 import { StateEventTransitionSenders } from "./factory-event-api";
-import { FactoryEvent, FactoryEventTypeKeys, StateFromFactory } from "./factory-machine";
-import {
-  AnyFactoryMachineEvent,
-  AnyFactoryMachineTransition,
-  AnyFactoryState,
-  FactoryMachine,
-  FactoryMachineContext,
-  FactoryTransitionsFromContext,
-  StateEventTransitionFuncs,
-  createFactoryMachine,
-} from "./factory-machine";
+import { AnyFactoryMachineEvent, AnyFactoryState, FactoryEvent, FactoryMachineContext, StateEventTransitionFuncs, StateFromFactory, createFactoryMachine } from "./factory-machine";
 import { States, defineStates } from "./states";
-import { KeyedChangeEvent } from "./typeguards";
-import { FlatMemberUnion, FlatMemberUnionToIntersection, Members, Simplify } from "./utility-types";
+import { FlatMemberUnion, FlatMemberUnionToIntersection } from "./utility-types";
 
 export type PromiseStateDataCreators<F extends PromiseCallback, E = Error> = States<{
   Idle: undefined;
@@ -83,7 +72,7 @@ export type PromiseTransitions = PromiseMachine<any>["transitions"];
 export type PromiseContextStateKey = keyof PromiseContextStates<any>;
 export type PromiseStateKey = keyof PromiseStateDataCreators<any>;
 
-type EVK = FactoryEventTypeKeys<PromiseMachine<any>>
+// type EVK = FactoryEventTypeKeys<PromiseMachine<any>>
 
 type EVE= FactoryEvent<PromiseMachine<any>>
 type PEVE = EVE['to']['key']
@@ -219,60 +208,3 @@ export type ExitPropKeys<
   }
   :
   never
-// look up params and return type of transition function
-// repackage conditional logic from FactoryTransitionsFromContext
-
-
-
-export type FactoryTransitionsFromContext2<
-  FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC["transitions"] =  keyof FC["transitions"],
-  Type extends
-    keyof FC["transitions"][FromStateKey] = keyof FC["transitions"][FromStateKey],
-  Transitions extends FC["transitions"] = FC["transitions"],
-  States extends FC["states"] = FC["states"],
-> = {
-  [TransitionStateKey in keyof Transitions]: TransitionStateKey extends FromStateKey
-    ? 
-        {
-          [EventKey in keyof Transitions[TransitionStateKey]]: EventKey extends Type
-            ? {
-                from: AnyFactoryState<
-                  States,
-                  TransitionStateKey extends keyof States
-                    ? TransitionStateKey
-                    : any
-                >;
-                type: EventKey;
-              } & (Transitions[TransitionStateKey][EventKey] extends keyof States
-                ? // if state key
-                  {
-                    params: Parameters<
-                      States[Transitions[TransitionStateKey][EventKey]]
-                    >;
-                    to: AnyFactoryState<
-                      States,
-                      Transitions[TransitionStateKey][EventKey]
-                    >;
-                  }
-                : Transitions[TransitionStateKey][EventKey] extends (
-                    ...args: infer A
-                  ) => (...innerArgs: any[]) => infer R
-                ? // if 2-stage function
-                  {
-                    params: A;
-                    to: R;
-                  }
-                : // if 1-stage function
-                Transitions[TransitionStateKey][EventKey] extends (
-                    ...args: infer A
-                  ) => infer R
-                ? {
-                    params: A;
-                    to: R;
-                  }
-                : never)
-            : never;
-        }
-    : never;
-};

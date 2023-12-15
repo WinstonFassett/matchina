@@ -230,11 +230,11 @@ export type StateEventTransitionFunc<
       ) => FactoryTransitionFromContext<FC, TransitionStateKey, EventKey>["to"];
 };
 
-export type FactoryEventTypeKeys<FC extends FactoryMachineContext> = {
-  [K in keyof FC["transitions"]]: {
-    [E in keyof FC["transitions"][K]]: ExitPropKeys<FC, K, E>;
-  }[keyof FC["transitions"][K]];
-}[keyof FC['transitions']];
+// export type FactoryEventTypeKeys<FC extends FactoryMachineContext> = {
+//   [K in keyof FC["transitions"]]: {
+//     [E in keyof FC["transitions"][K]]: ExitPropKeys<FC, K, E>;
+//   }[keyof FC["transitions"][K]];
+// }[keyof FC['transitions']];
 
 export type FactoryEvent<FC extends FactoryMachineContext> = {
   [K in keyof FC["transitions"]]: {
