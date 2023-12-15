@@ -46,21 +46,21 @@ if (matchesPropertyFilters(x, {
   x.type = 'execute'
 }
 
-if (matchesPropertyFilters(x, {
-  from: ['Pending']
-  // from: { key: ['Pending']}, 
-  // to: ['Rejected']
-  // to: ['Rejected']
-} as const)){
-  x.from = 'Pending'
-  x.type = 'reject'
-}
+// if (matchesPropertyFilters(x, {
+//   from: ['Pending']
+//   // from: { key: ['Pending']}, 
+//   // to: ['Rejected']
+//   // to: ['Rejected']
+// } as const)){
+//   x.from = 'Pending'
+//   x.type = 'reject'
+// }
 
-if (matchesPropertyFilters(x, {
-  type: ['reject', 'resolve']
-  // from: ['Idle', 'Pending'], 
-  // to: ['Rejected']
-} as const)){
-  x.from = 'Idle'
-  x.type = 'execute'
-}
+// if (matchesPropertyFilters(x, {
+//   type: ['reject', 'resolve']
+//   // from: ['Idle', 'Pending'], 
+//   // to: ['Rejected']
+// } as const)){
+//   x.from = 'Idle'
+//   x.type = 'execute'
+// }
