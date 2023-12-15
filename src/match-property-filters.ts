@@ -1,5 +1,5 @@
 
-export type Filters<T> = 
+export type FlatFilters<T> = 
 | { [K in keyof T]?: SingleValueFilter<T, K> } 
 ;
 
@@ -11,6 +11,10 @@ type UnionKeys<T> = T extends T ? keyof T : never;
 type UnionValues<T, K extends keyof any> = T extends T ? (K extends keyof T ? T[K] : never) : never;
 type SingleValueFilter<T, K extends keyof T> = T[K];
 type AnyValueFilter<T, K extends keyof T> = Array<UnionValues<T, K>> | ReadonlyArray<UnionValues<T, K>>;
+
+type NestedFilter<T> = { [K in keyof T]?: T[K] extends Record<string, any> ? NestableFilters<T[K]> : (SingleValueFilter<T, K>) }; 
+
+export type NestableFilters<T> = NestedFilter<T> & FlatFilters<T>;
 
 
 export type HasFilterValues<T, C> = T extends T
@@ -28,17 +32,29 @@ export type HasFilterValues<T, C> = T extends T
       : never
   : never;
 
-export function matchesPropertyFilters<T extends Record<string, any>, C extends Filters<T>>(
+type HasFilterValues2<T, C> = T extends T
+  ? {
+      [K in keyof T & keyof C]: 
+        T[K] extends C[K] 
+          ? true 
+          : false
+    } extends Record<keyof C, true>
+      ? T
+      : never
+  : never;
+
+
+export function matchesPropertyFilters<T extends Record<string, any>, C extends NestableFilters<T>>(
   item: T,
   condition: C
-): item is T & HasFilterValues<T, C> {
+): item is T & HasFilterValues2<T, C> {
   return Object.keys(condition).every((key) => matchKey(condition[key as keyof C], (item)[key]));
 }
 
-export function asPropertyFilterMatch<T extends Record<string, any>, C extends Filters<T>>(
+export function asPropertyFilterMatch<T extends Record<string, any>, C extends NestableFilters<T>>(
   item: T,
   condition: C
-): T & HasFilterValues<T, C> {
+): T & HasFilterValues2<T, C> {
   if (matchesPropertyFilters(item, condition)) {
     return item;
   }
@@ -64,7 +80,7 @@ type StateChangeEvent = {
   to: State;
 };
 
-type ChangeEventKeyFilter<E extends StateChangeEvent> = Filters<
+type ChangeEventKeyFilter<E extends StateChangeEvent> = FlatFilters<
   ChangeEventKeys<E>
 >;
 
@@ -75,11 +91,11 @@ function matchesChangeEventKeys<
 >(
   changeEvent: E,
   filter: F
-): changeEvent is E & {
+): changeEvent is E & HasFilterValues2<E, {
   type: FV['type'];
   to: { key: FV['to'] };
   from: { key: FV['from'] };
-} {
+}> {
   // Implementation remains the same
   return true;
 }
@@ -124,15 +140,17 @@ type X = ChangeEventKeys<PromiseEvent>;
 type X2 = ChangeEvents<PromiseEvent>
 
 
+type X3 = FilterValues<{ type: 'execute', from: PromiseStates['Idle'], to: PromiseStates['Pending'] }>
+type X4 = HasFilterValues2<PromiseEvent, { from: PromiseStates['Pending']}>
+type X5 = HasFilterValues2<PromiseEvent, { from: { key: 'Idle' }}>
+ 
 const e = {} as PromiseEvent
 
 // filter autocomplete is correct when beginning with type, but not when ending with type
 // meaning, type is constraining state keys, but state key values are not constraining type values
 // correctly constrains e to only possible values, with const
 if (matchesPropertyFilters(e, {
-  
-  to: { key: 'Pending', args: [] as any },
-  from: { key: 'Idle'},
+  to: { key: 'Pending', args: [] as any},
 } as const)){
   e.type = 'execute'
   e.from.key = 'Idle'
@@ -161,7 +179,7 @@ if (matchesPropertyFilters(e, {
 
 // constrains correctly but requires full state rather than just key
 if (matchesPropertyFilters(e, {  
-  to: { key: 'Resolved', data: ''},  
+  to: { key: 'Resolved', data: {} as any},  
 } as const)){
   e.type = 'resolve'
 }
@@ -169,7 +187,6 @@ if (matchesPropertyFilters(e, {
 // constrains e to only possible values
 if (matchesChangeEventKeys(e, {
   to: 'Rejected',
-  type: 'reject',
 } as const)) {
   e.from.key = 'Pending'
   e.type = 'reject'
@@ -180,19 +197,19 @@ if (matchesChangeEventKeys(e, {
 if (matchesChangeEventKeys(e, {  
   to: 'Pending'
 } as const)){
-  e.type = 'execute' // WRONG: (property) type: "execute" | "resolve" | "reject" SHOULD be "reject" | "resolve"
+  e.type = 'execute'
 }
 
 if (matchesChangeEventKeys(e, {
   from: 'Idle',
   to: 'Pending'
 } as const)){
-  e.type = 'execute' // WRONG: (property) type: "execute" | "resolve" | "reject" SHOULD be "reject" | "resolve"
+  e.type = 'execute'
 }
 
 if (matchesChangeEventKeys(e, {
   from: 'Pending',// to: 'Rejected'
 } as const)){
-  e.type = 'execute' // WRONG: (property) type: "execute" | "resolve" | "reject" SHOULD be "reject" | "resolve"
+  e.type = 'reject'
   
 }

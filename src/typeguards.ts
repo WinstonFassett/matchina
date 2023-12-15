@@ -2,10 +2,10 @@ import {
   AnyFactoryMachineEvent,
   AnyFactoryMachineTransition,
 } from "./factory-machine";
-import { Filters, HasFilterValues, matchKey, matchesPropertyFilters } from "./match-property-filters";
+import { FlatFilters, HasFilterValues, matchKey, matchesPropertyFilters } from "./match-property-filters";
 
 
-export function isKeyedChangeEvent <E extends KeyedChangeEvent, F extends Filters<ChangeEventKeys<E>>>(
+export function isKeyedChangeEvent <E extends KeyedChangeEvent, F extends FlatFilters<ChangeEventKeys<E>>>(
   ev: E, 
   filter: F): ev is E & KeyedChangeEventFromFilter<E, F> {
     const {type, to: { key: to }, from: { key: from }} = ev
@@ -41,7 +41,7 @@ export type ChangeEventKeys<E extends KeyedChangeEvent> = {
 
 export type KeyedChangeEventFromFilter<
   E extends KeyedChangeEvent,
-  F extends Filters<ChangeEventKeys<E>>,
+  F extends FlatFilters<ChangeEventKeys<E>>,
   // FV extends FilterValues<F> = FilterValues<F>,
   FV extends HasFilterValues<E, F> = HasFilterValues<E, F>
 > = 
