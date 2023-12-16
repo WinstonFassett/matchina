@@ -6,7 +6,8 @@ import {
   FactoryState
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
-import { ChangeEventKeyFilter, FilterValues, HasFilterValues, matchesChangeEventKeys } from "./match-property-filters";
+import { FilterValues, HasFilterValues } from "./match-property-filters";
+import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-change-event-keys";
 import { StateMachine } from "./state-machine";
 import { Effect } from "./types";
 

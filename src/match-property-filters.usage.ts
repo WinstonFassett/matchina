@@ -1,4 +1,5 @@
-import { matchesPropertyFilters, matchesChangeEventKeys } from "./match-property-filters";
+import { matchesPropertyFilters } from "./match-property-filters";
+import { matchesChangeEventKeys } from "./match-change-event-keys";
 
 // USAGE CODE BELOW THIS LINE
 type PromiseStates = {

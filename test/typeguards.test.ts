@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchesChangeEventKeys } from "../src/match-property-filters";
+import { matchesChangeEventKeys } from "../src/match-change-event-keys";
 
 describe("typeguards", () => {
   describe("matchesChangeEventKeys", () => {

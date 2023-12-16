@@ -8,7 +8,7 @@ import {
 } from "./factory-machine";
 import { StateEventHookConfig, StateHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
-import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-property-filters";
+import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-change-event-keys";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,

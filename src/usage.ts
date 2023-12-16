@@ -13,7 +13,8 @@ import {
   notify,
   onNotify,
 } from "./machine-hooks";
-import { matchesChangeEventKeys, matchesPropertyFilters } from "./match-property-filters";
+import { matchesPropertyFilters } from "./match-property-filters";
+import { matchesChangeEventKeys } from "./match-change-event-keys";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 
