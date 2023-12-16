@@ -3,7 +3,7 @@ import { disposers } from "./ext/setup";
 import { Disposer } from "./ext/types";
 import {
   AnyFactoryMachineEvent,
-  FactoryEvent,
+  FactoryMachineEventUnion,
   FactoryMachine,
   FactoryMachineContext,
 } from "./factory-machine";
@@ -50,7 +50,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
 
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
-  filter: ChangeEventKeyFilter<FactoryEvent<FC>>,
+  filter: ChangeEventKeyFilter<FactoryMachineEventUnion<FC>>,
   config:   
     | StateEventHookConfig<AnyFactoryMachineEvent<FC>>
     | StateHookConfig<FC>,

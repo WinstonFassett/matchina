@@ -1,6 +1,6 @@
 import { AbortableEventHandler, Funcware } from "./ext";
 import {
-  FactoryEvent,
+  FactoryMachineEventUnion,
   FactoryEventResolved,
   FactoryMachineContext
 } from "./factory-machine";
@@ -43,11 +43,11 @@ type On<
   FC extends FactoryMachineContext,
   FromStateKey extends keyof FC["transitions"] | "*",
 > = {
-  [Event in FactoryEvent<FC>["type"] | "*"]?: StateEventHookConfig<
+  [Event in FactoryMachineEventUnion<FC>["type"] | "*"]?: StateEventHookConfig<
     FactoryEventResolved<
       FC,
-      FromStateKey extends FactoryEvent<FC>["from"]["key"] ? FromStateKey : any,
-      Event extends FactoryEvent<FC>["type"] ? Event : FactoryEvent<FC>["type"]
+      FromStateKey extends FactoryMachineEventUnion<FC>["from"]["key"] ? FromStateKey : any,
+      Event extends FactoryMachineEventUnion<FC>["type"] ? Event : FactoryMachineEventUnion<FC>["type"]
     >
   >;
 };

@@ -14,7 +14,7 @@ export function createFactoryMachine<
   SF extends AnyStatesFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends AnyFactoryMachineEvent<FC> = AnyFactoryMachineEvent<FC>,
+  E extends FactoryMachineEventUnion<FC> = FactoryMachineEventUnion<FC>,
 >(
   states: SF,
   transitions: TC,
@@ -39,7 +39,7 @@ export function createFactoryMachine<
 export function nextFactoryState<FC extends FactoryMachineContext<any>>(
   transitions: FC["transitions"],
   states: FC["states"],
-  ev: ResolveEvent<AnyFactoryMachineEvent<FC>>,
+  ev: ResolveEvent<FactoryMachineEventUnion<FC>>,
 ) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
@@ -74,7 +74,7 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
       | ((...params: any[]) => StateFromFactory<SF>)
       | ((...params: any[]) => (
           ev: ResolveEvent<
-            AnyFactoryMachineEvent<{ states: SF; transitions: any }>
+          FactoryMachineEventUnion<{ states: SF; transitions: any }>
           > & {
             from: StateFromFactory<SF, FromStateKey>;
           },
@@ -112,7 +112,7 @@ export type AnyStatesFactory = Record<string, (...params: any) => any>;
 /**
  * Union of events that can be sent to a factory machine
  */
-export type FactoryEvent<FC extends FactoryMachineContext> = {
+export type FactoryMachineEventUnion<FC extends FactoryMachineContext<any>> = {
   [K in keyof FC["transitions"]]: {
     [E in keyof FC["transitions"][K]]: FactoryEventResolved<FC, K, E>;
   }[keyof FC["transitions"][K]];
@@ -124,12 +124,22 @@ export type FactoryEvent<FC extends FactoryMachineContext> = {
  * This is the configured event type, not the actual event type
  */
 export type FactoryEventResolved<
-  FC extends FactoryMachineContext,
+  FC extends FactoryMachineContext<any>,
   FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends FC['transitions'][FromKey][EventKey] = FC['transitions'][FromKey][EventKey]
 > =
-  AnyFactoryMachineEvent<FC> &
+  {
+    type: string & FlatEventKeys<FC>;
+    params: any[];
+    from: StateFromFactory<FC["states"]>;
+    to: StateFromFactory<FC["states"]>;
+    get machine(): FactoryMachine<FC> &
+      StateMachine<FactoryMachineEventUnion<FC>>;
+    match: MatchInvocation<
+      FlatMemberUnion<StateEventTransitionSenders<FC>>
+    >
+  } &
   {
     from: StateFromFactory<FC['states'], FromKey extends keyof FC['states'] ? FromKey : any>;
     type: EventKey;
