@@ -108,27 +108,13 @@ export type StateFromFactory<
 
 export type AnyStatesFactory = Record<string, (...params: any) => any>;
 
-export type PickFactoryEvent<  
-  FC extends FactoryMachineContext,
-  // FE extends FactoryEvent<any> = FactoryEvent<any>,
-  FromStateKey extends FactoryEvent<FC>['from']['key'] = FactoryEvent<FC>['from']['key'],
-  Type extends FactoryEvent<FC>['type'] = FactoryEvent<FC>['type'],
-  ToStateKey extends FactoryEvent<FC>['to']['key'] = FactoryEvent<FC>['to']['key'],
-> = FactoryEvent<FC> & HasFilterValues<
-  FactoryEvent<FC>,
-  {
-    from: StateFromFactory<FC["states"], FromStateKey>;
-    type: Type;
-    to: StateFromFactory<FC["states"], ToStateKey>;
-  }
->
 
 /**
  * Union of events that can be sent to a factory machine
  */
 export type FactoryEvent<FC extends FactoryMachineContext> = {
   [K in keyof FC["transitions"]]: {
-    [E in keyof FC["transitions"][K]]: ExitProps<FC, K, E>;
+    [E in keyof FC["transitions"][K]]: FactoryEventResolved<FC, K, E>;
   }[keyof FC["transitions"][K]];
 }[keyof FC['transitions']];
 
@@ -137,7 +123,7 @@ export type FactoryEvent<FC extends FactoryMachineContext> = {
  * Resolves transition config to event and params
  * This is the configured event type, not the actual event type
  */
-export type ExitProps<
+export type FactoryEventResolved<
   FC extends FactoryMachineContext,
   FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],

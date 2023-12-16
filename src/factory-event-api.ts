@@ -1,5 +1,5 @@
 import {
-  ExitProps,
+  FactoryEventResolved,
   FactoryMachine,
   FactoryMachineContext
 } from "./factory-machine";
@@ -56,7 +56,7 @@ export type FlatEventSenders<FC extends FactoryMachineContext> =
 export type StateEventTransitionSenders<FC extends FactoryMachineContext> = {
   [StateKey in keyof FC['transitions']]: {
     [EventKey in keyof FC['transitions'][StateKey]]: (
-      ...args: ExitProps<FC, StateKey, EventKey>['params']
+      ...args: FactoryEventResolved<FC, StateKey, EventKey>['params']
     ) => void;
   };
 };

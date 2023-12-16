@@ -1,6 +1,5 @@
-import { AnyFactoryMachineEvent, PickFactoryEvent } from "./factory-machine";
+import { AnyFactoryMachineEvent } from "./factory-machine";
 import { FuncRecord, MatchInvocationCases } from "./match";
-import { StateMachineEvent } from "./state-machine";
 
 export function matchEvent<
   R extends FuncRecord,
