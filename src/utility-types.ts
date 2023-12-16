@@ -52,3 +52,5 @@ type OmitNever<T> = { [K in keyof T as T[K] extends never ? never : K]: T[K] }
 type OmitEmpty<T> = {
   [K in keyof T as (T[K] extends {} ? keyof T[K] extends never ? never : K : K)]: T[K];
 };
+
+type NonEmptyObject<T> = T extends {} ? (keyof T extends never ? never : T) : T;

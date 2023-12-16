@@ -1,4 +1,4 @@
-import { AnyFactoryMachineEvent, AnyFactoryMachineTransition } from "./factory-machine";
+import { AnyFactoryMachineEvent, FactoryEventResolved } from "./factory-machine";
 import { FuncRecord, MatchInvocationCases } from "./match";
 import { StateMachineEvent } from "./state-machine";
 

@@ -2,8 +2,8 @@ import { createSetup, setup } from "./ext/setup";
 import { EntryListener, when } from "./extras/when";
 import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
-import { AnyFactoryMachineTransition, FactoryEvent, createFactoryMachine } from "./factory-machine";
-import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
+import { FactoryEvent, FactoryEventResolved, createFactoryMachine } from "./factory-machine";
+import { leftState, onLeftState } from "./factory-machine-hooks";
 import {
   effect,
   enter,
@@ -16,9 +16,6 @@ import {
 import { matchesChangeEventKeys, matchesPropertyFilters } from "./match-property-filters";
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
-import {
-  isFactoryMachineChangeFromTypeTo,
-} from "./typeguards";
 
 const m1 = createStateMachine<
   StateMachineEvent &
@@ -176,7 +173,7 @@ const unsub = notify((ev) => console.log(ev))(m4);
 const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>;
 
-type X = AnyFactoryMachineTransition<typeof m4>
+type X = FactoryEvent<typeof m4>
 const x = {} as X
 
 if (matchesPropertyFilters(x, {
@@ -286,21 +283,21 @@ m5.subscribe(
   ),
 );
 
-m5.subscribe(
-  whenEvent({ from: "Pending", type: "reject" }, (ev) => {
-    ev.type = "reject";
-    ev.to.key = "Rejected";
-  }),
-);
+// m5.subscribe(
+//   whenEvent({ from: "Pending", type: "reject" }, (ev) => {
+//     ev.type = "reject";
+//     ev.to.key = "Rejected";
+//   }),
+// );
 
-m5.subscribe(
-  whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
-    ev.type = "reject";
-    ev.from.key = "Pending";
-    ev.to.key = "Rejected";
-    ev.to.data.err.message = "nope";
-  }),
-);
+// m5.subscribe(
+//   whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
+//     ev.type = "reject";
+//     ev.from.key = "Pending";
+//     ev.to.key = "Rejected";
+//     ev.to.data.err.message = "nope";
+//   }),
+// );
 
 setup(m4)(notify(leftState("Rejected", (ev) => {})));
 
