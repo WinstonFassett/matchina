@@ -114,7 +114,7 @@ export type AnyStatesFactory = Record<string, (...params: any) => any>;
  */
 export type FactoryMachineEventUnion<FC extends FactoryMachineContext<any>> = {
   [K in keyof FC["transitions"]]: {
-    [E in keyof FC["transitions"][K]]: FactoryEventResolved<FC, K, E>;
+    [E in keyof FC["transitions"][K]]: FactoryMachineEvent<FC, K, E>;
   }[keyof FC["transitions"][K]];
 }[keyof FC['transitions']];
 
@@ -123,7 +123,7 @@ export type FactoryMachineEventUnion<FC extends FactoryMachineContext<any>> = {
  * Resolves transition config to event and params
  * This is the configured event type, not the actual event type
  */
-export type FactoryEventResolved<
+export type FactoryMachineEvent<
   FC extends FactoryMachineContext<any>,
   FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
