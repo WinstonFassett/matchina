@@ -10,7 +10,7 @@ import { StateEventHookConfig } from "./lifecycle-types";
 import {
   AnyKeyedChangeEvent,
   KeyedChangeEventFilter,
-} from "../../../typeguards";
+} from "../typeguards";
 import { Middleware } from "../../../types";
 
 const LIFECYCLE = [

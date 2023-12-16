@@ -58,9 +58,9 @@ export type PromiseStates<F extends PromiseCallback, E = Error> = States<{
 // > = AnyFactoryState<PromiseStatesFactory<F>, K>;
 
 
-// export type PromiseMachine<F extends PromiseCallback> = ReturnType<
-//   typeof createPromiseMachine<F>
-// >;
+export type PromiseMachine<F extends PromiseCallback> = ReturnType<
+  typeof createPromiseMachine<F>
+>;
 // export type PromiseMachineEvent<F extends PromiseCallback> = ReturnType<
 //   PromiseMachine<F>["getChange"]
 // >;
