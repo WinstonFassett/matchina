@@ -33,7 +33,7 @@ if (matchesPropertyFilters(x, { type: 'reject', to: 'Rejected', from: 'Pending' 
 }
 
 
-if (matchesPropertyFilters(x, { type: 'execute', from: 'Idle', to: 'Pending' } as const)) {
+if (matchesPropertyFilters(x, {  } as const)) {
   // narrowed type here
   x.from = 'Idle'
   x.type = 'execute'

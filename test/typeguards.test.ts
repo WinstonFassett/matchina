@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   asChangeTypeToFrom,
+  hasKeyValue,
   isChangeTypeToFrom,
   isKeyedChangeEvent,
 } from "../src/typeguards";
@@ -27,17 +28,17 @@ describe("typeguards", () => {
     it("matches on multiple values", () => {
       const event = {
         type: "change",
-        from: { key: "a" as 'a' | 'd' },
-        to: { key: "b" as 'a' | 'b' | 'c' },
-      } as const;
+        from: { key: "a" },
+        to: { key: "b" },
+      };
       expect(
         isKeyedChangeEvent(
           event,
           {
             type: "change",
-            // from: ["a"],
-            // to: ["b", "c"] as const,
-          } as const,
+            to: ["b", "c"],
+            from: ["a", "d"],
+          },
         ),
       ).toBe(true);
     });
@@ -135,5 +136,18 @@ describe("typeguards", () => {
       expect(() => asChangeTypeToFrom(event, "other", "b", "a")).toThrow();
     });
   });
-  
+  describe("hasKeyValue", () => {
+    it("matches on single values", () => {
+      const obj = { a: 1, b: "two" };
+      expect(hasKeyValue(obj, "a", 1)).toBe(true);
+    });
+    it("matches on multiple values", () => {
+      const obj = { a: 1, b: "two" };
+      expect(hasKeyValue(obj, "a", [1, 2])).toBe(true);
+    });
+    it("returns false if no parameters", () => {
+      const obj = { a: 1, b: "two" };
+      expect(hasKeyValue(obj, "a", undefined)).toBe(false);
+    });
+  });
 });
