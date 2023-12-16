@@ -82,19 +82,6 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
   };
 };
 
-interface AnyFactoryMachineEvent<FC extends FactoryMachineContext<any>>
-  extends StateMachineEvent {
-  // type: string & FlatEventKeys<FC>;
-  // params: any[];
-  from: StateFromFactory<FC["states"]>;
-  to: StateFromFactory<FC["states"]>;
-  get machine(): FactoryMachine<FC> &
-    StateMachine<AnyFactoryMachineEvent<FC>>;
-  match: MatchInvocation<
-    FlatMemberUnion<StateEventTransitionSenders<FC>>
-  >
-}
-
 export type FlatEventKeys<FC extends FactoryMachineContext> = string &
   {
     [StateKey in keyof FC['transitions']]: keyof FC['transitions'][StateKey];
@@ -130,7 +117,14 @@ export type FactoryMachineEvent<
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends FC['transitions'][FromKey][EventKey] = FC['transitions'][FromKey][EventKey]
 > =
-  AnyFactoryMachineEvent<FC> &
+  StateMachineEvent<StateFromFactory<FC['states']>> &
+  // AnyFactoryMachineEvent<FC> & 
+  {
+    get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEventUnion<FC>>;
+    match: MatchInvocation<
+    FlatMemberUnion<StateEventTransitionSenders<FC>>
+  >
+  } &
   {
     from: StateFromFactory<FC['states'], FromKey extends keyof FC['states'] ? FromKey : any>;
     type: EventKey;
