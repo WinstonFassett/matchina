@@ -121,24 +121,25 @@ export type AnyFactoryState<
 
 export type AnyStatesFactory = Record<string, (...params: any) => any>;
 
-export type FactoryEventResolved<
+export type FactoryEventResolved<  
   FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC["transitions"] = keyof FC["transitions"],
-  Type extends keyof FC["transitions"][FromStateKey] = keyof FC["transitions"][FromStateKey],
-  ToStateKey extends keyof FC["transitions"][FromStateKey][Type] = keyof FC["transitions"][FromStateKey][Type],
+  // FE extends FactoryEvent<any> = FactoryEvent<any>,
+  FromStateKey extends FactoryEvent<FC>['from']['key'] = FactoryEvent<FC>['from']['key'],
+  Type extends FactoryEvent<FC>['type'] = FactoryEvent<FC>['type'],
+  ToStateKey extends FactoryEvent<FC>['to']['key'] = FactoryEvent<FC>['to']['key'],
 > = FactoryEvent<FC> & HasFilterValues<
   FactoryEvent<FC>,
   {
-    from: StateFromFactory<FC["states"], FromStateKey extends keyof FC['states'] ? FromStateKey : any>;
+    from: StateFromFactory<FC["states"], FromStateKey>;
     type: Type;
-    to: StateFromFactory<FC["states"], ToStateKey extends keyof FC['states'] ? ToStateKey : any>;
+    to: StateFromFactory<FC["states"], ToStateKey>;
   }
 >
 
 export type FactoryTransitionFromContext<
   FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC["transitions"] = keyof FC["transitions"],
-  Type extends keyof FC["transitions"][FromStateKey] = keyof FC["transitions"][FromStateKey],
+  FromStateKey extends FactoryEvent<FC>['from']['key'] = FactoryEvent<FC>['from']['key'],
+  Type extends FactoryEvent<FC>['type'] = FactoryEvent<FC>['type'],
 > = FactoryEventResolved<
   FC,
   FromStateKey,

@@ -6,6 +6,7 @@ import {
   FactoryEventResolved,
   FactoryMachineContext,
   FlatEventKeys,
+  StateFromFactory,
 } from "./factory-machine";
 import { FlatFilters, HasFilterValues } from "./match-property-filters";
 import { StateMachine, StateMachineEvent } from "./state-machine";
@@ -39,34 +40,25 @@ export type StateTransitionHooks<
   StateKey extends keyof FC["transitions"] | "*",
 > = {
   leave: Middleware<
-    // FactoryEventResolved<FC, StateKey>
-    HasFilterValues<
+    StateKey extends "*"
+    ? FactoryEvent<FC>
+    : HasFilterValues<
       FactoryEvent<FC>,
       {
         from: { key: StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"] };
       }
     >
-    // AnyFactoryMachineEvent<FC> & {
-    //   from: AnyFactoryState<
-    //     FC["states"],
-    //     StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
-    //   >;
-    // }
   >;
   enter: Middleware<
-    // FactoryEventResolved<FC, any, any, FactoryEvent<FC>['to']>
+    StateKey extends "*" 
+    ? FactoryEvent<FC>
+    :
     HasFilterValues<
       FactoryEvent<FC>,
       {
         to: { key: StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"] };
       }
     >
-    // AnyFactoryMachineEvent<FC> & {
-    //   to: AnyFactoryState<
-    //     FC["states"],
-    //     StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
-    //   >;
-    // }
   >;
 };
 
@@ -75,62 +67,64 @@ export type StateTransitionHookConfig<
   StateKey extends keyof FC["transitions"] | "*",
 > = FlatFilters<StateTransitionHooks<FC, StateKey>>;
 
-type On1<
-  FC extends FactoryMachineContext,
-  StateKey extends keyof FC["transitions"] | "*",
-  Transitions extends FC["transitions"] = FC["transitions"],
-  States extends FC["states"] = FC["states"],
-> =
-  // regular state
-  StateKey extends keyof States
-    ? // specific state
-      {
-        [Event in
-          | keyof Transitions[StateKey]
-          | "*"]?: 
-          Event extends FlatFactoryEventKeys<FC> // specific event
-          ? 
-          // ? FactoryEventResolved<FC, StateKey, Event extends '*' ? any : Event>
-            FactoryEventResolved<FC, StateKey, Event>['to'] extends AnyFactoryState<States>
-            ? TransitionHookConfig<
-                FactoryEventResolved<FC, StateKey, Event>
-              >
-            : never
-          : // wildcard event
-            TransitionHookConfig<
-              FactoryEventResolved<FC, StateKey>
-            >;
-      }
-    : // wildcard state
-      {
-        [Event in
-          | FlatFactoryEventKeys<FC>
-          | "*"]?: TransitionHookConfig<
-          Event extends '*' ? FactoryEvent<FC> : FactoryEventResolved<FC, any, Event>
-        >;
-      };
-
 type EventKeys<
   FC extends FactoryMachineContext, 
-  FromStateKey extends keyof FC["transitions"]>
+  FromStateKey extends keyof FC["transitions"] | '*'
+>
 = 
-keyof FC['transitions'][FromStateKey];
+FromStateKey extends keyof FC["transitions"] ?
+keyof FC['transitions'][FromStateKey]
+: FlatEventKeys<FC>
+;
 
 type On<
   FC extends FactoryMachineContext,
-  FromStateKey extends keyof FC["transitions"],   
+  FromStateKey extends keyof FC["transitions"] | '*',   
 > =
 {
-  [Event in EventKeys<FC, FromStateKey> | "*"]?: 
+  [Event in EventKeys<FC, FromStateKey> | '*']?: 
     TransitionHookConfig<
-      HasFilterValues<
-        FactoryEvent<FC>,
-        {
-          type: Event extends '*' ? any : Event;
-          from: { key: FromStateKey }          
-        }
-      >
-    >
+      FactoryEvent<FC> & 
+      (
+        Event extends '*' ? 
+          FromStateKey extends FactoryEvent<FC>['from']['key']
+          ? FactoryEventResolved<FC, FromStateKey>
+          : FactoryEvent<FC>
+          // HasFilterValues<
+          //   FactoryEvent<FC>,
+          //   {
+          //     from: FromStateKey extends keyof FC['states'] ? { key: FromStateKey } : any;
+          //     // from: FromStateKey extends keyof FC["states"] ? StateFromFactory<FC['states'], FromStateKey> : any;
+          //     // from: StateFromFactory<FC["states"], FromStateKey extends keyof FC['states'] ? FromStateKey : keyof FC['states']>;
+          //     // type: Event extends FactoryEvent<FC>['type'] ? Event : FactoryEvent<FC>['type'];
+          //   }
+          // >        
+        :
+        { wtf: true } &
+        HasFilterValues<
+          FactoryEvent<FC>,
+          {
+            from: StateFromFactory<FC["states"], FromStateKey extends keyof FC['states'] ? FromStateKey : any>;
+            type: Event extends FactoryEvent<FC>['type'] ? Event : FactoryEvent<FC>['type'];
+          }
+        >
+      )
+      // HasFilterValues<
+      //   FactoryEvent<FC>,
+      //   {
+      //     type: Event extends '*' ? EventKeys<FC, FromStateKey> : Event;
+      //     from: FromStateKey extends keyof FC["states"] ? { key: FromStateKey } : any;
+      //   }
+      // > & {
+      //   wtf: true
+      // }
+    > 
+    // & Partial<{
+    //   e: Event, 
+    //   ek: EventKeys<FC, FromStateKey>,
+    //   // e: Event extends '*' ? EventKeys<FC, FromStateKey> : Event,
+    //   // from: { key: FromStateKey }    
+    // }>
 };
 
 export type FlatExitStates<
@@ -154,14 +148,14 @@ export type EventExitStatesIntersection<FC extends FactoryMachineContext> =
   TUnionToIntersection<FlatMemberUnion<StatesToEventsToStates<FC>>>;
 
 export type StatesToEventsToStates<FC extends FactoryMachineContext> = {
-  [StateKey in keyof FC['transitions']]: {
-    [EventKey in keyof FC['transitions'][StateKey]]: FactoryEventResolved<FC, StateKey, EventKey>['to']
+  [StateKey in keyof FC['transitions'] & FactoryEvent<FC>['from']['key'] ]: {
+    [EventKey in keyof FC['transitions'][StateKey] & FactoryEventResolved<FC, StateKey>['type'] ]: FactoryEventResolved<FC, StateKey, EventKey>['to']
   };
 };
 
 export type StateEventHookConfig<FC extends FactoryMachineContext> = {
   [StateKey in string & (keyof FC["transitions"] | "*")]?: {
-    on?: On<FC, StateKey extends '*' ? keyof FC["transitions"] : StateKey>;
+    on?: On<FC, StateKey>;
   } & StateTransitionHookConfig<FC, StateKey>;
 };
 

@@ -75,7 +75,7 @@ describe("onLifecycle usage", () => {
             // execute: {}, // Error. "execute" event not allowed in "Rejected" state
             "*": {
               before(change) {
-                change.from.key = "Rejected"; // can only be Rejected
+                change.from.key = 'Idle'; // can only be Rejected
                 // change.to.key = "Pending"; // "Idle" | "Pending" | "Rejected" | "Resolved"
               },
             },
@@ -127,6 +127,8 @@ describe("onLifecycle usage", () => {
             after: (event) => {
               console.log("* after", event.type);
             },
+            
+            // e: 'execute'
           },
         },
       },
