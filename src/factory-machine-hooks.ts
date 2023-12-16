@@ -22,7 +22,7 @@ export const beforeEvent = <
   });
 export const leftState = <
   E extends AnyFactoryMachineEvent<any>,
-  K extends keyof E["machine"]["states"],
+  K extends E['from']['key'],
 >(
   stateKey: K,
   fn: EntryListener<E & { from: StateFromFactory<E["machine"]["states"], K> }>,
