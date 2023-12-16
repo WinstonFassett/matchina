@@ -2,7 +2,7 @@ import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
 import {
   FactoryMachineEvent,
-  StateFromFactory
+  FactoryState
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
 import { StateMachine } from "./state-machine";
@@ -25,14 +25,14 @@ export const leftState = <
   K extends E['from']['key'],
 >(
   stateKey: K,
-  fn: EntryListener<E & { from: StateFromFactory<E["machine"]["states"], K> }>,
+  fn: EntryListener<E & { from: FactoryState<E["machine"]["states"], K> }>,
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 export const enteredState = <
   E extends FactoryMachineEvent<any>,
   K extends keyof E["machine"]["states"],
 >(
   stateKey: K,
-  fn: EntryListener<E & { to: StateFromFactory<E["machine"]["states"], K> }>,
+  fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>,
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 export const afterEvent = <
   E extends FactoryMachineEvent<any>,
@@ -62,7 +62,7 @@ export const onLeftState = <
 >(
   m: StateMachine<E>,
   stateKey: K,
-  fn: ExitListener<E & { from: StateFromFactory<E["machine"]["states"], K> }>,
+  fn: ExitListener<E & { from: FactoryState<E["machine"]["states"], K> }>,
 ) => setup(m)(leave(leftState(stateKey, fn)));
 
 export const onAfterEvent = <

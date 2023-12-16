@@ -1,7 +1,7 @@
 import { createApi } from "./factory-event-api";
 import {
   FactoryMachineTransitions,
-  StateFromFactory,
+  FactoryState,
   createFactoryMachine,
 } from "./factory-machine";
 import { UnionSpec } from "./matchbox";
@@ -14,8 +14,8 @@ export function matchina<
   stateConfig: S,
   transitionConfig: T | ((states: States<S>) => T),
   init:
-    | StateFromFactory<States<S>>
-    | ((states: States<S>, transitions: T) => StateFromFactory<States<S>>),
+    | FactoryState<States<S>>
+    | ((states: States<S>, transitions: T) => FactoryState<States<S>>),
 ) {
   const states = defineStates(stateConfig) as States<S>;
   const transitions =

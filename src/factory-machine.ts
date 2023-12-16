@@ -18,11 +18,11 @@ export function createFactoryMachine<
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroArgs<FC["states"]> | StateFromFactory<FC["states"]>,
+  init: KeysWithZeroArgs<FC["states"]> | FactoryState<FC["states"]>,
 ): FactoryMachine<FC> {
   const initialState = (
     typeof init === "string" ? states[init]({}) : init
-  ) as StateFromFactory<FC["states"]>;
+  ) as FactoryState<FC["states"]>;
   const machine = createStateMachine<E>(transitions, initialState);
   Object.assign(machine, {
     states,
@@ -53,6 +53,14 @@ export function nextFactoryState<FC extends FactoryMachineContext<any>>(
   }
 }
 
+export type AnyStatesFactory = Record<string, (...params: any) => any>;
+
+export type FactoryState<
+  States extends AnyStatesFactory,
+  StateKey extends keyof States = keyof States,
+> = ReturnType<States[StateKey]>;
+
+
 
 export interface FactoryMachine<FC extends FactoryMachineContext<any>>
   extends StateMachine<FactoryMachineEvent<FC>> {
@@ -71,14 +79,14 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
   [FromStateKey in string & keyof SF]: {
     [EventKey in string]?:
       | keyof SF
-      | ((...params: any[]) => StateFromFactory<SF>)
+      | ((...params: any[]) => FactoryState<SF>)
       | ((...params: any[]) => (
           ev: ResolveEvent<
           FactoryMachineEvent<{ states: SF; transitions: any }>
           > & {
-            from: StateFromFactory<SF, FromStateKey>;
+            from: FactoryState<SF, FromStateKey>;
           },
-        ) => StateFromFactory<SF>);
+        ) => FactoryState<SF>);
   };
 };
 
@@ -87,13 +95,6 @@ export type FlatEventKeys<FC extends FactoryMachineContext> = string &
     [StateKey in keyof FC['transitions']]: keyof FC['transitions'][StateKey];
   }[keyof FC['transitions']];
 // provides the return types of all state-event transitions
-
-export type StateFromFactory<
-  States extends AnyStatesFactory,
-  StateKey extends keyof States = keyof States,
-> = ReturnType<States[StateKey]>;
-
-export type AnyStatesFactory = Record<string, (...params: any) => any>;
 
 
 /**
@@ -117,7 +118,7 @@ export type FactoryMachineTransitionEvent<
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends FC['transitions'][FromKey][EventKey] = FC['transitions'][FromKey][EventKey]
 > =
-  StateMachineEvent<StateFromFactory<FC['states']>> &
+  StateMachineEvent<FactoryState<FC['states']>> &
   // AnyFactoryMachineEvent<FC> & 
   {
     get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
@@ -126,12 +127,12 @@ export type FactoryMachineTransitionEvent<
   >
   } &
   {
-    from: StateFromFactory<FC['states'], FromKey extends keyof FC['states'] ? FromKey : any>;
+    from: FactoryState<FC['states'], FromKey extends keyof FC['states'] ? FromKey : any>;
     type: EventKey;
   } &
   (ToKey extends keyof FC['states'] ? {
     params: Parameters<FC['states'][ToKey]>;
-    to: StateFromFactory<FC['states'], ToKey>;
+    to: FactoryState<FC['states'], ToKey>;
   } : ToKey extends (...args: infer A) => (...innerArgs: any[]) => infer R ? {
     params: A;
     to: R;
