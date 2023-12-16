@@ -2,7 +2,7 @@ import { createSetup, setup } from "./ext/setup";
 import { EntryListener, when } from "./extras/when";
 import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
-import { FactoryEvent, FactoryEventResolved, createFactoryMachine } from "./factory-machine";
+import { FactoryEvent, PickFactoryEvent, createFactoryMachine } from "./factory-machine";
 import { leftState, onLeftState } from "./factory-machine-hooks";
 import {
   effect,

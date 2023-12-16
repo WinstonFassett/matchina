@@ -108,7 +108,7 @@ export type StateFromFactory<
 
 export type AnyStatesFactory = Record<string, (...params: any) => any>;
 
-export type FactoryEventResolved<  
+export type PickFactoryEvent<  
   FC extends FactoryMachineContext,
   // FE extends FactoryEvent<any> = FactoryEvent<any>,
   FromStateKey extends FactoryEvent<FC>['from']['key'] = FactoryEvent<FC>['from']['key'],

@@ -1,7 +1,7 @@
 import { AbortableEventHandler, Funcware } from "./ext";
 import {
   FactoryEvent,
-  FactoryEventResolved,
+  PickFactoryEvent,
   FactoryMachineContext
 } from "./factory-machine";
 import { StateMachine, StateMachineEvent } from "./state-machine";
@@ -26,8 +26,8 @@ type StateTransitionHooks<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"] | "*",
 > = Partial<{
-  leave: Middleware<FactoryEventResolved<FC, StateKey extends '*' ? any : StateKey>>;
-  enter: Middleware<FactoryEventResolved<FC, any, any, StateKey extends '*' ? any : StateKey>>;
+  leave: Middleware<PickFactoryEvent<FC, StateKey extends '*' ? any : StateKey>>;
+  enter: Middleware<PickFactoryEvent<FC, any, any, StateKey extends '*' ? any : StateKey>>;
 }>;
 
 export type StateHookConfig<FC extends FactoryMachineContext> = {
@@ -44,7 +44,7 @@ type On<
   FromStateKey extends keyof FC["transitions"] | "*",
 > = {
   [Event in FactoryEvent<FC>["type"] | "*"]?: StateEventHookConfig<
-    FactoryEventResolved<
+    PickFactoryEvent<
       FC,
       FromStateKey extends FactoryEvent<FC>["from"]["key"] ? FromStateKey : any,
       Event extends FactoryEvent<FC>["type"] ? Event : FactoryEvent<FC>["type"]
