@@ -54,3 +54,7 @@ type OmitEmpty<T> = {
 };
 
 type NonEmptyObject<T> = T extends {} ? (keyof T extends never ? never : T) : T;
+type FunctionWithParameters<F> = F extends (...args: infer Args) => any ? Args extends [] ? false : true : false;
+export type KeysWithZeroArgs<T> = {
+  [K in keyof T]: FunctionWithParameters<T[K]> extends true ? never : K;
+}[keyof T];
