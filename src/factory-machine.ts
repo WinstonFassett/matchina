@@ -1,14 +1,12 @@
 import { StateEventTransitionSenders } from "./factory-event-api";
 import { MatchInvocation } from "./match";
-import { HasFilterValues } from "./match-property-filters";
 import {
   ResolveEvent,
   StateMachine,
   StateMachineEvent,
   createStateMachine,
 } from "./state-machine";
-import { KeysWithZeroArgs } from "./utility-types";
-import { FlatMemberUnion } from "./utility-types";
+import { FlatMemberUnion, KeysWithZeroArgs } from "./utility-types";
 
 export function createFactoryMachine<
   SF extends AnyStatesFactory,
@@ -60,8 +58,6 @@ export type FactoryState<
   StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
 
-
-
 export interface FactoryMachine<FC extends FactoryMachineContext<any>>
   extends StateMachine<FactoryMachineEvent<FC>> {
   states: FC["states"];
@@ -90,13 +86,6 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
   };
 };
 
-export type FlatEventKeys<FC extends FactoryMachineContext> = string &
-  {
-    [StateKey in keyof FC['transitions']]: keyof FC['transitions'][StateKey];
-  }[keyof FC['transitions']];
-// provides the return types of all state-event transitions
-
-
 /**
  * Union of events that can be sent to a factory machine
  */
@@ -119,7 +108,6 @@ export type FactoryMachineTransitionEvent<
   ToKey extends FC['transitions'][FromKey][EventKey] = FC['transitions'][FromKey][EventKey]
 > =
   StateMachineEvent<FactoryState<FC['states']>> &
-  // AnyFactoryMachineEvent<FC> & 
   {
     get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
     match: MatchInvocation<
