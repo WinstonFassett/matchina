@@ -7,13 +7,13 @@ import {
   FactoryMachine,
   FactoryMachineContext,
 } from "./factory-machine";
-import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
+import { StateHookConfig, StateEventHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
 import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-property-filters";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
-  config: StateEventHookConfig<FC>,
+  config: StateHookConfig<FC>,
 ) {
   const d = [] as Disposer[];
   for (const key in config) {
@@ -39,7 +39,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         useFilteredEventConfigs(
           machine,
           { from: stateKey, type: eventKey } as any,
-          eventConfig as StateEventHookConfig<FC>,
+          eventConfig as StateHookConfig<FC>,
           d,
         );
       }
@@ -51,9 +51,9 @@ export function onLifecycle<FC extends FactoryMachineContext>(
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   filter: ChangeEventKeyFilter<FactoryEvent<FC>>,
-  config:
-    | StateEventHookConfig<FC>
-    | TransitionHookConfig<AnyFactoryMachineEvent<FC>>,
+  config:   
+    | StateEventHookConfig<AnyFactoryMachineEvent<FC>>
+    | StateHookConfig<FC>,
   d: Disposer[],
 ) {
   for (const phase in config) {
