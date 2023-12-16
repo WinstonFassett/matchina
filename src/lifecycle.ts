@@ -3,13 +3,13 @@ import { disposers } from "./ext/setup";
 import { Disposer } from "./ext/types";
 import {
   AnyFactoryMachineEvent,
+  FactoryEvent,
   FactoryMachine,
   FactoryMachineContext,
 } from "./factory-machine";
 import { StateEventHookConfig, TransitionHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
-import { matchesChangeEventKeys } from "./match-property-filters";
-import { KeyedChangeEventFilter } from "./typeguards";
+import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-property-filters";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
@@ -50,7 +50,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
 
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
-  filter: KeyedChangeEventFilter<AnyFactoryMachineEvent<FC>>,
+  filter: ChangeEventKeyFilter<FactoryEvent<FC>>,
   config:
     | StateEventHookConfig<FC>
     | TransitionHookConfig<AnyFactoryMachineEvent<FC>>,

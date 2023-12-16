@@ -1,42 +1,6 @@
-import { FlatFilters, HasFilterValues } from "./match-property-filters";
 
+export {}
 
-
-export type KeyedChangeEvent<
-  Type extends string = string,
-  FromKey extends string = string,
-  ToKey extends string = FromKey,
-> = {
-  type: Type;
-  from: { key: FromKey };
-  to: { key: ToKey };
-};
-
-
-export type KeyedChangeEventFilter<E extends KeyedChangeEvent> = Filters1<{
-  type: E["type"];
-  to: E["to"]["key"];
-  from: E["from"]["key"];
-}>;
-
-export type ChangeEventKeys<E extends KeyedChangeEvent> = {
-  type: E["type"];
-  to: E["to"]["key"];
-  from: E["from"]["key"];
-};
-
-
-export type KeyedChangeEventFromFilter<
-  E extends KeyedChangeEvent,
-  F extends FlatFilters<ChangeEventKeys<E>>,
-  // FV extends FilterValues<F> = FilterValues<F>,
-  FV extends HasFilterValues<E, F> = HasFilterValues<E, F>
-> = 
-{
-  type: FV['type'];
-  from: { key: FV['from'] };
-  to: { key: FV['to'] };
-}
 
 // export type FactoryChangeEventFilter<
 //   E extends AnyFactoryMachineEvent<any>,
@@ -125,10 +89,4 @@ export type KeyedChangeEventFromFilter<
 //   }
 //   throw new Error("not a match");
 // }
-export type Filters1<T> = object & {
-  [K in keyof T]?: T[K] | T[K][];
-};
 
-export type FilterValues<T> = {
-  [K in keyof T]: T[K] extends (infer U)[] ? U : T[K];
-};

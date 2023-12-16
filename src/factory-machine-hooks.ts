@@ -2,11 +2,9 @@ import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
 import {
   AnyFactoryMachineEvent,
-  AnyFactoryState,
-  FactoryEventResolved,
+  AnyFactoryState
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
-import { matchesChangeEventKeys } from "./match-property-filters";
 import { StateMachine } from "./state-machine";
 import { Effect } from "./types";
 

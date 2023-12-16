@@ -5,8 +5,8 @@ import {
   FactoryMachineContext,
   StateEventTransitionFuncs,
 } from "./factory-machine";
+import { FlatFilters } from "./match-property-filters";
 import { StateMachineEvent, StateMachine } from "./state-machine";
-import { Filters1 } from "./typeguards";
 import { Effect, Middleware } from "./types";
 import {
   FlatMemberUnion,
@@ -30,7 +30,7 @@ export type TransitionHookExtensions<E extends StateMachineEvent> = {
 };
 
 export type TransitionHookConfig<E extends StateMachineEvent<any, any>> =
-  Filters1<TransitionHookExtensions<E>>;
+  FlatFilters<TransitionHookExtensions<E>>;
 
 export type StateTransitionHooks<
   FC extends FactoryMachineContext,
@@ -57,7 +57,7 @@ export type StateTransitionHooks<
 export type StateTransitionHookConfig<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"] | "*",
-> = Filters1<StateTransitionHooks<FC, StateKey>>;
+> = FlatFilters<StateTransitionHooks<FC, StateKey>>;
 
 type On<
   FC extends FactoryMachineContext,
