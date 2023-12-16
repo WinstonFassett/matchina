@@ -5,8 +5,9 @@ import {
   FactoryEvent,
   FactoryEventResolved,
   FactoryMachineContext,
+  FlatEventKeys,
 } from "./factory-machine";
-import { FlatFilters } from "./match-property-filters";
+import { FlatFilters, HasFilterValues } from "./match-property-filters";
 import { StateMachine, StateMachineEvent } from "./state-machine";
 import { Effect, Middleware } from "./types";
 import {
@@ -38,7 +39,13 @@ export type StateTransitionHooks<
   StateKey extends keyof FC["transitions"] | "*",
 > = {
   leave: Middleware<
-    FactoryEventResolved<FC, StateKey>
+    // FactoryEventResolved<FC, StateKey>
+    HasFilterValues<
+      FactoryEvent<FC>,
+      {
+        from: { key: StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"] };
+      }
+    >
     // AnyFactoryMachineEvent<FC> & {
     //   from: AnyFactoryState<
     //     FC["states"],
@@ -47,7 +54,13 @@ export type StateTransitionHooks<
     // }
   >;
   enter: Middleware<
-    FactoryEventResolved<FC, any, any, FactoryEvent<FC>['to']>
+    // FactoryEventResolved<FC, any, any, FactoryEvent<FC>['to']>
+    HasFilterValues<
+      FactoryEvent<FC>,
+      {
+        to: { key: StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"] };
+      }
+    >
     // AnyFactoryMachineEvent<FC> & {
     //   to: AnyFactoryState<
     //     FC["states"],
@@ -62,7 +75,7 @@ export type StateTransitionHookConfig<
   StateKey extends keyof FC["transitions"] | "*",
 > = FlatFilters<StateTransitionHooks<FC, StateKey>>;
 
-type On<
+type On1<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"] | "*",
   Transitions extends FC["transitions"] = FC["transitions"],
@@ -97,6 +110,25 @@ type On<
         >;
       };
 
+type On<
+  FC extends FactoryMachineContext,
+  FromStateKey extends keyof FC["transitions"],   
+> =
+{
+  [Event in keyof FC['transitions'][FromStateKey] | "*"]?: 
+    TransitionHookConfig<
+      // Event extends keyof FC["transitions"][FromStateKey] ? FactoryEventResolved<FC, FromStateKey, Event> : FactoryEvent<FC>
+      HasFilterValues<
+        FactoryEvent<FC>,
+        {
+          type: Event extends '*' ? any : Event;
+          from: { key: FromStateKey }          
+        }
+      >
+      // FactoryEventResolved<FC, FromStateKey, Event extends '*' ? any : Event>
+    >
+};
+
 export type FlatExitStates<
   FC extends FactoryMachineContext,
   States extends FC["states"] = FC["states"],
@@ -125,7 +157,7 @@ export type StatesToEventsToStates<FC extends FactoryMachineContext> = {
 
 export type StateEventHookConfig<FC extends FactoryMachineContext> = {
   [StateKey in string & (keyof FC["transitions"] | "*")]?: {
-    on?: On<FC, StateKey>;
+    on?: On<FC, StateKey extends '*' ? keyof FC["transitions"] : StateKey>;
   } & StateTransitionHookConfig<FC, StateKey>;
 };
 

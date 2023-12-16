@@ -59,7 +59,7 @@ describe("onLifecycle usage", () => {
         Rejected: {
           enter(change) {
             // TODO: Filter out Rejected and Resolved
-            change.from.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+            change.from.key = 'Pending'; // "Idle" | "Pending" | "Rejected" | "Resolved"
             change.to.key = "Rejected"; // can only be Rejected
             change.to.data = new Error("test"); // must be Error type
             change.to.data.message = "test"; // message autocomplete
@@ -76,7 +76,7 @@ describe("onLifecycle usage", () => {
             "*": {
               before(change) {
                 change.from.key = "Rejected"; // can only be Rejected
-                change.to.key = "Pending"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+                // change.to.key = "Pending"; // "Idle" | "Pending" | "Rejected" | "Resolved"
               },
             },
           },
