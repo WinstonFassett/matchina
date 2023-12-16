@@ -2,12 +2,11 @@ import { extendMethod, iff } from "./ext";
 import { disposers } from "./ext/setup";
 import { Disposer } from "./ext/types";
 import {
-  AnyFactoryMachineEvent,
-  FactoryMachineEventUnion,
   FactoryMachine,
   FactoryMachineContext,
+  FactoryMachineEventUnion
 } from "./factory-machine";
-import { StateHookConfig, StateEventHookConfig } from "./lifecycle-types";
+import { StateEventHookConfig, StateHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
 import { ChangeEventKeyFilter, matchesChangeEventKeys } from "./match-property-filters";
 
@@ -52,7 +51,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   filter: ChangeEventKeyFilter<FactoryMachineEventUnion<FC>>,
   config:   
-    | StateEventHookConfig<AnyFactoryMachineEvent<FC>>
+    | StateEventHookConfig<FactoryMachineEventUnion<FC>>
     | StateHookConfig<FC>,
   d: Disposer[],
 ) {
@@ -67,7 +66,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           machine,
           phase as keyof FactoryMachine<FC>,
           iff(
-            (ev: AnyFactoryMachineEvent<FC>) => matchesChangeEventKeys(ev, filter as any),
+            (ev: FactoryMachineEventUnion<FC>) => matchesChangeEventKeys(ev, filter as any),
             (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),
