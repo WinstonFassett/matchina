@@ -24,10 +24,10 @@ export function onLifecycle<FC extends FactoryMachineContext>(
     }
     const { on, enter, leave } = fromStateConfig;
     if (enter) {
-      useFilteredEventConfigs(machine, { to: stateKey }, { enter } as any, d);
+      useFilteredEventConfigs(machine, { to: stateKey } as any, { enter } as any, d);
     }
     if (leave) {
-      useFilteredEventConfigs(machine, { from: stateKey }, { leave } as any, d);
+      useFilteredEventConfigs(machine, { from: stateKey } as any, { leave } as any, d);
     }
     if (on) {
       for (const onKey in on) {
@@ -38,7 +38,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         }
         useFilteredEventConfigs(
           machine,
-          { from: stateKey, type: eventKey },
+          { from: stateKey, type: eventKey } as any,
           eventConfig as StateEventHookConfig<FC>,
           d,
         );
