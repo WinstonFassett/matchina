@@ -2,6 +2,7 @@ import { AbortableEventHandler, Funcware } from "./ext";
 import {
   AnyFactoryMachineEvent,
   AnyFactoryState,
+  FactoryEvent,
   FactoryEventResolved,
   FactoryMachineContext,
 } from "./factory-machine";
@@ -72,31 +73,15 @@ type On<
         [Event in
           | keyof Transitions[StateKey]
           | "*"]?: Event extends FlatFactoryEventKeys<FC> // specific event
-          ? ReturnType<
-              FactoryEventResolved<FC, StateKey, Event>['from']
-            > extends AnyFactoryState<States>
+          ? 
+            FactoryEventResolved<FC, StateKey, Event>['to'] extends AnyFactoryState<States>
             ? TransitionHookConfig<
-                AnyFactoryMachineEvent<FC> & {
-                  type: Event;
-                  from: AnyFactoryState<
-                    States,
-                    StateKey extends keyof States ? StateKey : keyof States
-                  >;
-                  to: FactoryEventResolved<FC, StateKey, Event>['to']
-                  
-                  params: FactoryEventResolved<FC, StateKey, Event>['params']
-                  
-                }
+                FactoryEventResolved<FC, StateKey, Event>
               >
             : never
           : // wildcard event
             TransitionHookConfig<
-              AnyFactoryMachineEvent<FC> & {
-                from: AnyFactoryState<
-                  States,
-                  StateKey extends keyof States ? StateKey : keyof States
-                >;
-              }
+              FactoryEventResolved<FC, StateKey>
             >;
       }
     : // wildcard state
@@ -104,17 +89,7 @@ type On<
         [AnyStateEvent in
           | FlatFactoryEventKeys<FC>
           | "*"]?: TransitionHookConfig<
-          AnyFactoryMachineEvent<FC> & {
-            type: AnyStateEvent extends "*"
-              ? FlatFactoryEventKeys<FC>
-              : AnyStateEvent;
-            from: AnyFactoryState<
-              States,
-              StateKey extends keyof States ? StateKey : keyof States
-            >;
-            to: FactoryEventResolved<FC,StateKey, AnyStateEvent>['to']            
-            params: FactoryEventResolved<FC,StateKey, AnyStateEvent>['params']
-          }
+          FactoryEvent<FC>
         >;
       };
 
