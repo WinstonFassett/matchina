@@ -2,77 +2,53 @@ import {
   AnyFactoryMachineEvent,
   AnyFactoryMachineTransition,
 } from "./factory-machine";
+import { Filters, HasFilterValues, matchKey, matchesPropertyFilters } from "./match-property-filters";
 
-export type AnyKeyedChangeEvent = {
-  type: string;
-  to: { key: string };
-  from: { key: string };
-};
+
+export function isKeyedChangeEvent <E extends KeyedChangeEvent, F extends Filters<ChangeEventKeys<E>>>(
+  ev: E, 
+  filter: F): ev is E  {
+    const {type, to: { key: to }, from: { key: from }} = ev
+    return matchesPropertyFilters({
+      type, to, from
+    }, filter)
+}
+
 
 export type KeyedChangeEvent<
-  Type extends string,
-  ToKey extends string,
-  FromKey extends string,
+  Type extends string = string,
+  FromKey extends string = string,
+  ToKey extends string = FromKey,
 > = {
   type: Type;
-  to: { key: ToKey };
   from: { key: FromKey };
+  to: { key: ToKey };
 };
 
-export function hasKeyValue<T, K extends PropertyKey, V>(
-  obj: T,
-  key: K,
-  values: V | V[],
-): obj is T & Record<K, V> {
-  if (!Array.isArray(values)) {
-    return (obj as Record<K, V>)[key] === values;
-  }
-  return values.includes((obj as Record<K, V>)[key]);
-}
 
-function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
-  if (keyOrKeys === undefined) {
-    return true;
-  }
-  return Array.isArray(keyOrKeys)
-    ? keyOrKeys.includes(value)
-    : keyOrKeys === value;
-}
-
-export type KeyedChangeEventFilter<E extends AnyKeyedChangeEvent> = Filters<{
+export type KeyedChangeEventFilter<E extends KeyedChangeEvent> = Filters1<{
   type: E["type"];
   to: E["to"]["key"];
   from: E["from"]["key"];
 }>;
 
-export type KeyedChangeEventFromFilter<
-  F extends KeyedChangeEventFilter<any>,
-  FromKey = FilterValues<F>["from"] extends string
-    ? FilterValues<F>["from"]
-    : string,
-  Type = FilterValues<F>["type"] extends string
-    ? FilterValues<F>["type"]
-    : string,
-  ToKey = FilterValues<F>["to"] extends string ? FilterValues<F>["to"] : string,
-> = {
-  type: Type;
-  from: { key: FromKey };
-  to: { key: ToKey };
+export type ChangeEventKeys<E extends KeyedChangeEvent> = {
+  type: E["type"];
+  to: E["to"]["key"];
+  from: E["from"]["key"];
 };
 
-export type FactoryChangeEventFromFilter1<
-  E extends AnyFactoryMachineEvent<any>,
-  F extends KeyedChangeEventFilter<E>,
-> = {
-  f: F;
-  from: FilterValues<F>["from"] extends string
-    ? FilterValues<F>["from"]
-    : string;
-  type: FilterValues<F>["type"] extends string
-    ? FilterValues<F>["type"]
-    : string;
-  to: FilterValues<F>["to"] extends string ? FilterValues<F>["to"] : string;
-};
+export type KeyedChangeEventFromFilter<
+  E extends KeyedChangeEvent,
+  F extends Filters<ChangeEventKeys<E>>,
+  // FV extends FilterValues<F> = FilterValues<F>,
+  FV extends HasFilterValues<E, F> = HasFilterValues<E, F>
+> = 
+{
+  type: FV['type'];
+  from: { key: FV['from'] };
+  to: { key: FV['to'] };
+}
 
 export type FactoryChangeEventFilter<
   E extends AnyFactoryMachineEvent<any>,
@@ -101,37 +77,10 @@ export type FactoryChangeEventFromFilter<
   FV["to"] extends string ? FV["to"] : string
 >;
 
-// export function isKeyedChangeEvent<
-//   E extends AnyKeyedChangeEvent,
-//   FromKey extends string & E["from"]["key"],
-//   Type extends string & E["type"],
-//   ToKey extends string & E["to"]["key"],
-// >(
-//   event: E,
-//   type: Type,
-//   from: FromKey,
-//   to: ToKey
-// ): event is E & KeyedChangeEventFromFilter<{
-//   type: Type;
-//   from: FromKey;
-//   to: ToKey;
-// }>;
-
-// export function isKeyedChangeEvent<
-//   E extends AnyKeyedChangeEvent,
-//   F extends KeyedChangeEventFilter<E> = KeyedChangeEventFilter<E>,
-// >(
-//   event: E,
-//   filter: {
-//     type: string,
-//     from: string,
-//     to: string
-//   }
-// ): event is E & KeyedChangeEventFromFilter<F>;
 
 
-export function isKeyedChangeEvent<
-  E extends AnyKeyedChangeEvent,
+export function isKeyedChangeEvent1<
+  E extends KeyedChangeEvent,
   Type extends string & E["type"] = string & E["type"],
   ToKey extends string & E["to"]["key"] = string & E["to"]["key"],
   FromKey extends string & E["from"]["key"] = string & E["from"]["key"],
@@ -141,7 +90,7 @@ export function isKeyedChangeEvent<
     from?: KeyedChangeEventFilter<E>['from'],
     to?: KeyedChangeEventFilter<E>['type']
   ]
-  ): event is E & KeyedChangeEventFromFilter<{
+  ): event is E & KeyedChangeEventFromFilter<E, {
     type: Type;
     from: FromKey;
     to: ToKey;
@@ -245,7 +194,7 @@ export function asChangeTypeToFrom<
   }
   throw new Error("not a match");
 }
-export type Filters<T> = object & {
+export type Filters1<T> = object & {
   [K in keyof T]?: T[K] | T[K][];
 };
 

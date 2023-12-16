@@ -26,14 +26,24 @@ export type HasFilterValues<T, C> = T extends T
 
 
 
-export function matchesPropertyFilters<T, C extends Filters<T>>(
+export function matchesPropertyFilters<T extends Record<string, any>, C extends Filters<T>>(
   item: T,
   condition: C
 ): item is T & HasFilterValues<T, C> {
-  return Object.keys(condition).every((key) => matchKey(condition[key as keyof C], (item as any)[key]));
+  return Object.keys(condition).every((key) => matchKey(condition[key as keyof C], (item)[key]));
 }
 
-function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
+export function asPropertyFilterMatch<T extends Record<string, any>, C extends Filters<T>>(
+  item: T,
+  condition: C
+): T & HasFilterValues<T, C> {
+  if (matchesPropertyFilters(item, condition)) {
+    return item;
+  }
+  throw new Error("not a match");
+}
+
+export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   if (keyOrKeys === undefined) {
     return true;
   }
