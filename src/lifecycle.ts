@@ -66,7 +66,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           machine,
           phase as keyof FactoryMachine<FC>,
           iff(
-            (ev: AnyFactoryMachineEvent<FC>) => isKeyedChangeEvent(ev, filter),
+            (ev: AnyFactoryMachineEvent<FC>) => isKeyedChangeEvent(ev, filter as any),
             (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),

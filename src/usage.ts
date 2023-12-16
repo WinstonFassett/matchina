@@ -1,5 +1,6 @@
 import { createSetup, setup } from "./ext/setup";
 import { EntryListener, when } from "./extras/when";
+import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
 import { createFactoryMachine } from "./factory-machine";
 import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
@@ -15,13 +16,10 @@ import {
 import { StateMachineEvent, createStateMachine } from "./state-machine";
 import { defineStates } from "./states";
 import {
-  AnyKeyedChangeEvent,
-  KeyedChangeEventFilter,
   isFactoryMachineChangeFromTypeTo,
   isFactoryMachineEvent,
-  isKeyedChangeEvent,
+  isKeyedChangeEvent
 } from "./typeguards";
-import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 
 const m1 = createStateMachine<
   StateMachineEvent &
@@ -92,10 +90,10 @@ const m4 = createFactoryMachine(
 // m4.getChange().to.key ;
 m4.send("execute", 1);
 
-const isChange =
-  <E extends AnyKeyedChangeEvent>(filter: KeyedChangeEventFilter<E>) =>
-  (ev: E) =>
-    isKeyedChangeEvent<E>(ev, filter);
+// const isChange =
+//   <E extends KeyedChangeEvent>(filter: KeyedChangeEventFilter<E>) =>
+//   (ev: E) =>
+//     isKeyedChangeEvent(ev, filter);
 
 setup(m4)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
@@ -125,14 +123,14 @@ setup(m4)(
       },
     ),
   ),
-  enter(
-    when(isChange({ type: "execute" }), (ev) => {
-      console.log("entered condition");
-      return (ev) => {
-        console.log("exited condition");
-      };
-    }),
-  ),
+  // enter(
+  //   when(isChange({ type: "execute" }), (ev) => {
+  //     console.log("entered condition");
+  //     return (ev) => {
+  //       console.log("exited condition");
+  //     };
+  //   }),
+  // ),
   notify(
     when(
       (ev) => ev.type === "reject",
@@ -180,9 +178,10 @@ const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
 type EE = ReturnType<typeof m5.getChange>;
 
 const e = {} as ReturnType<typeof m4.getChange>;
-if (isKeyedChangeEvent(e, { from: "Idle", type: "execute" } as const)) {
-  e.type = "execute";
-  e.from.key = "Idle";
+if (isKeyedChangeEvent(e, { from: 'Idle' } as const)) {
+  // e.type = "execute";
+  // e.from.key = "Idle";
+  
 }
 if (isFactoryMachineEvent(e, { type: "reject" } as const)) {
   e.from.key = "Pending";
