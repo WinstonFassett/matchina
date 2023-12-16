@@ -14,7 +14,7 @@ export function createFactoryMachine<
   SF extends AnyStatesFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEventUnion<FC> = FactoryMachineEventUnion<FC>,
+  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
 >(
   states: SF,
   transitions: TC,
@@ -39,7 +39,7 @@ export function createFactoryMachine<
 export function nextFactoryState<FC extends FactoryMachineContext<any>>(
   transitions: FC["transitions"],
   states: FC["states"],
-  ev: ResolveEvent<FactoryMachineEventUnion<FC>>,
+  ev: ResolveEvent<FactoryMachineEvent<FC>>,
 ) {
   const to = transitions[ev.from.key][ev.type];
   if (!to) {
@@ -55,7 +55,7 @@ export function nextFactoryState<FC extends FactoryMachineContext<any>>(
 
 
 export interface FactoryMachine<FC extends FactoryMachineContext<any>>
-  extends StateMachine<FactoryMachineEventUnion<FC>> {
+  extends StateMachine<FactoryMachineEvent<FC>> {
   states: FC["states"];
   transitions: FC["transitions"];
 }
@@ -74,7 +74,7 @@ export type FactoryMachineTransitions<SF extends AnyStatesFactory> = {
       | ((...params: any[]) => StateFromFactory<SF>)
       | ((...params: any[]) => (
           ev: ResolveEvent<
-          FactoryMachineEventUnion<{ states: SF; transitions: any }>
+          FactoryMachineEvent<{ states: SF; transitions: any }>
           > & {
             from: StateFromFactory<SF, FromStateKey>;
           },
@@ -99,10 +99,10 @@ export type AnyStatesFactory = Record<string, (...params: any) => any>;
 /**
  * Union of events that can be sent to a factory machine
  */
-export type FactoryMachineEventUnion<FC extends FactoryMachineContext<any>> = {
+export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
   [K in keyof FC["transitions"]]: {
     [E in keyof FC["transitions"][K]]:       
-      FactoryMachineEvent<FC, K, E>;
+      FactoryMachineTransitionEvent<FC, K, E>;
   }[keyof FC["transitions"][K]];
 }[keyof FC['transitions']];
 
@@ -111,7 +111,7 @@ export type FactoryMachineEventUnion<FC extends FactoryMachineContext<any>> = {
  * Resolves transition config to event and params
  * This is the configured event type, not the actual event type
  */
-export type FactoryMachineEvent<
+export type FactoryMachineTransitionEvent<
   FC extends FactoryMachineContext<any>,
   FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
@@ -120,7 +120,7 @@ export type FactoryMachineEvent<
   StateMachineEvent<StateFromFactory<FC['states']>> &
   // AnyFactoryMachineEvent<FC> & 
   {
-    get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEventUnion<FC>>;
+    get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
     match: MatchInvocation<
     FlatMemberUnion<StateEventTransitionSenders<FC>>
   >

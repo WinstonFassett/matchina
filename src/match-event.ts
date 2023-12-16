@@ -1,9 +1,9 @@
-import { FactoryMachineEventUnion } from "./factory-machine";
+import { FactoryMachineEvent } from "./factory-machine";
 import { FuncRecord, MatchInvocationCases } from "./match";
 
 export function matchEvent<
   R extends FuncRecord,
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   A,
   Exhaustive extends boolean = false
 >(

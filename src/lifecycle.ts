@@ -4,7 +4,7 @@ import { Disposer } from "./ext/types";
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineEventUnion
+  FactoryMachineEvent
 } from "./factory-machine";
 import { StateEventHookConfig, StateHookConfig } from "./lifecycle-types";
 import { HookAdapters } from "./machine-hooks";
@@ -49,9 +49,9 @@ export function onLifecycle<FC extends FactoryMachineContext>(
 
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
-  filter: ChangeEventKeyFilter<FactoryMachineEventUnion<FC>>,
+  filter: ChangeEventKeyFilter<FactoryMachineEvent<FC>>,
   config:   
-    | StateEventHookConfig<FactoryMachineEventUnion<FC>>
+    | StateEventHookConfig<FactoryMachineEvent<FC>>
     | StateHookConfig<FC>,
   d: Disposer[],
 ) {
@@ -66,7 +66,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           machine,
           phase as keyof FactoryMachine<FC>,
           iff(
-            (ev: FactoryMachineEventUnion<FC>) => matchesChangeEventKeys(ev, filter as any),
+            (ev: FactoryMachineEvent<FC>) => matchesChangeEventKeys(ev, filter as any),
             (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),

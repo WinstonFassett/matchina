@@ -1,7 +1,7 @@
 import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
 import {
-  FactoryMachineEventUnion,
+  FactoryMachineEvent,
   StateFromFactory
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
@@ -9,7 +9,7 @@ import { StateMachine } from "./state-machine";
 import { Effect } from "./types";
 
 export const beforeEvent = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E["type"],
 >(
   type: K,
@@ -21,21 +21,21 @@ export const beforeEvent = <
     }
   });
 export const leftState = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E['from']['key'],
 >(
   stateKey: K,
   fn: EntryListener<E & { from: StateFromFactory<E["machine"]["states"], K> }>,
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 export const enteredState = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends keyof E["machine"]["states"],
 >(
   stateKey: K,
   fn: EntryListener<E & { to: StateFromFactory<E["machine"]["states"], K> }>,
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 export const afterEvent = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E["type"],
 >(
   type: K,
@@ -48,7 +48,7 @@ export const afterEvent = <
   });
 
 export const onBeforeEvent = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E["type"],
 >(
   m: StateMachine<E>,
@@ -57,7 +57,7 @@ export const onBeforeEvent = <
 ) => setup(m)(beforeEvent(type, fn));
 
 export const onLeftState = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends keyof E["machine"]["states"],
 >(
   m: StateMachine<E>,
@@ -66,7 +66,7 @@ export const onLeftState = <
 ) => setup(m)(leave(leftState(stateKey, fn)));
 
 export const onAfterEvent = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E["type"],
 >(
   m: StateMachine<E>,
@@ -75,7 +75,7 @@ export const onAfterEvent = <
 ) => setup(m)(afterEvent<E, K>(type, fn));
 
 export const onGuardEvent = <
-  E extends FactoryMachineEventUnion<any>,
+  E extends FactoryMachineEvent<any>,
   K extends E["type"],
 >(
   m: StateMachine<E>,
