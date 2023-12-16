@@ -299,7 +299,7 @@ m5.subscribe(
 //   }),
 // );
 
-setup(m4)(notify(leftState("Rejected", (ev) => {})));
+setup(m4)(notify(leftState('Pending', (ev) => {})));
 
 const unsub2 = m5.subscribe(
   when(
