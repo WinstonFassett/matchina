@@ -2,11 +2,11 @@ import { AbortableEventHandler, Funcware } from "./ext";
 import {
   AnyFactoryMachineEvent,
   AnyFactoryState,
+  FactoryEventResolved,
   FactoryMachineContext,
-  StateEventTransitionFuncs,
 } from "./factory-machine";
 import { FlatFilters } from "./match-property-filters";
-import { StateMachineEvent, StateMachine } from "./state-machine";
+import { StateMachine, StateMachineEvent } from "./state-machine";
 import { Effect, Middleware } from "./types";
 import {
   FlatMemberUnion,
@@ -73,7 +73,7 @@ type On<
           | keyof Transitions[StateKey]
           | "*"]?: Event extends FlatFactoryEventKeys<FC> // specific event
           ? ReturnType<
-              StateEventTransitionFuncs<FC>[StateKey][Event]
+              FactoryEventResolved<FC, StateKey, Event>['from']
             > extends AnyFactoryState<States>
             ? TransitionHookConfig<
                 AnyFactoryMachineEvent<FC> & {
@@ -82,12 +82,10 @@ type On<
                     States,
                     StateKey extends keyof States ? StateKey : keyof States
                   >;
-                  to: ReturnType<
-                    StateEventTransitionFuncs<FC>[StateKey][Event]
-                  >;
-                  params: Parameters<
-                    StateEventTransitionFuncs<FC>[StateKey][Event]
-                  >;
+                  to: FactoryEventResolved<FC, StateKey, Event>['to']
+                  
+                  params: FactoryEventResolved<FC, StateKey, Event>['params']
+                  
                 }
               >
             : never
@@ -114,12 +112,8 @@ type On<
               States,
               StateKey extends keyof States ? StateKey : keyof States
             >;
-            to: ReturnType<
-              StateEventTransitionFuncs<FC>[StateKey][AnyStateEvent]
-            >;
-            params: Parameters<
-              StateEventTransitionFuncs<FC>[StateKey][AnyStateEvent]
-            >;
+            to: FactoryEventResolved<FC,StateKey, AnyStateEvent>['to']            
+            params: FactoryEventResolved<FC,StateKey, AnyStateEvent>['params']
           }
         >;
       };
@@ -128,8 +122,8 @@ export type FlatExitStates<
   FC extends FactoryMachineContext,
   States extends FC["states"] = FC["states"],
 > = Members<{
-  [StateKey in keyof StateEventTransitionFuncs<FC>]: {
-    [EventKey in keyof StateEventTransitionFuncs<FC>[StateKey]]: StateEventTransitionFuncs<FC>[StateKey][EventKey] extends (
+  [StateKey in keyof FC['transitions']]: {
+    [EventKey in keyof FC['transitions'][StateKey]]: FC['transitions'][StateKey][EventKey] extends (
       ...args: any[]
     ) => infer TargetState
       ? TargetState extends AnyFactoryState<States, infer TargetStateKey>
@@ -138,17 +132,15 @@ export type FlatExitStates<
           : never
         : never
       : never;
-  }[keyof StateEventTransitionFuncs<FC>[StateKey]];
+  }[keyof FC['transitions'][StateKey]];
 }>;
 
 export type EventExitStatesIntersection<FC extends FactoryMachineContext> =
   TUnionToIntersection<FlatMemberUnion<StatesToEventsToStates<FC>>>;
 
 export type StatesToEventsToStates<FC extends FactoryMachineContext> = {
-  [StateKey in keyof StateEventTransitionFuncs<FC>]: {
-    [EventKey in keyof StateEventTransitionFuncs<FC>[StateKey]]: ReturnType<
-      StateEventTransitionFuncs<FC>[StateKey][EventKey]
-    >;
+  [StateKey in keyof FC['transitions']]: {
+    [EventKey in keyof FC['transitions'][StateKey]]: FactoryEventResolved<FC, StateKey, EventKey>['to']
   };
 };
 
@@ -160,5 +152,5 @@ export type StateEventHookConfig<FC extends FactoryMachineContext> = {
 
 export type FlatFactoryEventKeys<FC extends FactoryMachineContext> = string &
   {
-    [StateKey in keyof StateEventTransitionFuncs<FC>]: keyof StateEventTransitionFuncs<FC>[StateKey];
-  }[keyof StateEventTransitionFuncs<FC>];
+    [StateKey in keyof FC['transitions']]: keyof FC['transitions'][StateKey];
+  }[keyof FC['transitions']];

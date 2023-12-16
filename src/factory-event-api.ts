@@ -1,8 +1,7 @@
 import {
   ExitProps,
   FactoryMachine,
-  FactoryMachineContext,
-  StateEventTransitionFuncs,
+  FactoryMachineContext
 } from "./factory-machine";
 import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
