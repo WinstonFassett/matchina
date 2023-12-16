@@ -3,7 +3,7 @@ import { EntryListener, when } from "./extras/when";
 import { withNanoSubscribe } from "./extras/with-nanosubscribe";
 import { createApi } from "./factory-event-api";
 import { FactoryMachineEvent, createFactoryMachine } from "./factory-machine";
-import { leftState, onLeftState } from "./factory-machine-hooks";
+import { leftState, onLeftState, whenEvent } from "./factory-machine-hooks";
 import {
   effect,
   enter,
@@ -283,21 +283,21 @@ m5.subscribe(
   ),
 );
 
-// m5.subscribe(
-//   whenEvent({ from: "Pending", type: "reject" }, (ev) => {
-//     ev.type = "reject";
-//     ev.to.key = "Rejected";
-//   }),
-// );
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject" }, (ev) => {
+    ev.type = "reject";
+    ev.to.key = "Rejected";
+  }),
+);
 
-// m5.subscribe(
-//   whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
-//     ev.type = "reject";
-//     ev.from.key = "Pending";
-//     ev.to.key = "Rejected";
-//     ev.to.data.err.message = "nope";
-//   }),
-// );
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
+    ev.type = "reject";
+    ev.from.key = "Pending";
+    ev.to.key = "Rejected";
+    ev.to.data.err.message = "nope";
+  }),
+);
 
 setup(m4)(notify(leftState('Pending', (ev) => {})));
 

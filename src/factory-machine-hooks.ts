@@ -2,9 +2,11 @@ import { AbortableEventHandler, setup } from "./ext";
 import { EntryListener, ExitListener, when } from "./extras/when";
 import {
   FactoryMachineEvent,
+  FactoryMachineTransitionEvent,
   FactoryState
 } from "./factory-machine";
 import { after, before, guard, leave } from "./machine-hooks";
+import { ChangeEventKeyFilter, FilterValues, HasFilterValues, matchesChangeEventKeys } from "./match-property-filters";
 import { StateMachine } from "./state-machine";
 import { Effect } from "./types";
 
@@ -91,35 +93,22 @@ export const onGuardEvent = <
     }),
   );
 
-// export const whenEvent = <
-//   E extends FactoryMachineEventUnion<any>,
-//   FromKey extends string & E["from"]["key"],
-//   Type extends string &
-//     E["type"] &
-//     FactoryEventResolved<E["machine"], FromKey>["type"],
-//   ToKey extends string &
-//     E["to"]["key"] &
-//     FactoryEventResolved<E["machine"], FromKey, Type>["to"]["key"],
-// >(
-//   filter: {
-//     from?: FromKey | FromKey[];
-//     type?: Type | Type[];
-//     to?: ToKey | ToKey[];
-//   },
-//   fn: Effect<
-//     E &
-//       FactoryChangeEventFromFilter<
-//         E,
-//         {
-//           from: FromKey;
-//           type: Type;
-//           to: ToKey;
-//         }
-//       >
-//   >,
-// ) =>
-//   when<E>(
-//     (ev) =>
-//       matchesChangeEventKeys(ev, {}),
-//     fn as any,
-//   );
+export const whenEvent = <
+  E extends FactoryMachineEvent<any>,
+  F extends ChangeEventKeyFilter<E>,
+  FV extends FilterValues<F>
+  >(
+  filter: F,
+  fn: Effect<    
+    E & HasFilterValues<E, {
+      type: FV['type'];
+      to: { key: FV['to'] };
+      from: { key: FV['from'] };
+    }>
+  >,
+) =>
+  when<E>(
+    (ev) =>
+      matchesChangeEventKeys(ev, {}),
+    fn as any,
+  );

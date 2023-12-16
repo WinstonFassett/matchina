@@ -10,7 +10,7 @@ type NestedFilter<T> = { [K in keyof T]?: T[K] extends Record<string, any> ? Nes
 
 export type NestableFilters<T> = NestedFilter<T> & FlatFilters<T>;
 
-type FilterValues<F> = {
+export type FilterValues<F> = {
   [K in keyof F]: F[K] extends (infer U)[] ? U : F[K];
 };
 
