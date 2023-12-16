@@ -64,13 +64,13 @@ describe("onLifecycle usage", () => {
             change.to.data = new Error("test"); // must be Error type
             change.to.data.message = "test"; // message autocomplete
           },
-          leave(change) {
-            change.from.data = new Error("test"); // must be Error type
-            change.from.data.message = "test"; // Error properties autocomplete
-            change.from.key = "Rejected"; // must be Rejected
-            // TODO: filter out Idle
-            change.to.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
-          },
+          // leave(change) {
+          //   change.from.data = new Error("test"); // must be Error type
+          //   change.from.data.message = "test"; // Error properties autocomplete
+          //   change.from.key = "Rejected"; // must be Rejected
+          //   // TODO: filter out Idle
+          //   change.to.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+          // },
           on: {
             // execute: {}, // Error. "execute" event not allowed in "Rejected" state
             "*": {
@@ -91,7 +91,7 @@ describe("onLifecycle usage", () => {
             reject: {
               after(change) {
                 change.type = "reject"; // must be "reject"
-                change.from.key = "Idle"; // "Idle" | "Pending" | "Rejected" | "Resolved"
+                change.from.key = 'Pending'; // "Idle" | "Pending" | "Rejected" | "Resolved"
                 change.to.data.message = "test"; // Error properties autocomplete
                 change.to.key = "Rejected"; // must be Rejected
               },

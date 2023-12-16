@@ -38,20 +38,22 @@ export type StateTransitionHooks<
   StateKey extends keyof FC["transitions"] | "*",
 > = {
   leave: Middleware<
-    AnyFactoryMachineEvent<FC> & {
-      from: AnyFactoryState<
-        FC["states"],
-        StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
-      >;
-    }
+    FactoryEventResolved<FC, StateKey>
+    // AnyFactoryMachineEvent<FC> & {
+    //   from: AnyFactoryState<
+    //     FC["states"],
+    //     StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
+    //   >;
+    // }
   >;
   enter: Middleware<
-    AnyFactoryMachineEvent<FC> & {
-      to: AnyFactoryState<
-        FC["states"],
-        StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
-      >;
-    }
+    FactoryEventResolved<FC, any, any, FactoryEvent<FC>['to']>
+    // AnyFactoryMachineEvent<FC> & {
+    //   to: AnyFactoryState<
+    //     FC["states"],
+    //     StateKey extends keyof FC["states"] ? StateKey : keyof FC["states"]
+    //   >;
+    // }
   >;
 };
 
@@ -72,8 +74,10 @@ type On<
       {
         [Event in
           | keyof Transitions[StateKey]
-          | "*"]?: Event extends FlatFactoryEventKeys<FC> // specific event
+          | "*"]?: 
+          Event extends FlatFactoryEventKeys<FC> // specific event
           ? 
+          // ? FactoryEventResolved<FC, StateKey, Event extends '*' ? any : Event>
             FactoryEventResolved<FC, StateKey, Event>['to'] extends AnyFactoryState<States>
             ? TransitionHookConfig<
                 FactoryEventResolved<FC, StateKey, Event>
@@ -86,10 +90,10 @@ type On<
       }
     : // wildcard state
       {
-        [AnyStateEvent in
+        [Event in
           | FlatFactoryEventKeys<FC>
           | "*"]?: TransitionHookConfig<
-          FactoryEvent<FC>
+          Event extends '*' ? FactoryEvent<FC> : FactoryEventResolved<FC, any, Event>
         >;
       };
 
