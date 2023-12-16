@@ -1,4 +1,5 @@
 import {
+  ExitProps,
   FactoryMachine,
   FactoryMachineContext,
   StateEventTransitionFuncs,
@@ -54,9 +55,9 @@ export type FlatEventSenders<FC extends FactoryMachineContext> =
   FlatMemberUnionToIntersection<StateEventTransitionSenders<FC>>;
 
 export type StateEventTransitionSenders<FC extends FactoryMachineContext> = {
-  [StateKey in keyof StateEventTransitionFuncs<FC>]: {
-    [EventKey in keyof StateEventTransitionFuncs<FC>[StateKey]]: (
-      ...args: Parameters<StateEventTransitionFuncs<FC>[StateKey][EventKey]>
+  [StateKey in keyof FC['transitions']]: {
+    [EventKey in keyof FC['transitions'][StateKey]]: (
+      ...args: ExitProps<FC, StateKey, EventKey>['params']
     ) => void;
   };
 };
