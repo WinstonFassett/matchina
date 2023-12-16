@@ -110,14 +110,19 @@ type On1<
         >;
       };
 
+type EventKeys<
+  FC extends FactoryMachineContext, 
+  FromStateKey extends keyof FC["transitions"]>
+= 
+keyof FC['transitions'][FromStateKey];
+
 type On<
   FC extends FactoryMachineContext,
   FromStateKey extends keyof FC["transitions"],   
 > =
 {
-  [Event in keyof FC['transitions'][FromStateKey] | "*"]?: 
+  [Event in EventKeys<FC, FromStateKey> | "*"]?: 
     TransitionHookConfig<
-      // Event extends keyof FC["transitions"][FromStateKey] ? FactoryEventResolved<FC, FromStateKey, Event> : FactoryEvent<FC>
       HasFilterValues<
         FactoryEvent<FC>,
         {
@@ -125,7 +130,6 @@ type On<
           from: { key: FromStateKey }          
         }
       >
-      // FactoryEventResolved<FC, FromStateKey, Event extends '*' ? any : Event>
     >
 };
 
