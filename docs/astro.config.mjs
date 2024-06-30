@@ -11,6 +11,9 @@ console.log({ remarkShikiTwoslash})
 export default defineConfig({
   site: 'https://winstonfassett.github.io',
   base: process.env.NODE_ENV === 'production' ? 'matchina' : undefined,
+  build: {
+    assets: 'assets'
+  },
   markdown: {
     syntaxHighlight: false,
     rehypePlugins:[
