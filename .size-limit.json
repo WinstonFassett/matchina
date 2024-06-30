@@ -2,5 +2,24 @@
   {
     "name": "index",
     "path": "dist/index.mjs"
+  },
+  {
+    "name": "matchbox",
+    "path": "dist/index.mjs",
+    "import": "{ matchboxFactory }"
+  }, 
+  {
+    "name": "states",
+    "path": "dist/index.mjs",
+    "import": "{ defineStates }"
+  },
+  {
+    "name": "machine",
+    "path": "src/state-machine.ts",
+    "import": "{ createStateMachine }"
+  },
+  {
+    "name": "pure",
+    "path": "src/state-machine-pure.ts"
   }
 ]
