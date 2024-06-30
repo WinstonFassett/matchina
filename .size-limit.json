@@ -65,5 +65,9 @@
     "name": "factory machine hooks",
     "path": "src/factory-machine-hooks.ts",
     "import": "{ whenEvent, onLeftState }"
+  },
+  {
+    "name": "state-machine-transition-helpers",
+    "path": "src/state-machine-transition-helpers.ts"
   }
 ]

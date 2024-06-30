@@ -11,3 +11,5 @@ export * from "./promise-machine";
 export * from "./state-machine";
 export * from "./state-machine-pure";
 export * from "./state-machine-hooks";
+export * from "./state-machine-transition-helpers";
+export * from "./types";
