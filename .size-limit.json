@@ -67,6 +67,11 @@
     "import": "{ whenEvent, onLeftState }"
   },
   {
+    "name": "factory-machine-lifecycle",
+    "path": "src/factory-machine-lifecycle.ts",
+    "import": "{ onLifecycle}"
+  },
+  {
     "name": "state-machine-transition-helpers",
     "path": "src/state-machine-transition-helpers.ts"
   },
