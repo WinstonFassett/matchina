@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineEffects } from "../src/extras/effects";
 import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "..";
+import { createFactoryMachine, withApi } from "../src";
 import { bindEffects } from "../src/extras/bind-effects";
 
 const effectsConfig = {

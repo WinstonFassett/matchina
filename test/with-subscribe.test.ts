@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createFactoryMachine, defineStates, withApi } from "..";
+import { createFactoryMachine, defineStates, withApi } from "../src";
 import { withNanoSubscribe } from "../src/extras/with-nanosubscribe";
 // import { whenEvent } from "../src/factory-machine-hooks";
 
