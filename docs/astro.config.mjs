@@ -124,15 +124,15 @@ export default defineConfig({
             },
             {
               label: "Context", 
-              link: "/matchina/guides/context"
+              link: "/guides/context"
             },
             {
               label: "Union Machines",
-              link: "/matchina/guides/union-machines",
+              link: "/guides/union-machines",
             },
             {
               label: "Timsy Compatibility",
-              link: "/matchina/guides/timsy",
+              link: "/guides/timsy",
             },
           ],
           
