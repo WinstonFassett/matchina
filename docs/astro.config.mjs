@@ -9,6 +9,8 @@ import rehypeShikiji from 'rehype-shikiji'
 console.log({ remarkShikiTwoslash})
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://winstonfassett.github.io',
+  base: process.env.NODE_ENV === 'production' ? '/matchina/' : '/',
   markdown: {
     syntaxHighlight: false,
     rehypePlugins:[
