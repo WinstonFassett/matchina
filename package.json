@@ -10,8 +10,16 @@
     "url": "https://github.com/WinstonFassett/matchina/issues"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vitest dev",
+    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
+    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w"
+
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "prettier": "^3.0.3",
+    "eslint": "^8.51.0",
+    "eslint-config-unjs": "^0.2.1",
+    "vitest": "^0.34.6"
+  }
 }
