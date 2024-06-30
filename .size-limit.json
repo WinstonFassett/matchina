@@ -69,5 +69,15 @@
   {
     "name": "state-machine-transition-helpers",
     "path": "src/state-machine-transition-helpers.ts"
+  },
+  {
+    "name": "nanosubscribe",
+    "path": "src/extras/nanosubscriber.ts",
+    "import": "{ nanosubscriber }"
+  },
+  {
+    "name": "with-nanosubscribe",
+    "path": "src/extras/with-nanosubscribe.ts",
+    "import": "{ withNanoSubscribe }"
   }
 ]
