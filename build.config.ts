@@ -22,6 +22,11 @@ export default defineBuildConfig({
     {
       ...mkdistEntry,
       format: "cjs",      
+    },    
+    {
+      input: 'src/integrations/react/',
+      outDir: "./dist/integrations/react",
+      builder: 'mkdist'
     }
   ],
   declaration: true,
