@@ -76,6 +76,12 @@
     "path": "src/state-machine-transition-helpers.ts"
   },
   {
+    "name": "react-dist",
+    "path": "src/integrations/react.ts",
+    "import": "{ useMachine }",
+    "ignore": ["react"]
+  },
+  {
     "name": "nanosubscribe",
     "path": "src/extras/nanosubscriber.ts",
     "import": "{ nanosubscriber }"
