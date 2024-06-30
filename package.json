@@ -1,0 +1,17 @@
+{
+  "name": "matchina",
+  "version": "0.1.0",  
+  "author": "Winston Fassett",
+  "repository": "WinstonFassett/matchina",
+  "homepage": "https://github.com/WinstonFassett/matchina#readme",
+  "license": "MIT",
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/WinstonFassett/matchina/issues"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
