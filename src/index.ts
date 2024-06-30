@@ -1,1 +1,1 @@
-export function ok() {}
+export * from "./ext";
