@@ -55,31 +55,31 @@ export default defineConfig({
           items: [
             {
               label: "Quickstart",
-              link: "/guides/quickstart/index.html",
+              link: "/guides/quickstart",
             },
             {
               label: "Features",
-              link: "/guides/inside/index.html",
+              link: "/guides/inside",
             },
             {
               label: "State Machines",
-              link: "/guides/machines/index.html",
+              link: "/guides/machines",
             },
             {
               label: "Hooks and Lifecycle",
-              link: "/guides/hooks/index.html",
+              link: "/guides/hooks",
             },
             {
               label: "Type Guards",
-              link: "/guides/typeguards/index.html",
+              link: "/guides/typeguards",
             },
             {
               label: "Extras",
-              link: "/guides/extras/index.html",
+              link: "/guides/extras",
             },
             {
               label: "Integrations",
-              link: "/guides/integrations/index.html",
+              link: "/guides/integrations",
             },
           ],
         },
@@ -88,30 +88,30 @@ export default defineConfig({
           items: [
             {
               label: "Promise - simple", 
-              link: "/examples/fetch-simple/index.html"
+              link: "/examples/fetch-simple"
             },
             { 
               label: 'Stopwatch (useEffect)',
-              link: '/examples/stopwatch-with-react-state-and-effects/index.html'
+              link: '/examples/stopwatch-with-react-state-and-effects'
             },
             { label: 'Stopwatch (onLifecycle setup)',
-              link: '/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect/index.html'
+              link: '/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect'
             },
             { 
               label: 'Stopwatch (data and setup)',
-              link: '/examples/stopwatch-using-data-and-hooks/index.html'
+              link: '/examples/stopwatch-using-data-and-hooks'
             },            
             { 
               label: 'Stopwatch (functional with data)',
-              link: '/examples/stopwatch-using-data-and-transition-functions/index.html'
+              link: '/examples/stopwatch-using-data-and-transition-functions'
             },
             { 
               label: 'Stopwatch (machine effect hooks)',
-              link: '/examples/stopwatch-with-react-state-and-state-effects/index.html'
+              link: '/examples/stopwatch-with-react-state-and-state-effects'
             },
             {
               label: "Fetch - advanced", 
-              link: "/examples/fetch-plus/index.html"
+              link: "/examples/fetch-plus"
             }
           ]
         },
@@ -120,19 +120,19 @@ export default defineConfig({
           items: [
             {
               label: "Effects",
-              link: "/guides/effects/index.html",
+              link: "/guides/effects",
             },
             {
               label: "Context", 
-              link: "/matchina/guides/context/index.html"
+              link: "/matchina/guides/context"
             },
             {
               label: "Union Machines",
-              link: "/matchina/guides/union-machines/index.html",
+              link: "/matchina/guides/union-machines",
             },
             {
               label: "Timsy Compatibility",
-              link: "/matchina/guides/timsy/index.html",
+              link: "/matchina/guides/timsy",
             },
           ],
           
