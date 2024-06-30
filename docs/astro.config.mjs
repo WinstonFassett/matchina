@@ -55,31 +55,31 @@ export default defineConfig({
           items: [
             {
               label: "Quickstart",
-              link: "/matchina/guides/quickstart/index.html",
+              link: "/guides/quickstart/index.html",
             },
             {
               label: "Features",
-              link: "/matchina/guides/inside/index.html",
+              link: "/guides/inside/index.html",
             },
             {
               label: "State Machines",
-              link: "/matchina/guides/machines/index.html",
+              link: "/guides/machines/index.html",
             },
             {
               label: "Hooks and Lifecycle",
-              link: "/matchina/guides/hooks/index.html",
+              link: "/guides/hooks/index.html",
             },
             {
               label: "Type Guards",
-              link: "/matchina/guides/typeguards/index.html",
+              link: "/guides/typeguards/index.html",
             },
             {
               label: "Extras",
-              link: "/matchina/guides/extras/index.html",
+              link: "/guides/extras/index.html",
             },
             {
               label: "Integrations",
-              link: "/matchina/guides/integrations/index.html",
+              link: "/guides/integrations/index.html",
             },
           ],
         },
@@ -88,30 +88,30 @@ export default defineConfig({
           items: [
             {
               label: "Promise - simple", 
-              link: "/matchina/examples/fetch-simple/index.html"
+              link: "/examples/fetch-simple/index.html"
             },
             { 
               label: 'Stopwatch (useEffect)',
-              link: '/matchina/examples/stopwatch-with-react-state-and-effects/index.html'
+              link: '/examples/stopwatch-with-react-state-and-effects/index.html'
             },
             { label: 'Stopwatch (onLifecycle setup)',
-              link: '/matchina/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect/index.html'
+              link: '/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect/index.html'
             },
             { 
               label: 'Stopwatch (data and setup)',
-              link: '/matchina/examples/stopwatch-using-data-and-hooks/index.html'
+              link: '/examples/stopwatch-using-data-and-hooks/index.html'
             },            
             { 
               label: 'Stopwatch (functional with data)',
-              link: '/matchina/examples/stopwatch-using-data-and-transition-functions/index.html'
+              link: '/examples/stopwatch-using-data-and-transition-functions/index.html'
             },
             { 
               label: 'Stopwatch (machine effect hooks)',
-              link: '/matchina/examples/stopwatch-with-react-state-and-state-effects/index.html'
+              link: '/examples/stopwatch-with-react-state-and-state-effects/index.html'
             },
             {
               label: "Fetch - advanced", 
-              link: "/matchina/examples/fetch-plus/index.html"
+              link: "/examples/fetch-plus/index.html"
             }
           ]
         },
@@ -120,7 +120,7 @@ export default defineConfig({
           items: [
             {
               label: "Effects",
-              link: "/matchina/guides/effects/index.html",
+              link: "/guides/effects/index.html",
             },
             {
               label: "Context", 
