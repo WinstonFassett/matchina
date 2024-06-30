@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": ["src", "test", "examples"],
+  "exclude": ["src/dev"]
+}
