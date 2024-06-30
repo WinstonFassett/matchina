@@ -1,0 +1,1 @@
+import{d as o,a as i,c as p}from"./states.c77b78b3.js";function m(r,e,a){const c=o(r),n=typeof e=="function"?e(c):e,s=typeof a=="function"?a(c,n):a,t=i(c,n,s);return{...p(t),get state(){return t.getState()},get change(){return t.getChange()},get machine(){return t}}}export{m};

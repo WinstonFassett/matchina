@@ -1,0 +1,1 @@
+import{r as s,R as b}from"./index.9fa1aa67.js";function f(t){const u=s.useCallback(e=>{const r=t.notify,a=r.bind(t);return t.notify=n=>{a(n),e(n)},()=>{t.notify=r}},[t]),o=s.useCallback(()=>t.getChange(),[t]);return[b.useSyncExternalStore(u,o,o),t]}export{f as u};
