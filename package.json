@@ -30,7 +30,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build": "unbuild && size-limit",
     "dev": "vitest dev",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w"
@@ -38,9 +38,11 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^10.0.1",
     "eslint": "^8.51.0",
     "eslint-config-unjs": "^0.2.1",
     "prettier": "^3.0.3",
+    "size-limit": "^10.0.1",
     "unbuild": "^2.0.0",
     "vitest": "^0.34.6"
   }
