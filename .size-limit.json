@@ -31,5 +31,14 @@
     "name": "matchChange",
     "path": "src/match-change.ts",
     "import": "{ matchChange }"
+  },
+  {
+    "name": "promise-handle",
+    "path": "src/promise-handle.ts"    
+  },
+  {
+    "name": "promise-machine",
+    "path": "src/promise-machine.ts",
+    "import": "{ createPromiseMachine }"
   }
 ]
