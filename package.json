@@ -1,0 +1,53 @@
+{
+  "name": "matchina",
+  "version": "0.1.0",
+  "author": "Winston Fassett",
+  "repository": "WinstonFassett/matchina",
+  "homepage": "https://github.com/WinstonFassett/matchina#readme",
+  "license": "MIT",
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/WinstonFassett/matchina/issues"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./integrations/react": {
+      "types": "./dist/integrations/react.d.ts",
+      "import": "./dist/integrations/react.mjs",
+      "require": "./dist/integrations/react.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild && size-limit",
+    "dev": "vitest dev",
+    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
+    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
+    "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
+    "test": "bun test:types && vitest run --coverage",
+    "test:types": "tsc --noEmit --skipLibCheck"
+  },
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^10.0.1",
+    "@types/node": "^20.8.2",
+    "@types/react": "^18.2.31",
+    "@vitest/coverage-v8": "^0.34.6",
+    "eslint": "^8.51.0",
+    "eslint-config-unjs": "^0.2.1",   
+    "prettier": "^3.0.3",
+    "size-limit": "^10.0.1",
+    "unbuild": "^2.0.0",
+    "vitest": "^0.34.6"
+  }
+}

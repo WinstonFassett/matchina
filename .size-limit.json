@@ -1,0 +1,94 @@
+[
+  {
+    "name": "index",
+    "path": "dist/index.mjs"
+  },
+  {
+    "name": "matchbox",
+    "path": "dist/index.mjs",
+    "import": "{ matchboxFactory }"
+  }, 
+  {
+    "name": "states",
+    "path": "dist/index.mjs",
+    "import": "{ defineStates }"
+  },
+  {
+    "name": "machine",
+    "path": "src/state-machine.ts",
+    "import": "{ createStateMachine }"
+  },
+  {
+    "name": "pure",
+    "path": "src/state-machine-pure.ts"
+  },
+  {
+    "name": "factory-machine",
+    "path": "src/factory-machine.ts",
+    "import": "{ createFactoryMachine }"
+  },
+  {
+    "name": "matchChange",
+    "path": "src/match-change.ts",
+    "import": "{ matchChange }"
+  },
+  {
+    "name": "promise-handle",
+    "path": "src/promise-handle.ts"    
+  },
+  {
+    "name": "promise-machine",
+    "path": "src/promise-machine.ts",
+    "import": "{ createPromiseMachine }"
+  },    
+  {
+    "name": "ext",
+    "path": "src/ext/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "setup",
+    "path": "src/ext/setup.ts",
+    "import": "*"
+  },
+  {
+    "name": "method enhancer",
+    "path": "src/ext/index.ts",
+    "import": "{ methodEnhancer }"
+  },
+  {
+    "name": "machine hooks",
+    "path": "src/state-machine-hooks.ts",
+    "import": "{notify}"
+  },
+  {
+    "name": "factory machine hooks",
+    "path": "src/factory-machine-hooks.ts",
+    "import": "{ whenEvent, onLeftState }"
+  },
+  {
+    "name": "factory-machine-lifecycle",
+    "path": "src/factory-machine-lifecycle.ts",
+    "import": "{ onLifecycle}"
+  },
+  {
+    "name": "state-machine-transition-helpers",
+    "path": "src/state-machine-transition-helpers.ts"
+  },
+  {
+    "name": "react-dist",
+    "path": "src/integrations/react.ts",
+    "import": "{ useMachine }",
+    "ignore": ["react"]
+  },
+  {
+    "name": "nanosubscribe",
+    "path": "src/extras/nanosubscriber.ts",
+    "import": "{ nanosubscriber }"
+  },
+  {
+    "name": "with-nanosubscribe",
+    "path": "src/extras/with-nanosubscribe.ts",
+    "import": "{ withNanoSubscribe }"
+  }
+]
