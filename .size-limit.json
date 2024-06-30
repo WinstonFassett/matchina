@@ -40,5 +40,20 @@
     "name": "promise-machine",
     "path": "src/promise-machine.ts",
     "import": "{ createPromiseMachine }"
+  },    
+  {
+    "name": "ext",
+    "path": "src/ext/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "setup",
+    "path": "src/ext/setup.ts",
+    "import": "*"
+  },
+  {
+    "name": "method enhancer",
+    "path": "src/ext/index.ts",
+    "import": "{ methodEnhancer }"
   }
 ]
