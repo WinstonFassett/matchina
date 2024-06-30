@@ -32,3 +32,12 @@ export type Simplify<T> = DrainOuterGeneric<
 export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
 
 
+type FunctionWithParameters<F> = F extends (...args: infer Args) => any
+  ? Args extends []
+    ? false
+    : true
+  : false;
+  
+export type KeysWithZeroArgs<T> = {
+  [K in keyof T]: FunctionWithParameters<T[K]> extends true ? never : K;
+}[keyof T];

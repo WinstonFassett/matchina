@@ -21,5 +21,10 @@
   {
     "name": "pure",
     "path": "src/state-machine-pure.ts"
+  },
+  {
+    "name": "factory-machine",
+    "path": "src/factory-machine.ts",
+    "import": "{ createFactoryMachine }"
   }
 ]
