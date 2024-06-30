@@ -1,0 +1,30 @@
+---
+title: Timsy Compatibility
+---
+import CodeBlock from "@components/CodeBlock.astro";
+import core from '@lib/examples/timsy-core.tsx?raw'
+import future from '@lib/examples/timsy-future.ts?raw'
+import promise from '@lib/examples/timsy-promise.tsx?raw'
+import explicit from '@lib/examples/timsy.explicit-state.tsx?raw'
+import predictable from '@lib/examples/timsy.predictable-state.tsx?raw'
+
+This project was heavily-inspired by the simplicity, elegance and type-safety of timsy.
+
+As it happens, similar usage is possible.
+
+
+## Make state explicit
+<CodeBlock code={explicit} lang='js' />
+
+## Make state predictable
+<CodeBlock code={predictable} lang='js' />
+
+## Make promises safe
+<CodeBlock code={promise} lang='js' />
+
+## Core Api
+<CodeBlock code={core} lang='js' />
+
+## Real-world example
+
+<CodeBlock code={future} lang='js' />

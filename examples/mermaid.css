@@ -1,0 +1,7 @@
+.node rect {
+  fill: transparent; /* Transparent background */
+}
+
+.node text {
+  fill: currentColor; /* Text color matches current color */
+}

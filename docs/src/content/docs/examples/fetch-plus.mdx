@@ -1,0 +1,16 @@
+---
+title: Fetch Machine
+---
+import { FetcherDemo } from '@lib/examples/Fetcher-advanced.tsx'
+import code from '@lib/examples/Fetcher-advanced.tsx?raw'
+import CodeBlock from "@components/CodeBlock.astro";
+
+<div className="text-4xl text-red-500 text-green-500 text-yellow-500 container w-full flex items-center gap-2 rounded"></div>
+
+<div className="not-content">
+  <FetcherDemo client:visible />
+</div>
+
+## Full Code 
+
+<CodeBlock lang='jsx' code={code} />

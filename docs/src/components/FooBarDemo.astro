@@ -1,0 +1,34 @@
+---
+import StateMachineMermaidDiagram from "@lib/examples/MachineViz";
+import { getXStateDefinition } from "@lib/examples/StopwatchCommon";
+import { trafficLight } from "@lib/examples/TrafficLight";
+import { createFactoryMachine, defineStates } from "@lib/src";
+
+const states = defineStates( {
+  Idle: undefined,
+  Foo: (foo: string) => ({ foo }),
+  Bar: (bar: number) => ({ bar })
+})
+const machine = createFactoryMachine(
+  states, 
+  {
+    Idle: {
+      toggle: 'Foo'
+    },
+    Foo: {
+      toggle: 'Bar',
+      foo: (foo = 'foo') => states.Foo(`my-${foo}`),      
+    },
+    Bar: {
+      toggle: 'Foo',
+      increment: (bar: number) => (ev) => 
+        states.Bar(ev?.from.data.bar + bar)
+    }
+  }, 
+  'Idle'
+)
+const config = getXStateDefinition(machine)
+
+---
+
+<StateMachineMermaidDiagram config={config} stateKey="Idle" client:visible  />

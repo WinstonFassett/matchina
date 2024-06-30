@@ -1,0 +1,94 @@
+---
+title: Type Guards
+---
+import CodeBlock from "@components/CodeBlock.astro";
+import code from '@lib/examples/typeguard.usage.ts?raw'
+import { PromiseMachine, PromiseMachineEvent } from 'matchina'
+
+## Type Safety Everywhere
+
+Cool autocomplete and type safety scenarios:
+
+```tsx twoslash
+import { PromiseMachine, PromiseMachineEvent, createPromiseMachine } from 'matchina'
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const slowAddingMachine = createPromiseMachine(async (a: number, b: number, t: number = 1000) => {
+  await delay(t)
+  return a + b
+})
+
+slowAddingMachine.send('execute', 1, 2)
+
+const lastChange = slowAddingMachine.getChange()
+
+if (lastChange.to.key === 'Resolved') {
+  const sum = lastChange.to.data
+}
+
+lastChange.to.match({
+  Pending: ([a, b, t]) => {
+    console.log(a, b, a + b)
+  },
+  Rejected: (err) => {
+    console.log(err.name, err.message)
+  }
+}, false)
+
+lastChange.from.as('Rejected').key === 'Rejected'
+
+if (lastChange.to.is('Pending')) {
+  const [a, b, t] = lastChange.to.data
+}
+
+lastChange.match({
+  execute: (a, b, t=1000) => {
+    console.log(a, b, t)
+  },
+  reject: (err) => {
+    console.log(err.name, err.message)
+  }
+}, false)
+
+```
+
+{/* type NumberMachineEventKeys = NumberMachineEvent['type']
+type NumberMachine = PromiseMachine<typeof addTwoNumbersSlowly>
+type NumberMachineEvent = PromiseMachineEvent<typeof addTwoNumbersSlowly> */}
+
+
+### On states
+
+- Factory autocompletes `states` types
+- State Creator autocompletes parameters
+- State autocompletes `key` 
+- State autocompletes `data`
+- `match` autocompletes state types
+- `match` handler autocompletes state properties
+
+### On state machines
+
+- transition config autocompletes state keys
+- transition config autocompletes transition type and from properties
+- autocomplete available states 
+- api autocompletes state types
+- api autocompletes transition params
+
+### On state machine events
+
+- `event` autocompletes event `type`, `to`, `from`, and `params`
+- `event.match` autocompletes event type
+- `event.match` handler autocompletes event params
+- type assert matching `to.key`, `from.key` and event `type` 
+
+### On hooks and typeguards
+
+
+
+## Code Snippets
+
+<CodeBlock
+  lang={'ts'}
+  code={code}
+/>

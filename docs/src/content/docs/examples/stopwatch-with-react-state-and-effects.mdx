@@ -1,0 +1,22 @@
+---
+title: Stopwatch
+---
+import { Stopwatch } from '@lib/examples/Stopwatch-with-react-state-and-effects.tsx'
+import code from '@lib/examples/Stopwatch-with-react-state-and-effects.tsx?raw'
+import CodeBlock from "@components/CodeBlock.astro";
+
+<div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full"></div>
+
+<div className="not-content">
+  <Stopwatch client:visible />
+</div>
+
+This is a React-first implementation using a declarative state machine. 
+
+Nothing fancy here. Longer than the rest, but not by much.
+
+The `useStopwatch` hook relies on React for its state and effects. 
+
+## Full Code 
+
+<CodeBlock lang='jsx' code={code} />

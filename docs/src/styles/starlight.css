@@ -1,0 +1,23 @@
+
+
+.content pre {
+  border-radius: .5em;
+
+}
+
+.content pre .code-container {
+  margin: 0;
+}
+
+.full-width {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+:root {
+  --sl-content-width: 60rem;
+}

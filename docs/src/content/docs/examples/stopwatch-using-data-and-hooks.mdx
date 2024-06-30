@@ -1,0 +1,25 @@
+---
+title: Stopwatch using State Data and Hooks
+---
+import { Stopwatch } from '@lib/examples/Stopwatch-using-data-and-hooks.tsx'
+import code from '@lib/examples/Stopwatch-using-data-and-hooks.tsx?raw'
+import CodeBlock from "@components/CodeBlock.astro";
+
+<div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full flex items-center gap-2 rounded"></div>
+
+<div className="not-content">
+  <Stopwatch client:visible />
+</div>
+
+This example shows how state `data` can be used instead of `useState`. Notice that this example only uses `useMemo` to create the state machine, and does not rely on `useEffect` or `useState`.
+
+Here we make `elapsed` a part of the state `data` and use a `before` setup to propagate it from state to state.
+
+We can also specify that whenever the machine is stopped, `elapsed` will be `0`;
+
+We also use the `when` helper, which tracks when a condition is entered and runs entry and exit handlers. With this we can use `when` as an alternative to `useEffect` when we want to do some cleanup work when things change.  
+
+
+## Full Code 
+
+<CodeBlock lang='jsx' code={code} />

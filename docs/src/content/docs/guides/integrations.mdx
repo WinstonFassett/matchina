@@ -1,0 +1,52 @@
+---
+title: Integrations
+---
+
+## React
+
+```tsx
+import { useMachine } from 'matchina/integrations/react'
+```
+
+Then, inside your component, 
+```ts
+useMachine(machine)
+```
+That's it!
+
+### Example
+
+```tsx
+import { useMachine } from 'matchina/integrations/react'
+
+const MyComponent = () => {
+  useMachine(machine)
+  return <div>
+    State: {machine.state}
+    <button onClick={() => machine.send('next')}>Next</button>
+  </div>
+}
+```
+
+### Promise Example
+
+```tsx
+import { createPromiseMachine, delay } from 'matchina'
+import { useMachine } from 'matchina/integrations/react'
+
+const MyComponent = () => {
+  useMachine(createPromiseMachine(
+    async (a: number, b: number) => {
+      await delay(1000)
+      return a + b
+    }
+  ))
+  return <div>
+    State: {machine.state}
+    <button onClick={() => machine.send('execute', 2, 3)}>
+      Execute
+    </button>
+  </div>
+}
+```
+
