@@ -26,5 +26,10 @@
     "name": "factory-machine",
     "path": "src/factory-machine.ts",
     "import": "{ createFactoryMachine }"
+  },
+  {
+    "name": "matchChange",
+    "path": "src/match-change.ts",
+    "import": "{ matchChange }"
   }
 ]
