@@ -55,5 +55,15 @@
     "name": "method enhancer",
     "path": "src/ext/index.ts",
     "import": "{ methodEnhancer }"
+  },
+  {
+    "name": "machine hooks",
+    "path": "src/state-machine-hooks.ts",
+    "import": "{notify}"
+  },
+  {
+    "name": "factory machine hooks",
+    "path": "src/factory-machine-hooks.ts",
+    "import": "{ whenEvent, onLeftState }"
   }
 ]

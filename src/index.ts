@@ -10,3 +10,4 @@ export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./state-machine";
 export * from "./state-machine-pure";
+export * from "./state-machine-hooks";
