@@ -1,11 +1,12 @@
-import { createFactoryMachine, defineStates, enter, effect, zen, setup, guard, createApi, resolve, enhanceMethod, methodEnhancer, transition, handle } from "../../src";
-import { whenEventType, whenState } from "../../src/factory-machine-hooks";
-import { useMachine } from "../../src/integrations/react";
+import { createFactoryMachine, defineStates, enter, effect, setup, guard, createApi, resolve, enhanceMethod, methodEnhancer, transition, handle } from "../src";
+import { whenEventType, whenState } from "../src/factory-machine-hooks";
+import { useMachine } from "../src/integrations/react";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { autotransition } from "./autotransition";
 import StateMachineMermaidDiagram from "./MachineViz";
 import { getXStateDefinition } from "./StopwatchCommon";
-import { delay } from "../../src/extras/delay";
+import { delay } from "../src/extras/delay";
+import { zen } from "../src/dev/zen";
 
 const pairs = [
   ["${", "}"],
