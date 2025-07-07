@@ -7,6 +7,6 @@
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["src", "test", "examples"],
-  "exclude": ["src/dev"]
+  "include": ["src", "test"],
+  "exclude": ["src/dev", "docs/node_modules"]
 }
