@@ -166,17 +166,16 @@ export function matchboxFactory<
 // : MatchboxFactory<TagProp>
   {
   if (Array.isArray(config)) {
-    const spec = (config).reduce(
-      (obj, tag) => {
-        obj[tag] = (data: any) =>
-          data;
-        return obj;
-      },
-      {} as any,
-    );
-    return matchboxFactory(spec, tagProp) as R //UnionFromDataSpecs<SpecFromStrings<Config & string[]>, TagProp>;
-    // : Config extends string[] ? UnionFromDataSpecs<SpecFromStrings<Config & string[]>, TagProp> : UnionFromDataSpecs<Config, TagProp>
-  }
+        // eslint-disable-next-line unicorn/no-array-reduce
+        const spec = (config).reduce(
+            (obj, tag) => {
+                obj[tag] = (data: any) => data;
+                return obj;
+            },
+            {} as any,
+        );
+        return matchboxFactory(spec, tagProp) as R;
+    }
 
   const createObj: any = {};
   for (const tag in config) {
@@ -189,7 +188,7 @@ export function matchboxFactory<
       );
     };
   }
-  return createObj as R //UnionFromDataSpecs<Config, TagProp>;
+  return createObj as R // UnionFromDataSpecs<Config, TagProp>;
 }
 
 export function matchbox<
@@ -246,7 +245,7 @@ class MemberImpl<
   }
 }
 
-//#region WIP 
+// #region WIP 
 
 type ExtractMemberTypes<T> = {
   [K in keyof T]: T[K] extends { data: infer D } ? D : never;
@@ -269,11 +268,10 @@ export function factoryFromMembers<
   TagProp extends string,
   T extends Record<string, (...args: any[]) => any> 
 >(members: T) {
-
   return members as (
     FactoryFromMembers<TagProp, T>
   )
 }
 
 
-//#endregion
+// #endregion

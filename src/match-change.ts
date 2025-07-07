@@ -101,7 +101,7 @@ export const entryware = <E extends StateChangeEvent>(
       handler: (ev: E) => void
   ]
 ) => (ev: E) => {
-  const handler = params[params.length - 1] as (ev: E) => any
+  const handler = params.at(-1) as (ev: E) => any
   const filters = params.slice(0, -1)
   const filter = getFilter(filters as any)
   // const filter = getFilter([)
