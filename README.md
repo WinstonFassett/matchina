@@ -2,6 +2,46 @@
 
 Lightweight state machines in TypeScript, powered by tagged unions and mapped types.
 
+## Installation
+
+```sh
+npm install matchina
+```
+
+## Quick Start
+
+Create a traffic light state machine:
+
+```ts
+import { defineStates, createMachine } from 'matchina';
+
+const states = defineStates({
+  Red: () => 'means stop',
+  Yellow: () => 'means caution',
+  Green: () => 'means go',
+});
+
+const transitions = {
+  Red: { next: 'Green' },
+  Yellow: { next: 'Red' },
+  Green: { next: 'Yellow' },
+};
+
+const machine = createMachine({
+  states,
+  initialState: 'Red',
+  transitions,
+});
+
+machine.send('next'); // transitions to Green
+console.log(machine.getState().key); // 'Green'
+```
+
+## More Examples & Documentation
+
+- See [the docs site](https://winstonfassett.github.io/matchina/) for live examples, guides, and API reference.
+- All examples in the docs are real, runnable code from the repo's `examples/` directory.
+
 ## Features
 
 - __State Machines__: 
