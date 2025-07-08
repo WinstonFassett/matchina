@@ -7,7 +7,7 @@ import { autotransition } from './autotransition';
 import StateMachineMermaidDiagram from './MachineViz';
 import { getXStateDefinition } from './StopwatchCommon';
 import { delay } from '../src/extras/delay';
-import { zen } from '../src/dev/zen';
+import { zen } from '../src/extras/zen';
 
 type Options = RequestInit & {
   timeout?: number;

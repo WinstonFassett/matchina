@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { effect, enter, setup, when } from "../src";
 import { useMachine } from "../src/integrations/react";
 import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
-import { matchina } from "../src/dev/matchina";
+import { matchina } from "../src/matchina";
 
 function useStopwatch() {
   // Define the state machine

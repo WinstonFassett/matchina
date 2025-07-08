@@ -5,7 +5,7 @@ title: Integrations
 ## React
 
 ```tsx
-import { useMachine } from 'matchina/integrations/react'
+import { useMachine } from 'matchina/react'
 ```
 
 Then, inside your component, 
@@ -17,7 +17,7 @@ That's it!
 ### Example
 
 ```tsx
-import { useMachine } from 'matchina/integrations/react'
+import { useMachine } from 'matchina/react'
 
 const MyComponent = () => {
   useMachine(machine)
@@ -32,7 +32,7 @@ const MyComponent = () => {
 
 ```tsx
 import { createPromiseMachine, delay } from 'matchina'
-import { useMachine } from 'matchina/integrations/react'
+import { useMachine } from 'matchina/react'
 
 const MyComponent = () => {
   useMachine(createPromiseMachine(

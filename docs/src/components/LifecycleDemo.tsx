@@ -6,8 +6,8 @@ import {
   withApi,
   withReset,
 } from "@lib/src";
-import { zen } from "@lib/src/dev/zen";
-import { useMachine } from "matchina/integrations/react";
+import { zen } from "@lib/src/extras/zen";
+import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 
 const slowlyAddTwoNumbers = (

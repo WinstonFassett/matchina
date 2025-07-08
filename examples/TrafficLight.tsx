@@ -1,5 +1,5 @@
 import React from 'react'
-import {  matchina } from "../src/dev/matchina";
+import {  matchina } from "../src/matchina";
 import { useMachine } from "../src/integrations/react";
 
 // ---cut---

@@ -32,7 +32,7 @@ const resolvedData = resolved.data
 
 ```tsx
 import { createPromiseMachine, withSubscribe } from "matchina";
-import { useMachine } from "matchina/integrations/react";
+import { useMachine } from "matchina/react";
 
 type MakeAPromise = (x: number, s:string, options?: { delay: number }) => Promise<{ result: string }>
 const promiseMachine = createPromiseMachine(null as unknown as MakeAPromise)

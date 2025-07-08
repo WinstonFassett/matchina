@@ -17,7 +17,7 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./integrations/react": {
+    "./react": {
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
       "require": "./dist/integrations/react.js"

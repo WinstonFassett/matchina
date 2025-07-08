@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useMachine } from "../src/integrations/react";
 import { StopwatchDevView, tickEffect, useEventTypeEffect, useStateEffects } from "./StopwatchCommon";
-import { matchina } from "../src/dev/matchina";
+import { matchina } from "../src/matchina";
 
 function useStopwatch() {
   const [elapsed, setElapsed] = useState(0) 

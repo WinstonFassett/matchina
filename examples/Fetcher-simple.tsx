@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { createApi, createFactoryMachine, defineStates, effect, setup } from "../src";
-import { zen } from '../src/dev/zen';
+import { zen } from '../src/extras/zen';
 import { delay } from '../src/extras/delay';
 import { useMachine } from '../src/integrations/react';
 import StateMachineMermaidDiagram from './MachineViz';

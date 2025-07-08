@@ -1,5 +1,5 @@
 import { createPromiseMachine, withApi, withReset } from "matchina";
-import { useMachine } from "matchina/integrations/react";
+import { useMachine } from "matchina/react";
 
 const slowlyAddTwoNumbers = (
   x: number,
