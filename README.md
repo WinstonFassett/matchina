@@ -32,60 +32,110 @@ A super lightweight, strongly-typed toolkit for building and extending state mac
 npm install matchina
 ```
 
-## Quick Start
-
-```ts
-import { matchina } from 'matchina';
-
-const machine = matchina({
-  initial: 'idle',
-  states: {
-    idle: { on: { START: 'running' } },
-    running: { on: { STOP: 'idle' } },
-  },
-});
-
-machine.send('START'); // => state: 'running'
-```
+## Getting Started
 
 - See [the docs site](https://winstonfassett.github.io/matchina/) for live examples, guides, and API reference.
 - All examples in the docs are real, runnable code from the repo's `examples/` directory.
 
-
-## Primitives & Features
-
-### FactoryMachine (`matchina()`)
-Create strongly-typed state machines with minimal config.
+## Quick Start
 
 ```ts
-const m = matchina({ initial: 'a', states: { a: {}, b: {} } });
+import { matchina } from "../src/matchina";
+
+export const player = matchina(
+  // Define states as keys to optional values or creator functions
+  {
+    Idle: undefined,
+    Playing: undefined,
+    Paused: undefined,
+    Stopped: undefined,
+  },
+  // Define transitions, typed by states and their parameters and values
+  {
+    Idle: { start: "Playing" },
+    Playing: {
+      pause: "Paused",
+      stop: "Stopped",
+    },
+    Paused: {
+      resume: "Playing",
+      stop: "Stopped",
+    },
+    Stopped: { start: "Playing" },
+  },
+  "Idle"
+);
+
+// Usage:
+player.start();      // Idle/Stopped -> Playing
+console.log(player.state.key);  // "Playing"
+player.pause();      // Playing -> Paused
+player.resume();     // Paused -> Playing
+player.stop();       // Playing/Paused -> Stopped
+
 ```
+
+### Promise Machines
+Async state machines for promises.
+
+```ts
+import { promiseMachine } from 'matchina';
+const pm = promiseMachine(() => fetch('/api'));
+```
+
+## Primitives & Features
 
 ### Matchbox Factories
 Composable state factory helpers.
 
 ```ts
-import { matchbox } from 'matchina';
-const box = matchbox({ a: {}, b: {} });
+import { matchbox } from "matchina";
+
+const stateFactory = matchbox({
+  Idle: () => ({}),
+  Playing: (trackId: string) => ({ trackId }),
+  Paused: (trackId: string) => ({ trackId }),
+  Stopped: () => ({}),
+});
+
+// Create state instances:
+const playingState = stateFactory.Playing("track-123");
+const pausedState = stateFactory.Paused("track-123");
+
+// Pattern match on state:
+const message = playingState.match({
+  Playing: s => `Now playing: ${s.trackId}`,
+  Paused: s => `Paused: ${s.trackId}`,
+  Idle: () => "Idle",
+  Stopped: () => "Stopped",
+});
+
+// Type-safe checks:
+const isPlayingTrack123 =
+  playingState.is("Playing") && playingState.data.trackId === "track-123"; // true
+
+// Cast to a specific state:
+if (playingState.is("Playing")) {
+  // TypeScript knows playingState.data has trackId
+  console.log(playingState.data.trackId);
+}
 ```
 
-### State Machines & Pure Machines
+### Factory Machines (`createFactoryMachine(states, transitions, init)`)
+Create strongly-typed state machines with minimal config.
 
 ```ts
-import { machine, pure } from 'matchina';
-machine({ ... }); // with effects
-pure({ ... });    // pure transitions only
 ```
 
-### States & Transitions
+### Machine Extensions
 
-```ts
-import { states } from 'matchina';
-states({ idle: {}, active: {} });
-```
+- `createApi` = add `.api` property with methods to send events
+- `zen` = `createApi` + convenience properties (`state`, `change`, `machine`)
+- `matchina` = createFactoryMachine + mixin zen at top-level
 
-### Actions, Effects, Guards
+### Hooks, Effects, Guards
 
+// THIS GENERATED CODE WILL NOT WORK. THIS IS NOT XSTATE. READ THE lifecycle demo that has amazing typing.
 ```ts
 const machine = matchina({
   states: {
@@ -96,15 +146,14 @@ const machine = matchina({
 });
 ```
 
-### Promise Machine
-Async state machines for promises.
 
-```ts
-import { promiseMachine } from 'matchina';
-const pm = promiseMachine(() => fetch('/api'));
-```
+this is missing the fuckin usage.
 
-## Hooks & Extensions
+### Machine Helpers and Pure Machines
+
+TODO
+
+## Extensions
 
 ### Nanosubscribe
 Tiny event emitter for subscriptions.
