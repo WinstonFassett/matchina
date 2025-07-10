@@ -1,4 +1,7 @@
 export * from "./ext";
+export * from "./extras/delay";
+export * from "./extras/effects";
+export * from "./extras/bind-effects";
 export * from "./extras/when";
 export * from "./extras/with-nanosubscribe";
 export * from "./extras/with-reset";
@@ -16,3 +19,6 @@ export * from "./state-machine-hooks";
 export * from "./state-machine-transition-helpers";
 export * from "./states";
 export * from "./types";
+// match-change
+export * from "./match-change";
+export * from "./match-filters"

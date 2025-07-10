@@ -1,6 +1,6 @@
-import { getXStateDefinition } from '@lib/examples/StopwatchCommon'
-import StateMachineMermaidDiagram from "@lib/examples/MachineViz";
-import { TrafficLight, trafficLight } from "@lib/examples/TrafficLight";
+import { getXStateDefinition } from '@code/examples/StopwatchCommon'
+import StateMachineMermaidDiagram from "@code/examples/MachineViz";
+import { TrafficLight, trafficLight } from "@code/examples/TrafficLight";
 import { useMemo } from 'react';
 import { useMachine } from '@lib/src/integrations/react';
 import { createApi } from '@lib/src';

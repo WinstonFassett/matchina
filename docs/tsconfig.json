@@ -6,8 +6,10 @@
     "baseUrl": ".",
     "paths": {      
       "@components/*": ["src/components/*"],
+      "@code/*": ["src/code/*"],
       "@lib/*": ["../*"],
-      "matchina/*": ["../*"]
+      "matchina/*": ["../*"],
+      "matchina/react": ["../src/integrations/react"]
     }
   }
 }
