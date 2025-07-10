@@ -28,13 +28,13 @@ async function promiseUsage() {
     );
 
   checkState();
-  machine.api.execute(1000);
+  machine.execute(1000);
   checkState();
   // const pendingPromise = machine.promise;
   // if (pendingPromise !== machine.promise) {
   //   console.log("Got valid result BUT promise changed!");
   // }
-  machine.api.execute(1);
+  machine.execute(1);
   // const donePromise = machine.done;
   const beforeDoneState = machine.getState();
   checkState();
@@ -54,7 +54,7 @@ async function promiseUsage() {
 
   // machine.send2('execute', 1000)
   // machine.send<"execute">("execute", 1);
-  machine.send("execute", 1000);
+  machine.execute(1000);
   machine.send("reject", new Error("error"));
   // machine.debugParams<any, 'Pending'>('resolve')('ok')
   // machine.debugParams<'execute', 'Idle'>('execute')(123)
@@ -80,7 +80,7 @@ async function promiseUsage() {
     });
 
   logState(); // not yet
-  fetchMachine.api.execute(123);
+  fetchMachine.execute(123);
   logState(); // not yet
   logState(); // result or error
 
@@ -90,11 +90,11 @@ async function promiseUsage() {
     matchChange(change, {
       to: "Pending",
       from: "Idle",
-      type: "execute",
+      type: "executing",
     })
   ) {
     change.from.key = "Idle";
-    change.type = "execute";
+    change.type = "executing";
     change.to.key = "Pending";
   }
 }

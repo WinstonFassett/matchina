@@ -60,8 +60,8 @@ const machine = createFactoryMachine<MyStates, Transitions>(
 machine.states.Bar(1).data.bar === 1
 //              ^|
 
-// const change = machine.getChange()
-// const { type, from: {key: fromKey}, to: { key: toKey } } = change
+const change = machine.getChange()
+const { type, from: {key: fromKey}, to: { key: toKey } } = change
 
 
 const slowAddingMachine = createPromiseMachine(async (a: number, b: number, t: number = 1000) => {
@@ -69,7 +69,7 @@ const slowAddingMachine = createPromiseMachine(async (a: number, b: number, t: n
   return a + b
 })
 
-slowAddingMachine.send('execute', 1, 2)
+slowAddingMachine.execute(1, 2)
 const api = createApi(slowAddingMachine)
 api.reject(new Error('test'))
 //   ^|
@@ -78,7 +78,7 @@ const lastChange = slowAddingMachine.getChange()
 
 
 lastChange.to.match({
-  Pending: ([a, b, t]) => {
+  Pending: ({promise, params: [a, b, t]}) => {
     
   },
   Rejected: (err) => {
@@ -105,9 +105,7 @@ lastChange.match({
 }, false)
 
 if (lastChange.to.is('Pending')) {
-  const [a, b, t] = lastChange.to.data
+  const [a, b, t] = lastChange.to.data.params
 }
 
 slowAddingMachine.states.Idle().key
-
-const { type, from: {key: fromKey}, to: { key: toKey } } = lastChange

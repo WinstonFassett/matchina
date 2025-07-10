@@ -23,7 +23,7 @@ const DataComponent: React.FC = () => {
           (
             <button
               onClick={() => {
-                machine.api.execute(123);
+                machine.execute(123);
               }}
             >
               Load Data
