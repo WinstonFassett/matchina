@@ -1,4 +1,4 @@
-import { SpecRecord, MemberOf, matchboxFactory } from "../../src/matchbox";
+import { SpecRecord, MemberOf, matchboxFactory } from "../src";
 // ---cut---
 const states = matchboxFactory(
   {
@@ -7,7 +7,7 @@ const states = matchboxFactory(
   },
   "key",
 );
-type State = MemberOf<typeof states>;
+type State = ReturnType<typeof states[keyof typeof states]>;
 
 const events = matchboxFactory(
   {
@@ -15,7 +15,7 @@ const events = matchboxFactory(
   },
   "type",
 );
-type Event = MemberOf<typeof events>;
+type Event = ReturnType<typeof events[keyof typeof events]>;
 
 const transition = (state: State, event: Event) =>
   state.match({
