@@ -47,10 +47,10 @@ export function LifecycleDemo({}) {
     return onLifecycle(machine, {
       Idle: {
         on: {
-          execute: {
+          executing: {
             after: ({ type, from, to, params }) => {
               console.log(
-                "after Idle.execute:",
+                "after Idle.executing:",
                 params
               )
             },
@@ -100,20 +100,20 @@ export function LifecycleDemo({}) {
           // render based on state
           Idle: () => (
             <span>
-              <button onClick={() => machine.send("execute", 1, 1)}>
+              <button onClick={() => machine.execute(1, 1)}>
                 Add 1+1
               </button>{" "}
               or{" "}
               <button
                 onClick={() =>
-                  adder.executing(2, 2, 2000, "Test two plus two")
+                  machine.execute(2, 2, 2000, "Test two plus two")
                 }
               >
                 Add 2+2
               </button>
             </span>
           ),
-          Pending: ([x, y, duration, name]) => (
+          Pending: ({ params: [x, y, duration, name]}) => (
             <span>
               Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
               {y}

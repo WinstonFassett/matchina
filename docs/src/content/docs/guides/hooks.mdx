@@ -6,8 +6,9 @@ import code from '@code/examples/usage-hooks.ts?raw'
 import Lifecycle from './lifecycle.mdx'
 
 
-## Lifecycle
-Every event sent to the machine goes through the following phases: 
+## Machine Lifecycle Hooks
+
+Every event sent to the machine goes through the following phases and hooks: 
   - `resolve`
   - `transition`
     - `guard`
@@ -29,7 +30,9 @@ Is this overkill? Probably. The main ones to use are `guard` and `effect`.
   code={code}
 />
 
-## Lifecycle
+## `useLifecycle` hook
+
+
 
 <div>
   <Lifecycle />

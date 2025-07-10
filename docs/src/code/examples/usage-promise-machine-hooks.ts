@@ -1,22 +1,35 @@
-import { createPromiseMachine, setup, effect, guard, enter, leave } from "matchina";
+import {
+  createPromiseMachine,
+  effect, enter, leave,
+  methodEnhancer,
+  onExecute,
+  setup,
+} from "matchina";
 
 // --- 1. Create a promise machine for async addition ---
 const adder = createPromiseMachine(
-  (a: number, b: number) => new Promise<number>(resolve => setTimeout(() => resolve(a + b), 500))
+  (a: number, b: number) => new Promise<number>(
+    resolve => setTimeout(() => resolve(a + b), 500))
 );
 
 // Everything below here is strongly typed and checked by TypeScript
 
 // --- 2. Add lifecycle hooks ---
 setup(adder)(
-  // Only allow non-negative numbers
-  guard(ev => ev.type !== "executing" || ev.to.data.params[0] >= 0),
-  // Log when addition starts
-  enter(ev => ev.to.is("Pending") && console.log("Started addition:", ev.to.data)),
-  // Log when leaving pending state
-  leave(ev => ev.from.is("Pending") && console.log("Leaving pending state")),
-  // Log when promise resolves
-  effect(ev => ev.type === "resolve" && console.log("Promise resolved with:", ev.to.data))
+  onExecute(
+    (execute) => (a: number, b: number) => {
+      if (a < 0 || b < 0) {
+        throw new Error("Both numbers must be non-negative.");
+      }
+      return execute(a, b)
+    }
+  ),
+  enter(ev => ev.to.is("Pending") && 
+    console.log("Started addition:", ev.to.data)),
+  leave(ev => ev.from.is("Pending") &&
+    console.log("Leaving pending state")),
+  effect(ev => ev.type === "resolve" &&
+    console.log("Promise resolved with:", ev.to.data))
 );
 
 // --- 3. Use the machine ---
