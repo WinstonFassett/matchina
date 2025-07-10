@@ -1,6 +1,4 @@
-import { createApi, createFactoryMachine, defineStates, zen } from "matchina";
-// import { whenEventType, whenState } from "matchina";
-import { delay } from "matchina";
+import { createApi, createFactoryMachine, defineStates, delay, zen } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import StateMachineMermaidDiagram from "./MachineViz";

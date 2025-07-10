@@ -8,6 +8,7 @@ export * from "./extras/with-reset";
 export * from "./extras/zen";
 export * from "./factory-machine";
 export * from "./factory-machine-event-api";
+export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./matchbox";
 export * from "./matchina";

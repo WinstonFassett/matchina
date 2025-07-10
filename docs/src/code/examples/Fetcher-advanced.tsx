@@ -1,13 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import { createApi, createFactoryMachine, defineStates, effect, enter, getAvailableActions, guard } from "matchina";
-// import { whenEventType, whenState } from "matchina";
+import { createApi, createFactoryMachine, defineStates, delay, effect, enter, guard, whenEventType, whenState, zen } from "matchina";
 import { useMachine } from 'matchina/react';
-import { MachineActions } from './MachineActions';
+import { useMemo, useState } from 'react';
 import { autotransition } from './autotransition';
+import { MachineActions } from './MachineActions';
 import StateMachineMermaidDiagram from './MachineViz';
 import { getXStateDefinition } from './StopwatchCommon';
-import { delay } from 'matchina';
-import { zen } from 'matchina';
 
 type Options = RequestInit & {
   timeout?: number;
