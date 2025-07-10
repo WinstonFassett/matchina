@@ -3,6 +3,8 @@ title: State Machines
 ---
 import MachineDemo from '@components/MachineDemo.astro';
 import FooBarDemo from '@components/FooBarDemo.astro';
+import Promises from './promises.mdx';
+
 
 The Finite State Machine (FSM) pattern is:
 <div>
@@ -148,3 +150,25 @@ Matchina types resolve this to:
 
 
 <FooBarDemo />
+
+
+
+## Promise Machines
+
+
+Matchina provides a convenient way to work with promises and state machines using `createPromiseMachine`. 
+Its states are: `Idle`, `Pending`(`promise` and `params`), `Resolved` (`result`), and Rejected (`error`).
+
+To execute the promise machine when in an `Idle` state, use the `execute` method. 
+This will transition the machine to the `Pending` state and return a promise that resolves to the `result` or rejects with an `error`.
+
+### State Payloads
+
+- The Pending state includes the original `params` and provides a `promise` property that can be awaited directly.
+- The Resolved state includes the `result` of the promise.
+- The Rejected state includes the `error` that occurred during the promise execution.
+
+### Usage Example
+
+<Promises />
+

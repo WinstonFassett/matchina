@@ -54,12 +54,12 @@ export default defineConfig({
           label: "Guides",
           items: [
             {
-              label: "Quickstart",
-              link: "/guides/quickstart",
-            },
-            {
               label: "Features",
               link: "/guides/inside",
+            },
+            {
+              label: "Quickstart",
+              link: "/guides/quickstart",
             },
             {
               label: "State Machines",
@@ -74,11 +74,7 @@ export default defineConfig({
               link: "/guides/typeguards",
             },
             {
-              label: "Extras",
-              link: "/guides/extras",
-            },
-            {
-              label: "Integrations",
+              label: "Integrations (React)",
               link: "/guides/integrations",
             },
           ],

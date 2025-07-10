@@ -1,23 +1,18 @@
 ---
-title: Integrations
+title: Integrations 
 ---
 
-## React
+## React Integration
+
+To react to machine state changes in React, you can use the `useMachine` hook from `matchina/react`. 
+
+This hook allows you to subscribe to state changes and trigger re-renders when the machine's state changes.
+
+### Basic Example
 
 ```tsx
 import { useMachine } from 'matchina/react'
-```
-
-Then, inside your component, 
-```ts
-useMachine(machine)
-```
-That's it!
-
-### Example
-
-```tsx
-import { useMachine } from 'matchina/react'
+import machine from './my-machine'
 
 const MyComponent = () => {
   useMachine(machine)
@@ -33,17 +28,19 @@ const MyComponent = () => {
 ```tsx
 import { createPromiseMachine, delay } from 'matchina'
 import { useMachine } from 'matchina/react'
+import { useMemo } from 'react'
 
 const MyComponent = () => {
-  useMachine(createPromiseMachine(
+  const machine = useMemo(() => createPromiseMachine(
     async (a: number, b: number) => {
       await delay(1000)
       return a + b
     }
-  ))
+  ), [])  
+  useMachine(machine)
   return <div>
     State: {machine.state}
-    <button onClick={() => machine.send('execute', 2, 3)}>
+    <button onClick={() => machine.execute(2, 3)}>
       Execute
     </button>
   </div>
