@@ -106,7 +106,7 @@ export function LifecycleDemo({}) {
               or{" "}
               <button
                 onClick={() =>
-                  adder.execute(2, 2, 2000, "Test two plus two")
+                  adder.executing(2, 2, 2000, "Test two plus two")
                 }
               >
                 Add 2+2

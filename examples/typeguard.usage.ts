@@ -97,7 +97,7 @@ if (matchChange(
   }
 
 lastChange.match({
-  execute: (a, b, t=1000) => {
+  executing: (a, b, t=1000) => {
     console.log(a, b, t)
   },
   reject: (err) => {

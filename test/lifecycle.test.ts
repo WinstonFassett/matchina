@@ -237,7 +237,7 @@ describe("onLifecycle usage", () => {
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     console.log("test guard reject");
-    machine.api.execute(1);
+    machine.api.executing(1);
     checkState();
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
@@ -246,14 +246,14 @@ describe("onLifecycle usage", () => {
 
     expect(didGuardAccept).toBeFalsy();
     console.log("test guard accept, handler reject");
-    machine.api.execute(99);
+    machine.api.executing(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log("BEFORE FAIL", machine.getState().key);
     console.log("***test handler accept");
-    machine.api.execute(100);
+    machine.api.executing(100);
     console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
@@ -266,7 +266,7 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.api.execute(100);
+    machine.api.executing(100);
     expectState("Pending");
     machine.api.reject(new Error("test"));
     expectState("Rejected");
@@ -282,7 +282,7 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.api.execute(1000);
+    machine.api.executing(1000);
     expectState("Pending");
 
     machine.api.resolve(1);
