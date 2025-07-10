@@ -1,4 +1,4 @@
-import { FactoryMachine, effect } from "matchina";
+import { type FactoryMachine, effect } from "matchina";
 
 export const autotransition = (eventType = '') =>
   (machine: FactoryMachine<any>) => {
