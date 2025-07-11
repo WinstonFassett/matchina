@@ -8,7 +8,8 @@
       "@components/*": ["src/components/*"],
       "@code/*": ["src/code/*"],
       "@lib/*": ["../*"],
-      "matchina/*": ["../*"],
+      "matchina": ["../src/index.ts"],
+      "matchina/*": ["../src/*"],
       "matchina/react": ["../src/integrations/react"]
     }
   },
