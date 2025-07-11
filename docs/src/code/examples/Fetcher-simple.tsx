@@ -68,7 +68,7 @@ export function SimpleFetchDemo() {
   const fetcher = usePromise(
     useCallback(
       async (ms = 1000) => {
-        await delay(ms);
+        await new Promise((resolve) => setTimeout(resolve, ms));
         return "Hello World";
       },
       [version],

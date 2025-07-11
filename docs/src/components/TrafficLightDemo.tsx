@@ -11,7 +11,7 @@ export function TrafficLightDemo() {
   }, [trafficLight.machine]);
   useMachine(trafficLight.machine);
   const actions = useMemo(
-    () => createApi(trafficLight.machine, trafficLight.state.key),
+    () => createApi(trafficLight.machine as any, trafficLight.state.key),
     [trafficLight.state],
   );
 

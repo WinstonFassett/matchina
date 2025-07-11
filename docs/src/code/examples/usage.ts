@@ -204,7 +204,6 @@ if (matchChange(e, { type: "reject" } as const)) {
   // e.from.key = "Pending";
   // e.type = "reject";
   // e.to.key = "Rejected";
-  // e.to.data.err.message = "nope";
 }
 
 // if (matchesChangeEventKeys(e, 'execute')) {}
@@ -284,14 +283,16 @@ console.log(
   }),
 );
 
-m5.subscribe(
-  when(
-    (ev) => ev.type === "execute",
-    (ev1) => (ev2) => {
-      console.log("in", ev1, "out", ev2);
-    },
-  ),
-);
+if (m5.subscribe) {
+  m5.subscribe(
+    when(
+      (ev) => ev.type === "execute",
+      (ev1) => (ev2) => {
+        console.log("in", ev1, "out", ev2);
+      },
+    ),
+  );
+}
 
 // m5.subscribe(
 //   whenEvent({ from: "Pending", type: "reject" }, (ev) => {

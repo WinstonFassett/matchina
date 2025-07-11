@@ -22,29 +22,31 @@ export function ReactMachineDemo({}) {
           // render based on state
           Idle: () => (
             <span>
-              <button onClick={() => machine.send("execute", 1, 1)}>
+              <button onClick={() => machine.send("executing", Promise.resolve(0), [1, 1])}>
                 Add 1+1 in 1 sec
               </button>{" "}
               or{" "}
-              <button
-                onClick={() =>
-                  machine.api.execute(2, 2, 2000, "Test two plus two")
-                }
-              >
+              <button onClick={() => machine.send("executing", Promise.resolve(0), [2, 2, 2000, "Test two plus two"])}>
                 Add 2+2 in 2 secs
               </button>
             </span>
           ),
-          Pending: ([x, y, duration, name]) => (
-            <span>
-              Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
-              {y}
-              {!!name && `(aka ${name})`}
-            </span>
-          ),
+          Pending: (args) => {
+            if (Array.isArray(args)) {
+              const [x, y, duration, name] = args;
+              return (
+                <span>
+                  Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
+                  {y}
+                  {!!name && `(aka ${name})`}
+                </span>
+              );
+            }
+            return null;
+          },
           _: () => (
             <span>
-              Done! <button onClick={() => machine.reset()}>Reset</button>
+              Done! <button onClick={() => machine.reset?.()}>Reset</button>
             </span>
           ),
         })}

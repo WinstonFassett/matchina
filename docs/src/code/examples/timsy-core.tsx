@@ -34,18 +34,20 @@ machine.api.switch();
 
 const currentState = machine.getState();
 
-const unsubscribe = machine.subscribe((change) => {
-  // Any change
-  const { type, from, to, params } = change;
-  change.match({
-    switch: function (...args: any[]) {
-      console.log("switching!");
-    },
-  });
-  return () => {
-    console.log("exiting", change);
-  };
-});
+const unsubscribe = machine.subscribe
+  ? machine.subscribe((change) => {
+      // Any change
+      const { type, from, to, params } = change;
+      change.match({
+        switch: function (...args: any[]) {
+          console.log("switching!");
+        },
+      });
+      return () => {
+        console.log("exiting", change);
+      };
+    })
+  : undefined;
 
 // machine.when({ to: "FOO" }, ({ to }) => {
 //   // When first entering either state

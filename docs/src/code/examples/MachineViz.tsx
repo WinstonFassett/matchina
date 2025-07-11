@@ -170,9 +170,9 @@ export const StateMachineMermaidDiagram = memo(
             action?.();
           });
           if (action && state === debouncedStateKey) {
-            el.style = `background-color: var(--sl-color-gray-5); color: var(--sl-color-accent-high); cursor: pointer; text-decoration: underline;`;
+            (el as HTMLElement).style.cssText = `background-color: var(--sl-color-gray-5); color: var(--sl-color-accent-high); cursor: pointer; text-decoration: underline;`;
           } else {
-            el.style = `background-color: transparent;  color: var(--sl-color-gray-3)`;
+            (el as HTMLElement).style.cssText = `background-color: transparent;  color: var(--sl-color-gray-3)`;
           }
         });
       },

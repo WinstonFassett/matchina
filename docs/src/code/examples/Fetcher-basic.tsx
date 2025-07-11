@@ -1,7 +1,9 @@
-import {
+import type {
   FactoryMachine,
   FactoryMachineEvent,
   States,
+} from "matchina";
+import {
   defineStates,
   effect,
   matchina,

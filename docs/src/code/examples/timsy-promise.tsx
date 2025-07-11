@@ -1,4 +1,4 @@
-import { createPromiseMachine, type Expand, withApi } from "matchina";
+import { createPromiseMachine, withApi } from "matchina";
 import React from "react";
 // ---cut---
 const machine = withApi(
@@ -7,7 +7,6 @@ const machine = withApi(
   ),
 );
 const state = machine.getState();
-type S = Expand<typeof state>;
 
 const DataComponent: React.FC = () => {
   const state = machine.getState();

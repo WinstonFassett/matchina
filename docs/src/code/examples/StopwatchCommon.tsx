@@ -92,7 +92,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
         />
       </div>
       <pre className="text-xs flex-1">
-        {JSON.stringify(stopwatch.change, null, 2)}
+        {JSON.stringify(stopwatch.state.data, null, 2)}
         {/* {JSON.stringify(getXStateDefinition(stopwatch.machine), null, 2)} */}
       </pre>
     </div>
