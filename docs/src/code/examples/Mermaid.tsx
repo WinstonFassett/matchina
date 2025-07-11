@@ -29,10 +29,6 @@ const useMermaid = (id: string, content: string): string | null => {
   return svg;
 };
 
-interface MermaidProps {
-  content: string;
-}
-
 let lastId = 0;
 export const Mermaid = React.memo(
   ({

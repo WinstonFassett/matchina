@@ -33,14 +33,21 @@ const machine = withNanoSubscribe(withApi(runMachine));
 machine.api.switch();
 
 const currentState = machine.getState();
+console.log("Current state:", currentState.key);
 
 const unsubscribe = machine.subscribe
   ? machine.subscribe((change) => {
       // Any change
       const { type, from, to, params } = change;
+      console.log(
+        `Change detected: type=${type}, from=${from.key}, to=${to.key}, params=${JSON.stringify(
+          params,
+        )}`,
+      );
       change.match({
-        switch: function (...args: any[]) {
+        switch: function (..._args: any[]) {
           console.log("switching!");
+          unsubscribe?.();
         },
       });
       return () => {

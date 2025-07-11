@@ -1,15 +1,5 @@
-import type {
-  FactoryMachine,
-  FactoryMachineEvent,
-  States,
-} from "matchina";
-import {
-  defineStates,
-  effect,
-  matchina,
-  setup,
-  when,
-} from "matchina";
+import type { FactoryMachine, FactoryMachineEvent, States } from "matchina";
+import { defineStates, effect, matchina, setup } from "matchina";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Idle: undefined;
@@ -85,7 +75,7 @@ export function createPromiseMachine<
 }
 
 const promiseDelayedSum = (a: number, b: number, ms = 100) =>
-  new Promise((resolve, reject) => setTimeout(() => resolve(a + b), ms));
+  new Promise((resolve, _reject) => setTimeout(() => resolve(a + b), ms));
 
 const adder = createPromiseMachine(promiseDelayedSum);
 

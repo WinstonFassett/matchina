@@ -12,7 +12,7 @@ import {
 export const theme = 'material-theme-ocean'
 
 export let html = ``
-const { lang, code: rawCode, showLines = true, ...props } = Astro.props;
+const { lang, code: rawCode, showLines = true } = Astro.props;
 
 if (['ts', 'tsx'].includes(lang)) {
   html = await codeToHtml(rawCode, {

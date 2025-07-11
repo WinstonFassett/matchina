@@ -5,7 +5,6 @@ const slowlyAddTwoNumbers = (
   x: number,
   y: number,
   duration = 1000,
-  name = "unnamed",
 ) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
@@ -22,11 +21,23 @@ export function ReactMachineDemo({}) {
           // render based on state
           Idle: () => (
             <span>
-              <button onClick={() => machine.send("executing", Promise.resolve(0), [1, 1])}>
+              <button
+                onClick={() =>
+                  machine.send("executing", Promise.resolve(0), [1, 1])
+                }
+              >
                 Add 1+1 in 1 sec
               </button>{" "}
               or{" "}
-              <button onClick={() => machine.send("executing", Promise.resolve(0), [2, 2, 2000, "Test two plus two"])}>
+              <button
+                onClick={() =>
+                  machine.execute(
+                    2,
+                    2,
+                    2000,
+                  )
+                }
+              >
                 Add 2+2 in 2 secs
               </button>
             </span>
@@ -36,8 +47,8 @@ export function ReactMachineDemo({}) {
               const [x, y, duration, name] = args;
               return (
                 <span>
-                  Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
-                  {y}
+                  Waiting {duration?.toString() ?? "default=1000"}ms to add {x}{" "}
+                  + {y}
                   {!!name && `(aka ${name})`}
                 </span>
               );

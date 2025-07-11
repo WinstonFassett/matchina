@@ -72,6 +72,7 @@ const {
   from: { key: fromKey },
   to: { key: toKey },
 } = change;
+console.log(`Event type: ${type} from ${fromKey} to ${toKey}`);
 
 const slowAddingMachine = createPromiseMachine(
   async (a: number, b: number, t: number = 1000) => {
@@ -89,7 +90,7 @@ const lastChange = slowAddingMachine.getChange();
 
 lastChange.to.match(
   {
-    Pending: ({ promise, params: [a, b, t] }) => {},
+    Pending: ({ promise: _promise, params: [_a, _b, _t] }) => {},
     Rejected: (err) => {
       console.log(err.name, err.message);
     },
@@ -97,7 +98,7 @@ lastChange.to.match(
   false,
 );
 const { from } = lastChange;
-
+console.log(`Transitioned from ${from.key} to ${lastChange.to.key}`);
 if (
   matchChange(lastChange, {
     to: "Rejected",
@@ -120,6 +121,7 @@ lastChange.match(
 
 if (lastChange.to.is("Pending")) {
   const [a, b, t] = lastChange.to.data.params;
+  console.log("Pending state with params:", a, b, t);
 }
 
 slowAddingMachine.states.Idle().key;

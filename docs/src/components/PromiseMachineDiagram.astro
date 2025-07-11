@@ -3,7 +3,7 @@ import StateMachineMermaidDiagram from "@code/examples/MachineViz";
 import { getXStateDefinition } from "@code/examples/StopwatchCommon";
 import { createApi, createPromiseMachine, delay, type FactoryMachine } from "matchina";
 
-const machine = createPromiseMachine(async (message: string) => await delay(1000))
+const machine = createPromiseMachine(async (_message: string) => await delay(1000))
 const config = getXStateDefinition(machine as FactoryMachine<any>)
 const actions = createApi(machine)
 ---

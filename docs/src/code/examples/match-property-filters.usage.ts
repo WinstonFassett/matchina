@@ -7,7 +7,7 @@ type PromiseStates = {
   Rejected: { key: "Rejected"; error: Error };
   Resolved: { key: "Resolved"; data: any };
 };
-type PromiseTransitions_FYI = {
+export type PromiseTransitions_FYI = {
   Idle: { execute: "Pending" };
   Pending: {
     resolve: "Resolved";

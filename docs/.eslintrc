@@ -1,0 +1,15 @@
+{
+  "extends": ["plugin:astro/recommended", "../.eslintrc"],
+  "overrides": [
+    {
+      "files": ["*.astro"],
+      "parser": "astro-eslint-parser",
+      "plugins": ["astro"],
+      "rules": {
+        // Astro-specific rules can be customized here
+        // Example: allow special comments
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    }
+  ]
+}

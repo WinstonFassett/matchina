@@ -20,7 +20,7 @@ export const trafficLight = matchina(
 setup(trafficLight.machine)(
   effect(
     when(
-      (ev) => true,
+      (_ev) => true,
       (change) =>
         tickEffect(
           trafficLight.next,

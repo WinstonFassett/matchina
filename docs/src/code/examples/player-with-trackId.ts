@@ -35,8 +35,10 @@ export const player = matchina(
 player.start("track-123"); // Idle/Stopped -> Playing
 console.log(player.state.key); // e.g., "Playing"
 console.log(player.state.data); // e.g., { trackId: "track-123" }
-const isPlayingTrack123 =
-  player.state.is("Playing") && player.state.data.trackId === "track-123"; // true
+console.log("Is playing track 123:", 
+  player.state.is("Playing") && 
+  player.state.data.trackId === "track-123"
+);
 player.pause(); // Playing -> Paused (trackId carried over)
 player.resume(); // Paused -> Playing (trackId carried over)
 player.stop(); // Playing/Paused -> Stopped

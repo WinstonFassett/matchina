@@ -10,7 +10,7 @@ const states = defineStates({
 
 type DataState = FactoryState<typeof states>;
 
-const DataComponent: React.FC = () => {
+export const DataComponent: React.FC = () => {
   const [state, setState] = useState<DataState>(states.NOT_LOADED());
 
   return (

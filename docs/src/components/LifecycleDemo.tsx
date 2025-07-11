@@ -1,10 +1,7 @@
 import {
-  createApi,
   createPromiseMachine,
   createReset,
-  onLifecycle,
-  withApi,
-  withReset,
+  onLifecycle
 } from "@lib/src";
 import { zen } from "@lib/src/extras/zen";
 import { useMachine } from "matchina/react";
@@ -14,7 +11,6 @@ const slowlyAddTwoNumbers = (
   x: number,
   y: number,
   duration = 1000,
-  name = "unnamed",
 ) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
@@ -52,7 +48,7 @@ export function LifecycleDemo({}) {
         on: {
           executing: {
             after: ({ type, from, to, params }) => {
-              console.log("after Idle.executing:", params);
+              console.log("after Idle.executing:", type, from.key, to.key, Object.keys(params));
             },
           },
         },
@@ -70,13 +66,16 @@ export function LifecycleDemo({}) {
               console.log(
                 "after",
                 type, // MUST be 'reject'
+                "from",
+                from.key, // previous state key
                 name,
-                message, // Error properties
+                message, // Error properties,
+                stack, // Error stack trace
               );
             },
           },
           resolve: {
-            before: ({ type, from, to: { data } }) => {
+            before: ({ type, from: _from, to: { data } }) => {
               console.log(
                 "before",
                 type, // MUST be 'resolve'
@@ -99,17 +98,16 @@ export function LifecycleDemo({}) {
             <span>
               <button onClick={() => machine.execute(1, 1)}>Add 1+1</button> or{" "}
               <button
-                onClick={() => machine.execute(2, 2, 2000, "Test two plus two")}
+                onClick={() => machine.execute(2, 2, 2000)}
               >
                 Add 2+2
               </button>
             </span>
           ),
-          Pending: ({ params: [x, y, duration, name] }) => (
+          Pending: ({ params: [x, y, duration] }) => (
             <span>
               Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
               {y}
-              {!!name && `(aka ${name})`}
               <button onClick={() => adder.reject(new Error("User rejected!"))}>
                 REJECT!
               </button>

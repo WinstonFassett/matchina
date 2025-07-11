@@ -1,20 +1,16 @@
+import { useMachine } from "@lib/src/integrations/react";
 import { createPromiseMachine, withApi } from "matchina";
 import React from "react";
 // ---cut---
 const machine = withApi(
-  createPromiseMachine((id: number) =>
+  createPromiseMachine((_id: number) =>
     fetch("/data").then((response) => response.json()),
   ),
 );
-const state = machine.getState();
 
-const DataComponent: React.FC = () => {
+export const DataComponent: React.FC = () => {
+  useMachine(machine);
   const state = machine.getState();
-  // useTransitionEffect("RESOLVED", ({ value }) => {
-  //   // Pass resolved data into other state stores or react
-  //   // to transitions
-  // })
-
   return (
     <div>
       {state.match({

@@ -1,6 +1,7 @@
-import { createFactoryMachine, defineStates, withApi } from "matchina";
+import { createFactoryMachine, defineStates, effect, setup, whenState, withApi } from "matchina";
+import { useMachine } from "matchina/react";
 import React from "react";
-// ---cut---
+
 type Data = { whatever: true };
 
 const states = defineStates({
@@ -10,43 +11,57 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-const dataMachine = withApi(
-  createFactoryMachine(
-    states,
-    {
-      NOT_LOADED: {
-        load: () => () => states.LOADING(),
+const createDataMachine = () => {
+  const machine = withApi(
+    createFactoryMachine(
+      states,
+      {
+        NOT_LOADED: {
+          load: () => () => states.LOADING(),
+        },
+        LOADING: {
+          loadSuccess: (data: Data) => () => states.LOADED(data),
+          loadError: (error: Error) => () => states.ERROR(error),
+        },
+        LOADED: {},
+        ERROR: {},
       },
-      LOADING: {
-        loadSuccess: (data: Data) => () => states.LOADED(data),
-        loadError: (error: Error) => () => states.ERROR(error),
-      },
-      LOADED: {},
-      ERROR: {},
-    },
-    "NOT_LOADED",
-  ),
-);
+      "NOT_LOADED",
+    ),
+  );
+  setup(machine)(
+    effect(whenState("NOT_LOADED", () => {    
+      fetch("/data")
+        .then((response) => response.json())
+        .then(machine.api.loadSuccess)
+        .catch(machine.api.loadError)
+    }))
+  )
+  return machine;
+};
 
-const DataComponent: React.FC = () => {
-  // soon
-  // const [state, events, useTransitionEffect] = useMachine(() =>
-  //   dataMachine(states.NOT_LOADED())
-  // )
+// TODO: fix TS here:
+// const createDataMatchina = () =>
+//   matchina(
+//     states,
+//     {
+//       NOT_LOADED: {
+//         load: () => () => states.LOADING(),
+//       },
+//       LOADING: {
+//         loadSuccess: (data: Data) => () => states.LOADED(data),
+//         loadError: (error: Error) => () => states.ERROR(error),
+//       },
+//       LOADED: {},
+//       ERROR: {},
+//     },
+//     "NOT_LOADED",
+//   )
 
+export const DataComponent: React.FC = () => {
+  const dataMachine = React.useMemo(() => createDataMachine(), []);
+  useMachine(dataMachine);
   const state = dataMachine.getState();
-  const { api } = dataMachine;
-
-  // soon
-  //useTransition("LOADING",
-  const onLoad = () => {
-    fetch("/data")
-      .then((response) => response.json())
-      .then(api.loadSuccess)
-      .catch(api.loadError);
-  };
-  //)
-
   return (
     <div>
       {state.match({
@@ -54,7 +69,7 @@ const DataComponent: React.FC = () => {
           (
             <button
               onClick={() => {
-                api.load();
+                dataMachine.api.load();
               }}
             >
               Load Data

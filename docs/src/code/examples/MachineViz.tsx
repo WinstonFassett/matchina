@@ -52,12 +52,8 @@ mermaid.initialize({
   `,
 });
 
-interface State {
-  key: string;
-}
-
-function toStateDiagram(config: any, callbackName: string) {
-  const currentStateKey = config.initial;
+function toStateDiagram(config: any, _callbackName: string) {
+  // const currentStateKey = config.initial;
   const transitions = config;
   const rows = [] as any[];
   let indents = 0;
@@ -83,7 +79,6 @@ ${rows.join("\n")}
     const allStates = new Set();
 
     indents += 1;
-    const compositeStates: State[] = [];
 
     // determine if transition is local
     // handle non-local transitions
@@ -91,7 +86,7 @@ ${rows.join("\n")}
     const { states } = config;
     const stateKeys = Object.keys(states);
 
-    stateKeys.forEach((stateKey, index) => {
+    stateKeys.forEach((stateKey, _index) => {
       allStates.add(stateKey);
       // rows.push(["    ", key, ifactive].join(""));
       let renderedState = false;
@@ -129,12 +124,12 @@ ${rows.join("\n")}
 
     //   rows.push(`${indent()}}`)
     // })
-    const unrenderedStates = Object.keys(config).filter(
-      (state) => !renderedStates.has(state),
-    );
-    unrenderedStates.forEach((state) => {
-      // rows.push(`${indent()}[*] --> ${state.name}`)
-    });
+    // const unrenderedStates = Object.keys(config).filter(
+    //   (state) => !renderedStates.has(state),
+    // );
+    // unrenderedStates.forEach((state) => {
+    //   // rows.push(`${indent()}[*] --> ${state.name}`)
+    // });
     // const state = definition.states[key];
     // console.log("state", key, state);
     // const ifactive = isActive ? ":::active" : "";
@@ -170,9 +165,11 @@ export const StateMachineMermaidDiagram = memo(
             action?.();
           });
           if (action && state === debouncedStateKey) {
-            (el as HTMLElement).style.cssText = `background-color: var(--sl-color-gray-5); color: var(--sl-color-accent-high); cursor: pointer; text-decoration: underline;`;
+            (el as HTMLElement).style.cssText =
+              `background-color: var(--sl-color-gray-5); color: var(--sl-color-accent-high); cursor: pointer; text-decoration: underline;`;
           } else {
-            (el as HTMLElement).style.cssText = `background-color: transparent;  color: var(--sl-color-gray-3)`;
+            (el as HTMLElement).style.cssText =
+              `background-color: transparent;  color: var(--sl-color-gray-3)`;
           }
         });
       },

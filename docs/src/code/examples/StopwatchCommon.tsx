@@ -100,7 +100,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
 }
 
 export function getStateValues<S extends AnyStatesFactory>(states: S) {
-  return Object.entries(states).map(([key, value]) => value({}));
+  return Object.entries(states).map(([, value]) => value({}));
 }
 
 export function getXStateDefinition<
@@ -185,11 +185,9 @@ function resolveState<S extends AnyStatesFactory>(
     return states[entry]({} as any); // as FactoryState<S>
   }
   if (typeof entry === "function") {
-    const funcOrState = entry();
-    let state: FactoryState<S>;
+    let funcOrState = entry();
     if (typeof funcOrState === "function") {
-      state = funcOrState();
-      // return resolveState(funcOrState({}))
+      funcOrState = funcOrState();
     }
     return resolveState(states, funcOrState);
   }

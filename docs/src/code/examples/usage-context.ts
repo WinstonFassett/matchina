@@ -10,7 +10,6 @@ import {
 const machine = createPromiseMachine(
   (x: number) => new Promise((resolve) => setTimeout(resolve, x)),
 );
-const api = createApi(machine);
 machine.execute(1100);
 
 type FetchContext = {

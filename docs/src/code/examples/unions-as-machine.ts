@@ -49,3 +49,4 @@ if (state.is("Done")) {
 // OR
 
 const result = state.as("Done").data.result;
+console.log("Result from Done state:", result);

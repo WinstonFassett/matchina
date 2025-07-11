@@ -3,9 +3,8 @@ import {
   effect,
   enter,
   leave,
-  methodEnhancer,
   onExecute,
-  setup,
+  setup
 } from "matchina";
 
 // --- 1. Create a promise machine for async addition ---
@@ -52,3 +51,4 @@ const message = adder.getState().match({
   Resolved: (result) => `Result: ${result}`,
   Rejected: (error) => `Error: ${error}`,
 });
+console.log(message);

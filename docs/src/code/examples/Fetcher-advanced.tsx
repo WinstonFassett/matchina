@@ -11,7 +11,7 @@ import {
   zen,
 } from "matchina";
 import { useMachine } from "matchina/react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { autotransition } from "./autotransition";
 import { MachineActions } from "./MachineActions";
 import StateMachineMermaidDiagram from "./MachineViz";
@@ -137,7 +137,7 @@ export function createFetcher(
   if (defaultOptions.autoretry) {
     fetcher.setup(
       effect(
-        whenState("NetworkError", (ev) => {
+        whenState("NetworkError", (_ev) => {
           if (fetcher.tries < maxTries) {
             const backoff = 1000 * fetcher.tries;
             const timer = setTimeout(() => {
@@ -154,25 +154,15 @@ export function createFetcher(
   return fetcher;
 }
 
-export function FetcherDemo() {
-  const [config, setConfig] = useState({
-    retry: {
-      limit: 10,
-      methods: ["get"],
-      statusCodes: [413],
-      backoffLimit: 3000,
-    },
-    maxTries: 5,
-  });
-
+export function FetcherDemo() {  
   const fetcher = useMemo(() => {
     return createFetcher("https://httpbin.org/delay/1", {
       method: "GET",
-      maxTries: config.maxTries,
+      maxTries: 5,
       timeout: 1200,
       autoretry: true,
     });
-  }, [config]);
+  }, []);
   useMachine(fetcher.machine);
   const { tries } = fetcher;
   const definition = useMemo(

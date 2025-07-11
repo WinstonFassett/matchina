@@ -13,15 +13,18 @@ import {
   matchFilters,
   notify,
   setupTransition as onChangeSetup,
+  onLeftState,
   onLifecycle,
   onNotify,
   setup,
   change as setupChange,
   transition,
   when,
+  whenEvent,
+  whenEventType,
+  whenFromState,
   withNanoSubscribe,
-  type EntryListener,
-  type StateMachineEvent,
+  type StateMachineEvent
 } from "matchina";
 
 const m1 = createStateMachine<
@@ -46,11 +49,11 @@ m1.send("start", "Bob");
 console.log("state", m1.getChange());
 m1.send("stop", { forever: true });
 
-const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) =>
-  when((ev) => ev.type === "start", fn);
+// const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) =>
 
 setup(m1)(
   guard((ev) => ev.type === "start"),
+  // when((ev) => ev.type === "start", fn),
   leave((ev) => console.log("before", ev)),
 );
 
@@ -127,19 +130,19 @@ setup(m4)(
       },
     ),
   ),
-  // enter(
-  //   when(isChange({ type: "execute" }), (ev) => {
-  //     console.log("entered condition");
-  //     return (ev) => {
-  //       console.log("exited condition");
-  //     };
-  //   }),
-  // ),
+  enter(
+    whenEventType("execute", (_ev) => {
+      console.log("entered condition");
+      return (_ev) => {
+        console.log("exited condition");
+      };
+    }),
+  ),
   notify(
     when(
       (ev) => ev.type === "reject",
       // eslint-disable-next-line unicorn/consistent-function-scoping
-      (ev) => (ev) => {},
+      (_ev) => (_ev) => {},
     ),
   ),
   notify(
@@ -147,7 +150,7 @@ setup(m4)(
       (ev) => ev.type === "execute",
       (ev) => {
         console.log("entered execute state", ev.to.key);
-        return (ev) => {
+        return (_ev) => {
           console.log("exited execute state");
         };
       },
@@ -177,10 +180,13 @@ api.execute(1);
 console.log("state", m4.getChange());
 // api.reject(new Error("nope"));
 
-const unsub = notify((ev) => console.log(ev))(m4);
+const unsub = notify((ev) => {
+  console.log("first notify", ev);
+  unsub()
+})(m4);
 
 const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
-type EE = ReturnType<typeof m5.getChange>;
+export type M4Change = ReturnType<typeof m5.getChange>;
 
 const x = m4.getChange();
 if (
@@ -188,7 +194,7 @@ if (
     type: "execute",
   } as const)
 ) {
-  // x.type = 'execute'
+  x.type = 'execute'
   x.type = "execute";
 }
 
@@ -196,20 +202,15 @@ if (
 const e = m4.getChange();
 
 if (matchChange(e, { from: "Idle" } as const)) {
-  // e.type = "execute";
-  // e.from.key = "Idle";
+  e.type = "execute";
+  e.from.key = "Idle";
 }
 if (matchChange(e, { type: "reject" } as const)) {
   console.log("MATCHED", e);
-  // e.from.key = "Pending";
-  // e.type = "reject";
-  // e.to.key = "Rejected";
+  e.from.key = "Pending";
+  e.type = "reject";
+  e.to.key = "Rejected";
 }
-
-// if (matchesChangeEventKeys(e, 'execute')) {}
-// if (matchesChangeEventKeys(e, 'execute', 'Idle', 'Pending')) {
-//   e.type = 'execute'
-// }
 
 if (matchChange(e, { type: "execute" } as const)) {
   e.to.key = "Pending";
@@ -222,10 +223,6 @@ if (matchChange(e, { to: "Pending", from: "Idle" } as const)) {
 if (matchChange(e, { from: "Pending", to: "Rejected" } as const)) {
   e.type = "reject";
 }
-
-// if (matchesChangeEventKeys(e, 'reject', 'Pending', 'Rejected')){
-
-// }
 
 if (
   matchChange(e, {
@@ -247,32 +244,6 @@ if (
   e.to.data.err.message = "nope";
 }
 
-// if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
-//   e.to.key = "Rejected";
-// }
-
-// if (isFactoryMachineChangeFromTypeTo(e, "Pending", "reject")) {
-//   // e.from.key = 'Rejected'
-//   e.type = "reject";
-//   e.to.key = "Rejected";
-//   e.to.data.err.message = "nope";
-// }
-
-// if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute")) {
-//   e.type = "execute";
-// }
-
-// if (isFactoryMachineChangeFromTypeTo(e, "Idle", "execute", "Pending")) {
-//   e.type = "execute";
-// }
-
-// if (
-//   isFactoryMachineChangeFromTypeTo(e, undefined as any, undefined, "Resolved")
-// ) {
-//   e.from.key = "Pending";
-//   e.to.key = "Resolved";
-//   e.type = "resolve";
-// }
 console.log("MATCHING", e);
 console.log(
   "Matched",
@@ -294,42 +265,42 @@ if (m5.subscribe) {
   );
 }
 
-// m5.subscribe(
-//   whenEvent({ from: "Pending", type: "reject" }, (ev) => {
-//     ev.type = "reject";
-//     ev.to.key = "Rejected";
-//   }),
-// );
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject" }, (ev) => {
+    ev.type = "reject";
+    ev.to.key = "Rejected";
+  }),
+);
 
-// m5.subscribe(
-//   whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
-//     ev.type = "reject";
-//     ev.from.key = "Pending";
-//     ev.to.key = "Rejected";
-//     ev.to.data.err.message = "nope";
-//   }),
-// );
+m5.subscribe(
+  whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
+    ev.type = "reject";
+    ev.from.key = "Pending";
+    ev.to.key = "Rejected";
+    ev.to.data.err.message = "nope";
+  }),
+);
 
-// setup(m4)(notify(leftState("Pending", (ev) => {})));
+setup(m4)(notify(whenFromState("Pending", (_ev) => {})));
 
-// const unsub2 = m5.subscribe(
-//   when(
-//     (x) => true,
-//     (x) => {
-//       console.log("enter");
-//       return (x) => {
-//         console.log("exit", x.to.key);
-//         unsub2();
-//       };
-//     },
-//   ),
-// );
+const unsub2 = m5.subscribe(
+  when(
+    (_x) => true,
+    (_x) => {
+      console.log("enter");
+      return (x) => {
+        console.log("exit", x.to.key);
+        unsub2();
+      };
+    },
+  ),
+);
 
-// onLeftState(m4, "Pending", (ev) => {
-//   ev.from.key = "Pending";
-//   ev.type = "execute";
-//   // ev.to.key = 'Resolved'
-// });
+onLeftState(m4, "Pending", (ev) => {
+  ev.from.key = "Pending";
+  ev.type = "execute";
+  // ev.to.key = 'Resolved'
+});
 
 setup(m4)(
   setupChange(
@@ -340,20 +311,20 @@ setup(m4)(
         e.from.key = "Idle";
       };
     },
-    effect((ev) => {}),
-    enter((ev) => {}),
-    guard((ev) => true),
+    effect((_ev) => {}),
+    enter((_ev) => {}),
+    guard((_ev) => true),
   ),
 );
 onChangeSetup(
   m4,
   { to: "Pending" },
-  guard((ev) => true),
+  guard((_ev) => true),
 );
 onChangeSetup(
   m4,
   { type: "execute" },
-  guard((ev) => true),
+  guard((_ev) => true),
 );
 
 setup(m4)(
