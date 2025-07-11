@@ -2,7 +2,7 @@
 import StateMachineMermaidDiagram from "@code/examples/MachineViz";
 import { getXStateDefinition } from "@code/examples/StopwatchCommon";
 import { trafficLight } from "@code/examples/TrafficLight";
-import { createFactoryMachine, defineStates } from "@lib/src";
+import { createFactoryMachine, defineStates, type FactoryMachine } from "matchina";
 
 const states = defineStates( {
   Idle: undefined,
@@ -27,7 +27,7 @@ const machine = createFactoryMachine(
   }, 
   'Idle'
 )
-const config = getXStateDefinition(machine)
+const config = getXStateDefinition(machine as FactoryMachine<any>)
 
 ---
 

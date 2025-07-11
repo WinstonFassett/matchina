@@ -1,4 +1,4 @@
-import { type AnyStatesFactory, type Disposer, type FactoryMachine, type FactoryMachineTransitions, type FactoryState, type StateMatchbox, createApi, disposers, getAvailableActions as getStateEvents } from "matchina";
+import { type AnyStatesFactory, type Disposer, type FactoryMachine, type FactoryMachineTransitions, type FactoryState, type StateMatchbox, type States, createApi, disposers, getAvailableActions as getStateEvents } from "matchina";
 import { useEffect, useMemo } from "react";
 import { StateMachineMermaidDiagram } from "./MachineViz";
 
@@ -74,7 +74,7 @@ export function getStateValues<S extends AnyStatesFactory>(
   return Object.entries(states).map(([key, value]) => value({}))
 }
 
-export function getXStateDefinition <F extends FactoryMachine<any>>(
+export function getXStateDefinition <F extends FactoryMachine<{ states: States<any>, transitions: any }>>(
   machine: F, 
   ) {
   const state = machine.getState()
