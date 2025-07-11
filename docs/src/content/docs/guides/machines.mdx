@@ -1,8 +1,9 @@
 ---
 title: State Machines
 ---
-import MachineDemo from '@components/MachineDemo.astro';
 import FooBarDemo from '@components/FooBarDemo.astro';
+import MachineDemo from '@components/MachineDemo.astro';
+import PromiseMachineDiagram from '@components/PromiseMachineDiagram.astro';
 import Promises from './promises.mdx';
 
 
@@ -146,15 +147,16 @@ const machine = createFactoryMachine(
 ```
 
 
-Matchina types resolve this to: 
+{/* Matchina types resolve this to: 
 
 
-<FooBarDemo />
+<FooBarDemo /> */}
 
 
 
 ## Promise Machines
 
+<PromiseMachineDiagram />
 
 Matchina provides a convenient way to work with promises and state machines using `createPromiseMachine`. 
 Its states are: `Idle`, `Pending`(`promise` and `params`), `Resolved` (`result`), and Rejected (`error`).
