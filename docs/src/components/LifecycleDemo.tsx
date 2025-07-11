@@ -17,19 +17,22 @@ const slowlyAddTwoNumbers = (
   name = "unnamed",
 ) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
-  
-  function useAdder() {    
-    const machine = useMemo(() => createPromiseMachine(slowlyAddTwoNumbers), []) 
-    const wrapper = useMemo(() => Object.assign(zen(machine), {
-      reset: createReset(machine, machine.states.Idle()),
-    }), [machine])
-    useMachine(machine);    
-    return wrapper
+
+function useAdder() {
+  const machine = useMemo(() => createPromiseMachine(slowlyAddTwoNumbers), []);
+  const wrapper = useMemo(
+    () =>
+      Object.assign(zen(machine), {
+        reset: createReset(machine, machine.states.Idle()),
+      }),
+    [machine],
+  );
+  useMachine(machine);
+  return wrapper;
 }
 
-
 export function LifecycleDemo({}) {
-  const adder = useAdder()
+  const adder = useAdder();
   const { machine, change } = adder;
   const [logs, setLogs] = useState<string[]>(["Log:"]);
   const log = (msg: string) => setLogs((logs) => [...logs, msg]);
@@ -43,16 +46,13 @@ export function LifecycleDemo({}) {
       },
     };
     console = dualConsole;
-    
+
     return onLifecycle(machine, {
       Idle: {
         on: {
           executing: {
             after: ({ type, from, to, params }) => {
-              console.log(
-                "after Idle.executing:",
-                params
-              )
+              console.log("after Idle.executing:", params);
             },
           },
         },
@@ -61,21 +61,18 @@ export function LifecycleDemo({}) {
         on: {
           "*": {
             after: (ev) => {
-              console.log(
-                `[${ev.type}]:`,
-                ev.to.key,
-                ev.to.data
-              )
+              console.log(`[${ev.type}]:`, ev.to.key, ev.to.data);
             },
           },
           reject: {
             after: ({ type, from, to }) => {
-              const { name, stack, message } = to.data // can only be Error type
-              console.log(        
-                "after",    
-                type, // MUST be 'reject'                  
-                name, message, // Error properties
-              )
+              const { name, stack, message } = to.data; // can only be Error type
+              console.log(
+                "after",
+                type, // MUST be 'reject'
+                name,
+                message, // Error properties
+              );
             },
           },
           resolve: {
@@ -84,12 +81,12 @@ export function LifecycleDemo({}) {
                 "before",
                 type, // MUST be 'resolve'
                 data, // resolved value
-              )
-            }
-          }
+              );
+            },
+          },
         },
       },
-    })
+    });
   }, []);
 
   return (
@@ -100,29 +97,20 @@ export function LifecycleDemo({}) {
           // render based on state
           Idle: () => (
             <span>
-              <button onClick={() => machine.execute(1, 1)}>
-                Add 1+1
-              </button>{" "}
-              or{" "}
+              <button onClick={() => machine.execute(1, 1)}>Add 1+1</button> or{" "}
               <button
-                onClick={() =>
-                  machine.execute(2, 2, 2000, "Test two plus two")
-                }
+                onClick={() => machine.execute(2, 2, 2000, "Test two plus two")}
               >
                 Add 2+2
               </button>
             </span>
           ),
-          Pending: ({ params: [x, y, duration, name]}) => (
+          Pending: ({ params: [x, y, duration, name] }) => (
             <span>
               Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
               {y}
               {!!name && `(aka ${name})`}
-              <button
-                onClick={() =>
-                  adder.reject(new Error("User rejected!"))
-                }
-              >
+              <button onClick={() => adder.reject(new Error("User rejected!"))}>
                 REJECT!
               </button>
             </span>

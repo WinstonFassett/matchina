@@ -6,10 +6,11 @@ const slowlyAddTwoNumbers = (
   y: number,
   duration = 1000,
   name = "unnamed",
-) => new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
+) =>
+  new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
 const kernel = createPromiseMachine(slowlyAddTwoNumbers);
-const machine = withReset(withApi(kernel), kernel.states.Idle())
+const machine = withReset(withApi(kernel), kernel.states.Idle());
 
 export function ReactMachineDemo({}) {
   const [change] = useMachine(machine);

@@ -5,19 +5,24 @@ import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
 
 function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
-  const effects = useMemo(() => ({ 
-    run: () => {
-      let lastTick = Date.now();
-      return tickEffect(() => {
-        const now = Date.now();
-        setElapsed(stopwatch.elapsed + now - lastTick);
-        lastTick = now;
-      });
-    },
-    clear: () => { setElapsed(0) }
-  }), [])
+  const effects = useMemo(
+    () => ({
+      run: () => {
+        let lastTick = Date.now();
+        return tickEffect(() => {
+          const now = Date.now();
+          setElapsed(stopwatch.elapsed + now - lastTick);
+          lastTick = now;
+        });
+      },
+      clear: () => {
+        setElapsed(0);
+      },
+    }),
+    [],
+  );
   // Define the state machine
-  const stopwatch = useMemo(() => {        
+  const stopwatch = useMemo(() => {
     return Object.assign(
       matchina(
         {
@@ -32,12 +37,12 @@ function useStopwatch() {
           Ticking: {
             stop: "Stopped",
             suspend: "Suspended",
-            clear: 'Ticking'
+            clear: "Ticking",
           },
           Suspended: {
             stop: "Stopped",
             resume: "Ticking",
-            clear: 'Suspended'
+            clear: "Suspended",
           },
         },
         "Stopped",
@@ -65,7 +70,7 @@ function useStopwatch() {
   return stopwatch;
 }
 
-export function Stopwatch () {
-  const stopwatch = useStopwatch()
-  return <StopwatchDevView stopwatch={stopwatch} />
+export function Stopwatch() {
+  const stopwatch = useStopwatch();
+  return <StopwatchDevView stopwatch={stopwatch} />;
 }

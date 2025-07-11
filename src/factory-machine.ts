@@ -81,11 +81,8 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
   }
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);
-    return typeof stateOrFn === "function"
-      ? (stateOrFn as any)(ev)
-      : stateOrFn;    
-  }
-  else {
+    return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
+  } else {
     return states[transition as keyof typeof states](...ev.params) as any;
   }
 }
@@ -112,21 +109,24 @@ export interface FactoryMachineContext<
 
 export type FactoryMachineTransitions<SF extends AnyStatesFactory> = object & {
   [FromStateKey in string & keyof SF]?: {
-    [EventKey in string]?:
-      FactoryMachineTransition<SF, FromStateKey, EventKey>;
+    [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
   };
 };
 
-export type FactoryMachineTransition<SF extends AnyStatesFactory, FromStateKey extends keyof SF = keyof SF, EventKey extends string = any > = 
-| keyof SF
-| ((...params: any[]) => FactoryState<SF>)
-| ((...params: any[]) => (
-    ev: ResolveEvent<
-      FactoryMachineEvent<{ states: SF; transitions: any }>
-    > & {
-      from: FactoryState<SF, FromStateKey>;
-    },
-  ) => FactoryState<SF>)
+export type FactoryMachineTransition<
+  SF extends AnyStatesFactory,
+  FromStateKey extends keyof SF = keyof SF,
+  EventKey extends string = any,
+> =
+  | keyof SF
+  | ((...params: any[]) => FactoryState<SF>)
+  | ((...params: any[]) => (
+      ev: ResolveEvent<
+        FactoryMachineEvent<{ states: SF; transitions: any }>
+      > & {
+        from: FactoryState<SF, FromStateKey>;
+      },
+    ) => FactoryState<SF>);
 
 /**
  * Union of events that can be sent to a factory machine
@@ -166,13 +166,13 @@ export type FactoryMachineTransitionEvent<
         to: FactoryState<FC["states"], ToKey>;
       }
     : ToKey extends (...args: infer A) => (...innerArgs: any[]) => infer R
-    ? {
-        params: A;
-        to: R;
-      }
-    : ToKey extends (...args: infer A) => infer R
-    ? {
-        params: A;
-        to: R;
-      }
-    : never);
+      ? {
+          params: A;
+          to: R;
+        }
+      : ToKey extends (...args: infer A) => infer R
+        ? {
+            params: A;
+            to: R;
+          }
+        : never);

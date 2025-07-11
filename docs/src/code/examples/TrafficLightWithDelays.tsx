@@ -1,6 +1,6 @@
 import { effect, matchina, setup, when } from "matchina";
 import { useMachine } from "matchina/react";
-import { tickEffect } from './StopwatchCommon';
+import { tickEffect } from "./StopwatchCommon";
 
 // ---cut---
 export const trafficLight = matchina(
@@ -14,31 +14,41 @@ export const trafficLight = matchina(
     Green: { next: "Yellow" },
     Yellow: { next: "Red" },
   },
-  'Red'
+  "Red",
 );
 
 setup(trafficLight.machine)(
-  effect(when(ev => true, change => tickEffect(trafficLight.next, change.to.match({
-    Red: () => 2000,
-    Green: () => 2000,  
-    Yellow: () => 1000,
-  }))))
+  effect(
+    when(
+      (ev) => true,
+      (change) =>
+        tickEffect(
+          trafficLight.next,
+          change.to.match({
+            Red: () => 2000,
+            Green: () => 2000,
+            Yellow: () => 1000,
+          }),
+        ),
+    ),
+  ),
 );
-trafficLight.next()
+trafficLight.next();
 
 export const TrafficLight = () => {
   useMachine(trafficLight.machine);
-  const { state } = trafficLight
+  const { state } = trafficLight;
   return (
-    <button title="Click to Change"
+    <button
+      title="Click to Change"
       className={`rounded ${trafficLight.state.match({
         Red: () => "bg-red-500",
         Yellow: () => "bg-yellow-500",
         Green: () => "bg-green-500",
-      })}`} 
+      })}`}
       onClick={() => trafficLight.next()}
     >
       {state.key} {state.data}
     </button>
   );
-}
+};

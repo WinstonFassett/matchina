@@ -1,4 +1,13 @@
-import { HasMethod, MethodOf, abortable, tap, methodEnhancer, setup, enhanceMethod, Setup } from "./ext";
+import {
+  HasMethod,
+  MethodOf,
+  abortable,
+  tap,
+  methodEnhancer,
+  setup,
+  enhanceMethod,
+  Setup,
+} from "./ext";
 import { AbortableEventHandler } from "./ext/abortable";
 import { Funcware } from "./ext/funcware/funcware";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
@@ -11,7 +20,9 @@ import { Func } from "./utility-types";
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   [key: string]: Func;
 } & {
-  transition: (middleware: Middleware<E>) => Funcware<StateMachine<E>["transition"]>;
+  transition: (
+    middleware: Middleware<E>,
+  ) => Funcware<StateMachine<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
   resolve: <F extends StateMachine<E>["resolve"]>(resolveFn: F) => Funcware<F>;
   guard: (
@@ -109,12 +120,10 @@ export const onNotify = machineHook("notify");
 export const change = <
   E extends StateMachineEvent,
   F extends ChangeEventKeyFilter<E>,
-  FE extends E & HasFilterValues<E,F>
+  FE extends E & HasFilterValues<E, F>,
 >(
   filter: F,
-  ...setups: Setup<StateMachine<
-    HasFilterValues<E,F>
-  >>[]
+  ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
 ) => {
   return (machine: StateMachine<E>) => {
     return enhanceMethod(machine, "transition", (next) => (ev) => {
@@ -130,16 +139,16 @@ export const change = <
 
 export const setupTransition = <
   E extends StateMachineEvent,
-  F extends ChangeEventKeyFilter<E>
+  F extends ChangeEventKeyFilter<E>,
 >(
   machine: StateMachine<E>,
   filter: F,
-  ...setups: Setup<StateMachine<
-    HasFilterValues<E,F>
-  >>[]
-) => change(filter, ...setups)(machine); 
+  ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
+) => change(filter, ...setups)(machine);
 
-function middlewareToFuncware<E>(middleware: Middleware<E>): Funcware<(change: E) => void> {
+function middlewareToFuncware<E>(
+  middleware: Middleware<E>,
+): Funcware<(change: E) => void> {
   return (next) => (ev) => {
     middleware(ev, next);
   };

@@ -1,4 +1,8 @@
-import { MemberExtensionsFromDataSpecs, SpecRecord, matchboxFactory } from "./matchbox";
+import {
+  MemberExtensionsFromDataSpecs,
+  SpecRecord,
+  matchboxFactory,
+} from "./matchbox";
 
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   key: Tag;

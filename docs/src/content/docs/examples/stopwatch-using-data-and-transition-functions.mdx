@@ -1,8 +1,9 @@
 ---
 title: Stopwatch React with data and transition parameters
 ---
-import { Stopwatch } from '@code/examples/Stopwatch-using-data-and-transition-functions.tsx'
-import code from '@code/examples/Stopwatch-using-data-and-transition-functions.tsx?raw'
+
+import { Stopwatch } from "@code/examples/Stopwatch-using-data-and-transition-functions.tsx";
+import code from "@code/examples/Stopwatch-using-data-and-transition-functions.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 
 <div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full p-4 flex-1 flex items-center gap-2 rounded"></div>
@@ -11,21 +12,18 @@ import CodeBlock from "@components/CodeBlock.astro";
   <Stopwatch client:visible />
 </div>
 
-This is a function-oriented example. It is the opposite of declarative. 
+This is a function-oriented example. It is the opposite of declarative.
 
 It also uses state `data` for tracking `elapsed` time and does not rely on React `useMemo` or `useState` for state or effects.
 
-It is a bit more verbose, but it shows the power of using functions for state data and transition handlers. 
+It is a bit more verbose, but it shows the power of using functions for state data and transition handlers.
 
-If you're into that sort of thing. I am. 
+If you're into that sort of thing. I am.
 
-But admittedly, it's not as pretty, and a little harder to follow. 
-
-
-
+But admittedly, it's not as pretty, and a little harder to follow.
 
 This example shows how we can use functions for a richer typescript experience.
 
-## Full Code 
+## Full Code
 
-<CodeBlock lang='jsx' code={code} />
+<CodeBlock lang="jsx" code={code} />

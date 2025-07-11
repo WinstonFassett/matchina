@@ -10,10 +10,7 @@ import {
   StateHookConfig,
 } from "./factory-machine-lifecycle-types";
 import { HookAdapters } from "./state-machine-hooks";
-import {
-  ChangeEventKeyFilter,
-  matchChange,
-} from "./match-change";
+import { ChangeEventKeyFilter, matchChange } from "./match-change";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
@@ -79,8 +76,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           machine,
           phase as keyof FactoryMachine<FC>,
           iff(
-            (ev: FactoryMachineEvent<FC>) =>
-              matchChange(ev, filter as any),
+            (ev: FactoryMachineEvent<FC>) => matchChange(ev, filter as any),
             (hookHandler as any)?.(hook, machine) ?? hook,
           ) as any,
         ),

@@ -1,3 +1,3 @@
-import { methodEnhancer } from './ext'
+import { methodEnhancer } from "./ext";
 
-export const onExecute = methodEnhancer('execute')
+export const onExecute = methodEnhancer("execute");

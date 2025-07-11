@@ -1,25 +1,23 @@
 ---
 title: Type Guards
 ---
+
 import CodeBlock from "@components/CodeBlock.astro";
-import code from '@code/examples/typeguard.usage.ts?raw'
+import code from "@code/examples/typeguard.usage.ts?raw";
 
 ## Type Safety Everywhere
 
 Cool autocomplete and type safety scenarios:
 
-
-
-{/* type NumberMachineEventKeys = NumberMachineEvent['type']
+{/_ type NumberMachineEventKeys = NumberMachineEvent['type']
 type NumberMachine = PromiseMachine<typeof addTwoNumbersSlowly>
-type NumberMachineEvent = PromiseMachineEvent<typeof addTwoNumbersSlowly> */}
-
+type NumberMachineEvent = PromiseMachineEvent<typeof addTwoNumbersSlowly> _/}
 
 ### On states
 
 - Factory autocompletes `states` types
 - State Creator autocompletes parameters
-- State autocompletes `key` 
+- State autocompletes `key`
 - State autocompletes `data`
 - `match` autocompletes state types
 - `match` handler autocompletes state properties
@@ -28,7 +26,7 @@ type NumberMachineEvent = PromiseMachineEvent<typeof addTwoNumbersSlowly> */}
 
 - transition config autocompletes state keys
 - transition config autocompletes transition type and from properties
-- autocomplete available states 
+- autocomplete available states
 - api autocompletes state types
 - api autocompletes transition params
 
@@ -37,15 +35,10 @@ type NumberMachineEvent = PromiseMachineEvent<typeof addTwoNumbersSlowly> */}
 - `event` autocompletes event `type`, `to`, `from`, and `params`
 - `event.match` autocompletes event type
 - `event.match` handler autocompletes event params
-- type assert matching `to.key`, `from.key` and event `type` 
+- type assert matching `to.key`, `from.key` and event `type`
 
 ### On hooks and typeguards
 
-
-
 ## Code Snippets
 
-<CodeBlock
-  lang={'ts'}
-  code={code}
-/>
+<CodeBlock lang={"ts"} code={code} />

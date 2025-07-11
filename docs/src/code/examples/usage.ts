@@ -25,7 +25,7 @@ import {
 } from "matchina";
 
 const m1 = createStateMachine<
-  StateMachineEvent<{ key: string, payload?: any }> &
+  StateMachineEvent<{ key: string; payload?: any }> &
     (
       | { type: "start"; params: [nickname: "Bob" | "Pat"] }
       | { type: "stop"; params: [{ forever: boolean }] }
@@ -36,14 +36,14 @@ const m1 = createStateMachine<
       start: { key: "Running" },
     },
     Running: {
-      stop: { key: "Idle" }
-    }, 
+      stop: { key: "Idle" },
+    },
   },
-  { key: "Idle", payload: 'whatever' },
+  { key: "Idle", payload: "whatever" },
 );
 
 m1.send("start", "Bob");
-console.log('state', m1.getChange())
+console.log("state", m1.getChange());
 m1.send("stop", { forever: true });
 
 const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) =>
@@ -57,10 +57,10 @@ setup(m1)(
 const m2 = createStateMachine(
   {
     Idle: {
-      start:{ key: "Running" },
+      start: { key: "Running" },
     },
     Running: {
-      stop:{ key: "Idle" },
+      stop: { key: "Idle" },
     },
   },
   { key: "Idle", data: undefined } as {
@@ -174,7 +174,7 @@ onNotify(
 const api = createApi(m4);
 
 api.execute(1);
-console.log('state', m4.getChange())
+console.log("state", m4.getChange());
 // api.reject(new Error("nope"));
 
 const unsub = notify((ev) => console.log(ev))(m4);
@@ -189,7 +189,7 @@ if (
   } as const)
 ) {
   // x.type = 'execute'
-  x.type = 'execute';
+  x.type = "execute";
 }
 
 // const e = {} as ReturnType<typeof m4.getChange>;
@@ -200,7 +200,7 @@ if (matchChange(e, { from: "Idle" } as const)) {
   // e.from.key = "Idle";
 }
 if (matchChange(e, { type: "reject" } as const)) {
-  console.log("MATCHED", e)
+  console.log("MATCHED", e);
   // e.from.key = "Pending";
   // e.type = "reject";
   // e.to.key = "Rejected";
@@ -274,8 +274,9 @@ if (
 //   e.to.key = "Resolved";
 //   e.type = "resolve";
 // }
-console.log('MATCHING', e)
-console.log('Matched', 
+console.log("MATCHING", e);
+console.log(
+  "Matched",
   e.match({
     reject: (err) => err.message,
     resolve: (ok) => ok.toString(),
@@ -331,43 +332,47 @@ m5.subscribe(
 
 setup(m4)(
   setupChange(
-    { type: 'execute'}, 
-    m => { return () => {
-      const e = m.getChange()
-      e.from.key = 'Idle'
-    }},    
-    effect(ev => {
-      
-    }),
-    enter(ev => {}),
-    guard(ev => true),
-
-  )
-)
+    { type: "execute" },
+    (m) => {
+      return () => {
+        const e = m.getChange();
+        e.from.key = "Idle";
+      };
+    },
+    effect((ev) => {}),
+    enter((ev) => {}),
+    guard((ev) => true),
+  ),
+);
 onChangeSetup(
-  m4, { to: 'Pending' }, 
-  guard(ev => true),
-)
-onChangeSetup(m4, { type: 'execute' }, guard(ev => true))
+  m4,
+  { to: "Pending" },
+  guard((ev) => true),
+);
+onChangeSetup(
+  m4,
+  { type: "execute" },
+  guard((ev) => true),
+);
 
 setup(m4)(
   transition((ev, next) => {
-    const done = setup(m4)()
-    next(ev)
-    done()
-  })
-)
+    const done = setup(m4)();
+    next(ev);
+    done();
+  }),
+);
 
 onLifecycle(m4, {
-  '*': {
+  "*": {
     on: {
-      '*': {
+      "*": {
         transition: (ev, next) => {
-          const done = setup(m4)()
-          next(ev)
-          done()
-        }
-      }
-    }
-  }
-})
+          const done = setup(m4)();
+          next(ev);
+          done();
+        },
+      },
+    },
+  },
+});

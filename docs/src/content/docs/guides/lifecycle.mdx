@@ -1,7 +1,8 @@
 ---
 title: Lifecycle
 ---
-import {LifecycleDemo} from '@components/LifecycleDemo';
+
+import { LifecycleDemo } from "@components/LifecycleDemo";
 
 <LifecycleDemo client:visible />
 
@@ -16,9 +17,11 @@ onLifecycle(machine, {
           console.log(
             "Specific state and event:\n",
             type, // MUST equal and autocomplete to 'execute'
-            "from", from.key, // MUST equal and autocomplete to 'Idle'
-            "to", to.key, // MUST equal and autocomplete to 'Pending'
-          )
+            "from",
+            from.key, // MUST equal and autocomplete to 'Idle'
+            "to",
+            to.key, // MUST equal and autocomplete to 'Pending'
+          );
         },
       },
     },
@@ -30,27 +33,35 @@ onLifecycle(machine, {
           console.log(
             "any state with any event:\n",
             type, // any valid event b/c wildcard event
-            "from", from.key, // any valid state b/c wildcard state
-            "to", to.key, // any valid exit state (which excludes Idle)
-            "with data", to.data, // any valid state data b/c wildcard state
-          )
+            "from",
+            from.key, // any valid state b/c wildcard state
+            "to",
+            to.key, // any valid exit state (which excludes Idle)
+            "with data",
+            to.data, // any valid state data b/c wildcard state
+          );
         },
       },
       reject: {
         after: ({ type, from, to }) => {
-          const { name, stack, message } = to.data // can only be Error type
+          const { name, stack, message } = to.data; // can only be Error type
           console.log(
             "Any reject event:\n",
             type, // MUST be 'reject'
-            "from", from.key, // any valid state b/c wildcard state
-            "with data", from.data, // any valid state data b/c wildcard state
-            "to", to.key, // MUST equal and autocomplete to 'Rejected'
-            "Error", name, message, stack, // Error properties
-          )
+            "from",
+            from.key, // any valid state b/c wildcard state
+            "with data",
+            from.data, // any valid state data b/c wildcard state
+            "to",
+            to.key, // MUST equal and autocomplete to 'Rejected'
+            "Error",
+            name,
+            message,
+            stack, // Error properties
+          );
         },
       },
     },
   },
-})
+});
 ```
-

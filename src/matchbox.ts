@@ -4,8 +4,6 @@
 import { match, MatchCases } from "./match-case";
 import { Simplify } from "./utility-types";
 
-
-
 interface AnyFactory {
   [key: string]: (...args: unknown[]) => unknown;
 }
@@ -14,28 +12,26 @@ type TFactory<T, K extends string = string> = {
   [key in K]: (...args: unknown[]) => T;
 };
 
-type AFactoryMember<
-  TagProp extends string,
-  Tag extends string,
-  Data,
-> = {
+type AFactoryMember<TagProp extends string, Tag extends string, Data> = {
   data: Data;
   getTag: () => Tag;
 } & {
   [_ in TagProp]: Tag;
-} 
+};
 
 type MemberOfFactory<
   TagProp extends string,
   F extends AnyFactory,
   D,
   K extends string & keyof F = string & keyof F,
-> =
-ReturnType<F[K]> &
-AFactoryMember<TagProp, K, D> & 
-FactoryMemberApi<TagProp, F> 
+> = ReturnType<F[K]> &
+  AFactoryMember<TagProp, K, D> &
+  FactoryMemberApi<TagProp, F>;
 
-export interface FactoryMemberApi<TagProp extends string, F extends AnyFactory> {
+export interface FactoryMemberApi<
+  TagProp extends string,
+  F extends AnyFactory,
+> {
   is: <K extends keyof F>(key: K) => this is MemberOfFactory<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => MemberOfFactory<TagProp, F, K>;
   match: MatchMemberData<ExtractMemberTypes<F>>;
@@ -46,7 +42,6 @@ type MatchboxFactory<TagProp extends string> = {
   [K in string]: (...args: unknown[]) => MemberOfFactory<TagProp, any, any, K>;
 };
 
-
 // type MatchboxFactory<
 //   TagProp extends string = "tag",
 //   Creators extends TFactory<any> = TFactory<any>,
@@ -56,10 +51,10 @@ type MatchboxFactory<TagProp extends string> = {
 //   ) => FactoryMember<Creators, MemberData<Creators>, K>;
 // };
 
-export type UnionFromDataSpecs<DataSpecs, TagProp extends string = "tag"> = CreatorsFromDataSpecs<
+export type UnionFromDataSpecs<
   DataSpecs,
-  TagProp
->;
+  TagProp extends string = "tag",
+> = CreatorsFromDataSpecs<DataSpecs, TagProp>;
 
 export type MatchboxFactoryFromData<
   DataSpecs,
@@ -80,12 +75,10 @@ export type MemberCreateFromDataSpecs<
     => MemberFromDataSpecs<Tag, DataSpecs, TagProp>;
 
 export type FactoryFromDataSpecs<DataSpecs, TagProp extends string> = {
-  [T in keyof DataSpecs]: 
-    DataSpecs[T] extends (...args: infer P) => infer R
-      ? (...args: P) => MemberFromDataSpecs<T, DataSpecs, TagProp>
-      : () => MemberFromDataSpecs<T, DataSpecs, TagProp>;
+  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer R
+    ? (...args: P) => MemberFromDataSpecs<T, DataSpecs, TagProp>
+    : () => MemberFromDataSpecs<T, DataSpecs, TagProp>;
 };
-
 
 export type MemberFromDataSpecs<
   Tag extends keyof DataSpecs,
@@ -98,9 +91,16 @@ export type MemberFromDataSpecs<
 
 type AnyMember = { data: any };
 
-export interface MemberExtensionsFromDataSpecs<DataSpecs, TagProp extends string> {
-  is: <T extends keyof DataSpecs>(key: T) => this is MemberFromDataSpecs<T, DataSpecs, TagProp>;
-  as: <T extends keyof DataSpecs>(key: T) => MemberFromDataSpecs<T, DataSpecs, TagProp>;
+export interface MemberExtensionsFromDataSpecs<
+  DataSpecs,
+  TagProp extends string,
+> {
+  is: <T extends keyof DataSpecs>(
+    key: T,
+  ) => this is MemberFromDataSpecs<T, DataSpecs, TagProp>;
+  as: <T extends keyof DataSpecs>(
+    key: T,
+  ) => MemberFromDataSpecs<T, DataSpecs, TagProp>;
   match: MatchMemberData<DataSpecs>;
 }
 
@@ -126,22 +126,23 @@ export type MemberOf<
   Key extends keyof Factory = keyof Factory,
 > = ReturnType<Factory[Key]>;
 
-export type SpecFromStrings<Config> = 
-  Config extends ReadonlyArray<string> ? {
-    [K in Config[number]]: (data: any) => any;
-  } : never;
+export type SpecFromStrings<Config> =
+  Config extends ReadonlyArray<string>
+    ? {
+        [K in Config[number]]: (data: any) => any;
+      }
+    : never;
 
 const fruits = ["apple", "orange", "banana"] as const;
 type F = SpecFromStrings<typeof fruits>;
 
-type Fruit = typeof fruits[number];
+type Fruit = (typeof fruits)[number];
 
-const strings = ["A", "B", "C"] as const
-type S = typeof strings
-type X = Record<typeof strings[number], any>
+const strings = ["A", "B", "C"] as const;
+type S = typeof strings;
+type X = Record<(typeof strings)[number], any>;
 
 type TestSpecType = SpecFromStrings<typeof strings>;
-
 
 /**
  * Create a tagged union from a record mapping tags to value types, along with associated
@@ -151,31 +152,19 @@ export function matchboxFactory<
   Config extends SpecRecord | string,
   TagProp extends string = "tag",
   R = UnionFromDataSpecs<
-    Config extends ReadonlyArray<string>
-      ? SpecFromStrings<Config> 
-      : Config
-    , 
+    Config extends ReadonlyArray<string> ? SpecFromStrings<Config> : Config,
     TagProp
-  >
->(
-  config: Config,
-  tagProp = "tag" as TagProp,
-)
-: R
-
-// : MatchboxFactory<TagProp>
-  {
+  >,
+>(config: Config, tagProp = "tag" as TagProp): R {
+  // : MatchboxFactory<TagProp>
   if (Array.isArray(config)) {
-        // eslint-disable-next-line unicorn/no-array-reduce
-        const spec = (config).reduce(
-            (obj, tag) => {
-                obj[tag] = (data: any) => data;
-                return obj;
-            },
-            {} as any,
-        );
-        return matchboxFactory(spec, tagProp) as R;
-    }
+    // eslint-disable-next-line unicorn/no-array-reduce
+    const spec = config.reduce((obj, tag) => {
+      obj[tag] = (data: any) => data;
+      return obj;
+    }, {} as any);
+    return matchboxFactory(spec, tagProp) as R;
+  }
 
   const createObj: any = {};
   for (const tag in config) {
@@ -188,7 +177,7 @@ export function matchboxFactory<
       );
     };
   }
-  return createObj as R // UnionFromDataSpecs<Config, TagProp>;
+  return createObj as R; // UnionFromDataSpecs<Config, TagProp>;
 }
 
 export function matchbox<
@@ -199,9 +188,11 @@ export function matchbox<
   tag: Tag,
   data: any,
   tagProp: TagProp = "tag" as TagProp,
-): MemberOfFactory<TagProp, FactoryFromDataSpecs<DataSpecs, TagProp>, DataSpecs[Tag]>
-
-{
+): MemberOfFactory<
+  TagProp,
+  FactoryFromDataSpecs<DataSpecs, TagProp>,
+  DataSpecs[Tag]
+> {
   return new MemberImpl<DataSpecs, Tag, TagProp>(tag, data, tagProp) as any;
 }
 
@@ -245,33 +236,32 @@ class MemberImpl<
   }
 }
 
-// #region WIP 
+// #region WIP
 
 type ExtractMemberTypes<T> = {
   [K in keyof T]: T[K] extends { data: infer D } ? D : never;
 };
 
-
 type ExtractSpec<T> = Simplify<{
-  [K in keyof T]: T[K] extends (...args: infer P) => { data: infer D } ? (...args: P) => D : never;
+  [K in keyof T]: T[K] extends (...args: infer P) => { data: infer D }
+    ? (...args: P) => D
+    : never;
 }>;
 
-
 type FactoryFromMembers<
-TagProp extends string,
-T extends Record<string, (...args: any[]) => any> 
+  TagProp extends string,
+  T extends Record<string, (...args: any[]) => any>,
 > = {
-  [K in keyof T]: (...args: Parameters<T[K]>) => MemberFromDataSpecs<K, ExtractSpec<T>, TagProp>;
+  [K in keyof T]: (
+    ...args: Parameters<T[K]>
+  ) => MemberFromDataSpecs<K, ExtractSpec<T>, TagProp>;
 };
 
 export function factoryFromMembers<
   TagProp extends string,
-  T extends Record<string, (...args: any[]) => any> 
+  T extends Record<string, (...args: any[]) => any>,
 >(members: T) {
-  return members as (
-    FactoryFromMembers<TagProp, T>
-  )
+  return members as FactoryFromMembers<TagProp, T>;
 }
-
 
 // #endregion

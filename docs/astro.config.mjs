@@ -3,22 +3,20 @@ import starlight from "@astrojs/starlight";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 // import mdx from '@astrojs/mdx';
-import remarkShikiTwoslash from 'remark-shiki-twoslash';
-import rehypeShikiji from 'rehype-shikiji'
+import remarkShikiTwoslash from "remark-shiki-twoslash";
+import rehypeShikiji from "rehype-shikiji";
 
-console.log({ remarkShikiTwoslash})
+console.log({ remarkShikiTwoslash });
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://winstonfassett.github.io',
-  base: process.env.NODE_ENV === 'production' ? 'matchina' : undefined,
+  site: "https://winstonfassett.github.io",
+  base: process.env.NODE_ENV === "production" ? "matchina" : undefined,
   build: {
-    assets: 'assets'
+    assets: "assets",
   },
   markdown: {
     syntaxHighlight: false,
-    rehypePlugins:[
-      [rehypeShikiji, { theme: "material-theme-ocean" }]
-    ],
+    rehypePlugins: [[rehypeShikiji, { theme: "material-theme-ocean" }]],
 
     // remarkPlugins: [
     //   [remarkShikiTwoslash, { theme: "material-theme-ocean" }]
@@ -34,7 +32,7 @@ export default defineConfig({
     // mdx({
     //   syntaxHighlight: 'shiki',
     //   shikiConfig: { theme: 'dracula' },
-    //   remarkPlugins: [remarkShikiTwoslash.default, 
+    //   remarkPlugins: [remarkShikiTwoslash.default,
     //     // remarkToc
     //   ],
     //   // rehypePlugins: [rehypeMinifyHtml],
@@ -44,8 +42,8 @@ export default defineConfig({
     starlight({
       title: "Matchina",
       editLink: {
-				baseUrl: 'https://github.com/winstonfassett/matchina/edit/main/docs/',
-			},
+        baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
+      },
       social: {
         github: "https://github.com/WinstonFassett/matchina",
       },
@@ -83,33 +81,34 @@ export default defineConfig({
           label: "Examples",
           items: [
             {
-              label: "Promise - simple", 
-              link: "/examples/fetch-simple"
-            },
-            { 
-              label: 'Stopwatch (useEffect)',
-              link: '/examples/stopwatch-with-react-state-and-effects'
-            },
-            { label: 'Stopwatch (onLifecycle setup)',
-              link: '/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect'
-            },
-            { 
-              label: 'Stopwatch (data and setup)',
-              link: '/examples/stopwatch-using-data-and-hooks'
-            },            
-            { 
-              label: 'Stopwatch (functional with data)',
-              link: '/examples/stopwatch-using-data-and-transition-functions'
-            },
-            { 
-              label: 'Stopwatch (machine effect hooks)',
-              link: '/examples/stopwatch-with-react-state-and-state-effects'
+              label: "Promise - simple",
+              link: "/examples/fetch-simple",
             },
             {
-              label: "Fetch - advanced", 
-              link: "/examples/fetch-plus"
-            }
-          ]
+              label: "Stopwatch (useEffect)",
+              link: "/examples/stopwatch-with-react-state-and-effects",
+            },
+            {
+              label: "Stopwatch (onLifecycle setup)",
+              link: "/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect",
+            },
+            {
+              label: "Stopwatch (data and setup)",
+              link: "/examples/stopwatch-using-data-and-hooks",
+            },
+            {
+              label: "Stopwatch (functional with data)",
+              link: "/examples/stopwatch-using-data-and-transition-functions",
+            },
+            {
+              label: "Stopwatch (machine effect hooks)",
+              link: "/examples/stopwatch-with-react-state-and-state-effects",
+            },
+            {
+              label: "Fetch - advanced",
+              link: "/examples/fetch-plus",
+            },
+          ],
         },
         {
           label: "Recipes",
@@ -119,8 +118,8 @@ export default defineConfig({
               link: "/guides/effects",
             },
             {
-              label: "Context", 
-              link: "/guides/context"
+              label: "Context",
+              link: "/guides/context",
             },
             {
               label: "Union Machines",
@@ -131,14 +130,17 @@ export default defineConfig({
               link: "/guides/timsy",
             },
           ],
-          
         },
         // {
         //   label: "Reference",
         //   autogenerate: { directory: "reference" },
         // },
       ],
-      customCss: ["./src/styles/tailwind.css", "./src/styles/starlight.css", "./src/components/style-rich.css"],
+      customCss: [
+        "./src/styles/tailwind.css",
+        "./src/styles/starlight.css",
+        "./src/components/style-rich.css",
+      ],
     }),
     tailwind({ applyBaseStyles: false }),
     react(),

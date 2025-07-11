@@ -1,19 +1,17 @@
 ---
 title: State Machines
 ---
-import FooBarDemo from '@components/FooBarDemo.astro';
-import MachineDemo from '@components/MachineDemo.astro';
-import PromiseMachineDiagram from '@components/PromiseMachineDiagram.astro';
-import Promises from './promises.mdx';
 
+import FooBarDemo from "@components/FooBarDemo.astro";
+import MachineDemo from "@components/MachineDemo.astro";
+import PromiseMachineDiagram from "@components/PromiseMachineDiagram.astro";
+import Promises from "./promises.mdx";
 
 The Finite State Machine (FSM) pattern is:
-<div>
-```ts
-const { getState, send } = fsm(states, transitions, initialState)
-```
-</div>
 
+<div>
+  ```ts const {(getState, send)} = fsm(states, transitions, initialState) ```
+</div>
 
 ### States
 
@@ -27,68 +25,78 @@ Use `defineStates` to create a fully-typed state factory.
 
 ```ts
 const states = defineStates({
-  Idle: null, 
+  Idle: null,
   Fetching: (userId: string) => ({ userId }),
   Succeeded: (result: User) => ({ result }),
-  Failed: (error: Error) => ({ error })  
-})
+  Failed: (error: Error) => ({ error }),
+});
 ```
 
 ###### `key` and `data`
+
 ```ts
-const state = states.Fetching('user-id')
-state.key === 'Fetching' 
-state.data.userId === 'user-id' 
+const state = states.Fetching("user-id");
+state.key === "Fetching";
+state.data.userId === "user-id";
 ```
 
 ###### `match`
+
 ```ts
-console.log(state.match({
-  Idle: () => 'idle',
-  Fetching: ({ userId }) => `fetching ${userId}`,
-  Succeeded: ({ result }) => `succeeded ${result}`,
-  Failed: ({ error }) => `failed ${error}`
-}))
+console.log(
+  state.match({
+    Idle: () => "idle",
+    Fetching: ({ userId }) => `fetching ${userId}`,
+    Succeeded: ({ result }) => `succeeded ${result}`,
+    Failed: ({ error }) => `failed ${error}`,
+  }),
+);
 ```
 
 ### Transitions
 
-Transitions are keyed by state `key` and transition `type`. 
+Transitions are keyed by state `key` and transition `type`.
 
 From the `state-machine` resolve function:
+
 ```ts
 const to = machine.transitions[ev.from.key][ev.type];
 ```
 
 Transition configuration varies by machine type.
+
 - Basic state machine `transitions` will be used as the next state
 - Factory machines `transitions` can be string state keys or functions that return the next state
 - Promise machines `transitions` are already provided
 
 ## Factory Machines
 
-Create a factory machine with 
+Create a factory machine with
+
 ```ts
-createFactoryMachine(states, transitions, initialState)
+createFactoryMachine(states, transitions, initialState);
 ```
 
 ### Factory Machine States
+
 Define states first with `defineStates` or create inline by passing in creator map.
 
 With inline states factory:
+
 ```ts
 const machine = createFactoryMachine(
   {
     Idle: undefined,
     Foo: (foo: string) => ({ foo }),
-    Bar: (bar: number) => ({ bar })
-  }, 
-  transitions, 
-  'Idle'
-)
+    Bar: (bar: number) => ({ bar }),
+  },
+  transitions,
+  "Idle",
+);
 ```
 
 With standalone states factory:
+
 ```ts
 const states = defineStates( {
   Idle: undefined,
@@ -96,72 +104,72 @@ const states = defineStates( {
   Bar: (bar: number) => ({ bar })
 })
 const machine = createFactoryMachine(
-  states, 
-  transitions, 
+  states,
+  transitions,
   states.Foo(...)
 )
 ```
 
-
 ### Factory Machine Transitions
 
 Factory Machine Transition values can be:
-  - a Factory State `key`
-  - a function returning a Factory State 
-  - a function returning a Resolver 
-  
+
+- a Factory State `key`
+- a function returning a Factory State
+- a function returning a Resolver
+
 A simple transition function:
+
 ```ts
-(...myParameters: any[]) => MyExitState
+(...myParameters: any[]) => MyExitState;
 ```
 
 A transition resolver function:
+
 ```ts
-(...myParameters: any[]) => ({ type, from }) => MyExitState
+(...myParameters: any[]) =>
+  ({ type, from }) =>
+    MyExitState;
 ```
 
 For example, in the snippet below:
+
 - `toggle` uses a simple state `key`
 - `foo` takes a parameter and returns a Factory State
 - `increment` takes a `bar` parameter and returns a Resolver that increments `ev.from.data.bar` by that amount
 
 ```ts
 const machine = createFactoryMachine(
-  states, 
+  states,
   {
     Idle: {
-      toggle: 'Foo'
+      toggle: "Foo",
     },
     Foo: {
-      toggle: 'Bar',
-      foo: (foo = 'foo') => states.Foo(`my-${foo}`),      
+      toggle: "Bar",
+      foo: (foo = "foo") => states.Foo(`my-${foo}`),
     },
     Bar: {
-      toggle: 'Foo',
-      increment: (bar: number) => (ev) => 
-        states.Bar(ev.from.data.bar + bar)
-    }
-  }, 
-  'Idle'
-)
+      toggle: "Foo",
+      increment: (bar: number) => (ev) => states.Bar(ev.from.data.bar + bar),
+    },
+  },
+  "Idle",
+);
 ```
 
-
-{/* Matchina types resolve this to: 
-
+{/\* Matchina types resolve this to:
 
 <FooBarDemo /> */}
-
-
 
 ## Promise Machines
 
 <PromiseMachineDiagram />
 
-Matchina provides a convenient way to work with promises and state machines using `createPromiseMachine`. 
+Matchina provides a convenient way to work with promises and state machines using `createPromiseMachine`.
 Its states are: `Idle`, `Pending`(`promise` and `params`), `Resolved` (`result`), and Rejected (`error`).
 
-To execute the promise machine when in an `Idle` state, use the `execute` method. 
+To execute the promise machine when in an `Idle` state, use the `execute` method.
 This will transition the machine to the `Pending` state and return a promise that resolves to the `result` or rejects with an `error`.
 
 ### State Payloads
@@ -173,4 +181,3 @@ This will transition the machine to the `Pending` state and return a promise tha
 ### Usage Example
 
 <Promises />
-

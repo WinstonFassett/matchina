@@ -36,7 +36,6 @@ export const whenState = <
   fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>,
 ) => when<E>((ev) => ev.to.key === stateKey, fn);
 
-
 export const whenEventType = <
   E extends FactoryMachineEvent<any>,
   K extends E["type"],
@@ -44,7 +43,6 @@ export const whenEventType = <
   type: K,
   fn: EntryListener<E & { type: K }>,
 ) => when<E>((ev) => ev.type === type, fn as any);
-
 
 export const afterEvent = <
   E extends FactoryMachineEvent<any>,
@@ -118,8 +116,8 @@ export const whenEvent = <
   FV extends FilterValues<F> = FilterValues<F>,
 >(
   filter: F,
-  fn: (ev: 
-    E &
+  fn: (
+    ev: E &
       HasFilterValues<
         E,
         {
@@ -127,7 +125,7 @@ export const whenEvent = <
           to: { key: FV["to"] };
           from: { key: FV["from"] };
         }
-      >
+      >,
   ) => any,
 ) => when<E>((ev) => matchChange(ev, filter), fn as any);
 
@@ -137,8 +135,8 @@ export const iffEvent = <
   FV extends FilterValues<F> = FilterValues<F>,
 >(
   filter: F,
-  fn: (ev: 
-    E &
+  fn: (
+    ev: E &
       HasFilterValues<
         E,
         {
@@ -146,6 +144,6 @@ export const iffEvent = <
           to: { key: FV["to"] };
           from: { key: FV["from"] };
         }
-      >
+      >,
   ) => any,
-) => iff(ev => matchChange(ev, filter), fn)
+) => iff((ev) => matchChange(ev, filter), fn);

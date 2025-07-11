@@ -2,22 +2,18 @@
 title: Quick Start
 description: Get going
 ---
-import code from '@code/examples/TrafficLight.tsx?raw'
+
+import code from "@code/examples/TrafficLight.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 import { TrafficLightDemo } from "@components/TrafficLightDemo";
-
 
 Let's create a traffic light button like this:
 
 <TrafficLightDemo client:visible />
 
-
 ## Full Code
-<CodeBlock
-  lang={'js'}
-  code={code}
-/>
 
+<CodeBlock lang={"js"} code={code} />
 
 ## Step by Step:
 
@@ -28,7 +24,7 @@ const states = defineStates({
   Red: () => "means stop",
   Yellow: () => "means caution",
   Green: () => "means go",
-})
+});
 ```
 
 ### Define Transitions
@@ -38,17 +34,13 @@ const transitions = {
   Red: { next: "Green" },
   Yellow: { next: "Red" },
   Green: { next: "Yellow" },
-}
+};
 ```
 
 ### Create Machine with Initial State
 
 ```tsx
-const machine = createFactoryMachine(
-  states, 
-  transitions, 
-  "Red"
-)
+const machine = createFactoryMachine(states, transitions, "Red");
 ```
 
 ### Use Machine (React)
@@ -69,11 +61,11 @@ trafficLight.state.match({
   Red: () => "bg-red-500",
   Yellow: () => "bg-yellow-500",
   Green: () => "bg-green-500",
-})
+});
 ```
 
 ### Send machine events
 
 ```tsx
-trafficLight.next()
+trafficLight.next();
 ```

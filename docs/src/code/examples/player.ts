@@ -21,13 +21,13 @@ export const player = matchina(
     },
     Stopped: { start: "Playing" },
   },
-  "Idle"
+  "Idle",
 );
 
 // Usage:
-player.start();      // Idle/Stopped -> Playing
-player.pause();      // Playing -> Paused
-player.resume();     // Paused -> Playing
-player.stop();       // Playing/Paused -> Stopped
+player.start(); // Idle/Stopped -> Playing
+player.pause(); // Playing -> Paused
+player.resume(); // Paused -> Playing
+player.stop(); // Playing/Paused -> Stopped
 
-console.log(player.state.is("Playing"));  // false;
+console.log(player.state.is("Playing")); // false;

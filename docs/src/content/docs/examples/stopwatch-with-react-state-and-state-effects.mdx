@@ -1,10 +1,11 @@
 ---
 title: Stopwatch using state Effects
 ---
-import { Stopwatch } from '@code/examples/Stopwatch-with-React-state-and-state-effects.tsx'
-import code from '@code/examples/Stopwatch-with-React-state-and-state-effects.tsx?raw'
+
+import { Stopwatch } from "@code/examples/Stopwatch-with-React-state-and-state-effects.tsx";
+import code from "@code/examples/Stopwatch-with-React-state-and-state-effects.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
-import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
 <div className="text-4xl text-red-500 text-green-500 text-yellow-500 border flex items-center gap-2 rounded"></div>
 
@@ -16,15 +17,11 @@ This is the cleanest, shortest version of these stopwatch examples, partly becau
 
 This example is like the React-first example. It relies on React for state and effects. But it simplifies the logic by providing effects for states and events (`clear`).
 
-Still this isn't exactly an idiomatic way of separating effects. From that perspective it would be ideal to fully separate the machine definition from React, i.e. in separate files. 
+Still this isn't exactly an idiomatic way of separating effects. From that perspective it would be ideal to fully separate the machine definition from React, i.e. in separate files.
 In that case, the machine definition should specify effects as non-function JS values, i.e. strings or objects created by `defineEffects`. That will be the subject of the next exploration.
 
-<LinkCard
-  title="Effects"
-  href="/guides/effects/"
-/>
+<LinkCard title="Effects" href="/guides/effects/" />
 
+## Code
 
-## Code 
-
-<CodeBlock lang='jsx' code={code} />
+<CodeBlock lang="jsx" code={code} />

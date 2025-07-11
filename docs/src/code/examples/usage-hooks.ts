@@ -1,4 +1,11 @@
-import { createFactoryMachine, defineStates, enter, guard, leave, setup } from "matchina";
+import {
+  createFactoryMachine,
+  defineStates,
+  enter,
+  guard,
+  leave,
+  setup,
+} from "matchina";
 
 // ---cut---
 const states = defineStates({

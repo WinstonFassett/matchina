@@ -32,5 +32,5 @@ export const buildSetup = <T>(target: T) => {
       }
     };
   };
-  return [add, () => disposers(d)()]
-}
+  return [add, () => disposers(d)()];
+};

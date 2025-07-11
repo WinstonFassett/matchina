@@ -7,7 +7,6 @@ import {
 import { delay, delayer } from "../src/extras/delay";
 import { withApi, createFactoryMachine, createApi } from "../src";
 
-
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
     const machine = withApi(createPromiseMachine(delayer(1, "Resolved Data")));

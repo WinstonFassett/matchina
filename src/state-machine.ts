@@ -99,16 +99,19 @@ export function createStateMachine<E extends StateMachineEvent>(
 }
 export type TransitionRecord = {
   [from: string]: {
-    [type: string]: string | object
-  } 
+    [type: string]: string | object;
+  };
 };
 export interface TransitionContext {
   transitions: TransitionRecord;
 }
 
-export function getAvailableActions(transitions: TransitionRecord, state: string) {
-  const entry = transitions[state]
-  return entry ? Object.keys(entry) : []
+export function getAvailableActions(
+  transitions: TransitionRecord,
+  state: string,
+) {
+  const entry = transitions[state];
+  return entry ? Object.keys(entry) : [];
 }
 
 // export function getAutoTransition(entry: FactoryMachineTransition<any, any, any>) {

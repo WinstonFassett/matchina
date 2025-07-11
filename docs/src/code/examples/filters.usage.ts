@@ -21,9 +21,7 @@ type FlattenTransitions<T> = {
 
 type X = FlattenTransitions<PromiseTransitions>;
 const x = {} as X;
-if (
-  matchFilters(x, { type: "reject", to: "Rejected", from: "Pending" })
-) {
+if (matchFilters(x, { type: "reject", to: "Rejected", from: "Pending" })) {
   // narrowed type here
   x.from = "Pending";
   x.to = "Rejected";

@@ -7,11 +7,8 @@ import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
 export function createApi<
   M extends FactoryMachine<any>,
-  K extends keyof M["transitions"] = keyof M["transitions"]
->(
-  machine: M,
-  filterStateKey?: K
-): FactoryMachineApi<M> {
+  K extends keyof M["transitions"] = keyof M["transitions"],
+>(machine: M, filterStateKey?: K): FactoryMachineApi<M> {
   const { states, transitions } = machine;
   const createSender =
     (eventKey: any) =>
@@ -60,8 +57,9 @@ export function withApi<M extends FactoryMachine<any>>(target: M) {
 export type FlatEventSenders<FC extends FactoryMachineContext> =
   FlatMemberUnionToIntersection<StateEventTransitionSenders<FC>>;
 
-export type StateEventTransitionSenders<FC extends FactoryMachineContext,
-K extends keyof FC["transitions"] = keyof FC["transitions"]
+export type StateEventTransitionSenders<
+  FC extends FactoryMachineContext,
+  K extends keyof FC["transitions"] = keyof FC["transitions"],
 > = {
   [StateKey in K]: {
     [EventKey in keyof FC["transitions"][StateKey]]: (

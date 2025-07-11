@@ -15,11 +15,9 @@
   --twoslash-tag-annotate-color: #1ba673;
   --twoslash-tag-annotate-bg: #1ba67320;
 }
- 
 
 .twoslash {
   --twoslash-popup-bg: #191919;
-
 }
 
 /* Respect people's wishes to not have animations */
@@ -136,7 +134,7 @@
   top: -1.6em;
   height: 1.4em;
   left: -1px;
-  content: ' ';
+  content: " ";
 }
 .twoslash .twoslash-completions-list ul li {
   overflow: hidden;

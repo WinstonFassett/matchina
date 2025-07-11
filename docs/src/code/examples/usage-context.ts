@@ -1,4 +1,10 @@
-import { createApi, createFactoryMachine, createPromiseMachine, defineStates, updateState } from "matchina";
+import {
+  createApi,
+  createFactoryMachine,
+  createPromiseMachine,
+  defineStates,
+  updateState,
+} from "matchina";
 
 // ---cut---
 const machine = createPromiseMachine(
@@ -80,7 +86,10 @@ const m5 = createFactoryMachine(
   oneState,
   {
     State: {
-      increment: (inc = 1) => (ev) => updateState(({ count }) => ({ count: count+inc }))(ev),
+      increment:
+        (inc = 1) =>
+        (ev) =>
+          updateState(({ count }) => ({ count: count + inc }))(ev),
       // increment2: (inc=1) => updateState(),
       decrement:
         (dec = 1) =>
@@ -95,7 +104,7 @@ const m5 = createFactoryMachine(
 
 const api5 = createApi(m5);
 api5.increment(2);
-console.log('state', m5.getState())
+console.log("state", m5.getState());
 
-m5.send('increment', 2);
-console.log('state', m5.getState())
+m5.send("increment", 2);
+console.log("state", m5.getState());

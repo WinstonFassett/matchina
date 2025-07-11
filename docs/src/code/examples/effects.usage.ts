@@ -1,4 +1,10 @@
-import { bindEffects, createFactoryMachine, defineEffects, defineStates, withApi } from "matchina";
+import {
+  bindEffects,
+  createFactoryMachine,
+  defineEffects,
+  defineStates,
+  withApi,
+} from "matchina";
 
 const myEffects = defineEffects({
   LoadRemote: undefined,

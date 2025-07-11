@@ -1,14 +1,23 @@
-import { FactoryMachine, FactoryMachineEvent, createFactoryMachine } from "./factory-machine";
+import {
+  FactoryMachine,
+  FactoryMachineEvent,
+  createFactoryMachine,
+} from "./factory-machine";
 import { States, defineStates } from "./states";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Idle: undefined;
-  Pending: (promise: Promise<Awaited<ReturnType<F>>>, params: Parameters<F>) => { promise: Promise<Awaited<ReturnType<F>>>; params: Parameters<F> };
+  Pending: (
+    promise: Promise<Awaited<ReturnType<F>>>,
+    params: Parameters<F>,
+  ) => { promise: Promise<Awaited<ReturnType<F>>>; params: Parameters<F> };
   Rejected: (error: E) => E;
   Resolved: (data: Awaited<ReturnType<F>>) => Awaited<ReturnType<F>>;
 };
 
-export type PromiseStates<F extends PromiseCallback, E = Error> = States<PromiseStateCreators<F, E>>;
+export type PromiseStates<F extends PromiseCallback, E = Error> = States<
+  PromiseStateCreators<F, E>
+>;
 
 export const PromiseStates: PromiseStates<any> = defineStates({
   Idle: undefined,
@@ -19,13 +28,13 @@ export const PromiseStates: PromiseStates<any> = defineStates({
 
 export type PromiseTransitions = {
   readonly Idle: {
-      readonly executing: "Pending";
+    readonly executing: "Pending";
   };
   readonly Pending: {
-      readonly resolve: "Resolved";
-      readonly reject: "Rejected";
+    readonly resolve: "Resolved";
+    readonly reject: "Rejected";
   };
-}
+};
 
 export const PromiseTransitions: PromiseTransitions = {
   Idle: { executing: "Pending" },
@@ -37,9 +46,13 @@ export const PromiseTransitions: PromiseTransitions = {
 
 export type PromiseCallback = (...args: any[]) => Promise<any>;
 
-export function createPromiseMachine<F extends PromiseCallback = PromiseCallback>(
+export function createPromiseMachine<
+  F extends PromiseCallback = PromiseCallback,
+>(
   makePromise?: F,
-): PromiseMachine<F> & { execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>> } {
+): PromiseMachine<F> & {
+  execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
+} {
   const states = PromiseStates as unknown as PromiseStates<F>;
   const machine = createFactoryMachine(states, PromiseTransitions, "Idle");
 
@@ -48,23 +61,29 @@ export function createPromiseMachine<F extends PromiseCallback = PromiseCallback
   let rejectCurrent: ((reason: any) => void) | undefined;
 
   function execute(...params: Parameters<F>): Promise<Awaited<ReturnType<F>>> {
-    if (!makePromise) throw new Error("No promise factory provided");
-    if (machine.getState().key !== "Idle") throw new Error("Can only execute from Idle state");
+    if (!makePromise) {
+      throw new Error("No promise factory provided");
+    }
+    if (machine.getState().key !== "Idle") {
+      throw new Error("Can only execute from Idle state");
+    }
     const promise = makePromise(...params);
     currentPromise = promise;
     machine.send("executing", promise, params);
     return new Promise((resolve, reject) => {
       resolveCurrent = resolve;
       rejectCurrent = reject;
-      promise.then((result) => {
-        if (currentPromise === promise) {
-          machine.send("resolve", result);
-        }
-      }).catch((error) => {
-        if (currentPromise === promise) {
-          machine.send("reject", error);
-        }
-      });
+      promise
+        .then((result) => {
+          if (currentPromise === promise) {
+            machine.send("resolve", result);
+          }
+        })
+        .catch((error) => {
+          if (currentPromise === promise) {
+            machine.send("reject", error);
+          }
+        });
     });
   }
 
@@ -73,7 +92,7 @@ export function createPromiseMachine<F extends PromiseCallback = PromiseCallback
       // Store the promise and params on the Pending state
       // Already handled by execute method
     }
-    if (ev.from.key === 'Pending') {
+    if (ev.from.key === "Pending") {
       currentPromise = undefined;
       resolveCurrent = undefined;
       rejectCurrent = undefined;
@@ -102,7 +121,8 @@ export type PromiseMachine<F extends PromiseCallback> = FactoryMachine<{
   states: PromiseStates<F>;
   transitions: PromiseTransitions;
 }>;
-export type PromiseMachineEvent<F extends PromiseCallback> = FactoryMachineEvent<PromiseMachine<F>>;
+export type PromiseMachineEvent<F extends PromiseCallback> =
+  FactoryMachineEvent<PromiseMachine<F>>;
 // ReturnType<
 //   typeof createPromiseMachine<F>
 // >;

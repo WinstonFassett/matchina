@@ -7,7 +7,7 @@ const states = matchboxFactory(
   },
   "key",
 );
-type State = ReturnType<typeof states[keyof typeof states]>;
+type State = ReturnType<(typeof states)[keyof typeof states]>;
 
 const events = matchboxFactory(
   {
@@ -15,7 +15,7 @@ const events = matchboxFactory(
   },
   "type",
 );
-type Event = ReturnType<typeof events[keyof typeof events]>;
+type Event = ReturnType<(typeof events)[keyof typeof events]>;
 
 const transition = (state: State, event: Event) =>
   state.match({
