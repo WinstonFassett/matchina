@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "npx astro deploy --site https://winstonfassett.github.io/matchina || echo 'Set up astro deploy for gh-pages'"
