@@ -11,5 +11,6 @@
       "matchina/*": ["../*"],
       "matchina/react": ["../src/integrations/react"]
     }
-  }
+  },
+  "exclude": ["dist", "node_modules"]
 }
