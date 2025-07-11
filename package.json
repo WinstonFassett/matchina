@@ -32,8 +32,8 @@
   "scripts": {
     "build": "unbuild && size-limit",
     "dev": "vitest dev",
-    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
-    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
+    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
+    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
     "test": "bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
