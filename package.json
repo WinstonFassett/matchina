@@ -29,15 +29,22 @@
   "files": [
     "dist"
   ],
+  "workspaces": [
+    ".",
+    "docs"
+  ],
   "scripts": {
-    "build": "unbuild && size-limit",
+    "build": "npm run build:lib && npm run build:docs",
+    "build:lib": "unbuild && size-limit",
+    "build:docs": "npm --workspace docs run build",
     "dev": "vitest dev",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
     "test": "bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
-    "build:docs": "cd docs && npm install && npm run build"
+    "publish:lib": "npm publish --access public",
+    "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",

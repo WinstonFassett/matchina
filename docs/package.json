@@ -8,7 +8,8 @@
     "check": "astro check",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy": "npx astro deploy --site https://winstonfassett.github.io/matchina || echo 'Set up astro deploy for gh-pages'"
   },
   "dependencies": {
     "@astrojs/check": "^0.2.1",
