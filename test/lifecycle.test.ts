@@ -17,7 +17,9 @@ describe("onLifecycle usage", () => {
     let didEnterRejected = 0;
     let count = 0;
 
-    const pm = createPromiseMachine<(x: number) => Promise<number>>();
+    const pm = createPromiseMachine<(x: number) => Promise<number>>(
+      (x) => delayed(15,x)
+    );
     // Create machine WITHOUT a promise to drive it
     const api = createApi(pm);
     // api.resolve(1)
@@ -47,9 +49,9 @@ describe("onLifecycle usage", () => {
       onLifecycle(machine, {
         Idle: {
           on: {
-            execute: {
+            executing: {
               before(change) {
-                change.type = "execute"; // can only be execute
+                change.type = "executing"; // can only be execute
                 change.from.key = "Idle"; // can only be Idle
                 change.to.key = "Pending"; // can only be Pending
               },
@@ -134,7 +136,7 @@ describe("onLifecycle usage", () => {
       },
       Idle: {
         on: {
-          execute: {
+          executing: {
             guard(change) {
               console.log("GUARD", change.type);
               const {
@@ -149,7 +151,7 @@ describe("onLifecycle usage", () => {
                 )}`,
               );
               console.group();
-              const accept = params[0] > 1;
+              const accept = params[1][0] > 1;
               if (accept) {
                 didGuardAccept ||= ++count;
               } else {
@@ -162,7 +164,7 @@ describe("onLifecycle usage", () => {
             },
             before: (ev, ...rest) => {
               console.log("BEFORE", ev.type);
-              expect(ev.type).toBe("execute");
+              expect(ev.type).toBe("executing");
               const {
                 params: [amount],
               } = ev;
@@ -174,8 +176,8 @@ describe("onLifecycle usage", () => {
             },
             handle: (event) => {
               console.log("*** HANDLE");
-              const num = event.params[0];
-              const accept = event.params[0] >= 100;
+              const num = event.params[1][0];
+              const accept = event.params [1][0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
                 console.log("handler rejecting");
@@ -237,7 +239,7 @@ describe("onLifecycle usage", () => {
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
     console.log("test guard reject");
-    machine.api.executing(1);
+    machine.execute(1);
     checkState();
     expect(didGuardReject).toBeTruthy();
     expect(didBeforeExecute).toBeFalsy();
@@ -246,14 +248,14 @@ describe("onLifecycle usage", () => {
 
     expect(didGuardAccept).toBeFalsy();
     console.log("test guard accept, handler reject");
-    machine.api.executing(99);
+    machine.execute(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
     console.log("BEFORE FAIL", machine.getState().key);
     console.log("***test handler accept");
-    machine.api.executing(100);
+    machine.execute(100);
     console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
@@ -266,7 +268,7 @@ describe("onLifecycle usage", () => {
 
     // test non-hooked event, for coverage
     machine.reset();
-    machine.api.executing(100);
+    machine.execute(100);
     expectState("Pending");
     machine.api.reject(new Error("test"));
     expectState("Rejected");
@@ -282,7 +284,7 @@ describe("onLifecycle usage", () => {
 
     console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
-    machine.api.executing(1000);
+    machine.execute(1000);
     expectState("Pending");
 
     machine.api.resolve(1);

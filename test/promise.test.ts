@@ -14,7 +14,7 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.api.executing();
+    machine.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
@@ -37,7 +37,7 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.api.executing();
+    machine.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
@@ -60,7 +60,7 @@ describe("createPromiseMachine", () => {
       );
       const api = createApi(machine);
       expect(machine.getState().key).toBe("Idle");
-      api.executing();
+      api.executing(Promise.resolve(), [])
       expect(machine.getState().key).toBe("Pending");
       api.cancel();
       expect(machine.getState().key).toBe("Idle");

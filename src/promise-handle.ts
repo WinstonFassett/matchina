@@ -16,7 +16,7 @@ export const handlePromise =
     const next = machine.handle;
     machine.handle = (ev) => {
       if (ev.type === trigger) {
-        const promise = makePromise(...(ev.params as Parameters<F>));
+        const promise = makePromise(...(ev.params[1] as Parameters<F>));
         const store = ev as any;
         store.promise = promise;
         store.done = promise

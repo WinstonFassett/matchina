@@ -19,5 +19,5 @@ function fooFactory(x: number) {
   return "ok";
 }
 const thing2WithFoo = ensureProperty(testThing, "foo", fooFactory);
-console.log(thing2WithFoo.foo(2)); // this works
+console.log(thing2WithFoo.foo); // this works
 console.log(thing2WithFoo.bar.message); // this is typed as any. Should be type error
