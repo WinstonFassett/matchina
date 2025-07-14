@@ -49,7 +49,7 @@ export const Mermaid = React.memo(
     if (!svg) return <div>Loading...</div>;
     return (
       <div>
-        <InlineSvg svg={svg} />
+        <InlineSvg svg={svg} ref={elRef} />
       </div>
     );
   },
