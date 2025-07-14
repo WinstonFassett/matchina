@@ -1,12 +1,39 @@
-# TODO: Finalize Project for Release
+# Matchina: Project Finalization Plan
 
-## Inbox
+## Priority Tasks
 
-- [ ] clean up console logging ie in tests
-- [ ] review test coverage
-- [ ] remove snippets?
-- [ ] Review and improve test coverage
-- [ ] upgrade astro, shikiji?
+### Documentation Improvements
+
+- [ ] Implement new documentation structure according to DOCS-PLAN.md
+- [ ] Move features to home page for better visibility
+- [ ] Break up large code examples into smaller, focused pieces
+- [ ] Distinguish between React and non-React examples
+- [ ] Add visual state diagrams for complex machines
+
+### Code Cleanup
+
+- [ ] Clean up console logging in tests for readability
+- [ ] Standardize logging format in examples and tests
+- [ ] Review and improve test coverage for:
+  - [ ] factory-machine-hooks.ts (21.47%)
+  - [ ] matchina.ts (25.58%)
+  - [ ] promise-handle.ts (12.9%)
+  - [ ] state-machine-transition-helpers.ts (25.64%)
+
+### Type System Enhancements
+
+- [ ] Complete documentation of type guards:
+  - [ ] is, as, match functions
+  - [ ] matchChange
+  - [ ] getFilter
+  - [ ] isEntry
+- [ ] Review and improve API for extensions
+
+### Publishing Preparation
+
+- [ ] Ensure examples aren't included in npm package
+- [ ] Audit dependencies for both root and docs
+- [ ] Prepare release notes for v0.1.0
 
 ## Documentation Review
 
