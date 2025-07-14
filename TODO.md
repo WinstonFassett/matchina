@@ -6,13 +6,12 @@
 - [ ] review test coverage
 - [ ] remove snippets?
 - [ ] Review and improve test coverage
-- [ ] upgrade astro, shikiji
-- [ ] update changelog and release
+- [ ] upgrade astro, shikiji?
 
 ## Documentation Review
 
-- [ ] QuickStart button does not work locally
-- [ ] move features to home package
+- [ ] Identify all unused examples, determine how to handle React examples vs console examples
+- [ ] move features to be on home page
 - [ ] consider breaking up code in docs more
 - [ ] Matchbox State Factories
 - [ ] State Factory Machines
@@ -30,11 +29,16 @@
 - isEntry
 - State = is, as, match
 - transition hook extensions - share API?
+
+## Extensibility approach in ext, which is kinda weird
 - extensionware, funcware, abortable
 
+## Examples
 
 - promise simple example is not simple
-- review context example
+- review context example. does it make sense?
+
+# Older todos:
 
 ## 1. Examples Handling
 - [ ] Ensure examples are not included in npm package
