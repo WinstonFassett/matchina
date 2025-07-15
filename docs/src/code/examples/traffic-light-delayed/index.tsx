@@ -1,20 +1,7 @@
-import { facade } from "matchina";
 import { useMachine } from "matchina/react";
+import { createTrafficLight } from "./machine";
 
-// ---cut---
-export const trafficLight = facade(
-  {
-    Red: () => "means stop",
-    Yellow: () => "means caution",
-    Green: () => "means go",
-  },
-  {
-    Red: { next: "Green" },
-    Yellow: { next: "Red" },
-    Green: { next: "Yellow" },
-  },
-  "Red",
-);
+const trafficLight = createTrafficLight();
 
 export const TrafficLight = () => {
   useMachine(trafficLight.machine);

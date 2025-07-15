@@ -1,11 +1,13 @@
 import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xstate-definition";
+import { TrafficLight } from "@code/examples/traffic-light";
+import { createTrafficLight } from "@code/examples/traffic-light/machine";
 import StateMachineMermaidDiagram from "@components/MachineViz";
-import { TrafficLight, trafficLight } from "@code/examples/TrafficLight";
-import { useMemo } from "react";
-import { useMachine } from "@lib/src/integrations/react";
 import { createApi } from "@lib/src";
+import { useMachine } from "@lib/src/integrations/react";
+import { useMemo } from "react";
 
 export function TrafficLightDemo() {
+  const trafficLight = useMemo(createTrafficLight, []);
   const config = useMemo(() => {
     return getXStateDefinition(trafficLight.machine);
   }, [trafficLight.machine]);
