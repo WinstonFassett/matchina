@@ -8,7 +8,7 @@ import {
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../components/MachineViz";
-import { getXStateDefinition } from "./StopwatchCommon";
+import { getXStateDefinition } from "./stopwatch-common/matchina-machine-to-xstate-definition";
 
 const pairs = [
   ["${", "}"],

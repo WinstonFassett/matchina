@@ -2,11 +2,11 @@ import { facade } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 import {
-  StopwatchDevView,
   useEventTypeEffect,
-  useStateEffects,
-} from "../StopwatchCommon";
-import { tickEffect } from "../tick-effect";
+  useStateEffects
+} from "../stopwatch-common/matchina-hooks";
+import { StopwatchDevView } from "../stopwatch-common/StopwatchDevView";
+import { tickEffect } from "../stopwatch-common/tick-effect";
 
 function useStopwatch(elapsed: number, setElapsed: (elapsed: number) => void) {
   // Define the state machine

@@ -1,4 +1,4 @@
-import { getXStateDefinition } from "@code/examples/StopwatchCommon";
+import { getXStateDefinition } from "@code/examples/stopwatch-common/matchina-machine-to-xstate-definition";
 import StateMachineMermaidDiagram from "@components/MachineViz";
 import { TrafficLight, trafficLight } from "@code/examples/TrafficLight";
 import { useMemo } from "react";

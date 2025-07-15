@@ -1,6 +1,6 @@
 import { useMachine } from "matchina/react";
 import { useMemo } from "react";
-import { StopwatchDevView } from "../StopwatchCommon";
+import { StopwatchDevView } from "../stopwatch-common/StopwatchDevView";
 import { createStopwatch } from "./machine";
 
 export function Stopwatch() {

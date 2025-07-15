@@ -1,8 +1,8 @@
 import { facade, onLifecycle, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
-import { StopwatchDevView } from "./StopwatchCommon";
-import { tickEffect } from "./tick-effect";
+import { StopwatchDevView } from "./stopwatch-common/StopwatchDevView";
+import { tickEffect } from "./stopwatch-common/tick-effect";
 
 // ---cut---
 

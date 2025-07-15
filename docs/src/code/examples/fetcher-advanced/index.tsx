@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import { autotransition } from "../autotransition";
 import { MachineActions } from "../../../components/MachineActions";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
-import { getXStateDefinition } from "../StopwatchCommon";
+import { getXStateDefinition } from "../stopwatch-common/matchina-machine-to-xstate-definition";
 
 type Options = RequestInit & {
   timeout?: number;
