@@ -140,9 +140,9 @@ function getErrors(data: FormData): Partial<Record<keyof FormData, string>> {
 }
 ```
 
-## Transitions
+## Transitions and Machine Creation
 
-Now, let's define the transitions between our form states:
+Now, let's define the transitions and create our form machine. We'll define the transitions inline to maintain full TypeScript inference:
 
 ```ts
 const transitions = {
@@ -391,10 +391,29 @@ const transitions = {
 Now we can create the form machine:
 
 ```ts
-// Create the form machine
+// Create the form machine with inline transitions
 const formMachine = matchina(
   formStates,
-  transitions,
+  {
+    Pristine: {
+      // ... transitions for Pristine state
+    },
+    Editing: {
+      // ... transitions for Editing state
+    },
+    Invalid: {
+      // ... transitions for Invalid state
+    },
+    Submitting: {
+      // ... transitions for Submitting state
+    },
+    Success: {
+      // ... transitions for Success state
+    },
+    Error: {
+      // ... transitions for Error state
+    }
+  },
   "Pristine" // Initial state
 );
 ```

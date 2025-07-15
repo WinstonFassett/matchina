@@ -26,22 +26,27 @@ const trafficLightStates = matchbox({
 
 Each state represents one of the traffic light colors.
 
-## Transitions
+## Transitions and Machine Creation
 
-Now, let's define the transitions between these states:
+For better TypeScript inference, we'll define the transitions inline when creating the machine:
 
 ```ts
-const transitions = {
-  Red: {
-    change: "Green"
+// Create the traffic light machine with inline transitions
+const trafficLight = matchina(
+  trafficLightStates,
+  {
+    Red: {
+      change: "Green"
+    },
+    Yellow: {
+      change: "Red"
+    },
+    Green: {
+      change: "Yellow"
+    }
   },
-  Yellow: {
-    change: "Red"
-  },
-  Green: {
-    change: "Yellow"
-  }
-};
+  "Red" // Initial state
+);
 ```
 
 We've defined a simple cycle: Red → Green → Yellow → Red...
@@ -51,13 +56,6 @@ We've defined a simple cycle: Red → Green → Yellow → Red...
 To make the traffic light change automatically, we'll add lifecycle hooks:
 
 ```ts
-// Create the traffic light machine
-const trafficLight = matchina(
-  trafficLightStates,
-  transitions,
-  "Red" // Initial state
-);
-
 // Setup automatic transitions
 setup(trafficLight, {
   enter: {

@@ -66,9 +66,9 @@ const authStates = matchbox({
 });
 ```
 
-## Transitions
+## Transitions and Machine Creation
 
-Now, let's define the transitions for our auth flow:
+For better TypeScript inference, we'll define the transitions inline when creating the machine:
 
 ```ts
 const transitions = {
@@ -299,10 +299,18 @@ const transitions = {
 Now we can create the authentication machine:
 
 ```ts
-// Create the authentication machine
+// Create the authentication machine with inline transitions
 const authMachine = matchina(
   authStates,
-  transitions,
+  {
+    LoggedOut: {
+      // ... transitions for LoggedOut state
+    },
+    LoginForm: {
+      // ... transitions for LoginForm state
+    },
+    // ... transitions for other states
+  },
   "LoggedOut" // Initial state
 );
 ```

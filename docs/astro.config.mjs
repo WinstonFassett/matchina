@@ -68,6 +68,10 @@ export default defineConfig({
               link: "/guides/typeguards",
             },
             {
+              label: "TypeScript Inference",
+              link: "/guides/typescript-inference",
+            },
+            {
               label: "Lifecycle & Hooks",
               link: "/guides/lifecycle",
             },

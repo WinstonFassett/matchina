@@ -27,34 +27,26 @@ Here we've defined two states, `On` and `Off`, neither of which need any additio
 
 ## Transitions
 
-Next, we define the transitions between these states:
-
-```ts
-const transitions = {
-  On: {
-    toggle: "Off",
-    turnOff: "Off"
-  },
-  Off: {
-    toggle: "On",
-    turnOn: "On"
-  }
-};
-```
-
-We've defined two transitions for each state:
-- In the `On` state, either `toggle` or `turnOff` will transition to the `Off` state
-- In the `Off` state, either `toggle` or `turnOn` will transition to the `On` state
+Next, we define the transitions between these states. Since we want to maintain full TypeScript inference, we'll define the transitions inline when creating the machine.
 
 ## Creating the Machine
 
 Now we can create the state machine by combining the states, transitions, and setting the initial state:
 
 ```ts
-// Create the toggle machine
+// Create the toggle machine with inline transitions
 const toggleMachine = matchina(
   toggleStates,
-  transitions,
+  {
+    On: {
+      toggle: "Off",
+      turnOff: "Off"
+    },
+    Off: {
+      toggle: "On",
+      turnOn: "On"
+    }
+  },
   "Off" // Initial state
 );
 ```

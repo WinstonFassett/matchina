@@ -1,0 +1,219 @@
+---
+title: TypeScript Inference Best Practices
+description: Learn how to get the most out of TypeScript's type inference with Matchina
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+One of Matchina's greatest strengths is its excellent TypeScript support. However, to get the most out of the type system, there are certain patterns you should follow and others you should avoid. This guide explains how to maintain full type inference when working with Matchina state machines.
+
+## The Problem with Standalone Definitions
+
+When you define states and transitions as standalone variables and then pass them to the machine creation functions, TypeScript's ability to infer and enforce types across these separate definitions is limited:
+
+```ts
+// ❌ BAD PRACTICE: Breaks type inference for transitions
+const states = {
+  Idle: undefined,
+  Playing: (trackId: string) => ({ trackId }),
+  Paused: (trackId: string) => ({ trackId })
+};
+
+// TypeScript won't properly validate these transitions against the states
+const transitions = {
+  Idle: {
+    start: (trackId: string) => "Playing" // No error if trackId is wrong type
+  },
+  Playing: {
+    pause: "Paused",
+    // TypeScript won't catch if you mistype a state name
+    stop: "Stoped" // Typo, but no error
+  },
+  Paused: {
+    resume: "Playing",
+  }
+};
+
+// Problems with inference propagate to the machine
+const player = matchina(states, transitions, "Idle");
+```
+
+This approach leads to several issues:
+- Typos in state names aren't caught at compile time
+- Parameter types for transitions aren't validated against state definitions
+- Autocomplete doesn't work properly when authoring transitions
+- Type errors are only found at runtime
+
+## Recommended Patterns
+
+### Inline Definitions
+
+The best practice is to define both states and transitions inline within the same function call:
+
+```ts
+// ✅ GOOD PRACTICE: Full type inference with inline definitions
+const player = matchina(
+  { // States inline
+    Idle: undefined,
+    Playing: (trackId: string) => ({ trackId }),
+    Paused: (trackId: string) => ({ trackId })
+  },
+  { // Transitions inline
+    Idle: {
+      start: (trackId: string) => "Playing" // TypeScript validates parameter type
+    },
+    Playing: {
+      pause: "Paused",
+      stop: "Stopped" // TypeScript would error if this state doesn't exist
+    },
+    Paused: {
+      resume: "Playing"
+    }
+  },
+  "Idle"
+);
+```
+
+Benefits of this approach:
+- Full type checking between states and transitions
+- Autocomplete for state names in transitions
+- Parameter type checking for transition functions
+- Prevents common errors like typos in state names
+
+### Using matchbox for Reusable State Definitions
+
+If you need to share state definitions across multiple machines, use the `matchbox` function:
+
+```ts
+// ✅ GOOD PRACTICE: Using matchbox for reusable state definitions
+import { matchbox, matchina } from "matchina";
+
+// Define reusable states with matchbox
+const playerStates = matchbox({
+  Idle: undefined,
+  Playing: (trackId: string) => ({ trackId }),
+  Paused: (trackId: string) => ({ trackId })
+});
+
+// Still define the transitions inline when creating the machine
+const player = matchina(
+  playerStates,
+  { // Transitions inline with full type checking
+    Idle: {
+      start: (trackId: string) => "Playing" // TypeScript validates parameter type
+    },
+    Playing: {
+      pause: "Paused",
+      // TypeScript would error if you tried to transition to a non-existent state
+    },
+    Paused: {
+      resume: "Playing"
+    }
+  },
+  "Idle"
+);
+```
+
+This pattern preserves type inference while allowing state definitions to be reused.
+
+## Developer Experience Benefits
+
+Using the recommended patterns gives you:
+
+1. **Better autocompletion**: IDE suggestions for state names when defining transitions
+2. **Immediate feedback**: Errors are caught during development instead of at runtime
+3. **Refactoring support**: Renaming states will automatically flag outdated transitions
+4. **Parameter validation**: TypeScript checks that transition parameters match state requirements
+
+## Real-world Example
+
+Here's a practical example showing both approaches for comparison:
+
+<Tabs>
+  <TabItem label="❌ Poor Inference">
+    ```ts
+    // States defined separately
+    const states = {
+      Draft: (content: string = "") => ({ content }),
+      Published: (content: string, publishDate: Date) => ({ content, publishDate }),
+      Archived: (content: string, archiveDate: Date) => ({ content, archiveDate })
+    };
+    
+    // Transitions defined separately - limited type checking
+    const transitions = {
+      Draft: {
+        update: (content: string, state) => ({ ...state, data: { content } }),
+        publish: (state) => ({
+          key: "Published",
+          data: { content: state.data.content, publishDate: new Date() }
+        })
+      },
+      Published: {
+        // This typo won't be caught by TypeScript!
+        archive: (state) => ({
+          key: "Archivedd",
+          data: { content: state.data.content, archiveDate: new Date() }
+        })
+      },
+      Archived: {
+        // TypeScript won't check if this is a valid transition
+        republish: (state) => ({
+          key: "Published",
+          data: { content: state.data.content, publishDate: new Date() }
+        })
+      }
+    };
+    
+    const postMachine = matchina(states, transitions, "Draft");
+    ```
+  </TabItem>
+  <TabItem label="✅ Full Inference">
+    ```ts
+    // Defining machine with inline states and transitions
+    const postMachine = matchina(
+      {
+        Draft: (content: string = "") => ({ content }),
+        Published: (content: string, publishDate: Date) => ({ content, publishDate }),
+        Archived: (content: string, archiveDate: Date) => ({ content, archiveDate })
+      },
+      {
+        Draft: {
+          update: (content: string, state) => ({ ...state, data: { content } }),
+          publish: (state) => ({
+            key: "Published",
+            data: { content: state.data.content, publishDate: new Date() }
+          })
+        },
+        Published: {
+          // TypeScript would error on this typo!
+          archive: (state) => ({
+            key: "Archived", // Correct spelling, TypeScript validates this
+            data: { content: state.data.content, archiveDate: new Date() }
+          })
+        },
+        Archived: {
+          // TypeScript fully validates this transition
+          republish: (state) => ({
+            key: "Published",
+            data: { content: state.data.content, publishDate: new Date() }
+          })
+        }
+      },
+      "Draft"
+    );
+    ```
+  </TabItem>
+</Tabs>
+
+## Summary
+
+To ensure the best developer experience with Matchina:
+
+1. **Define states and transitions together**: Use inline definitions within the `matchina` function call
+2. **Use `matchbox` for reusable state definitions**: When you need to share state definitions
+3. **Avoid standalone transition objects**: These break TypeScript's ability to validate your code
+4. **Let TypeScript help you**: Embrace the rich type checking and autocomplete features
+
+Following these practices will help you catch errors earlier, write more reliable code, and get the most out of Matchina's TypeScript integration.

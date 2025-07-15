@@ -152,24 +152,22 @@ Here's a more visual example: a traffic light state machine with a React UI comp
 <Tabs>
   <TabItem label="State Machine">
     ```tsx
-    import { defineStates, createFactoryMachine } from "matchina";
+    import { matchina } from "matchina";
     
-    // Define states
-    const states = defineStates({
-      Red: () => "means stop",
-      Yellow: () => "means caution",
-      Green: () => "means go",
-    });
-    
-    // Define transitions
-    const transitions = {
-      Red: { next: "Green" },
-      Yellow: { next: "Red" },
-      Green: { next: "Yellow" },
-    };
-    
-    // Create machine with initial state
-    const trafficLight = createFactoryMachine(states, transitions, "Red");
+    // Define machine with states and transitions inline
+    const trafficLight = matchina(
+      {
+        Red: () => "means stop",
+        Yellow: () => "means caution",
+        Green: () => "means go",
+      },
+      {
+        Red: { next: "Green" },
+        Yellow: { next: "Red" },
+        Green: { next: "Yellow" },
+      },
+      "Red"
+    );
     ```
   </TabItem>
   <TabItem label="React Component">
@@ -206,12 +204,100 @@ Here's a more visual example: a traffic light state machine with a React UI comp
   </TabItem>
 </Tabs>
 
+## TypeScript Inference Best Practices
+
+Matchina is designed to provide excellent TypeScript inference, but there are some patterns that work better than others:
+
+### ✅ Recommended: Define machines using functions
+
+Always define your machines using the `matchina` function with inline state and transition definitions:
+
+```ts
+// Best approach for full TypeScript inference
+const player = matchina(
+  { // States inline
+    Idle: undefined,
+    Playing: (trackId: string) => ({ trackId }),
+    Paused: (trackId: string) => ({ trackId }),
+  },
+  { // Transitions inline
+    Idle: { 
+      start: (trackId: string) => "Playing"
+    },
+    Playing: {
+      pause: "Paused",
+    },
+    Paused: {
+      resume: "Playing",
+    },
+  },
+  "Idle"
+);
+```
+
+### ❌ Avoid: Separating states and transitions as standalone objects
+
+This approach breaks TypeScript inference and loses auto-completion:
+
+```ts
+// Don't do this - breaks TypeScript inference
+const states = {
+  Idle: undefined,
+  Playing: (trackId: string) => ({ trackId }),
+  Paused: (trackId: string) => ({ trackId }),
+};
+
+const transitions = {
+  Idle: { 
+    start: (trackId: string) => "Playing"
+  },
+  // TypeScript won't properly validate these transitions
+  // against the states defined above
+};
+
+const player = matchina(states, transitions, "Idle");
+```
+
+### ✅ Alternative: Using matchbox for reusable state definitions
+
+If you need to share state definitions, use the `matchbox` function:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+const playerStates = matchbox({
+  Idle: undefined,
+  Playing: (trackId: string) => ({ trackId }),
+  Paused: (trackId: string) => ({ trackId }),
+});
+
+// Still define the transitions inline when creating the machine
+const player = matchina(
+  playerStates,
+  {
+    Idle: { 
+      start: (trackId: string) => "Playing"
+    },
+    Playing: {
+      pause: "Paused",
+    },
+    Paused: {
+      resume: "Playing",
+    },
+  },
+  "Idle"
+);
+```
+
+This pattern preserves type inference while allowing state definitions to be reused.
+
 ## Next Steps
 
 Now that you understand the basics, explore these guides to learn more:
 
 - [Matchbox: Type-Safe Unions](./union-machines/) - Learn about the foundational concept of tagged unions
 - [Factory Machines](./machines/) - Create complete state machines with TypeScript inference
+- [TypeScript Inference Best Practices](./typescript-inference/) - Learn how to maintain full type inference
 - [Type Guards](./typeguards/) - Master type guards for type-safe state handling
 - [Lifecycle & Hooks](./lifecycle/) - Intercept and react to state changes
 - [Promise Machines](./promises/) - Handle async operations with state machines

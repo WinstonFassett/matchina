@@ -28,65 +28,61 @@ Each state carries a `value` property, but we separate them into different state
 
 ## Transitions
 
-Next, we define transitions that modify the counter's value:
+Next, we define transitions that modify the counter's value. We'll define them inline when creating the machine to maintain full TypeScript inference:
+
+## Creating the Machine
+
+Now we create the counter machine with both the states and transitions:
 
 ```ts
-const transitions = {
-  Zero: {
-    increment: () => ({ key: "Positive", data: { value: 1 } }),
-    decrement: () => ({ key: "Negative", data: { value: -1 } })
-    // No need to define reset since we're already at Zero
-  },
-  Positive: {
-    increment: (state) => ({
-      ...state,
-      data: { value: state.data.value + 1 }
-    }),
-    decrement: (state) => {
-      const newValue = state.data.value - 1;
-      return newValue === 0
-        ? "Zero"
-        : newValue < 0
-        ? { key: "Negative", data: { value: newValue } }
-        : { ...state, data: { value: newValue } };
+// Create the counter machine
+const counterMachine = matchina(
+  counterStates,
+  {
+    Zero: {
+      increment: () => ({ key: "Positive", data: { value: 1 } }),
+      decrement: () => ({ key: "Negative", data: { value: -1 } })
+      // No need to define reset since we're already at Zero
     },
-    reset: "Zero"
-  },
-  Negative: {
-    decrement: (state) => ({
-      ...state,
-      data: { value: state.data.value - 1 }
-    }),
-    increment: (state) => {
-      const newValue = state.data.value + 1;
-      return newValue === 0
-        ? "Zero"
-        : newValue > 0
-        ? { key: "Positive", data: { value: newValue } }
-        : { ...state, data: { value: newValue } };
+    Positive: {
+      increment: (state) => ({
+        ...state,
+        data: { value: state.data.value + 1 }
+      }),
+      decrement: (state) => {
+        const newValue = state.data.value - 1;
+        return newValue === 0
+          ? "Zero"
+          : newValue < 0
+          ? { key: "Negative", data: { value: newValue } }
+          : { ...state, data: { value: newValue } };
+      },
+      reset: "Zero"
     },
-    reset: "Zero"
-  }
-};
+    Negative: {
+      decrement: (state) => ({
+        ...state,
+        data: { value: state.data.value - 1 }
+      }),
+      increment: (state) => {
+        const newValue = state.data.value + 1;
+        return newValue === 0
+          ? "Zero"
+          : newValue > 0
+          ? { key: "Positive", data: { value: newValue } }
+          : { ...state, data: { value: newValue } };
+      },
+      reset: "Zero"
+    }
+  },
+  "Zero" // Initial state
+);
 ```
 
 The transitions define how the counter behaves when:
 - `increment` is called (value increases by 1)
 - `decrement` is called (value decreases by 1)
 - `reset` is called (value returns to 0)
-
-## Creating the Machine
-
-Now we create the counter machine:
-
-```ts
-// Create the counter machine
-const counterMachine = matchina(
-  counterStates,
-  transitions,
-  "Zero" // Initial state
-);
-```
 
 ## Usage
 

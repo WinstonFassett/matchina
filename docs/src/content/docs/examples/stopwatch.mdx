@@ -28,54 +28,46 @@ const stopwatchStates = matchbox({
 
 The `Stopped` state has an `elapsed` property that stores the total elapsed time, while the `Running` state also tracks the `startTime` to calculate additional elapsed time.
 
-## Transitions
+## Transitions and Machine Creation
 
-Now, let's define the transitions:
-
-```ts
-const transitions = {
-  Stopped: {
-    start: (state) => ({
-      key: "Running",
-      data: {
-        elapsed: state.data.elapsed,
-        startTime: Date.now()
-      }
-    })
-  },
-  Running: {
-    stop: (state) => {
-      const currentTime = Date.now();
-      const additionalElapsed = currentTime - state.data.startTime;
-      const totalElapsed = state.data.elapsed + additionalElapsed;
-      
-      return {
-        key: "Stopped",
-        data: {
-          elapsed: totalElapsed
-        }
-      };
-    },
-    
-    reset: () => ({
-      key: "Stopped",
-      data: {
-        elapsed: 0
-      }
-    })
-  }
-};
-```
-
-## Creating the Machine
-
-Now we can create the stopwatch machine:
+Now, let's create the stopwatch machine with inline transitions for better TypeScript inference:
 
 ```ts
-// Create the stopwatch machine
+// Create the stopwatch machine with inline transitions
 const stopwatch = matchina(
   stopwatchStates,
-  transitions,
+  {
+    Stopped: {
+      start: (state) => ({
+        key: "Running",
+        data: {
+          elapsed: state.data.elapsed,
+          startTime: Date.now()
+        }
+      })
+    },
+    Running: {
+      stop: (state) => {
+        const currentTime = Date.now();
+        const additionalElapsed = currentTime - state.data.startTime;
+        const totalElapsed = state.data.elapsed + additionalElapsed;
+        
+        return {
+          key: "Stopped",
+          data: {
+            elapsed: totalElapsed
+          }
+        };
+      },
+      
+      reset: () => ({
+        key: "Stopped",
+        data: {
+          elapsed: 0
+        }
+      })
+    }
+  },
   "Stopped" // Initial state
 );
 ```

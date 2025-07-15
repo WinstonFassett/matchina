@@ -196,54 +196,8 @@ unsubscribe();
 
 Now that you understand lifecycle hooks, explore these related guides:
 
-- [Effects](./effects/) - Learn about the dedicated effects system
-- [Factory Machines](./machines/) - Create complete state machines
-- [Promise Machines](./promises/) - Handle async operations with state machines
-- [React Integration](./integrations/) - Use lifecycle hooks with React
-            from.key, // MUST equal and autocomplete to 'Idle'
-            "to",
-            to.key, // MUST equal and autocomplete to 'Pending'
-          );
-        },
-      },
-    },
-  },
-  "*": {
-    on: {
-      "*": {
-        after: ({ type, from, to }) => {
-          console.log(
-            "any state with any event:\n",
-            type, // any valid event b/c wildcard event
-            "from",
-            from.key, // any valid state b/c wildcard state
-            "to",
-            to.key, // any valid exit state (which excludes Idle)
-            "with data",
-            to.data, // any valid state data b/c wildcard state
-          );
-        },
-      },
-      reject: {
-        after: ({ type, from, to }) => {
-          const { name, stack, message } = to.data; // can only be Error type
-          console.log(
-            "Any reject event:\n",
-            type, // MUST be 'reject'
-            "from",
-            from.key, // any valid state b/c wildcard state
-            "with data",
-            from.data, // any valid state data b/c wildcard state
-            "to",
-            to.key, // MUST equal and autocomplete to 'Rejected'
-            "Error",
-            name,
-            message,
-            stack, // Error properties
-          );
-        },
-      },
-    },
-  },
-});
+- [Effects](/guides/effects) - Learn about the dedicated effects system
+- [Factory Machines](/guides/machines) - Create complete state machines
+- [Promise Machines](/guides/promises) - Handle async operations with state machines
+- [React Integration](/guides/integrations) - Use lifecycle hooks with React
 ```
