@@ -1,11 +1,10 @@
 import mermaid from "mermaid";
 import React, {
   forwardRef,
-  type RefObject,
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 import "./mermaid.css";
 // Initialize Mermaid
@@ -49,7 +48,7 @@ export const Mermaid = React.memo(
     if (!svg) return <div>Loading...</div>;
     return (
       <div>
-        <InlineSvg svg={svg} ref={elRef} />
+        <MemoizedInlineSvg svg={svg} ref={elRef} />
       </div>
     );
   },
@@ -58,29 +57,27 @@ export const Mermaid = React.memo(
 interface InlineSvgProps {
   svg: string;
 }
-
-const InlineSvg: React.FC<InlineSvgProps> = React.memo(
-  forwardRef(({ svg }, ref) => {
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    useEffect(() => {
-      const viewBoxMatch = svg?.match(
-        /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/,
-      );
-      if (viewBoxMatch && viewBoxMatch[1]) {
-        const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);
-        setDimensions({ width, height });
-      }
-    }, [svg]);
-    return (
-      <div
-        ref={ref as RefObject<HTMLDivElement> | null}
-        style={{
-          minHeight: `${dimensions.height}px`,
-        }}
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const viewBoxMatch = svg?.match(
+      /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/,
     );
-  }),
-);
+    if (viewBoxMatch && viewBoxMatch[1]) {
+      const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);
+      setDimensions({ width, height });
+    }
+  }, [svg]);
+  return (
+    <div
+      ref={ref}
+      style={{
+        minHeight: `${dimensions.height}px`,
+      }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+});
+export const MemoizedInlineSvg = React.memo(InlineSvg);
 
 export default Mermaid;
