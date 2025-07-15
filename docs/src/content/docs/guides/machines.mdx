@@ -1,183 +1,331 @@
 ---
-title: State Machines
+title: Factory Machines
+description: Create complete state machines with TypeScript inference and type-safe transitions
 ---
 
-import FooBarDemo from "@components/FooBarDemo.astro";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import MachineDemo from "@components/MachineDemo.astro";
-import PromiseMachineDiagram from "@components/PromiseMachineDiagram.astro";
-import Promises from "./promises.mdx";
 
-The Finite State Machine (FSM) pattern is:
+## What are Factory Machines?
+
+Factory Machines combine state factories with transitions to create complete state machines with type-safe operations. They extend the Matchbox pattern to provide:
+
+1. **Type-safe state creation** with proper parameter inference
+2. **Type-safe transitions** with smart parameter types
+3. **State data preservation** when transitioning between states
+4. **Lifecycle hooks** for intercepting and reacting to state changes
 
 ```ts 
   const {(getState, send)} = fsm(states, transitions, initialState) 
 ```
 
-### States
+## Creating Factory Machines
 
-States can be any type, usually extending `string` or `object`.
+There are two ways to create a factory machine:
 
-Factory Machines use state factory functions to create keyed state objects.
+<Tabs>
+  <TabItem label="Using defineStates">
+```ts
+import { defineStates, createFactoryMachine } from "matchina";
 
-###### `defineStates`
+// 1. Define state factory
+const TaskStates = defineStates({
+  Idle: () => ({}),
+  Loading: (query: string) => ({ query }),
+  Success: (query: string, results: string[]) => ({ query, results }),
+  Error: (query: string, message: string) => ({ query, message })
+});
 
-Use `defineStates` to create a fully-typed state factory.
+// 2. Create a factory machine with type-safe transitions
+const taskMachine = createFactoryMachine(
+  TaskStates,
+  {
+    Idle: { 
+      // Parameter types are inferred from the destination state
+      search: (query: string) => "Loading"
+    },
+    Loading: {
+      // Parameter types are inferred from the destination state
+      success: (results: string[]) => (state) => {
+        // TypeScript knows state.data has query from Loading state
+        return TaskStates.Success(state.data.query, results);
+      },
+      // Parameter types are inferred from the destination state
+      error: (message: string) => (state) => {
+        // TypeScript knows state.data has query from Loading state
+        return TaskStates.Error(state.data.query, message);
+      }
+    },
+    Success: {
+      // Return to idle state
+      reset: "Idle",
+      // Start a new search
+      search: (query: string) => "Loading"
+    },
+    Error: {
+      // Return to idle state
+      reset: "Idle",
+      // Retry the same query
+      retry: (state) => {
+        // TypeScript knows state.data has query from Error state
+        return TaskStates.Loading(state.data.query);
+      }
+    }
+  },
+  // 3. Set initial state
+  TaskStates.Idle()
+);
+```
+  </TabItem>
+  <TabItem label="Using matchina">
+```ts
+import { matchina } from "matchina";
+
+// Create a state machine directly with matchina
+const taskMachine = matchina(
+  // 1. Define states
+  {
+    Idle: undefined,
+    Loading: (query: string) => ({ query }),
+    Success: (query: string, results: string[]) => ({ query, results }),
+    Error: (query: string, message: string) => ({ query, message })
+  },
+  // 2. Define transitions
+  {
+    Idle: { 
+      search: (query: string) => "Loading" 
+    },
+    Loading: {
+      success: (results: string[]) => "Success",
+      error: (message: string) => "Error"
+    },
+    Success: {
+      reset: "Idle",
+      search: (query: string) => "Loading"
+    },
+    Error: {
+      reset: "Idle",
+      retry: (state) => "Loading"
+    }
+  },
+  // 3. Set initial state
+  "Idle"
+);
+```
+  </TabItem>
+</Tabs>
+
+## Transition Types
+
+Factory machines support different kinds of transitions:
+
+### 1. String Transitions
+
+The simplest form that preserves compatible data:
 
 ```ts
-const states = defineStates({
-  Idle: null,
-  Fetching: (userId: string) => ({ userId }),
-  Succeeded: (result: User) => ({ result }),
-  Failed: (error: Error) => ({ error }),
+{
+  Playing: {
+    pause: "Paused"  // Simple transition to Paused state
+  }
+}
+```
+
+### 2. Function Transitions
+
+Return a string for the target state:
+
+```ts
+{
+  Idle: {
+    search: (query: string) => "Loading"  // With parameters
+  }
+}
+```
+
+### 3. State Factory Transitions
+
+Return a new state using the state factory:
+
+```ts
+{
+  Loading: {
+    success: (results: string[]) => (state) => {
+      return TaskStates.Success(state.data.query, results);
+    }
+  }
+}
+```
+
+### 4. State Update Transitions
+
+Return a modified version of the current state:
+
+```ts
+{
+  Counting: {
+    increment: (state) => ({
+      ...state,
+      data: { count: state.data.count + 1 }
+    })
+  }
+}
+```
+
+## Using Factory Machines
+
+Once you've created a factory machine, you can use its API:
+
+### 1. Triggering Transitions
+
+Call transition methods with proper parameters:
+
+```ts
+// Call transition with required parameters
+taskMachine.search("react hooks");
+
+// When in Loading state, call success with results
+if (taskMachine.getState().is("Loading")) {
+  taskMachine.success(["result1", "result2"]);
+}
+```
+
+### 2. Getting Current State
+
+Get the current state for inspection:
+
+```ts
+const state = taskMachine.getState();
+console.log(state.key);  // Current state key
+
+// Use type guards
+if (state.is("Success")) {
+  console.log(state.data.results);  // Type-safe access to results
+}
+```
+
+### 3. Pattern Matching
+
+Use pattern matching for exhaustive state handling:
+
+```ts
+const ui = taskMachine.getState().match({
+  Idle: () => "Enter a search term",
+  Loading: ({ query }) => `Searching for "${query}"...`,
+  Success: ({ query, results }) => 
+    `Found ${results.length} results for "${query}": ${results.join(", ")}`,
+  Error: ({ query, message }) => 
+    `Error searching for "${query}": ${message}`
 });
 ```
 
-###### `key` and `data`
+## Advanced Pattern: Preserving State Data
+
+Transitions often need to preserve data from the previous state. There are multiple ways to do this:
+
+### 1. Using String Transitions (Auto Preservation)
 
 ```ts
-const state = states.Fetching("user-id");
-state.key === "Fetching";
-state.data.userId === "user-id";
+// When data types are compatible, data is automatically preserved
+{
+  Playing: {
+    pause: "Paused"  // trackId is preserved from Playing to Paused
+  }
+}
 ```
 
-###### `match`
+### 2. Using State Access in Function Transitions
 
 ```ts
-console.log(
-  state.match({
-    Idle: () => "idle",
-    Fetching: ({ userId }) => `fetching ${userId}`,
-    Succeeded: ({ result }) => `succeeded ${result}`,
-    Failed: ({ error }) => `failed ${error}`,
-  }),
-);
+{
+  Error: {
+    retry: (state) => {
+      // Access previous state data
+      return "Loading";  // Original query is preserved
+    }
+  }
+}
 ```
 
-### Transitions
-
-Transitions are keyed by state `key` and transition `type`.
-
-From the `state-machine` resolve function:
+### 3. Using State Factory for Complete Control
 
 ```ts
-const to = machine.transitions[ev.from.key][ev.type];
+{
+  Loading: {
+    success: (results: string[]) => (state) => {
+      // Use state factory with data from current state
+      return TaskStates.Success(state.data.query, results);
+    }
+  }
+}
 ```
 
-Transition configuration varies by machine type.
+## Example: Todo List Machine
 
-- Basic state machine `transitions` will be used as the next state
-- Factory machines `transitions` can be string state keys or functions that return the next state
-- Promise machines `transitions` are already provided
-
-## Factory Machines
-
-Create a factory machine with
+Here's a complete example of a todo list machine:
 
 ```ts
-createFactoryMachine(states, transitions, initialState);
-```
+import { matchina } from "matchina";
 
-### Factory Machine States
-
-Define states first with `defineStates` or create inline by passing in creator map.
-
-With inline states factory:
-
-```ts
-const machine = createFactoryMachine(
+const todoMachine = matchina(
+  // States
   {
-    Idle: undefined,
-    Foo: (foo: string) => ({ foo }),
-    Bar: (bar: number) => ({ bar }),
+    Empty: () => ({}),
+    Active: (todos: string[]) => ({ todos }),
+    Saving: (todos: string[]) => ({ todos }),
+    Error: (message: string, todos?: string[]) => ({ message, todos })
   },
-  transitions,
-  "Idle",
-);
-```
-
-With standalone states factory:
-
-```ts
-const states = defineStates( {
-  Idle: undefined,
-  Foo: (foo: string) => ({ foo }),
-  Bar: (bar: number) => ({ bar })
-})
-const machine = createFactoryMachine(
-  states,
-  transitions,
-  states.Foo(...)
-)
-```
-
-### Factory Machine Transitions
-
-Factory Machine Transition values can be:
-
-- a Factory State `key`
-- a function returning a Factory State
-- a function returning a Resolver
-
-A simple transition function:
-
-```ts
-(...myParameters: any[]) => MyExitState;
-```
-
-A transition resolver function:
-
-```ts
-(...myParameters: any[]) =>
-  ({ type, from }) =>
-    MyExitState;
-```
-
-For example, in the snippet below:
-
-- `toggle` uses a simple state `key`
-- `foo` takes a parameter and returns a Factory State
-- `increment` takes a `bar` parameter and returns a Resolver that increments `ev.from.data.bar` by that amount
-
-```ts
-const machine = createFactoryMachine(
-  states,
+  // Transitions
   {
-    Idle: {
-      toggle: "Foo",
+    Empty: {
+      add: (todo: string) => "Active"
     },
-    Foo: {
-      toggle: "Bar",
-      foo: (foo = "foo") => states.Foo(`my-${foo}`),
+    Active: {
+      add: (todo: string, state) => ({
+        ...state,
+        data: { todos: [...state.data.todos, todo] }
+      }),
+      remove: (index: number, state) => {
+        const newTodos = [...state.data.todos];
+        newTodos.splice(index, 1);
+        return newTodos.length === 0 
+          ? "Empty" 
+          : { ...state, data: { todos: newTodos } };
+      },
+      save: "Saving"
     },
-    Bar: {
-      toggle: "Foo",
-      increment: (bar: number) => (ev) => states.Bar(ev.from.data.bar + bar),
+    Saving: {
+      success: "Active",
+      error: (message: string) => "Error"
     },
+    Error: {
+      dismiss: (state) => 
+        state.data.todos?.length 
+          ? { key: "Active", data: { todos: state.data.todos } } 
+          : "Empty"
+    }
   },
-  "Idle",
+  "Empty"
 );
+
+// Usage
+todoMachine.add("Learn Matchina");
+todoMachine.add("Build a state machine");
+todoMachine.save();
+
+// Simulate API error
+setTimeout(() => {
+  todoMachine.error("Failed to save todos");
+}, 1000);
 ```
 
-{/* Matchina types resolve this to:
+<MachineDemo />
 
-<FooBarDemo /> */}
+## Next Steps
 
-## Promise Machines
+Now that you understand Factory Machines, explore these related guides:
 
-<PromiseMachineDiagram />
-
-Matchina provides a convenient way to work with promises and state machines using `createPromiseMachine`.
-Its states are: `Idle`, `Pending`(`promise` and `params`), `Resolved` (`result`), and Rejected (`error`).
-
-To execute the promise machine when in an `Idle` state, use the `execute` method.
-This will transition the machine to the `Pending` state and return a promise that resolves to the `result` or rejects with an `error`.
-
-### State Payloads
-
-- The Pending state includes the original `params` and provides a `promise` property that can be awaited directly.
-- The Resolved state includes the `result` of the promise.
-- The Rejected state includes the `error` that occurred during the promise execution.
-
-### Usage Example
-
-<Promises />
+- [Lifecycle & Hooks](./lifecycle/) - Add hooks for intercepting state changes
+- [Effects](./effects/) - Manage side effects with the effects system
+- [Promise Machines](./promises/) - Handle async operations with state machines
+- [React Integration](./integrations/) - Use state machines with React

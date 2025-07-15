@@ -1,0 +1,173 @@
+---
+title: Toggle State Machine
+description: A basic on/off toggle state machine example
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a simple toggle state machine that switches between `On` and `Off` states. It shows the fundamental concepts of state machines with minimal complexity.
+
+## State Definition
+
+We start by defining the states for our toggle machine:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+// Define the states
+const toggleStates = matchbox({
+  On: () => ({}),
+  Off: () => ({})
+});
+```
+
+Here we've defined two states, `On` and `Off`, neither of which need any additional data.
+
+## Transitions
+
+Next, we define the transitions between these states:
+
+```ts
+const transitions = {
+  On: {
+    toggle: "Off",
+    turnOff: "Off"
+  },
+  Off: {
+    toggle: "On",
+    turnOn: "On"
+  }
+};
+```
+
+We've defined two transitions for each state:
+- In the `On` state, either `toggle` or `turnOff` will transition to the `Off` state
+- In the `Off` state, either `toggle` or `turnOn` will transition to the `On` state
+
+## Creating the Machine
+
+Now we can create the state machine by combining the states, transitions, and setting the initial state:
+
+```ts
+// Create the toggle machine
+const toggleMachine = matchina(
+  toggleStates,
+  transitions,
+  "Off" // Initial state
+);
+```
+
+## Usage
+
+Let's see how to use this state machine:
+
+```ts
+// Check the current state
+console.log(toggleMachine.state.key); // "Off"
+console.log(toggleMachine.state.is("Off")); // true
+
+// Toggle the state
+toggleMachine.toggle();
+console.log(toggleMachine.state.key); // "On"
+
+// Use the specific transition
+toggleMachine.turnOff();
+console.log(toggleMachine.state.key); // "Off"
+
+// Use pattern matching for rendering
+const message = toggleMachine.state.match({
+  On: () => "The toggle is ON",
+  Off: () => "The toggle is OFF"
+});
+console.log(message); // "The toggle is OFF"
+```
+
+## Complete Example
+
+Here's the complete example:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+// Define the states
+const toggleStates = matchbox({
+  On: () => ({}),
+  Off: () => ({})
+});
+
+// Create the toggle machine
+const toggleMachine = matchina(
+  toggleStates,
+  {
+    On: {
+      toggle: "Off",
+      turnOff: "Off"
+    },
+    Off: {
+      toggle: "On",
+      turnOn: "On"
+    }
+  },
+  "Off" // Initial state
+);
+
+// Usage example
+function demonstrateToggle() {
+  console.log("Initial state:", toggleMachine.state.key);
+  
+  toggleMachine.turnOn();
+  console.log("After turnOn:", toggleMachine.state.key);
+  
+  toggleMachine.toggle();
+  console.log("After toggle:", toggleMachine.state.key);
+  
+  // Using pattern matching for UI rendering
+  const renderToggle = () => {
+    return toggleMachine.state.match({
+      On: () => `<button class="toggle toggle-on">ON</button>`,
+      Off: () => `<button class="toggle toggle-off">OFF</button>`
+    });
+  };
+  
+  console.log("Rendered output:", renderToggle());
+}
+
+// Run the demonstration
+demonstrateToggle();
+```
+
+## TypeScript Benefits
+
+One of the main benefits of using Matchina is TypeScript integration. The machine's methods are fully typed:
+
+```ts
+// TypeScript knows these methods exist
+toggleMachine.toggle();
+toggleMachine.turnOn();
+toggleMachine.turnOff();
+
+// TypeScript would show an error for non-existent methods
+// @ts-expect-error - This method doesn't exist
+toggleMachine.invalidMethod();
+
+// TypeScript knows which states exist
+if (toggleMachine.state.is("On")) {
+  // TypeScript knows we're in the On state here
+}
+
+// TypeScript would show an error for non-existent states
+// @ts-expect-error - This state doesn't exist
+if (toggleMachine.state.is("Invalid")) {
+  // This code is unreachable
+}
+```
+
+## Next Steps
+
+Now that you've seen a basic toggle machine, you might want to explore:
+
+- [Counter Example](/examples/counter) - Add numeric data to your states
+- [Traffic Light Example](/examples/traffic-light) - Create a machine with more states
+- [Lifecycle Hooks](/guides/lifecycle) - Add behavior when states change

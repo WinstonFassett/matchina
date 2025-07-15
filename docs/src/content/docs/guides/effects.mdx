@@ -1,10 +1,196 @@
 ---
 title: Effects
+description: Manage side effects with the Matchina effects system
 ---
 
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/effects.usage.ts?raw";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Check it:
+## What are Effects?
+
+Effects in Matchina provide a structured way to handle side effects that result from state transitions. Instead of mixing side effect logic with state transition logic, Matchina allows you to:
+
+1. Define states with specific effect types
+2. Bind handlers to those effect types
+3. Separate state management from side effect execution
+
+This pattern keeps your state machine pure while still allowing it to interact with the outside world.
+
+## Creating Effect States
+
+To create a state with an effect, include an `effect` property in your state data:
+
+```ts
+import { matchina } from "matchina";
+
+// Create a counter machine with effects
+const counter = matchina(
+  {
+    Idle: () => ({ count: 0 }),
+    Counting: (count: number) => ({ count }),
+    // Define an effect state that has a specific effect type
+    Milestone: (count: number) => ({ count, effect: "Notify" as const })
+  },
+  {
+    Idle: { 
+      start: "Counting" 
+    },
+    Counting: {
+      increment: (state) => {
+        const newCount = state.data.count + 1;
+        // Create a Milestone effect state when count is multiple of 10
+        if (newCount % 10 === 0) {
+          return "Milestone";
+        }
+        return { ...state, data: { count: newCount } };
+      },
+      reset: "Idle"
+    },
+    Milestone: {
+      acknowledge: "Counting"
+    }
+  },
+  "Idle"
+);
+```
+
+## Handling Effects
+
+There are two ways to handle effects in Matchina:
+
+### 1. Using bindEffects
+
+The `bindEffects` function allows you to register handlers for specific effect types:
+
+```ts
+import { setup, bindEffects } from "matchina";
+
+// Add effect handlers with type safety
+setup(counter)(
+  // Effect handler - handle the Notify effect
+  bindEffects({
+    Notify: ({ data }) => {
+      // Show notification for milestone
+      alert(`Milestone reached: ${data.count}`);
+    }
+  })
+);
+```
+
+### 2. Using effect Hook
+
+You can also use the `effect` hook to handle all effects:
+
+```ts
+import { setup, effect } from "matchina";
+
+// Add general effect handler
+setup(counter)(
+  effect(ev => {
+    // Check if event has an effect
+    if (ev.to.data.effect === "Notify") {
+      alert(`Milestone reached: ${ev.to.data.count}`);
+    }
+  })
+);
+```
+
+## Exhaustive vs. Non-exhaustive Effect Handling
+
+### Exhaustive Handling
+
+With `bindEffects`, you can ensure that all effects are handled:
+
+```ts
+bindEffects({
+  Notify: ({ data }) => {
+    // Handle Notify effect
+  },
+  // TypeScript error if you have other effect types not handled here
+}, { exhaustive: true });
+```
+
+### Non-exhaustive Handling
+
+For optional handling, use non-exhaustive mode:
+
+```ts
+bindEffects({
+  // Only handle some effects
+  Notify: ({ data }) => {
+    // Handle Notify effect
+  },
+  // No error if other effect types exist
+}, { exhaustive: false });
+```
+
+## Combining Effects with Transitions
+
+Effects are often combined with transitions to create more complex behavior:
+
+```ts
+const todoMachine = matchina(
+  {
+    Idle: () => ({}),
+    Active: (todos: string[]) => ({ todos }),
+    Saving: (todos: string[]) => ({ todos }),
+    // Effect state
+    SyncRequired: (todos: string[]) => ({ 
+      todos, 
+      effect: "AutoSync" as const 
+    })
+  },
+  {
+    // ...transitions
+    Active: {
+      add: (todo: string, state) => {
+        const todos = [...state.data.todos, todo];
+        // Transition to effect state when we have 5+ items
+        return todos.length >= 5 
+          ? "SyncRequired" 
+          : { ...state, data: { todos } };
+      }
+    },
+    SyncRequired: {
+      // After sync, go back to Active state
+      syncComplete: "Active"
+    }
+  },
+  "Idle"
+);
+
+// Handle the AutoSync effect
+setup(todoMachine)(
+  bindEffects({
+    AutoSync: ({ data, machine }) => {
+      // Start synchronization
+      saveToServer(data.todos).then(() => {
+        // Transition when sync completes
+        machine.syncComplete();
+      });
+    }
+  })
+);
+```
+
+## Complete Example
+
+Here's a full example of using effects in a counter machine:
 
 <CodeBlock lang={"js"} code={code} />
+
+## Benefits of the Effects Pattern
+
+- **Separation of concerns**: Keep state logic separate from side effect logic
+- **Testability**: Test state transitions independently from effect handlers
+- **Composability**: Reuse effect handlers across different state machines
+- **Type safety**: TypeScript ensures all effects are properly handled
+
+## Next Steps
+
+Now that you understand effects, explore these related guides:
+
+- [Lifecycle Hooks](./lifecycle/) - Learn about other hooks for state changes
+- [Promise Machines](./promises/) - Handle async operations with state machines
+- [React Integration](./integrations/) - Use effects with React components

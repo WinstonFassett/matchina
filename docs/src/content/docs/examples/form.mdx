@@ -1,0 +1,577 @@
+---
+title: Form Validation State Machine
+description: Form with validation state machine
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates how to build a form validation state machine that handles different validation states and user interactions. It shows how state machines can simplify complex UI logic.
+
+## State Definition
+
+First, let's define the states for our form validation:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+// Define our form fields
+type FormData = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+// Define the states
+const formStates = matchbox({
+  Pristine: () => ({
+    data: {
+      username: "",
+      email: "",
+      password: ""
+    },
+    touched: {
+      username: false,
+      email: false,
+      password: false
+    },
+    errors: {}
+  }),
+  
+  Editing: (
+    data: FormData,
+    touched: Record<keyof FormData, boolean>,
+    errors: Partial<Record<keyof FormData, string>>
+  ) => ({
+    data,
+    touched,
+    errors
+  }),
+  
+  Invalid: (
+    data: FormData,
+    touched: Record<keyof FormData, boolean>,
+    errors: Record<keyof FormData, string>
+  ) => ({
+    data,
+    touched,
+    errors
+  }),
+  
+  Valid: (data: FormData) => ({
+    data,
+    touched: {
+      username: true,
+      email: true,
+      password: true
+    },
+    errors: {}
+  }),
+  
+  Submitting: (data: FormData) => ({
+    data
+  }),
+  
+  Success: (data: FormData) => ({
+    data
+  }),
+  
+  Error: (data: FormData, errorMessage: string) => ({
+    data,
+    errorMessage
+  })
+});
+```
+
+## Helper Functions
+
+Let's create some validation helper functions:
+
+```ts
+// Validation functions
+function validateUsername(username: string): string | null {
+  if (!username) return "Username is required";
+  if (username.length < 3) return "Username must be at least 3 characters";
+  return null;
+}
+
+function validateEmail(email: string): string | null {
+  if (!email) return "Email is required";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Email is invalid";
+  return null;
+}
+
+function validatePassword(password: string): string | null {
+  if (!password) return "Password is required";
+  if (password.length < 8) return "Password must be at least 8 characters";
+  if (!/[A-Z]/.test(password)) return "Password must contain an uppercase letter";
+  if (!/[0-9]/.test(password)) return "Password must contain a number";
+  return null;
+}
+
+// Check the entire form
+function validateForm(data: FormData): Record<keyof FormData, string | null> {
+  return {
+    username: validateUsername(data.username),
+    email: validateEmail(data.email),
+    password: validatePassword(data.password)
+  };
+}
+
+// Check if the form is valid
+function isFormValid(data: FormData): boolean {
+  const validations = validateForm(data);
+  return Object.values(validations).every(error => error === null);
+}
+
+// Get only the errors (no nulls)
+function getErrors(data: FormData): Partial<Record<keyof FormData, string>> {
+  const validations = validateForm(data);
+  const errors: Partial<Record<keyof FormData, string>> = {};
+  
+  for (const [key, value] of Object.entries(validations) as [keyof FormData, string | null][]) {
+    if (value !== null) {
+      errors[key] = value;
+    }
+  }
+  
+  return errors;
+}
+```
+
+## Transitions
+
+Now, let's define the transitions between our form states:
+
+```ts
+const transitions = {
+  Pristine: {
+    // Start editing the form
+    updateField: (
+      field: keyof FormData,
+      value: string,
+      state
+    ) => {
+      const newData = {
+        ...state.data.data,
+        [field]: value
+      };
+      
+      const newTouched = {
+        ...state.data.touched,
+        [field]: true
+      };
+      
+      const errors = getErrors(newData);
+      const hasErrors = Object.keys(errors).length > 0;
+      
+      return {
+        key: hasErrors ? "Invalid" : "Editing",
+        data: {
+          data: newData,
+          touched: newTouched,
+          errors
+        }
+      };
+    }
+  },
+  
+  Editing: {
+    // Update a field while editing
+    updateField: (
+      field: keyof FormData,
+      value: string,
+      state
+    ) => {
+      const newData = {
+        ...state.data.data,
+        [field]: value
+      };
+      
+      const newTouched = {
+        ...state.data.touched,
+        [field]: true
+      };
+      
+      const errors = getErrors(newData);
+      const hasErrors = Object.keys(errors).length > 0;
+      
+      if (isFormValid(newData)) {
+        return {
+          key: "Valid",
+          data: {
+            data: newData
+          }
+        };
+      }
+      
+      return {
+        key: hasErrors ? "Invalid" : "Editing",
+        data: {
+          data: newData,
+          touched: newTouched,
+          errors
+        }
+      };
+    },
+    
+    // Reset the form
+    reset: "Pristine",
+    
+    // Submit the form if it's valid
+    submit: (state) => {
+      if (isFormValid(state.data.data)) {
+        return {
+          key: "Submitting",
+          data: {
+            data: state.data.data
+          }
+        };
+      }
+      
+      // Stay in current state if not valid
+      return state;
+    }
+  },
+  
+  Invalid: {
+    // Update a field when in invalid state
+    updateField: (
+      field: keyof FormData,
+      value: string,
+      state
+    ) => {
+      const newData = {
+        ...state.data.data,
+        [field]: value
+      };
+      
+      const newTouched = {
+        ...state.data.touched,
+        [field]: true
+      };
+      
+      const errors = getErrors(newData);
+      
+      if (isFormValid(newData)) {
+        return {
+          key: "Valid",
+          data: {
+            data: newData
+          }
+        };
+      }
+      
+      return {
+        key: "Invalid",
+        data: {
+          data: newData,
+          touched: newTouched,
+          errors: errors as Record<keyof FormData, string>
+        }
+      };
+    },
+    
+    // Reset the form
+    reset: "Pristine"
+  },
+  
+  Valid: {
+    // Update a field when in valid state
+    updateField: (
+      field: keyof FormData,
+      value: string,
+      state
+    ) => {
+      const newData = {
+        ...state.data.data,
+        [field]: value
+      };
+      
+      if (isFormValid(newData)) {
+        return {
+          key: "Valid",
+          data: {
+            data: newData
+          }
+        };
+      }
+      
+      const errors = getErrors(newData);
+      
+      return {
+        key: "Invalid",
+        data: {
+          data: newData,
+          touched: {
+            username: true,
+            email: true,
+            password: true
+          },
+          errors: errors as Record<keyof FormData, string>
+        }
+      };
+    },
+    
+    // Submit the form
+    submit: (state) => ({
+      key: "Submitting",
+      data: {
+        data: state.data.data
+      }
+    }),
+    
+    // Reset the form
+    reset: "Pristine"
+  },
+  
+  Submitting: {
+    // Handle successful submission
+    success: (state) => ({
+      key: "Success",
+      data: {
+        data: state.data.data
+      }
+    }),
+    
+    // Handle submission error
+    failure: (errorMessage: string, state) => ({
+      key: "Error",
+      data: {
+        data: state.data.data,
+        errorMessage
+      }
+    })
+  },
+  
+  Success: {
+    // Start a new form
+    reset: "Pristine"
+  },
+  
+  Error: {
+    // Try submitting again
+    retry: (state) => ({
+      key: "Submitting",
+      data: {
+        data: state.data.data
+      }
+    }),
+    
+    // Edit the form again
+    edit: (state) => {
+      const errors = getErrors(state.data.data);
+      const hasErrors = Object.keys(errors).length > 0;
+      
+      return {
+        key: hasErrors ? "Invalid" : "Valid",
+        data: hasErrors ? {
+          data: state.data.data,
+          touched: {
+            username: true,
+            email: true,
+            password: true
+          },
+          errors: errors as Record<keyof FormData, string>
+        } : {
+          data: state.data.data
+        }
+      };
+    },
+    
+    // Reset the form
+    reset: "Pristine"
+  }
+};
+```
+
+## Creating the Machine
+
+Now we can create the form machine:
+
+```ts
+// Create the form machine
+const formMachine = matchina(
+  formStates,
+  transitions,
+  "Pristine" // Initial state
+);
+```
+
+## Lifecycle Hooks
+
+Let's add lifecycle hooks to handle form submission:
+
+```ts
+import { setup } from "matchina";
+
+// Setup lifecycle hooks
+setup(formMachine, {
+  enter: {
+    Submitting: async ({ data }) => {
+      try {
+        // Simulate API call
+        const response = await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if (Math.random() > 0.3) {
+              resolve({ status: 200, data: { message: "Success" } });
+            } else {
+              reject(new Error("Server error. Please try again."));
+            }
+          }, 1500);
+        });
+        
+        // Handle success
+        formMachine.success();
+      } catch (error) {
+        // Handle error
+        formMachine.failure(error.message);
+      }
+    }
+  }
+});
+```
+
+## Usage in React
+
+Here's how you might use this form machine in a React component:
+
+```tsx
+import { useLifecycle } from "matchina/react";
+import { useMemo, FormEvent } from "react";
+
+function RegistrationForm() {
+  // Create the form machine
+  const formMachine = useMemo(() => /* form machine creation */, []);
+  
+  // Get the machine and lifecycle API
+  const [machine, lifecycle] = useLifecycle(formMachine);
+  
+  // Setup submission handler
+  lifecycle.onEnter("Submitting", async ({ data }) => {
+    try {
+      // Real API call would go here
+      const response = await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() > 0.3) {
+            resolve({ status: 200 });
+          } else {
+            reject(new Error("Registration failed. Please try again."));
+          }
+        }, 1500);
+      });
+      
+      machine.success();
+    } catch (error) {
+      machine.failure(error.message);
+    }
+  });
+  
+  // Handle form submission
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    machine.submit();
+  };
+  
+  // Render different UI based on state
+  return (
+    <div className="registration-form">
+      {machine.state.match({
+        Pristine: ({ data }) => (
+          <form onSubmit={handleSubmit}>
+            <h2>Register</h2>
+            
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                value={data.username}
+                onChange={e => machine.updateField("username", e.target.value)}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={data.email}
+                onChange={e => machine.updateField("email", e.target.value)}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={data.password}
+                onChange={e => machine.updateField("password", e.target.value)}
+              />
+            </div>
+            
+            <button type="submit">Register</button>
+          </form>
+        ),
+        
+        Editing: ({ data, errors }) => (
+          <form onSubmit={handleSubmit}>
+            {/* Similar to Pristine but with validation feedback */}
+            {/* Display any touched field errors */}
+            <button type="submit">Register</button>
+          </form>
+        ),
+        
+        Invalid: ({ data, errors, touched }) => (
+          <form onSubmit={handleSubmit}>
+            {/* Similar to Editing but with clear error indications */}
+            {/* Show all errors for touched fields */}
+            <button type="submit" disabled>Register</button>
+          </form>
+        ),
+        
+        Valid: ({ data }) => (
+          <form onSubmit={handleSubmit}>
+            {/* Similar to Pristine but with all fields valid */}
+            <button type="submit">Register</button>
+          </form>
+        ),
+        
+        Submitting: () => (
+          <div className="loading">
+            <p>Creating your account...</p>
+            <div className="spinner"></div>
+          </div>
+        ),
+        
+        Success: () => (
+          <div className="success">
+            <h2>Registration Successful!</h2>
+            <p>Your account has been created.</p>
+            <button onClick={() => machine.reset()}>Register Another</button>
+          </div>
+        ),
+        
+        Error: ({ errorMessage }) => (
+          <div className="error">
+            <h2>Registration Failed</h2>
+            <p>{errorMessage}</p>
+            <button onClick={() => machine.retry()}>Try Again</button>
+            <button onClick={() => machine.edit()}>Edit Form</button>
+          </div>
+        )
+      })}
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+This form validation example demonstrates a more complex state machine with multiple states, validation logic, and API integration. You might want to explore:
+
+- [Authentication Flow Example](/examples/auth-flow) - Build a complete authentication system
+- [Effects System](/guides/effects) - Learn more about handling side effects
+- [React Integration](/guides/integrations) - Explore more ways to use state machines with React

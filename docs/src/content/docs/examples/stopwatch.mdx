@@ -1,0 +1,409 @@
+---
+title: Stopwatch State Machine
+description: Stopwatch with start, stop, reset functionality
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a stopwatch state machine with start, stop, and reset functionality. It shows how to manage time-based state and lifecycle hooks for continuous updates.
+
+## State Definition
+
+Let's start by defining the states for our stopwatch:
+
+```ts
+import { matchbox, matchina, setup } from "matchina";
+
+// Define the states with data
+const stopwatchStates = matchbox({
+  Stopped: (elapsed: number = 0) => ({ elapsed }),
+  Running: (
+    elapsed: number = 0,
+    startTime: number = Date.now()
+  ) => ({ elapsed, startTime })
+});
+```
+
+The `Stopped` state has an `elapsed` property that stores the total elapsed time, while the `Running` state also tracks the `startTime` to calculate additional elapsed time.
+
+## Transitions
+
+Now, let's define the transitions:
+
+```ts
+const transitions = {
+  Stopped: {
+    start: (state) => ({
+      key: "Running",
+      data: {
+        elapsed: state.data.elapsed,
+        startTime: Date.now()
+      }
+    })
+  },
+  Running: {
+    stop: (state) => {
+      const currentTime = Date.now();
+      const additionalElapsed = currentTime - state.data.startTime;
+      const totalElapsed = state.data.elapsed + additionalElapsed;
+      
+      return {
+        key: "Stopped",
+        data: {
+          elapsed: totalElapsed
+        }
+      };
+    },
+    
+    reset: () => ({
+      key: "Stopped",
+      data: {
+        elapsed: 0
+      }
+    })
+  }
+};
+```
+
+## Creating the Machine
+
+Now we can create the stopwatch machine:
+
+```ts
+// Create the stopwatch machine
+const stopwatch = matchina(
+  stopwatchStates,
+  transitions,
+  "Stopped" // Initial state
+);
+```
+
+## Lifecycle Hooks
+
+To make the stopwatch update in real-time, we'll add lifecycle hooks:
+
+```ts
+// Setup lifecycle hooks
+setup(stopwatch, {
+  enter: {
+    Running: () => {
+      let requestId: number;
+      
+      // Function to update the UI
+      const updateTime = () => {
+        // Get current state data
+        const { startTime, elapsed } = stopwatch.state.data;
+        
+        // Calculate current elapsed time
+        const currentTime = Date.now();
+        const runningTime = currentTime - startTime;
+        const totalElapsed = elapsed + runningTime;
+        
+        // Update UI (this would call a render function in a real app)
+        console.log(`Elapsed time: ${formatTime(totalElapsed)}`);
+        
+        // Continue animation loop
+        requestId = requestAnimationFrame(updateTime);
+      };
+      
+      // Start the animation loop
+      requestId = requestAnimationFrame(updateTime);
+      
+      // Return cleanup function
+      return () => {
+        cancelAnimationFrame(requestId);
+      };
+    }
+  }
+});
+
+// Helper function to format time as mm:ss.ms
+function formatTime(timeMs: number) {
+  const totalSeconds = timeMs / 1000;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const milliseconds = Math.floor((timeMs % 1000) / 10);
+  
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+}
+```
+
+## Complete Example
+
+Here's the complete stopwatch example:
+
+```ts
+import { matchbox, matchina, setup } from "matchina";
+
+// Define the states with data
+const stopwatchStates = matchbox({
+  Stopped: (elapsed: number = 0) => ({ elapsed }),
+  Running: (
+    elapsed: number = 0,
+    startTime: number = Date.now()
+  ) => ({ elapsed, startTime })
+});
+
+// Create the stopwatch machine
+const stopwatch = matchina(
+  stopwatchStates,
+  {
+    Stopped: {
+      start: (state) => ({
+        key: "Running",
+        data: {
+          elapsed: state.data.elapsed,
+          startTime: Date.now()
+        }
+      })
+    },
+    Running: {
+      stop: (state) => {
+        const currentTime = Date.now();
+        const additionalElapsed = currentTime - state.data.startTime;
+        const totalElapsed = state.data.elapsed + additionalElapsed;
+        
+        return {
+          key: "Stopped",
+          data: {
+            elapsed: totalElapsed
+          }
+        };
+      },
+      
+      reset: () => ({
+        key: "Stopped",
+        data: {
+          elapsed: 0
+        }
+      }),
+      
+      lap: (state, laps) => {
+        const currentTime = Date.now();
+        const additionalElapsed = currentTime - state.data.startTime;
+        const totalElapsed = state.data.elapsed + additionalElapsed;
+        
+        // Add current time to laps (this would be handled by the app)
+        laps.push(totalElapsed);
+        
+        // Return same state
+        return state;
+      }
+    }
+  },
+  "Stopped" // Initial state
+);
+
+// Helper function to format time as mm:ss.ms
+function formatTime(timeMs: number) {
+  const totalSeconds = timeMs / 1000;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const milliseconds = Math.floor((timeMs % 1000) / 10);
+  
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+}
+
+// Demo function
+function demoStopwatch() {
+  // We can't show the actual running in this example
+  // due to timing, but here's how it would work
+  
+  console.log("Initial state:", stopwatch.state.key);
+  console.log("Elapsed:", formatTime(stopwatch.state.data.elapsed));
+  
+  // Start the stopwatch
+  console.log("Starting stopwatch...");
+  stopwatch.start();
+  console.log("State:", stopwatch.state.key);
+  
+  // This would normally run for a while with the animation frame
+  
+  // Stop the stopwatch
+  console.log("Stopping stopwatch...");
+  stopwatch.stop();
+  console.log("State:", stopwatch.state.key);
+  console.log("Elapsed:", formatTime(stopwatch.state.data.elapsed));
+  
+  // Start again
+  console.log("Starting again...");
+  stopwatch.start();
+  console.log("State:", stopwatch.state.key);
+  
+  // Reset
+  console.log("Resetting...");
+  stopwatch.reset();
+  console.log("State:", stopwatch.state.key);
+  console.log("Elapsed:", formatTime(stopwatch.state.data.elapsed));
+}
+```
+
+## React Integration
+
+Here's how you might implement this stopwatch in a React component:
+
+```tsx
+import { useLifecycle } from "matchina/react";
+import { useMemo, useState, useRef, useCallback } from "react";
+import { matchbox, matchina } from "matchina";
+
+function StopwatchComponent() {
+  // State for displaying the time
+  const [displayTime, setDisplayTime] = useState("00:00.00");
+  // State for laps
+  const [laps, setLaps] = useState<string[]>([]);
+  
+  // Create the stopwatch machine
+  const stopwatchMachine = useMemo(() => {
+    const states = matchbox({
+      Stopped: (elapsed: number = 0) => ({ elapsed }),
+      Running: (
+        elapsed: number = 0,
+        startTime: number = Date.now()
+      ) => ({ elapsed, startTime })
+    });
+    
+    return matchina(
+      states,
+      {
+        Stopped: {
+          start: (state) => ({
+            key: "Running",
+            data: {
+              elapsed: state.data.elapsed,
+              startTime: Date.now()
+            }
+          })
+        },
+        Running: {
+          stop: (state) => {
+            const currentTime = Date.now();
+            const additionalElapsed = currentTime - state.data.startTime;
+            const totalElapsed = state.data.elapsed + additionalElapsed;
+            
+            return {
+              key: "Stopped",
+              data: {
+                elapsed: totalElapsed
+              }
+            };
+          },
+          
+          reset: () => ({
+            key: "Stopped",
+            data: {
+              elapsed: 0
+            }
+          }),
+          
+          lap: (state) => state // Handled in component
+        }
+      },
+      "Stopped"
+    );
+  }, []);
+  
+  // Get the machine and lifecycle API
+  const [machine, lifecycle] = useLifecycle(stopwatchMachine);
+  
+  // Helper function to format time
+  const formatTime = useCallback((timeMs: number) => {
+    const totalSeconds = timeMs / 1000;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    const milliseconds = Math.floor((timeMs % 1000) / 10);
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+  }, []);
+  
+  // Setup the running state handler
+  lifecycle.onEnter("Running", () => {
+    let animationId: number;
+    
+    const updateTime = () => {
+      const { startTime, elapsed } = machine.state.data;
+      const currentTime = Date.now();
+      const runningTime = currentTime - startTime;
+      const totalElapsed = elapsed + runningTime;
+      
+      // Update display time
+      setDisplayTime(formatTime(totalElapsed));
+      
+      // Continue the loop
+      animationId = requestAnimationFrame(updateTime);
+    };
+    
+    // Start the animation loop
+    animationId = requestAnimationFrame(updateTime);
+    
+    // Return cleanup
+    return () => cancelAnimationFrame(animationId);
+  });
+  
+  // Handle lap button
+  const handleLap = () => {
+    if (machine.state.is("Running")) {
+      const { startTime, elapsed } = machine.state.data;
+      const currentTime = Date.now();
+      const runningTime = currentTime - startTime;
+      const totalElapsed = elapsed + runningTime;
+      
+      setLaps(prevLaps => [...prevLaps, formatTime(totalElapsed)]);
+    }
+  };
+  
+  // Handle reset - clear laps too
+  const handleReset = () => {
+    machine.reset();
+    setLaps([]);
+    setDisplayTime("00:00.00");
+  };
+  
+  return (
+    <div className="stopwatch">
+      <div className="time-display">{displayTime}</div>
+      
+      <div className="controls">
+        {machine.state.match({
+          Stopped: () => (
+            <>
+              <button onClick={() => machine.start()}>Start</button>
+              {machine.state.data.elapsed > 0 && (
+                <button onClick={handleReset}>Reset</button>
+              )}
+            </>
+          ),
+          Running: () => (
+            <>
+              <button onClick={() => machine.stop()}>Stop</button>
+              <button onClick={handleLap}>Lap</button>
+              <button onClick={handleReset}>Reset</button>
+            </>
+          )
+        })}
+      </div>
+      
+      {laps.length > 0 && (
+        <div className="laps">
+          <h3>Laps</h3>
+          <ul>
+            {laps.map((lap, i) => (
+              <li key={i}>Lap {i + 1}: {lap}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+Now that you've seen a stopwatch example, you might want to explore:
+
+- [Form Validation Example](/examples/form) - Build a more complex state machine
+- [Authentication Flow Example](/examples/auth-flow) - Create a full authentication flow
+- [Lifecycle Hooks](/guides/lifecycle) - Learn more about state machine lifecycle

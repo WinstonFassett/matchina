@@ -1,0 +1,359 @@
+---
+title: Traffic Light State Machine
+description: A traffic light with automatic transitions between states
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a traffic light state machine with automatic transitions between states. It shows how to create a state machine with timed transitions and lifecycle hooks.
+
+## State Definition
+
+Let's start by defining the states for our traffic light:
+
+```ts
+import { matchbox, matchina, setup } from "matchina";
+
+// Define the states
+const trafficLightStates = matchbox({
+  Red: () => ({}),
+  Yellow: () => ({}),
+  Green: () => ({})
+});
+```
+
+Each state represents one of the traffic light colors.
+
+## Transitions
+
+Now, let's define the transitions between these states:
+
+```ts
+const transitions = {
+  Red: {
+    change: "Green"
+  },
+  Yellow: {
+    change: "Red"
+  },
+  Green: {
+    change: "Yellow"
+  }
+};
+```
+
+We've defined a simple cycle: Red → Green → Yellow → Red...
+
+## Lifecycle Hooks
+
+To make the traffic light change automatically, we'll add lifecycle hooks:
+
+```ts
+// Create the traffic light machine
+const trafficLight = matchina(
+  trafficLightStates,
+  transitions,
+  "Red" // Initial state
+);
+
+// Setup automatic transitions
+setup(trafficLight, {
+  enter: {
+    Red: () => {
+      const timer = setTimeout(() => {
+        trafficLight.change();
+      }, 5000); // Red light for 5 seconds
+      
+      // Return cleanup function
+      return () => clearTimeout(timer);
+    },
+    Yellow: () => {
+      const timer = setTimeout(() => {
+        trafficLight.change();
+      }, 2000); // Yellow light for 2 seconds
+      
+      return () => clearTimeout(timer);
+    },
+    Green: () => {
+      const timer = setTimeout(() => {
+        trafficLight.change();
+      }, 4000); // Green light for 4 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }
+});
+```
+
+The `enter` hooks set timers that automatically trigger the `change` transition after the appropriate duration for each light.
+
+## Manual Control
+
+We can also add manual control to override the automatic behavior:
+
+```ts
+// Add manual controls
+const transitions = {
+  Red: {
+    change: "Green",
+    forceGreen: "Green",
+    forceYellow: "Yellow"
+  },
+  Yellow: {
+    change: "Red",
+    forceRed: "Red",
+    forceGreen: "Green"
+  },
+  Green: {
+    change: "Yellow",
+    forceYellow: "Yellow",
+    forceRed: "Red"
+  }
+};
+```
+
+## Complete Example
+
+Here's the complete traffic light example:
+
+```ts
+import { matchbox, matchina, setup } from "matchina";
+
+// Define the states
+const trafficLightStates = matchbox({
+  Red: () => ({}),
+  Yellow: () => ({}),
+  Green: () => ({})
+});
+
+// Create the traffic light machine
+const trafficLight = matchina(
+  trafficLightStates,
+  {
+    Red: {
+      change: "Green",
+      forceGreen: "Green",
+      forceYellow: "Yellow"
+    },
+    Yellow: {
+      change: "Red",
+      forceRed: "Red",
+      forceGreen: "Green"
+    },
+    Green: {
+      change: "Yellow",
+      forceYellow: "Yellow",
+      forceRed: "Red"
+    }
+  },
+  "Red" // Initial state
+);
+
+// Setup automatic transitions
+setup(trafficLight, {
+  enter: {
+    Red: () => {
+      console.log("Entered Red state");
+      const timer = setTimeout(() => {
+        console.log("Auto-changing from Red");
+        trafficLight.change();
+      }, 5000); // Red light for 5 seconds
+      
+      // Return cleanup function
+      return () => clearTimeout(timer);
+    },
+    Yellow: () => {
+      console.log("Entered Yellow state");
+      const timer = setTimeout(() => {
+        console.log("Auto-changing from Yellow");
+        trafficLight.change();
+      }, 2000); // Yellow light for 2 seconds
+      
+      return () => clearTimeout(timer);
+    },
+    Green: () => {
+      console.log("Entered Green state");
+      const timer = setTimeout(() => {
+        console.log("Auto-changing from Green");
+        trafficLight.change();
+      }, 4000); // Green light for 4 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  },
+  leave: {
+    Red: () => console.log("Leaving Red state"),
+    Yellow: () => console.log("Leaving Yellow state"),
+    Green: () => console.log("Leaving Green state")
+  }
+});
+
+// Usage example
+function demonstrateTrafficLight() {
+  console.log("Traffic light initialized to:", trafficLight.state.key);
+  
+  // We can force a transition if needed
+  setTimeout(() => {
+    console.log("Manually forcing to Green");
+    trafficLight.forceGreen();
+  }, 2000);
+  
+  // Pattern matching for UI rendering
+  const renderTrafficLight = () => {
+    return trafficLight.state.match({
+      Red: () => `<div class="traffic-light red-active"></div>`,
+      Yellow: () => `<div class="traffic-light yellow-active"></div>`,
+      Green: () => `<div class="traffic-light green-active"></div>`
+    });
+  };
+  
+  console.log("Current UI:", renderTrafficLight());
+}
+
+// Don't run the demonstration here since it uses timers
+// demonstrateTrafficLight();
+```
+
+## React Integration
+
+Here's how you might use this traffic light in a React component:
+
+```tsx
+import { useEffect, useMemo } from "react";
+import { useLifecycle } from "matchina/react";
+import { matchbox, matchina } from "matchina";
+
+// Define the traffic light machine
+const createTrafficLightMachine = () => {
+  const states = matchbox({
+    Red: () => ({}),
+    Yellow: () => ({}),
+    Green: () => ({})
+  });
+  
+  return matchina(
+    states,
+    {
+      Red: {
+        change: "Green",
+        forceGreen: "Green",
+        forceYellow: "Yellow"
+      },
+      Yellow: {
+        change: "Red",
+        forceRed: "Red",
+        forceGreen: "Green"
+      },
+      Green: {
+        change: "Yellow",
+        forceYellow: "Yellow",
+        forceRed: "Red"
+      }
+    },
+    "Red"
+  );
+};
+
+function TrafficLightComponent() {
+  // Create the machine once
+  const trafficLightMachine = useMemo(() => createTrafficLightMachine(), []);
+  
+  // Get the machine and lifecycle API
+  const [machine, lifecycle] = useLifecycle(trafficLightMachine);
+  
+  // Setup automatic transitions
+  useEffect(() => {
+    lifecycle.onEnter("Red", () => {
+      const timer = setTimeout(() => machine.change(), 5000);
+      return () => clearTimeout(timer);
+    });
+    
+    lifecycle.onEnter("Yellow", () => {
+      const timer = setTimeout(() => machine.change(), 2000);
+      return () => clearTimeout(timer);
+    });
+    
+    lifecycle.onEnter("Green", () => {
+      const timer = setTimeout(() => machine.change(), 4000);
+      return () => clearTimeout(timer);
+    });
+  }, [machine, lifecycle]);
+  
+  return (
+    <div className="traffic-light-container">
+      <h2>Traffic Light</h2>
+      
+      <div className="traffic-light">
+        <div className={`light red ${machine.state.is("Red") ? "active" : ""}`}></div>
+        <div className={`light yellow ${machine.state.is("Yellow") ? "active" : ""}`}></div>
+        <div className={`light green ${machine.state.is("Green") ? "active" : ""}`}></div>
+      </div>
+      
+      <div className="controls">
+        <button onClick={() => machine.forceRed()}>Force Red</button>
+        <button onClick={() => machine.forceYellow()}>Force Yellow</button>
+        <button onClick={() => machine.forceGreen()}>Force Green</button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Advanced: Adding Pedestrian Controls
+
+We can extend the traffic light with pedestrian controls:
+
+```ts
+// Extended state definition with pedestrian controls
+const extendedStates = matchbox({
+  Red: () => ({}),
+  Yellow: () => ({}),
+  Green: () => ({}),
+  RedWithPedestrian: () => ({}),
+  // Add effect state for pedestrian button press
+  PedestrianButtonPressed: () => ({})
+});
+
+const extendedTransitions = {
+  Red: {
+    change: "Green",
+    pedestrianButton: "RedWithPedestrian"
+  },
+  Yellow: {
+    change: "Red"
+  },
+  Green: {
+    change: "Yellow",
+    pedestrianButton: "PedestrianButtonPressed"
+  },
+  RedWithPedestrian: {
+    pedestrianTimerComplete: "Red"
+  },
+  PedestrianButtonPressed: {
+    // This will be handled by the effect system
+  }
+};
+
+// Handle the pedestrian button effect
+bindEffects(trafficLight, {
+  PedestrianButtonPressed: () => {
+    // Schedule an early transition to Yellow
+    setTimeout(() => {
+      trafficLight.change();
+    }, 1000);
+    
+    // Move to Green state after handling
+    trafficLight.transition("Green");
+  }
+});
+```
+
+## Next Steps
+
+Now that you've seen a traffic light machine, you might want to explore:
+
+- [Form Validation Example](/examples/form) - Build a more complex state machine
+- [Stopwatch Example](/examples/stopwatch) - Create a state machine with more data
+- [Lifecycle Hooks](/guides/lifecycle) - Learn more about state machine lifecycle

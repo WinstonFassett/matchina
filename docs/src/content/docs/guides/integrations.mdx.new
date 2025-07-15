@@ -299,6 +299,7 @@ function UserView() {
 
 Now that you understand React integration, explore these related guides:
 
-- [Promises](/guides/promises) - Learn more about promise machines
-- [Lifecycle](/guides/lifecycle) - Understand the full lifecycle system
-- [Effects](/guides/effects) - Manage side effects with state machines
+- [Matchbox: Type-Safe Unions](./union-machines/) - Learn about the foundational concept
+- [Factory Machines](./machines/) - Create full state machines with TypeScript inference
+- [Promise Machines](./promises/) - Handle async operations with state machines
+- [Examples](../examples/) - See complete examples of React integration

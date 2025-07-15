@@ -1,0 +1,547 @@
+---
+title: Authentication Flow
+description: Complete authentication flow with login, registration, and password reset
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a complete authentication flow using state machines. It covers login, registration, password reset, and session management. This shows how complex UI flows can be simplified with state machines.
+
+## State Definition
+
+First, let's define the states for our authentication flow:
+
+```ts
+import { matchbox, matchina, setup } from "matchina";
+
+// Define our authentication states
+const authStates = matchbox({
+  // Initial state - not logged in
+  LoggedOut: () => ({}),
+  
+  // Login form
+  LoginForm: (
+    email: string = "",
+    password: string = "",
+    error: string | null = null
+  ) => ({ email, password, error }),
+  
+  // Registration form
+  RegisterForm: (
+    name: string = "",
+    email: string = "",
+    password: string = "",
+    confirmPassword: string = "",
+    error: string | null = null
+  ) => ({ name, email, password, confirmPassword, error }),
+  
+  // Password reset request form
+  PasswordResetForm: (
+    email: string = "",
+    error: string | null = null
+  ) => ({ email, error }),
+  
+  // Password reset confirmation
+  PasswordResetSent: (email: string) => ({ email }),
+  
+  // Registration confirmation
+  RegisterSuccess: (email: string) => ({ email }),
+  
+  // Process states
+  LoggingIn: (email: string, password: string) => ({ email, password }),
+  Registering: (name: string, email: string, password: string) => ({ name, email, password }),
+  RequestingPasswordReset: (email: string) => ({ email }),
+  
+  // Logged in state
+  LoggedIn: (
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      avatar?: string;
+    }
+  ) => ({ user })
+});
+```
+
+## Transitions
+
+Now, let's define the transitions for our auth flow:
+
+```ts
+const transitions = {
+  LoggedOut: {
+    // Navigate to login form
+    showLogin: () => "LoginForm",
+    
+    // Navigate to registration form
+    showRegister: () => "RegisterForm",
+    
+    // Auto-login with saved token (if available)
+    autoLogin: (user: any) => ({
+      key: "LoggedIn",
+      data: { user }
+    })
+  },
+  
+  LoginForm: {
+    // Update form fields
+    updateEmail: (email: string, state) => ({
+      ...state,
+      data: { ...state.data, email }
+    }),
+    
+    updatePassword: (password: string, state) => ({
+      ...state,
+      data: { ...state.data, password }
+    }),
+    
+    // Submit login form
+    login: (state) => {
+      const { email, password } = state.data;
+      
+      // Basic validation
+      if (!email || !password) {
+        return {
+          ...state,
+          data: { ...state.data, error: "Please fill in all fields" }
+        };
+      }
+      
+      return {
+        key: "LoggingIn",
+        data: { email, password }
+      };
+    },
+    
+    // Navigate to registration
+    goToRegister: "RegisterForm",
+    
+    // Navigate to password reset
+    goToPasswordReset: (state) => ({
+      key: "PasswordResetForm",
+      data: { email: state.data.email || "" }
+    }),
+    
+    // Go back to initial state
+    cancel: "LoggedOut"
+  },
+  
+  RegisterForm: {
+    // Update form fields
+    updateName: (name: string, state) => ({
+      ...state,
+      data: { ...state.data, name }
+    }),
+    
+    updateEmail: (email: string, state) => ({
+      ...state,
+      data: { ...state.data, email }
+    }),
+    
+    updatePassword: (password: string, state) => ({
+      ...state,
+      data: { ...state.data, password }
+    }),
+    
+    updateConfirmPassword: (confirmPassword: string, state) => ({
+      ...state,
+      data: { ...state.data, confirmPassword }
+    }),
+    
+    // Submit registration form
+    register: (state) => {
+      const { name, email, password, confirmPassword } = state.data;
+      
+      // Basic validation
+      if (!name || !email || !password) {
+        return {
+          ...state,
+          data: { ...state.data, error: "Please fill in all fields" }
+        };
+      }
+      
+      if (password !== confirmPassword) {
+        return {
+          ...state,
+          data: { ...state.data, error: "Passwords do not match" }
+        };
+      }
+      
+      return {
+        key: "Registering",
+        data: { name, email, password }
+      };
+    },
+    
+    // Navigate to login
+    goToLogin: "LoginForm",
+    
+    // Go back to initial state
+    cancel: "LoggedOut"
+  },
+  
+  PasswordResetForm: {
+    // Update email
+    updateEmail: (email: string, state) => ({
+      ...state,
+      data: { ...state.data, email }
+    }),
+    
+    // Submit password reset form
+    requestReset: (state) => {
+      const { email } = state.data;
+      
+      // Basic validation
+      if (!email) {
+        return {
+          ...state,
+          data: { ...state.data, error: "Please enter your email" }
+        };
+      }
+      
+      return {
+        key: "RequestingPasswordReset",
+        data: { email }
+      };
+    },
+    
+    // Navigate to login
+    goToLogin: "LoginForm",
+    
+    // Go back to initial state
+    cancel: "LoggedOut"
+  },
+  
+  LoggingIn: {
+    // Login success
+    success: (
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        avatar?: string;
+      }
+    ) => ({
+      key: "LoggedIn",
+      data: { user }
+    }),
+    
+    // Login failure
+    failure: (error: string, state) => ({
+      key: "LoginForm",
+      data: { 
+        email: state.data.email, 
+        password: state.data.password, 
+        error 
+      }
+    })
+  },
+  
+  Registering: {
+    // Registration success
+    success: (state) => ({
+      key: "RegisterSuccess",
+      data: { email: state.data.email }
+    }),
+    
+    // Registration failure
+    failure: (error: string, state) => ({
+      key: "RegisterForm",
+      data: { 
+        name: state.data.name,
+        email: state.data.email, 
+        password: state.data.password,
+        confirmPassword: state.data.password,
+        error 
+      }
+    })
+  },
+  
+  RequestingPasswordReset: {
+    // Reset request success
+    success: (state) => ({
+      key: "PasswordResetSent",
+      data: { email: state.data.email }
+    }),
+    
+    // Reset request failure
+    failure: (error: string, state) => ({
+      key: "PasswordResetForm",
+      data: { 
+        email: state.data.email, 
+        error 
+      }
+    })
+  },
+  
+  RegisterSuccess: {
+    // Go to login
+    goToLogin: "LoginForm"
+  },
+  
+  PasswordResetSent: {
+    // Go to login
+    goToLogin: "LoginForm"
+  },
+  
+  LoggedIn: {
+    // Logout
+    logout: "LoggedOut"
+  }
+};
+```
+
+## Creating the Machine
+
+Now we can create the authentication machine:
+
+```ts
+// Create the authentication machine
+const authMachine = matchina(
+  authStates,
+  transitions,
+  "LoggedOut" // Initial state
+);
+```
+
+## Lifecycle Hooks
+
+Let's add lifecycle hooks to handle the async processes:
+
+```ts
+// Mock API services
+const authApi = {
+  login: async (email: string, password: string) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulate authentication logic
+    if (email === "user@example.com" && password === "password") {
+      return {
+        id: "123",
+        name: "Test User",
+        email: "user@example.com",
+        avatar: "https://i.pravatar.cc/150?u=123"
+      };
+    }
+    
+    throw new Error("Invalid email or password");
+  },
+  
+  register: async (name: string, email: string, password: string) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Simulate registration logic
+    if (email === "taken@example.com") {
+      throw new Error("Email is already taken");
+    }
+    
+    return { success: true };
+  },
+  
+  requestPasswordReset: async (email: string) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Simulate password reset logic
+    if (email === "notfound@example.com") {
+      throw new Error("Email not found");
+    }
+    
+    return { success: true };
+  }
+};
+
+// Setup lifecycle hooks
+setup(authMachine, {
+  enter: {
+    // Handle login process
+    LoggingIn: async ({ data }) => {
+      try {
+        const user = await authApi.login(data.email, data.password);
+        
+        // Store in localStorage (in a real app)
+        localStorage.setItem("authToken", "sample-jwt-token");
+        localStorage.setItem("user", JSON.stringify(user));
+        
+        // Transition to logged in state
+        authMachine.success(user);
+      } catch (error) {
+        authMachine.failure(error.message);
+      }
+    },
+    
+    // Handle registration process
+    Registering: async ({ data }) => {
+      try {
+        await authApi.register(data.name, data.email, data.password);
+        
+        // Transition to success state
+        authMachine.success();
+      } catch (error) {
+        authMachine.failure(error.message);
+      }
+    },
+    
+    // Handle password reset process
+    RequestingPasswordReset: async ({ data }) => {
+      try {
+        await authApi.requestPasswordReset(data.email);
+        
+        // Transition to success state
+        authMachine.success();
+      } catch (error) {
+        authMachine.failure(error.message);
+      }
+    },
+    
+    // Initialize authentication
+    LoggedOut: () => {
+      // Check for stored token
+      const storedToken = localStorage.getItem("authToken");
+      const storedUser = localStorage.getItem("user");
+      
+      if (storedToken && storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          // Auto-login
+          authMachine.autoLogin(user);
+        } catch (e) {
+          // Invalid stored data, clear it
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("user");
+        }
+      }
+    },
+    
+    // Cleanup on logout
+    LoggedIn: () => {
+      // Return cleanup function that runs on leaving LoggedIn state
+      return () => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+      };
+    }
+  }
+});
+```
+
+## React Integration
+
+Here's how you might use this authentication machine in a React application:
+
+```tsx
+import { useLifecycle } from "matchina/react";
+import { useMemo, useState, FormEvent } from "react";
+
+function AuthApp() {
+  // Create the auth machine
+  const authMachine = useMemo(() => /* auth machine creation */, []);
+  
+  // Get the machine and lifecycle API
+  const [machine, lifecycle] = useLifecycle(authMachine);
+  
+  // Setup lifecycle hooks
+  useEffect(() => {
+    lifecycle.onEnter("LoggingIn", async ({ data }) => {
+      try {
+        // Actual API call
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: data.email, 
+            password: data.password 
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+        
+        const user = await response.json();
+        
+        // Store token
+        localStorage.setItem('authToken', user.token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        machine.success(user);
+      } catch (error) {
+        machine.failure(error.message);
+      }
+    });
+    
+    // Similar implementations for other async states...
+  }, [machine, lifecycle]);
+  
+  // Render different components based on state
+  return (
+    <div className="auth-container">
+      {machine.state.match({
+        LoggedOut: () => (
+          <div className="auth-welcome">
+            <h1>Welcome to Our App</h1>
+            <button onClick={() => machine.showLogin()}>Log In</button>
+            <button onClick={() => machine.showRegister()}>Register</button>
+          </div>
+        ),
+        
+        LoginForm: ({ email, password, error }) => (
+          <LoginFormComponent
+            email={email}
+            password={password}
+            error={error}
+            onEmailChange={(e) => machine.updateEmail(e.target.value)}
+            onPasswordChange={(e) => machine.updatePassword(e.target.value)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              machine.login();
+            }}
+            onRegisterClick={() => machine.goToRegister()}
+            onForgotPasswordClick={() => machine.goToPasswordReset()}
+          />
+        ),
+        
+        // Similarly define components for other states...
+        
+        LoggedIn: ({ user }) => (
+          <div className="user-dashboard">
+            <header>
+              <img src={user.avatar} alt={user.name} />
+              <h2>Welcome, {user.name}</h2>
+              <button onClick={() => machine.logout()}>Log Out</button>
+            </header>
+            <main>
+              {/* Dashboard content */}
+            </main>
+          </div>
+        )
+      })}
+    </div>
+  );
+}
+```
+
+## Benefits of Using State Machines for Auth
+
+Using state machines for authentication flows provides several benefits:
+
+1. **Clear state separation** - Each auth state is explicitly modeled
+2. **Automatic form management** - Field values are preserved between states
+3. **Controlled navigation** - Users can only navigate to valid states
+4. **Centralized auth logic** - Authentication logic is in one place
+5. **Type safety** - TypeScript ensures correct data for each state
+6. **Testability** - Each state transition can be tested in isolation
+
+## Next Steps
+
+This authentication flow example demonstrates a complex real-world application of state machines. You might want to explore:
+
+- [Form Validation Example](/examples/form) - Learn more about form validation
+- [Effects System](/guides/effects) - Handle side effects with state machines
+- [Lifecycle Management](/guides/lifecycle) - Understand more about lifecycle hooks

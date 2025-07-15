@@ -1,8 +1,155 @@
 ---
-title: Context
+title: Using Context in State Machines
+description: Learn how to add and manage data context in Matchina state machines
 ---
 
-import CodeBlock from "@components/CodeBlock.astro";
-import code from "@code/examples/usage-context.ts?raw";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-<CodeBlock lang={"js"} code={code} />
+## What is State Context?
+
+Context in Matchina state machines allows you to store and manipulate data alongside your states. Unlike traditional state machines that only track the current state name, Matchina's context system lets you:
+
+1. **Store typed data** specific to each state
+2. **Access data** from the current and previous states
+3. **Transform data** during transitions
+4. **Share data** between different states
+
+## Adding Context to States
+
+When you define states using `matchbox` or `defineStates`, you can specify the data structure for each state:
+
+```ts
+import { matchbox } from "matchina";
+
+// Define states with different data contexts
+const states = matchbox({
+  Idle: () => ({ lastUpdated: null }),
+  Loading: (resourceId: string) => ({ resourceId, startTime: Date.now() }),
+  Success: (data: any) => ({ data, receivedAt: Date.now() }),
+  Error: (message: string) => ({ message, occurredAt: Date.now() })
+});
+```
+
+## Accessing Context Data
+
+Once a state machine has context data, you can access it directly from the state object:
+
+```ts
+// Check the current state and access its data
+if (machine.state.is("Success")) {
+  // TypeScript knows the shape of data here!
+  const { data, receivedAt } = machine.state.data;
+  console.log(`Received data at ${new Date(receivedAt).toLocaleString()}`);
+}
+
+// Or use pattern matching for exhaustive handling
+const message = machine.state.match({
+  Idle: () => "No data loaded yet",
+  Loading: ({ resourceId }) => `Loading resource ${resourceId}...`,
+  Success: ({ data }) => `Loaded ${data.items.length} items`,
+  Error: ({ message }) => `Error: ${message}`
+});
+```
+
+## Transforming Context During Transitions
+
+You can transform context data during transitions using state transition functions:
+
+```ts
+import { matchina } from "matchina";
+
+const dataMachine = matchina(
+  states,
+  {
+    Idle: {
+      load: (resourceId: string) => "Loading"
+    },
+    Loading: {
+      // Transform loading state to success with data
+      success: (data: any) => "Success",
+      // Transform loading state to error with message
+      failure: (message: string) => "Error",
+      // Transition back to idle without parameters
+      cancel: "Idle"
+    },
+    Success: {
+      reload: (state) => ({
+        key: "Loading", 
+        data: { resourceId: state.data.data.id }
+      })
+    },
+    Error: {
+      retry: (state) => {
+        // Access previous state's context if available
+        if (state.from?.is("Loading")) {
+          return {
+            key: "Loading",
+            data: { resourceId: state.from.data.resourceId }
+          };
+        }
+        return "Idle";
+      }
+    }
+  },
+  "Idle"
+);
+```
+
+## Preserving Context Between States
+
+Sometimes you want to preserve context data when transitioning between states. You can do this by accessing the previous state's data:
+
+```ts
+// Define transition that preserves context from previous state
+{
+  toggleLoading: (state) => ({
+    key: state.is("Loading") ? "Idle" : "Loading",
+    // Copy data from current state
+    data: state.is("Loading") 
+      ? { lastUpdated: Date.now() } // Going to Idle
+      : { resourceId: "default", startTime: Date.now() } // Going to Loading
+  })
+}
+```
+
+## Combining with Lifecycle Hooks
+
+Context becomes even more powerful when combined with lifecycle hooks:
+
+```ts
+import { matchina, setup } from "matchina";
+
+const machine = matchina(/* ... */);
+
+// Access context in lifecycle hooks
+setup(machine, {
+  enter: {
+    Success: ({ data }) => {
+      // Store data in localStorage when entering Success state
+      localStorage.setItem("cachedData", JSON.stringify(data));
+    }
+  },
+  leave: {
+    Loading: ({ data }, toState) => {
+      // Calculate and log loading time when leaving Loading state
+      const loadTime = Date.now() - data.startTime;
+      console.log(`Loading ${data.resourceId} took ${loadTime}ms`);
+    }
+  }
+});
+```
+
+## Best Practices
+
+- **Keep context minimal** - Only store what you need for state-specific logic
+- **Use TypeScript** - Let TypeScript infer the shape of your context data
+- **Consider immutability** - Avoid mutating context directly; create new objects
+- **Handle missing context** - Check for existence when accessing previous state context
+
+## Next Steps
+
+Now that you understand how to use context in state machines, learn about:
+
+- [Lifecycle Hooks](/guides/lifecycle) - Add behavior during state transitions
+- [Pattern Matching](/guides/typeguards) - Work with state data in a type-safe way
+- [React Integration](/guides/integrations) - Use state context with React components
