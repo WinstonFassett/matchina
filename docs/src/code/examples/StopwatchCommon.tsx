@@ -11,7 +11,7 @@ import {
   getAvailableActions as getStateEvents,
 } from "matchina";
 import { useEffect, useMemo } from "react";
-import { StateMachineMermaidDiagram } from "./MachineViz";
+import { StateMachineMermaidDiagram } from "../../components/MachineViz";
 
 export function tickEffect(tick: () => void, interval = 50) {
   const timer = setInterval(tick, interval);

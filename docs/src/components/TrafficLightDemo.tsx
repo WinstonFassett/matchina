@@ -1,5 +1,5 @@
 import { getXStateDefinition } from "@code/examples/StopwatchCommon";
-import StateMachineMermaidDiagram from "@code/examples/MachineViz";
+import StateMachineMermaidDiagram from "@components/MachineViz";
 import { TrafficLight, trafficLight } from "@code/examples/TrafficLight";
 import { useMemo } from "react";
 import { useMachine } from "@lib/src/integrations/react";
