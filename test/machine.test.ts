@@ -32,7 +32,7 @@ const makeMachine = () => {
   return m2;
 };
 
-describe("createFactoryMachine", () => {
+describe("createMachine", () => {
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {

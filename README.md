@@ -246,7 +246,7 @@ The `matchbox` factory provides the foundation for Matchina's state machines, of
 Factory Machines combine state factories with transitions for complete type safety:
 
 ```ts
-import { defineStates, createFactoryMachine, setup, guard, enter } from "matchina";
+import { defineStates, createMachine, setup, guard, enter } from "matchina";
 
 // Define your state factory with proper types
 const TaskStates = defineStates({
@@ -257,7 +257,7 @@ const TaskStates = defineStates({
 });
 
 // Create a factory machine with type-safe transitions
-const taskMachine = createFactoryMachine(
+const taskMachine = createMachine(
   TaskStates,
   {
     Idle: { 
@@ -579,7 +579,7 @@ Matchina focuses on TypeScript type inference and composable, lightweight primit
 
 No. Matchina is designed to be modular. You can use only the parts you need:
 - Use `matchbox` alone for type-safe tagged unions
-- Use `createFactoryMachine` for state machines
+- Use `createMachine` for state machines
 - Use `createPromiseMachine` for async operations
 - Use React integrations if you're working with React
 

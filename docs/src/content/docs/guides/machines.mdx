@@ -26,7 +26,7 @@ There are two ways to create a factory machine:
 <Tabs>
   <TabItem label="Using defineStates">
 ```ts
-import { defineStates, createFactoryMachine } from "matchina";
+import { defineStates, createMachine } from "matchina";
 
 // 1. Define state factory
 const TaskStates = defineStates({
@@ -37,7 +37,7 @@ const TaskStates = defineStates({
 });
 
 // 2. Create a factory machine with type-safe transitions
-const taskMachine = createFactoryMachine(
+const taskMachine = createMachine(
   TaskStates,
   {
     Idle: { 

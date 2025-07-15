@@ -152,7 +152,7 @@ if (state.is("Editing") && !state.data.values.email) {
 Matchbox forms the foundation for Matchina's state machines:
 
 ```ts
-import { matchbox, createFactoryMachine } from "matchina";
+import { matchbox, createMachine } from "matchina";
 
 // Create a state factory
 const AuthState = matchbox({
@@ -163,7 +163,7 @@ const AuthState = matchbox({
 });
 
 // Create a state machine using the factory
-const authMachine = createFactoryMachine(
+const authMachine = createMachine(
   AuthState,
   {
     LoggedOut: {

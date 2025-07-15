@@ -15,8 +15,8 @@
   },
   {
     "name": "machine",
-    "path": "src/state-machine.ts",
-    "import": "{ createStateMachine }"
+    "path": "src/transition-machine.ts",
+    "import": "{ createTransitionMachine }"
   },
   {
     "name": "pure",
@@ -25,7 +25,7 @@
   {
     "name": "factory-machine",
     "path": "src/factory-machine.ts",
-    "import": "{ createFactoryMachine }"
+    "import": "{ createMachine }"
   },
   {
     "name": "matchChange",
@@ -72,8 +72,8 @@
     "import": "{ onLifecycle}"
   },
   {
-    "name": "state-machine-transition-helpers",
-    "path": "src/state-machine-transition-helpers.ts"
+    "name": "factory-machine-transition-helpers",
+    "path": "src/factory-machine-transition-helpers.ts"
   },
   {
     "name": "react-dist",

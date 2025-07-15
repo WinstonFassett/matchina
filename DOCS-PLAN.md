@@ -44,7 +44,7 @@ This document outlines a plan for reorganizing Matchina's documentation to make 
 
 **Content:**
 - Creating state factories with `defineStates`
-- Building machines with `createFactoryMachine`
+- Building machines with `createMachine`
 - Defining transitions with parameter inference
 - Using the state machine API
 - Pattern matching for state rendering

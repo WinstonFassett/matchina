@@ -61,7 +61,7 @@ describe("withSubscribe", () => {
   //     Running: {},
   //   });
   //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
@@ -91,7 +91,7 @@ describe("withSubscribe", () => {
   //     Running: {},
   //   });
   //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
@@ -122,7 +122,7 @@ describe("withSubscribe", () => {
   //     Running: {},
   //   });
   //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
