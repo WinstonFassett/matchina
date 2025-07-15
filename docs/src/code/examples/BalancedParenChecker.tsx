@@ -8,7 +8,7 @@ import {
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../components/MachineViz";
-import { getXStateDefinition } from "./stopwatch-common/matchina-machine-to-xstate-definition";
+import { getXStateDefinition } from "./lib/matchina-machine-to-xstate-definition";
 
 const pairs = [
   ["${", "}"],
@@ -85,7 +85,7 @@ const balancedParenthesesChecker = (initialText?: string) => {
     text: "",
     controller,
     processing: undefined as undefined | Promise<void>,
-    async append(text: string, delayMs = 1000): Promise<void> {
+    async append(text: string, delayMs = 0): Promise<void> {
       console.log("append", logic.text, text);
       logic.text = logic.text + text;
       if (logic.processing) {
@@ -159,7 +159,7 @@ const balancedParenthesesChecker = (initialText?: string) => {
 
 export function BalancedParenthesesDemo() {
   const [input, setInput] = useState("");
-  const inputDebounced = useDebounce(input, 500);
+  const inputDebounced = useDebounce(input, 100);
   const prevInputDebounced = usePrevious(inputDebounced);
   const [checkerVersion, setCheckerVersion] = useState({});
   const checker = useMemo(() => balancedParenthesesChecker(), [checkerVersion]);

@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   useEventTypeEffect,
   useStateEffects
-} from "../stopwatch-common/matchina-hooks";
+} from "../lib/matchina-hooks";
 import { StopwatchDevView } from "../stopwatch-common/StopwatchDevView";
-import { tickEffect } from "../stopwatch-common/tick-effect";
+import { tickEffect } from "../lib/tick-effect";
 
 function useStopwatch(elapsed: number, setElapsed: (elapsed: number) => void) {
   // Define the state machine

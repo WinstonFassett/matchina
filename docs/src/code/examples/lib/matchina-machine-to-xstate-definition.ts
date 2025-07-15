@@ -1,5 +1,5 @@
 import type { FactoryMachine, States } from "@lib/src";
-import { getStateValues, resolveState } from "./matchina-utils";
+import { getStateValues, resolveState } from "./state-utils";
 
 
 export function getXStateDefinition<

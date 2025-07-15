@@ -1,11 +1,11 @@
 import { type StateMatchbox, type Disposer, disposers } from "@lib/src";
 import { useEffect } from "react";
-import type { Effect } from "./types";
+import type { DisposableEffect } from "./disposable-effect";
 
 
 export function useStateEffects<S extends StateMatchbox<string, any>>(
   state: S,
-  getEffects = (state: StateMatchbox<string, any>): Effect<S>[] | undefined => (state.data as any).effects
+  getEffects = (state: StateMatchbox<string, any>): DisposableEffect<S>[] | undefined => (state.data as any).effects
 ) {
   useEffect(() => {
     const effects = getEffects(state);

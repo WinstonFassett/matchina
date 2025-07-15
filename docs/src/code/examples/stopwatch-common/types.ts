@@ -1,6 +1,4 @@
-import type { Disposer, FactoryMachine } from "matchina";
-
-export type Effect<T> = (state: T) => Disposer | void;
+import type { FactoryMachine } from "matchina";
 
 export const StateData = {
   Stopped: () => ({ elapsed: 0 }),

@@ -2,7 +2,7 @@ import { facade } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 import { StopwatchDevView } from "../stopwatch-common/StopwatchDevView";
-import { tickEffect } from "../stopwatch-common/tick-effect";
+import { tickEffect } from "../lib/tick-effect";
 
 function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);

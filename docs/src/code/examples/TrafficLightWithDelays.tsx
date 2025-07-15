@@ -1,6 +1,6 @@
 import { effect, facade, setup, when } from "matchina";
 import { useMachine } from "matchina/react";
-import { tickEffect } from "./stopwatch-common/tick-effect";
+import { tickEffect } from "./lib/tick-effect";
 
 // ---cut---
 export const trafficLight = facade(

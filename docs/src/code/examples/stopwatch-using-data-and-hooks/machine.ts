@@ -1,5 +1,5 @@
 import { facade, setup, before, effect, when } from "@lib/src";
-import { tickEffect } from "../stopwatch-common/tick-effect";
+import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatch = () => {
   const model = Object.assign(

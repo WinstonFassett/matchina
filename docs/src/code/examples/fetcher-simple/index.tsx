@@ -9,7 +9,7 @@ import {
 import { useMachine } from "matchina/react";
 import React, { useCallback, useMemo } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
-import { getXStateDefinition } from "../stopwatch-common/matchina-machine-to-xstate-definition";
+import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 
 function usePromise(fn: (...args: any[]) => Promise<any>) {
   const model = useMemo(() => {

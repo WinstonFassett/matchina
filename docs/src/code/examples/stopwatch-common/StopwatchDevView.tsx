@@ -1,8 +1,8 @@
 import StateMachineMermaidDiagram from "@components/MachineViz";
 import { createApi } from "@lib/src";
 import { useMemo } from "react";
-import { getXStateDefinition } from "./matchina-machine-to-xstate-definition";
-import { Stopwatch } from "./types";
+import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
+import type { Stopwatch } from "./types";
 import { StopwatchView } from "./StopwatchView";
 
 

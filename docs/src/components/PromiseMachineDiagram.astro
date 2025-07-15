@@ -1,6 +1,6 @@
 ---
 import StateMachineMermaidDiagram from "@components/MachineViz";
-import { getXStateDefinition } from "@code/examples/stopwatch-common/matchina-machine-to-xstate-definition";
+import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xstate-definition";
 import { createApi, createPromiseMachine, delay, type FactoryMachine } from "matchina";
 
 const machine = createPromiseMachine(async (_message: string) => await delay(1000))
