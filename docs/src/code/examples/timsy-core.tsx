@@ -1,5 +1,5 @@
 import {
-  createFactoryMachine,
+  createMachine,
   defineStates,
   withApi,
   withNanoSubscribe,
@@ -12,7 +12,7 @@ const states = defineStates({
   BAZ: () => ({}),
 });
 
-const runMachine = createFactoryMachine(
+const runMachine = createMachine(
   states,
   {
     FOO: {

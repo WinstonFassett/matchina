@@ -1,6 +1,6 @@
 import {
   createApi,
-  createFactoryMachine,
+  createMachine,
   defineStates,
   delay,
   zen,
@@ -63,7 +63,7 @@ const balancedParenthesesChecker = (initialText?: string) => {
     Group: (pair: Pair, parent?: GroupState) => ({ pair, parent }),
     Invalid: undefined,
   });
-  const machine = createFactoryMachine(
+  const machine = createMachine(
     states,
     {
       Valid: {

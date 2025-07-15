@@ -1,6 +1,6 @@
 import {
   createApi,
-  createFactoryMachine,
+  createMachine,
   createPromiseMachine,
   defineStates,
   delay,
@@ -57,7 +57,7 @@ const transitions: Transitions = {
   },
 };
 
-const machine = createFactoryMachine<MyStates, Transitions>(
+const machine = createMachine<MyStates, Transitions>(
   states,
   transitions,
   "Idle",

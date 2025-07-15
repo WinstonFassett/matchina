@@ -1,4 +1,4 @@
-import { createFactoryMachine, defineStates, withApi } from "matchina";
+import { createMachine, defineStates, withApi } from "matchina";
 
 // ---cut---
 const states = defineStates({
@@ -8,7 +8,7 @@ const states = defineStates({
 });
 
 const machine = withApi(
-  createFactoryMachine(
+  createMachine(
     states,
     {
       IDLE: {

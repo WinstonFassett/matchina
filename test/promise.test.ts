@@ -5,7 +5,7 @@ import {
   PromiseTransitions,
 } from "../src/promise-machine";
 import { delay, delayer } from "../src/extras/delay";
-import { withApi, createFactoryMachine, createApi } from "../src";
+import { withApi, createMachine, createApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
@@ -50,7 +50,7 @@ describe("createPromiseMachine", () => {
 
   describe("with extended transitions", () => {
     it("should allow enhancing the transition config", () => {
-      const machine = createFactoryMachine(
+      const machine = createMachine(
         PromiseStates,
         {
           ...PromiseTransitions,

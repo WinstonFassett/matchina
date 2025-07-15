@@ -1,6 +1,6 @@
 import {
   bindEffects,
-  createFactoryMachine,
+  createMachine,
   defineEffects,
   defineStates,
   withApi,
@@ -19,7 +19,7 @@ const states = defineStates({
 });
 
 const machine = withApi(
-  createFactoryMachine(
+  createMachine(
     states,
     {
       Idle: { next: "Pending" },

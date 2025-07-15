@@ -1,14 +1,14 @@
 ---
 import StateMachineMermaidDiagram from "@code/examples/MachineViz";
 import { getXStateDefinition } from "@code/examples/StopwatchCommon";
-import { createFactoryMachine, defineStates, type FactoryMachine } from "matchina";
+import { createMachine, defineStates, type FactoryMachine } from "matchina";
 
 const states = defineStates( {
   Idle: undefined,
   Foo: (foo: string) => ({ foo }),
   Bar: (bar: number) => ({ bar })
 })
-const machine = createFactoryMachine(
+const machine = createMachine(
   states, 
   {
     Idle: {

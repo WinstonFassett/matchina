@@ -1,6 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { defineStates } from "../src/states";
-import { createFactoryMachine } from "../src/factory-machine";
+import { createMachine } from "../src/factory-machine";
 import { guard, enter, leave } from "../src/state-machine-hooks";
 import { createSetup, setup } from "../src/ext/setup";
 import { createTransitionMachine } from "../src/transition-machine";
@@ -70,7 +70,7 @@ describe("factory-machine", () => {
       Rejected: (err: Error) => ({ err }),
     });
 
-    const machine = createFactoryMachine(
+    const machine = createMachine(
       states,
       {
         Idle: { execute: "Pending" },

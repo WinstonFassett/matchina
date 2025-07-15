@@ -8,7 +8,7 @@ import {
 import { createTransitionMachine } from "./transition-machine";
 import { FlatMemberUnion, KeysWithZeroArgs } from "./utility-types";
 
-export function createFactoryMachine<
+export function createMachine<
   SF extends AnyStatesFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },

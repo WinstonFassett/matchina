@@ -1,6 +1,6 @@
 import {
   createApi,
-  createFactoryMachine,
+  createMachine,
   createPromiseMachine,
   defineStates,
   updateState,
@@ -28,7 +28,7 @@ const { Idle, Pending, Rejected, Resolved } = defineStates({
   Resolved: (context: FetchContext, data: any) => assign(context, { data }),
 });
 
-const m2 = createFactoryMachine(
+const m2 = createMachine(
   { Idle, Pending, Rejected, Resolved },
   {
     Idle: {
@@ -53,7 +53,7 @@ const counterStates = defineStates({
   Idle: ({ count = 0 } = {}) => ({ count }),
 });
 
-const counter = createFactoryMachine(
+const counter = createMachine(
   counterStates,
   {
     Idle: {
@@ -81,7 +81,7 @@ const oneState = defineStates({
   }),
 });
 
-const m5 = createFactoryMachine(
+const m5 = createMachine(
   oneState,
   {
     State: {

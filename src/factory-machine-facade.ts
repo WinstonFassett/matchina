@@ -2,7 +2,7 @@ import { createApi } from "./factory-machine-event-api";
 import {
   FactoryMachineTransitions,
   FactoryState,
-  createFactoryMachine,
+  createMachine,
 } from "./factory-machine";
 import { SpecRecord } from "./matchbox";
 import { States, defineStates } from "./states";
@@ -26,7 +26,7 @@ export function facade<
       : transitionConfig;
   const initialState =
     typeof init === "function" ? init(states, transitions) : init;
-  const machine = createFactoryMachine(states, transitions, initialState);
+  const machine = createMachine(states, transitions, initialState);
   const api = createApi(machine);
   return {
     ...api,

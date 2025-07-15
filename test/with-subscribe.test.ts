@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createFactoryMachine, defineStates, withApi } from "../src";
+import { createMachine, defineStates, withApi } from "../src";
 import { withNanoSubscribe } from "../src/extras/with-nanosubscribe";
 // import { whenEvent } from "../src/factory-machine-hooks";
 
@@ -10,7 +10,7 @@ describe("withSubscribe", () => {
       Running: {},
     });
 
-    const inner = createFactoryMachine(
+    const inner = createMachine(
       states,
       {
         Idle: {
@@ -36,7 +36,7 @@ describe("withSubscribe", () => {
       Running: {},
     });
     const machine = withNanoSubscribe(
-      createFactoryMachine(
+      createMachine(
         states,
         {
           Idle: {
@@ -158,7 +158,7 @@ describe("withSubscribe", () => {
       Running: {},
     });
     const machine = withNanoSubscribe(
-      createFactoryMachine(
+      createMachine(
         states,
         {
           Idle: {

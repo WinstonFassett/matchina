@@ -1,6 +1,6 @@
 import {
   createApi,
-  createFactoryMachine,
+  createMachine,
   defineStates,
   delay,
   effect,
@@ -45,7 +45,7 @@ export function createFetcher(
   });
   const canRefetch = { refetch: "Refetching" } as const;
 
-  const machine = createFactoryMachine(
+  const machine = createMachine(
     states,
     {
       Idle: {

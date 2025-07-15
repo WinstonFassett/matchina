@@ -1,7 +1,7 @@
 import {
   FactoryMachine,
   FactoryMachineEvent,
-  createFactoryMachine,
+  createMachine,
 } from "./factory-machine";
 import { States, defineStates } from "./states";
 
@@ -54,7 +54,7 @@ export function createPromiseMachine<
   execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
 } {
   const states = PromiseStates as unknown as PromiseStates<F>;
-  const machine = createFactoryMachine(states, PromiseTransitions, "Idle");
+  const machine = createMachine(states, PromiseTransitions, "Idle");
 
   let currentPromise: Promise<any> | undefined;
   let resolveCurrent: ((value: any) => void) | undefined;

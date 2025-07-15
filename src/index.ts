@@ -11,7 +11,7 @@ export * from "./factory-machine-event-api";
 export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./matchbox";
-export * from "./matchina";
+export * from "./factory-machine-facade";
 export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./promise-machine-hooks";

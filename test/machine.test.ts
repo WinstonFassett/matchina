@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "../src";
+import { createMachine, withApi } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -9,7 +9,7 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  const m = createFactoryMachine(
+  const m = createMachine(
     states,
     {
       Initial: {

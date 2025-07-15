@@ -1,4 +1,4 @@
-import { createFactoryMachine, defineStates, effect, setup, whenState, withApi } from "matchina";
+import { createMachine, defineStates, effect, setup, whenState, withApi } from "matchina";
 import { useMachine } from "matchina/react";
 import React from "react";
 
@@ -13,7 +13,7 @@ const states = defineStates({
 
 const createDataMachine = () => {
   const machine = withApi(
-    createFactoryMachine(
+    createMachine(
       states,
       {
         NOT_LOADED: {

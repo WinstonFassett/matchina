@@ -1,6 +1,6 @@
 import {
   createApi,
-  createFactoryMachine,
+  createMachine,
   defineStates,
   effect,
   setup,
@@ -19,7 +19,7 @@ function usePromise(fn: (...args: any[]) => Promise<any>) {
       Resolved: (data: Awaited<ReturnType<typeof fn>>) => data,
       Rejected: (error: Error) => error,
     });
-    const machine = createFactoryMachine(
+    const machine = createMachine(
       states,
       {
         Idle: {

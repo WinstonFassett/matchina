@@ -1,5 +1,5 @@
 import {
-  createFactoryMachine,
+  createMachine,
   defineStates,
   enter,
   guard,
@@ -15,7 +15,7 @@ const states = defineStates({
   Rejected: (err: Error) => ({ err }),
 });
 
-const m4 = createFactoryMachine(
+const m4 = createMachine(
   states,
   {
     Idle: { execute: "Pending" },
