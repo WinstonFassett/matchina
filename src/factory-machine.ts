@@ -4,8 +4,8 @@ import {
   ResolveEvent,
   StateMachine,
   StateMachineEvent,
-  createStateMachine,
 } from "./state-machine";
+import { createTransitionMachine } from "./transition-machine";
 import { FlatMemberUnion, KeysWithZeroArgs } from "./utility-types";
 
 export function createFactoryMachine<
@@ -21,7 +21,7 @@ export function createFactoryMachine<
   const initialState = (
     typeof init === "string" ? states[init]({}) : init
   ) as FactoryState<FC["states"]>;
-  const machine = createStateMachine<E>(transitions as any, initialState);
+  const machine = createTransitionMachine<E>(transitions as any, initialState);
   Object.assign(machine, {
     states,
     resolve: (ev: ResolveEvent<E>): E | undefined => {

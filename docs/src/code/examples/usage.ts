@@ -2,7 +2,7 @@ import {
   createApi,
   createFactoryMachine,
   createSetup,
-  createStateMachine,
+  createTransitionMachine,
   defineStates,
   effect,
   enter,
@@ -27,7 +27,7 @@ import {
   type StateMachineEvent
 } from "matchina";
 
-const m1 = createStateMachine<
+const m1 = createTransitionMachine<
   StateMachineEvent<{ key: string; payload?: any }> &
     (
       | { type: "start"; params: [nickname: "Bob" | "Pat"] }
@@ -57,7 +57,7 @@ setup(m1)(
   leave((ev) => console.log("before", ev)),
 );
 
-const m2 = createStateMachine(
+const m2 = createTransitionMachine(
   {
     Idle: {
       start: { key: "Running" },

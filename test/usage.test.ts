@@ -3,11 +3,11 @@ import { defineStates } from "../src/states";
 import { createFactoryMachine } from "../src/factory-machine";
 import { guard, enter, leave } from "../src/state-machine-hooks";
 import { createSetup, setup } from "../src/ext/setup";
-import { createStateMachine } from "../src/state-machine";
+import { createTransitionMachine } from "../src/transition-machine";
 
 describe("setup", () => {
   it("should transition correctly", () => {
-    const machine = createStateMachine(
+    const machine = createTransitionMachine(
       {
         Idle: {
           start: { key: "Running" },
@@ -34,7 +34,7 @@ describe("setup", () => {
 
 describe("createSetup", () => {
   it("should transition correctly", () => {
-    const machine = createStateMachine(
+    const machine = createTransitionMachine(
       {
         Idle: {
           start: { key: "Running" },
