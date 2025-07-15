@@ -1,14 +1,5 @@
-import {
-  createApi,
-  createMachine,
-  defineStates,
-  delay,
-  zen,
-} from "matchina";
-import { useMachine } from "matchina/react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import StateMachineMermaidDiagram from "../../components/MachineViz";
-import { getXStateDefinition } from "./lib/matchina-machine-to-xstate-definition";
+import { defineStates, createMachine, zen, delay } from "@lib/src";
+import { useMachine } from "@lib/src/integrations/react";
 
 const pairs = [
   ["${", "}"],
@@ -21,16 +12,13 @@ const pairs = [
   ['"', '"'],
 ] as const;
 type Pair = (typeof pairs)[number];
-
 const pairsByOpen = Object.fromEntries(pairs.map((pair) => [pair[0], pair]));
 const pairsByClose = Object.fromEntries(pairs.map((pair) => [pair[1], pair]));
-
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
-
 const tokenRegex = new RegExp(
-  `[${Object.keys(pairsByOpen).map(escapeRegExp).join("")}|${Object.keys(pairsByClose).map(escapeRegExp).join("")}]`,
+  `[${Object.keys(pairsByOpen).map(escapeRegExp).join("")}|${Object.keys(pairsByClose).map(escapeRegExp).join("")}]`
 );
 console.log({ tokenRegex });
 function matchNextPair(str: string) {
@@ -48,7 +36,6 @@ function matchNextPair(str: string) {
   console.log("opening", openPair[0]);
   return [nextMatchIndex, openPair, 0] as const;
 }
-
 type GroupState = {
   key: "Group";
   data: {
@@ -56,8 +43,7 @@ type GroupState = {
     parent?: GroupState;
   };
 };
-
-const balancedParenthesesChecker = (initialText?: string) => {
+export const balancedParenthesesChecker = (initialText?: string) => {
   const states = defineStates({
     Valid: undefined,
     Group: (pair: Pair, parent?: GroupState) => ({ pair, parent }),
@@ -78,7 +64,7 @@ const balancedParenthesesChecker = (initialText?: string) => {
       },
       Invalid: {},
     },
-    "Valid",
+    "Valid"
   );
   const controller = new AbortController();
   const logic = Object.assign(zen(machine), {
@@ -110,7 +96,7 @@ const balancedParenthesesChecker = (initialText?: string) => {
           console.log("next match", nextMatch);
           const [nextTokenIndex, nextTokenPair, nextTokenType] = nextMatch;
           logic.text = logic.text.slice(
-            nextTokenIndex + nextTokenPair[nextTokenType].length,
+            nextTokenIndex + nextTokenPair[nextTokenType].length
           );
           const isOpen = nextTokenType === 0;
           const state = machine.getState();
@@ -153,77 +139,6 @@ const balancedParenthesesChecker = (initialText?: string) => {
     },
   });
   if (initialText) logic.append(initialText);
-  const view = Object.assign(logic, { use: () => useMachine(machine) });
-  return view;
+  // const view = Object.assign(logic, { use: () => useMachine(machine) });
+  return logic;
 };
-
-export function BalancedParenthesesDemo() {
-  const [input, setInput] = useState("");
-  const inputDebounced = useDebounce(input, 100);
-  const prevInputDebounced = usePrevious(inputDebounced);
-  const [checkerVersion, setCheckerVersion] = useState({});
-  const checker = useMemo(() => balancedParenthesesChecker(), [checkerVersion]);
-  checker.use();
-  useEffect(() => {
-    checker.append(input);
-    return () => {
-      checker.controller.abort();
-    };
-  }, [checker]);
-  useEffect(() => {
-    const isAppend =
-      !prevInputDebounced || input.startsWith(prevInputDebounced);
-    if (isAppend) {
-      console.log("isAppend", prevInputDebounced, input);
-      checker.append(
-        input.slice(prevInputDebounced ? prevInputDebounced.length : 0),
-      );
-    } else {
-      console.log("restarting checker");
-      setCheckerVersion({});
-    }
-  }, [inputDebounced]);
-  const actions = useMemo(
-    () => createApi(checker.machine, checker.state.key),
-    [checker.state],
-  );
-  return (
-    <div>
-      <textarea value={input} onChange={(ev) => setInput(ev.target.value)} />
-      <p>Current State: {checker.state.key}</p>
-      {checker.text && <pre>Pending validation:{checker.text}</pre>}
-      {checker.state.is("Group") && (
-        <pre>Expecting {checker.state.data.pair[1]}</pre>
-      )}
-      <StateMachineMermaidDiagram
-        config={getXStateDefinition(checker.machine)}
-        stateKey={checker.state.key}
-        actions={actions}
-      />
-    </div>
-  );
-}
-
-function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
-
-  useEffect(() => {
-    ref.current = value;
-  });
-
-  return ref.current;
-}
-
-export function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
