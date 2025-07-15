@@ -142,7 +142,7 @@ export default defineConfig({
             },
             {
               label: "Stopwatch (Effect Hooks)",
-              link: "/examples/stopwatch-with-react-state-and-state-effects",
+              link: "/examples/stopwatch-using-react-state-and-state-effects",
             },
             {
               label: "Paren Checker",

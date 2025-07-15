@@ -76,15 +76,15 @@ Matchina is a lightweight, strongly-typed toolkit for building and extending sta
 7. **TrafficLightWithDelays.tsx** - Traffic light with timing
 8. **timsy.predictable-state.tsx** - Predictable state with Timsy
 9. **timsy.explicit-state.tsx** - Explicit state definition
-10. **Stopwatch-with-React-state-and-state-effects.tsx** - React state with effects
-11. **Stopwatch-with-external-React-state-and-state-effects.tsx** - External state
+10. **stopwatch-using-React-state-and-state-effects.tsx** - React state with effects
+11. **stopwatch-using-external-React-state-and-state-effects.tsx** - External state
 12. **Fetcher-simple.tsx** - Simple data fetching
-13. **Stopwatch-with-React-state-and-effects.tsx** - React state with effects
+13. **stopwatch-using-React-state-and-effects.tsx** - React state with effects
 14. **BalancedParenChecker.tsx** - Parenthesis checker example
 15. **StopwatchCommon.tsx** - Common stopwatch functionality
 16. **Mermaid.tsx** - Mermaid diagram integration
 17. **MachineViz.tsx** - Machine visualization
-18. **Stopwatch-with-React-state-using-lifecycle-instead-of-useEffect.tsx** - Lifecycle approach
+18. **stopwatch-using-React-state-using-lifecycle-instead-of-useEffect.tsx** - Lifecycle approach
 19. **timsy-promise.tsx** - Promise handling with Timsy
 20. **Stopwatch-old.tsx** - Legacy stopwatch implementation
 21. **Fetcher-basic.tsx** - Basic data fetching
@@ -114,9 +114,9 @@ Matchina is a lightweight, strongly-typed toolkit for building and extending sta
 2. **fetch-plus.mdx** - Advanced data fetching
 3. **stopwatch-using-data-and-hooks.mdx** - Stopwatch with hooks
 4. **stopwatch-using-data-and-transition-functions.mdx** - Stopwatch with transitions
-5. **stopwatch-with-react-state-and-effects.mdx** - React state with effects
-6. **stopwatch-with-react-state-and-state-effects.mdx** - State effects example
-7. **stopwatch-with-react-state-using-lifecyle-instead-of-useeffect.mdx** - Lifecycle approach
+5. **stopwatch-using-react-state-and-effects.mdx** - React state with effects
+6. **stopwatch-using-react-state-and-state-effects.mdx** - State effects example
+7. **stopwatch-using-react-state-using-lifecyle-instead-of-useeffect.mdx** - Lifecycle approach
 8. **paren-checker.mdx** - Parenthesis checker example
 
 ## Test Coverage Summary
