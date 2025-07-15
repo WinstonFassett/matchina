@@ -1,10 +1,9 @@
-import { facade } from "matchina";
-import { useMachine } from "matchina/react";
-import { useEffect, useMemo, useState } from "react";
-import { StopwatchDevView } from "../stopwatch-common/StopwatchDevView";
+import { facade } from "@lib/src";
+import { useMachine } from "@lib/src/integrations/react";
+import { useState, useMemo, useEffect } from "react";
 import { tickEffect } from "../lib/tick-effect";
 
-function useStopwatch() {
+export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
   const effects = useMemo(
     () => ({
@@ -20,7 +19,7 @@ function useStopwatch() {
         setElapsed(0);
       },
     }),
-    [],
+    []
   );
   // Define the state machine
   const stopwatch = useMemo(() => {
@@ -46,12 +45,12 @@ function useStopwatch() {
             clear: "Suspended",
           },
         },
-        "Stopped",
+        "Stopped"
       ),
       {
         elapsed: elapsed,
         setElapsed: setElapsed,
-      },
+      }
     );
   }, []);
   stopwatch.elapsed = elapsed;
@@ -65,13 +64,8 @@ function useStopwatch() {
         Ticking: effects.run,
         Stopped: () => effects.clear,
       },
-      false,
+      false
     );
   }, [stopwatch.state]);
   return stopwatch;
-}
-
-export function Stopwatch() {
-  const stopwatch = useStopwatch();
-  return <StopwatchDevView stopwatch={stopwatch} />;
 }

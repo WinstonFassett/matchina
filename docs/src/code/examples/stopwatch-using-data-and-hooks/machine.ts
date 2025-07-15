@@ -1,7 +1,7 @@
 import { facade, setup, before, effect, when } from "@lib/src";
 import { tickEffect } from "../lib/tick-effect";
 
-export const createStopwatch = () => {
+export const createStopwatchMachine = () => {
   const model = Object.assign(
     facade(
       //state data creators
