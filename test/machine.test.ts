@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineStates } from "../src/states";
+import { defineStates } from "../src/define-states";
 import { createMachine, withApi } from "../src";
 
 const makeStates = () =>

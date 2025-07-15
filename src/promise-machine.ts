@@ -3,7 +3,7 @@ import {
   FactoryMachineEvent,
   createMachine,
 } from "./factory-machine";
-import { States, defineStates } from "./states";
+import { States, defineStates } from "./define-states";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Idle: undefined;

@@ -4,7 +4,7 @@ import {
   SpecFromStrings,
   factoryFromMembers,
   matchboxFactory,
-} from "../src/matchbox";
+} from "../src/matchbox-factory";
 
 describe("matchboxFactory", () => {
   const testConfig = {

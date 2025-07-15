@@ -4,8 +4,8 @@ import {
   FactoryState,
   createMachine,
 } from "./factory-machine";
-import { SpecRecord } from "./matchbox";
-import { States, defineStates } from "./states";
+import { SpecRecord } from "./matchbox-factory";
+import { States, defineStates } from "./define-states";
 import { KeysWithZeroArgs } from "./utility-types";
 
 export function facade<

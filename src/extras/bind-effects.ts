@@ -1,5 +1,5 @@
 import { MatchCases } from "../match-case";
-import { MatchboxFactoryFromData, MemberOf, SpecRecord } from "../matchbox";
+import { MatchboxFactoryFromData, MemberOf, SpecRecord } from "../matchbox-factory";
 import { handleEffects } from "./effects";
 
 export function bindEffects<

@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { defineStates } from "../src/states";
+import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { guard, enter, leave } from "../src/state-machine-hooks";
 import { createSetup, setup } from "../src/ext/setup";

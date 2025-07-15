@@ -4,7 +4,7 @@ import {
   MemberOf,
   MemberFromDataSpecs,
   matchboxFactory,
-} from "../matchbox";
+} from "../matchbox-factory";
 import { MatchCases } from "../match-case";
 
 export type AnyEffect = MemberFromDataSpecs<any, any, "effect">;
