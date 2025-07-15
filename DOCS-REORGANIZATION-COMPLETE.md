@@ -21,9 +21,10 @@ This document summarizes the reorganization of the Matchina documentation.
 1. **toggle.mdx** - Basic on/off toggle state machine
 2. **counter.mdx** - Counter with increment, decrement, and reset
 3. **traffic-light.mdx** - Traffic light with automatic transitions
-4. **form.mdx** - Form with validation state machine
+4. **form.mdx** - Form with validation state machine (refactored to use a reusable form machine factory)
 5. **stopwatch.mdx** - Stopwatch with start, stop, reset functionality
 6. **auth-flow.mdx** - Complete authentication flow
+7. **checkout.mdx** - Advanced checkout flow with multiple coordinated state machines (auth + checkout + payment)
 
 ## Key Improvements
 
@@ -38,6 +39,5 @@ This document summarizes the reorganization of the Matchina documentation.
 
 1. Review existing examples in the /examples directory and ensure they match the new documentation structure
 2. Add diagrams for state transitions where mentioned in the docs plan
-3. Create any additional examples mentioned in the docs plan that weren't implemented yet
 
 The documentation now provides a clear, structured learning path for users of Matchina, highlighting its TypeScript-first approach and practical applications.

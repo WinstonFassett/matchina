@@ -1,0 +1,282 @@
+---
+title: Counter State Machine
+description: A counter with increment, decrement, and reset functionality
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a counter state machine that tracks a numeric value with increment, decrement, and reset operations. It shows how to manage stateful data with Matchina.
+
+## Simplified Counter
+
+Let's create a simple counter that stores its value in a single state:
+
+```ts
+import { matchina } from "matchina";
+
+// Create a counter machine with inline state and transitions
+const counter = matchina(
+  {
+    // Single state with a count value
+    Counter: (count: number = 0) => ({ count })
+  },
+  {
+    Counter: {
+      // Increment the counter
+      increment: (state) => ({
+        ...state,
+        data: { count: state.data.count + 1 }
+      }),
+      
+      // Decrement the counter
+      decrement: (state) => ({
+        ...state,
+        data: { count: state.data.count - 1 }
+      }),
+      
+      // Reset the counter
+      reset: () => ({
+        key: "Counter",
+        data: { count: 0 }
+      }),
+      
+      // Set to a specific value
+      set: (count: number) => ({
+        key: "Counter", 
+        data: { count }
+      })
+    }
+  },
+  "Counter" // Initial state
+);
+
+// Usage
+console.log(counter.state.data.count); // 0
+counter.increment();
+counter.increment();
+console.log(counter.state.data.count); // 2
+counter.decrement();
+console.log(counter.state.data.count); // 1
+counter.reset();
+console.log(counter.state.data.count); // 0
+counter.set(10);
+console.log(counter.state.data.count); // 10
+```
+
+This approach is simpler and more direct for a counter - we don't need multiple states since a counter is essentially just a numeric value with operations.
+    },
+    Negative: {
+      decrement: (state) => ({
+        ...state,
+        data: { value: state.data.value - 1 }
+      }),
+      increment: (state) => {
+        const newValue = state.data.value + 1;
+        return newValue === 0
+          ? "Zero"
+          : newValue > 0
+          ? { key: "Positive", data: { value: newValue } }
+          : { ...state, data: { value: newValue } };
+      },
+      reset: "Zero"
+    }
+  },
+  "Zero" // Initial state
+);
+```
+
+The transitions define how the counter behaves when:
+- `increment` is called (value increases by 1)
+- `decrement` is called (value decreases by 1)
+- `reset` is called (value returns to 0)
+
+## Usage
+
+Here's how to use the counter machine:
+
+```ts
+// Initial state
+console.log(counterMachine.state.key); // "Zero"
+console.log(counterMachine.state.data.value); // 0
+
+// Increment a few times
+counterMachine.increment();
+counterMachine.increment();
+console.log(counterMachine.state.key); // "Positive"
+console.log(counterMachine.state.data.value); // 2
+
+// Decrement below zero
+counterMachine.decrement();
+counterMachine.decrement();
+counterMachine.decrement();
+console.log(counterMachine.state.key); // "Negative"
+console.log(counterMachine.state.data.value); // -1
+
+// Reset
+counterMachine.reset();
+console.log(counterMachine.state.key); // "Zero"
+console.log(counterMachine.state.data.value); // 0
+
+// Pattern matching for display
+const displayValue = counterMachine.state.match({
+  Zero: () => "Counter is at zero",
+  Positive: ({ value }) => `Counter is positive: +${value}`,
+  Negative: ({ value }) => `Counter is negative: ${value}`
+});
+```
+
+## Complete Example
+
+Here's the complete counter example:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+// Define states with data
+const counterStates = matchbox({
+  Zero: () => ({ value: 0 }),
+  Positive: (value: number) => ({ value }),
+  Negative: (value: number) => ({ value })
+});
+
+// Create the counter machine
+const counterMachine = matchina(
+  counterStates,
+  {
+    Zero: {
+      increment: () => ({ key: "Positive", data: { value: 1 } }),
+      decrement: () => ({ key: "Negative", data: { value: -1 } })
+    },
+    Positive: {
+      increment: (state) => ({
+        ...state,
+        data: { value: state.data.value + 1 }
+      }),
+      decrement: (state) => {
+        const newValue = state.data.value - 1;
+        return newValue === 0
+          ? "Zero"
+          : newValue < 0
+          ? { key: "Negative", data: { value: newValue } }
+          : { ...state, data: { value: newValue } };
+      },
+      reset: "Zero"
+    },
+    Negative: {
+      decrement: (state) => ({
+        ...state,
+        data: { value: state.data.value - 1 }
+      }),
+      increment: (state) => {
+        const newValue = state.data.value + 1;
+        return newValue === 0
+          ? "Zero"
+          : newValue > 0
+          ? { key: "Positive", data: { value: newValue } }
+          : { ...state, data: { value: newValue } };
+      },
+      reset: "Zero"
+    }
+  },
+  "Zero"
+);
+
+// Usage example
+function demonstrateCounter() {
+  console.log("Initial:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  counterMachine.increment();
+  console.log("After increment:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  counterMachine.increment();
+  console.log("After another increment:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  counterMachine.decrement();
+  console.log("After decrement:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  counterMachine.decrement();
+  counterMachine.decrement();
+  console.log("After two more decrements:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  counterMachine.reset();
+  console.log("After reset:", counterMachine.state.key, counterMachine.state.data.value);
+  
+  // Pattern matching example
+  const getCounterDisplay = () => {
+    return counterMachine.state.match({
+      Zero: () => "Counter: 0",
+      Positive: ({ value }) => `Counter: +${value}`,
+      Negative: ({ value }) => `Counter: ${value}`
+    });
+  };
+  
+  console.log("Display:", getCounterDisplay());
+}
+
+// Run the demonstration
+demonstrateCounter();
+```
+
+## React Integration
+
+Here's how you might use this counter in a React component:
+
+```tsx
+import { useMachine } from "matchina/react";
+import { matchbox, matchina } from "matchina";
+import { useMemo } from "react";
+
+// Define the counter machine as before
+const createCounterMachine = () => {
+  const counterStates = matchbox({
+    Zero: () => ({ value: 0 }),
+    Positive: (value: number) => ({ value }),
+    Negative: (value: number) => ({ value })
+  });
+  
+  return matchina(
+    counterStates,
+    // Transitions as defined above
+    {/* ... */},
+    "Zero"
+  );
+};
+
+function CounterComponent() {
+  // Create the machine once
+  const counterMachine = useMemo(() => createCounterMachine(), []);
+  
+  // Subscribe to state changes
+  useMachine(counterMachine);
+  
+  return (
+    <div className="counter">
+      <h2>Counter Example</h2>
+      
+      <div className="counter-display">
+        {counterMachine.state.match({
+          Zero: () => <span className="zero">0</span>,
+          Positive: ({ value }) => <span className="positive">+{value}</span>,
+          Negative: ({ value }) => <span className="negative">{value}</span>
+        })}
+      </div>
+      
+      <div className="counter-controls">
+        <button onClick={() => counterMachine.decrement()}>-</button>
+        <button onClick={() => counterMachine.reset()}>Reset</button>
+        <button onClick={() => counterMachine.increment()}>+</button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+Now that you've seen a counter machine, you might want to explore:
+
+- [Traffic Light Example](/examples/traffic-light) - Create a machine with automatic transitions
+- [Form Validation Example](/examples/form) - Build a more complex state machine
+- [Effects System](/guides/effects) - Add side effects to your state machines

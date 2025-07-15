@@ -105,7 +105,7 @@ export default defineConfig({
               link: "/examples/toggle",
             },
             {
-              label: "Counter",
+              label: "Rock-Paper-Scissors Game",
               link: "/examples/counter",
             },
             {
@@ -147,6 +147,10 @@ export default defineConfig({
             {
               label: "Paren Checker",
               link: "/examples/paren-checker",
+            },
+            {
+              label: "Checkout Flow with Multiple Machines",
+              link: "/examples/checkout",
             },
           ],
         },

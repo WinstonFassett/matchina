@@ -4,10 +4,10 @@
 
 ### Documentation Improvements
 
-- [ ] Implement new documentation structure according to DOCS-PLAN.md
-- [ ] Move features to home page for better visibility
-- [ ] Break up large code examples into smaller, focused pieces
-- [ ] Distinguish between React and non-React examples
+- [x] Implement new documentation structure according to DOCS-PLAN.md
+- [x] Move features to home page for better visibility
+- [x] Break up large code examples into smaller, focused pieces
+- [x] Distinguish between React and non-React examples
 - [ ] Add visual state diagrams for complex machines
 
 ### Code Cleanup
@@ -37,22 +37,22 @@
 
 ## Documentation Sections to Improve
 
-- [ ] **Matchbox State Factories**: Clarify usage patterns and benefits
-- [ ] **State Factory Machines**: Show type inference benefits
-- [ ] **Transitions**: Add more examples of complex transitions
-- [ ] **Promises**: Simplify promise examples for better clarity
-- [ ] **Lifecycle and Hooks**: Simplify lifecycle example, show real-world use cases
-- [ ] **Type Guards**: Create comprehensive guide to all type guards
+- [x] **Matchbox State Factories**: Clarify usage patterns and benefits
+- [x] **State Factory Machines**: Show type inference benefits
+- [x] **Transitions**: Add more examples of complex transitions
+- [x] **Promises**: Simplify promise examples for better clarity
+- [x] **Lifecycle and Hooks**: Simplify lifecycle example, show real-world use cases
+- [x] **Type Guards**: Create comprehensive guide to all type guards
 
 ## Example Improvements
 
-- [ ] Simplify promise examples for better onboarding
-- [ ] Review context example for clarity and usefulness
-- [ ] Ensure all examples are properly structured with:
-  - [ ] Clear introduction
-  - [ ] Step-by-step explanation
-  - [ ] TypeScript benefits highlighted
-  - [ ] Next steps for learning more
+- [x] Simplify promise examples for better onboarding
+- [x] Review context example for clarity and usefulness
+- [x] Ensure all examples are properly structured with:
+  - [x] Clear introduction
+  - [x] Step-by-step explanation
+  - [x] TypeScript benefits highlighted
+  - [x] Next steps for learning more
 
 ## Technical Improvements
 

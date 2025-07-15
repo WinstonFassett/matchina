@@ -9,42 +9,93 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 One of Matchina's greatest strengths is its excellent TypeScript support. However, to get the most out of the type system, there are certain patterns you should follow and others you should avoid. This guide explains how to maintain full type inference when working with Matchina state machines.
 
-## The Problem with Standalone Definitions
+## Transition Types and Options
 
-When you define states and transitions as standalone variables and then pass them to the machine creation functions, TypeScript's ability to infer and enforce types across these separate definitions is limited:
+Matchina supports multiple formats for transitions, with full type inference when defined inline:
 
 ```ts
-// ❌ BAD PRACTICE: Breaks type inference for transitions
-const states = {
-  Idle: undefined,
-  Playing: (trackId: string) => ({ trackId }),
-  Paused: (trackId: string) => ({ trackId })
-};
-
-// TypeScript won't properly validate these transitions against the states
-const transitions = {
-  Idle: {
-    start: (trackId: string) => "Playing" // No error if trackId is wrong type
+// ✅ GOOD PRACTICE: Define transitions inline with various forms
+const player = matchina(
+  {
+    Idle: undefined, // State with no data
+    Playing: (trackId: string) => ({ trackId }), // State with data
+    Paused: (trackId: string) => ({ trackId }),
+    Loading: (trackId: string) => ({ trackId }),
+    Error: (message: string) => ({ message })
   },
-  Playing: {
-    pause: "Paused",
-    // TypeScript won't catch if you mistype a state name
-    stop: "Stoped" // Typo, but no error
+  {
+    Idle: {
+      // 1. Simple string transition - just the target state name
+      reset: "Idle",
+      
+      // 2. Function returning a state name - allows parameters
+      play: (trackId: string) => "Playing",
+      
+      // 3. Function returning a full state object - for complex transitions
+      loadTrack: (trackId: string) => ({
+        key: "Loading",
+        data: { trackId }
+      })
+    },
+    Playing: {
+      // Function that uses the current state
+      pause: (state) => ({
+        key: "Paused",
+        data: { trackId: state.data.trackId }
+      }),
+      
+      // Simple transition to another state
+      stop: "Idle"
+    },
+    Loading: {
+      // Functions can handle errors with specific state transitions
+      loaded: "Playing",
+      failed: (errorMessage: string) => ({
+        key: "Error",
+        data: { message: errorMessage }
+      })
+    }
   },
-  Paused: {
-    resume: "Playing",
-  }
-};
-
-// Problems with inference propagate to the machine
-const player = matchina(states, transitions, "Idle");
+  "Idle"
+);
 ```
 
-This approach leads to several issues:
-- Typos in state names aren't caught at compile time
-- Parameter types for transitions aren't validated against state definitions
-- Autocomplete doesn't work properly when authoring transitions
-- Type errors are only found at runtime
+Each transition can be defined in several ways:
+
+1. A simple string with the target state name
+2. A function that returns a state name
+3. A function that returns a complete state object
+4. A function that accepts the current state and returns a new state
+
+The TypeScript compiler ensures that all transitions are valid and that any parameters match the requirements of the target state.
+
+## Transition Types in Matchina
+
+Matchina supports several forms of transitions, each with different levels of customization:
+
+```ts
+// Different forms of transitions
+
+// 1. Simple string transition (target state with no parameters)
+"TargetState"
+
+// 2. Function returning a state name (can compute target state dynamically)
+(params, state) => "TargetState" 
+
+// 3. Object with key and data (full control over target state and data)
+(params, state) => ({ 
+  key: "TargetState", 
+  data: { /* new state data */ } 
+})
+
+// 4. Keeping the same state with modified data
+(params, state) => ({
+  ...state,
+  data: { /* modified data */ }
+})
+```
+
+For full type inference to work properly, these transitions should be defined inline within the `matchina` function call, rather than as standalone objects.
 
 ## Recommended Patterns
 
