@@ -1,4 +1,4 @@
-import { matchina, onLifecycle, when } from "matchina";
+import { facade, onLifecycle, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
@@ -12,7 +12,7 @@ function useStopwatch() {
   const stopwatch = useMemo(
     () =>
       Object.assign(
-        matchina(
+        facade(
           {
             Stopped: {},
             Ticking: {},

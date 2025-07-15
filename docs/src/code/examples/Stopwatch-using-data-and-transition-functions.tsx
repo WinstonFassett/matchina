@@ -1,4 +1,4 @@
-import { effect, enter, matchina, setup, when } from "matchina";
+import { effect, enter, facade, setup, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo } from "react";
 import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
@@ -7,7 +7,7 @@ function useStopwatch() {
   // Define the state machine
   const stopwatch = useMemo(() => {
     const model = Object.assign(
-      matchina(
+      facade(
         //state data creators
         {
           Stopped: () => ({ elapsed: 0 }),

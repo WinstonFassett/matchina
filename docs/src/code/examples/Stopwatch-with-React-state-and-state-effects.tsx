@@ -1,4 +1,4 @@
-import { matchina } from "matchina";
+import { facade } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import {
@@ -28,7 +28,7 @@ function useStopwatch() {
   const stopwatch = useMemo(
     () =>
       Object.assign(
-        matchina(
+        facade(
           {
             Stopped: { effects: [effects.clear] },
             Ticking: { effects: [effects.run] },

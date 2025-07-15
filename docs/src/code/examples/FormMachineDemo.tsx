@@ -1,5 +1,5 @@
 import React from "react";
-import { matchbox, matchina } from "matchina";
+import { matchbox, facade } from "matchina";
 
 // Simple form machine for login
 export function FormMachineDemo() {
@@ -103,7 +103,7 @@ export function FormMachineDemo() {
     };
     
     // Create the machine
-    return matchina(
+    return facade(
       states,
       {
         Pristine: {
@@ -633,7 +633,7 @@ export function FormMachineDemo() {
   }
   
   // Create the form machine
-  return matchina(
+  return facade(
     states,
     {
       Pristine: {

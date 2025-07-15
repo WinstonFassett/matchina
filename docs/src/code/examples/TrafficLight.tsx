@@ -1,8 +1,8 @@
-import { matchina } from "matchina";
+import { facade } from "matchina";
 import { useMachine } from "matchina/react";
 
 // ---cut---
-export const trafficLight = matchina(
+export const trafficLight = facade(
   {
     Red: () => "means stop",
     Yellow: () => "means caution",

@@ -1,6 +1,6 @@
-import { matchina } from "matchina";
+import { facade } from "matchina";
 
-export const player = matchina(
+export const player = facade(
   // Define states as keys to optional values or creator functions
   {
     Idle: undefined,

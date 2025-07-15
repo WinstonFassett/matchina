@@ -1,9 +1,9 @@
-import { effect, matchina, setup, when } from "matchina";
+import { effect, facade, setup, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { tickEffect } from "./StopwatchCommon";
 
 // ---cut---
-export const trafficLight = matchina(
+export const trafficLight = facade(
   {
     Red: () => "means stop",
     Green: () => "means go",

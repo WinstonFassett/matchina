@@ -1,7 +1,7 @@
-import { matchina } from "matchina";
+import { facade } from "matchina";
 
 // Playback controls state machine example
-export const player = matchina(
+export const player = facade(
   {
     Idle: () => ({}),
     Playing: (trackId: string) => ({ trackId }),

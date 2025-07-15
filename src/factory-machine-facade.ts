@@ -8,7 +8,7 @@ import { SpecRecord } from "./matchbox";
 import { States, defineStates } from "./states";
 import { KeysWithZeroArgs } from "./utility-types";
 
-export function matchina<
+export function facade<
   S extends SpecRecord,
   T extends FactoryMachineTransitions<States<S>>,
 >(

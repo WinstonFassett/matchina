@@ -1,5 +1,5 @@
 import type { FactoryMachine, FactoryMachineEvent, States } from "matchina";
-import { defineStates, effect, matchina, setup } from "matchina";
+import { defineStates, effect, facade, setup } from "matchina";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Idle: undefined;
@@ -50,7 +50,7 @@ export function createPromiseMachine<
   F extends PromiseCallback = PromiseCallback,
 >(makePromise?: F) {
   const states = PromiseStates as unknown as PromiseStates<F>;
-  const impl = Object.assign(matchina(states, PromiseTransitions, "Idle"), {
+  const impl = Object.assign(facade(states, PromiseTransitions, "Idle"), {
     promise: undefined as undefined | ReturnType<F>,
     done: undefined as undefined | Promise<unknown>,
   });
@@ -120,7 +120,7 @@ const fetchStates = {
 };
 
 const fetcher = Object.assign(
-  matchina(fetchStates, enhancedPromiseTransitions, "Idle"),
+  facade(fetchStates, enhancedPromiseTransitions, "Idle"),
   {
     // TODO
   },
