@@ -1,0 +1,334 @@
+---
+title: Rock-Paper-Scissors Game
+description: A game state machine demonstrating state transitions with conditional logic
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Introduction
+
+This example demonstrates a Rock-Paper-Scissors game state machine that manages the game flow, tracks scores, and determines winners. It shows how state machines can handle complex conditional logic and state transitions in an interactive application.
+
+## State Definition
+
+First, let's define the possible moves and our game states:
+
+```ts
+import { matchbox, matchina } from "matchina";
+
+// Define the possible moves
+type Move = "rock" | "paper" | "scissors";
+
+// Define our game states
+const gameStates = matchbox({
+  // Waiting for player to choose
+  WaitingForPlayer: (
+    playerScore: number = 0,
+    computerScore: number = 0
+  ) => ({ 
+    playerScore, 
+    computerScore 
+  }),
+  
+  // Player has chosen, now computer chooses
+  PlayerChose: (
+    playerMove: Move,
+    playerScore: number,
+    computerScore: number
+  ) => ({ 
+    playerMove, 
+    playerScore, 
+    computerScore 
+  }),
+  
+  // Round complete, showing results
+  RoundComplete: (
+    playerMove: Move,
+    computerMove: Move,
+    roundWinner: "player" | "computer" | "tie",
+    playerScore: number,
+    computerScore: number
+  ) => ({ 
+    playerMove, 
+    computerMove, 
+    roundWinner, 
+    playerScore, 
+    computerScore 
+  }),
+  
+  // Game over (someone reached win threshold)
+  GameOver: (
+    winner: "player" | "computer",
+    playerScore: number,
+    computerScore: number
+  ) => ({ 
+    winner, 
+    playerScore, 
+    computerScore 
+  })
+});
+```
+
+## Creating the Machine
+
+Now let's create the game machine with transitions defined inline:
+
+```ts
+// Helper to determine winner of a round
+function determineWinner(playerMove: Move, computerMove: Move): "player" | "computer" | "tie" {
+  if (playerMove === computerMove) return "tie";
+  
+  if (
+    (playerMove === "rock" && computerMove === "scissors") ||
+    (playerMove === "paper" && computerMove === "rock") ||
+    (playerMove === "scissors" && computerMove === "paper")
+  ) {
+    return "player";
+  }
+  
+  return "computer";
+}
+
+// Create the game machine with inline transitions
+const gameMachine = matchina(
+  gameStates,
+  {
+    WaitingForPlayer: {
+      // Player selects a move
+      selectMove: (move: Move, state) => ({
+        key: "PlayerChose",
+        data: {
+          playerMove: move,
+          playerScore: state.data.playerScore,
+          computerScore: state.data.computerScore
+        }
+      })
+    },
+    
+    PlayerChose: {
+      // Computer makes its move and round is evaluated
+      computerSelectMove: (state) => {
+        // Generate computer's random move
+        const moves: Move[] = ["rock", "paper", "scissors"];
+        const computerMove = moves[Math.floor(Math.random() * moves.length)];
+        
+        // Determine winner of the round
+        const roundWinner = determineWinner(state.data.playerMove, computerMove);
+        
+        // Update scores
+        let playerScore = state.data.playerScore;
+        let computerScore = state.data.computerScore;
+        
+        if (roundWinner === "player") {
+          playerScore += 1;
+        } else if (roundWinner === "computer") {
+          computerScore += 1;
+        }
+        
+        // Check if game is over (first to 3 wins)
+        if (playerScore >= 3) {
+          return {
+            key: "GameOver",
+            data: {
+              winner: "player",
+              playerScore,
+              computerScore
+            }
+          };
+        }
+        
+        if (computerScore >= 3) {
+          return {
+            key: "GameOver",
+            data: {
+              winner: "computer",
+              playerScore,
+              computerScore
+            }
+          };
+        }
+        
+        // Game continues, show round result
+        return {
+          key: "RoundComplete",
+          data: {
+            playerMove: state.data.playerMove,
+            computerMove,
+            roundWinner,
+            playerScore,
+            computerScore
+          }
+        };
+      }
+    },
+    
+    RoundComplete: {
+      // Start next round
+      nextRound: (state) => ({
+        key: "WaitingForPlayer",
+        data: {
+          playerScore: state.data.playerScore,
+          computerScore: state.data.computerScore
+        }
+      })
+    },
+    
+    GameOver: {
+      // Start a new game
+      newGame: () => ({
+        key: "WaitingForPlayer",
+        data: {
+          playerScore: 0,
+          computerScore: 0
+        }
+      })
+    }
+  },
+  // Initial state
+  "WaitingForPlayer"
+);
+```
+
+## Using the Game Machine
+
+Here's how we can use our Rock-Paper-Scissors game machine:
+
+```ts
+// Start a new game
+console.log(gameMachine.state.key); // "WaitingForPlayer"
+console.log(`Player: ${gameMachine.state.data.playerScore}, Computer: ${gameMachine.state.data.computerScore}`);
+
+// Player selects rock
+gameMachine.selectMove("rock");
+console.log(gameMachine.state.key); // "PlayerChose"
+console.log(`Player selected: ${gameMachine.state.data.playerMove}`);
+
+// Computer selects its move and round is evaluated
+gameMachine.computerSelectMove();
+console.log(gameMachine.state.key); // "RoundComplete" or "GameOver"
+
+// If the game is still going, we can check the result and continue
+if (gameMachine.state.is("RoundComplete")) {
+  console.log(`Player: ${gameMachine.state.data.playerMove}, Computer: ${gameMachine.state.data.computerMove}`);
+  console.log(`Round winner: ${gameMachine.state.data.roundWinner}`);
+  console.log(`Score - Player: ${gameMachine.state.data.playerScore}, Computer: ${gameMachine.state.data.computerScore}`);
+  
+  // Start next round
+  gameMachine.nextRound();
+}
+
+// If the game is over, we can check the final result
+if (gameMachine.state.is("GameOver")) {
+  console.log(`Game over! Winner: ${gameMachine.state.data.winner}`);
+  console.log(`Final score - Player: ${gameMachine.state.data.playerScore}, Computer: ${gameMachine.state.data.computerScore}`);
+  
+  // Start a new game
+  gameMachine.newGame();
+}
+```
+
+## React Implementation
+
+Here's how we could implement this game in a React component:
+
+```tsx
+import React from "react";
+import { useMachine } from "matchina/react";
+import { matchbox, matchina } from "matchina";
+
+// Same state and machine definitions as above...
+
+function RockPaperScissorsGame() {
+  const machine = React.useMemo(() => {
+    return matchina(
+      gameStates,
+      {
+        // ...transitions as defined above
+      },
+      "WaitingForPlayer"
+    );
+  }, []);
+  
+  // Use the machine in React
+  useMachine(machine);
+  
+  // Render based on current state
+  return (
+    <div className="game-container">
+      <h2>Rock Paper Scissors</h2>
+      
+      {/* Score display */}
+      <div className="score">
+        <span>Player: {machine.state.match({
+          WaitingForPlayer: ({ playerScore }) => playerScore,
+          PlayerChose: ({ playerScore }) => playerScore,
+          RoundComplete: ({ playerScore }) => playerScore,
+          GameOver: ({ playerScore }) => playerScore
+        })}</span>
+        <span>Computer: {machine.state.match({
+          WaitingForPlayer: ({ computerScore }) => computerScore,
+          PlayerChose: ({ computerScore }) => computerScore,
+          RoundComplete: ({ computerScore }) => computerScore,
+          GameOver: ({ computerScore }) => computerScore
+        })}</span>
+      </div>
+      
+      {/* Game content based on state */}
+      {machine.state.match({
+        WaitingForPlayer: () => (
+          <div className="move-selection">
+            <h3>Choose your move:</h3>
+            <div className="buttons">
+              <button onClick={() => machine.selectMove("rock")}>Rock</button>
+              <button onClick={() => machine.selectMove("paper")}>Paper</button>
+              <button onClick={() => machine.selectMove("scissors")}>Scissors</button>
+            </div>
+          </div>
+        ),
+        
+        PlayerChose: ({ playerMove }) => (
+          <div className="waiting">
+            <h3>You chose {playerMove}</h3>
+            <p>Computer is choosing...</p>
+            <button onClick={() => machine.computerSelectMove()}>Continue</button>
+          </div>
+        ),
+        
+        RoundComplete: ({ playerMove, computerMove, roundWinner }) => (
+          <div className="result">
+            <h3>Round Result:</h3>
+            <p>You: {playerMove}</p>
+            <p>Computer: {computerMove}</p>
+            <p className="winner">
+              {roundWinner === "tie" 
+                ? "It's a tie!" 
+                : `${roundWinner === "player" ? "You" : "Computer"} won this round!`}
+            </p>
+            <button onClick={() => machine.nextRound()}>Next Round</button>
+          </div>
+        ),
+        
+        GameOver: ({ winner }) => (
+          <div className="game-over">
+            <h3>Game Over!</h3>
+            <p className="winner">{winner === "player" ? "You" : "Computer"} won the game!</p>
+            <button onClick={() => machine.newGame()}>Play Again</button>
+          </div>
+        )
+      })}
+    </div>
+  );
+}
+```
+
+## Benefits of Using State Machines
+
+This Rock-Paper-Scissors game demonstrates several benefits of using state machines:
+
+1. **Clear Game Flow**: The state machine defines exactly what can happen at each stage of the game
+2. **Type Safety**: All the state transitions and their data requirements are fully typed
+3. **Impossible States Prevented**: The machine ensures we can't end up in invalid states
+4. **Comprehensive UI Rendering**: Pattern matching makes it easy to render the appropriate UI for each state
+5. **Game Logic Separation**: The game logic is cleanly separated from the UI rendering logic
+
+For games and interactive applications, state machines provide a clean way to model complex state transitions while ensuring your application remains in a valid state at all times.
