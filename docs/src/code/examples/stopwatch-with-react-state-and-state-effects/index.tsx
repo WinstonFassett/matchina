@@ -3,10 +3,10 @@ import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import {
   StopwatchDevView,
-  tickEffect,
   useEventTypeEffect,
   useStateEffects,
-} from "./StopwatchCommon";
+} from "../StopwatchCommon";
+import { tickEffect } from "../tick-effect";
 
 function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);

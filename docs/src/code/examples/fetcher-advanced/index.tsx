@@ -12,10 +12,10 @@ import {
 } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo } from "react";
-import { autotransition } from "./autotransition";
-import { MachineActions } from "../../components/MachineActions";
-import StateMachineMermaidDiagram from "../../components/MachineViz";
-import { getXStateDefinition } from "./StopwatchCommon";
+import { autotransition } from "../autotransition";
+import { MachineActions } from "../../../components/MachineActions";
+import StateMachineMermaidDiagram from "../../../components/MachineViz";
+import { getXStateDefinition } from "../StopwatchCommon";
 
 type Options = RequestInit & {
   timeout?: number;

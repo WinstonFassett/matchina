@@ -13,11 +13,6 @@ import {
 import { useEffect, useMemo } from "react";
 import { StateMachineMermaidDiagram } from "../../components/MachineViz";
 
-export function tickEffect(tick: () => void, interval = 50) {
-  const timer = setInterval(tick, interval);
-  return () => clearInterval(timer);
-}
-
 const StateData = {
   Stopped: () => ({ elapsed: 0 }),
   Ticking: (elapsed = 0, at = Date.now()) => ({ at, elapsed }),

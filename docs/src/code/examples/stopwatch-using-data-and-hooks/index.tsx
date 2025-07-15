@@ -1,7 +1,8 @@
 import { before, effect, facade, setup, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo } from "react";
-import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
+import { StopwatchDevView } from "../StopwatchCommon";
+import { tickEffect } from "../tick-effect";
 
 export function useStopwatch() {
   // Define the state machine

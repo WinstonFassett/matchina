@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { facade } from "matchina";
 import { useMachine } from "matchina/react";
-import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
+import { StopwatchDevView } from "../StopwatchCommon";
+import { tickEffect } from "../tick-effect";
 
 function useStopwatch() {
   const [startTime, setStartTime] = useState<number | undefined>(undefined);

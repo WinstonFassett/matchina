@@ -1,12 +1,18 @@
 import { facade } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
-import { StopwatchDevView, tickEffect } from "./StopwatchCommon";
+import {
+  StopwatchDevView,
+  useEventTypeEffect,
+  useStateEffects,
+} from "../StopwatchCommon";
+import { tickEffect } from "../tick-effect";
 
-function useStopwatch() {
-  const [elapsed, setElapsed] = useState(0);
-  const effects = useMemo(
-    () => ({
+function useStopwatch(elapsed: number, setElapsed: (elapsed: number) => void) {
+  // Define the state machine
+  const stopwatch = useMemo(() => {
+    const effects = {
+      clear: () => setElapsed(0),
       run: () => {
         let lastTick = Date.now();
         return tickEffect(() => {
@@ -15,19 +21,12 @@ function useStopwatch() {
           lastTick = now;
         });
       },
-      clear: () => {
-        setElapsed(0);
-      },
-    }),
-    [],
-  );
-  // Define the state machine
-  const stopwatch = useMemo(() => {
+    };
     return Object.assign(
       facade(
         {
-          Stopped: {},
-          Ticking: {},
+          Stopped: { effects: [effects.clear] },
+          Ticking: { effects: [effects.run] },
           Suspended: {},
         },
         {
@@ -48,29 +47,20 @@ function useStopwatch() {
         "Stopped",
       ),
       {
-        elapsed: elapsed,
-        setElapsed: setElapsed,
+        elapsed,
+        effects,
       },
     );
   }, []);
-  stopwatch.elapsed = elapsed;
-  useMachine(stopwatch.machine);
   useEffect(() => {
-    if (stopwatch.change.type === "clear") {
-      effects.clear();
-    }
-    return stopwatch.state.match(
-      {
-        Ticking: effects.run,
-        Stopped: () => effects.clear,
-      },
-      false,
-    );
-  }, [stopwatch.state]);
+    stopwatch.elapsed = elapsed;
+  }, [elapsed]);
+  useMachine(stopwatch.machine);
+  useStateEffects(stopwatch.state);
+  useEventTypeEffect(stopwatch.change, stopwatch.effects);
   return stopwatch;
 }
 
 export function Stopwatch() {
-  const stopwatch = useStopwatch();
-  return <StopwatchDevView stopwatch={stopwatch} />;
+  return <StopwatchDevView stopwatch={useStopwatch(...useState(0))} />;
 }
