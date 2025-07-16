@@ -1,27 +1,37 @@
 ---
-title: Stopwatch using state Effects
+title: Stopwatch with React State and State Effects
 ---
 
-import { Stopwatch } from "@code/examples/stopwatch-using-react-state-and-state-effects";
-import code from "@code/examples/stopwatch-using-react-state-and-state-effects/index.tsx?raw";
+import StopwatchExample from "@code/examples/stopwatch-using-react-state-and-state-effects";
+import indexCode from "@code/examples/stopwatch-using-react-state-and-state-effects/index.tsx?raw";
+import hookCode from "@code/examples/stopwatch-using-react-state-and-state-effects/useStopwatch.ts?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
-<div className="text-4xl text-red-500 text-green-500 text-yellow-500 border flex items-center gap-2 rounded"></div>
+## Interactive Stopwatch Example
 
 <div className="not-content">
-  <Stopwatch client:visible />
+  <StopwatchExample client:visible />
 </div>
 
-This is the cleanest, shortest version of these stopwatch examples, partly because it relies on some utility functions, `useStateEffects` and `useEventTypeEffect`.
+## About This Example
 
-This example is like the React-first example. It relies on React for state and effects. But it simplifies the logic by providing effects for states and events (`clear`).
+This is the cleanest, shortest version of the stopwatch examples, using specialized utility hooks:
 
-Still this isn't exactly an idiomatic way of separating effects. From that perspective it would be ideal to fully separate the machine definition from React, i.e. in separate files.
-In that case, the machine definition should specify effects as non-function JS values, i.e. strings or objects created by `defineEffects`. That will be the subject of the next exploration.
+- Uses `useStateEffects` and `useEventTypeEffect` for simplified effect management
+- Relies on React for state management like the React-first example
+- Provides a more declarative approach to handling state-specific effects
 
-<LinkCard title="Effects" href="/guides/effects/" />
+The key innovation here is using effects tied directly to states and events (like `clear`), which creates a more maintainable separation of concerns.
 
-## Code
+While this approach is elegant, a more idiomatic pattern would fully separate the machine definition from React into separate files, with effects specified as non-function JS values (strings or objects created by `defineEffects`).
 
-<CodeBlock lang="jsx" code={code} />
+<LinkCard title="Learn More About Effects" href="/guides/effects/" />
+
+## Hook Implementation
+
+<CodeBlock lang="typescript" code={hookCode} />
+
+## Component Integration
+
+<CodeBlock lang="jsx" code={indexCode} />

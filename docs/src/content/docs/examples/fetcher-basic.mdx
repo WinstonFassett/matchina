@@ -1,0 +1,49 @@
+---
+title: Basic Promise Machine
+---
+
+import FetcherExample from "@code/examples/fetcher-basic";
+import machineCode from "@code/examples/fetcher-basic/machine.ts?raw";
+import hooksCode from "@code/examples/fetcher-basic/hooks.ts?raw";
+import viewCode from "@code/examples/fetcher-basic/FetcherAppView.tsx?raw";
+import indexCode from "@code/examples/fetcher-basic/index.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+## Interactive Fetcher Example
+
+<div className="not-content">
+  <FetcherExample client:visible />
+</div>
+
+## About This Example
+
+This example demonstrates a basic promise machine for handling asynchronous operations:
+
+- Defines a state machine with Idle, Pending, Resolved, and Rejected states
+- Manages promise lifecycle automatically
+- Provides type-safe transitions between states
+- Demonstrates how to handle errors and data results
+
+The promise machine pattern is ideal for managing any asynchronous operation, from API calls to complex workflows with retry logic.
+
+## Machine Implementation
+
+<CodeBlock lang="typescript" code={machineCode} />
+
+## Hook Implementation
+
+<CodeBlock lang="typescript" code={hooksCode} />
+
+## Component Implementation 
+
+<CodeBlock lang="tsx" code={viewCode} />
+
+## Integration
+
+<CodeBlock lang="tsx" code={indexCode} />
+
+<CardGrid>
+  <LinkCard title="Learn More About State Data" href="/guides/state-data/" />
+  <LinkCard title="Explore Effects" href="/guides/effects/" />
+</CardGrid>

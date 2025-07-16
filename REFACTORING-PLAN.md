@@ -44,13 +44,14 @@ Each example MDX file should follow this format:
 - [x] `stopwatch-using-data-and-transition-functions`
 - [x] `stopwatch-using-data-and-hooks` 
 - [x] `stopwatch-using-react-state-and-effects`
-- [ ] `stopwatch-using-react-state-and-state-effects`
-- [ ] `stopwatch-using-external-react-state-and-state-effects`
-- [ ] `stopwatch-using-react-state-using-lifecycle-instead-of-useEffect`
+- [x] `stopwatch-using-react-state-and-state-effects`
+- [x] `stopwatch-using-external-react-state-and-state-effects`
+- [x] `stopwatch-using-react-state-using-lifecycle-instead-of-useEffect`
 
 ### Other Examples
+- [x] `fetcher-basic` example
+- [ ] Other fetcher examples
 - [ ] Form examples
-- [ ] Fetcher examples
 - [ ] Rock-paper-scissors example
 - [ ] Checkout example
 - [ ] Any other examples in the codebase

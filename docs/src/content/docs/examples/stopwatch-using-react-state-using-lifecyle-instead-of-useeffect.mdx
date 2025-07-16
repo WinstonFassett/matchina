@@ -1,25 +1,38 @@
 ---
-title: Stopwatch with React state and useLifecycle
+title: Stopwatch with React State and Lifecycle Hooks
 ---
 
-import { Stopwatch } from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect";
-import code from "@code/examples/stopwatch-using-React-state-using-lifecycle-instead-of-useEffect/index.tsx?raw";
+import StopwatchExample from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect";
+import hookCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/useStopwatch.ts?raw";
+import indexCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 
-<div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full"></div>
+## Interactive Stopwatch Example
 
 <div className="not-content">
-  <Stopwatch client:visible />
+  <StopwatchExample client:visible />
 </div>
 
-This version uses `onLifecycle` instead of `useEffect`.
+## About This Example
 
-It is somewhat verbose, and mainly serves to show how the `onLifecycle` hook _could_ be used here.
+This version demonstrates using `onLifecycle` hooks instead of `useEffect`:
 
-One nice thing about `onLifecycle` is the autocomplete experience for the developer that makes it easy to explore the available extensions for each state and event.
+- Uses lifecycle events to manage side effects
+- Provides better TypeScript autocompletion support
+- Constrains event types to their specific states
 
-And within a given state or event config, the event will be constrained to that state and/or event. For example `{ Rejected: { enter: ev => { ev.data.error } } }` would autocomplete `ev.error` that is part of the `Rejected` state `data`.
+While slightly more verbose than other approaches, `onLifecycle` offers a superior developer experience with:
 
-## Full Code
+1. Strong type inference for state and event-specific data
+2. Automatic documentation through IDE autocomplete
+3. Clear separation of lifecycle events by state
 
-<CodeBlock lang="jsx" code={code} />
+For example, in a configuration like `{ Rejected: { enter: ev => { ev.data.error } } }`, TypeScript would correctly infer and autocomplete `ev.error` since it's part of the `Rejected` state's `data`.
+
+## Hook Implementation
+
+<CodeBlock lang="typescript" code={hookCode} />
+
+## Component Integration
+
+<CodeBlock lang="jsx" code={indexCode} />
