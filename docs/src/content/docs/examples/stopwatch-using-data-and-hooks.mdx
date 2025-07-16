@@ -2,24 +2,33 @@
 title: Stopwatch using State Data and Hooks
 ---
 
-import { Stopwatch } from "@code/examples/stopwatch-using-data-and-hooks";
-import code from "@code/examples/stopwatch-using-data-and-hooks/index.tsx?raw";
+import StopwatchExample from "@code/examples/stopwatch-using-data-and-hooks";
+import machineCode from "@code/examples/stopwatch-using-data-and-hooks/machine.ts?raw";
+import indexCode from "@code/examples/stopwatch-using-data-and-hooks/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 
-<div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full flex items-center gap-2 rounded"></div>
+## Interactive Stopwatch Example
 
 <div className="not-content">
-  <Stopwatch client:visible />
+  <StopwatchExample client:visible />
 </div>
 
-This example shows how state `data` can be used instead of `useState`. Notice that this example only uses `useMemo` to create the state machine, and does not rely on `useEffect` or `useState`.
+## About This Example
 
-Here we make `elapsed` a part of the state `data` and use a `before` setup to propagate it from state to state.
+This example demonstrates how to use state `data` instead of React's `useState`. Key features:
 
-We can also specify that whenever the machine is stopped, `elapsed` will be `0`;
+- Uses `useMemo` only to create the state machine
+- Avoids `useEffect` and `useState` dependencies
+- Makes `elapsed` a part of the state's `data`
+- Uses lifecycle hooks to manage state transitions
+- Automatically resets `elapsed` to `0` when stopped
 
-We also use the `when` helper, which tracks when a condition is entered and runs entry and exit handlers. With this we can use `when` as an alternative to `useEffect` when we want to do some cleanup work when things change.
+The `when` helper functions as an alternative to `useEffect`, tracking when a condition is entered and running entry/exit handlers.
 
-## Full Code
+## Machine Code
 
-<CodeBlock lang="jsx" code={code} />
+<CodeBlock lang="typescript" code={machineCode} />
+
+## Component Integration
+
+<CodeBlock lang="jsx" code={indexCode} />

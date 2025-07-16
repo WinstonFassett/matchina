@@ -1,29 +1,36 @@
 ---
-title: Stopwatch React with data and transition parameters
+title: Stopwatch with Data and Transition Functions
 ---
 
-import { Stopwatch } from "@code/examples/stopwatch-using-data-and-transition-functions";
-import code from "@code/examples/stopwatch-using-data-and-transition-functions/index.tsx?raw";
+import StopwatchExample from "@code/examples/stopwatch-using-data-and-transition-functions";
+import machineCode from "@code/examples/stopwatch-using-data-and-transition-functions/machine.ts?raw";
+import indexCode from "@code/examples/stopwatch-using-data-and-transition-functions/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 
-<div className="text-4xl text-red-500 text-green-500 text-yellow-500 w-full p-4 flex-1 flex items-center gap-2 rounded"></div>
+## Interactive Stopwatch Example
 
 <div className="not-content">
-  <Stopwatch client:visible />
+  <StopwatchExample client:visible />
 </div>
 
-This is a function-oriented example. It is the opposite of declarative.
+## About This Example
 
-It also uses state `data` for tracking `elapsed` time and does not rely on React `useMemo` or `useState` for state or effects.
+This example demonstrates a function-oriented approach to state machine implementation. It showcases:
 
-It is a bit more verbose, but it shows the power of using functions for state data and transition handlers.
+- Using state `data` for tracking `elapsed` time without React state
+- Function-based state transitions for rich TypeScript type inference
+- Separation of machine logic and UI components
 
-If you're into that sort of thing. I am.
+This approach is more verbose but provides stronger typing and clearer data flow between states.
 
-But admittedly, it's not as pretty, and a little harder to follow.
+## Machine Code
 
-This example shows how we can use functions for a richer typescript experience.
+The machine implementation defines state data constructors and transitions as functions:
 
-## Full Code
+<CodeBlock lang="typescript" code={machineCode} />
 
-<CodeBlock lang="jsx" code={code} />
+## Component Integration
+
+Here's how the stopwatch machine is integrated with React:
+
+<CodeBlock lang="jsx" code={indexCode} />

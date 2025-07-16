@@ -2,7 +2,7 @@ import { onLifecycle, when } from "@lib/src";
 import { useMachine } from "@lib/src/integrations/react";
 import { useState, useMemo, useEffect } from "react";
 import { tickEffect } from "../lib/tick-effect";
-import { createStopwatch } from "./createStopwatch";
+import { createStopwatch } from "./machine";
 
 export function useStopwatch() {
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
