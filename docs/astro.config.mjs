@@ -94,6 +94,10 @@ export default defineConfig({
               link: "/guides/hooks",
             },
             {
+              label: "MatchboxFactory",
+              link: "/guides/matchbox",
+            },
+            {
               label: "Matchbox (Tagged Unions)",
               link: "/guides/union-machines",
             },
