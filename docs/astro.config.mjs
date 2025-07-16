@@ -18,15 +18,17 @@ export default defineConfig({
     syntaxHighlight: false,
     rehypePlugins: [[rehypeShikiji, { theme: "material-theme-ocean" }]],
 
-    // remarkPlugins: [
-    //   [remarkShikiTwoslash, { theme: "material-theme-ocean" }]
-    //   // '@astrojs/markdown-remark',
-    //   // {
-    //   //   syntaxHighlight: false,
-    //   //   remarkPlugins: [
-    //   //   ]
-    //   // },
-    // ]
+    remarkPlugins: [
+      [remarkShikiTwoslash, { 
+        // theme: "material-theme-ocean" 
+      }]
+      // '@astrojs/markdown-remark',
+      // {
+      //   syntaxHighlight: false,
+      //   remarkPlugins: [
+      //   ]
+      // },
+    ]
   },
   integrations: [
     // mdx({

@@ -12,9 +12,10 @@ import {
 export const theme = 'material-theme-ocean'
 
 export let html = ``
-const { lang, code: rawCode, showLines = true } = Astro.props;
+const { lang, code: rawCode, showLines = true, twoslash = false } = Astro.props;
 
-if (['ts', 'tsx'].includes(lang)) {
+// Use Twoslash only when explicitly requested
+if (twoslash && ['ts', 'tsx'].includes(lang)) {
   html = await codeToHtml(rawCode, {
     lang,
     theme,

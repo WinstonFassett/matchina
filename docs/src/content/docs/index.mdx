@@ -41,9 +41,10 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 
 <Tabs>
   <TabItem label="TypeScript-First">
-    ```ts
+    ```ts twoslash
+    import { facade } from "matchina";
     // TypeScript automatically infers parameter types based on destination states
-    const player = matchina(
+    const player = facade(
       {
         Idle: undefined,
         Playing: (trackId: string) => ({ trackId }),

@@ -1,0 +1,370 @@
+---
+title: Matchbox (Tagged Unions)
+description: "Matchbox: a powerful tagged union system with complete type inference"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CodeBlock from '@components/CodeBlock.astro';
+
+# Matchbox: Tagged Unions
+
+Matchbox is a powerful system for creating and working with tagged unions in TypeScript, providing type-safe pattern matching, exhaustiveness checking, and comprehensive type inference.
+
+## What are Tagged Unions?
+
+Tagged unions (also known as discriminated unions or sum types) are a powerful way to represent data that can be one of several distinct types, each with its own structure:
+
+<CodeBlock twoslash={true} lang="ts">
+// A simple tagged union using TypeScript's native union types
+type Result = 
+  | { status: 'success'; data: string }
+  | { status: 'error'; message: string };
+  
+// Using the tagged union
+function handleResult(result: Result) {
+  switch (result.status) {
+    case 'success':
+      // TypeScript knows result.data exists here
+      console.log(result.data.toUpperCase());
+      break;
+    case 'error':
+      // TypeScript knows result.message exists here
+      console.log(`Error: ${result.message}`);
+      break;
+  }
+}
+</CodeBlock>
+
+## Why Matchbox?
+
+While TypeScript has built-in support for discriminated unions, Matchbox adds powerful capabilities:
+
+1. **Factory Functions** - Create instances of union variants with proper typing
+2. **Pattern Matching** - Match against union variants with exhaustiveness checking
+3. **Type Predicates** - Built-in type guards with the `is` method
+4. **Type Assertion** - Convert between variants with the `as` method
+5. **Complete Type Inference** - Full inference with minimal type annotations
+
+## Creating a Matchbox
+
+You can create a matchbox using the `matchboxFactory` function:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+// Define a matchbox with different variant shapes
+const Result = matchboxFactory({
+  Success: (data: string) => ({ data }),
+  Error: (message: string) => ({ message }),
+  Loading: () => ({}),
+});
+
+// Create instances of each variant
+const success = Result.Success('Data loaded');
+const error = Result.Error('Failed to load');
+const loading = Result.Loading();
+
+// The tag property ('tag' by default) identifies the variant
+console.log(success.tag); // 'Success'
+console.log(error.tag); // 'Error'
+console.log(loading.tag); // 'Loading'
+
+// Each variant has properly typed data
+console.log(success.data.data); // 'Data loaded'
+console.log(error.data.message); // 'Failed to load'
+</CodeBlock>
+
+### Custom Tag Property
+
+You can customize the property name used for the tag:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+// Use 'status' instead of 'tag' as the discriminator
+const HttpResult = matchboxFactory({
+  Success: (data: any) => ({ data }),
+  Error: (code: number, message: string) => ({ code, message }),
+  Loading: () => ({})
+}, 'status');
+
+const success = HttpResult.Success({ name: 'John' });
+console.log(success.status); // 'Success'
+</CodeBlock>
+
+## Pattern Matching
+
+The most powerful feature of Matchbox is pattern matching with the `match` method:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const Shape = matchboxFactory({
+  Circle: (radius: number) => ({ radius }),
+  Rectangle: (width: number, height: number) => ({ width, height }),
+  Triangle: (base: number, height: number) => ({ base, height })
+});
+
+// Create a shape
+const circle = Shape.Circle(5);
+const rectangle = Shape.Rectangle(10, 20);
+
+// Pattern match on the shape to calculate area
+function getArea(shape: ReturnType<typeof Shape[keyof typeof Shape]>) {
+  return shape.match({
+    Circle: ({ radius }) => Math.PI * radius * radius,
+    Rectangle: ({ width, height }) => width * height,
+    Triangle: ({ base, height }) => (base * height) / 2
+  });
+}
+
+console.log(getArea(circle)); // ~78.54
+console.log(getArea(rectangle)); // 200
+</CodeBlock>
+
+### Exhaustiveness Checking
+
+Matchbox ensures you handle all possible variants:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const TrafficLight = matchboxFactory({
+  Red: () => ({}),
+  Yellow: () => ({}),
+  Green: () => ({})
+});
+
+const light = TrafficLight.Red();
+
+// This will cause a compile-time error because we didn't handle Green
+light.match({
+  Red: () => 'Stop',
+  Yellow: () => 'Caution'
+  // Error: Property 'Green' is missing in type...
+});
+
+// Handling all cases works
+const action = light.match({
+  Red: () => 'Stop',
+  Yellow: () => 'Caution',
+  Green: () => 'Go'
+});
+</CodeBlock>
+
+### Default Case
+
+You can provide a default case with the `_` key:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const HttpStatus = matchboxFactory({
+  OK: () => ({}),
+  NotFound: () => ({}),
+  ServerError: () => ({}),
+  BadRequest: () => ({}),
+});
+
+const status = HttpStatus.NotFound();
+
+// Using a default case
+const message = status.match({
+  OK: () => 'Everything is fine',
+  NotFound: () => 'Resource not found',
+  _: () => 'An error occurred' // Handles all other cases
+});
+</CodeBlock>
+
+### Non-Exhaustive Matching
+
+You can also opt-out of exhaustiveness checking by passing `false` as the second argument:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const Animal = matchboxFactory({
+  Dog: (name: string) => ({ name }),
+  Cat: (name: string) => ({ name }),
+  Bird: (name: string) => ({ name })
+});
+
+const pet = Animal.Dog('Rex');
+
+// Non-exhaustive matching (second parameter set to false)
+const sound = pet.match({
+  Dog: () => 'Woof',
+  Cat: () => 'Meow'
+}, false);
+
+// If pet is a Bird, sound will be undefined
+</CodeBlock>
+
+## Type Guards with `is`
+
+Matchbox provides built-in type guards with the `is` method:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const Response = matchboxFactory({
+  Success: (data: any) => ({ data }),
+  Error: (error: Error) => ({ error })
+});
+
+const response = Response.Success({ id: 123 });
+
+if (response.is('Success')) {
+  // TypeScript knows this is a Success variant
+  console.log(response.data.data.id); // 123
+}
+
+if (response.is('Error')) {
+  // TypeScript knows this is an Error variant
+  console.log(response.data.error.message);
+}
+
+// Type guard in a function parameter
+function handleSuccess(response: ReturnType<typeof Response[keyof typeof Response]>) {
+  if (response.is('Success')) {
+    return response.data.data;
+  }
+  throw new Error('Not a success response');
+}
+</CodeBlock>
+
+## Type Assertion with `as`
+
+The `as` method lets you assert a variant's type:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+const UserState = matchboxFactory({
+  LoggedIn: (user: { id: string; name: string }) => ({ user }),
+  LoggedOut: () => ({}),
+  Loading: () => ({})
+});
+
+function getUsername(state: ReturnType<typeof UserState[keyof typeof UserState]>) {
+  try {
+    // Will throw if not a LoggedIn state
+    const loggedIn = state.as('LoggedIn');
+    return loggedIn.data.user.name;
+  } catch (e) {
+    return 'Guest';
+  }
+}
+
+const state1 = UserState.LoggedIn({ id: '1', name: 'Alice' });
+const state2 = UserState.LoggedOut();
+
+console.log(getUsername(state1)); // 'Alice'
+console.log(getUsername(state2)); // 'Guest'
+</CodeBlock>
+
+## Creating Matchboxes from String Arrays
+
+You can create a simple matchbox from a string array:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory } from 'matchina';
+
+// Create a matchbox where each variant just carries the data it's given
+const Fruit = matchboxFactory(['Apple', 'Banana', 'Orange']);
+
+const apple = Fruit.Apple({ color: 'red', sweet: true });
+const banana = Fruit.Banana('yellow and sweet');
+
+console.log(apple.tag); // 'Apple'
+console.log(apple.data); // { color: 'red', sweet: true }
+
+console.log(banana.tag); // 'Banana'
+console.log(banana.data); // 'yellow and sweet'
+</CodeBlock>
+
+## defineStates: Matchbox for State Machines
+
+Matchina provides a specialized matchbox factory called `defineStates` specifically designed for creating state machine states:
+
+<CodeBlock twoslash={true} lang="ts">
+import { defineStates } from 'matchina';
+
+// Define states for a login flow
+const loginStates = defineStates({
+  Idle: () => ({}),
+  Authenticating: (username: string) => ({ username }),
+  Success: (user: { id: string; name: string }) => ({ user }),
+  Failed: (error: string) => ({ error })
+});
+
+// Create a state
+const authState = loginStates.Authenticating('alice@example.com');
+
+// Note: the tag property is 'key' instead of 'tag'
+console.log(authState.key); // 'Authenticating'
+console.log(authState.data.username); // 'alice@example.com'
+
+// Pattern matching works the same way
+const message = authState.match({
+  Idle: () => 'Please log in',
+  Authenticating: ({ username }) => `Authenticating ${username}...`,
+  Success: ({ user }) => `Welcome, ${user.name}!`,
+  Failed: ({ error }) => `Login failed: ${error}`
+});
+
+console.log(message); // 'Authenticating alice@example.com...'
+</CodeBlock>
+
+## Advanced Usage
+
+### Composing Matchboxes
+
+You can combine multiple matchboxes:
+
+<CodeBlock twoslash={true} lang="ts">
+import { matchboxFactory, factoryFromMembers } from 'matchina';
+
+// Create two separate matchboxes
+const UserEvents = matchboxFactory({
+  Login: (username: string, password: string) => ({ username, password }),
+  Logout: () => ({})
+});
+
+const SystemEvents = matchboxFactory({
+  Startup: () => ({}),
+  Shutdown: () => ({})
+});
+
+// Combine them into a single matchbox
+const AllEvents = factoryFromMembers({
+  ...UserEvents,
+  ...SystemEvents
+});
+
+// Now you can create any event
+const loginEvent = AllEvents.Login('user', 'pass');
+const startupEvent = AllEvents.Startup();
+
+// And match on them
+function handleEvent(event: ReturnType<typeof AllEvents[keyof typeof AllEvents]>) {
+  return event.match({
+    Login: ({ username }) => `User ${username} logging in`,
+    Logout: () => 'User logging out',
+    Startup: () => 'System starting up',
+    Shutdown: () => 'System shutting down'
+  });
+}
+</CodeBlock>
+
+## Conclusion
+
+Matchbox provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than using plain TypeScript discriminated unions.
+
+The key advantages are:
+- Factory functions for creating properly typed variants
+- Exhaustive pattern matching
+- Built-in type guards and assertions
+- Excellent type inference
+
+This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.
