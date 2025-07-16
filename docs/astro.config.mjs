@@ -80,7 +80,7 @@ export default defineConfig({
           label: "Machines",
           items: [
             {
-              label: "State Factory Machines",
+              label: "Creating Machines",
               link: "/guides/machines",
             },
             {
@@ -102,35 +102,36 @@ export default defineConfig({
           ],
         },
         {
+          label: "Extensions",
+          items: [
+            {
+              label: "API Wrappers",
+              link: "/guides/hooks",
+            },
+            {
+              label: "Timsy Integration",
+              link: "/guides/timsy",
+            }
+          ],
+        },
+        {
           label: "How To",
           items: [
             {
-              label: "Context",
-              link: "/guides/context",
+              label: "Type Inference",
+              link: "/guides/typescript-inference",
             },
             {
               label: "Type Guards",
               link: "/guides/typeguards",
             },
             {
-              label: "TypeScript Tips",
-              link: "/guides/typescript-inference",
-            },
-            {
               label: "Tagged Unions",
               link: "/guides/union-machines",
             },
             {
-              label: "Timsy Integration",
-              link: "/guides/timsy",
-            },
-            {
-              label: "Hooks API",
-              link: "/guides/hooks",
-            },
-            {
-              label: "Extras",
-              link: "/guides/extras",
+              label: "Context",
+              link: "/guides/context",
             }
           ],
         },
