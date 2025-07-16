@@ -12,9 +12,58 @@ Technically "MatchboxFactory" is not a thing. So it's a confusing title imo. The
 
 The ordering of the docs sucks and i think copilot has not been good so far at taking a holistic view and emphasizing good quality organization, flow, content length and readability. I think copilot errs on the side of making things too long. but at this point I think it's lost the plot. Hence this restart. It is idiotic to put the matchbox factory stuff at the end of the guide section when it is the foundational thing for the lib. Absurd. Review the docs, think about how the flow ought to work at a high level. 
 
-I want you to approach this thoughtfully. Start with an outline. Maybe its Guides and Examples, maybe its more, less. Maybe you reorder. 
+I want to see a quickstart, but then after that we talk about matchbox factories, then states and createMachine. And then use a sort of core -> non-core progression. MatchboxFactory and Matchbox (Tagged Union) are duplicative. there was supposed to be an interestig thing about how to implement a state machine using matchboxes for states and events, but I think copilot fucked it up. 
 
-I want to see a quickstart, but then after that we talk about matchbox factories, then states and createMachine. 
+I am looking for better sidebar groupings. Guides is kinda dumb IMO. what is idiomatic? Is it "guides" and "examples"? nothing else?.
+
+ # Working: Doc Structure
+
+# Proposed Documentation Structure for Matchina
+
+Based on your feedback and the DOCS-ANALYSIS document, here's a more aligned structure:
+
+## Main Navigation
+
+1. **Quickstart**
+   * Brief introduction to Matchina
+   * Installation
+   * Basic example of pattern matching
+   * How to import and use core functions
+2. **Core Concepts**
+   * **Matchbox Factories** (fundamental building block)
+     * Creating typed matchboxes with `matchboxFactory()`
+     * Pattern matching with discriminated unions
+     * Type inference capabilities
+   * **States**
+     * Using `defineStates()` (wrapper around matchboxFactory)
+     * State patterns and structure
+   * **Machines**
+     * `createMachine(states, transitions)`
+     * Transition definitions, types of transitions 
+     * Event handling with typed payloads
+3. **Machine Setup**
+   * `setup(machine)(...enhancers)` 
+   * `onLifecycle(machine, stateAndEventHookConfig)`
+   * **API Wrappers**
+   * `createApi(machine)`
+   * `zen(machine)`
+   * `facade(machine)` - don't bother. deprecated. prefer zen (imo)
+   * When to use each approach
+
+4. **Examples**
+
+   * Basic Examples
+
+     * Simple state machine
+     * Pattern matching with tagged unions
+   * Advanced Examples
+
+     * Complex state flows
+     * Combining with React/frameworks
+     * Custom extensions
+
+
+
 
 # Documentation Analysis and Status
 
@@ -103,3 +152,92 @@ Our approach to documentation follows these principles:
 3. Add any missing cross-references between related content
 
 By addressing these items, we'll complete the documentation refactoring project and provide a high-quality, consistent, and helpful set of documentation for Matchina users.
+
+# Documentation Analysis: Examples and Structure
+
+Let me review the examples, identify patterns, and analyze their structure to help streamline the documentation.
+
+## Examples Analysis Grid
+
+Searched for files matching `**/examples/*.mdx`, 19 matches
+
+Let me examine some examples to understand their structure and identify patterns:
+
+Read [toggle.mdx](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), lines 1 to 30
+
+Read [toggle.mdx](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), lines 70 to 100
+
+Read [fetcher-basic.mdx](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), lines 1 to 30
+
+Read [index.tsx](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), lines 1 to 16
+
+Searched text for `MachineExampleWithChart` (`**/examples/**/*.tsx`), 20 results
+
+Let me check a few more examples to look for API patterns:
+
+Searched text for `createMachine` (`**/examples/**/*.ts*`), 20 results
+
+Searched text for `zen|facade|createApi` (`**/examples/**/*.ts*`), 20 results
+
+Based on my analysis, I've compiled the following grid of examples and their characteristics:
+
+## Example Analysis Grid
+
+| Example                | Has Demo/Diagram       | Uses MachineExampleWithChart | APIs Used                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Issues                                  |
+| :--------------------- | :--------------------- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------- |
+| Toggle                 | No                     | No                           | `matchbox`, `matchina`                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Verbose explanation, redundant code     |
+| Traffic Light          | Yes (TrafficLightDemo) | No                           | [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html)                                                                                                                                                                                                                                                                                                                             | Good example, but could be streamlined  |
+| Counter                | No                     | No                           | `matchina`                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Basic example, lacks visualization      |
+| Rock-Paper-Scissors    | Yes                    | Yes                          | [createMachine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), [defineStates](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), [zen](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) | Good structured example                 |
+| Form Validation        | No                     | No                           | `matchina`                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Lacks visualization                     |
+| Stopwatch              | Yes                    | Yes                          | Various                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Multiple redundant variants             |
+| Stopwatch (with Hooks) | Yes                    | Yes                          | [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), hooks                                                                                                                                                                                                                                                                                                                      | Redundant with other stopwatch examples |
+| Stopwatch (Transition) | Yes                    | Yes                          | [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), transitions                                                                                                                                                                                                                                                                                                                | Redundant with other stopwatch examples |
+| Stopwatch (Effects)    | Yes                    | Yes                          | Various                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Redundant with other stopwatch examples |
+| Auth Flow              | No                     | No                           | Various                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Complex example without visualization   |
+| Fetch - Simple         | Yes                    | No                           | [createApi](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), hooks                                                                                                                                                                                                                                                                                                                   | Uses custom component structure         |
+| Fetcher - Basic        | Yes                    | Yes                          | [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), effects                                                                                                                                                                                                                                                                                                                    | Good structured example                 |
+| Fetcher - Advanced     | Yes                    | Yes                          | [createMachine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), etc.                                                                                                                                                                                                                                                                                                                | Good structured example                 |
+| Paren Checker          | No                     | No                           | [createMachine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), [zen](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html)                                                                                                                                                                | Lacks visualization                     |
+| Checkout               | No                     | No                           | Multiple machines                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Complex without visualization           |
+
+## Key Issues Identified
+
+1. **Inconsistent Visualization**: Some examples use [MachineExampleWithChart](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), others use custom components, and some have no visualization at all.
+2. **Redundant Code**: Many examples show the "Full Code" section after already showing individual snippets, creating duplication.
+3. **Too Many Stopwatch Variants**: There are at least 5 different stopwatch examples showing slight variations that could be consolidated.
+4. **Inconsistent API Usage**: Some examples use [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), others use [createMachine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) + [zen](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html), and others use `matchina` directly.
+5. **Verbose Explanations**: Many examples have lengthy explanations that repeat concepts already covered in the guides.
+6. **Missing Diagrams**: Several complex examples (Auth Flow, Checkout) would benefit from state diagrams but don't have them.
+
+## Recommendations for Each Example Type
+
+### Basic Examples (Toggle, Counter, Traffic Light)
+
+* Use consistent visualization with [MachineExampleWithChart](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html)
+* Focus on a single concept per example
+* Limit explanation to 2-3 key points
+* Remove redundant "Full Code" sections
+
+### Intermediate Examples (Fetch, Auth Flow)
+
+* Add visualizations to all examples
+* Standardize on either [facade](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) or [createMachine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) + [zen](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) pattern
+* Focus on the unique aspects of each example
+* Use tabs to separate concerns rather than linear explanation
+
+### Advanced Examples (Stopwatch variants, Checkout)
+
+* Consolidate redundant examples (especially stopwatches)
+* Create a single "Stopwatch" with tabs for different implementation approaches
+* Add visualizations to complex examples
+* Use comparison tables instead of verbose explanations
+
+## Teaching Strategy for Concepts
+
+1. **State Machines**: Start with visual diagram → show state definition → show transitions → demonstrate usage (in that order)
+2. **Pattern Matching**: Show problem statement → demonstrate match syntax → show alternative approaches → explain type safety
+3. **Lifecycle & Hooks**: Show simple "before/after" examples → demonstrate hook API → show real-world use case
+4. **Promise Handling**: Show problem statement → demonstrate promise state machine → show error handling → show integration
+
+By following these approaches, we can significantly reduce the documentation length while making it more effective for learning.

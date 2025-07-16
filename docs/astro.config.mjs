@@ -51,14 +51,36 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: "Guides",
+          label: "Introduction",
           items: [
             {
               label: "Quickstart",
               link: "/guides/quickstart",
             },
             {
+              label: "What's in the Box",
+              link: "/guides/inside",
+            }
+          ],
+        },
+        {
+          label: "Core Concepts",
+          items: [
+            {
+              label: "Matchbox Factories",
+              link: "/guides/matchbox",
+            },
+            {
               label: "State Machines",
+              link: "/guides/machines",
+            }
+          ],
+        },
+        {
+          label: "Machines",
+          items: [
+            {
+              label: "State Factory Machines",
               link: "/guides/machines",
             },
             {
@@ -66,20 +88,8 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
-              label: "Type Guards",
-              link: "/guides/typeguards",
-            },
-            {
-              label: "TypeScript Inference",
-              link: "/guides/typescript-inference",
-            },
-            {
               label: "Lifecycle & Hooks",
               link: "/guides/lifecycle",
-            },
-            {
-              label: "Context",
-              link: "/guides/context",
             },
             {
               label: "Effects",
@@ -88,82 +98,139 @@ export default defineConfig({
             {
               label: "React Integration",
               link: "/guides/integrations",
+            }
+          ],
+        },
+        {
+          label: "How To",
+          items: [
+            {
+              label: "Context",
+              link: "/guides/context",
+            },
+            {
+              label: "Type Guards",
+              link: "/guides/typeguards",
+            },
+            {
+              label: "TypeScript Tips",
+              link: "/guides/typescript-inference",
+            },
+            {
+              label: "Tagged Unions",
+              link: "/guides/union-machines",
+            },
+            {
+              label: "Timsy Integration",
+              link: "/guides/timsy",
             },
             {
               label: "Hooks API",
               link: "/guides/hooks",
             },
             {
-              label: "MatchboxFactory",
-              link: "/guides/matchbox",
-            },
-            {
-              label: "Matchbox (Tagged Unions)",
-              link: "/guides/union-machines",
-            },
+              label: "Extras",
+              link: "/guides/extras",
+            }
           ],
         },
         {
           label: "Examples",
           items: [
             {
-              label: "Toggle",
-              link: "/examples/toggle",
+              label: "Basic",
+              items: [
+                {
+                  label: "Toggle",
+                  link: "/examples/toggle",
+                },
+                {
+                  label: "Counter",
+                  link: "/examples/counter",
+                },
+                {
+                  label: "Traffic Light",
+                  link: "/examples/traffic-light",
+                },
+                {
+                  label: "Rock-Paper-Scissors",
+                  link: "/examples/rock-paper-scissors",
+                }
+              ]
             },
             {
-              label: "Rock-Paper-Scissors Game",
-              link: "/examples/rock-paper-scissors",
+              label: "Stopwatches",
+              items: [
+                {
+                  label: "Basic Stopwatch",
+                  link: "/examples/stopwatch",
+                },
+                {
+                  label: "With Hooks",
+                  link: "/examples/stopwatch-using-data-and-hooks",
+                },
+                {
+                  label: "With Transition Functions",
+                  link: "/examples/stopwatch-using-data-and-transition-functions",
+                },
+                {
+                  label: "With Effect Hooks",
+                  link: "/examples/stopwatch-using-react-state-and-state-effects",
+                },
+                {
+                  label: "With External React State",
+                  link: "/examples/stopwatch-using-external-react-state-and-state-effects",
+                },
+                {
+                  label: "With Lifecycle",
+                  link: "/examples/stopwatch-using-react-state-using-lifecyle-instead-of-useeffect",
+                }
+              ]
             },
             {
-              label: "Traffic Light",
-              link: "/examples/traffic-light",
+              label: "Fetchers",
+              items: [
+                {
+                  label: "Simple Fetch",
+                  link: "/examples/fetch-simple",
+                },
+                {
+                  label: "Advanced Fetch",
+                  link: "/examples/fetch-plus",
+                },
+                {
+                  label: "Basic Fetcher",
+                  link: "/examples/fetcher-basic",
+                },
+                {
+                  label: "Advanced Fetcher",
+                  link: "/examples/fetcher-advanced",
+                }
+              ]
             },
             {
-              label: "Form Validation",
-              link: "/examples/form",
-            },
-            {
-              label: "Stopwatch",
-              link: "/examples/stopwatch",
-            },
-            {
-              label: "Authentication Flow",
-              link: "/examples/auth-flow",
-            },
-            {
-              label: "Fetch - Simple",
-              link: "/examples/fetch-simple",
-            },
-            {
-              label: "Fetch - Advanced",
-              link: "/examples/fetch-plus",
-            },
-            {
-              label: "Stopwatch (with Hooks)",
-              link: "/examples/stopwatch-using-data-and-hooks",
-            },
-            {
-              label: "Stopwatch (Transition Functions)",
-              link: "/examples/stopwatch-using-data-and-transition-functions",
-            },
-            {
-              label: "Stopwatch (Effect Hooks)",
-              link: "/examples/stopwatch-using-react-state-and-state-effects",
-            },
-            {
-              label: "Paren Checker",
-              link: "/examples/paren-checker",
-            },
-            {
-              label: "Checkout Flow with Multiple Machines",
-              link: "/examples/checkout",
-            },
+              label: "Advanced",
+              items: [
+                {
+                  label: "Form Validation",
+                  link: "/examples/form",
+                },
+                {
+                  label: "Authentication Flow",
+                  link: "/examples/auth-flow",
+                },
+                {
+                  label: "Paren Checker",
+                  link: "/examples/paren-checker",
+                },
+                {
+                  label: "Checkout Flow",
+                  link: "/examples/checkout",
+                }
+              ]
+            }
           ],
         },
-        // {
-        //   label: "Reference",
-        //   autogenerate: { directory: "reference" },
-        // },
       ],
       customCss: [
         "./src/styles/tailwind.css",

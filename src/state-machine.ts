@@ -13,10 +13,8 @@ export interface StateMachineEvent<
   get machine(): StateMachine<StateMachineEvent<To, From>>;
 }
 
+// When resolving, "to" is not known
 export type ResolveEvent<C> = Omit<C, "to">;
-
-export const EmptyTransform = <E>(event: E) => event;
-export const EmptyEffect = <E>(event: E) => {};
 
 export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
   getState(): E["to"] | E["from"];
@@ -34,23 +32,6 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
   notify(ev: E): void;
   after(ev: E): void;
 }
-export type TransitionRecord = {
-  [from: string]: {
-    [type: string]: string | object;
-  };
-};
-export interface TransitionContext {
-  transitions: TransitionRecord;
-}
 
-export function getAvailableActions(
-  transitions: TransitionRecord,
-  state: string,
-) {
-  const entry = transitions[state];
-  return entry ? Object.keys(entry) : [];
-}
 
-// export function getAutoTransition(entry: FactoryMachineTransition<any, any, any>) {
-//   return transitions[state]['']
-// }
+

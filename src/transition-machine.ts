@@ -1,4 +1,16 @@
-import { StateMachineEvent, TransitionRecord, StateMachine, TransitionContext, ResolveEvent, EmptyTransform, EmptyEffect } from "./state-machine";
+import { StateMachineEvent, StateMachine, ResolveEvent } from "./state-machine";
+
+export const EmptyTransform = <E>(event: E) => event;
+export const EmptyEffect = <E>(event: E) => {};
+
+export type TransitionRecord = {
+  [from: string]: {
+    [type: string]: string | object;
+  };
+};
+export interface TransitionContext {
+  transitions: TransitionRecord;
+}
 
 export function createTransitionMachine<E extends StateMachineEvent>(
   transitions: TransitionRecord,

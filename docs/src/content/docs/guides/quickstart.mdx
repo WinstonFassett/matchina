@@ -3,8 +3,8 @@ title: Quick Start
 description: Get started with Matchina in minutes
 ---
 
-import code from "@code/examples/traffic-light/index.tsx?raw";
-import playerCode from "@code/examples/player-with-trackId.ts?raw";
+import machineCode from "@code/examples/traffic-light/machine.ts?raw";
+import componentCode from "@code/examples/traffic-light/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 import { TrafficLightDemo } from "@components/TrafficLightDemo";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -15,289 +15,37 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 npm install matchina
 ```
 
-## Basic Example: Player State Machine
+## Interactive Example: Traffic Light
 
-Let's create a simple music player state machine that demonstrates the core concepts of Matchina:
+Here's a simple traffic light state machine that demonstrates Matchina's core concepts:
 
-```ts
-import { matchina } from "matchina";
+<div className="not-content">
+  <TrafficLightDemo client:visible />
+</div>
 
-// 1. Define states with their associated data types
-const player = matchina(
-  {
-    Idle: undefined,
-    Playing: (trackId: string) => ({ trackId }),
-    Paused: (trackId: string) => ({ trackId }),
-    Stopped: undefined,
-  },
-  // 2. Define transitions - TypeScript infers parameter types
-  {
-    Idle: { 
-      start: (trackId: string) => "Playing" // Parameter type inferred from Playing state
-    },
-    Playing: {
-      pause: "Paused",    // Preserves trackId from Playing state
-      stop: "Stopped"
-    },
-    Paused: {
-      resume: "Playing",  // Preserves trackId from Paused state
-      stop: "Stopped"
-    },
-    Stopped: { 
-      start: (trackId: string) => "Playing" // Parameter type inferred from Playing state
-    },
-  },
-  // 3. Set initial state
-  "Idle"
-);
+## How It Works
 
-// 4. Usage with full type safety:
-player.start("song-123");      // TypeScript knows this needs a trackId
-console.log(player.state.key);  // "Playing"
-
-// 5. Type guards for type narrowing
-if (player.state.is("Playing")) {
-  // TypeScript knows player.state.data has trackId when in Playing state
-  console.log(player.state.data.trackId);  // "song-123"
-}
-
-// 6. Pattern matching with exhaustive checking
-const message = player.state.match({
-  Playing: ({ trackId }) => `Now playing: ${trackId}`,
-  Paused: ({ trackId }) => `Paused: ${trackId}`,
-  Idle: () => "Ready to play",
-  Stopped: () => "Playback stopped"
-});
-```
-
-## Core Concepts
-
-### 1. State Definition
-
-Define all possible states with their associated data types:
-
-```ts
-{
-  Idle: undefined,                              // State with no data
-  Playing: (trackId: string) => ({ trackId }),  // State with trackId data
-  Paused: (trackId: string) => ({ trackId }),   // State with trackId data
-  Stopped: undefined,                           // State with no data
-}
-```
-
-### 2. Transition Definition
-
-Specify valid transitions between states with type-safe parameters:
-
-```ts
-{
-  Idle: { 
-    start: (trackId: string) => "Playing"  // Need trackId to transition to Playing
-  },
-  Playing: {
-    pause: "Paused",                       // Simple transition to Paused state
-    stop: "Stopped"                        // Simple transition to Stopped state
-  }
-  // ...more transitions
-}
-```
-
-### 3. Machine Creation
-
-Initialize the machine with states, transitions, and an initial state:
-
-```ts
-const player = matchina(states, transitions, "Idle");
-```
-
-### 4. Triggering Transitions
-
-Call transition methods with proper parameters:
-
-```ts
-player.start("song-123");  // With parameter
-player.pause();            // No parameter needed
-```
-
-### 5. Checking Current State
-
-Use type guards to check and narrow the current state:
-
-```ts
-if (player.state.is("Playing")) {
-  // TypeScript knows we're in Playing state
-  console.log(player.state.data.trackId);
-}
-```
-
-### 6. Pattern Matching
-
-Handle different states with exhaustive pattern matching:
-
-```ts
-const message = player.state.match({
-  Playing: ({ trackId }) => `Now playing: ${trackId}`,
-  Paused: ({ trackId }) => `Paused: ${trackId}`,
-  Idle: () => "Ready to play",
-  Stopped: () => "Playback stopped"
-});
-```
-
-## Visual Example: Traffic Light
-
-Here's a more visual example: a traffic light state machine with a React UI component:
-
-<TrafficLightDemo client:visible />
+The traffic light example uses just two files:
 
 <Tabs>
   <TabItem label="State Machine">
-    ```tsx
-    import { matchina } from "matchina";
-    
-    // Define machine with states and transitions inline
-    const trafficLight = matchina(
-      {
-        Red: () => "means stop",
-        Yellow: () => "means caution",
-        Green: () => "means go",
-      },
-      {
-        Red: { next: "Green" },
-        Yellow: { next: "Red" },
-        Green: { next: "Yellow" },
-      },
-      "Red"
-    );
-    ```
+    <CodeBlock code={machineCode} lang="ts" />
   </TabItem>
   <TabItem label="React Component">
-    ```tsx
-    import { useMachine } from "matchina/react";
-    
-    export const TrafficLight = () => {
-      // Use the machine in React
-      useMachine(trafficLight);
-      
-      // Use pattern matching to get background color
-      const bgColor = trafficLight.state.match({
-        Red: () => "bg-red-500",
-        Yellow: () => "bg-yellow-500",
-        Green: () => "bg-green-500",
-      });
-      
-      return (
-        <div className="flex flex-col items-center">
-          <div className={`w-20 h-20 rounded-full ${bgColor} mb-4`}></div>
-          <button 
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-            onClick={() => trafficLight.next()}
-          >
-            Next
-          </button>
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-  <TabItem label="Full Code">
-    <CodeBlock lang={"jsx"} code={code} />
+    <CodeBlock code={componentCode} lang="tsx" />
   </TabItem>
 </Tabs>
 
-## TypeScript Inference Best Practices
+## Key Concepts Demonstrated
 
-Matchina is designed to provide excellent TypeScript inference, but there are some patterns that work better than others:
-
-### ✅ Recommended: Define machines using functions
-
-Always define your machines using the `matchina` function with inline state and transition definitions:
-
-```ts
-// Best approach for full TypeScript inference
-const player = matchina(
-  { // States inline
-    Idle: undefined,
-    Playing: (trackId: string) => ({ trackId }),
-    Paused: (trackId: string) => ({ trackId }),
-  },
-  { // Transitions inline
-    Idle: { 
-      start: (trackId: string) => "Playing"
-    },
-    Playing: {
-      pause: "Paused",
-    },
-    Paused: {
-      resume: "Playing",
-    },
-  },
-  "Idle"
-);
-```
-
-### ❌ Avoid: Separating states and transitions as standalone objects
-
-This approach breaks TypeScript inference and loses auto-completion:
-
-```ts
-// Don't do this - breaks TypeScript inference
-const states = {
-  Idle: undefined,
-  Playing: (trackId: string) => ({ trackId }),
-  Paused: (trackId: string) => ({ trackId }),
-};
-
-const transitions = {
-  Idle: { 
-    start: (trackId: string) => "Playing"
-  },
-  // TypeScript won't properly validate these transitions
-  // against the states defined above
-};
-
-const player = matchina(states, transitions, "Idle");
-```
-
-### ✅ Alternative: Using matchbox for reusable state definitions
-
-If you need to share state definitions, use the `matchbox` function:
-
-```ts
-import { matchbox, matchina } from "matchina";
-
-const playerStates = matchbox({
-  Idle: undefined,
-  Playing: (trackId: string) => ({ trackId }),
-  Paused: (trackId: string) => ({ trackId }),
-});
-
-// Still define the transitions inline when creating the machine
-const player = matchina(
-  playerStates,
-  {
-    Idle: { 
-      start: (trackId: string) => "Playing"
-    },
-    Playing: {
-      pause: "Paused",
-    },
-    Paused: {
-      resume: "Playing",
-    },
-  },
-  "Idle"
-);
-```
-
-This pattern preserves type inference while allowing state definitions to be reused.
+- **State Definition**: Define states with data
+- **Transition Definition**: Specify allowed state changes
+- **Pattern Matching**: Handle different states with type safety
+- **React Integration**: Use state machines in React components
 
 ## Next Steps
 
-Now that you understand the basics, explore these guides to learn more:
-
-- [Matchbox: Type-Safe Unions](./union-machines/) - Learn about the foundational concept of tagged unions
-- [Factory Machines](./machines/) - Create complete state machines with TypeScript inference
-- [TypeScript Inference Best Practices](./typescript-inference/) - Learn how to maintain full type inference
-- [Type Guards](./typeguards/) - Master type guards for type-safe state handling
-- [Lifecycle & Hooks](./lifecycle/) - Intercept and react to state changes
-- [Promise Machines](./promises/) - Handle async operations with state machines
+- **[State Machines](/guides/machines)** - Learn how to build more complex state machines
+- **[React Integration](/guides/integrations)** - Integrate state machines with React components
+- **[Browse Examples](/examples/toggle)** - Explore practical examples
+- **[Type Guards](/guides/typeguards)** - Understand type-safe state handling
