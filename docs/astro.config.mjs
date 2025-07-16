@@ -96,21 +96,12 @@ export default defineConfig({
               link: "/guides/effects",
             },
             {
-              label: "React Integration",
-              link: "/guides/integrations",
-            }
-          ],
-        },
-        {
-          label: "Extensions",
-          items: [
-            {
               label: "API Wrappers",
-              link: "/guides/hooks",
+              link: "/guides/api-wrappers",
             },
             {
-              label: "Timsy Integration",
-              link: "/guides/timsy",
+              label: "React Integration",
+              link: "/guides/integrations",
             }
           ],
         },
@@ -128,6 +119,14 @@ export default defineConfig({
             {
               label: "Tagged Unions",
               link: "/guides/union-machines",
+            },
+            {
+              label: "Timsy",
+              link: "/guides/timsy",
+            },
+            {
+              label: "Hooks API",
+              link: "/guides/hooks",
             },
             {
               label: "Context",
