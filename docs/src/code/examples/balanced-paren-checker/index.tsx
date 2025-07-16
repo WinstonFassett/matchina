@@ -42,7 +42,7 @@ export function BalancedParenthesesDemo() {
       <textarea value={input} onChange={(ev) => setInput(ev.target.value)} />
       <p>Current State: {checker.state.key}</p>
       {checker.text && <pre>Pending validation:{checker.text}</pre>}
-      {checker.state.is("Group") && (
+      {checker.state.is("Open") && (
         <pre>Expecting {checker.state.data.pair[1]}</pre>
       )}
       <StateMachineMermaidDiagram

@@ -36,29 +36,29 @@ function matchNextPair(str: string) {
   console.log("opening", openPair[0]);
   return [nextMatchIndex, openPair, 0] as const;
 }
-type GroupState = {
-  key: "Group";
+type OpenState = {
+  key: "Open";
   data: {
     pair: Pair;
-    parent?: GroupState;
+    parent?: OpenState;
   };
 };
 export const balancedParenthesesChecker = (initialText?: string) => {
   const states = defineStates({
     Valid: undefined,
-    Group: (pair: Pair, parent?: GroupState) => ({ pair, parent }),
+    Open: (pair: Pair, parent?: OpenState) => ({ pair, parent }),
     Invalid: undefined,
   });
   const machine = createMachine(
     states,
     {
       Valid: {
-        open: "Group",
+        open: "Open",
         invalidClose: "Invalid",
       },
-      Group: {
-        open: "Group",
-        close: "Group",
+      Open: {
+        open: "Open",
+        close: "Open",
         invalidClose: "Invalid",
         valid: "Valid",
       },
@@ -107,7 +107,7 @@ export const balancedParenthesesChecker = (initialText?: string) => {
               if (isOpen) logic.open(nextTokenPair);
               else logic.invalidClose();
               break;
-            case "Group":
+            case "Open":
               if (isOpen) {
                 logic.open(nextTokenPair, state);
               } else {
