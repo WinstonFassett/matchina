@@ -1,0 +1,45 @@
+---
+title: Advanced Fetcher with Retry and Timeout
+---
+
+import FetcherExample from "@code/examples/fetcher-advanced";
+import machineCode from "@code/examples/fetcher-advanced/machine.ts?raw";
+import hooksCode from "@code/examples/fetcher-advanced/hooks.ts?raw";
+import viewCode from "@code/examples/fetcher-advanced/FetcherAppView.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+## Interactive Fetcher Example
+
+<div className="not-content">
+  <FetcherExample client:visible />
+</div>
+
+## About This Example
+
+This example demonstrates an advanced fetcher state machine with robust error handling:
+
+- Automatic retries with exponential backoff
+- Request timeout management
+- Network error detection and recovery
+- Abort capability for canceling requests
+- Detailed state tracking for the entire fetch lifecycle
+
+The advanced fetcher is ideal for real-world applications where network reliability is a concern and users need visibility into the request lifecycle.
+
+## Machine Implementation
+
+<CodeBlock lang="typescript" code={machineCode} />
+
+## Hook Implementation
+
+<CodeBlock lang="typescript" code={hooksCode} />
+
+## Component Implementation 
+
+<CodeBlock lang="tsx" code={viewCode} />
+
+<CardGrid>
+  <LinkCard title="Basic Fetcher Example" href="/examples/fetcher-basic/" />
+  <LinkCard title="Learn About State Effects" href="/guides/effects/" />
+</CardGrid>

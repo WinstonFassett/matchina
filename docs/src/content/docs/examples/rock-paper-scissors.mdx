@@ -4,6 +4,20 @@ description: A game state machine demonstrating state transitions with condition
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import DemoWithMermaid from '@components/DemoWithMermaid';
+import RockPaperScissorsExample from '@code/examples/rock-paper-scissors';
+
+<DemoWithMermaid
+  example={RockPaperScissorsExample}
+  mermaidDiagram={`
+    stateDiagram-v2
+      WaitingForPlayer --> PlayerChose: selectMove
+      PlayerChose --> RoundComplete: computerSelectMove
+      PlayerChose --> GameOver: computerSelectMove
+      RoundComplete --> WaitingForPlayer: nextRound
+      GameOver --> WaitingForPlayer: newGame
+  `}
+/>
 
 ## Introduction
 
