@@ -106,7 +106,7 @@ export default defineConfig({
             },
             {
               label: "Rock-Paper-Scissors Game",
-              link: "/examples/counter",
+              link: "/examples/rock-paper-scissors",
             },
             {
               label: "Traffic Light",

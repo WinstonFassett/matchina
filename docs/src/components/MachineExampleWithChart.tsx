@@ -5,7 +5,7 @@ import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xs
 
 interface MachineExampleWithChartProps {
   machine: any;
-  AppView?: React.ComponentType<{ machine: any }>;
+  AppView?: React.ComponentType<{ machine: any  } & Record<string, any>>;
   showRawState?: boolean;
   title?: string;
 }

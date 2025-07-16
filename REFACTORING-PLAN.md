@@ -32,11 +32,12 @@ Use descriptive, kebab-case names that indicate the pattern being demonstrated:
 ### Standardized Format
 Each example MDX file should follow this format:
 1. Title and metadata
-2. Interactive example at the top (diagram + UI)
-3. Brief description of what the example demonstrates
-4. Key features and concepts explained
-5. Machine implementation code
-6. Component integration code
+2. Import statements for components and raw code
+3. Interactive example with client:visible directive
+4. Brief description of what the example demonstrates
+5. Key features and concepts explained
+6. Machine implementation code
+7. Component integration code
 
 ## 4. Examples to Update
 
@@ -52,7 +53,7 @@ Each example MDX file should follow this format:
 - [x] `fetcher-basic` example
 - [ ] Other fetcher examples
 - [ ] Form examples
-- [ ] Rock-paper-scissors example
+- [x] Rock-paper-scissors example
 - [ ] Checkout example
 - [ ] Any other examples in the codebase
 

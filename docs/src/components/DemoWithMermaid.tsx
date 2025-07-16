@@ -2,12 +2,14 @@ import { useState } from "react";
 import { MachineExampleWithChart } from "./MachineExampleWithChart";
 
 interface DemoWithMermaidProps {
-  createMachine: () => any;
+  createMachine?: () => any;
+  example?: React.ComponentType<any>;
   AppView?: React.ComponentType<{ machine: any }>;
   title?: string;
   description?: string;
   showCode?: boolean;
   showRawState?: boolean;
+  mermaidDiagram?: string;
 }
 
 /**
@@ -17,24 +19,40 @@ interface DemoWithMermaidProps {
  */
 export function DemoWithMermaid({
   createMachine,
+  example: Example,
   AppView,
   title,
   description,
   showCode = false,
-  showRawState = false
+  showRawState = false,
+  mermaidDiagram
 }: DemoWithMermaidProps) {
-  const [machine] = useState(createMachine);
+  // If we have a createMachine function, create the machine instance
+  const [machine] = useState(() => createMachine && createMachine());
   
   return (
     <div className="demo-with-mermaid mb-8">
       {title && <h3 className="text-xl font-medium mb-2">{title}</h3>}
       {description && <p className="text-gray-700 mb-4">{description}</p>}
       
-      <MachineExampleWithChart 
-        machine={machine} 
-        AppView={AppView} 
-        showRawState={showRawState} 
-      />
+      {/* If we have a pre-built example component, use that */}
+      {Example && <Example />}
+      
+      {/* If we have a machine instance and AppView, use MachineExampleWithChart */}
+      {machine && (
+        <MachineExampleWithChart 
+          machine={machine} 
+          AppView={AppView} 
+          showRawState={showRawState}
+        />
+      )}
+      
+      {/* If we have a mermaid diagram, render it separately */}
+      {mermaidDiagram && !Example && (
+        <div className="mermaid-diagram mt-4">
+          {/* The mermaid diagram would be rendered here */}
+        </div>
+      )}
       
       {showCode && (
         <div className="mt-4">

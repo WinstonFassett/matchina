@@ -7,7 +7,9 @@ import { MachineExampleWithChart } from '@components/MachineExampleWithChart';
 // Main export for importing in MDX documentation
 export default function RockPaperScissorsExample() {
   // Create the machine
-  const machine = useMemo(() => createRPSMachine(), []);
+  const game = useMemo(() => createRPSMachine(), []);
+  
+  const { machine } = game;
   
   // Use the machine in React
   useMachine(machine);
@@ -18,10 +20,10 @@ export default function RockPaperScissorsExample() {
 // Named export for backward compatibility
 export function RockPaperScissors() {
   // Create the machine
-  const machine = useMemo(() => createRPSMachine(), []);
+  const game = useMemo(() => createRPSMachine(), []);
   
   // Use the machine in React
-  useMachine(machine);
+  useMachine(game.machine);
   
-  return <RPSAppView machine={machine} />;
+  return <RPSAppView machine={game} />;
 }

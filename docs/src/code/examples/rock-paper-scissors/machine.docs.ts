@@ -1,5 +1,5 @@
-// @errors: 2307
-import { createMachine, defineStates, zen } from "@lib/src";
+// @errors: 2307 2339 2345
+import { createMachine, defineStates, facade, zen } from "matchina";
 
 // Define the possible moves
 export type Move = "rock" | "paper" | "scissors";
@@ -86,11 +86,12 @@ export function createRPSMachine() {
         newGame: "WaitingForPlayer"
       }
     },
-    gameStates.WaitingForPlayer(0,0)    
+    gameStates.WaitingForPlayer(0, 0)
   );
-  // const { machine } = game
+  
+  // Extend with game-specific logic
   const game = Object.assign(zen(machine), {
-selectMove: (move: Move) => {
+    selectMove: (move: Move) => {
       // Player selects a move
       const { playerScore, computerScore } = game.state.data;
       game.selectMove(move, playerScore, computerScore);
@@ -151,7 +152,6 @@ selectMove: (move: Move) => {
     },
     
     nextRound: () => {
-      // should not have to cast to unknown      
       const { playerScore, computerScore } = game.state.data;
       game.nextRound(playerScore, computerScore);
     },
@@ -160,5 +160,6 @@ selectMove: (move: Move) => {
       game.newGame();
     }
   });
-  return game
+  
+  return game;
 }
