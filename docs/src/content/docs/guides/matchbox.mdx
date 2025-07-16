@@ -1,6 +1,16 @@
 ---
-title: Matchbox (Tagged Unions)
-description: "Matchbox: a powerful tagged union system with complete type inference"
+title: MatchboxFactory
+description: "A powerful typed factory for creating tagged ## Conclusion
+
+The `matchboxFactory` provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than using plain TypeScript discriminated unions.
+
+The key advantages are:
+- Factory functions for creating properly typed tagged union instances
+- Exhaustive pattern matching
+- Built-in type guards and assertions
+- Excellent type inference
+
+This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.ypeScript"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -18,9 +28,7 @@ import defaultCaseRaw from '../../../code/examples/matchbox-usage/default-case.t
 import nonExhaustiveRaw from '../../../code/examples/matchbox-usage/non-exhaustive.ts?raw';
 import typeGuardsRaw from '../../../code/examples/matchbox-usage/type-guards.ts?raw';
 
-# Matchbox: Tagged Unions
-
-Matchbox is a powerful system for creating and working with tagged unions in TypeScript, providing type-safe pattern matching, exhaustiveness checking, and comprehensive type inference.
+The `matchboxFactory` function creates factories for working with tagged unions in TypeScript, providing type-safe pattern matching, exhaustiveness checking, and comprehensive type inference.
 
 ## What are Tagged Unions?
 
@@ -28,31 +36,31 @@ Tagged unions (also known as discriminated unions or sum types) are a powerful w
 
 <CodeBlock code={tsNativeUnionRaw} lang="ts" twoslash={true} />
 
-## Why Matchbox?
+## Why MatchboxFactory?
 
-While TypeScript has built-in support for discriminated unions, Matchbox adds powerful capabilities:
+While TypeScript has built-in support for discriminated unions, the `matchboxFactory` system adds powerful capabilities:
 
-1. **Factory Functions** - Create instances of union variants with proper typing
+1. **Factory Functions** - Create tagged union instances with proper typing
 2. **Pattern Matching** - Match against union variants with exhaustiveness checking
 3. **Type Predicates** - Built-in type guards with the `is` method
 4. **Type Assertion** - Convert between variants with the `as` method
 5. **Complete Type Inference** - Full inference with minimal type annotations
 
-## Creating a Matchbox
+## Creating a Factory
 
-You can create a matchbox using the `matchboxFactory` function:
+You can create a factory using the `matchboxFactory` function. This factory then provides functions to create individual tagged union instances:
 
 <CodeBlock code={lightBasicRaw} lang="ts" twoslash={true} />
 
 ## Pattern Matching
 
-The most powerful feature of Matchbox is exhaustive pattern matching with the `match` method:
+The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
 
 <CodeBlock code={lightPatternMatchingRaw} lang="ts" twoslash={true} />
 
 ## Type Guards
 
-Matchbox provides automatic type narrowing with the `is` method:
+Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
 
 <CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
 
@@ -82,7 +90,7 @@ By default, the tag property is named `tag`, but you can customize it:
 
 ## Advanced Pattern Matching
 
-Matchbox can handle complex scenarios with nested data:
+Tagged unions created with `matchboxFactory` can handle complex scenarios with nested data:
 
 <CodeBlock code={lightAdvancedMatchingRaw} lang="ts" twoslash={true} />
 
