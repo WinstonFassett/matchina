@@ -12,6 +12,10 @@ Technically "MatchboxFactory" is not a thing. So it's a confusing title imo. The
 
 The ordering of the docs sucks and i think copilot has not been good so far at taking a holistic view and emphasizing good quality organization, flow, content length and readability. I think copilot errs on the side of making things too long. but at this point I think it's lost the plot. Hence this restart. It is idiotic to put the matchbox factory stuff at the end of the guide section when it is the foundational thing for the lib. Absurd. Review the docs, think about how the flow ought to work at a high level. 
 
+I want you to approach this thoughtfully. Start with an outline. Maybe its Guides and Examples, maybe its more, less. Maybe you reorder. 
+
+I want to see a quickstart, but then after that we talk about matchbox factories, then states and createMachine. 
+
 # Documentation Analysis and Status
 
 ## Overview
