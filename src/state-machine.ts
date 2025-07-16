@@ -32,6 +32,3 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
   notify(ev: E): void;
   after(ev: E): void;
 }
-
-
-

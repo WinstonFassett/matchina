@@ -72,7 +72,7 @@ export default defineConfig({
             },
             {
               label: "State Machines",
-              link: "/guides/machines",
+              link: "/guides/state-machine-interface",
             }
           ],
         },
