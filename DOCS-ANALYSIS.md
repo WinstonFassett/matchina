@@ -1,3 +1,17 @@
+# Intro by me, the actual SWE
+
+I had to prune this so the numbers are off.
+
+I need you to understand this library in order to fucking help. 
+
+The whole idea is that Matchbox Factories created by `matchboxFactory` provide excellent type support for parameterized tagged unions with typed payloads. And that is very useful for state machines. 
+
+Fundamentally this lib provides matchboxFactory() to create matchbox factories and functions to create state machines. defineStates is a matchboxFactory wrapper that always uses the `key` property for the discriminator. createMachine(states, transitions) is very strongly typed utility function that, given typed state matchboxFactory, can provide excellent typig for transitions that define entry and exit states and can also have functional overrides for typed events that carry typed data payloads. The machines are implemented internally by createTransitionMachine which actually satisfies the StateMachine interface but is itself agnostic of how to create states. For machines, we provide createApi(machine), zen(machine) and facade(machine) which can create more convenient wrappers for interacting with machines and sending events by calling methods. And we provide a ton of extensibility mechanisms that basically override the core methods of the inner state/transition machine. We haven't even gotten into the ext stuff and we don't really need to yet imo as it is sort of implementation detail. But we provide hooks and lifecycle mechanisms that are very strongly typed. Basically with this lib you should never have to use TS to cast any types in order to access strong typed payloads. Code ends up looking pretty clean imo in terms of type declarations. 
+
+Technically "MatchboxFactory" is not a thing. So it's a confusing title imo. There is only a function, `matchboxFactory` which might be called createMatchboxFactory(). Anyway the doc title MatchboxFactory is weird. Would be better to call it Matchbox Factories, with a space.
+
+The ordering of the docs sucks and i think copilot has not been good so far at taking a holistic view and emphasizing good quality organization, flow, content length and readability. I think copilot errs on the side of making things too long. but at this point I think it's lost the plot. Hence this restart. It is idiotic to put the matchbox factory stuff at the end of the guide section when it is the foundational thing for the lib. Absurd. Review the docs, think about how the flow ought to work at a high level. 
+
 # Documentation Analysis and Status
 
 ## Overview
