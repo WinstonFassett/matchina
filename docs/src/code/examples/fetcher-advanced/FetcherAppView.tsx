@@ -1,6 +1,6 @@
 import { createApi } from "matchina";
 import { useMemo } from "react";
-import { MachineActions } from "../../../components/MachineActions";
+import { MachineActions } from "../lib/MachineActions";
 
 interface FetcherAppViewProps {
   machine: any; // We'd ideally type this properly with the fetcher type
