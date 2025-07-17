@@ -231,6 +231,19 @@ export default defineConfig({
             }
           ],
         },
+        {
+          label: "Appendix",
+          items: [
+            {
+              label: "Timsy Inspiration",
+              link: "/guides/timsy",
+            },
+            {
+              label: "Unions as Machines",
+              link: "/guides/unions-as-machine",
+            }
+          ],
+        },
       ],
       customCss: [
         "./src/styles/tailwind.css",
