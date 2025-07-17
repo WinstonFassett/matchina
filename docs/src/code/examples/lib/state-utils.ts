@@ -11,6 +11,7 @@ export function getStateValues<S extends AnyStatesFactory>(states: S) {
 
 export function resolveState<S extends AnyStatesFactory>(
   states: AnyStatesFactory,
+  from: string,
   entry: TransitionEntry<any>
 ): FactoryState<S> {
   if (typeof entry === "string") {
@@ -19,9 +20,14 @@ export function resolveState<S extends AnyStatesFactory>(
   if (typeof entry === "function") {
     let funcOrState = entry();
     if (typeof funcOrState === "function") {
-      funcOrState = funcOrState();
+      const fromState = states[from]({} as any);
+      const event = {
+        type: fromState.key,
+        from: fromState,
+      }
+      funcOrState = funcOrState(event);
     }
-    return resolveState(states, funcOrState);
+    return resolveState(states, from, funcOrState);
   }
   return entry as any;
 }

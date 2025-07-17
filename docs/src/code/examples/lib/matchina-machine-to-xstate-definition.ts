@@ -5,10 +5,10 @@ import { getStateValues, resolveState } from "./state-utils";
 export function getXStateDefinition<
   F extends FactoryMachine<{ states: States<any>; transitions: any; }>
 >(machine: F) {
-  const state = machine.getState();
+  const initialState = machine.getState();
   const stateValues = getStateValues(machine.states);
   const definition = {
-    initial: state.key,
+    initial: initialState.key,
     states: {} as any,
     // on: {} as any, 
   };
@@ -26,10 +26,11 @@ export function getXStateDefinition<
   // })
   Object.entries(machine.transitions as object).forEach(
     ([from, stateEvents]) => {
-      Object.entries(stateEvents as object).forEach(([event, to]) => {
+      Object.entries(stateEvents as object).forEach(([event, entry]) => {
         definition.states[from].on[event] = resolveState(
           machine.states,
-          to
+          from,
+          entry,
         ).key;
       });
     }

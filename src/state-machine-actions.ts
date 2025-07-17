@@ -1,4 +1,4 @@
-import { TransitionRecord } from "./state-machine";
+import { TransitionRecord } from "./transition-machine";
 
 
 export function getAvailableActions(
