@@ -1,11 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, type ComponentType } from "react";
 import { createApi } from "@lib/src";
+import type { FactoryMachine, FactoryState } from "@lib/src";
 import StateMachineMermaidDiagram from "./MachineViz";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
+import { useMachine } from "@lib/src/integrations/react";
 
-interface MachineExampleWithChartProps {
-  machine: any;
-  AppView?: React.ComponentType<{ machine: any  } & Record<string, any>>;
+interface MachineExampleWithChartProps<T = any> {
+  machine: FactoryMachine<any> & T;
+  AppView?: ComponentType<{ 
+    machine: FactoryMachine<any> & T;
+  } & Record<string, any>>;
   showRawState?: boolean;
   title?: string;
 }
@@ -15,22 +19,24 @@ interface MachineExampleWithChartProps {
  * and optional custom app view. Used to create consistent interactive examples
  * throughout the documentation.
  */
-export function MachineExampleWithChart({ 
+export function MachineExampleWithChart<T = any>({ 
   machine, 
   AppView, 
   showRawState = false,
   title
-}: MachineExampleWithChartProps) {
+}: MachineExampleWithChartProps<T>) {
+  useMachine(machine);
+  const currentState = machine.getState();
   // Get the XState definition for the Mermaid diagram
   const config = useMemo(
-    () => getXStateDefinition(machine.machine),
-    [machine.machine]
+    () => getXStateDefinition(machine),
+    [machine]
   );
 
   // Create an API for the actions
   const actions = useMemo(
-    () => createApi(machine.machine, machine.state.key),
-    [machine.state]
+    () => createApi(machine),
+    [machine]
   );
 
   return (
@@ -44,15 +50,15 @@ export function MachineExampleWithChart({
             <AppView machine={machine} />
           ) : (
             <div className="p-4 border rounded">
-              <p className="text-sm text-gray-500">Default View</p>
-              <div className="text-lg font-bold">{machine.state.key}</div>
+              <p className="text-sm text-gray-500">Current State</p>
+              <div className="text-lg font-bold">{currentState.key}</div>
               <div className="mt-2">
                 {Object.keys(actions).map(action => (
                   !action.startsWith('_') && (
                     <button
                       key={action}
                       className="mr-2 mb-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
-                      onClick={() => (machine as any)[action]()}
+                      onClick={() => machine.send(action)}
                     >
                       {action}
                     </button>
@@ -67,7 +73,7 @@ export function MachineExampleWithChart({
         <div className="flex-1">
           <StateMachineMermaidDiagram
             config={config}
-            stateKey={machine.state.key}
+            stateKey={currentState.key}
             actions={actions}
           />
         </div>
@@ -78,8 +84,8 @@ export function MachineExampleWithChart({
         <div className="mt-4">
           <details>
             <summary className="cursor-pointer text-sm">Show State Data</summary>
-            <pre className="text-xs mt-2 p-2 bg-gray-100 rounded">
-              {JSON.stringify(machine.state.data, null, 2)}
+            <pre className="text-xs mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+              {JSON.stringify(currentState.data, null, 2)}
             </pre>
           </details>
         </div>

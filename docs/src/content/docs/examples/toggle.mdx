@@ -3,53 +3,40 @@ title: Toggle State Machine
 description: A basic on/off toggle state machine example
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ToggleExample from "@code/examples/toggle";
+import machineCode from "@code/examples/toggle/machine.ts?raw";
+import indexCode from "@code/examples/toggle/index.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
 
-## Introduction
+A simple toggle state machine that switches between `On` and `Off` states, demonstrating the most basic state machine pattern with two states and direct transitions between them.
 
-This example demonstrates a simple toggle state machine that switches between `On` and `Off` states. It shows the fundamental concepts of state machines with minimal complexity.
+<div className="not-content">
+  <ToggleExample client:visible />
+</div>
 
-## State Definition
+## Implementation Details
 
-We start by defining the states for our toggle machine:
+This example demonstrates the core concepts of state machines in Matchina:
 
-```ts
-import { matchbox, matchina } from "matchina";
+- Two simple states (`On` and `Off`) with no additional data
+- Direct transitions between states using string references
+- Built-in pattern matching for conditional rendering
 
-// Define the states
-const toggleStates = matchbox({
-  On: () => ({}),
-  Off: () => ({})
-});
-```
+The implementation uses the `facade` function which combines state and transition definitions into a simple state machine.
 
-Here we've defined two states, `On` and `Off`, neither of which need any additional data.
+## Machine Code
 
-## Transitions
+<CodeBlock lang="typescript" code={machineCode} />
 
-Next, we define the transitions between these states. Since we want to maintain full TypeScript inference, we'll define the transitions inline when creating the machine.
+## Component Integration
 
-## Creating the Machine
+<CodeBlock lang="jsx" code={indexCode} />
 
-Now we can create the state machine by combining the states, transitions, and setting the initial state:
+## Additional Notes
 
-```ts
-// Create the toggle machine with inline transitions
-const toggleMachine = matchina(
-  toggleStates,
-  {
-    On: {
-      toggle: "Off",
-      turnOff: "Off"
-    },
-    Off: {
-      toggle: "On",
-      turnOn: "On"
-    }
-  },
-  "Off" // Initial state
-);
-```
+- The toggle example is often used as the "Hello World" of state machines
+- The visual component uses conditional styling based on the current state
+- You can trigger transitions using either the generic `toggle` method or the specific `turnOn`/`turnOff` methods
 
 ## Usage
 
