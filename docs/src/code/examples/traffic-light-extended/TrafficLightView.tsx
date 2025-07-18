@@ -2,15 +2,18 @@ import { useMachine } from "@lib/src/integrations/react";
 import { walkDuration, type ExtendedTrafficLightMachine } from "./machine";
 import { useEffect, useState } from "react";
 
-// Custom blinking style
-const blinkingStyle = {
-  animation: 'blink 1s ease-in-out infinite',
-  '@keyframes blink': {
-    '0%': { opacity: 1 },
-    '50%': { opacity: 0.3 },
-    '100%': { opacity: 1 },
-  },
-};
+// Simple interval effect hook
+function useIntervalEffect(effect: () => void, ms: number | null) {
+  useEffect(() => {
+    if (ms === null) return;
+    
+    // Start the interval
+    const id = setInterval(effect, ms);
+    
+    // Return cleanup function
+    return () => clearInterval(id);
+  }, [effect, ms]);
+}
 
 export const ExtendedTrafficLightView = ({
   machine
@@ -28,61 +31,47 @@ export const ExtendedTrafficLightView = ({
   const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
   const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
   const [isBlinking, setIsBlinking] = useState(false);
+  const [walkBlinking, setWalkBlinking] = useState(true);
 
   const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
   
-  // Handle the pedestrian walk warning
+  // Set initial walk warning duration
   useEffect(() => {
     if (walkWarningDuration) {
       setWalkTimeRemaining(walkWarningDuration);
-      const timer = setInterval(() => {
-        setWalkTimeRemaining(prev => Math.max(0, prev - 100));
-      }, 100);
-      return () => clearInterval(timer);
     } else {
       setWalkTimeRemaining(0);
     }
   }, [walkWarningDuration]);
   
-  // Handle normal light countdown
+  // Set initial time remaining when state changes
   useEffect(() => {
     setTimeRemaining(currentState.data.duration);
-    if (currentState.data.duration > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining(prev => Math.max(0, prev - 100));
-      }, 100);
-      return () => clearInterval(timer);
-    }
   }, [currentState]);
 
-  // Handle flashing states in the UI
-  useEffect(() => {
-    if (currentState.is("FlashingYellow") || currentState.is("FlashingRed")) {
-      // Set up blinking for flashing states
-      const blinkTimer = setInterval(() => {
-        setIsBlinking(prev => !prev);
-      }, 500); // Blink every 500ms
-      
-      return () => clearInterval(blinkTimer);
-    } else {
-      setIsBlinking(false);
-    }
-  }, [currentState.key]);
+  // Handle light countdown
+  useIntervalEffect(
+    () => setTimeRemaining(prev => Math.max(0, prev - 100)),
+    currentState.data.duration > 0 ? 100 : null
+  );
 
-  // Create a separate blinking effect for walk signal during countdown
-  const [walkBlinking, setWalkBlinking] = useState(true);
-  
-  useEffect(() => {
-    if (walkTimeRemaining > 0) {
-      const blinkTimer = setInterval(() => {
-        setWalkBlinking(prev => !prev);
-      }, 500); // Blink every 500ms
-      
-      return () => clearInterval(blinkTimer);
-    } else {
-      setWalkBlinking(true);
-    }
-  }, [walkTimeRemaining > 0]);
+  // Handle walk countdown
+  useIntervalEffect(
+    () => setWalkTimeRemaining(prev => Math.max(0, prev - 100)),
+    walkTimeRemaining > 0 ? 100 : null
+  );
+
+  // Handle traffic light blinking
+  useIntervalEffect(
+    () => setIsBlinking(prev => !prev),
+    currentState.is("FlashingYellow") || currentState.is("FlashingRed") ? 500 : null
+  );
+
+  // Handle walk signal blinking
+  useIntervalEffect(
+    () => setWalkBlinking(prev => !prev),
+    walkTimeRemaining > 0 ? 500 : null
+  );
 
   return (
     <div className="flex flex-col items-center">
