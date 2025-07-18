@@ -1,70 +1,64 @@
-import { createMachine, defineStates, onLifecycle, withApi } from "matchina";
+import { createMachine, defineStates, enter, onLifecycle, setup, whenState, withApi } from "matchina";
 
 export const createExtendedTrafficLightMachine = () => {
-  // Define states with messages and pedestrian info
+  const pedestrianStates = defineStates({
+    Walk: undefined,
+    DontWalk: undefined
+  })
   const states = defineStates({
-    Green: () => ({ 
-      message: 'Traffic: Go',
-      pedestrianSignal: 'dontWalk',
-      pedestrianRequested: false
+    Green: () => ({
+      message: "Go",
+      duration: 5000, // 5 seconds
+      pedestrian: pedestrianStates.Walk(),
     }),
-    Yellow: () => ({ 
-      message: 'Traffic: Prepare to stop',
-      pedestrianSignal: 'dontWalk',
-      pedestrianRequested: false
+    Yellow: () => ({
+      message: "Prepare to stop",
+      duration: 2000, // 2 seconds
+      pedestrian: pedestrianStates.DontWalk(),
     }),
-    Red: () => ({ 
-      message: 'Traffic: Stop',
-      pedestrianSignal: 'dontWalk',
-      pedestrianRequested: false
+    Red: () => ({
+      message: "Stop",
+      duration: 4000, // 4 seconds
+      pedestrian: pedestrianStates.DontWalk(),
     }),
-    RedWithPedestrian: () => ({ 
-      message: 'Traffic: Stop',
-      pedestrianSignal: 'walk',
-      pedestrianRequested: false
+    RedWithPedestrianRequest: () => ({
+      message: "Stop with pedestrian requesting crossing",
+      duration: 2000, // 4 seconds
+      pedestrian: pedestrianStates.DontWalk(),
     }),
-    PedestrianFlashing: () => ({
-      message: 'Traffic: Stop',
-      pedestrianSignal: 'flashing',
-      pedestrianRequested: false
-    })
   });
-  
-  // Create a machine with transitions
-  const machine = withApi(createMachine(
-    states,
+
+  const machine = Object.assign(
+    withApi(createMachine(
+      states,
+      {
+        Green: { next: "Yellow" },
+        Yellow: { next: "Red" },
+        Red: { 
+          next: "Green",
+          crossingRequested: "RedWithPedestrianRequest",
+        },
+      },
+      "Red",
+    )),
     {
-      Green: { 
-        next: 'Yellow'
+      crossingRequested: false,
+      requestCrossing: () => {
+        machine.crossingRequested = true;
       },
-      Yellow: { 
-        next: 'Red'
-      },
-      Red: { 
-        next: function(s) {
-          return s.data.pedestrianRequested ? states.RedWithPedestrian() : states.Green();
-        }
-      },
-      RedWithPedestrian: {
-        next: 'PedestrianFlashing'
-      },
-      PedestrianFlashing: {
-        next: 'Green'
-      }
     },
-    'Red'
-  ));
-  
-  // Add pedestrian button functionality directly to the machine
-  Object.assign(machine.api, {
-    pedestrianButton: () => {
-      const currentState = machine.getState();
-      currentState.data.pedestrianRequested = true;
-      return currentState;
-    }
-  });
-  
+  );
+  setup(machine)(
+    enter(whenState("Red", (ev) => {
+      if (machine.crossingRequested) {
+        machine.api.crossingRequested()
+        machine.crossingRequested = false;
+      }
+    }))
+  )  
   return machine;
 };
 
-export type ExtendedTrafficLightMachine = ReturnType<typeof createExtendedTrafficLightMachine>;
+export type ExtendedTrafficLightMachine = ReturnType<
+  typeof createExtendedTrafficLightMachine
+>;
