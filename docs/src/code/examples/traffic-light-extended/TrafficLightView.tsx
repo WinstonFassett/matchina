@@ -1,4 +1,5 @@
 import { type ExtendedTrafficLightMachine } from "./machine";
+import { useEffect, useState } from "react";
 
 export const ExtendedTrafficLightView = ({
   machine
@@ -7,10 +8,30 @@ export const ExtendedTrafficLightView = ({
 }) => {
   const currentState = machine.getState();
   const stateMessage = currentState.data.message;
-  const pedestrianMessage = currentState.data.pedestrianMessage;
+  const pedestrianSignal = currentState.data.pedestrianSignal;
   
-  // Is this a pedestrian crossing state?
-  const isPedestrianCrossing = currentState.is("RedWithPedestrian");
+  // For flashing pedestrian signal
+  const [flashVisible, setFlashVisible] = useState(true);
+  
+  // Flash the pedestrian signal when in flashing state
+  useEffect(() => {
+    if (pedestrianSignal === 'flashing') {
+      const interval = setInterval(() => {
+        setFlashVisible(prev => !prev);
+      }, 500); // Flash every 500ms
+      
+      return () => clearInterval(interval);
+    } else {
+      setFlashVisible(true);
+    }
+  }, [pedestrianSignal]);
+  
+  // Determine if pedestrian can cross
+  const showWalkSignal = pedestrianSignal === 'walk' || 
+    (pedestrianSignal === 'flashing' && flashVisible);
+  
+  // Determine if pedestrian button is requesting
+  const pedestrianRequested = currentState.data.pedestrianRequested;
   
   return (
     <div className="flex flex-col items-center">
@@ -22,7 +43,8 @@ export const ExtendedTrafficLightView = ({
             <div 
               className={`w-16 h-16 rounded-full ${currentState.match({
                 Red: () => "bg-red-600",              
-                RedWithPedestrian: () => "bg-red-600",              
+                RedWithPedestrian: () => "bg-red-600",
+                PedestrianFlashing: () => "bg-red-600",
                 _: ()=> "bg-red-900"
               }, false)}`}
             />
@@ -44,24 +66,20 @@ export const ExtendedTrafficLightView = ({
         </div>
         
         {/* Pedestrian signal */}
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <div className="flex flex-col space-y-4 items-center">
-            {/* Don't walk */}
-            <div 
-              className={`w-16 h-16 rounded flex items-center justify-center ${
-                isPedestrianCrossing ? "bg-red-900" : "bg-red-600"
-              }`}
-            >
-              <span className="text-white text-xl">✋</span>
-            </div>
-            {/* Walk */}
-            <div 
-              className={`w-16 h-16 rounded flex items-center justify-center ${
-                isPedestrianCrossing ? "bg-green-500" : "bg-green-900"
-              }`}
-            >
-              <span className="text-white text-xl">🚶</span>
-            </div>
+        <div className="bg-gray-800 p-4 rounded-lg flex flex-col items-center">
+          <div className="w-16 h-16 rounded flex items-center justify-center mb-2">
+            {showWalkSignal ? (
+              <span className="text-green-500 text-2xl">🚶</span>
+            ) : (
+              <span className="text-red-500 text-2xl">✋</span>
+            )}
+          </div>
+          <div className="text-sm text-center">
+            {currentState.match({
+              RedWithPedestrian: () => "WALK",
+              PedestrianFlashing: () => "DON'T WALK",
+              _: () => "DON'T WALK"
+            }, false)}
           </div>
         </div>
       </div>
@@ -70,12 +88,13 @@ export const ExtendedTrafficLightView = ({
         {stateMessage}
       </div>
       
-      <div className="text-lg mb-4">
-        Pedestrian: {pedestrianMessage}
-      </div>
-      
       <div className="text-sm mb-4">
         Current state: <span className="font-mono">{currentState.key}</span>
+        {pedestrianRequested && 
+          <span className="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">
+            Pedestrian waiting
+          </span>
+        }
       </div>
       
       <div className="flex space-x-4">
@@ -88,8 +107,8 @@ export const ExtendedTrafficLightView = ({
         <button
           className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
           onClick={() => machine.api.pedestrianButton()}
-          disabled={isPedestrianCrossing}>
-          Pedestrian Button
+          disabled={pedestrianRequested}>
+          Request Crossing
         </button>
       </div>
     </div>

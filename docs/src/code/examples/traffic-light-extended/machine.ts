@@ -4,20 +4,29 @@ export const createExtendedTrafficLightMachine = () => {
   // Define states with messages and pedestrian info
   const states = defineStates({
     Green: () => ({ 
-      message: 'Go',
-      pedestrianMessage: 'Do not cross'
+      message: 'Traffic: Go',
+      pedestrianSignal: 'dontWalk',
+      pedestrianRequested: false
     }),
     Yellow: () => ({ 
-      message: 'Prepare to stop',
-      pedestrianMessage: 'Do not cross'
+      message: 'Traffic: Prepare to stop',
+      pedestrianSignal: 'dontWalk',
+      pedestrianRequested: false
     }),
     Red: () => ({ 
-      message: 'Stop',
-      pedestrianMessage: 'Wait'
+      message: 'Traffic: Stop',
+      pedestrianSignal: 'dontWalk',
+      pedestrianRequested: false
     }),
     RedWithPedestrian: () => ({ 
-      message: 'Stop',
-      pedestrianMessage: 'Cross now'
+      message: 'Traffic: Stop',
+      pedestrianSignal: 'walk',
+      pedestrianRequested: false
+    }),
+    PedestrianFlashing: () => ({
+      message: 'Traffic: Stop',
+      pedestrianSignal: 'flashing',
+      pedestrianRequested: false
     })
   });
   
@@ -26,23 +35,34 @@ export const createExtendedTrafficLightMachine = () => {
     states,
     {
       Green: { 
-        next: 'Yellow',
-        pedestrianButton: 'Yellow' // Pressing button while green just continues normal cycle
+        next: 'Yellow'
       },
       Yellow: { 
-        next: 'Red',
-        pedestrianButton: 'Red' // Pressing button while yellow just continues normal cycle
+        next: 'Red'
       },
       Red: { 
-        next: 'Green',
-        pedestrianButton: 'RedWithPedestrian' // Allow pedestrian crossing
+        next: function(s) {
+          return s.data.pedestrianRequested ? states.RedWithPedestrian() : states.Green();
+        }
       },
       RedWithPedestrian: {
-        next: 'Green' // After pedestrian time, go back to green
+        next: 'PedestrianFlashing'
+      },
+      PedestrianFlashing: {
+        next: 'Green'
       }
     },
-    states.Red() // Start with red light
+    'Red'
   ));
+  
+  // Add pedestrian button functionality directly to the machine
+  Object.assign(machine.api, {
+    pedestrianButton: () => {
+      const currentState = machine.getState();
+      currentState.data.pedestrianRequested = true;
+      return currentState;
+    }
+  });
   
   return machine;
 };
