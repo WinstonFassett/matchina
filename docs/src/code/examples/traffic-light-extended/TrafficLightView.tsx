@@ -86,7 +86,7 @@ export const ExtendedTrafficLightView = ({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex space-x-8 mb-4">
+      <div className="flex space-x-8 mb-4 items-end">
         {/* Traffic light */}
         <div className="bg-gray-800 p-4 rounded-lg">
           <div className="flex flex-col space-y-4 items-center">
@@ -118,33 +118,39 @@ export const ExtendedTrafficLightView = ({
         </div>
         
         {/* Pedestrian signal */}
-        <div className="bg-gray-800 p-4 rounded-lg flex flex-col items-center">
-          <div className="w-16 h-16 rounded flex items-center justify-center mb-2">
-            {pedestrianSignal.match({
-              Walk: () => (
-                <span 
-                  className="text-green-500 text-2xl" 
-                  style={walkTimeRemaining > 0 ? { opacity: walkBlinking ? 1 : 0.3 } : undefined}
-                >
-                  🚶
-                </span>
-              ),
-              DontWalk: () => <span className="text-red-500 text-2xl">✋</span>,
-              Error: () => <span className="text-yellow-500 text-2xl">⚠️</span>,
-            })}
-          </div>
-          <div className="text-sm text-center w-16">
-            {pedestrianSignal.match({
-              Walk: () => "WALK",
-              DontWalk: () => "DON'T WALK",
-              Error: () => "ERROR",
-            })}
-          </div>
-          {walkTimeRemaining > 0 && (
-            <div className="text-yellow-600 font-mono text-center">
-              {`${(walkTimeRemaining / 1000).toFixed(1)}s`}
+        <div className="bg-gray-800 p-4 rounded-lg">
+          <div className="flex flex-col items-center">
+            <div className="h-8 flex items-center justify-center">
+              {pedestrianSignal.match({
+                Walk: () => (
+                  <span 
+                    className="text-green-500 text-2xl" 
+                    style={walkTimeRemaining > 0 ? { opacity: walkBlinking ? 1 : 0.3 } : undefined}
+                  >
+                    🚶
+                  </span>
+                ),
+                DontWalk: () => <span className="text-red-500 text-2xl">✋</span>,
+                Error: () => <span className="text-yellow-500 text-2xl">⚠️</span>,
+              })}
             </div>
-          )}
+            <div className="text-sm text-center w-16 h-8 flex items-center justify-center">
+              {pedestrianSignal.match({
+                Walk: () => "WALK",
+                DontWalk: () => "DON'T WALK",
+                Error: () => "ERROR",
+              })}
+            </div>
+            <div className="h-4 flex items-center justify-center">
+              {walkTimeRemaining > 0 ? (
+                <div className="text-yellow-600 font-mono text-center">
+                  {`${(walkTimeRemaining / 1000).toFixed(1)}s`}
+                </div>
+              ) : (
+                <div className="invisible">0.0s</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

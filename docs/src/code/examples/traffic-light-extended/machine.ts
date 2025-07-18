@@ -115,7 +115,7 @@ export const createExtendedTrafficLightMachine = () => {
     "Red",
   );
 
-  // Create API using withApi (auto-generates API methods from transitions)
+  // Simple and clean with withApi
   const machine = Object.assign(
     withApi(baseMachine),
     {
@@ -179,115 +179,6 @@ export const createExtendedTrafficLightMachine = () => {
       }
       timer = setTimeout(() => {
         machine.api.next();
-      }, duration);
-    })
-  )  
-  // start it
-  machine.send('next')
-  return machine;
-};
-
-// Alternative implementation with direct methods (without .api prefix)
-export const createExtendedTrafficLightMachineAlt = () => {   
-  const baseMachine = createMachine(
-    states,
-    {
-      Green: { 
-        next: "Yellow",
-        ...commonTransitions
-      },
-      Yellow: { 
-        next: "Red",
-        ...commonTransitions
-      },
-      Red: { 
-        next: "Green",
-        crossingRequested: "RedWithPedestrianRequest",
-        ...commonTransitions
-      },
-      RedWithPedestrianRequest: {
-        next: "Green",
-        ...commonTransitions
-      },
-      FlashingYellow: {
-        reset: "Red"
-      },
-      FlashingRed: {
-        reset: "Red"
-      },
-    },
-    "Red",
-  );
-
-  // Combine the machine with custom methods (no .api prefix needed)
-  const machine = Object.assign(
-    baseMachine,
-    {
-      data: sharedState,
-      next: () => baseMachine.send("next"),
-      emergency: () => baseMachine.send("emergency"),
-      malfunction: () => baseMachine.send("malfunction"),
-      reset: () => baseMachine.send("reset"),
-      crossingRequested: () => baseMachine.send("crossingRequested"),
-      requestCrossing: function() {
-        sharedState.send("change", { crossingRequested: true })
-        this.crossingRequested()
-      },
-    },
-  );
-
-  let timer: NodeJS.Timeout | null = null;
-  let walkWarnTimer: NodeJS.Timeout | null = null;
-  
-  setup(machine)(
-    enter(whenState("Red", (ev) => {      
-      const state = machine.data.getState();
-      if (state.data.crossingRequested) {
-        queueMicrotask(machine.crossingRequested)        
-      }
-    })),
-    enter(whenState("RedWithPedestrianRequest", (ev) => {
-      machine.data.send("change", {
-        crossingRequested: false,
-      })
-    })),
-    enter(ev => {
-      if (walkWarnTimer) {
-        clearTimeout(walkWarnTimer);
-        walkWarnTimer = null;
-      }
-
-      // update pedestrian timer
-      if (ev.to.is("Red") ) {
-        sharedState.send("change", {
-          walkWarningDuration: 0,
-        })
-      } else {
-        const walkWarnAt = 
-          ev.to.is("Green") ? greenWalkWarnAt : 
-          ev.to.is("Yellow") ? yellowWalkWarnAt : -1;
-        if (walkWarnAt > -1) {
-          const walkWarningDuration = 
-            ev.to.is("Green") ? walkDuration - greenWalkWarnAt :
-            ev.to.is("Yellow") ? states.Yellow().data.duration - yellowWalkWarnAt : 0;
-          walkWarnTimer = setTimeout(() => {
-            sharedState.send("change", { walkWarningDuration })
-          }, walkWarnAt);
-        }
-      }
-
-      // update timer for normal states (not flashing states)
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
-      
-      const duration = ev.to.data.duration;
-      if (duration === 0) {
-        return
-      }
-      timer = setTimeout(() => {
-        machine.next();
       }, duration);
     })
   )  
