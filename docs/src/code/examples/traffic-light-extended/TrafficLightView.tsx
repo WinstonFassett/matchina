@@ -17,59 +17,62 @@ export const ExtendedTrafficLightView = ({
   const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
   const [currentStateKey, setCurrentStateKey] = useState(currentState.key);
   
-  // Handle state changes and timer
-  useEffect(() => {
-    // Reset timer when state changes
-    if (currentStateKey !== currentState.key) {
-      setCurrentStateKey(currentState.key);
-      setTimeRemaining(currentState.data.duration);
-    }
+  // // Handle state changes and timer
+  // useEffect(() => {
+  //   // Reset timer when state changes
+  //   if (currentStateKey !== currentState.key) {
+  //     setCurrentStateKey(currentState.key);
+  //     setTimeRemaining(currentState.data.duration);
+  //   }
     
-    // Set up auto-transition timer
-    const timer = setTimeout(() => {
-      // When time is up, transition to next state
-      machine.api.next();
-    }, timeRemaining);
+  //   // Set up auto-transition timer
+  //   const timer = setTimeout(() => {
+  //     // When time is up, transition to next state
+  //     machine.api.next();
+  //   }, timeRemaining);
     
-    // Clean up timer on state change
-    return () => clearTimeout(timer);
-  }, [currentState.key, timeRemaining, machine]);
+  //   // Clean up timer on state change
+  //   return () => clearTimeout(timer);
+  // }, [currentState.key, timeRemaining, machine]);
   
-  // Update countdown timer
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeRemaining(prev => Math.max(0, prev - 100));
-    }, 100);
+  // // Update countdown timer
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setTimeRemaining(prev => Math.max(0, prev - 100));
+  //   }, 100);
     
-    return () => clearInterval(timer);
-  }, []);
+  //   return () => clearInterval(timer);
+  // }, []);
   
   
-  // For pedestrian signal logic
-  useEffect(() => {
-    // If we're in Red state and time remaining is less than 3 seconds, start flashing
-    if (currentState.is("Red") && machine.crossingRequested && 
-        timeRemaining < 3000) {
-      setIsFlashing(true);
-    } else {
-      setIsFlashing(false);
-      setFlashVisible(true);
-    }
-  }, [currentState, timeRemaining, machine.crossingRequested]);
+  // // For pedestrian signal logic
+  // useEffect(() => {
+  //   // If we're in Red state and time remaining is less than 3 seconds, start flashing
+  //   if (currentState.is("Red") && machine.crossingRequested && 
+  //       timeRemaining < 3000) {
+  //     setIsFlashing(true);
+  //   } else {
+  //     setIsFlashing(false);
+  //     setFlashVisible(true);
+  //   }
+  // }, [currentState, timeRemaining, machine.crossingRequested]);
   
   // Flash the pedestrian signal 
-  useEffect(() => {
-    if (isFlashing) {
-      const interval = setInterval(() => {
-        setFlashVisible(prev => !prev);
-      }, 500); // Flash every 500ms
+  // useEffect(() => {
+  //   if (isFlashing) {
+  //     const interval = setInterval(() => {
+  //       setFlashVisible(prev => !prev);
+  //     }, 500); // Flash every 500ms
       
-      return () => clearInterval(interval);
-    }
-  }, [isFlashing]);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [isFlashing]);
   
   // Determine if pedestrian can cross
-  const showWalkSignal = currentState.is("Red") && machine.crossingRequested;
+  const machineState = machine.data.getState();
+
+  // const showWalkSignal = currentState.is("Red") && machineState.crossingRequested;
+  const pedestrianSignal = currentState.data.pedestrian;
   
   // Calculate progress percentage
   const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
@@ -108,16 +111,18 @@ export const ExtendedTrafficLightView = ({
         {/* Pedestrian signal */}
         <div className="bg-gray-800 p-4 rounded-lg flex flex-col items-center">
           <div className="w-16 h-16 rounded flex items-center justify-center mb-2">
-            {showWalkSignal ? (
-              <span className="text-green-500 text-2xl">🚶</span>
-            ) : (
-              <span className="text-red-500 text-2xl">✋</span>
-            )}
+            {pedestrianSignal.match({
+              Walk: () => <span className="text-green-500 text-2xl">🚶</span>,
+              DontWalk: () => <span className="text-red-500 text-2xl">✋</span>,
+              Error: () => <span className="text-yellow-500 text-2xl">⚠️</span>,
+            })}
           </div>
           <div className="text-sm text-center">
-            {currentState.is("Red") && machine.crossingRequested ? 
-              (isFlashing ? (flashVisible ? "WALK" : "DON'T WALK") : "WALK") : 
-              "DON'T WALK"}
+            {pedestrianSignal.match({
+              Walk: () => "WALK",
+              DontWalk: () => "DON'T WALK",
+              Error: () => "ERROR",
+            })}
           </div>
         </div>
       </div>
@@ -129,7 +134,7 @@ export const ExtendedTrafficLightView = ({
             Green: () => "bg-green-500",
             Yellow: () => "bg-yellow-400",
             Red: () => "bg-red-600",
-            RedWithPedestrianRequest: () => "bg-green-500"
+            RedWithPedestrianRequest: () => "bg-red-600",
           }, false)}`}
           style={{ width: `${progressPercent}%` }}
         ></div>
@@ -158,7 +163,7 @@ export const ExtendedTrafficLightView = ({
         <button
           className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
           onClick={() => machine.requestCrossing()}
-          disabled={machine.crossingRequested}>
+          disabled={machineState.data.crossingRequested}>
           Request Crossing
         </button>
       </div>

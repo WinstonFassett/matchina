@@ -14,6 +14,7 @@ export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./factory-machine-transition-helpers";
 export * from "./matchbox-factory";
+export * from "./extras/nanosubscriber"
 export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./promise-machine-hooks";
