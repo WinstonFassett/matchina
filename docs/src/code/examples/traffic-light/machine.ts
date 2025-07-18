@@ -1,17 +1,24 @@
-import { facade } from "@lib/src";
+import { createMachine, defineStates, withApi } from "matchina";
 
-// ---cut---
+export const createTrafficLightMachine = () => {
 
-export const createTrafficLight = () => facade(
-  {
-    Red: () => "means stop",
-    Yellow: () => "means caution",
-    Green: () => "means go",
-  },
-  {
-    Red: { next: "Green" },
-    Yellow: { next: "Red" },
-    Green: { next: "Yellow" },
-  },
-  "Red"
-);
+  const states = defineStates({
+    Green: () => ({ message: 'Go' }),
+    Yellow: () => ({ message: 'Prepare to stop' }),
+    Red: () => ({ message: 'Stop' })
+  });
+  
+  const machine = withApi(createMachine(
+    states,
+    {
+      Green: { next: 'Yellow' },
+      Yellow: { next: 'Red' },
+      Red: { next: 'Green' }
+    },
+    'Red'
+  ));
+  
+  return machine;
+};
+
+export type TrafficLightMachine = ReturnType<typeof createTrafficLightMachine>;
