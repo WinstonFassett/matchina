@@ -224,6 +224,14 @@ export default defineConfig({
                   link: "/examples/paren-checker",
                 },
                 {
+                  label: "Traffic Light with Pedestrian Crossing",
+                  link: "/examples/traffic-light-extended",
+                },
+                {
+                  label: "Todo List",
+                  link: "/examples/todo-list",
+                },
+                {
                   label: "Checkout Flow",
                   link: "/examples/checkout",
                 }
