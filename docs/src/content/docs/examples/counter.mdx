@@ -5,8 +5,10 @@ description: A counter example with state data
 
 import CounterExample from "@code/examples/counter/example";
 import machineCode from "@code/examples/counter/machine.ts?raw";
+import viewCode from "@code/examples/counter/CounterView.tsx?raw";
 import indexCode from "@code/examples/counter/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 
 A counter state machine that maintains a numeric value that can be incremented, decremented, and reset, demonstrating how to store and update data within a state.
 
@@ -26,11 +28,12 @@ Unlike the toggle example which had two distinct states, this counter example us
 
 ## Machine Code
 
-<CodeBlock lang="typescript" code={machineCode} />
-
-## Component Integration
-
-<CodeBlock lang="jsx" code={indexCode} />
+<CodeTabs files={[
+  { name: "machine.ts", code: machineCode, twoslash: true },
+  { name: "CounterView.tsx", code: viewCode },
+  { name: "index.tsx", code: indexCode },
+  ]} />
+  
 
 ## Additional Notes
 

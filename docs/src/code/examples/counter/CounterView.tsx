@@ -1,10 +1,10 @@
-import type { createCounterMachine } from "./machine";
+import { type CounterMachine } from "./machine";
 
 // A counter view component that uses the enhanced CounterMachine
 export const CounterView = ({
   machine
 }: {
-  machine: ReturnType<typeof createCounterMachine>;
+  machine: CounterMachine
 }) => {
   // Get current state
   const currentState = machine.getState();

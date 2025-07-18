@@ -1,6 +1,4 @@
-import { createMachine, defineStates, withApi } from "@lib/src";
-
-// ---cut---
+import { createMachine, defineStates, onLifecycle, withApi } from "matchina";
 
 export const createCounterMachine = () => {
   const states = defineStates({
@@ -8,15 +6,33 @@ export const createCounterMachine = () => {
   });
   
   // Create a machine with proper transitions
-  return withApi(createMachine(
+  const machine = withApi(createMachine(
     states,
     {
-      Active: { 
-        increment: () => (ev) => states.Active(ev.from.data.count + 1),
-        decrement: () => (ev) => states.Active(ev.from.data.count - 1),
+      Active: {         
+        increment: 'Active',
+        decrement: 'Active',
         reset: () => () => states.Active(0)
       },
     },
     states.Active()
   ));
+  onLifecycle(machine, {
+    Active: {
+      on: {
+        increment: {
+          effect: (ev) => {
+            ev.to.data.count = ev.from.data.count + 1;
+          }
+        },
+        decrement: {
+          effect: (ev) => {
+            ev.to.data.count = ev.from.data.count - 1;
+          }
+        },
+      }
+    }
+  });
+  return machine
 };
+export type CounterMachine = ReturnType<typeof createCounterMachine>;
