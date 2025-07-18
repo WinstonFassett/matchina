@@ -2,6 +2,16 @@ import { useMachine } from "@lib/src/integrations/react";
 import { walkDuration, type ExtendedTrafficLightMachine } from "./machine";
 import { useEffect, useState } from "react";
 
+// Custom blinking style
+const blinkingStyle = {
+  animation: 'blink 1s ease-in-out infinite',
+  '@keyframes blink': {
+    '0%': { opacity: 1 },
+    '50%': { opacity: 0.3 },
+    '100%': { opacity: 1 },
+  },
+};
+
 export const ExtendedTrafficLightView = ({
   machine
 }: {
@@ -59,6 +69,21 @@ export const ExtendedTrafficLightView = ({
     }
   }, [currentState.key]);
 
+  // Create a separate blinking effect for walk signal during countdown
+  const [walkBlinking, setWalkBlinking] = useState(true);
+  
+  useEffect(() => {
+    if (walkTimeRemaining > 0) {
+      const blinkTimer = setInterval(() => {
+        setWalkBlinking(prev => !prev);
+      }, 500); // Blink every 500ms
+      
+      return () => clearInterval(blinkTimer);
+    } else {
+      setWalkBlinking(true);
+    }
+  }, [walkTimeRemaining > 0]);
+
   return (
     <div className="flex flex-col items-center">
       <div className="flex space-x-8 mb-4">
@@ -96,12 +121,19 @@ export const ExtendedTrafficLightView = ({
         <div className="bg-gray-800 p-4 rounded-lg flex flex-col items-center">
           <div className="w-16 h-16 rounded flex items-center justify-center mb-2">
             {pedestrianSignal.match({
-              Walk: () => <span className="text-green-500 text-2xl">🚶</span>,
+              Walk: () => (
+                <span 
+                  className="text-green-500 text-2xl" 
+                  style={walkTimeRemaining > 0 ? { opacity: walkBlinking ? 1 : 0.3 } : undefined}
+                >
+                  🚶
+                </span>
+              ),
               DontWalk: () => <span className="text-red-500 text-2xl">✋</span>,
               Error: () => <span className="text-yellow-500 text-2xl">⚠️</span>,
             })}
           </div>
-          <div className="text-sm text-center">
+          <div className="text-sm text-center w-16">
             {pedestrianSignal.match({
               Walk: () => "WALK",
               DontWalk: () => "DON'T WALK",
@@ -109,7 +141,7 @@ export const ExtendedTrafficLightView = ({
             })}
           </div>
           {walkTimeRemaining > 0 && (
-            <div className="ml-2 text-yellow-600 font-mono">
+            <div className="text-yellow-600 font-mono text-center">
               {`${(walkTimeRemaining / 1000).toFixed(1)}s`}
             </div>
           )}
