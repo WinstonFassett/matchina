@@ -24,6 +24,7 @@ This example builds on the basic [Traffic Light](/examples/traffic-light) exampl
 - Additional state data for pedestrian signals
 - A pedestrian button transition to request crossing
 - Visual indication of pedestrian crossing status
+- Special states for emergencies (flashing yellow) and malfunctions (flashing red)
 
 The extended machine shows how to model a system that responds to external input (pedestrian button) and has different behaviors based on its current state.
 
@@ -42,6 +43,13 @@ The traffic light normally cycles through Green → Yellow → Red → Green, bu
 1. If the light is already Red, it transitions to RedWithPedestrian to allow crossing
 2. If the light is Green or Yellow, it continues its normal cycle until reaching Red
 3. From RedWithPedestrian, the light returns to Green after pedestrians have crossed
+
+Additionally, the light can enter special states:
+
+- **Emergency Mode (Flashing Yellow)**: Indicates caution, proceed if safe
+- **Malfunction Mode (Flashing Red)**: Treat as a stop sign, stop and then proceed when safe
+
+These special states demonstrate how state machines can model exceptional conditions and transitions between normal and exceptional operation.
 
 This pattern demonstrates how state machines can handle external inputs differently based on their current state, providing a clean way to model complex interactive systems.
 

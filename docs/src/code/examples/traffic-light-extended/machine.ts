@@ -1,61 +1,79 @@
 import { createMachine, defineStates, enter, setup, whenState, withApi } from "matchina";
 
- const pedestrianStates = defineStates({
-    Walk: undefined,
-    DontWalk: undefined,
-    Error: undefined
-  })
+const pedestrianStates = defineStates({
+  Walk: undefined,
+  DontWalk: undefined,
+  Error: undefined
+})
 
-  interface State {
-    key: string,
-    crossingRequested?: boolean;
-    walkWarningDuration?: number;
-  }
+interface State {
+  key: string,
+  crossingRequested?: boolean;
+  walkWarningDuration?: number;
+}
 
-  const sharedStates = defineStates({
-      State: (state: State = { key: "State", crossingRequested: false }) => state,
-  })
+const sharedStates = defineStates({
+  State: (state: State = { key: "State", crossingRequested: false }) => state,
+})
 
-  const sharedState = createMachine(
-    sharedStates,
-    {
-      State: {
-        change: (changes: Partial<State>) => (ev) => (sharedStates.State({
-          ...ev.from.data,
-          ...changes
-        })),
-      },
+const sharedState = createMachine(
+  sharedStates,
+  {
+    State: {
+      change: (changes: Partial<State>) => (ev) => (sharedStates.State({
+        ...ev.from.data,
+        ...changes
+      })),
     },
-    sharedStates.State({ key: "State", crossingRequested: false })
-  )
+  },
+  sharedStates.State({ key: "State", crossingRequested: false })
+)
 
-  const states = defineStates({
-    Green: () => ({
-      message: "Go",
-      duration: 4000, // 3 seconds
-      pedestrian: pedestrianStates.Walk(),
-    }),
-    Yellow: () => ({
-      message: "Prepare to stop",
-      duration: 2000, // 2 seconds
-      pedestrian: pedestrianStates.Walk(),
-    }),
-    Red: () => ({
-      message: "Stop",
-      duration: 4000, // 4 seconds
-      pedestrian: pedestrianStates.DontWalk(),
-    }),
-    RedWithPedestrianRequest: () => ({
-      message: "Stop with pedestrian requesting crossing",
-      duration: 2000, // 4 seconds
-      pedestrian: pedestrianStates.DontWalk(),
-    }),
-    Broken: () => ({
-      message: "Broken (flashing red)",
-      duration: 0,
-      pedestrian: pedestrianStates.Error(),
-    }),
-  });
+// Common transitions that all normal states can use
+const commonTransitions = {
+  emergency: "FlashingYellow",
+  malfunction: "FlashingRed"
+} as const;
+
+const states = defineStates({
+  Green: () => ({
+    message: "Go",
+    duration: 4000, // 4 seconds
+    pedestrian: pedestrianStates.Walk(),
+  }),
+  Yellow: () => ({
+    message: "Prepare to stop",
+    duration: 2000, // 2 seconds
+    pedestrian: pedestrianStates.Walk(),
+  }),
+  Red: () => ({
+    message: "Stop",
+    duration: 4000, // 4 seconds
+    pedestrian: pedestrianStates.DontWalk(),
+  }),
+  RedWithPedestrianRequest: () => ({
+    message: "Stop with pedestrian requesting crossing",
+    duration: 2000, // 2 seconds
+    pedestrian: pedestrianStates.DontWalk(),
+  }),
+  FlashingYellow: () => ({
+    message: "Proceed with caution",
+    duration: 0, // No automatic transition
+    pedestrian: pedestrianStates.DontWalk(),
+    isFlashing: true,
+  }),
+  FlashingRed: () => ({
+    message: "Stop and proceed when safe",
+    duration: 0, // No automatic transition
+    pedestrian: pedestrianStates.Error(),
+    isFlashing: true,
+  }),
+  Broken: () => ({
+    message: "Broken (flashing red)",
+    duration: 0,
+    pedestrian: pedestrianStates.Error(),
+  }),
+});
 
 
 export const walkDuration = 
@@ -66,32 +84,52 @@ export const greenWalkWarnAt = walkDuration - states.Yellow().data.duration - st
 export const yellowWalkWarnAt = 0 //states.Yellow().data.duration;
 
 export const createExtendedTrafficLightMachine = () => {   
-  const machine = Object.assign(
-    withApi(createMachine(
-      states,
-      {
-        Green: { next: "Yellow" },
-        Yellow: { next: "Red" },
-        Red: { 
-          next: "Green",
-          crossingRequested: "RedWithPedestrianRequest",
-        },
-        RedWithPedestrianRequest: {
-          next: "Green",          
-        },
+  // Create the base machine with transitions
+  const baseMachine = createMachine(
+    states,
+    {
+      Green: { 
+        next: "Yellow",
+        ...commonTransitions
       },
-      "Red",
-    )),
+      Yellow: { 
+        next: "Red",
+        ...commonTransitions
+      },
+      Red: { 
+        next: "Green",
+        crossingRequested: "RedWithPedestrianRequest",
+        ...commonTransitions
+      },
+      RedWithPedestrianRequest: {
+        next: "Green",
+        ...commonTransitions
+      },
+      FlashingYellow: {
+        reset: "Red"
+      },
+      FlashingRed: {
+        reset: "Red"
+      },
+    },
+    "Red",
+  );
+
+  // Create API using withApi (auto-generates API methods from transitions)
+  const machine = Object.assign(
+    withApi(baseMachine),
     {
       data: sharedState,
       requestCrossing: () => {
         sharedState.send("change", { crossingRequested: true })
-        machine.send("crossingRequested")
-      },
+        machine.api.crossingRequested()
+      }
     },
   );
+
   let timer: NodeJS.Timeout | null = null;
   let walkWarnTimer: NodeJS.Timeout | null = null;
+  
   setup(machine)(
     enter(whenState("Red", (ev) => {      
       const state = machine.data.getState();
@@ -129,17 +167,127 @@ export const createExtendedTrafficLightMachine = () => {
         }
       }
 
-      // update timer
+      // update timer for normal states (not flashing states)
       if (timer) {
         clearTimeout(timer);
         timer = null;
       }
+      
       const duration = ev.to.data.duration;
       if (duration === 0) {
         return
       }
       timer = setTimeout(() => {
         machine.api.next();
+      }, duration);
+    })
+  )  
+  // start it
+  machine.send('next')
+  return machine;
+};
+
+// Alternative implementation with direct methods (without .api prefix)
+export const createExtendedTrafficLightMachineAlt = () => {   
+  const baseMachine = createMachine(
+    states,
+    {
+      Green: { 
+        next: "Yellow",
+        ...commonTransitions
+      },
+      Yellow: { 
+        next: "Red",
+        ...commonTransitions
+      },
+      Red: { 
+        next: "Green",
+        crossingRequested: "RedWithPedestrianRequest",
+        ...commonTransitions
+      },
+      RedWithPedestrianRequest: {
+        next: "Green",
+        ...commonTransitions
+      },
+      FlashingYellow: {
+        reset: "Red"
+      },
+      FlashingRed: {
+        reset: "Red"
+      },
+    },
+    "Red",
+  );
+
+  // Combine the machine with custom methods (no .api prefix needed)
+  const machine = Object.assign(
+    baseMachine,
+    {
+      data: sharedState,
+      next: () => baseMachine.send("next"),
+      emergency: () => baseMachine.send("emergency"),
+      malfunction: () => baseMachine.send("malfunction"),
+      reset: () => baseMachine.send("reset"),
+      crossingRequested: () => baseMachine.send("crossingRequested"),
+      requestCrossing: function() {
+        sharedState.send("change", { crossingRequested: true })
+        this.crossingRequested()
+      },
+    },
+  );
+
+  let timer: NodeJS.Timeout | null = null;
+  let walkWarnTimer: NodeJS.Timeout | null = null;
+  
+  setup(machine)(
+    enter(whenState("Red", (ev) => {      
+      const state = machine.data.getState();
+      if (state.data.crossingRequested) {
+        queueMicrotask(machine.crossingRequested)        
+      }
+    })),
+    enter(whenState("RedWithPedestrianRequest", (ev) => {
+      machine.data.send("change", {
+        crossingRequested: false,
+      })
+    })),
+    enter(ev => {
+      if (walkWarnTimer) {
+        clearTimeout(walkWarnTimer);
+        walkWarnTimer = null;
+      }
+
+      // update pedestrian timer
+      if (ev.to.is("Red") ) {
+        sharedState.send("change", {
+          walkWarningDuration: 0,
+        })
+      } else {
+        const walkWarnAt = 
+          ev.to.is("Green") ? greenWalkWarnAt : 
+          ev.to.is("Yellow") ? yellowWalkWarnAt : -1;
+        if (walkWarnAt > -1) {
+          const walkWarningDuration = 
+            ev.to.is("Green") ? walkDuration - greenWalkWarnAt :
+            ev.to.is("Yellow") ? states.Yellow().data.duration - yellowWalkWarnAt : 0;
+          walkWarnTimer = setTimeout(() => {
+            sharedState.send("change", { walkWarningDuration })
+          }, walkWarnAt);
+        }
+      }
+
+      // update timer for normal states (not flashing states)
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      
+      const duration = ev.to.data.duration;
+      if (duration === 0) {
+        return
+      }
+      timer = setTimeout(() => {
+        machine.next();
       }, duration);
     })
   )  

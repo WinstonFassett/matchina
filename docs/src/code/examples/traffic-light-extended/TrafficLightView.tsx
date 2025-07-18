@@ -7,19 +7,21 @@ export const ExtendedTrafficLightView = ({
 }: {
   machine: ExtendedTrafficLightMachine
 }) => {
-  useMachine(machine)
+  useMachine(machine);
   const currentState = machine.getState();
   const pedestrianSignal = currentState.data.pedestrian;
 
-  useMachine(machine.data)
-  const data = machine.data.getState()
+  useMachine(machine.data);
+  const data = machine.data.getState();
   const walkWarningDuration = data.data.walkWarningDuration;
 
   const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
   const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
+  const [isBlinking, setIsBlinking] = useState(false);
 
   const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
   
+  // Handle the pedestrian walk warning
   useEffect(() => {
     if (walkWarningDuration) {
       setWalkTimeRemaining(walkWarningDuration);
@@ -30,15 +32,32 @@ export const ExtendedTrafficLightView = ({
     } else {
       setWalkTimeRemaining(0);
     }
-  }, [walkWarningDuration])
+  }, [walkWarningDuration]);
   
+  // Handle normal light countdown
   useEffect(() => {
     setTimeRemaining(currentState.data.duration);
-    const timer = setInterval(() => {
-      setTimeRemaining(prev => Math.max(0, prev - 100));
-    }, 100);    
-    return () => clearInterval(timer);
+    if (currentState.data.duration > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => Math.max(0, prev - 100));
+      }, 100);
+      return () => clearInterval(timer);
+    }
   }, [currentState]);
+
+  // Handle flashing states in the UI
+  useEffect(() => {
+    if (currentState.is("FlashingYellow") || currentState.is("FlashingRed")) {
+      // Set up blinking for flashing states
+      const blinkTimer = setInterval(() => {
+        setIsBlinking(prev => !prev);
+      }, 500); // Blink every 500ms
+      
+      return () => clearInterval(blinkTimer);
+    } else {
+      setIsBlinking(false);
+    }
+  }, [currentState.key]);
 
   return (
     <div className="flex flex-col items-center">
@@ -51,6 +70,7 @@ export const ExtendedTrafficLightView = ({
               className={`w-16 h-16 rounded-full ${currentState.match({
                 Red: () => "bg-red-600",              
                 RedWithPedestrianRequest: () => "bg-red-600",
+                FlashingRed: () => isBlinking ? "bg-red-600" : "bg-red-900",
                 _: ()=> "bg-red-900"
               }, false)}`}
             />
@@ -58,6 +78,7 @@ export const ExtendedTrafficLightView = ({
             <div 
               className={`w-16 h-16 rounded-full ${currentState.match({
                 Yellow: () => "bg-yellow-400",
+                FlashingYellow: () => isBlinking ? "bg-yellow-400" : "bg-yellow-900",
                 _: () => "bg-yellow-900"
               }, false)}`}
             />
@@ -95,28 +116,32 @@ export const ExtendedTrafficLightView = ({
         </div>
       </div>
 
-      {/* Light Countdown */}
-      <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
-        <div 
-          className={`h-full rounded-full ${currentState.match({
-        Green: () => "bg-green-500",
-        Yellow: () => "bg-yellow-400",
-        Red: () => "bg-red-600",
-        RedWithPedestrianRequest: () => "bg-red-600",
-          }, false)}`}
-          style={{ width: `${progressPercent}%` }}
-        ></div>
-      </div>
-      <div className="text-xs text-gray-600 mb-2">Light Countdown</div>
+      {/* Light Countdown - only show for non-flashing states */}
+      {!currentState.is("FlashingYellow") && !currentState.is("FlashingRed") && (
+        <>
+          <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
+            <div 
+              className={`h-full rounded-full ${currentState.match({
+                Green: () => "bg-green-500",
+                Yellow: () => "bg-yellow-400",
+                Red: () => "bg-red-600",
+                RedWithPedestrianRequest: () => "bg-red-600",
+              }, false)}`}
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+          </div>
+          <div className="text-xs text-gray-600 mb-2">Light Countdown</div>
+        </>
+      )}
 
       {/* Walk Countdown */}
       {walkWarningDuration && walkTimeRemaining > 0 && (
         <>
           <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
-        <div 
-          className={`h-full rounded-full bg-yellow-500`}
-          style={{ width: `${(walkTimeRemaining / walkDuration) * 100}%` }}
-        ></div>
+            <div 
+              className={`h-full rounded-full bg-yellow-500`}
+              style={{ width: `${(walkTimeRemaining / walkDuration) * 100}%` }}
+            ></div>
           </div>
           <div className="text-xs text-gray-600 mb-2">Walk Countdown</div>
         </>
@@ -130,27 +155,55 @@ export const ExtendedTrafficLightView = ({
         Current state: <span className="font-mono">{currentState.key}</span>
       </div>
       
+      <div className="flex space-x-4 mb-4">
+        {!currentState.is("FlashingYellow") && !currentState.is("FlashingRed") && (
+          <>
+            <button
+              className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+              onClick={() => machine.api.next()}>
+              Next Signal
+            </button>
+            {
+              !data.data.crossingRequested ? 
+                <button
+                  className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
+                  onClick={() => machine.requestCrossing()}
+                >
+                  Request Crossing
+                </button>
+                :
+                <button
+                  className="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
+                  disabled>
+                  Crossing Requested
+                </button>
+            }
+          </>
+        )}
+      </div>
+      
+      {/* Special mode controls */}
       <div className="flex space-x-4">
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-          onClick={() => machine.api.next()}>
-          Next Signal
-        </button>
-        {
-          !data.data.crossingRequested ? 
+        {!currentState.is("FlashingYellow") && !currentState.is("FlashingRed") ? (
+          <>
             <button
-              className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
-              onClick={() => machine.requestCrossing()}
-            >
-              Request Crossing
+              className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600"
+              onClick={() => machine.api.emergency()}>
+              Emergency Mode
             </button>
-            :
             <button
-              className="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-              disabled>
-              Crossing Requested
+              className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+              onClick={() => machine.api.malfunction()}>
+              Malfunction
             </button>
-        }
+          </>
+        ) : (
+          <button
+            className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+            onClick={() => machine.api.reset()}>
+            Reset to Normal
+          </button>
+        )}
       </div>
     </div>
   );
