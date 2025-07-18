@@ -64,7 +64,7 @@ export const createExtendedTrafficLightMachine = () => {
   const states = defineStates({
     Green: () => ({
       message: "Go",
-      duration: 5000, // 5 seconds
+      duration: 4000, // 3 seconds
       pedestrian: pedestrianStates.Walk(),
     }),
     Yellow: () => ({
@@ -122,12 +122,13 @@ export const createExtendedTrafficLightMachine = () => {
       const state = machine.data.getState();
       console.log('machine state', state)
       if (state.data.crossingRequested) {
-        machine.api.crossingRequested()
-        machine.data.send("change", {
-          ...state, 
-          crossingRequested: false,
-        })
+        queueMicrotask(machine.api.crossingRequested)        
       }
+    })),
+    enter(whenState("RedWithPedestrianRequest", (ev) => {
+      machine.data.send("change", {
+        crossingRequested: false,
+      })
     })),
     enter(ev => {
       console.log("Entering state:", ev.to.key);
@@ -139,6 +140,7 @@ export const createExtendedTrafficLightMachine = () => {
       if (duration === 0) {
         return
       }
+      console.log("Setting timer for state:", ev.to.key, "for duration:", duration);
       timer = setTimeout(() => {
         console.log("Auto-transitioning from:", ev.to.key);
         machine.api.next();

@@ -1,3 +1,4 @@
+import { useMachine } from "@lib/src/integrations/react";
 import { type ExtendedTrafficLightMachine } from "./machine";
 import { useEffect, useState } from "react";
 
@@ -7,16 +8,21 @@ export const ExtendedTrafficLightView = ({
   machine: ExtendedTrafficLightMachine
 }) => {
   const currentState = machine.getState();
-  const stateKey = currentState.key;
+  // const stateKey = currentState.key;
   
   // For flashing pedestrian signal
-  const [flashVisible, setFlashVisible] = useState(true);
+  // const [flashVisible, setFlashVisible] = useState(true);
   const [isFlashing, setIsFlashing] = useState(false);
   
   // For countdown timer
   const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
-  const [currentStateKey, setCurrentStateKey] = useState(currentState.key);
+  // const [currentStateKey, setCurrentStateKey] = useState(currentState.key);
   
+  useMachine(machine.data)
+  const data = machine.data.getState()
+  useEffect(() => {
+    console.log("Traffic light data updated:", data);
+  }, [data])
   // // Handle state changes and timer
   // useEffect(() => {
   //   // Reset timer when state changes
@@ -36,13 +42,13 @@ export const ExtendedTrafficLightView = ({
   // }, [currentState.key, timeRemaining, machine]);
   
   // // Update countdown timer
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setTimeRemaining(prev => Math.max(0, prev - 100));
-  //   }, 100);
-    
-  //   return () => clearInterval(timer);
-  // }, []);
+  useEffect(() => {
+    setTimeRemaining(currentState.data.duration);
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => Math.max(0, prev - 100));
+    }, 100);    
+    return () => clearInterval(timer);
+  }, [currentState]);
   
   
   // // For pedestrian signal logic
@@ -159,13 +165,21 @@ export const ExtendedTrafficLightView = ({
           onClick={() => machine.api.next()}>
           Next Signal
         </button>
-        
-        <button
-          className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
-          onClick={() => machine.requestCrossing()}
-          disabled={machineState.data.crossingRequested}>
-          Request Crossing
-        </button>
+        {
+          !data.data.crossingRequested ? 
+            <button
+              className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
+              onClick={() => machine.requestCrossing()}
+            >
+              Request Crossing
+            </button>
+            :
+            <button
+              className="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
+              disabled>
+              Crossing Requested
+            </button>
+        }
       </div>
     </div>
   );
