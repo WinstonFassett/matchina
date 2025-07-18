@@ -1,5 +1,5 @@
 import { useMachine } from "@lib/src/integrations/react";
-import { type ExtendedTrafficLightMachine } from "./machine";
+import { walkDuration, type ExtendedTrafficLightMachine } from "./machine";
 import { useEffect, useState } from "react";
 
 export const ExtendedTrafficLightView = ({
@@ -7,26 +7,19 @@ export const ExtendedTrafficLightView = ({
 }: {
   machine: ExtendedTrafficLightMachine
 }) => {
+  useMachine(machine)
   const currentState = machine.getState();
-  // const stateKey = currentState.key;
-  
-  // For flashing pedestrian signal
-  // const [flashVisible, setFlashVisible] = useState(true);
-  const [isFlashing, setIsFlashing] = useState(false);
-  
-  // For countdown timer
-  const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
-  // const [currentStateKey, setCurrentStateKey] = useState(currentState.key);
-  
-  const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
+  const pedestrianSignal = currentState.data.pedestrian;
 
   useMachine(machine.data)
   const data = machine.data.getState()
-  useEffect(() => {
-    console.log("Traffic light data updated:", data);
-  }, [data])
-
   const walkWarningDuration = data.data.walkWarningDuration;
+
+  const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
+  const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
+
+  const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
+  
   useEffect(() => {
     if (walkWarningDuration) {
       setWalkTimeRemaining(walkWarningDuration);
@@ -38,25 +31,7 @@ export const ExtendedTrafficLightView = ({
       setWalkTimeRemaining(0);
     }
   }, [walkWarningDuration])
-  // // Handle state changes and timer
-  // useEffect(() => {
-  //   // Reset timer when state changes
-  //   if (currentStateKey !== currentState.key) {
-  //     setCurrentStateKey(currentState.key);
-  //     setTimeRemaining(currentState.data.duration);
-  //   }
-    
-  //   // Set up auto-transition timer
-  //   const timer = setTimeout(() => {
-  //     // When time is up, transition to next state
-  //     machine.api.next();
-  //   }, timeRemaining);
-    
-  //   // Clean up timer on state change
-  //   return () => clearTimeout(timer);
-  // }, [currentState.key, timeRemaining, machine]);
   
-  // // Update countdown timer
   useEffect(() => {
     setTimeRemaining(currentState.data.duration);
     const timer = setInterval(() => {
@@ -64,40 +39,7 @@ export const ExtendedTrafficLightView = ({
     }, 100);    
     return () => clearInterval(timer);
   }, [currentState]);
-  
-  
-  // // For pedestrian signal logic
-  // useEffect(() => {
-  //   // If we're in Red state and time remaining is less than 3 seconds, start flashing
-  //   if (currentState.is("Red") && machine.crossingRequested && 
-  //       timeRemaining < 3000) {
-  //     setIsFlashing(true);
-  //   } else {
-  //     setIsFlashing(false);
-  //     setFlashVisible(true);
-  //   }
-  // }, [currentState, timeRemaining, machine.crossingRequested]);
-  
-  // Flash the pedestrian signal 
-  // useEffect(() => {
-  //   if (isFlashing) {
-  //     const interval = setInterval(() => {
-  //       setFlashVisible(prev => !prev);
-  //     }, 500); // Flash every 500ms
-      
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [isFlashing]);
-  
-  // Determine if pedestrian can cross
-  const machineState = machine.data.getState();
 
-  // const showWalkSignal = currentState.is("Red") && machineState.crossingRequested;
-  const pedestrianSignal = currentState.data.pedestrian;
-  
-  // Calculate progress percentage
-  const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
-  
   return (
     <div className="flex flex-col items-center">
       <div className="flex space-x-8 mb-4">
@@ -140,7 +82,7 @@ export const ExtendedTrafficLightView = ({
           </div>
           <div className="text-sm text-center">
             {pedestrianSignal.match({
-              Walk: () => "WALK", //walkTimeRemaining ? "WALK CAREFULLY" : "WALK",
+              Walk: () => "WALK",
               DontWalk: () => "DON'T WALK",
               Error: () => "ERROR",
             })}
@@ -152,7 +94,7 @@ export const ExtendedTrafficLightView = ({
           )}
         </div>
       </div>
-      
+
       {/* Light Countdown */}
       <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
         <div 
@@ -173,26 +115,19 @@ export const ExtendedTrafficLightView = ({
           <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
         <div 
           className={`h-full rounded-full bg-yellow-500`}
-          style={{ width: `${(walkTimeRemaining / walkWarningDuration) * 100}%` }}
+          style={{ width: `${(walkTimeRemaining / walkDuration) * 100}%` }}
         ></div>
           </div>
           <div className="text-xs text-gray-600 mb-2">Walk Countdown</div>
         </>
       )}
       
-      {/* Current state and actions */}
-
       <div className="text-xl font-bold mb-2">
         {currentState.data.message}
       </div>
       
       <div className="text-sm mb-4">
         Current state: <span className="font-mono">{currentState.key}</span>
-        {isFlashing && 
-          <span className="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">
-            Flashing
-          </span>
-        }
       </div>
       
       <div className="flex space-x-4">

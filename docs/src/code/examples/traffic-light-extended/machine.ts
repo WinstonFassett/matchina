@@ -1,7 +1,6 @@
 import { createMachine, defineStates, enter, setup, whenState, withApi } from "matchina";
 
-export const createExtendedTrafficLightMachine = () => {
-  const pedestrianStates = defineStates({
+ const pedestrianStates = defineStates({
     Walk: undefined,
     DontWalk: undefined,
     Error: undefined
@@ -58,13 +57,15 @@ export const createExtendedTrafficLightMachine = () => {
     }),
   });
 
-  const walkDuration = 
-    states.Green().data.duration +
-    states.Yellow().data.duration
-    
-  const greenWalkWarnAt = walkDuration - states.Yellow().data.duration - states.Green().data.duration / 2;
-  const yellowWalkWarnAt = 0 //states.Yellow().data.duration;
+
+export const walkDuration = 
+  states.Green().data.duration +
+  states.Yellow().data.duration
   
+export const greenWalkWarnAt = walkDuration - states.Yellow().data.duration - states.Green().data.duration / 2;
+export const yellowWalkWarnAt = 0 //states.Yellow().data.duration;
+
+export const createExtendedTrafficLightMachine = () => {   
   const machine = Object.assign(
     withApi(createMachine(
       states,

@@ -14,7 +14,7 @@ import CodeTabs from "@components/CodeTabs.astro";
 A traffic light state machine that cycles through Red, Yellow, and Green states, demonstrating a state machine with multiple distinct states in a defined sequence.
 
 <div className="not-content">
-  <TrafficLightExample client:visible />
+  <TrafficLightExample client:only="react" />
 </div>
 
 ## Implementation Details
@@ -69,7 +69,7 @@ import extendedIndexCode from "@code/examples/traffic-light-extended/index.tsx?r
 Let's extend our basic traffic light to include pedestrian crossing functionality. This demonstrates how to model more complex systems with additional states and transitions.
 
 <div className="not-content">
-  <ExtendedTrafficLightExample client:visible />
+  <ExtendedTrafficLightExample client:visible="react" />
 </div>
 
 ### Implementation Details
