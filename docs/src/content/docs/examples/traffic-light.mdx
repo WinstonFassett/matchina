@@ -48,7 +48,7 @@ Unlike the counter example which used data within a state, or the toggle example
 This basic implementation can be extended in several ways:
 
 - Add automatic transitions using lifecycle hooks and timers
-- Implement pedestrian crossing controls
+- Implement pedestrian crossing controls (see below)
 - Add special states like "flashing yellow" for low-traffic periods
 
 ## Next Steps
@@ -58,3 +58,43 @@ Now that you've seen state machines with varying complexity, you might want to e
 - [Advanced State Data](/guides/state-data) - Learn more about storing and using data in states
 - [Lifecycle Hooks](/guides/lifecycle) - Add behavior when states change
 - [State Guards](/guides/guards) - Control when transitions can occur
+
+## Extended Example: Traffic Light with Pedestrian Crossing
+
+import ExtendedTrafficLightExample from "@code/examples/traffic-light-extended/example";
+import extendedMachineCode from "@code/examples/traffic-light-extended/machine.ts?raw";
+import extendedViewCode from "@code/examples/traffic-light-extended/TrafficLightView.tsx?raw";
+import extendedIndexCode from "@code/examples/traffic-light-extended/index.tsx?raw";
+
+Let's extend our basic traffic light to include pedestrian crossing functionality. This demonstrates how to model more complex systems with additional states and transitions.
+
+<div className="not-content">
+  <ExtendedTrafficLightExample client:visible />
+</div>
+
+### Implementation Details
+
+This extended example builds on the basic traffic light by adding:
+
+- A new state for pedestrian crossing (`RedWithPedestrian`)
+- Additional state data for pedestrian signals
+- A pedestrian button transition to request crossing
+- Visual indication of pedestrian crossing status
+
+### Machine Code
+
+<CodeTabs files={[
+  { name: "machine.ts", code: extendedMachineCode, twoslash: true },
+  { name: "TrafficLightView.tsx", code: extendedViewCode },
+  { name: "index.tsx", code: extendedIndexCode }
+  ]} />
+
+### How It Works
+
+The traffic light normally cycles through Green → Yellow → Red → Green, but when a pedestrian presses the button:
+
+1. If the light is already Red, it transitions to RedWithPedestrian to allow crossing
+2. If the light is Green or Yellow, it continues its normal cycle until reaching Red
+3. From RedWithPedestrian, the light returns to Green after pedestrians have crossed
+
+This pattern demonstrates how state machines can handle external inputs differently based on their current state, providing a clean way to model complex interactive systems.

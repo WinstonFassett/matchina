@@ -1,0 +1,54 @@
+---
+title: Extended Traffic Light
+description: A traffic light with pedestrian crossing controls
+---
+
+import ExtendedTrafficLightExample from "@code/examples/traffic-light-extended/example";
+import machineCode from "@code/examples/traffic-light-extended/machine.ts?raw";
+import viewCode from "@code/examples/traffic-light-extended/TrafficLightView.tsx?raw";
+import indexCode from "@code/examples/traffic-light-extended/index.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+
+An extended traffic light state machine that adds pedestrian crossing functionality, demonstrating how to model more complex systems with additional states and transitions.
+
+<div className="not-content">
+  <ExtendedTrafficLightExample client:visible />
+</div>
+
+## Implementation Details
+
+This example builds on the basic [Traffic Light](/examples/traffic-light) example by adding:
+
+- A new state for pedestrian crossing (`RedWithPedestrian`)
+- Additional state data for pedestrian signals
+- A pedestrian button transition to request crossing
+- Visual indication of pedestrian crossing status
+
+The extended machine shows how to model a system that responds to external input (pedestrian button) and has different behaviors based on its current state.
+
+## Machine Code
+
+<CodeTabs files={[
+  { name: "machine.ts", code: machineCode, twoslash: true },
+  { name: "TrafficLightView.tsx", code: viewCode },
+  { name: "index.tsx", code: indexCode }
+  ]} />
+
+## How It Works
+
+The traffic light normally cycles through Green → Yellow → Red → Green, but when a pedestrian presses the button:
+
+1. If the light is already Red, it transitions to RedWithPedestrian to allow crossing
+2. If the light is Green or Yellow, it continues its normal cycle until reaching Red
+3. From RedWithPedestrian, the light returns to Green after pedestrians have crossed
+
+This pattern demonstrates how state machines can handle external inputs differently based on their current state, providing a clean way to model complex interactive systems.
+
+## Next Steps
+
+Now that you've seen a more complex state machine example, you might want to explore:
+
+- [Nested States](/guides/nested-states) - Create hierarchical state machines
+- [Effect Handlers](/guides/effects) - Add side effects to your transitions
+- [History States](/guides/history) - Remember previous states
