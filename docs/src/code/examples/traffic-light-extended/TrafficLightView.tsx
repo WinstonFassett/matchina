@@ -18,11 +18,26 @@ export const ExtendedTrafficLightView = ({
   const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
   // const [currentStateKey, setCurrentStateKey] = useState(currentState.key);
   
+  const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
+
   useMachine(machine.data)
   const data = machine.data.getState()
   useEffect(() => {
     console.log("Traffic light data updated:", data);
   }, [data])
+
+  const walkWarningDuration = data.data.walkWarningDuration;
+  useEffect(() => {
+    if (walkWarningDuration) {
+      setWalkTimeRemaining(walkWarningDuration);
+      const timer = setInterval(() => {
+        setWalkTimeRemaining(prev => Math.max(0, prev - 100));
+      }, 100);
+      return () => clearInterval(timer);
+    } else {
+      setWalkTimeRemaining(0);
+    }
+  }, [walkWarningDuration])
   // // Handle state changes and timer
   // useEffect(() => {
   //   // Reset timer when state changes
@@ -125,27 +140,48 @@ export const ExtendedTrafficLightView = ({
           </div>
           <div className="text-sm text-center">
             {pedestrianSignal.match({
-              Walk: () => "WALK",
+              Walk: () => "WALK", //walkTimeRemaining ? "WALK CAREFULLY" : "WALK",
               DontWalk: () => "DON'T WALK",
               Error: () => "ERROR",
             })}
           </div>
+          {walkTimeRemaining > 0 && (
+            <div className="ml-2 text-yellow-600 font-mono">
+              {`${(walkTimeRemaining / 1000).toFixed(1)}s`}
+            </div>
+          )}
         </div>
       </div>
       
-      {/* Progress bar */}
+      {/* Light Countdown */}
       <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
         <div 
           className={`h-full rounded-full ${currentState.match({
-            Green: () => "bg-green-500",
-            Yellow: () => "bg-yellow-400",
-            Red: () => "bg-red-600",
-            RedWithPedestrianRequest: () => "bg-red-600",
+        Green: () => "bg-green-500",
+        Yellow: () => "bg-yellow-400",
+        Red: () => "bg-red-600",
+        RedWithPedestrianRequest: () => "bg-red-600",
           }, false)}`}
           style={{ width: `${progressPercent}%` }}
         ></div>
       </div>
+      <div className="text-xs text-gray-600 mb-2">Light Countdown</div>
+
+      {/* Walk Countdown */}
+      {walkWarningDuration && walkTimeRemaining > 0 && (
+        <>
+          <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
+        <div 
+          className={`h-full rounded-full bg-yellow-500`}
+          style={{ width: `${(walkTimeRemaining / walkWarningDuration) * 100}%` }}
+        ></div>
+          </div>
+          <div className="text-xs text-gray-600 mb-2">Walk Countdown</div>
+        </>
+      )}
       
+      {/* Current state and actions */}
+
       <div className="text-xl font-bold mb-2">
         {currentState.data.message}
       </div>

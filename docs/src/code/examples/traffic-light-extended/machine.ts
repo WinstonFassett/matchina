@@ -36,6 +36,7 @@ export const createExtendedTrafficLightMachine = () => {
   interface State {
     key: string,
     crossingRequested?: boolean;
+    walkWarningDuration?: number;
   }
 
   // const sharedState = createTransitionMachine<StateMachineEvent<State, State>>(
@@ -70,7 +71,7 @@ export const createExtendedTrafficLightMachine = () => {
     Yellow: () => ({
       message: "Prepare to stop",
       duration: 2000, // 2 seconds
-      pedestrian: pedestrianStates.DontWalk(),
+      pedestrian: pedestrianStates.Walk(),
     }),
     Red: () => ({
       message: "Stop",
@@ -89,6 +90,14 @@ export const createExtendedTrafficLightMachine = () => {
     }),
   });
 
+  const walkDuration = 
+    states.Green().data.duration +
+    states.Yellow().data.duration
+
+    
+  const greenWalkWarnAt = walkDuration - states.Yellow().data.duration - states.Green().data.duration / 2;
+  const yellowWalkWarnAt = 0 //states.Yellow().data.duration;
+  
   const machine = Object.assign(
     withApi(createMachine(
       states,
@@ -108,7 +117,7 @@ export const createExtendedTrafficLightMachine = () => {
     {
       data: sharedState,
       requestCrossing: () => {
-        console.log('request crossing')
+        // console.log('request crossing')
         sharedState.send("change", {
           crossingRequested: true,
         })
@@ -117,10 +126,14 @@ export const createExtendedTrafficLightMachine = () => {
     },
   );
   let timer: NodeJS.Timeout | null = null;
+  let walkWarnTimer: NodeJS.Timeout | null = null;
   setup(machine)(
-    enter(whenState("Red", (ev) => {
+    // enter(whenState("Green", (ev) => {
+      
+    // })),
+    enter(whenState("Red", (ev) => {      
       const state = machine.data.getState();
-      console.log('machine state', state)
+      // console.log('machine state', state)
       if (state.data.crossingRequested) {
         queueMicrotask(machine.api.crossingRequested)        
       }
@@ -132,6 +145,58 @@ export const createExtendedTrafficLightMachine = () => {
     })),
     enter(ev => {
       console.log("Entering state:", ev.to.key);
+      if (walkWarnTimer) {
+        clearTimeout(walkWarnTimer);
+        walkWarnTimer = null;
+      }
+      // if (ev.to.key !== "Yellow") {
+      //   if (sharedState.getState().data.walkWarningDuration) {
+      //     sharedState.send("change", {
+      //       walkWarningDuration: 0,
+      //     })
+      //   }
+      // } 
+      // // if (ev.to.key === "Green") {
+      // //   walkWarnTimer = setTimeout(() => {
+      // //     sharedState.send("change", {
+      // //       walkWarningDuration,
+      // //     })
+      // //   }, walkWarnAt)
+      // // } 
+
+      // update pedestrian timer
+      if (ev.to.is("Red") ) {
+        sharedState.send("change", {
+          walkWarningDuration: 0,
+        })
+        // if (walkWarnTimer) {
+        //   clearTimeout(walkWarnTimer);
+        //   walkWarnTimer = null;
+        // }
+      } else {
+        const walkWarnAt = 
+          ev.to.is("Green") ? greenWalkWarnAt : 
+          ev.to.is("Yellow") ? yellowWalkWarnAt : -1;
+        console.log("walkWarnAt", walkWarnAt, "for state:", ev.to.key);
+        if (walkWarnAt > -1) {
+          const walkWarningDuration = 
+            ev.to.is("Green") ? walkDuration - greenWalkWarnAt :
+            ev.to.is("Yellow") ? states.Yellow().data.duration - yellowWalkWarnAt : 0;
+          console.log("Setting walk warning duration for state:", ev.to.key, "for duration:", walkWarningDuration);
+          walkWarnTimer = setTimeout(() => {
+            // console.log("Setting walk warning duration for state:", ev.to.key, "for duration:", walkWarnAt);
+            sharedState.send("change", {
+              walkWarningDuration
+            })
+          }, walkWarnAt);
+        }
+        // sharedState.send("change", {
+        //   walkWarningDuration,
+        // })
+      }
+
+      // update timer
+
       if (timer) {
         clearTimeout(timer);
         timer = null;
@@ -140,9 +205,9 @@ export const createExtendedTrafficLightMachine = () => {
       if (duration === 0) {
         return
       }
-      console.log("Setting timer for state:", ev.to.key, "for duration:", duration);
+      // console.log("Setting timer for state:", ev.to.key, "for duration:", duration);
       timer = setTimeout(() => {
-        console.log("Auto-transitioning from:", ev.to.key);
+        // console.log("Auto-transitioning from:", ev.to.key);
         machine.api.next();
       }, duration);
       // return () => {
