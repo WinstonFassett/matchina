@@ -190,14 +190,15 @@ export default defineConfig({
             {
               label: "Fetchers",
               items: [
-                {
-                  label: "Overview",
-                  link: "/examples/fetcher-overview",
-                },
-                {
-                  label: "Basic Fetcher",
-                  link: "/examples/fetcher-basic",
-                },
+                // {
+                //   label: "Overview",
+                //   link: "/examples/fetcher-overview",
+                // },
+                // BROKEN
+                // {
+                //   label: "Basic Fetcher",
+                //   link: "/examples/fetcher-basic",
+                // },
                 {
                   label: "Advanced Fetcher",
                   link: "/examples/fetcher-advanced",
