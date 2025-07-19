@@ -11,6 +11,7 @@ I want you to help me:
 3. Ensure the MDX files properly import and display these code files using the CodeTabs component
 
 The stopwatch examples that need updating are:
+
 - stopwatch-using-data-and-transition-functions
 - stopwatch-using-data-and-hooks
 - stopwatch-using-react-state-and-effects
@@ -30,10 +31,10 @@ import CodeTabs from "@components/CodeTabs.astro";
 ...
 
 <CodeTabs files={[
-  { name: "machine.ts", code: machineCode, twoslash: true },
-  { name: "TrafficLightView.tsx", code: viewCode },
-  { name: "index.tsx", code: indexCode }
-  ]} />
+{ name: "machine.ts", code: machineCode, twoslash: true },
+{ name: "TrafficLightView.tsx", code: viewCode },
+{ name: "index.tsx", code: indexCode }
+]} />
 ```
 
 Please analyze each stopwatch example and help me implement the code tabs properly.

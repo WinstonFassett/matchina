@@ -9,7 +9,7 @@ Focus: Fix all stopwatch examples that have the `machine.getChange` error or oth
 - [✓] The `machine.getChange` errors are fixed (by updating `MachineExampleWithChart.tsx`)
 - [ ] **All stopwatch examples**: Implement code tabs like other examples
   - [ ] stopwatch-using-data-and-transition-functions
-  - [ ] stopwatch-using-data-and-hooks  
+  - [ ] stopwatch-using-data-and-hooks
   - [ ] stopwatch-using-react-state-and-effects
   - [ ] stopwatch-using-external-react-state-and-state-effects
   - [ ] stopwatch-using-react-state-using-lifecycle-instead-of-useEffect
@@ -57,11 +57,13 @@ Focus: Improve the overall example framework.
 1. **Stopwatch Examples**: The stopwatch examples are now functional (after fixing the `machine.getChange` error), but they need to be structured with code tabs like other examples.
 
 2. **Fetcher Examples**: The fetcher examples are likely experiencing similar issues:
+
    - Possibly using `getChange` instead of `change` in their implementation
    - May need updating to use the current API patterns
    - Should verify the promise state machine implementation matches current best practices
 
-3. **Code Tabs Implementation**: 
+3. **Code Tabs Implementation**:
+
    - Many examples already use the pattern with separate code files and a tabbed interface:
      ```tsx
      import machineCode from "@code/examples/fetcher-basic/machine.ts?raw";
