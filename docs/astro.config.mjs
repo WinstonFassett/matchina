@@ -183,7 +183,7 @@ export default defineConfig({
                 },
                 {
                   label: "With Lifecycle",
-                  link: "/examples/stopwatch-using-react-state-using-lifecyle-instead-of-useeffect",
+                  link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
                 }
               ]
             },
