@@ -2,10 +2,13 @@
 title: Stopwatch with Data and Transition Functions
 ---
 
-import StopwatchExample from "@code/examples/stopwatch-using-data-and-transition-functions";
+import StopwatchExample from "@code/examples/stopwatch-using-data-and-transition-functions/example";
 import machineCode from "@code/examples/stopwatch-using-data-and-transition-functions/machine.ts?raw";
+import viewCode from "@code/examples/stopwatch-using-data-and-transition-functions/StopwatchView.tsx?raw";
 import indexCode from "@code/examples/stopwatch-using-data-and-transition-functions/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+import tickEffectCode from "@code/examples/lib/tick-effect.ts?raw";
 
 ## Interactive Stopwatch Example
 
@@ -25,12 +28,11 @@ This approach is more verbose but provides stronger typing and clearer data flow
 
 ## Machine Code
 
-The machine implementation defines state data constructors and transitions as functions:
-
-<CodeBlock lang="typescript" code={machineCode} />
-
-## Component Integration
-
-Here's how the stopwatch machine is integrated with React:
-
-<CodeBlock lang="jsx" code={indexCode} />
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+    { name: "../lib/tick-effect.ts", code: tickEffectCode },
+  ]}
+/>

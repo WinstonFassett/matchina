@@ -4,8 +4,10 @@ title: Stopwatch using State Data and Hooks
 
 import StopwatchExample from "@code/examples/stopwatch-using-data-and-hooks";
 import machineCode from "@code/examples/stopwatch-using-data-and-hooks/machine.ts?raw";
+import viewCode from "@code/examples/stopwatch-using-data-and-hooks/StopwatchView.tsx?raw";
 import indexCode from "@code/examples/stopwatch-using-data-and-hooks/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 
 ## Interactive Stopwatch Example
 
@@ -27,8 +29,10 @@ The `when` helper functions as an alternative to `useEffect`, tracking when a co
 
 ## Machine Code
 
-<CodeBlock lang="typescript" code={machineCode} />
-
-## Component Integration
-
-<CodeBlock lang="jsx" code={indexCode} />
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
