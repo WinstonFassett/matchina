@@ -1,10 +1,8 @@
-import { useMachine } from "matchina/react";
 import { createTrafficLight } from "./machine";
 
 const trafficLight = createTrafficLight();
 
 export const TrafficLight = () => {
-  useMachine(trafficLight.machine);
   const { state } = trafficLight;
   return (
     <button

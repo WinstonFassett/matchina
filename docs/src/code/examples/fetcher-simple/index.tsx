@@ -58,7 +58,6 @@ function usePromise(fn: (...args: any[]) => Promise<any>) {
     );
     return view;
   }, [fn]);
-  useMachine(model.machine);
   return model;
 }
 
