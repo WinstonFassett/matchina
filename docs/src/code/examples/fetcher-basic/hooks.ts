@@ -4,7 +4,13 @@ import { createPromiseMachine, promiseDelayedSum } from "./machine";
 export const useSumFetcher = (defaultA = 5, defaultB = 7) => {
   const [a, setA] = useState(defaultA);
   const [b, setB] = useState(defaultB);
-  const [adder] = useState(() => createPromiseMachine(promiseDelayedSum));
+  const [adder] = useState(() => {
+    const machine = createPromiseMachine(promiseDelayedSum);
+    return {
+      machine,
+      state: machine.getState(),
+    };
+  });
   
   useEffect(() => {
     // Clean up any pending promises when component unmounts
@@ -15,11 +21,11 @@ export const useSumFetcher = (defaultA = 5, defaultB = 7) => {
   }, []);
 
   const calculate = () => {
-    adder.execute(a, b);
+    adder.machine.execute(a, b);
   };
 
   return {
-    machine: adder,
+    ...adder,
     a,
     b,
     setA,

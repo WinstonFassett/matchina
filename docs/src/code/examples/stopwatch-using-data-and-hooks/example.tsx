@@ -1,11 +1,17 @@
 import { useMachine } from "matchina/react";
 import { useMemo } from "react";
+import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { StopwatchView } from "./StopwatchView";
 import { createStopwatchMachine } from "./machine";
 
-// Named export for backward compatibility
-export function Stopwatch() {
+export default function StopwatchExample() {
   const stopwatch = useMemo(createStopwatchMachine, []);
   useMachine(stopwatch.machine);
-  return <StopwatchView machine={stopwatch} />;
+  return (
+    <MachineExampleWithChart
+      machine={stopwatch}
+      AppView={StopwatchView}
+      showRawState={true}
+    />
+  );
 }
