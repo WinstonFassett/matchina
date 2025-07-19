@@ -195,14 +195,6 @@ export default defineConfig({
                   link: "/examples/fetcher-overview",
                 },
                 {
-                  label: "Simple Fetch",
-                  link: "/examples/fetch-simple",
-                },
-                {
-                  label: "Advanced Fetch",
-                  link: "/examples/fetch-plus",
-                },
-                {
                   label: "Basic Fetcher",
                   link: "/examples/fetcher-basic",
                 },

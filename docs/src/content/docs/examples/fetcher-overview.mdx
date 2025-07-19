@@ -13,16 +13,6 @@ The fetcher examples demonstrate how to use Matchina's promise machines to handl
 
 <CardGrid>
   <LinkCard
-    title="Simple Fetch"
-    href="/examples/fetch-simple/"
-    description="Basic promise handling with a minimal implementation"
-  />
-  <LinkCard
-    title="Advanced Fetch"
-    href="/examples/fetch-plus/"
-    description="Enhanced fetch with additional features and better error handling"
-  />
-  <LinkCard
     title="Basic Fetcher"
     href="/examples/fetcher-basic/"
     description="Type-safe promise machine for handling async operations"
@@ -38,26 +28,19 @@ The fetcher examples demonstrate how to use Matchina's promise machines to handl
 
 ### Simple vs. Advanced Implementations
 
-The fetcher examples demonstrate a progression from simple to advanced implementations:
+The fetcher examples demonstrate two approaches to implementing async data fetching:
 
-1. **Simple Fetch** (`fetch-simple`): Minimal implementation showing the core promise machine concept
-2. **Advanced Fetch** (`fetch-plus`): Enhanced implementation with additional state handling
-3. **Basic Fetcher** (`fetcher-basic`): Type-safe implementation with clear state transitions
-4. **Advanced Fetcher** (`fetcher-advanced`): Full-featured implementation with robust error handling and recovery mechanisms
+1. **Basic Fetcher** (`fetcher-basic`): Type-safe implementation with clear state transitions
+2. **Advanced Fetcher** (`fetcher-advanced`): Full-featured implementation with robust error handling and recovery mechanisms
 
 ### Key Differences
 
-- **Simple Fetch vs Basic Fetcher**: While both implement basic fetch functionality, the Basic Fetcher uses Matchina's promise machine for better type safety and state management
-- **Advanced Fetch vs Advanced Fetcher**: The Advanced Fetcher adds retry logic, timeout, and abort capability over the Advanced Fetch example
-- **Simple Fetch vs Advanced Fetch**: Advanced Fetch adds enhanced error handling and UI improvements
-- **Basic Fetcher vs Advanced Fetcher**: Advanced Fetcher adds robust error handling, retry logic, and a more comprehensive UI
+- **Basic Fetcher vs Advanced Fetcher**: Advanced Fetcher adds robust error handling, retry logic, timeout support, and a more comprehensive UI
 
 ### Key Features by Example
 
 | Example          | Type Safety | Error Handling | Retry Logic | Timeout | Abort Capability | UI Integration |
 | ---------------- | ----------- | -------------- | ----------- | ------- | ---------------- | -------------- |
-| Simple Fetch     | Basic       | Basic          | No          | No      | No               | Simple         |
-| Advanced Fetch   | Good        | Enhanced       | No          | No      | No               | Enhanced       |
 | Basic Fetcher    | Good        | Standard       | No          | No      | No               | Interactive    |
 | Advanced Fetcher | Excellent   | Comprehensive  | Yes         | Yes     | Yes              | Comprehensive  |
 
