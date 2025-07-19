@@ -4,5 +4,11 @@ import { FetcherAppView } from "./FetcherAppView";
 
 export default function FetcherExample() {
   const fetcher = useAdvancedFetcher();
-  return <MachineExampleWithChart machine={fetcher} AppView={FetcherAppView} showRawState={true} />;
+  return (
+    <MachineExampleWithChart
+      machine={fetcher}
+      AppView={FetcherAppView}
+      showRawState={true}
+    />
+  );
 }

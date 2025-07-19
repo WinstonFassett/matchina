@@ -4,7 +4,7 @@ import { TrafficLight } from "./index";
 
 export default function TrafficLightExample() {
   const trafficLight = createTrafficLight();
-  
+
   return (
     <div>
       <TrafficLight />

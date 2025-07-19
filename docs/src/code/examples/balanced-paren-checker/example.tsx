@@ -5,7 +5,7 @@ import { balancedParenthesesChecker } from "./machine";
 
 export default function BalancedParenthesesExample() {
   const checker = useMemo(() => balancedParenthesesChecker(), []);
-  
+
   return (
     <div>
       <BalancedParenthesesDemo />
