@@ -5,7 +5,13 @@ import { StopwatchView } from "./StopwatchView";
 // Main export for importing in MDX documentation
 export default function StopwatchExample() {
   const stopwatch = createStopwatchMachine();
-  return <MachineExampleWithChart machine={stopwatch} AppView={StopwatchView} showRawState={true} />;
+  return (
+    <MachineExampleWithChart
+      machine={stopwatch}
+      AppView={StopwatchView}
+      showRawState={true}
+    />
+  );
 }
 
 // Named export for backward compatibility

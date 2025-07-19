@@ -16,20 +16,20 @@ export const createStopwatchMachine = () => {
           _tick: "Ticking",
           stop: "Stopped",
           suspend: "Suspended",
-          reset: "Stopped"
+          reset: "Stopped",
         },
         Suspended: {
           resume: "Ticking",
           stop: "Stopped",
-          reset: "Stopped"
+          reset: "Stopped",
         },
       },
       // Initial state
-      "Stopped"
+      "Stopped",
     ),
     {
       elapsed: 0,
-    }
+    },
   );
 
   // Update elapsed time on _tick event
@@ -37,9 +37,10 @@ export const createStopwatchMachine = () => {
     // Before transition handler
     (ev) => {
       if (ev.type === "_tick" && ev.from.is("Ticking")) {
-        ev.to.data.elapsed = ev.from.data.elapsed + (Date.now() - ev.from.data.at);
+        ev.to.data.elapsed =
+          ev.from.data.elapsed + (Date.now() - ev.from.data.at);
       }
-      
+
       // Reset elapsed time on reset
       if (ev.type === "reset") {
         ev.to.data.elapsed = 0;
@@ -51,28 +52,28 @@ export const createStopwatchMachine = () => {
         (ev) => ev?.to.is("Ticking"),
         () => {
           let requestId: number;
-          
+
           // Function to trigger tick events
           const tick = () => {
             model._tick();
             requestId = requestAnimationFrame(tick);
           };
-          
+
           // Start animation loop
           requestId = requestAnimationFrame(tick);
-          
+
           // Return cleanup function
           return () => {
             cancelAnimationFrame(requestId);
           };
-        }
-      )
+        },
+      ),
     ),
     // Update model's elapsed property to match state
     effect((ev) => {
       model.elapsed = ev?.to.data.elapsed ?? 0;
-    })
+    }),
   );
-  
+
   return model;
 };

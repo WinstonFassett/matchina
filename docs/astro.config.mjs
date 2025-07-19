@@ -19,8 +19,8 @@ export default defineConfig({
     rehypePlugins: [[rehypeShikiji, { theme: "material-theme-ocean" }]],
 
     // remarkPlugins: [
-    //   [remarkShikiTwoslash, { 
-    //     // theme: "material-theme-ocean" 
+    //   [remarkShikiTwoslash, {
+    //     // theme: "material-theme-ocean"
     //   }]
     //   // '@astrojs/markdown-remark',
     //   // {
@@ -60,7 +60,7 @@ export default defineConfig({
             {
               label: "What's in the Box",
               link: "/guides/inside",
-            }
+            },
           ],
         },
         {
@@ -73,7 +73,7 @@ export default defineConfig({
             {
               label: "State Machines",
               link: "/guides/state-machine-interface",
-            }
+            },
           ],
         },
         {
@@ -102,7 +102,7 @@ export default defineConfig({
             {
               label: "React Integration",
               link: "/guides/integrations",
-            }
+            },
           ],
         },
         {
@@ -131,7 +131,7 @@ export default defineConfig({
             {
               label: "Context",
               link: "/guides/context",
-            }
+            },
           ],
         },
         {
@@ -155,8 +155,8 @@ export default defineConfig({
                 {
                   label: "Rock-Paper-Scissors",
                   link: "/examples/rock-paper-scissors",
-                }
-              ]
+                },
+              ],
             },
             {
               label: "Stopwatches",
@@ -184,8 +184,8 @@ export default defineConfig({
                 {
                   label: "With Lifecycle",
                   link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
-                }
-              ]
+                },
+              ],
             },
             {
               label: "Fetchers",
@@ -205,8 +205,8 @@ export default defineConfig({
                 {
                   label: "Advanced Fetcher",
                   link: "/examples/fetcher-advanced",
-                }
-              ]
+                },
+              ],
             },
             {
               label: "Advanced",
@@ -234,9 +234,9 @@ export default defineConfig({
                 {
                   label: "Checkout Flow",
                   link: "/examples/checkout",
-                }
-              ]
-            }
+                },
+              ],
+            },
           ],
         },
         {
@@ -249,7 +249,7 @@ export default defineConfig({
             {
               label: "Unions as Machines",
               link: "/guides/unions-as-machine",
-            }
+            },
           ],
         },
       ],

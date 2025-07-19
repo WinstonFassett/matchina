@@ -24,6 +24,7 @@ This example demonstrates a stopwatch state machine with start, stop, and reset 
 ## State Definition
 
 The stopwatch has three states:
+
 - **Stopped**: The initial state with an elapsed time of 0
 - **Ticking**: The running state that updates elapsed time
 - **Suspended**: A paused state that preserves elapsed time
@@ -37,6 +38,6 @@ The machine uses lifecycle hooks to implement the timer functionality, automatic
     { name: "machine.ts", code: machineCode },
     { name: "StopwatchView.tsx", code: viewCode },
     { name: "index.tsx", code: indexCode },
-    { name: "../lib/tick-effect.ts", code: tickEffectCode }
+    { name: "../lib/tick-effect.ts", code: tickEffectCode },
   ]}
 />

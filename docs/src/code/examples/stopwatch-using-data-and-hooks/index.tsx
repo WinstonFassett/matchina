@@ -8,7 +8,13 @@ import { createStopwatchMachine } from "./machine";
 export default function StopwatchExample() {
   const stopwatch = useMemo(createStopwatchMachine, []);
   useMachine(stopwatch.machine);
-  return <MachineExampleWithChart machine={stopwatch} AppView={StopwatchView} showRawState={true} />;
+  return (
+    <MachineExampleWithChart
+      machine={stopwatch}
+      AppView={StopwatchView}
+      showRawState={true}
+    />
+  );
 }
 
 // Named export for backward compatibility
