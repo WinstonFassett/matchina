@@ -6,9 +6,13 @@ import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xs
 import { useMachine } from "@lib/src/integrations/react";
 
 interface MachineExampleWithChartProps<T = any> {
-  machine: FactoryMachine<any> & T;
+  machine: { 
+    machine: FactoryMachine<any>;
+    state: { key: string; data: any };
+    [key: string]: any;
+  };
   AppView?: ComponentType<{ 
-    machine: FactoryMachine<any> & T;
+    machine: any;
   } & Record<string, any>>;
   showRawState?: boolean;
   title?: string;
@@ -25,18 +29,21 @@ export function MachineExampleWithChart<T = any>({
   showRawState = false,
   title
 }: MachineExampleWithChartProps<T>) {
-  useMachine(machine);
-  const currentState = machine.getState();
+  // Use the machine
+  useMachine(machine.machine);
+  
+  // Access the current state directly from the machine object
+  const currentState = machine.state;
   // Get the XState definition for the Mermaid diagram
   const config = useMemo(
-    () => getXStateDefinition(machine),
-    [machine]
+    () => getXStateDefinition(machine.machine),
+    [machine.machine]
   );
 
   // Create an API for the actions
   const actions = useMemo(
-    () => createApi(machine),
-    [machine]
+    () => createApi(machine.machine),
+    [machine.machine]
   );
 
   return (
@@ -58,7 +65,15 @@ export function MachineExampleWithChart<T = any>({
                     <button
                       key={action}
                       className="mr-2 mb-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
-                      onClick={() => machine.send(action)}
+                      onClick={() => {
+                        // Check if the machine has the action as a method
+                        if (typeof (machine as any)[action] === 'function') {
+                          (machine as any)[action]();
+                        } else if (machine.machine && typeof machine.machine.send === 'function') {
+                          // Fall back to machine.send if available
+                          machine.machine.send(action);
+                        }
+                      }}
                     >
                       {action}
                     </button>
