@@ -121,10 +121,6 @@ export default defineConfig({
               link: "/guides/union-machines",
             },
             {
-              label: "Timsy",
-              link: "/guides/timsy",
-            },
-            {
               label: "Hooks API",
               link: "/guides/hooks",
             },
