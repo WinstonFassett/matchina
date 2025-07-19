@@ -6,14 +6,10 @@ import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xs
 import { useMachine } from "@lib/src/integrations/react";
 
 interface MachineExampleWithChartProps<T = any> {
-  machine: {
-    machine: FactoryMachine<any>;
-    state: { key: string; data: any };
-    [key: string]: any;
-  };
+  machine: FactoryMachine<any> & T;
   AppView?: ComponentType<
     {
-      machine: any;
+      machine: FactoryMachine<any> & T;
     } & Record<string, any>
   >;
   showRawState?: boolean;
@@ -31,19 +27,13 @@ export function MachineExampleWithChart<T = any>({
   showRawState = false,
   title,
 }: MachineExampleWithChartProps<T>) {
-  // Use the machine
-  useMachine(machine.machine);
-
-  // Access the current state directly from the machine object
-  const currentState = machine.state;
+  useMachine(machine);
+  const currentState = machine.getState();
   // Get the XState definition for the Mermaid diagram
-  const config = useMemo(
-    () => getXStateDefinition(machine.machine),
-    [machine.machine],
-  );
+  const config = useMemo(() => getXStateDefinition(machine), [machine]);
 
   // Create an API for the actions
-  const actions = useMemo(() => createApi(machine.machine), [machine.machine]);
+  const actions = useMemo(() => createApi(machine), [machine]);
 
   return (
     <div className="machine-example">
@@ -65,18 +55,7 @@ export function MachineExampleWithChart<T = any>({
                       <button
                         key={action}
                         className="mr-2 mb-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
-                        onClick={() => {
-                          // Check if the machine has the action as a method
-                          if (typeof (machine as any)[action] === "function") {
-                            (machine as any)[action]();
-                          } else if (
-                            machine.machine &&
-                            typeof machine.machine.send === "function"
-                          ) {
-                            // Fall back to machine.send if available
-                            machine.machine.send(action);
-                          }
-                        }}
+                        onClick={() => machine.send(action)}
                       >
                         {action}
                       </button>
@@ -92,7 +71,7 @@ export function MachineExampleWithChart<T = any>({
           <StateMachineMermaidDiagram
             config={config}
             stateKey={currentState.key}
-            actions={actions}
+            actions={actions as any}
           />
         </div>
       </div>
