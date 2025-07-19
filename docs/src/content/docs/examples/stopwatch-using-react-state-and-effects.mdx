@@ -5,7 +5,9 @@ title: Stopwatch with React State and Effects
 import StopwatchExample from "@code/examples/stopwatch-using-react-state-and-effects";
 import indexCode from "@code/examples/stopwatch-using-react-state-and-effects/index.tsx?raw";
 import hookCode from "@code/examples/stopwatch-using-react-state-and-effects/useStopwatch.ts?raw";
+import viewCode from "@code/examples/stopwatch-using-react-state-and-effects/StopwatchView.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 
 ## Interactive Stopwatch Example
 
@@ -23,10 +25,12 @@ This example demonstrates a React-first implementation using a declarative state
 
 The `useStopwatch` hook relies on React for both its state management and effects, making it familiar to React developers.
 
-## Hook Implementation
+## Machine Code
 
-<CodeBlock lang="typescript" code={hookCode} />
-
-## Component Integration
-
-<CodeBlock lang="jsx" code={indexCode} />
+<CodeTabs
+  files={[
+    { name: "useStopwatch.ts", code: hookCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>

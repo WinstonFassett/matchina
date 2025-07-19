@@ -3,9 +3,12 @@ title: Stopwatch with React State and Lifecycle Hooks
 ---
 
 import StopwatchExample from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect";
+import machineCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine.ts?raw";
 import hookCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/useStopwatch.ts?raw";
 import indexCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/index.tsx?raw";
+import viewCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/StopwatchView.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 
 ## Interactive Stopwatch Example
 
@@ -29,10 +32,13 @@ While slightly more verbose than other approaches, `onLifecycle` offers a superi
 
 For example, in a configuration like `{ Rejected: { enter: ev => { ev.data.error } } }`, TypeScript would correctly infer and autocomplete `ev.error` since it's part of the `Rejected` state's `data`.
 
-## Hook Implementation
+## Machine Code
 
-<CodeBlock lang="typescript" code={hookCode} />
-
-## Component Integration
-
-<CodeBlock lang="jsx" code={indexCode} />
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "useStopwatch.ts", code: hookCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode }
+  ]}
+/>
