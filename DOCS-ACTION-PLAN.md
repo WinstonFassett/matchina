@@ -1,106 +1,56 @@
 # Documentation and Examples Action Plan
 
-This document focuses on fixing documentation examples and improving the Matchina docs.
+This document outlines the issues identified in the Matchina documentation and examples, and the steps to address them. The plan is structured into focused Copilot sessions.
 
-## Focus Areas
+## Copilot Session 1: Stopwatch Examples Fix
 
-1. **Fix Broken Examples**
-   - [x] `MachineExampleWithChart.tsx`: Fixed to use `machine.state` instead of `machine.getState()`
-   - [ ] Stopwatch examples with errors:
-     - [ ] `stopwatch-using-data-and-transition-functions`: `machine.getChange is not a function`
-     - [ ] `basic stopwatch`: No live demo
-     - [ ] `with hooks`: `machine.getChange is not a function`
-     - [ ] `effect hooks`: `machine.getChange is not a function`
-   - [ ] Other broken examples:
-     - [ ] Fetcher advanced and basic
-     - [ ] Authentication flow (not live)
-     - [ ] Todo list (404)
-     - [ ] Checkout flow (not live)
+Focus: Fix all stopwatch examples that have the `machine.getChange` error or other issues.
 
-2. **Improve Documentation**
-   - [ ] Use Starlight's built-in code blocks with copy buttons
-   - [ ] Make examples concise and elegant
-   - [ ] Focus on TypeScript benefits
-   - [ ] Fix incorrect transition examples
-   - [ ] Review all examples for verbosity
-
-3. **Example Improvement**
-   - [ ] Traffic light example is good - use as model for other examples
-   - [ ] Use simple string-to-string transitions where possible
-   - [ ] Utilize hooks and states for passing arguments in events
-
-## Twoslash Integration
-   - [ ] Investigate solutions for import issues with Twoslash
-   - [ ] Find ways to break examples into smaller files
-
-## Immediate Next Steps
-1. Start the docs dev server and test if our fix for `MachineExampleWithChart.tsx` resolved the issues
-2. Implement Starlight's code blocks with copy functionality
-3. Fix remaining broken examples
-
-This error appears in several stopwatch examples. The issue is likely related to the API evolution where `getChange` was replaced or renamed.
-
-### Fix Plan:
-- [ ] Identify where `getChange` is being referenced incorrectly in examples
-- [ ] Update to use the current API (likely `machine.change` instead of `machine.getChange()`)
-- [ ] Test all examples after the fix
-
-## 2. Broken Examples
-
-Multiple examples are not functioning correctly or have no live demo:
-
-### Stopwatch Examples:
 - [ ] **stopwatch-using-data-and-transition-functions**: Fix `machine.getChange` error
+- [ ] **stopwatch-using-data-and-hooks**: Fix `machine.getChange` error
+- [ ] **stopwatch-using-react-state-and-effects**: Fix functionality
+- [ ] **stopwatch-using-external-react-state-and-state-effects**: Fix functionality
+- [ ] **stopwatch-using-react-state-using-lifecycle-instead-of-useEffect**: Fix functionality
 - [ ] **basic stopwatch**: Add live demo
-- [ ] **with hooks**: Fix `machine.getChange` error
-- [ ] **effect hooks**: Fix `machine.getChange` error
-- [ ] **all other stopwatches**: Validate functionality
+- [ ] Test all examples after fixes
 
-### Other Examples:
-- [ ] **fetcher advanced and fetcher basic**: Fix functionality
+## Copilot Session 2: Other Interactive Examples Fix
+
+Focus: Fix other broken examples throughout the documentation.
+
+- [ ] **fetcher basic and advanced**: Fix functionality
 - [ ] **authentication flow**: Implement live demo
 - [ ] **todo list**: Fix 404 error
 - [ ] **checkout flow**: Implement live demo
+- [ ] Test all examples after fixes
 
-## 3. Documentation Improvement
+## Copilot Session 3: Documentation Enhancement
 
-The documentation should be concise, elegant, and focused on demonstrating the value of the library.
+Focus: Improve the documentation content and code blocks.
 
-### Content Enhancement:
-- [ ] Review all docs for verbosity and reduce where appropriate
-- [ ] Ensure examples are minimal but complete
-- [ ] Focus on the TypeScript benefits
-- [ ] Validate documentation against actual code to ensure accuracy
+- [ ] Implement Starlight's built-in code blocks with copy buttons
+- [ ] Make documentation more concise and elegant
+- [ ] Review for technical accuracy, especially around transitions
+- [ ] Ensure consistent terminology and structure
 - [ ] Fix any incorrect transition examples or usage patterns
 
-### Style Improvements:
-- [ ] Implement Starlight's built-in code blocks with copy buttons
-- [ ] Ensure consistent formatting throughout
+## Copilot Session 4: Example Framework Enhancement
 
-## 4. Example Framework
+Focus: Improve the overall example framework.
 
-The traffic light example is considered exemplary. Other examples should follow similar patterns:
+- [ ] Ensure all examples follow the traffic light pattern's elegance and simplicity
+- [ ] Standardize the example format
+- [ ] Add visualizations where missing
+- [ ] Explore solutions for Twoslash import issues
+- [ ] Consider breaking examples into smaller files for better readability
 
-### Example Structure:
-- [ ] Dead simple, minimal, elegant examples
-- [ ] Use string-to-string transitions where possible
-- [ ] Utilize hooks and states for passing arguments in events
-- [ ] Include visualizations where appropriate
-- [ ] Break examples into appropriate file structure for readability
+## Fix Details
 
-## 5. Twoslash Integration
+1. **`machine.getChange` error**: The issue appears to be resolved by updating the `MachineExampleWithChart.tsx` component to properly access the state.
 
-There are challenges with imports in Twoslash:
-
-### Investigation:
-- [ ] Research solutions for Twoslash import issues
-- [ ] Explore ways to break examples into smaller files
-- [ ] Test alternative approaches to improve the developer experience
-
-## Prioritized Next Steps
-
-1. Fix the `machine.getChange` error in stopwatch examples
-2. Fix critical broken examples (stopwatch series first)
-3. Implement Starlight's built-in code blocks with copy buttons
-4. Review and improve documentation content for elegance and clarity
-5. Expand live examples where missing
+2. **Example improvement principles**:
+   - Make examples dead simple, minimal, and elegant
+   - Use string-to-string transitions where possible
+   - Utilize hooks and states for passing arguments in events
+   - Include visualizations
+   - Break examples into appropriate file structure for readability
