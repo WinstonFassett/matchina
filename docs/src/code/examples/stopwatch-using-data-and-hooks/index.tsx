@@ -1,4 +1,3 @@
-import { useMachine } from "matchina/react";
 import { useMemo } from "react";
 import { StopwatchView } from "./StopwatchView";
 import { createStopwatchMachine } from "./machine";
@@ -6,6 +5,5 @@ import { createStopwatchMachine } from "./machine";
 // Named export for backward compatibility
 export function Stopwatch() {
   const stopwatch = useMemo(createStopwatchMachine, []);
-  useMachine(stopwatch.machine);
   return <StopwatchView machine={stopwatch} />;
 }

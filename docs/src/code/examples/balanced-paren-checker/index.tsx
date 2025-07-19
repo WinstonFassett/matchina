@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
-import { useMachine } from "matchina/react";
 
 export function BalancedParenthesesDemo() {
   const [input, setInput] = useState("");
@@ -11,7 +10,6 @@ export function BalancedParenthesesDemo() {
   const prevInputDebounced = usePrevious(inputDebounced);
   const [checkerVersion, setCheckerVersion] = useState({});
   const checker = useMemo(() => balancedParenthesesChecker(), [checkerVersion]);
-  useMachine(checker.machine);
   useEffect(() => {
     checker.append(input);
     return () => {

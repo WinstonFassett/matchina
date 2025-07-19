@@ -1,5 +1,4 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
-import { useMachine } from "matchina/react";
 import { useMemo } from "react";
 import { CounterView } from "./CounterView";
 import { createCounterMachine } from "./machine";
@@ -8,7 +7,6 @@ import { createCounterMachine } from "./machine";
 
 export default function CounterExample() {
   const machine = useMemo(createCounterMachine, []);
-  useMachine(machine);
   return (
     <MachineExampleWithChart
       machine={machine as any}
