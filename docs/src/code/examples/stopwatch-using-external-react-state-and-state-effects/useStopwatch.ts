@@ -5,7 +5,9 @@ import { createStopwatchMachine } from "./machine";
 
 export const useStopwatch = () => {
   const [elapsed, setElapsed] = useState(0);
-  const stopwatch = createStopwatchMachine(elapsed, setElapsed);
+  const [stopwatch] = useState(() =>
+    createStopwatchMachine(elapsed, setElapsed),
+  );
 
   useEffect(() => {
     stopwatch.elapsed = elapsed;
