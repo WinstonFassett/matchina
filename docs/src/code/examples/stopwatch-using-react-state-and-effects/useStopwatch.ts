@@ -1,5 +1,5 @@
-import { facade } from "@lib/src";
-import { useMachine } from "@lib/src/integrations/react";
+import { facade } from "matchina";
+import { useMachine } from "matchina/react";
 import { useState, useMemo, useEffect } from "react";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -19,7 +19,7 @@ export function useStopwatch() {
         setElapsed(0);
       },
     }),
-    []
+    [],
   );
   // Define the state machine
   const stopwatch = useMemo(() => {
@@ -45,12 +45,12 @@ export function useStopwatch() {
             clear: "Suspended",
           },
         },
-        "Stopped"
+        "Stopped",
       ),
       {
         elapsed: elapsed,
         setElapsed: setElapsed,
-      }
+      },
     );
   }, []);
   stopwatch.elapsed = elapsed;
@@ -64,7 +64,7 @@ export function useStopwatch() {
         Ticking: effects.run,
         Stopped: () => effects.clear,
       },
-      false
+      false,
     );
   }, [stopwatch.state]);
   return stopwatch;

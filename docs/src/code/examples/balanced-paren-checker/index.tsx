@@ -1,11 +1,9 @@
-import {
-  createApi,
-} from "matchina";
+import { createApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 
 export function BalancedParenthesesDemo() {
   const [input, setInput] = useState("");

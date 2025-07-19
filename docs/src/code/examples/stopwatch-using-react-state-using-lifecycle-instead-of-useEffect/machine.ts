@@ -1,25 +1,26 @@
-import { facade } from "@lib/src";
+import { facade } from "matchina";
 
-export const createStopwatch = () => facade(
-  {
-    Stopped: {},
-    Ticking: {},
-    Suspended: {},
-  },
-  {
-    Stopped: {
-      start: "Ticking",
+export const createStopwatch = () =>
+  facade(
+    {
+      Stopped: {},
+      Ticking: {},
+      Suspended: {},
     },
-    Ticking: {
-      stop: "Stopped",
-      suspend: "Suspended",
-      clear: "Ticking",
+    {
+      Stopped: {
+        start: "Ticking",
+      },
+      Ticking: {
+        stop: "Stopped",
+        suspend: "Suspended",
+        clear: "Ticking",
+      },
+      Suspended: {
+        stop: "Stopped",
+        resume: "Ticking",
+        clear: "Suspended",
+      },
     },
-    Suspended: {
-      stop: "Stopped",
-      resume: "Ticking",
-      clear: "Suspended",
-    },
-  },
-  "Stopped"
-);
+    "Stopped",
+  );

@@ -1,6 +1,5 @@
-import type { AnyStatesFactory, FactoryState } from "@lib/src";
+import type { AnyStatesFactory, FactoryState } from "matchina";
 import type { TransitionEntry } from "./utility-types";
-
 
 export function getStateValues<S extends AnyStatesFactory>(states: S) {
   return Object.entries(states).map(([, value]) => value({}));
@@ -12,7 +11,7 @@ export function getStateValues<S extends AnyStatesFactory>(states: S) {
 export function resolveState<S extends AnyStatesFactory>(
   states: AnyStatesFactory,
   from: string,
-  entry: TransitionEntry<any>
+  entry: TransitionEntry<any>,
 ): FactoryState<S> {
   if (typeof entry === "string") {
     return states[entry]({} as any); // as FactoryState<S>
@@ -24,7 +23,7 @@ export function resolveState<S extends AnyStatesFactory>(
       const event = {
         type: fromState.key,
         from: fromState,
-      }
+      };
       funcOrState = funcOrState(event);
     }
     return resolveState(states, from, funcOrState);

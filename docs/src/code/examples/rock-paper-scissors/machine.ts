@@ -1,5 +1,5 @@
 // @errors: 2307
-import { createMachine, defineStates, zen } from "@lib/src";
+import { createMachine, defineStates, zen } from "matchina";
 
 // Define the possible moves
 export type Move = "rock" | "paper" | "scissors";
@@ -7,56 +7,56 @@ export type Move = "rock" | "paper" | "scissors";
 // Define our game states
 export const gameStates = defineStates({
   // Waiting for player to choose
-  WaitingForPlayer: (
-    playerScore: number = 0,
-    computerScore: number = 0
-  ) => ({ 
-    playerScore, 
-    computerScore 
+  WaitingForPlayer: (playerScore: number = 0, computerScore: number = 0) => ({
+    playerScore,
+    computerScore,
   }),
-  
+
   // Player has chosen, now computer chooses
   PlayerChose: (
     playerMove: Move,
     playerScore: number,
-    computerScore: number
-  ) => ({ 
-    playerMove, 
-    playerScore, 
-    computerScore 
+    computerScore: number,
+  ) => ({
+    playerMove,
+    playerScore,
+    computerScore,
   }),
-  
+
   // Round complete, showing results
   RoundComplete: (
     playerMove: Move,
     computerMove: Move,
     roundWinner: "player" | "computer" | "tie",
     playerScore: number,
-    computerScore: number
-  ) => ({ 
-    playerMove, 
-    computerMove, 
-    roundWinner, 
-    playerScore, 
-    computerScore 
+    computerScore: number,
+  ) => ({
+    playerMove,
+    computerMove,
+    roundWinner,
+    playerScore,
+    computerScore,
   }),
-  
+
   // Game over (someone reached win threshold)
   GameOver: (
     winner: "player" | "computer",
     playerScore: number,
-    computerScore: number
-  ) => ({ 
-    winner, 
-    playerScore, 
-    computerScore 
-  })
+    computerScore: number,
+  ) => ({
+    winner,
+    playerScore,
+    computerScore,
+  }),
 });
 
 // Helper to determine winner of a round
-export function determineWinner(playerMove: Move, computerMove: Move): "player" | "computer" | "tie" {
+export function determineWinner(
+  playerMove: Move,
+  computerMove: Move,
+): "player" | "computer" | "tie" {
   if (playerMove === computerMove) return "tie";
-  
+
   if (
     (playerMove === "rock" && computerMove === "scissors") ||
     (playerMove === "paper" && computerMove === "rock") ||
@@ -64,7 +64,7 @@ export function determineWinner(playerMove: Move, computerMove: Move): "player" 
   ) {
     return "player";
   }
-  
+
   return "computer";
 }
 
@@ -74,49 +74,49 @@ export function createRPSMachine() {
     gameStates,
     {
       WaitingForPlayer: {
-        selectMove: "PlayerChose"
+        selectMove: "PlayerChose",
       },
       PlayerChose: {
-        computerSelectMove: "RoundComplete"
+        computerSelectMove: "RoundComplete",
       },
       RoundComplete: {
-        nextRound: "WaitingForPlayer"
+        nextRound: "WaitingForPlayer",
       },
       GameOver: {
-        newGame: "WaitingForPlayer"
-      }
+        newGame: "WaitingForPlayer",
+      },
     },
-    gameStates.WaitingForPlayer(0,0)    
+    gameStates.WaitingForPlayer(0, 0),
   );
   // const { machine } = game
   const game = Object.assign(zen(machine), {
-selectMove: (move: Move) => {
+    selectMove: (move: Move) => {
       // Player selects a move
       const { playerScore, computerScore } = game.state.data;
       game.selectMove(move, playerScore, computerScore);
     },
-    
+
     computerSelectMove: () => {
       // Get current state data
       const { playerMove, playerScore, computerScore } = game.state.data as any;
-      
+
       // Generate computer's random move
       const moves: Move[] = ["rock", "paper", "scissors"];
       const computerMove = moves[Math.floor(Math.random() * moves.length)];
-      
+
       // Determine winner of the round
       const roundWinner = determineWinner(playerMove, computerMove);
-      
+
       // Update scores
       let newPlayerScore = playerScore;
       let newComputerScore = computerScore;
-      
+
       if (roundWinner === "player") {
         newPlayerScore += 1;
       } else if (roundWinner === "computer") {
         newComputerScore += 1;
       }
-      
+
       // Check if game is over (first to 3 wins)
       if (newPlayerScore >= 3) {
         game.computerSelectMove(
@@ -124,41 +124,41 @@ selectMove: (move: Move) => {
           computerMove,
           "player",
           newPlayerScore,
-          newComputerScore
+          newComputerScore,
         );
         return;
       }
-      
+
       if (newComputerScore >= 3) {
         game.computerSelectMove(
           playerMove,
           computerMove,
           "computer",
           newPlayerScore,
-          newComputerScore
+          newComputerScore,
         );
         return;
       }
-      
+
       // Game continues, show round result
       game.computerSelectMove(
-        playerMove, 
-        computerMove, 
-        roundWinner, 
-        newPlayerScore, 
-        newComputerScore
+        playerMove,
+        computerMove,
+        roundWinner,
+        newPlayerScore,
+        newComputerScore,
       );
     },
-    
+
     nextRound: () => {
-      // should not have to cast to unknown      
+      // should not have to cast to unknown
       const { playerScore, computerScore } = game.state.data;
       game.nextRound(playerScore, computerScore);
     },
-    
+
     newGame: () => {
       game.newGame();
-    }
+    },
   });
-  return game
+  return game;
 }

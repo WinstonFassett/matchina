@@ -7,13 +7,14 @@ This document outlines the issues identified in the Matchina documentation and e
 Focus: Fix all stopwatch examples that have the `machine.getChange` error or other issues.
 
 - [✓] The `machine.getChange` errors are fixed (by updating `MachineExampleWithChart.tsx`)
-- [ ] **All stopwatch examples**: Implement code tabs like other examples
-  - [ ] stopwatch-using-data-and-transition-functions
-  - [ ] stopwatch-using-data-and-hooks
-  - [ ] stopwatch-using-react-state-and-effects
-  - [ ] stopwatch-using-external-react-state-and-state-effects
-  - [ ] stopwatch-using-react-state-using-lifecycle-instead-of-useEffect
-- [ ] **basic stopwatch**: Add live demo
+- [✓] **All stopwatch examples**: Implement code tabs like other examples
+  - [✓] stopwatch-using-data-and-transition-functions
+  - [✓] stopwatch-using-data-and-hooks
+  - [✓] stopwatch-using-react-state-and-effects
+  - [✓] stopwatch-using-external-react-state-and-state-effects
+  - [✓] stopwatch-using-react-state-using-lifecycle-instead-of-useEffect
+  - [✓] stopwatch-using-react-state-and-state-effects (additional example not in original list)
+- [✓] **basic stopwatch**: Add live demo
 - [ ] Test all examples after the code tab implementation
 
 ## Copilot Session 2: Other Interactive Examples Fix

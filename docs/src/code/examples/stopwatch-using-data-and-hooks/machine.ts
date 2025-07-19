@@ -1,4 +1,4 @@
-import { facade, setup, before, effect, when } from "@lib/src";
+import { facade, setup, before, effect, when } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = () => {
@@ -26,11 +26,11 @@ export const createStopwatchMachine = () => {
         },
       },
       // initial state
-      "Stopped"
+      "Stopped",
     ),
     {
       elapsed: 0,
-    }
+    },
   );
   setup(model.machine)(
     before((ev) => {
@@ -39,21 +39,21 @@ export const createStopwatchMachine = () => {
           stop: () => 0,
           clear: () => 0,
           _: () => ev.from.data.elapsed,
-          _tick: () => ev.from.data.elapsed +
-            (Date.now() - ev.from.as("Ticking").data.at),
+          _tick: () =>
+            ev.from.data.elapsed + (Date.now() - ev.from.as("Ticking").data.at),
         },
-        false
+        false,
       );
     }),
     effect(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(model._tick)
-      )
+        () => tickEffect(model._tick),
+      ),
     ),
     effect((ev) => {
       model.elapsed = ev.to.data.elapsed;
-    })
+    }),
   );
   return model;
 };

@@ -1,16 +1,15 @@
-import type { FactoryMachine, States } from "@lib/src";
+import type { FactoryMachine, States } from "matchina";
 import { getStateValues, resolveState } from "./state-utils";
 
-
 export function getXStateDefinition<
-  F extends FactoryMachine<{ states: States<any>; transitions: any; }>
+  F extends FactoryMachine<{ states: States<any>; transitions: any }>,
 >(machine: F) {
   const initialState = machine.getState();
   const stateValues = getStateValues(machine.states);
   const definition = {
     initial: initialState.key,
     states: {} as any,
-    // on: {} as any, 
+    // on: {} as any,
   };
   for (const state of stateValues) {
     definition.states[state.key] = {
@@ -33,7 +32,7 @@ export function getXStateDefinition<
           entry,
         ).key;
       });
-    }
+    },
   );
   return definition;
 }

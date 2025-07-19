@@ -1,8 +1,7 @@
-import { getAvailableActions as getStateEvents } from "@lib/src";
+import { getAvailableActions as getStateEvents } from "matchina";
 import type { Stopwatch } from "./types";
 
-
-export function StopwatchView({ stopwatch }: { stopwatch: Stopwatch; }) {
+export function StopwatchView({ stopwatch }: { stopwatch: Stopwatch }) {
   return (
     <div className="p-4 rounded border">
       <div
@@ -31,7 +30,7 @@ export function StopwatchView({ stopwatch }: { stopwatch: Stopwatch; }) {
                 </button>
               )
             );
-          }
+          },
         )}
       </div>
     </div>

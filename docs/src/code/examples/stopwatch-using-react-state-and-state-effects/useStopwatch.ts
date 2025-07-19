@@ -1,5 +1,5 @@
-import { facade } from "@lib/src";
-import { useMachine } from "@lib/src/integrations/react";
+import { facade } from "matchina";
+import { useMachine } from "matchina/react";
 import { useState, useMemo } from "react";
 import { useStateEffects, useEventTypeEffect } from "../lib/matchina-hooks";
 import { tickEffect } from "../lib/tick-effect";
@@ -18,39 +18,40 @@ export function useStopwatch() {
         });
       },
     }),
-    []
+    [],
   );
   // Define the state machine
   const stopwatch = useMemo(
-    () => Object.assign(
-      facade(
+    () =>
+      Object.assign(
+        facade(
+          {
+            Stopped: { effects: [effects.clear] },
+            Ticking: { effects: [effects.run] },
+            Suspended: {},
+          },
+          {
+            Stopped: {
+              start: "Ticking",
+            },
+            Ticking: {
+              stop: "Stopped",
+              suspend: "Suspended",
+              clear: "Ticking",
+            },
+            Suspended: {
+              stop: "Stopped",
+              resume: "Ticking",
+              clear: "Suspended",
+            },
+          },
+          "Stopped",
+        ),
         {
-          Stopped: { effects: [effects.clear] },
-          Ticking: { effects: [effects.run] },
-          Suspended: {},
+          elapsed,
         },
-        {
-          Stopped: {
-            start: "Ticking",
-          },
-          Ticking: {
-            stop: "Stopped",
-            suspend: "Suspended",
-            clear: "Ticking",
-          },
-          Suspended: {
-            stop: "Stopped",
-            resume: "Ticking",
-            clear: "Suspended",
-          },
-        },
-        "Stopped"
       ),
-      {
-        elapsed,
-      }
-    ),
-    []
+    [],
   );
   useMachine(stopwatch.machine);
   useStateEffects(stopwatch.state);

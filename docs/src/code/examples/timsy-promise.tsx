@@ -1,4 +1,4 @@
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 import { createPromiseMachine, withApi } from "matchina";
 import React from "react";
 // ---cut---

@@ -1,4 +1,4 @@
-import { facade, setup, effect, when } from "@lib/src";
+import { facade, setup, effect, when } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 // ---cut---
@@ -15,22 +15,23 @@ export const createTrafficLight = () => {
       Green: { next: "Yellow" },
       Yellow: { next: "Red" },
     },
-    "Red"
+    "Red",
   );
   setup(trafficLight.machine)(
     effect(
       when(
         (_ev) => true,
-        (change) => tickEffect(
-          trafficLight.next,
-          change.to.match({
-            Red: () => 2000,
-            Green: () => 2000,
-            Yellow: () => 1000,
-          })
-        )
-      )
-    )
+        (change) =>
+          tickEffect(
+            trafficLight.next,
+            change.to.match({
+              Red: () => 2000,
+              Green: () => 2000,
+              Yellow: () => 1000,
+            }),
+          ),
+      ),
+    ),
   );
   trafficLight.next();
   return trafficLight;
