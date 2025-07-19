@@ -162,6 +162,10 @@ export default defineConfig({
               label: "Stopwatches",
               items: [
                 {
+                  label: "Overview",
+                  link: "/examples/stopwatch-overview",
+                },
+                {
                   label: "Basic Stopwatch",
                   link: "/examples/stopwatch",
                 },
@@ -190,6 +194,10 @@ export default defineConfig({
             {
               label: "Fetchers",
               items: [
+                {
+                  label: "Overview",
+                  link: "/examples/fetcher-overview",
+                },
                 {
                   label: "Simple Fetch",
                   link: "/examples/fetch-simple",
