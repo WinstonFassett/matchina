@@ -1,7 +1,10 @@
-import { facade } from "matchina";
+import { createMachine, defineStates, zen } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
-export const createStopwatchMachine = (elapsed: number, setElapsed: (elapsed: number) => void) => {
+export const createStopwatchMachine = (
+  elapsed: number,
+  setElapsed: (elapsed: number) => void,
+) => {
   const effects = {
     clear: () => setElapsed(0),
     run: () => {
@@ -13,36 +16,40 @@ export const createStopwatchMachine = (elapsed: number, setElapsed: (elapsed: nu
       });
     },
   };
-  
+
+  const states = defineStates({
+    Stopped: { effects: [effects.clear] },
+    Ticking: { effects: [effects.run] },
+    Suspended: {},
+  });
+
   const stopwatch = Object.assign(
-    facade(
-      {
-        Stopped: { effects: [effects.clear] },
-        Ticking: { effects: [effects.run] },
-        Suspended: {},
-      },
-      {
-        Stopped: {
-          start: "Ticking",
+    zen(
+      createMachine(
+        states,
+        {
+          Stopped: {
+            start: "Ticking",
+          },
+          Ticking: {
+            stop: "Stopped",
+            suspend: "Suspended",
+            clear: "Ticking",
+          },
+          Suspended: {
+            stop: "Stopped",
+            resume: "Ticking",
+            clear: "Suspended",
+          },
         },
-        Ticking: {
-          stop: "Stopped",
-          suspend: "Suspended",
-          clear: "Ticking",
-        },
-        Suspended: {
-          stop: "Stopped",
-          resume: "Ticking",
-          clear: "Suspended",
-        },
-      },
-      "Stopped",
+        "Stopped",
+      ),
     ),
     {
       elapsed,
       effects,
     },
   );
-  
+
   return stopwatch;
 };
