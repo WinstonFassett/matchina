@@ -3,13 +3,12 @@ import { useFetcher } from "./hooks";
 import { FetcherAppView } from "./FetcherAppView";
 
 export default function FetcherExample() {
-  const fetcher = useFetcher();
-  console.log("FetcherExample", fetcher);
+  const { fetcher, reset } = useFetcher();
 
   return (
     <MachineExampleWithChart
       machine={fetcher as any}
-      AppView={FetcherAppView}
+      AppView={(props: any) => <FetcherAppView {...props} onReset={reset} />}
       showRawState={true}
     />
   );

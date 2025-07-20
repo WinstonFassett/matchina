@@ -2,6 +2,6 @@ import { FetcherAppView } from "./FetcherAppView";
 import { useFetcher } from "./hooks";
 
 export function Fetcher() {
-  const fetcher = useFetcher();
-  return <FetcherAppView machine={fetcher} />;
+  const { machine, reset } = useFetcher();
+  return <FetcherAppView machine={machine} onReset={reset} />;
 }
