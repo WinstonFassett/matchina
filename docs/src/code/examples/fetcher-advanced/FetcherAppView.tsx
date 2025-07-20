@@ -11,8 +11,8 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
   const { tries } = machine;
 
   return (
-    <div className="p-4 border rounded">
-      <div className="mb-4">
+    <div className="space-y-4 p-4 border rounded-lg max-w-full">
+      <div className="space-y-2">
         <h3 className="text-lg font-bold">Advanced Fetcher</h3>
         <div className="flex items-center gap-2">
           <span className="font-medium">State:</span>
@@ -33,13 +33,14 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
           </span>
         </div>
         {tries > 0 && (
-          <div className="text-sm mt-1">
+          <div className="text-sm">
             <span className="font-medium">Attempts:</span> {tries}
           </div>
         )}
       </div>
 
-      <div className="mb-4">
+      <div>
+        <h4 className="text-sm font-medium mb-2">Actions:</h4>
         <MachineActions
           transitions={machine.transitions}
           state={state.key}
@@ -48,18 +49,21 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
         />
       </div>
 
-      <div className="mt-4">
-        <h4 className="text-sm font-medium mb-1">Response:</h4>
-        <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm">
-          <pre>
-            {state.match({
-              Resolved: (data: any) => "Success!",
-              Error: (error: Error) => `Error: ${error?.message}`,
-              NetworkError: (error: Error) =>
-                `Network Error: ${error?.message}`,
-              _: () => "n/a",
-            })}
-          </pre>
+      <div>
+        <h4 className="text-sm font-medium mb-2">Response:</h4>
+        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-sm max-w-full overflow-hidden">
+          {state.match({
+            Resolved: () => <span className="text-green-600">Success!</span>,
+            Error: (error: Error) => (
+              <span className="text-red-600">Error: {error?.message}</span>
+            ),
+            NetworkError: (error: Error) => (
+              <span className="text-red-600">
+                Network Error: {error?.message}
+              </span>
+            ),
+            _: () => <span className="text-gray-500">n/a</span>,
+          })}
         </div>
       </div>
     </div>
