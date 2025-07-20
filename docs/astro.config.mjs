@@ -2,8 +2,13 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
-
 import react from "@astrojs/react";
+import { fileURLToPath } from 'url';
+import path from 'path';
+import fs from 'fs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const twoslashConfigPath = path.resolve(__dirname, 'twoslash.config.js');
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,6 +16,16 @@ export default defineConfig({
   base: process.env.NODE_ENV === "production" ? "matchina" : undefined,
   build: {
     assets: "assets",
+  },
+  markdown: {
+    shikiConfig: {
+      langs: [],
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      wrap: true
+    }
   },
   integrations: [
     starlight({

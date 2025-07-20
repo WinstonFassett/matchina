@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "matchina": ["../src/index.ts"],
+      "matchina/*": ["../src/*"]
+    }
+  }
+}
