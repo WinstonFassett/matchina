@@ -1,16 +1,16 @@
 import { useMachine } from "matchina/react";
 import { useMemo, useState, useCallback } from "react";
-import { createBasicFetcherMachine } from "./machine";
+import { createPromiseFetcherMachine } from "./machine";
 
-export function useFetcher() {
+export function usePromiseFetcher() {
   const [machineId, setMachineId] = useState(0);
 
-  const fetcher = useMemo(() => createBasicFetcherMachine(), [machineId]);
+  const fetcher = useMemo(() => createPromiseFetcherMachine(), [machineId]);
   useMachine(fetcher);
 
   const reset = useCallback(() => {
     setMachineId((id) => id + 1);
   }, []);
 
-  return { fetcher, reset };
+  return { machine: fetcher, reset };
 }

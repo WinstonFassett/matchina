@@ -200,8 +200,8 @@ export default defineConfig({
               label: "Fetchers",
               items: [
                 {
-                  label: "Basic Fetcher",
-                  link: "/examples/fetcher-basic",
+                  label: "Promise Machine Fetcher",
+                  link: "/examples/promise-machine-fetcher",
                 },
                 {
                   label: "Advanced Fetcher",

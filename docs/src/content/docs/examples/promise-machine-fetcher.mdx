@@ -1,0 +1,59 @@
+---
+title: Promise Machine Fetcher
+description: A basic HTTP fetcher using promise machines
+---
+
+import PromiseFetcherExample from "@code/examples/promise-machine-fetcher/example";
+import machineCode from "@code/examples/promise-machine-fetcher/machine.ts?raw";
+import viewCode from "@code/examples/promise-machine-fetcher/PromiseFetcherView.tsx?raw";
+import hooksCode from "@code/examples/promise-machine-fetcher/hooks.ts?raw";
+import indexCode from "@code/examples/promise-machine-fetcher/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A simple HTTP fetcher built with promise machines, demonstrating how to handle asynchronous operations with automatic state management for loading, success, and error states.
+
+<div className="not-content">
+  <PromiseFetcherExample client:visible />
+</div>
+
+## Implementation Details
+
+This example demonstrates the core promise machine pattern for HTTP requests:
+
+- **Automatic state management** - Promise machines handle Idle, Pending, Resolved, and Rejected states
+- **Type-safe parameters** - URL and options are passed as typed parameters
+- **Error handling** - HTTP errors and network failures are automatically caught
+- **Reset functionality** - Machine can be reset by recreating the instance
+- **Layout-aware UI** - Results display with proper overflow handling
+
+The promise machine automatically transitions between states based on the fetch operation lifecycle, providing a clean abstraction over async operations.
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode, twoslash: true },
+    { name: "hooks.ts", code: hooksCode },
+    { name: "PromiseFetcherView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## How It Works
+
+The fetcher follows the standard promise machine lifecycle:
+
+1. **Idle** - Ready to make a request
+2. **Pending** - Request is in flight, shows loading state
+3. **Resolved** - Request succeeded, displays the response data
+4. **Rejected** - Request failed, shows error message
+
+The reset functionality recreates the machine instance by incrementing a `machineId`, which forces React to create a fresh machine that starts in the Idle state.
+
+## Next Steps
+
+Now that you've seen a basic promise machine, you might want to explore:
+
+- [Advanced Fetcher](/examples/fetcher-advanced) - Retry logic, timeouts, and abort functionality
+- [Async Calculator](/examples/async-calculator) - Promise machines for computations
+- [Promise Machine Guide](/guides/promises) - Complete promise machine documentation
