@@ -5,7 +5,7 @@ export type Listen<T> = (value: T) => void;
 export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
   getChange: () => Change;
-}) {
+}): void {
   if (!machine || !machine.getChange) {
     throw new Error("useMachine requires a machine instance");
   }
@@ -24,8 +24,5 @@ export function useMachine<Change>(machine: {
     [machine],
   );
   const onGetChange = useCallback(() => machine.getChange(), [machine]);
-  return [
-    React.useSyncExternalStore(onSubscribe, onGetChange, onGetChange),
-    machine,
-  ] as const;
+  React.useSyncExternalStore(onSubscribe, onGetChange, onGetChange);
 }

@@ -4,5 +4,6 @@ import { createAsyncCalculatorMachine } from "./machine";
 
 export function useAsyncCalculator() {
   const calculator = useMemo(() => createAsyncCalculatorMachine(), []);
-  return useMachine(calculator);
+  useMachine(calculator);
+  return calculator;
 }
