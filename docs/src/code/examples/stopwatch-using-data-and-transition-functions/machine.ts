@@ -23,17 +23,17 @@ export const createStopwatchMachine = () => {
     {
       Stopped: { start: "Ticking" },
       Ticking: {
-        _tick: (ev) =>
+        _tick: () => (ev) =>
           states.Ticking(
             !ev ? 0 : ev?.from.data.elapsed + (Date.now() - ev?.from.data.at),
           ),
         stop: "Stopped",
-        suspend: (ev) => states.Suspended(ev?.from.data.elapsed),
+        suspend: () => (ev) => states.Suspended(ev?.from.data.elapsed),
         clear: "Ticking",
       },
       Suspended: {
         stop: "Stopped",
-        resume: (ev) => states.Ticking(ev?.from.data.elapsed),
+        resume: () => (ev) => states.Ticking(ev?.from.data.elapsed),
         clear: "Suspended",
       },
     },
@@ -48,15 +48,7 @@ export const createStopwatchMachine = () => {
     enter(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => {
-          // Create an interval that calls the _tick function
-          const timer = setInterval(() => {
-            machine._tick(null);
-          }, 50);
-
-          // Return cleanup function
-          return () => clearInterval(timer);
-        },
+        () => tickEffect(machine._tick),
       ),
     ),
     effect((ev) => {
