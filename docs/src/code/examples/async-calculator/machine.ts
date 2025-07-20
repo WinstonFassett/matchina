@@ -1,9 +1,13 @@
-import { createPromiseMachine } from "matchina";
+import { createPromiseMachine, withReset } from "matchina";
 
-// Function to create a promise machine for async addition
 export function createAsyncCalculatorMachine() {
-  return createPromiseMachine(
+  const baseMachine = createPromiseMachine(
     (a: number, b: number) =>
       new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 1000)),
   );
+  return withReset(baseMachine, baseMachine.states.Idle());
 }
+
+export type AsyncCalculatorMachine = ReturnType<
+  typeof createAsyncCalculatorMachine
+>;

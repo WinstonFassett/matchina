@@ -1,7 +1,8 @@
 import { useState } from "react";
+import type { AsyncCalculatorMachine } from "./machine";
 
 interface AsyncCalculatorViewProps {
-  machine: any;
+  machine: AsyncCalculatorMachine;
 }
 
 export function AsyncCalculatorView({ machine }: AsyncCalculatorViewProps) {
@@ -39,6 +40,14 @@ export function AsyncCalculatorView({ machine }: AsyncCalculatorViewProps) {
           >
             Calculate
           </button>
+          {!state.is("Idle") && (
+            <button
+              onClick={machine.reset}
+              className="px-4 py-1 bg-gray-500 text-white rounded"
+            >
+              Reset
+            </button>
+          )}
         </div>
       </div>
 
