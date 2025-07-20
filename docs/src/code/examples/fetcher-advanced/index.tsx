@@ -1,12 +1,26 @@
+import { useState } from "react";
 import { useAdvancedFetcher } from "./hooks";
 import { FetcherAppView } from "./FetcherAppView";
+import {
+  OptionsForm,
+  defaultOptions,
+  type FetcherOptions,
+} from "./OptionsForm";
 
 export function FetcherDemo() {
-  const fetcher = useAdvancedFetcher("https://httpbin.org/delay/1", {
+  const [options, setOptions] = useState<FetcherOptions>(defaultOptions);
+
+  const fetcher = useAdvancedFetcher(options.url, {
     method: "GET",
-    maxTries: 5,
-    timeout: 1200,
-    autoretry: true,
+    timeout: options.timeout,
+    maxTries: options.maxTries,
+    autoretry: options.autoretry,
   });
-  return <FetcherAppView machine={fetcher} />;
+
+  return (
+    <div>
+      <OptionsForm options={options} onChange={setOptions} />
+      <FetcherAppView machine={fetcher} />
+    </div>
+  );
 }

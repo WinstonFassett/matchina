@@ -1,46 +1,65 @@
 ---
 title: Advanced Fetcher with Retry and Timeout
+description: A robust HTTP fetcher with retry logic, timeouts, and abort functionality
 ---
 
 import FetcherExample from "@code/examples/fetcher-advanced/example";
 import machineCode from "@code/examples/fetcher-advanced/machine.ts?raw";
 import hooksCode from "@code/examples/fetcher-advanced/hooks.ts?raw";
 import viewCode from "@code/examples/fetcher-advanced/FetcherAppView.tsx?raw";
+import optionsCode from "@code/examples/fetcher-advanced/OptionsForm.tsx?raw";
 import indexCode from "@code/examples/fetcher-advanced/index.tsx?raw";
-import CodeBlock from "@components/CodeBlock.astro";
-import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+import CodeTabs from "@components/CodeTabs.astro";
 
-## Interactive Fetcher Example
+A production-ready HTTP fetcher with advanced error handling, automatic retries, configurable timeouts, and abort functionality. Perfect for real-world applications where network reliability matters.
 
 <div className="not-content">
   <FetcherExample client:visible />
 </div>
 
-## About This Example
+## Implementation Details
 
-This example demonstrates an advanced fetcher state machine with robust error handling:
+This advanced fetcher demonstrates sophisticated state machine patterns for HTTP requests:
 
-- Automatic retries with exponential backoff
-- Request timeout management
-- Network error detection and recovery
-- Abort capability for canceling requests
-- Detailed state tracking for the entire fetch lifecycle
+- **Configurable retry logic** - Automatic retries with exponential backoff for network errors, timeouts, and failures
+- **Request timeout management** - Configurable timeout with automatic cleanup
+- **Abort capability** - Cancel in-flight requests with proper cleanup
+- **Network error detection** - Distinguishes between network errors, timeouts, and other failures
+- **Detailed state tracking** - Comprehensive state management for the entire fetch lifecycle
+- **Live configuration** - Change settings and see the machine recreate with new options
 
-The advanced fetcher is ideal for real-world applications where network reliability is a concern and users need visibility into the request lifecycle.
+The fetcher uses effects and guards to implement complex retry logic while maintaining clean state transitions.
 
-## Machine Implementation
+## Source Code
 
-<CodeBlock lang="typescript" code={machineCode} />
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "hooks.ts", code: hooksCode },
+    { name: "FetcherAppView.tsx", code: viewCode },
+    { name: "OptionsForm.tsx", code: optionsCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
 
-## Hook Implementation
+## How It Works
 
-<CodeBlock lang="typescript" code={hooksCode} />
+The advanced fetcher extends the basic fetch pattern with sophisticated error handling:
 
-## Component Implementation 
+1. **Idle** - Ready to make a request with configurable options
+2. **Fetching** - Request in flight with timeout and abort capability
+3. **ProcessingResponse** - Parsing response data with error handling
+4. **Resolved** - Request succeeded, displays success state
+5. **Error/NetworkError/TimedOut** - Various failure states with retry capability
+6. **Refetching** - Automatic retry with exponential backoff
+7. **Aborted** - User-cancelled request
 
-<CodeBlock lang="jsx" code={viewCode} />
+The configuration form recreates the machine when options change, demonstrating how to handle dynamic machine configuration in React applications.
 
-<CardGrid>
-  <LinkCard title="Basic Fetcher Example" href="/examples/fetcher-basic/" />
-  <LinkCard title="Learn About State Effects" href="/guides/effects/" />
-</CardGrid>
+## Next Steps
+
+Now that you've seen an advanced fetcher, you might want to explore:
+
+- [Promise Machine Fetcher](/examples/promise-machine-fetcher) - Basic promise machine pattern
+- [State Effects Guide](/guides/effects) - Learn about effects and lifecycle management
+- [Guards and Conditions](/guides/guards) - Conditional transitions and validation
