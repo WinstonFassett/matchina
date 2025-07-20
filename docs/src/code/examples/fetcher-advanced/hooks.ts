@@ -15,7 +15,7 @@ export const useAdvancedFetcher = (
     return createFetcher(url, options);
   }, [url]);
 
-  useMachine(fetcher as any);
+  useMachine(fetcher);
 
   return fetcher;
 };
