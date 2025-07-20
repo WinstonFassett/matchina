@@ -1,11 +1,7 @@
 import { createStopwatchMachine } from "./machine";
 import { StopwatchView } from "./StopwatchView";
 
-// Named export for backward compatibility
-export function Stopwatch() {
+export default function StopwatchExample() {
   const machine = createStopwatchMachine();
   return <StopwatchView machine={machine} />;
 }
-
-// Default export for the examples
-export default Stopwatch;

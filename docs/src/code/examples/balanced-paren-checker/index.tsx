@@ -29,21 +29,22 @@ export function BalancedParenthesesDemo() {
       setCheckerVersion({});
     }
   }, [inputDebounced]);
+
+  // With zen, the machine methods are directly on the object
+  const state = checker.getState();
   const actions = useMemo(
-    () => createApi(checker.machine, checker.state.key),
-    [checker.state],
+    () => createApi(checker, state.key),
+    [checker, state],
   );
   return (
     <div>
       <textarea value={input} onChange={(ev) => setInput(ev.target.value)} />
-      <p>Current State: {checker.state.key}</p>
+      <p>Current State: {state.key}</p>
       {checker.text && <pre>Pending validation:{checker.text}</pre>}
-      {checker.state.is("Open") && (
-        <pre>Expecting {checker.state.data.pair[1]}</pre>
-      )}
+      {state.is("Open") && <pre>Expecting {state.data.pair[1]}</pre>}
       <StateMachineMermaidDiagram
-        config={getXStateDefinition(checker.machine)}
-        stateKey={checker.state.key}
+        config={getXStateDefinition(checker)}
+        stateKey={state.key}
         actions={actions}
       />
     </div>

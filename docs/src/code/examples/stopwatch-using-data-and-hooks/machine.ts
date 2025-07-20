@@ -1,38 +1,49 @@
-import { facade, setup, before, effect, when } from "matchina";
+import {
+  defineStates,
+  createMachine,
+  setup,
+  before,
+  effect,
+  when,
+  zen,
+} from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = () => {
-  const model = Object.assign(
-    facade(
-      //state data creators
-      {
-        Stopped: () => ({ elapsed: 0 }),
-        Ticking: (elapsed: number = 0) => ({ at: Date.now(), elapsed }),
-        Suspended: (elapsed = 0) => ({ elapsed }),
-      } as const,
-      // transitions
-      {
-        Stopped: { start: "Ticking" },
-        Ticking: {
-          _tick: "Ticking",
-          stop: "Stopped",
-          suspend: "Suspended",
-          clear: "Ticking",
-        },
-        Suspended: {
-          stop: "Stopped",
-          resume: "Ticking",
-          clear: "Suspended",
-        },
-      },
-      // initial state
-      "Stopped",
-    ),
+  // Define states using defineStates
+  const states = defineStates({
+    Stopped: () => ({ elapsed: 0 }),
+    Ticking: (elapsed: number = 0) => ({ at: Date.now(), elapsed }),
+    Suspended: (elapsed = 0) => ({ elapsed }),
+  });
+
+  // Create the base machine with states, transitions, and initial state
+  const baseMachine = createMachine(
+    states,
     {
-      elapsed: 0,
+      Stopped: { start: "Ticking" },
+      Ticking: {
+        _tick: "Ticking",
+        stop: "Stopped",
+        suspend: "Suspended",
+        clear: "Ticking",
+      },
+      Suspended: {
+        stop: "Stopped",
+        resume: "Ticking",
+        clear: "Suspended",
+      },
     },
+    "Stopped",
   );
-  setup(model.machine)(
+
+  // Use zen to enhance the machine with utility methods
+  const machine = Object.assign(zen(baseMachine), {
+    elapsed: 0,
+  });
+
+  // Setup hooks directly on the machine (no need for .machine with zen)
+  setup(machine)(
     before((ev) => {
       ev.to.data.elapsed = ev.match(
         {
@@ -48,12 +59,12 @@ export const createStopwatchMachine = () => {
     effect(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(model._tick),
+        () => tickEffect(machine._tick),
       ),
     ),
     effect((ev) => {
-      model.elapsed = ev.to.data.elapsed;
+      machine.elapsed = ev.to.data.elapsed;
     }),
   );
-  return model;
+  return machine;
 };

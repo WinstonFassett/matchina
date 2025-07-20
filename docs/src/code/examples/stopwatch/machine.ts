@@ -1,89 +1,73 @@
 import {
-  facade,
+  defineStates,
+  createMachine,
   setup,
   enter,
   when,
   effect,
   zen,
-  createMachine,
+  before,
 } from "matchina";
+import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = () => {
-  const states = {
+  // Define states using defineStates
+  const states = defineStates({
     Stopped: (elapsed = 0) => ({ elapsed }),
     Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
     Suspended: (elapsed = 0) => ({ elapsed }),
-  };
-  const model = Object.assign(
-    zen(
-      createMachine(
-        // State data creators
-        states,
-        // Transitions
-        {
-          Stopped: { start: "Ticking" },
-          Ticking: {
-            _tick: "Ticking",
-            stop: "Stopped",
-            suspend: "Suspended",
-            reset: "Stopped",
-          },
-          Suspended: {
-            resume: "Ticking",
-            stop: "Stopped",
-            reset: "Stopped",
-          },
-        },
-        states.Stopped(0),
-      ),
-    ),
+  });
+
+  // Create the base machine with states, transitions, and initial state
+  const baseMachine = createMachine(
+    states,
     {
-      elapsed: 0,
+      Stopped: { start: "Ticking" },
+      Ticking: {
+        _tick: "Ticking",
+        stop: "Stopped",
+        suspend: "Suspended",
+        clear: "Ticking",
+      },
+      Suspended: {
+        stop: "Stopped",
+        resume: "Ticking",
+        clear: "Suspended",
+      },
     },
+    states.Stopped(),
   );
 
-  // Update elapsed time on _tick event
-  setup(model.machine)(
+  // Use zen to enhance the machine with utility methods
+  const machine = Object.assign(zen(baseMachine), {
+    elapsed: 0,
+  });
+
+  // Setup hooks directly on the machine (no need for .machine with zen)
+  setup(machine)(
     // Before transition handler
-    (ev) => {
+    before((ev) => {
       if (ev.type === "_tick" && ev.from.is("Ticking")) {
         ev.to.data.elapsed =
           ev.from.data.elapsed + (Date.now() - ev.from.data.at);
       }
-
-      // Reset elapsed time on reset
-      if (ev.type === "reset") {
+      if (ev.type === "clear") {
         ev.to.data.elapsed = 0;
       }
-    },
-    // Enter Ticking state: start timer
+      return () => {};
+    }),
+    // Effect when entering Ticking state
     enter(
       when(
-        (ev) => ev?.to.is("Ticking"),
-        () => {
-          let requestId: number;
-
-          // Function to trigger tick events
-          const tick = () => {
-            model._tick();
-            requestId = requestAnimationFrame(tick);
-          };
-
-          // Start animation loop
-          requestId = requestAnimationFrame(tick);
-
-          // Return cleanup function
-          return () => {
-            cancelAnimationFrame(requestId);
-          };
-        },
+        (ev) => ev.to.is("Ticking"),
+        () => tickEffect(machine._tick),
       ),
     ),
-    // Update model's elapsed property to match state
+    // Effect for all transitions - update elapsed field
     effect((ev) => {
-      model.elapsed = ev?.to.data.elapsed ?? 0;
+      machine.elapsed = ev?.to.data.elapsed ?? 0;
     }),
   );
 
-  return model;
+  return machine;
 };

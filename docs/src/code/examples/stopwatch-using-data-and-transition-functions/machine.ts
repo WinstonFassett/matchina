@@ -1,50 +1,67 @@
-import { facade, setup, enter, when, effect } from "matchina";
+import {
+  defineStates,
+  createMachine,
+  setup,
+  enter,
+  when,
+  effect,
+  zen,
+} from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = () => {
-  const model = Object.assign(
-    facade(
-      //state data creators
-      {
-        Stopped: () => ({ elapsed: 0 }),
-        Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
-        Suspended: (elapsed = 0) => ({ elapsed }),
-      },
-      // transitions
-      ({ Stopped, Ticking, Suspended }) => ({
-        Stopped: { start: Ticking },
-        Ticking: {
-          _tick: () => (ev) =>
-            Ticking(
-              !ev ? 0 : ev?.from.data.elapsed + (Date.now() - ev?.from.data.at),
-            ),
-          stop: Stopped,
-          suspend: () => (ev) => Suspended(ev?.from.data.elapsed),
-          clear: Ticking,
-        },
-        Suspended: {
-          stop: Stopped,
-          resume: () => (ev) => Ticking(ev?.from.data.elapsed),
-          clear: Suspended,
-        },
-      }),
-      // initial state
-      ({ Stopped }) => Stopped(),
-    ),
+  // Define states using defineStates
+  const states = defineStates({
+    Stopped: () => ({ elapsed: 0 }),
+    Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
+    Suspended: (elapsed = 0) => ({ elapsed }),
+  });
+
+  // Create the base machine with states, transitions, and initial state
+  const baseMachine = createMachine(
+    states,
     {
-      elapsed: 0,
+      Stopped: { start: "Ticking" },
+      Ticking: {
+        _tick: (ev) =>
+          states.Ticking(
+            !ev ? 0 : ev?.from.data.elapsed + (Date.now() - ev?.from.data.at),
+          ),
+        stop: "Stopped",
+        suspend: (ev) => states.Suspended(ev?.from.data.elapsed),
+        clear: "Ticking",
+      },
+      Suspended: {
+        stop: "Stopped",
+        resume: (ev) => states.Ticking(ev?.from.data.elapsed),
+        clear: "Suspended",
+      },
     },
+    "Stopped",
   );
-  setup(model.machine)(
+
+  // Use zen to enhance the machine with utility methods
+  const machine = Object.assign(zen(baseMachine), {
+    elapsed: 0,
+  });
+  setup(machine)(
     enter(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(model._tick),
+        () => {
+          // Create an interval that calls the _tick function
+          const timer = setInterval(() => {
+            machine._tick(null);
+          }, 50);
+
+          // Return cleanup function
+          return () => clearInterval(timer);
+        },
       ),
     ),
     effect((ev) => {
-      model.elapsed = ev.to.data.elapsed ?? 0;
+      machine.elapsed = ev.to.data.elapsed ?? 0;
     }),
   );
-  return model;
+  return machine;
 };

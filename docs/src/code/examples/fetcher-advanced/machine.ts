@@ -128,23 +128,24 @@ export function createFetcher(
     ),
     guard((ev) => (ev.type === "refetch" ? fetcher.tries < maxTries : true)),
   );
-  if (defaultOptions.autoretry) {
-    fetcher.setup(
-      effect(
-        whenState("NetworkError", (_ev) => {
-          if (fetcher.tries < maxTries) {
-            const backoff = 1000 * fetcher.tries;
-            const timer = setTimeout(() => {
-              fetcher.refetch();
-            }, backoff);
-            return () => {
-              clearTimeout(timer);
-            };
-          }
-        }),
-      ),
-    );
-  }
+
+  // Create the setup function, always initialize it
+  fetcher.setup(
+    effect(
+      whenState("NetworkError", (_ev) => {
+        if (defaultOptions.autoretry && fetcher.tries < maxTries) {
+          const backoff = 1000 * fetcher.tries;
+          const timer = setTimeout(() => {
+            fetcher.refetch();
+          }, backoff);
+          return () => {
+            clearTimeout(timer);
+          };
+        }
+      }),
+    ),
+  );
+
   return fetcher;
 }
 

@@ -1,4 +1,4 @@
-import { facade } from "matchina";
+import { defineStates, createMachine, zen } from "matchina";
 import { useMachine } from "matchina/react";
 import { useState, useMemo, useEffect } from "react";
 import { tickEffect } from "../lib/tick-effect";
@@ -21,40 +21,46 @@ export function useStopwatch() {
     }),
     [],
   );
+
   // Define the state machine
   const stopwatch = useMemo(() => {
-    return Object.assign(
-      facade(
-        {
-          Stopped: {},
-          Ticking: {},
-          Suspended: {},
-        },
-        {
-          Stopped: {
-            start: "Ticking",
-          },
-          Ticking: {
-            stop: "Stopped",
-            suspend: "Suspended",
-            clear: "Ticking",
-          },
-          Suspended: {
-            stop: "Stopped",
-            resume: "Ticking",
-            clear: "Suspended",
-          },
-        },
-        "Stopped",
-      ),
+    // Define states using defineStates
+    const states = defineStates({
+      Stopped: {},
+      Ticking: {},
+      Suspended: {},
+    });
+
+    // Create the base machine with states, transitions, and initial state
+    const baseMachine = createMachine(
+      states,
       {
-        elapsed: elapsed,
-        setElapsed: setElapsed,
+        Stopped: {
+          start: "Ticking",
+        },
+        Ticking: {
+          stop: "Stopped",
+          suspend: "Suspended",
+          clear: "Ticking",
+        },
+        Suspended: {
+          stop: "Stopped",
+          resume: "Ticking",
+          clear: "Suspended",
+        },
       },
+      "Stopped",
     );
+
+    // Use zen to enhance the machine with utility methods
+    return Object.assign(zen(baseMachine), {
+      elapsed: elapsed,
+      setElapsed: setElapsed,
+    });
   }, []);
+
   stopwatch.elapsed = elapsed;
-  useMachine(stopwatch.machine);
+  useMachine(stopwatch);
   useEffect(() => {
     if (stopwatch.change.type === "clear") {
       effects.clear();

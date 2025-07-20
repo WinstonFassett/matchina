@@ -1,15 +1,26 @@
-import { facade, setup, effect, when } from "matchina";
+import {
+  defineStates,
+  createMachine,
+  setup,
+  effect,
+  when,
+  zen,
+} from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 // ---cut---
 
 export const createTrafficLight = () => {
-  const trafficLight = facade(
-    {
-      Red: () => "means stop",
-      Green: () => "means go",
-      Yellow: () => "means caution",
-    },
+  // Define states using defineStates
+  const states = defineStates({
+    Red: () => "means stop",
+    Green: () => "means go",
+    Yellow: () => "means caution",
+  });
+
+  // Create the base machine with states, transitions, and initial state
+  const baseMachine = createMachine(
+    states,
     {
       Red: { next: "Green" },
       Green: { next: "Yellow" },
@@ -17,13 +28,17 @@ export const createTrafficLight = () => {
     },
     "Red",
   );
-  setup(trafficLight.machine)(
+
+  // Use zen to enhance the machine with utility methods
+  const machine = zen(baseMachine);
+
+  setup(machine)(
     effect(
       when(
         (_ev) => true,
         (change) =>
           tickEffect(
-            trafficLight.next,
+            machine.next,
             change.to.match({
               Red: () => 2000,
               Green: () => 2000,
@@ -33,6 +48,6 @@ export const createTrafficLight = () => {
       ),
     ),
   );
-  trafficLight.next();
-  return trafficLight;
+  machine.next();
+  return machine;
 };

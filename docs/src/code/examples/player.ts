@@ -1,14 +1,16 @@
-import { facade } from "matchina";
+import { defineStates, createMachine, zen } from "matchina";
 
-export const player = facade(
-  // Define states as keys to optional values or creator functions
-  {
-    Idle: undefined,
-    Playing: undefined,
-    Paused: undefined,
-    Stopped: undefined,
-  },
-  // Define transitions, typed by states and their parameters and values
+// Define states using defineStates
+const states = defineStates({
+  Idle: undefined,
+  Playing: undefined,
+  Paused: undefined,
+  Stopped: undefined,
+});
+
+// Create the base machine with states, transitions, and initial state
+const baseMachine = createMachine(
+  states,
   {
     Idle: { start: "Playing" },
     Playing: {
@@ -23,6 +25,9 @@ export const player = facade(
   },
   "Idle",
 );
+
+// Use zen to enhance the machine with utility methods
+export const player = zen(baseMachine);
 
 // Usage:
 player.start(); // Idle/Stopped -> Playing

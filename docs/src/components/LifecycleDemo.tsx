@@ -1,17 +1,9 @@
-import {
-  createPromiseMachine,
-  createReset,
-  onLifecycle
-} from "@lib/src";
+import { createPromiseMachine, createReset, onLifecycle } from "@lib/src";
 import { zen } from "@lib/src/extras/zen";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 
-const slowlyAddTwoNumbers = (
-  x: number,
-  y: number,
-  duration = 1000,
-) =>
+const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
 function useAdder() {
@@ -23,7 +15,7 @@ function useAdder() {
       }),
     [machine],
   );
-  useMachine(machine);
+  useMachine(wrapper);
   return wrapper;
 }
 
@@ -48,7 +40,13 @@ export function LifecycleDemo({}) {
         on: {
           executing: {
             after: ({ type, from, to, params }) => {
-              console.log("after Idle.executing:", type, from.key, to.key, Object.keys(params));
+              console.log(
+                "after Idle.executing:",
+                type,
+                from.key,
+                to.key,
+                Object.keys(params),
+              );
             },
           },
         },
@@ -97,9 +95,7 @@ export function LifecycleDemo({}) {
           Idle: () => (
             <span>
               <button onClick={() => machine.execute(1, 1)}>Add 1+1</button> or{" "}
-              <button
-                onClick={() => machine.execute(2, 2, 2000)}
-              >
+              <button onClick={() => machine.execute(2, 2, 2000)}>
                 Add 2+2
               </button>
             </span>

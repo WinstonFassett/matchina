@@ -18,7 +18,7 @@ export function useStopwatch() {
   );
   useEffect(
     () =>
-      onLifecycle(stopwatch.machine, {
+      onLifecycle(stopwatch, {
         "*": {
           enter: when(
             (ev) => ev.to.is("Ticking"),
@@ -61,7 +61,7 @@ export function useStopwatch() {
       }),
     [stopwatch],
   );
-  useMachine(stopwatch.machine);
+  useMachine(stopwatch);
   stopwatch.startTime = startTime;
   stopwatch.elapsed = elapsed;
   return stopwatch;
