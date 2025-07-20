@@ -4,6 +4,7 @@ import {
   createMachine,
   zen,
   type FactoryMachineTransitions,
+  matchina,
 } from "matchina";
 
 const states = defineStates({
@@ -27,12 +28,10 @@ const invalidTransitions = {
   },
 };
 
-const invalidMachine = zen(
-  createMachine(
-    states,
-    invalidTransitions, // invalid because not typed correctly
-    "Idle",
-  ),
+const invalidMachine = matchina(
+  states,
+  invalidTransitions, // invalid because not typed correctly
+  "Idle",
 );
 
 invalidMachine; // never
@@ -52,7 +51,7 @@ const transitionsAsConst = {
   },
 } as const;
 
-const validMachine = zen(createMachine(states, transitionsAsConst, "Idle"));
+const validMachine = matchina(states, transitionsAsConst, "Idle");
 
 validMachine.st;
 //             ^|

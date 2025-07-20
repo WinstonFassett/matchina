@@ -43,11 +43,18 @@ Matchina supports several forms of transitions, each with different levels of cu
 (...params) => (event) => states.TargetState(...moreParams)
 ```
 
-For full type inference to work properly, these transitions should be defined inside `createMachine()` rather than as standalone objects.
-
 ## Recommended Patterns
 
 ### Inline Transitions
+
+For full type inference to work properly, these transitions should be defined inside `createMachine()` rather than as standalone objects.
+
+Benefits of this approach:
+
+- Full type checking between states and transitions
+- Autocomplete for state names in transitions
+- Parameter type checking for transition functions
+- Prevents common errors like typos in state names
 
 Compare the type support for inline transitions versus standalone transition objects:
 
@@ -68,13 +75,6 @@ Compare the type support for inline transitions versus standalone transition obj
   ]}
 />
 
-Benefits of this approach:
-
-- Full type checking between states and transitions
-- Autocomplete for state names in transitions
-- Parameter type checking for transition functions
-- Prevents common errors like typos in state names
-
 ## Developer Experience Benefits
 
 Using the recommended patterns gives you:
@@ -88,9 +88,8 @@ Using the recommended patterns gives you:
 
 To ensure the best developer experience with Matchina:
 
-1. **Define states and transitions together**: Use inline definitions within the `matchina` function call
-2. **Use `matchbox` for reusable state definitions**: When you need to share state definitions
-3. **Avoid standalone transition objects**: These break TypeScript's ability to validate your code
-4. **Let TypeScript help you**: Embrace the rich type checking and autocomplete features
+1. \*\*Define transitions inside `createMachine` function call
+2. **Avoid standalone transition objects**: These break TypeScript's ability to validate your code
+3. **Let TypeScript help you**: Embrace the rich type checking and autocomplete features
 
 Following these practices will help you catch errors earlier, write more reliable code, and get the most out of Matchina's TypeScript integration.

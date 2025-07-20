@@ -1,7 +1,6 @@
 // @noErrors
-import { defineStates, createMachine, zen } from "matchina";
+import { defineStates, matchina } from "matchina";
 
-// ✅ GOOD PRACTICE: Full type inference with inline definitions
 const states = defineStates({
   Idle: undefined,
   Playing: (trackId: string) => ({ trackId }),
@@ -9,25 +8,24 @@ const states = defineStates({
   Stopped: undefined,
 });
 
-const machine = zen(
-  createMachine(
-    states,
-    {
-      Idle: {
-        // TypeScript will auto-complete state names
-        start: "Playing",
-      },
-      Playing: {
-        // TypeScript will error if the state doesn't exist
-        pause: "Paused",
-        stop: "Stopped",
-      },
-      Paused: {
-        resume: "Playing",
-      },
+// ✅ GOOD PRACTICE: Full type inference with inline definitions
+const machine = matchina(
+  states,
+  {
+    Idle: {
+      // TypeScript will auto-complete state names
+      start: "Playing",
     },
-    "Idle",
-  ),
+    Playing: {
+      // TypeScript will error if the state doesn't exist
+      pause: "Paused",
+      stop: "Stopped",
+    },
+    Paused: {
+      resume: "Playing",
+    },
+  },
+  "Idle",
 );
 
 machine.st;
