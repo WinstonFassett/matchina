@@ -7,13 +7,14 @@ export const useAdvancedFetcher = (
   options = {
     method: "GET",
     maxTries: 5,
-    timeout: 1200,
+    timeout: 2000,
     autoretry: true,
   },
 ) => {
+  const { method, maxTries, timeout, autoretry } = options;
   const fetcher = useMemo(() => {
     return createFetcher(url, options);
-  }, [url]);
+  }, [url, method, maxTries, timeout, autoretry]);
 
   useMachine(fetcher);
 

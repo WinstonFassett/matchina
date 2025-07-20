@@ -1,20 +1,14 @@
-import { createApi } from "matchina";
-import { useMemo } from "react";
+import { useMachine } from "@lib/src/integrations/react";
 import { MachineActions } from "../lib/MachineActions";
-
+import type { FetcherMachine } from "./machine";
 interface FetcherAppViewProps {
-  machine: any; // We'd ideally type this properly with the fetcher type
+  machine: FetcherMachine;
 }
 
 export function FetcherAppView({ machine }: FetcherAppViewProps) {
-  const fetcher = machine;
-  console.log("FetcherAppView", fetcher);
-  const { tries } = fetcher;
-
-  const actions = useMemo(
-    () => createApi(fetcher, fetcher.state.key),
-    [fetcher.state],
-  );
+  useMachine(machine);
+  const state = machine.getState();
+  const { tries } = machine;
 
   return (
     <div className="p-4 border rounded">
@@ -23,7 +17,7 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
         <div className="flex items-center gap-2">
           <span className="font-medium">State:</span>
           <span
-            className={fetcher.state.match({
+            className={state.match({
               Idle: () => "text-gray-500",
               Fetching: () => "text-blue-500",
               ProcessingResponse: () => "text-blue-300",
@@ -35,7 +29,7 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
               Refetching: () => "text-purple-500",
             })}
           >
-            {fetcher.state.key}
+            {state.key}
           </span>
         </div>
         {tries > 0 && (
@@ -47,21 +41,22 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
 
       <div className="mb-4">
         <MachineActions
-          transitions={fetcher.transitions}
-          state={fetcher.state.key}
-          send={fetcher.send}
+          transitions={machine.transitions}
+          state={state.key}
+          send={machine.send}
           children={undefined}
         />
       </div>
 
       <div className="mt-4">
         <h4 className="text-sm font-medium mb-1">Response Data:</h4>
-        <div className="bg-gray-100 p-2 rounded text-sm max-h-40 overflow-auto">
+        <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm">
           <pre>
-            {fetcher.state.match({
+            {state.match({
               Resolved: (data: any) => JSON.stringify(data, null, 2),
-              Error: (error: Error) => `Error: ${error.message}`,
-              NetworkError: (error: Error) => `Network Error: ${error.message}`,
+              Error: (error: Error) => `Error: ${error?.message}`,
+              NetworkError: (error: Error) =>
+                `Network Error: ${error?.message}`,
               _: () => "No data available",
             })}
           </pre>

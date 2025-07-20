@@ -157,3 +157,5 @@ function extend<Source extends object, Destination>(
 ): Assign<Source, Destination> {
   return Object.assign(source, destination) as Assign<Source, Destination>;
 }
+
+export type FetcherMachine = ReturnType<typeof createFetcher>;
