@@ -6,6 +6,9 @@ export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
   getChange: () => Change;
 }) {
+  if (!machine || !machine.getChange) {
+    throw new Error("useMachine requires a machine instance");
+  }
   const onSubscribe = useCallback(
     (listener: Listen<Change>) => {
       const orig = machine.notify;
