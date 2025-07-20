@@ -20,8 +20,8 @@ function useAdder() {
 }
 
 export function LifecycleDemo({}) {
-  const adder = useAdder();
-  const { machine, change } = adder;
+  const machine = useAdder();
+  const change = machine.getChange();
   const [logs, setLogs] = useState<string[]>(["Log:"]);
   const log = (msg: string) => setLogs((logs) => [...logs, msg]);
   useEffect(() => {
@@ -104,14 +104,16 @@ export function LifecycleDemo({}) {
             <span>
               Waiting {duration?.toString() ?? "default=1000"}ms to add {x} +{" "}
               {y}
-              <button onClick={() => adder.reject(new Error("User rejected!"))}>
+              <button
+                onClick={() => machine.reject(new Error("User rejected!"))}
+              >
                 REJECT!
               </button>
             </span>
           ),
           _: () => (
             <span>
-              Done! <button onClick={() => adder.reset()}>Reset</button>
+              Done! <button onClick={() => machine.reset()}>Reset</button>
             </span>
           ),
         })}

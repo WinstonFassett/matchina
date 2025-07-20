@@ -35,11 +35,12 @@ export const player = zen(baseMachine);
 
 // Usage:
 player.start("track-123"); // Idle/Stopped -> Playing
-console.log(player.state.key); // e.g., "Playing"
-console.log(player.state.data); // e.g., { trackId: "track-123" }
+console.log(player.getState().key); // e.g., "Playing"
+console.log(player.getState().data); // e.g., { trackId: "track-123" }
 console.log(
   "Is playing track 123:",
-  player.state.is("Playing") && player.state.data.trackId === "track-123",
+  player.getState().is("Playing") &&
+    player.getState().data.trackId === "track-123",
 );
 player.pause(); // Playing -> Paused (trackId carried over)
 player.resume(); // Paused -> Playing (trackId carried over)

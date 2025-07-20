@@ -35,4 +35,4 @@ player.pause(); // Playing -> Paused
 player.resume(); // Paused -> Playing
 player.stop(); // Playing/Paused -> Stopped
 
-console.log(player.state.is("Playing")); // false;
+console.log(player.getState().is("Playing")); // false;

@@ -93,13 +93,14 @@ export function createRPSMachine() {
   const game = Object.assign(zen(machine), {
     selectMove: (move: Move) => {
       // Player selects a move
-      const { playerScore, computerScore } = game.state.data;
+      const { playerScore, computerScore } = game.getState().data;
       game.selectMove(move, playerScore, computerScore);
     },
 
     computerSelectMove: () => {
       // Get current state data
-      const { playerMove, playerScore, computerScore } = game.state.data as any;
+      const { playerMove, playerScore, computerScore } = game.getState()
+        .data as any;
 
       // Generate computer's random move
       const moves: Move[] = ["rock", "paper", "scissors"];
@@ -152,7 +153,7 @@ export function createRPSMachine() {
     },
 
     nextRound: () => {
-      const { playerScore, computerScore } = game.state.data;
+      const { playerScore, computerScore } = game.getState().data;
       game.nextRound(playerScore, computerScore);
     },
 

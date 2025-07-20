@@ -3,11 +3,11 @@ import { createTrafficLight } from "./machine";
 const trafficLight = createTrafficLight();
 
 export const TrafficLight = () => {
-  const { state } = trafficLight;
+  const { getState(): state } = trafficLight;
   return (
     <button
       title="Click to Change"
-      className={`rounded ${trafficLight.state.match({
+      className={`rounded ${trafficLight.getState().match({
         Red: () => "bg-red-500",
         Yellow: () => "bg-yellow-500",
         Green: () => "bg-green-500",

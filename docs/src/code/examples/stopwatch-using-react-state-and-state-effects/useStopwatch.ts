@@ -6,7 +6,6 @@ import { tickEffect } from "../lib/tick-effect";
 
 export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
-  const stopwatchRef = useRef<any>(null);
 
   const effects = useMemo(
     () => ({
@@ -15,9 +14,7 @@ export function useStopwatch() {
         let lastTick = Date.now();
         return tickEffect(() => {
           const now = Date.now();
-          if (stopwatchRef.current) {
-            setElapsed(stopwatchRef.current.elapsed + now - lastTick);
-          }
+          setElapsed(stopwatch.elapsed + now - lastTick);
           lastTick = now;
         });
       },
@@ -62,8 +59,8 @@ export function useStopwatch() {
   }, []);
 
   useMachine(stopwatch);
-  useStateEffects(stopwatch.state);
-  useEventTypeEffect(stopwatch.change, effects);
+  useStateEffects(stopwatch.getState());
+  useEventTypeEffect(stopwatch.getChange(), effects);
   stopwatch.elapsed = elapsed;
   return stopwatch;
 }
