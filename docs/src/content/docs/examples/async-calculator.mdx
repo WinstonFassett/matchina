@@ -7,7 +7,7 @@ import machineCode from "@code/examples/async-calculator/machine.ts?raw";
 import hooksCode from "@code/examples/async-calculator/hooks.ts?raw";
 import viewCode from "@code/examples/async-calculator/AsyncCalculatorView.tsx?raw";
 import indexCode from "@code/examples/async-calculator/index.tsx?raw";
-import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
 ## Interactive Async Calculator
@@ -27,21 +27,18 @@ This example demonstrates a basic promise machine for handling asynchronous calc
 
 The promise machine pattern is perfect for any asynchronous operation - from simple calculations to complex API workflows.
 
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "hooks.ts", code: hooksCode },
+    { name: "AsyncCalculatorView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
 ## Machine Implementation
-
-<CodeBlock lang="typescript" code={machineCode} />
-
-## Hook Implementation
-
-<CodeBlock lang="typescript" code={hooksCode} />
-
-## Component Implementation
-
-<CodeBlock lang="jsx" code={viewCode} />
-
-## Integration
-
-<CodeBlock lang="jsx" code={indexCode} />
 
 <CardGrid>
   <LinkCard

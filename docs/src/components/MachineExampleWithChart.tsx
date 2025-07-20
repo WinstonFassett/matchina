@@ -5,8 +5,8 @@ import StateMachineMermaidDiagram from "./MachineViz";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { useMachine } from "@lib/src/integrations/react";
 
-interface MachineExampleWithChartProps<T = any> {
-  machine: FactoryMachine<any> & T;
+interface MachineExampleWithChartProps {
+  machine: FactoryMachine<any> & any;
   AppView?: ComponentType<
     {
       machine: FactoryMachine<any> & T;
@@ -21,12 +21,12 @@ interface MachineExampleWithChartProps<T = any> {
  * and optional custom app view. Used to create consistent interactive examples
  * throughout the documentation.
  */
-export function MachineExampleWithChart<T = any>({
+export function MachineExampleWithChart({
   machine,
   AppView,
   showRawState = false,
   title,
-}: MachineExampleWithChartProps<T>) {
+}: MachineExampleWithChartProps) {
   useMachine(machine);
   const currentState = machine.getState();
   // Get the XState definition for the Mermaid diagram

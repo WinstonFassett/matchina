@@ -41,7 +41,6 @@ function getLangFromExtension(filename: string): string {
           code={file.code}
           lang={file.language ?? getLangFromExtension(file.name)}
           twoslash={file.twoslash || false}
-          showLines={true}
         />
       </TabItem>
     ))

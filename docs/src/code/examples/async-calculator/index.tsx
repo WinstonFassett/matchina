@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { AsyncCalculatorView } from "./AsyncCalculatorView";
-import { useAsyncCalculator } from "./hooks";
+import { createAsyncCalculatorMachine } from "./machine";
 
 export function AsyncCalculator() {
-  const calculator = useAsyncCalculator();
+  const [calculator] = useState(() => createAsyncCalculatorMachine());
   return <AsyncCalculatorView machine={calculator} />;
 }

@@ -1,13 +1,13 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
-import { useAsyncCalculator } from "./hooks";
+import { useState } from "react";
 import { AsyncCalculatorView } from "./AsyncCalculatorView";
+import { createAsyncCalculatorMachine } from "./machine";
 
 export default function AsyncCalculatorExample() {
-  const calculator = useAsyncCalculator();
-
+  const [calculator] = useState(() => createAsyncCalculatorMachine());
   return (
     <MachineExampleWithChart
-      machine={calculator as any}
+      machine={calculator}
       AppView={AsyncCalculatorView}
       showRawState={true}
     />
