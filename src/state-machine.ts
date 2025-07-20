@@ -20,7 +20,7 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
   getState(): E["to"] | E["from"];
   getChange(): E;
   send: (type: E["type"], ...params: E["params"]) => void;
-  resolve(ev: ResolveEvent<E>): E | undefined;
+  resolveExit(ev: ResolveEvent<E>): E | undefined;
   transition(change: E): void;
   guard(ev: E): boolean;
   handle(ev: E): E | undefined;

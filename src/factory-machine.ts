@@ -24,7 +24,7 @@ export function createMachine<
   const machine = createTransitionMachine<E>(transitions as any, initialState);
   Object.assign(machine, {
     states,
-    resolve: (ev: ResolveEvent<E>): E | undefined => {
+    resolveExit: (ev: ResolveEvent<E>): E | undefined => {
       const to = nextFactoryState<FC>(transitions, states, ev);
       if (to) {
         return new FactoryMachineEventImpl<E>(

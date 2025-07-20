@@ -24,7 +24,9 @@ export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
     middleware: Middleware<E>,
   ) => Funcware<StateMachine<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
-  resolve: <F extends StateMachine<E>["resolve"]>(resolveFn: F) => Funcware<F>;
+  resolveExit: <F extends StateMachine<E>["resolveExit"]>(
+    resolveFn: F,
+  ) => Funcware<F>;
   guard: (
     guardFn: StateMachine<E>["guard"],
   ) => Funcware<StateMachine<E>["guard"]>;
@@ -43,7 +45,7 @@ type Transform<I, O = I> = (source: I) => O;
 export const HookAdapters = {
   transition: middlewareToFuncware,
   update: middlewareToFuncware,
-  resolve: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
+  resolveExit: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
   guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
   handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
   before: (abortware) => abortable(abortware),
@@ -91,7 +93,7 @@ const combineGuards =
 // export const send = methodHook("send");
 export const before = hookSetup("before");
 export const transition = hookSetup("transition");
-export const resolve = hookSetup("resolve");
+export const resolveExit = hookSetup("resolveExit");
 export const guard = hookSetup("guard");
 export const update = hookSetup("update");
 export const handle = hookSetup("handle");
@@ -107,7 +109,7 @@ export const notify = hookSetup("notify");
 
 export const onBefore = machineHook("before");
 export const onTransition = machineHook("transition");
-export const onResolve = machineHook("resolve");
+export const onResolveExit = machineHook("resolveExit");
 export const onGuard = machineHook("guard");
 export const onUpdate = machineHook("update");
 export const onHandle = machineHook("handle");

@@ -15,6 +15,7 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **Nano-sized, opt-in primitives** for state machines and async logic
 - **Composable APIs** that work together or standalone
 - Inspired by [Timsy](https://github.com/christianalfoni/timsy), [Unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
+
 ## Philosophy & Inspiration
 
 - **Nano-sized, opt-in primitives** for state machines and async logic.
@@ -25,20 +26,22 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 
 A super lightweight, strongly-typed toolkit for building and extending state machines, factories, and async flows in TypeScript. Use only what you need.
 
-
 ## Features
 
-- **Type-Safe State Factories**: 
+- **Type-Safe State Factories**:
+
   - Create discriminated union types with `matchbox` for powerful pattern matching
   - Build factory machines with complete type inference for states and transitions
   - Enjoy automatic type narrowing with `.is()` and `.as()` type guards
 
 - **Smart Transitions**:
+
   - Define transitions with TypeScript inferring parameter types from destination states
   - Trigger transitions with fully typed parameters based on target state requirements
   - Handle complex transition logic with guards and side effects
 
 - **Async Handling**:
+
   - `createPromiseMachine` for type-safe async state management
   - Lifecycle hooks for promises with appropriate typing
   - Safe error handling for rejected promises
@@ -73,42 +76,42 @@ const player = matchina(
   },
   // Define transitions - TypeScript infers parameter types based on destination states
   {
-    Idle: { 
-      start: (trackId: string) => "Playing" // Parameter type matches Playing state
+    Idle: {
+      start: (trackId: string) => "Playing", // Parameter type matches Playing state
     },
     Playing: {
-      pause: "Paused",  // State transition will preserve trackId
-      stop: "Stopped"
+      pause: "Paused", // State transition will preserve trackId
+      stop: "Stopped",
     },
     Paused: {
       resume: "Playing", // State transition will preserve trackId
-      stop: "Stopped"
+      stop: "Stopped",
     },
-    Stopped: { 
-      start: (trackId: string) => "Playing" // Parameter type matches Playing state
+    Stopped: {
+      start: (trackId: string) => "Playing", // Parameter type matches Playing state
     },
   },
-  "Idle"
+  "Idle",
 );
 
 // Usage with full type safety:
-player.start("song-123");      // TypeScript knows this needs a trackId
-console.log(player.state.key);  // "Playing"
+player.start("song-123"); // TypeScript knows this needs a trackId
+console.log(player.state.key); // "Playing"
 
 // TypeScript knows player.state.data has trackId when in Playing state
 if (player.state.is("Playing")) {
-  console.log(player.state.data.trackId);  // "song-123"
+  console.log(player.state.data.trackId); // "song-123"
 }
 
-player.pause();      // TypeScript knows no parameter needed
-player.resume();     // TypeScript knows no parameter needed
+player.pause(); // TypeScript knows no parameter needed
+player.resume(); // TypeScript knows no parameter needed
 
 // Pattern matching with exhaustive checking
 const message = player.state.match({
   Playing: ({ trackId }) => `Now playing: ${trackId}`,
   Paused: ({ trackId }) => `Paused: ${trackId}`,
   Idle: () => "Ready to play",
-  Stopped: () => "Playback stopped"
+  Stopped: () => "Playback stopped",
 });
 ```
 
@@ -117,54 +120,53 @@ const message = player.state.match({
 Type-safe state machines for managing asynchronous operations:
 
 ```ts
-import { 
-  createPromiseMachine, 
-  setup, 
-  effect, 
-  guard, 
-  enter, 
-  leave 
+import {
+  createPromiseMachine,
+  setup,
+  effect,
+  guard,
+  enter,
+  leave,
 } from "matchina";
 
 // Create a promise machine for async addition with full type inference
 const adder = createPromiseMachine(
-  (a: number, b: number) => new Promise<number>(
-    resolve => setTimeout(() => resolve(a + b), 500)
-  )
+  (a: number, b: number) =>
+    new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 500)),
 );
 
 // All hooks are strongly typed and TypeScript checked
 setup(adder)(
   // Type-safe guard to validate parameters
-  guard(ev => {
+  guard((ev) => {
     // TypeScript knows ev.params exists and contains our parameters
     if (ev.type !== "executing") return true;
     const [a, b] = ev.params[1];
     return a >= 0 && b >= 0; // Only allow non-negative numbers
   }),
-  
+
   // Type-safe hooks for state transitions
-  enter(ev => {
+  enter((ev) => {
     if (ev.to.is("Pending")) {
       // TypeScript knows ev.to.data has promise and params when in Pending state
       console.log("Started addition:", ev.to.data.params);
     }
   }),
-  
+
   // Log when leaving pending state
-  leave(ev => {
+  leave((ev) => {
     if (ev.from.is("Pending")) {
       console.log("Leaving pending state");
     }
   }),
-  
+
   // Log when promise resolves
-  effect(ev => {
-    if (ev.type === "resolve") {
+  effect((ev) => {
+    if (ev.type === "resolveExit") {
       // TypeScript knows ev.to.data contains the result when in Resolved state
       console.log("Promise resolved with:", ev.to.data);
     }
-  })
+  }),
 );
 
 // --- Usage with type safety ---
@@ -175,10 +177,10 @@ await done; // TypeScript knows this is Promise<number>
 
 // Pattern match on state for messaging
 const message = adder.getState().match({
-  Idle:     ()      => "Ready to add.",
-  Pending:  params  => `Adding: ${params.params.join(' + ')}`,
-  Resolved: result  => `Result: ${result}`,
-  Rejected: error   => `Error: ${error.message}`,
+  Idle: () => "Ready to add.",
+  Pending: (params) => `Adding: ${params.params.join(" + ")}`,
+  Resolved: (result) => `Result: ${result}`,
+  Rejected: (error) => `Error: ${error.message}`,
 });
 ```
 
@@ -194,13 +196,13 @@ import { matchbox } from "matchina";
 // Create a state factory with typed data for each state
 const PlayerState = matchbox({
   Idle: () => ({}),
-  Playing: (trackId: string, startTime: number = Date.now()) => ({ 
-    trackId, 
-    startTime 
+  Playing: (trackId: string, startTime: number = Date.now()) => ({
+    trackId,
+    startTime,
   }),
-  Paused: (trackId: string, position: number) => ({ 
-    trackId, 
-    position 
+  Paused: (trackId: string, position: number) => ({
+    trackId,
+    position,
   }),
   Stopped: () => ({}),
 });
@@ -211,9 +213,9 @@ const pausedState = PlayerState.Paused("track-123", 45);
 
 // Exhaustive pattern matching with access to state data:
 const message = playingState.match({
-  Playing: ({ trackId, startTime }) => 
+  Playing: ({ trackId, startTime }) =>
     `Now playing: ${trackId} (started at ${new Date(startTime).toLocaleTimeString()})`,
-  Paused: ({ trackId, position }) => 
+  Paused: ({ trackId, position }) =>
     `Paused: ${trackId} at ${position} seconds`,
   Idle: () => "Ready to play",
   Stopped: () => "Playback stopped",
@@ -222,7 +224,9 @@ const message = playingState.match({
 // Type-safe guards with type narrowing:
 if (playingState.is("Playing")) {
   // TypeScript knows playingState.data has trackId and startTime
-  console.log(`Playing ${playingState.data.trackId} since ${playingState.data.startTime}`);
+  console.log(
+    `Playing ${playingState.data.trackId} since ${playingState.data.startTime}`,
+  );
 }
 
 // Type-safe casting:
@@ -253,16 +257,16 @@ const TaskStates = defineStates({
   Idle: () => ({}),
   Loading: (query: string) => ({ query }),
   Success: (query: string, results: string[]) => ({ query, results }),
-  Error: (query: string, message: string) => ({ query, message })
+  Error: (query: string, message: string) => ({ query, message }),
 });
 
 // Create a factory machine with type-safe transitions
 const taskMachine = createMachine(
   TaskStates,
   {
-    Idle: { 
+    Idle: {
       // Parameter types are inferred from the destination state
-      search: (query: string) => "Loading"
+      search: (query: string) => "Loading",
     },
     Loading: {
       // Parameter types are inferred from the destination state
@@ -274,13 +278,13 @@ const taskMachine = createMachine(
       error: (message: string) => (state) => {
         // TypeScript knows state.data has query from Loading state
         return TaskStates.Error(state.data.query, message);
-      }
+      },
     },
     Success: {
       // Return to idle state
       reset: "Idle",
       // Start a new search
-      search: (query: string) => "Loading"
+      search: (query: string) => "Loading",
     },
     Error: {
       // Return to idle state
@@ -289,24 +293,24 @@ const taskMachine = createMachine(
       retry: (state) => {
         // TypeScript knows state.data has query from Error state
         return TaskStates.Loading(state.data.query);
-      }
-    }
+      },
+    },
   },
-  TaskStates.Idle()
+  TaskStates.Idle(),
 );
 
 // Add hooks with proper typing
 setup(taskMachine)(
   // Guard to prevent empty searches
-  guard(ev => {
+  guard((ev) => {
     if (ev.type !== "search") return true;
     return ev.params[0].length > 0;
   }),
-  
+
   // Log state transitions
-  enter(ev => {
+  enter((ev) => {
     console.log(`Entering ${ev.to.key} state`, ev.to.data);
-  })
+  }),
 );
 
 // Usage with full type safety
@@ -324,10 +328,9 @@ if (taskMachine.getState().is("Loading")) {
 const ui = taskMachine.getState().match({
   Idle: () => "Enter a search term",
   Loading: ({ query }) => `Searching for "${query}"...`,
-  Success: ({ query, results }) => 
+  Success: ({ query, results }) =>
     `Found ${results.length} results for "${query}": ${results.join(", ")}`,
-  Error: ({ query, message }) => 
-    `Error searching for "${query}": ${message}`
+  Error: ({ query, message }) => `Error searching for "${query}": ${message}`,
 });
 ```
 
@@ -343,14 +346,14 @@ The Factory Machine provides:
 Matchina provides powerful hooks for intercepting and reacting to state transitions:
 
 ```ts
-import { 
-  matchina, 
-  setup, 
-  guard, 
-  enter, 
-  leave, 
-  effect, 
-  bindEffects 
+import {
+  matchina,
+  setup,
+  guard,
+  enter,
+  leave,
+  effect,
+  bindEffects,
 } from "matchina";
 
 // Create a counter machine with effects
@@ -359,11 +362,11 @@ const counter = matchina(
     Idle: () => ({ count: 0 }),
     Counting: (count: number) => ({ count }),
     // Define an effect state that has a specific effect type
-    Milestone: (count: number) => ({ count, effect: "Notify" as const })
+    Milestone: (count: number) => ({ count, effect: "Notify" as const }),
   },
   {
-    Idle: { 
-      start: "Counting" 
+    Idle: {
+      start: "Counting",
     },
     Counting: {
       increment: (state) => {
@@ -374,43 +377,43 @@ const counter = matchina(
         }
         return { ...state, data: { count: newCount } };
       },
-      reset: "Idle"
+      reset: "Idle",
     },
     Milestone: {
-      acknowledge: "Counting"
-    }
+      acknowledge: "Counting",
+    },
   },
-  "Idle"
+  "Idle",
 );
 
 // Add lifecycle hooks with type safety
 setup(counter)(
   // Guard - prevent incrementing past 100
-  guard(ev => {
+  guard((ev) => {
     if (ev.type !== "increment") return true;
     if (!ev.from.is("Counting")) return true;
     return ev.from.data.count < 100;
   }),
-  
+
   // Enter hook - log entering Milestone state
-  enter(ev => {
+  enter((ev) => {
     if (ev.to.is("Milestone")) {
       console.log(`Milestone reached: ${ev.to.data.count}`);
     }
   }),
-  
+
   // Leave hook - log leaving states
-  leave(ev => {
+  leave((ev) => {
     console.log(`Leaving ${ev.from.key} state`);
   }),
-  
+
   // Effect handler - handle the Notify effect
   bindEffects({
     Notify: ({ data }) => {
       // Show notification
       alert(`Milestone reached: ${data.count}`);
-    }
-  })
+    },
+  }),
 );
 
 // Usage
@@ -428,14 +431,13 @@ Lifecycle hooks provide:
 - **Effect handlers** for handling side effects
 - **Type-safe API** that enforces correct usage
 
-
 ### React Integration
 
 Matchina provides React hooks for integrating state machines with React components:
 
 ```tsx
-import React from 'react';
-import { matchina, useLifecycle } from 'matchina/react';
+import React from "react";
+import { matchina, useLifecycle } from "matchina/react";
 
 // Create a todo machine
 const todoMachine = matchina(
@@ -443,45 +445,45 @@ const todoMachine = matchina(
     Empty: () => ({}),
     Active: (todos: string[]) => ({ todos }),
     Saving: (todos: string[]) => ({ todos }),
-    Error: (message: string) => ({ message })
+    Error: (message: string) => ({ message }),
   },
   {
     Empty: {
-      add: (todo: string) => "Active"
+      add: (todo: string) => "Active",
     },
     Active: {
       add: (todo: string, state) => ({
         ...state,
-        data: { todos: [...state.data.todos, todo] }
+        data: { todos: [...state.data.todos, todo] },
       }),
       remove: (index: number, state) => {
         const newTodos = [...state.data.todos];
         newTodos.splice(index, 1);
-        return newTodos.length === 0 
-          ? "Empty" 
+        return newTodos.length === 0
+          ? "Empty"
           : { ...state, data: { todos: newTodos } };
       },
-      save: "Saving"
+      save: "Saving",
     },
     Saving: {
       success: "Active",
-      error: (message: string) => "Error"
+      error: (message: string) => "Error",
     },
     Error: {
-      dismiss: (state) => 
-        state.from?.is("Saving") 
-          ? { key: "Active", data: state.from.data } 
-          : "Empty"
-    }
+      dismiss: (state) =>
+        state.from?.is("Saving")
+          ? { key: "Active", data: state.from.data }
+          : "Empty",
+    },
   },
-  "Empty"
+  "Empty",
 );
 
 // Todo component using the machine
 const TodoApp: React.FC = () => {
-  const [newTodo, setNewTodo] = React.useState('');
+  const [newTodo, setNewTodo] = React.useState("");
   const [machine, lifecycle] = useLifecycle(todoMachine);
-  
+
   // Register lifecycle hook for the Saving state
   lifecycle.onEnter("Saving", ({ data }) => {
     // Simulate API call
@@ -493,30 +495,30 @@ const TodoApp: React.FC = () => {
       }
     }, 1000);
   });
-  
+
   return (
     <div>
       <h1>Todo App</h1>
-      
-      <form onSubmit={e => {
-        e.preventDefault();
-        if (newTodo.trim()) {
-          machine.add(newTodo);
-          setNewTodo('');
-        }
-      }}>
-        <input 
-          value={newTodo} 
-          onChange={e => setNewTodo(e.target.value)} 
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (newTodo.trim()) {
+            machine.add(newTodo);
+            setNewTodo("");
+          }
+        }}
+      >
+        <input
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
           placeholder="New todo"
         />
         <button type="submit">Add</button>
       </form>
-      
+
       {machine.state.match({
-        Empty: () => (
-          <p>No todos yet. Add one to get started!</p>
-        ),
+        Empty: () => <p>No todos yet. Add one to get started!</p>,
         Active: ({ todos }) => (
           <>
             <ul>
@@ -530,15 +532,13 @@ const TodoApp: React.FC = () => {
             <button onClick={machine.save}>Save</button>
           </>
         ),
-        Saving: () => (
-          <p>Saving todos...</p>
-        ),
+        Saving: () => <p>Saving todos...</p>,
         Error: ({ message }) => (
           <div className="error">
             <p>Error: {message}</p>
             <button onClick={machine.dismiss}>Dismiss</button>
           </div>
-        )
+        ),
       })}
     </div>
   );
@@ -578,6 +578,7 @@ Matchina focuses on TypeScript type inference and composable, lightweight primit
 ### Do I need to use the entire library?
 
 No. Matchina is designed to be modular. You can use only the parts you need:
+
 - Use `matchbox` alone for type-safe tagged unions
 - Use `createMachine` for state machines
 - Use `createPromiseMachine` for async operations
@@ -587,13 +588,13 @@ No. Matchina is designed to be modular. You can use only the parts you need:
 
 Matchina is very lightweight:
 
-| Feature                    | Size (min+gz) |
-|----------------------------|---------------|
-| matchbox                   | 376 B         |
-| factory-machine            | 595 B         |
-| promise-machine            | 1.01 kB       |
-| react integration          | 365 B         |
-| full library               | 2.41 kB       |
+| Feature           | Size (min+gz) |
+| ----------------- | ------------- |
+| matchbox          | 376 B         |
+| factory-machine   | 595 B         |
+| promise-machine   | 1.01 kB       |
+| react integration | 365 B         |
+| full library      | 2.41 kB       |
 
 ## Contributing
 

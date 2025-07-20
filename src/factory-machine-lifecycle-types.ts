@@ -10,7 +10,7 @@ import { Effect, Middleware } from "./types";
 
 type TransitionHookExtensions<E extends StateMachineEvent> = {
   begin: AbortableEventHandler<E>;
-  resolve: Funcware<(ev: Partial<E>) => E>;
+  resolveExit: Funcware<(ev: Partial<E>) => E>;
   transition: Middleware<E>;
   guard: StateMachine<E>["guard"];
   handle: StateMachine<E>["handle"];

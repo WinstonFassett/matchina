@@ -14,7 +14,7 @@ export interface TransitionContext {
 
 export function createTransitionMachine<E extends StateMachineEvent>(
   transitions: TransitionRecord,
-  initialState: E["from"]
+  initialState: E["from"],
 ) {
   let lastChange = {
     type: "__initialize",
@@ -26,7 +26,7 @@ export function createTransitionMachine<E extends StateMachineEvent>(
     getState: () => lastChange.to,
     send(type, ...params) {
       const lastChange = machine.getChange();
-      const resolved = machine.resolve({
+      const resolved = machine.resolveExit({
         type,
         params,
         from: lastChange.to,
@@ -35,7 +35,7 @@ export function createTransitionMachine<E extends StateMachineEvent>(
         machine.transition(resolved);
       }
     },
-    resolve(ev) {
+    resolveExit(ev) {
       const to = machine.transitions[ev.from.key][ev.type];
       if (to) {
         return { ...ev, to } as E; // TODO: use Object.assign
@@ -59,8 +59,8 @@ export function createTransitionMachine<E extends StateMachineEvent>(
       machine.notify(update); // notify consumers
       machine.after(update); // cleanup
     },
-    handle: (EmptyTransform<E>),
-    before: (EmptyTransform<E>),
+    handle: EmptyTransform<E>,
+    before: EmptyTransform<E>,
     update: (update: E) => {
       lastChange = update;
     },
@@ -68,10 +68,10 @@ export function createTransitionMachine<E extends StateMachineEvent>(
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
     },
-    leave: (EmptyEffect<E>),
-    enter: (EmptyEffect<E>),
-    notify: (EmptyEffect<E>),
-    after: (EmptyEffect<E>),
+    leave: EmptyEffect<E>,
+    enter: EmptyEffect<E>,
+    notify: EmptyEffect<E>,
+    after: EmptyEffect<E>,
   };
   return machine;
 }
