@@ -1,18 +1,15 @@
 import { createPromiseMachine, withApi, withReset } from "matchina";
 import { useMachine } from "matchina/react";
 
-const slowlyAddTwoNumbers = (
-  x: number,
-  y: number,
-  duration = 1000,
-) =>
+const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
 const kernel = createPromiseMachine(slowlyAddTwoNumbers);
 const machine = withReset(withApi(kernel), kernel.states.Idle());
 
 export function ReactMachineDemo({}) {
-  const [change] = useMachine(machine);
+  useMachine(machine);
+  const change = machine.getChange();
   return (
     <div>
       <div>
@@ -29,15 +26,7 @@ export function ReactMachineDemo({}) {
                 Add 1+1 in 1 sec
               </button>{" "}
               or{" "}
-              <button
-                onClick={() =>
-                  machine.execute(
-                    2,
-                    2,
-                    2000,
-                  )
-                }
-              >
+              <button onClick={() => machine.execute(2, 2, 2000)}>
                 Add 2+2 in 2 secs
               </button>
             </span>
