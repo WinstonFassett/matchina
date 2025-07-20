@@ -1,19 +1,7 @@
 import { useMachine } from "matchina/react";
 import { walkDuration, type ExtendedTrafficLightMachine } from "./machine";
 import { useEffect, useState } from "react";
-
-// Simple interval effect hook
-function useIntervalEffect(effect: () => void, ms: number | null) {
-  useEffect(() => {
-    if (ms === null) return;
-
-    // Start the interval
-    const id = setInterval(effect, ms);
-
-    // Return cleanup function
-    return () => clearInterval(id);
-  }, [effect, ms]);
-}
+import { useIntervalEffect } from "./hooks";
 
 export const ExtendedTrafficLightView = ({
   machine,
@@ -26,7 +14,6 @@ export const ExtendedTrafficLightView = ({
 
   useMachine(machine.data);
   const data = machine.data.getState();
-  console.log("data", data);
   const walkWarningDuration = data.data.walkWarningDuration;
 
   const [timeRemaining, setTimeRemaining] = useState(
@@ -36,12 +23,10 @@ export const ExtendedTrafficLightView = ({
   const [isBlinking, setIsBlinking] = useState(false);
   const [walkBlinking, setWalkBlinking] = useState(false);
 
-  // console.log("isBlinking", isBlinking);
   const progressPercent = Math.max(
     0,
     Math.min(100, (timeRemaining / currentState.data.duration) * 100),
   );
-  console.log("walk warning duration", walkWarningDuration);
   // Set initial walk warning duration
   useEffect(() => {
     if (walkWarningDuration) {
@@ -75,14 +60,11 @@ export const ExtendedTrafficLightView = ({
       ? 500
       : null,
   );
-  console.log("walkTimeRemaining", walkTimeRemaining);
-  // Handle walk signal blinking
   useIntervalEffect(
     () => {
-      console.log("walkBlinking", walkBlinking);
       setWalkBlinking((prev) => !prev);
     },
-    walkWarningDuration && walkTimeRemaining > 0 ? 500 : null,
+    walkTimeRemaining > 0 ? 500 : null,
   );
 
   return (

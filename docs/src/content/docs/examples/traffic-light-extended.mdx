@@ -6,6 +6,7 @@ description: A traffic light with pedestrian crossing controls
 import ExtendedTrafficLightExample from "@code/examples/traffic-light-extended/example";
 import statesCode from "@code/examples/traffic-light-extended/states.ts?raw";
 import machineCode from "@code/examples/traffic-light-extended/machine.ts?raw";
+import hooksCode from "@code/examples/traffic-light-extended/hooks.ts?raw";
 import viewCode from "@code/examples/traffic-light-extended/TrafficLightView.tsx?raw";
 import indexCode from "@code/examples/traffic-light-extended/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
@@ -35,6 +36,7 @@ The extended machine shows how to model a system that responds to external input
   files={[
     { name: "states.ts", code: statesCode },
     { name: "machine.ts", code: machineCode },
+    { name: "hooks.ts", code: hooksCode },
     { name: "TrafficLightView.tsx", code: viewCode },
     { name: "index.tsx", code: indexCode },
   ]}
