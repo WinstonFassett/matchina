@@ -9,12 +9,11 @@ export * from "./extras/with-reset";
 export * from "./extras/zen";
 export * from "./factory-machine";
 export * from "./factory-machine-event-api";
-export * from "./factory-machine-facade";
 export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./factory-machine-transition-helpers";
 export * from "./matchbox-factory";
-export * from "./extras/nanosubscriber"
+export * from "./extras/nanosubscriber";
 export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./promise-machine-hooks";
@@ -27,4 +26,3 @@ export * from "./types";
 // match-change
 export * from "./match-change";
 export * from "./match-filters";
-
