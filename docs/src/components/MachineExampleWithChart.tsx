@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect, type ComponentType } from "react";
-import { createApi } from "@lib/src";
-import type { FactoryMachine, FactoryState } from "@lib/src";
+import { createApi } from "matchina";
+import type { FactoryMachine, FactoryState } from "matchina";
 import StateMachineMermaidDiagram from "./MachineViz";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/integrations/react";
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any> & any;

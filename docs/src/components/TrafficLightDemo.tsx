@@ -2,8 +2,8 @@ import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xsta
 import { TrafficLight } from "@code/examples/traffic-light";
 import { createTrafficLight } from "@code/examples/traffic-light/machine";
 import StateMachineMermaidDiagram from "@components/MachineViz";
-import { createApi } from "@lib/src";
-import { useMachine } from "@lib/src/integrations/react";
+import { createApi } from "matchina";
+import { useMachine } from "matchina/integrations/react";
 import { useMemo } from "react";
 
 export function TrafficLightDemo() {
