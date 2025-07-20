@@ -18,17 +18,17 @@ export default defineConfig({
     assets: "assets",
   },
   markdown: {
+    // is this getting used?
     shikiConfig: {
       langs: [],
-      themes: {
-        light: "github-light",
-        dark: "github-dark",
-      },
       wrap: true,
     },
   },
   integrations: [
     starlight({
+      expressiveCode: {
+        themes: ["material-theme-ocean"],
+      },
       title: "Matchina",
       editLink: {
         baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
