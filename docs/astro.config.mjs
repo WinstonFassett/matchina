@@ -188,17 +188,21 @@ export default defineConfig({
               ],
             },
             {
+              label: "Async",
+              items: [
+                {
+                  label: "Async Calculator",
+                  link: "/examples/async-calculator",
+                },
+              ],
+            },
+            {
               label: "Fetchers",
               items: [
-                // {
-                //   label: "Overview",
-                //   link: "/examples/fetcher-overview",
-                // },
-                // BROKEN
-                // {
-                //   label: "Basic Fetcher",
-                //   link: "/examples/fetcher-basic",
-                // },
+                {
+                  label: "Basic Fetcher",
+                  link: "/examples/fetcher-basic",
+                },
                 {
                   label: "Advanced Fetcher",
                   link: "/examples/fetcher-advanced",

@@ -1,15 +1,8 @@
-import { createMachine, createPromiseMachine } from "@lib/src";
-import { useState, useEffect } from "react";
+import { useMachine } from "matchina/react";
+import { useMemo } from "react";
+import { createBasicFetcherMachine } from "./machine";
 
-export function useFetcher(url: string, options: RequestInit = {}) {
-  const [machine] = useState(() =>
-    createPromiseMachine(async () => {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    }),
-  );
-  console.log({ machine, url, options });
+export function useFetcher() {
+  const fetcher = useMemo(() => createBasicFetcherMachine(), []);
+  return useMachine(fetcher);
 }

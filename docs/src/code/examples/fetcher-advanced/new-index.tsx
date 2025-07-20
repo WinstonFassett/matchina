@@ -5,7 +5,13 @@ import { FetcherAppView } from "./FetcherAppView";
 // Main export for importing in MDX documentation
 export default function FetcherExample() {
   const fetcher = useAdvancedFetcher();
-  return <MachineExampleWithChart machine={fetcher} AppView={FetcherAppView} showRawState={true} />;
+  return (
+    <MachineExampleWithChart
+      machine={fetcher as any}
+      AppView={FetcherAppView}
+      showRawState={true}
+    />
+  );
 }
 
 // For backward compatibility

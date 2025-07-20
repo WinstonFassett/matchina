@@ -23,3 +23,27 @@
 - `src/components/` - Astro and React components for docs
 - `src/code/examples/` - Code examples imported into docs
 - `astro.config.mjs` - Starlight configuration with sidebar structure
+
+## Example Patterns (CRITICAL - Always Follow)
+
+### File Structure
+
+- `machine.ts` - Exports `createXyzMachine()` function (NOT global instance)
+- `XyzView.tsx` - React component that takes machine as prop
+- `hooks.ts` - Optional, usually not needed
+- `example.tsx` - Uses MachineExampleWithChart, creates machine instance
+- `index.tsx` - Clean component without demo wrapper
+
+### Machine Creation Pattern
+
+- **ALWAYS** export `createXyzMachine()` function from machine.ts
+- **NEVER** export global machine instances
+- React components create machine with `useMemo(() => createXyzMachine(), [])`
+- Use `useMachine(machineInstance)` to track the instance
+
+### Astro Config Organization
+
+- **CRITICAL**: New examples MUST be added to `astro.config.mjs` sidebar
+- Examples are organized in sections (Basic, Async, Fetch, etc.)
+- Each example needs proper title and link in sidebar structure
+- **ALWAYS** update astro config when adding new examples

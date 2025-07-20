@@ -6,7 +6,7 @@ export default function FetcherExample() {
   const fetcher = useAdvancedFetcher();
   return (
     <MachineExampleWithChart
-      machine={fetcher}
+      machine={fetcher as any}
       AppView={FetcherAppView}
       showRawState={true}
     />

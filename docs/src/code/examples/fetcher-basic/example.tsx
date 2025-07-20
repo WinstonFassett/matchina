@@ -1,13 +1,13 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
-import { useSumFetcher } from "./hooks";
+import { useFetcher } from "./hooks";
 import { FetcherAppView } from "./FetcherAppView";
 
 export default function FetcherExample() {
-  const fetcher = useSumFetcher();
+  const fetcher = useFetcher();
 
   return (
     <MachineExampleWithChart
-      machine={fetcher}
+      machine={fetcher as any}
       AppView={FetcherAppView}
       showRawState={true}
     />
