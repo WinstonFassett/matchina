@@ -3,7 +3,7 @@ import { createApi } from "matchina";
 import type { FactoryMachine, FactoryState } from "matchina";
 import StateMachineMermaidDiagram from "./MachineViz";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { useMachine } from "matchina/integrations/react";
+import { useMachine } from "matchina/react";
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any> & any;
