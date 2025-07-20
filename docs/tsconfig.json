@@ -1,17 +1,5 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "baseUrl": ".",
-    "paths": {
-      "@components/*": ["src/components/*"],
-      "@code/*": ["src/code/*"],
-      "@lib/*": ["../*"],
-      "matchina": ["../src/index.ts"],
-      "matchina/*": ["../src/*"],
-      "matchina/react": ["../src/integrations/react"]
-    }
-  },
-  "exclude": ["dist", "node_modules"]
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
 }
