@@ -8,11 +8,12 @@ interface FetcherAppViewProps {
 
 export function FetcherAppView({ machine }: FetcherAppViewProps) {
   const fetcher = machine;
+  console.log("FetcherAppView", fetcher);
   const { tries } = fetcher;
-  
+
   const actions = useMemo(
-    () => createApi(fetcher.machine, fetcher.state.key),
-    [fetcher.state]
+    () => createApi(fetcher, fetcher.state.key),
+    [fetcher.state],
   );
 
   return (
@@ -20,18 +21,20 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
       <div className="mb-4">
         <h3 className="text-lg font-bold">Advanced Fetcher</h3>
         <div className="flex items-center gap-2">
-          <span className="font-medium">State:</span> 
-          <span className={fetcher.state.match({
-            Idle: () => "text-gray-500",
-            Fetching: () => "text-blue-500",
-            ProcessingResponse: () => "text-blue-300",
-            Resolved: () => "text-green-500",
-            Error: () => "text-red-500",
-            NetworkError: () => "text-red-500",
-            Aborted: () => "text-yellow-500",
-            TimedOut: () => "text-orange-500",
-            Refetching: () => "text-purple-500",
-          })}>
+          <span className="font-medium">State:</span>
+          <span
+            className={fetcher.state.match({
+              Idle: () => "text-gray-500",
+              Fetching: () => "text-blue-500",
+              ProcessingResponse: () => "text-blue-300",
+              Resolved: () => "text-green-500",
+              Error: () => "text-red-500",
+              NetworkError: () => "text-red-500",
+              Aborted: () => "text-yellow-500",
+              TimedOut: () => "text-orange-500",
+              Refetching: () => "text-purple-500",
+            })}
+          >
             {fetcher.state.key}
           </span>
         </div>
@@ -44,9 +47,9 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
 
       <div className="mb-4">
         <MachineActions
-          transitions={fetcher.machine.transitions}
+          transitions={fetcher.transitions}
           state={fetcher.state.key}
-          send={fetcher.machine.send}
+          send={fetcher.send}
           children={undefined}
         />
       </div>
@@ -59,7 +62,7 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
               Resolved: (data: any) => JSON.stringify(data, null, 2),
               Error: (error: Error) => `Error: ${error.message}`,
               NetworkError: (error: Error) => `Network Error: ${error.message}`,
-              _: () => "No data available"
+              _: () => "No data available",
             })}
           </pre>
         </div>
