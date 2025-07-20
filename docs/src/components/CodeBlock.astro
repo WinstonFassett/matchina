@@ -20,11 +20,11 @@ const {
 } = Astro.props;
 
 // Process code first before deciding how to render it
-const processedCode = applyCut(mapPaths(rawCode));
+// const processedCode = applyCut(mapPaths(rawCode));
 
 // Use Twoslash only when explicitly requested for TypeScript/TSX
 if (twoslash && ["ts", "tsx"].includes(lang)) {
-  html = await codeToHtml(processedCode, {
+  html = await codeToHtml(rawCode, {
     lang,
     theme,
     transformers: [transformerTwoslash()],
