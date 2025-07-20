@@ -4,8 +4,9 @@ import CodeSpan from "./CodeSpan.astro";
 import Heading from "./Heading.astro";
 import Note from "./Note.astro";
 import { Code } from "@astrojs/starlight/components";
-import { transformerTwoslash } from "@shikijs/twoslash";
+import { transformerTwoslash, rendererRich } from "@shikijs/twoslash";
 import { codeToHtml } from "shiki";
+import "@shikijs/twoslash/style-rich.css";
 
 export const theme = "material-theme-ocean";
 
@@ -21,7 +22,8 @@ const {
 if (twoslash && ["ts", "tsx"].includes(lang)) {
   html = await codeToHtml(rawCode, {
     lang,
-    theme: "vitesse-dark",
+    // theme: "vitesse-dark",
+    theme,
     transformers: [
       transformerTwoslash(), // <-- here
       // ...
