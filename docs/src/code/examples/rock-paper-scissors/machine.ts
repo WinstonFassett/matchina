@@ -1,70 +1,6 @@
-import { createMachine, defineStates, zen } from "matchina";
-
-export type Move = "rock" | "paper" | "scissors";
-
-export const states = defineStates({
-  WaitingForPlayer: (playerScore: number = 0, computerScore: number = 0) => ({
-    playerScore,
-    computerScore,
-  }),
-  PlayerChose: (
-    playerMove: Move,
-    playerScore: number,
-    computerScore: number,
-  ) => ({
-    playerMove,
-    playerScore,
-    computerScore,
-  }),
-  Judging: (
-    playerMove: Move,
-    computerMove: Move,
-    playerScore: number,
-    computerScore: number,
-  ) => ({
-    playerMove,
-    computerMove,
-    playerScore,
-    computerScore,
-  }),
-  RoundComplete: (
-    playerMove: Move,
-    computerMove: Move,
-    roundWinner: "player" | "computer" | "tie",
-    playerScore: number,
-    computerScore: number,
-  ) => ({
-    playerMove,
-    computerMove,
-    roundWinner,
-    playerScore,
-    computerScore,
-  }),
-  GameOver: (
-    winner: "player" | "computer",
-    playerScore: number,
-    computerScore: number,
-  ) => ({
-    winner,
-    playerScore,
-    computerScore,
-  }),
-});
-
-export function determineWinner(
-  playerMove: Move,
-  computerMove: Move,
-): "player" | "computer" | "tie" {
-  if (playerMove === computerMove) return "tie";
-  if (
-    (playerMove === "rock" && computerMove === "scissors") ||
-    (playerMove === "paper" && computerMove === "rock") ||
-    (playerMove === "scissors" && computerMove === "paper")
-  ) {
-    return "player";
-  }
-  return "computer";
-}
+import { createMachine, zen } from "matchina";
+import { states, type Move } from "./states";
+import { randomMove, determineWinner } from "./game-utils";
 
 export function createRPSMachine() {
   const machine = createMachine(
@@ -130,9 +66,4 @@ export function createRPSMachine() {
   return Object.assign(zen(machine), {
     randomMove,
   });
-}
-
-function randomMove() {
-  const moves: Move[] = ["rock", "paper", "scissors"];
-  return moves[Math.floor(Math.random() * moves.length)];
 }

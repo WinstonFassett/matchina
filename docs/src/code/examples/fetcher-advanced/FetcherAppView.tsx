@@ -1,4 +1,4 @@
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 import { MachineActions } from "../lib/MachineActions";
 import type { FetcherMachine } from "./machine";
 

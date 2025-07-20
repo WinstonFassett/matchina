@@ -1,5 +1,5 @@
-import type { Move } from "./machine";
 import { createRPSMachine } from "./machine";
+import type { Move } from "./states";
 
 const getIcon = (move: Move | undefined) => {
   switch (move) {

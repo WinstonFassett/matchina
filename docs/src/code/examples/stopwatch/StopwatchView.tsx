@@ -1,6 +1,6 @@
 // Basic StopwatchView component for the example
 import { getAvailableActions as getStateEvents } from "matchina";
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 
 /**
  * A simple Stopwatch UI component that displays the current state, elapsed time,
