@@ -19,36 +19,24 @@ const {
   twoslash = false,
 } = Astro.props;
 
-// Use Twoslash only when explicitly requested
+// Process code first before deciding how to render it
+const processedCode = applyCut(mapPaths(rawCode));
+
+// Use Twoslash only when explicitly requested for TypeScript/TSX
 if (twoslash && ["ts", "tsx"].includes(lang)) {
-  html = await codeToHtml(rawCode, {
+  html = await codeToHtml(processedCode, {
     lang,
-    // theme: "vitesse-dark",
     theme,
-    transformers: [
-      transformerTwoslash(), // <-- here
-      // ...
-    ],
+    transformers: [transformerTwoslash()],
   });
-  //   html = await codeToHtml(rawCode, {
-  //     lang,
-  //     theme,
-  //     transformers: [
-  //       transformerTwoSlash(
-  //         {
-  //           renderer: rendererRich(),
-  //         }
-  //       )
-  //     ],
-  //   })
-  // } else {
-  //   html = await codeToHtml(applyCut(mapPaths(rawCode)),
-  //     {
-  //       lang,
-  //       theme,
-  //     }
-  //   );
 }
+//  else if (lang !== "md") {
+//   // Generate regular syntax highlighted HTML for non-markdown code
+//   html = await codeToHtml(processedCode, {
+//     lang,
+//     theme,
+//   });
+// }
 
 function applyCut(s: string) {
   return s.split(/\/\/ \-\-\-cut\-\-\-\s*/).pop() ?? "";
@@ -76,11 +64,9 @@ function mapPaths(s: string) {
       components={{ Heading, CodeBlock, CodeSpan, Note }}
     />
   ) : (
-    // : <div set:html={html} />
     <Code
       code={applyCut(mapPaths(rawCode))}
       lang={lang}
-      twoslash={twoslash}
       showLines={showLines}
     />
   )
