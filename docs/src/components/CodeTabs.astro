@@ -1,6 +1,6 @@
 ---
-import { TabItem, Tabs } from '@astrojs/starlight/components';
-import CodeBlock from './CodeBlock.astro';
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+import { Code } from "@astrojs/starlight/components";
 
 interface Props {
   files: {
@@ -14,35 +14,35 @@ interface Props {
 const { files } = Astro.props as Props;
 
 function getLangFromExtension(filename: string): string {
-  const ext = filename.split('.').pop();
+  const ext = filename.split(".").pop();
   switch (ext) {
-    case 'ts':
-      return 'ts';
-    case 'js':
-      return 'javascript';
-    case 'jsx':
-      return 'jsx';
-    case 'tsx':
-      return 'tsx';
-    case 'py':
-      return 'python';
+    case "ts":
+      return "ts";
+    case "js":
+      return "javascript";
+    case "jsx":
+      return "jsx";
+    case "tsx":
+      return "tsx";
+    case "py":
+      return "python";
     default:
-      return 'plaintext';
+      return "plaintext";
   }
 }
-
 ---
 
 <Tabs>
-  {files.map((file, index) => (
-    <TabItem label={file.name} active={index === 0}>
-      <CodeBlock
-        code={file.code}
-        lang={file.language ?? getLangFromExtension(file.name)}
-        twoslash={file.twoslash || false}
-        showLines={true}
-      />
-    </TabItem>     
-  ))}
+  {
+    files.map((file, index) => (
+      <TabItem label={file.name}>
+        <Code
+          code={file.code}
+          lang={file.language ?? getLangFromExtension(file.name)}
+          twoslash={file.twoslash || false}
+          showLines={true}
+        />
+      </TabItem>
+    ))
+  }
 </Tabs>
-
