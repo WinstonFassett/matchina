@@ -1,5 +1,4 @@
-import { createPromiseMachine, createReset, onLifecycle } from "matchina";
-import { zen } from "matchina/extras/zen";
+import { createPromiseMachine, createReset, onLifecycle, zen } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 

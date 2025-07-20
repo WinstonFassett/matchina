@@ -3,7 +3,7 @@ title: API Wrappers
 description: Learn about the different API wrappers for state machines in Matchina
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 # API Wrappers
 
@@ -19,19 +19,19 @@ The `createApi` function creates a flat event API for a factory machine, simplif
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { createApi } from 'matchina';
+import { createMachine } from "matchina";
+import { createApi } from "matchina";
 
 const toggleMachine = createMachine({
-  initial: 'off',
+  initial: "off",
   states: {
     off: {
-      on: { TOGGLE: 'on' }
+      on: { TOGGLE: "on" },
     },
     on: {
-      on: { TOGGLE: 'off' }
-    }
-  }
+      on: { TOGGLE: "off" },
+    },
+  },
 });
 
 // Create a flat event API
@@ -45,30 +45,30 @@ The generated API is fully typed, with the correct parameter types for each even
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { createApi } from 'matchina';
+import { createMachine } from "matchina";
+import { createApi } from "matchina";
 
 const counterMachine = createMachine({
-  initial: 'idle',
+  initial: "idle",
   context: { count: 0 },
   states: {
     idle: {
-      on: { 
+      on: {
         INCREMENT: {
-          target: 'idle',
+          target: "idle",
           action: (ctx, params: [number]) => {
             ctx.count += params[0];
-          }
+          },
         },
         DECREMENT: {
-          target: 'idle',
+          target: "idle",
           action: (ctx, params: [number]) => {
             ctx.count -= params[0];
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 });
 
 const api = createApi(counterMachine);
@@ -82,19 +82,19 @@ You can also use the `withApi` helper to add the API directly to your machine:
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { withApi } from 'matchina';
+import { createMachine } from "matchina";
+import { withApi } from "matchina";
 
 const toggleMachine = createMachine({
-  initial: 'off',
+  initial: "off",
   states: {
     off: {
-      on: { TOGGLE: 'on' }
+      on: { TOGGLE: "on" },
     },
     on: {
-      on: { TOGGLE: 'off' }
-    }
-  }
+      on: { TOGGLE: "off" },
+    },
+  },
 });
 
 // Enhance the machine with an API
@@ -110,19 +110,18 @@ The `zen` wrapper builds on top of `createApi` and provides a clean, minimal int
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { zen } from 'matchina/extras';
+import { createMachine, zen } from "matchina";
 
 const toggleMachine = createMachine({
-  initial: 'off',
+  initial: "off",
   states: {
     off: {
-      on: { TOGGLE: 'on' }
+      on: { TOGGLE: "on" },
     },
     on: {
-      on: { TOGGLE: 'off' }
-    }
-  }
+      on: { TOGGLE: "off" },
+    },
+  },
 });
 
 // Create a zen wrapper
@@ -149,19 +148,19 @@ The `pure` wrapper provides the most minimal interface for a state machine, expo
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { pure } from 'matchina';
+import { createMachine } from "matchina";
+import { pure } from "matchina";
 
 const toggleMachine = createMachine({
-  initial: 'off',
+  initial: "off",
   states: {
     off: {
-      on: { TOGGLE: 'on' }
+      on: { TOGGLE: "on" },
     },
     on: {
-      on: { TOGGLE: 'off' }
-    }
-  }
+      on: { TOGGLE: "off" },
+    },
+  },
 });
 
 // Create a pure state machine interface
@@ -169,7 +168,7 @@ const pureMachine = pure(toggleMachine);
 
 // Only getState and send are available
 console.log(pureMachine.getState()); // 'off'
-pureMachine.send('TOGGLE'); // transitions to 'on'
+pureMachine.send("TOGGLE"); // transitions to 'on'
 console.log(pureMachine.getState()); // 'on'
 ```
 
@@ -183,13 +182,13 @@ console.log(pureMachine.getState()); // 'on'
     - You want fully typed event handlers with proper parameter types
   </TabItem>
 
-  <TabItem label="zen">
-    Use `zen` when:
-    - You need both event methods and state access in a clean package
-    - You're using the machine within a component or module
-    - You want to easily integrate with frameworks like React
-    - You appreciate a more functional, fluent interface
-  </TabItem>
+{" "}
+<TabItem label="zen">
+  Use `zen` when: - You need both event methods and state access in a clean
+  package - You're using the machine within a component or module - You want to
+  easily integrate with frameworks like React - You appreciate a more
+  functional, fluent interface
+</TabItem>
 
   <TabItem label="pure">
     Use `pure` when:
@@ -206,39 +205,39 @@ You can combine wrappers for different scenarios. Here's an example of using `cr
 
 ```ts twoslash
 // @noErrors
-import { createMachine } from 'matchina';
-import { createApi, pure } from 'matchina';
+import { createMachine } from "matchina";
+import { createApi, pure } from "matchina";
 
 // Create a complex machine
 const authMachine = createMachine({
-  initial: 'signedOut',
-  context: { username: '', error: null },
+  initial: "signedOut",
+  context: { username: "", error: null },
   states: {
     signedOut: {
-      on: { 
+      on: {
         LOGIN: {
-          target: 'authenticating',
+          target: "authenticating",
           action: (ctx, [username, password]) => {
             ctx.username = username;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     authenticating: {
-      on: { 
-        SUCCESS: 'signedIn',
+      on: {
+        SUCCESS: "signedIn",
         FAILURE: {
-          target: 'signedOut',
+          target: "signedOut",
           action: (ctx, [error]) => {
             ctx.error = error;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     signedIn: {
-      on: { LOGOUT: 'signedOut' }
-    }
-  }
+      on: { LOGOUT: "signedOut" },
+    },
+  },
 });
 
 // For internal use, create a typed API
@@ -252,10 +251,10 @@ function authenticateUser(username, password) {
   api.LOGIN(username, password);
   // Simulate auth process
   setTimeout(() => {
-    if (username === 'admin' && password === 'password') {
+    if (username === "admin" && password === "password") {
       api.SUCCESS();
     } else {
-      api.FAILURE(new Error('Invalid credentials'));
+      api.FAILURE(new Error("Invalid credentials"));
     }
   }, 1000);
 }
@@ -265,6 +264,7 @@ export { publicMachine, authenticateUser };
 ```
 
 In this example:
+
 - Internal code uses the `createApi` wrapper for typed event methods
 - External code only receives the `pure` interface with limited capabilities
 - The authentication logic is encapsulated, with only necessary parts exposed
