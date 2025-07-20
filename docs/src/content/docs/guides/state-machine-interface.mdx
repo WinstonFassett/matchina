@@ -6,9 +6,15 @@ description: Core interface definitions for Matchina state machines
 import CodeBlock from "@components/CodeBlock.astro";
 import stateMachineCode from "@lib/src/state-machine.ts?raw";
 
-## State Machine Concept
+## What is a state machine?
 
 At the heart of Matchina is a well-defined state machine interface that governs how state transitions occur and how events flow through the system.
+
+A minimal (pure) state machine in Matchina looks like this:
+
+```ts
+const { getState, send } = createMachine(states, transitions, initialState);
+```
 
 ## States
 
@@ -39,9 +45,21 @@ State factories are the recommended approach for most applications, as they prov
 
 ## Core Interfaces
 
-The following interfaces define the fundamental state machine architecture in Matchina:
+In addition to `getState` and `send`, machines internally include several lifecycle methods and hook support for more advanced control.
+
+Here are the core interfaces that define a Matchina state machine:
 
 <CodeBlock code={stateMachineCode} lang="ts" />
+
+If you prefer to only expose a minimal interface to consumers, you can use the `pure` API wrapper:
+
+```ts
+import { pure } from "matchina";
+// a pure state machine interface with ONLY getState and send
+const { getState, send } = pure(
+  createMachine(states, transitions, initialState),
+);
+```
 
 ## State Machine Lifecycle
 
