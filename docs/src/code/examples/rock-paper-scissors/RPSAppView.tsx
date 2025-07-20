@@ -35,7 +35,7 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
 
       {/* Game content based on state */}
       {machine.getState().match({
-        WaitingForPlayer: () => (
+        WaitingForPlayer: ({ computerScore, playerScore }) => (
           <div className="text-center">
             <h3 className="text-lg mb-3">Choose your move:</h3>
             <div className="flex justify-center gap-4">
@@ -61,11 +61,9 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
           </div>
         ),
 
-        PlayerChose: (data: any) => (
+        PlayerChose: ({ playerMove, playerScore, computerScore }) => (
           <div className="text-center">
-            <h3 className="text-lg mb-3">
-              You chose {getIcon(data.playerMove)}
-            </h3>
+            <h3 className="text-lg mb-3">You chose {getIcon(playerMove)}</h3>
             <p className="mb-4">Computer is choosing...</p>
             <button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -75,7 +73,21 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
             </button>
           </div>
         ),
-
+        Judging: ({ playerMove, computerMove }) => (
+          <div className="text-center">
+            <h3 className="text-lg mb-3">Judging...</h3>
+            <p className="mb-4">
+              You chose {getIcon(playerMove)} vs Computer chose{" "}
+              {getIcon(computerMove)}
+            </p>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => machine.judge()}
+            >
+              See Result
+            </button>
+          </div>
+        ),
         RoundComplete: (data: any) => (
           <div className="text-center">
             <h3 className="text-lg mb-3">Round Result:</h3>

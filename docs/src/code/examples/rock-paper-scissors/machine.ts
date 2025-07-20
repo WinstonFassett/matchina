@@ -22,6 +22,17 @@ export const gameStates = defineStates({
     playerScore,
     computerScore,
   }),
+  Judging: (
+    playerMove: Move,
+    computerMove: Move,
+    playerScore: number,
+    computerScore: number,
+  ) => ({
+    playerMove,
+    computerMove,
+    playerScore,
+    computerScore,
+  }),
 
   // Round complete, showing results
   RoundComplete: (
@@ -68,19 +79,59 @@ export function determineWinner(
   return "computer";
 }
 
-// Create the game machine
 export function createRPSMachine() {
   const machine = createMachine(
     gameStates,
     {
       WaitingForPlayer: {
-        selectMove: "PlayerChose",
+        selectMove:
+          (move: Move) =>
+          ({ from }) => {
+            const { playerScore, computerScore } = from.data;
+            return gameStates.PlayerChose(move, playerScore, computerScore);
+          },
       },
       PlayerChose: {
-        computerSelectMove: "RoundComplete",
+        computerSelectMove:
+          () =>
+          ({ from }) => {
+            const { playerMove, playerScore, computerScore } = from.data;
+            return gameStates.Judging(
+              playerMove,
+              randomMove(),
+              playerScore,
+              computerScore,
+            );
+          },
+      },
+      Judging: {
+        judge:
+          () =>
+          ({ from }) => {
+            const { playerMove, computerMove, playerScore, computerScore } =
+              from.data;
+            const winner = determineWinner(playerMove, computerMove);
+            return gameStates.RoundComplete(
+              playerMove,
+              computerMove,
+              winner,
+              playerScore + (winner === "player" ? 1 : 0),
+              computerScore + (winner === "computer" ? 1 : 0),
+            );
+          },
       },
       RoundComplete: {
-        nextRound: "WaitingForPlayer",
+        nextRound:
+          () =>
+          ({ from }) => {
+            const { playerScore, computerScore } = from.data;
+            // Check if game over condition is met (e.g., score >= 5)
+            if (playerScore >= 5 || computerScore >= 5) {
+              const winner = playerScore >= 5 ? "player" : "computer";
+              return gameStates.GameOver(winner, playerScore, computerScore);
+            }
+            return gameStates.WaitingForPlayer(playerScore, computerScore);
+          },
       },
       GameOver: {
         newGame: "WaitingForPlayer",
@@ -88,78 +139,15 @@ export function createRPSMachine() {
     },
     gameStates.WaitingForPlayer(0, 0),
   );
-  // const { machine } = game
+
   const game = Object.assign(zen(machine), {
-    selectMove: (move: Move) => {
-      // Player selects a move
-      const { playerScore, computerScore } = game.getState().data;
-      game.selectMove(move, playerScore, computerScore);
-    },
-
-    computerSelectMove: () => {
-      // Get current state data
-      const { playerMove, playerScore, computerScore } = game.getState()
-        .data as any;
-
-      // Generate computer's random move
-      const moves: Move[] = ["rock", "paper", "scissors"];
-      const computerMove = moves[Math.floor(Math.random() * moves.length)];
-
-      // Determine winner of the round
-      const roundWinner = determineWinner(playerMove, computerMove);
-
-      // Update scores
-      let newPlayerScore = playerScore;
-      let newComputerScore = computerScore;
-
-      if (roundWinner === "player") {
-        newPlayerScore += 1;
-      } else if (roundWinner === "computer") {
-        newComputerScore += 1;
-      }
-
-      // Check if game is over (first to 3 wins)
-      if (newPlayerScore >= 3) {
-        game.computerSelectMove(
-          playerMove,
-          computerMove,
-          "player",
-          newPlayerScore,
-          newComputerScore,
-        );
-        return;
-      }
-
-      if (newComputerScore >= 3) {
-        game.computerSelectMove(
-          playerMove,
-          computerMove,
-          "computer",
-          newPlayerScore,
-          newComputerScore,
-        );
-        return;
-      }
-
-      // Game continues, show round result
-      game.computerSelectMove(
-        playerMove,
-        computerMove,
-        roundWinner,
-        newPlayerScore,
-        newComputerScore,
-      );
-    },
-
-    nextRound: () => {
-      // should not have to cast to unknown
-      const { playerScore, computerScore } = game.getState().data;
-      game.nextRound(playerScore, computerScore);
-    },
-
-    newGame: () => {
-      game.newGame();
-    },
+    randomMove,
   });
+
   return game;
+}
+
+function randomMove() {
+  const moves: Move[] = ["rock", "paper", "scissors"];
+  return moves[Math.floor(Math.random() * moves.length)];
 }

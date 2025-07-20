@@ -37,12 +37,6 @@ function getLangFromExtension(filename: string): string {
   {
     files.map((file, index) => (
       <TabItem label={file.name}>
-        {/* <Code
-          code={file.code}
-          lang={file.language ?? getLangFromExtension(file.name)}
-          twoslash={file.twoslash || false}
-          showLines={true}
-        /> */}
         <CodeBlock
           code={file.code}
           lang={file.language ?? getLangFromExtension(file.name)}

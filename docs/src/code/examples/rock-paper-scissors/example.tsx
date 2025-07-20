@@ -4,12 +4,10 @@ import { createRPSMachine } from "./machine";
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 
 export default function RockPaperScissorsExample() {
-  // Create the machine
-  const game = useMemo(() => createRPSMachine(), []);
-
+  const machine = useMemo(() => createRPSMachine(), []);
   return (
     <MachineExampleWithChart
-      machine={game}
+      machine={machine as any}
       AppView={RPSAppView}
       showRawState={true}
     />

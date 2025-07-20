@@ -3,7 +3,7 @@ import { createTrafficLight } from "./machine";
 const trafficLight = createTrafficLight();
 
 export const TrafficLight = () => {
-  const { getState(): state } = trafficLight;
+  const state = trafficLight.getState();
   return (
     <button
       title="Click to Change"

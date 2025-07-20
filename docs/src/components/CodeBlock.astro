@@ -56,7 +56,7 @@ function mapPaths(s: string) {
   )
 }
 {
-  !!html ? (
+  !!twoslash ? (
     <div set:html={html} />
   ) : lang === "md" ? (
     <Markdown
@@ -64,10 +64,6 @@ function mapPaths(s: string) {
       components={{ Heading, CodeBlock, CodeSpan, Note }}
     />
   ) : (
-    <Code
-      code={applyCut(mapPaths(rawCode))}
-      lang={lang}
-      showLines={showLines}
-    />
+    <Code code={applyCut(mapPaths(rawCode))} lang={lang} />
   )
 }
