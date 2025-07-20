@@ -1,8 +1,6 @@
-import React from "react";
 import type { Move } from "./machine";
 import { createRPSMachine } from "./machine";
 
-// Helper for move icons
 const getIcon = (move: Move | undefined) => {
   switch (move) {
     case "rock":

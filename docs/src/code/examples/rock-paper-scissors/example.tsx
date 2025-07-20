@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
+import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { useState } from "react";
 import { RPSAppView } from "./RPSAppView";
 import { createRPSMachine } from "./machine";
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 
 export default function RockPaperScissorsExample() {
-  const machine = useMemo(() => createRPSMachine(), []);
+  const [machine] = useState(() => createRPSMachine());
   return (
     <MachineExampleWithChart
       machine={machine as any}

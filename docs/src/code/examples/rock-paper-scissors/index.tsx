@@ -1,14 +1,8 @@
-import React, { useMemo } from "react";
+import { useState } from "react";
 import { RPSAppView } from "./RPSAppView";
 import { createRPSMachine } from "./machine";
 
-// Named export for backward compatibility
 export function RockPaperScissors() {
-  // Create the machine
-  const game = useMemo(() => createRPSMachine(), []);
-
+  const [game] = useState(() => createRPSMachine());
   return <RPSAppView machine={game} />;
 }
-
-// Default export for the examples
-export default RockPaperScissors;
