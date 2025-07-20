@@ -3,12 +3,12 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fs from 'fs';
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const twoslashConfigPath = path.resolve(__dirname, 'twoslash.config.js');
+const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,11 +21,11 @@ export default defineConfig({
     shikiConfig: {
       langs: [],
       themes: {
-        light: 'github-light',
-        dark: 'github-dark',
+        light: "github-light",
+        dark: "github-dark",
       },
-      wrap: true
-    }
+      wrap: true,
+    },
   },
   integrations: [
     starlight({
@@ -219,10 +219,6 @@ export default defineConfig({
                 {
                   label: "Traffic Light with Pedestrian Crossing",
                   link: "/examples/traffic-light-extended",
-                },
-                {
-                  label: "Todo List",
-                  link: "/examples/todo-list",
                 },
                 {
                   label: "Checkout Flow",
