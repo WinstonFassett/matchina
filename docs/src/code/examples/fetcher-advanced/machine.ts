@@ -129,19 +129,23 @@ export function createFetcher(
     guard((ev) => (ev.type === "refetch" ? fetcher.tries < maxTries : true)),
   );
   if (defaultOptions.autoretry) {
+    const autoRetryStates = ["NetworkError", "TimedOut", "Error"] as const;
+
     fetcher.setup(
-      effect(
-        whenState("NetworkError", (_ev) => {
-          if (fetcher.tries < maxTries) {
-            const backoff = 1000 * fetcher.tries;
-            const timer = setTimeout(() => {
-              fetcher.refetch();
-            }, backoff);
-            return () => {
-              clearTimeout(timer);
-            };
-          }
-        }),
+      ...autoRetryStates.map((stateName) =>
+        effect(
+          whenState(stateName, (_ev) => {
+            if (fetcher.tries < maxTries) {
+              const backoff = 1000 * fetcher.tries;
+              const timer = setTimeout(() => {
+                fetcher.refetch();
+              }, backoff);
+              return () => {
+                clearTimeout(timer);
+              };
+            }
+          }),
+        ),
       ),
     );
   }

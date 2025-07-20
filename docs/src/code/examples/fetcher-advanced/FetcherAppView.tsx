@@ -1,5 +1,4 @@
 import { useMachine } from "@lib/src/integrations/react";
-import { useState } from "react";
 import { MachineActions } from "../lib/MachineActions";
 import type { FetcherMachine } from "./machine";
 
@@ -8,11 +7,6 @@ interface FetcherAppViewProps {
 }
 
 export function FetcherAppView({ machine }: FetcherAppViewProps) {
-  const [url, setUrl] = useState("https://httpbin.org/delay/1");
-  const [timeout, setTimeout] = useState(2000);
-  const [maxTries, setMaxTries] = useState(5);
-  const [autoretry, setAutoretry] = useState(true);
-
   useMachine(machine);
   const state = machine.getState();
   const { tries } = machine;
@@ -43,49 +37,6 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
             <span className="font-medium">Attempts:</span> {tries}
           </div>
         )}
-      </div>
-
-      <div>
-        <h4 className="text-sm font-medium mb-2">Configuration:</h4>
-        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-          <div>
-            <label className="block font-medium mb-1">URL:</label>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full px-2 py-1 border rounded text-xs"
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Timeout (ms):</label>
-            <input
-              type="number"
-              value={timeout}
-              onChange={(e) => setTimeout(Number(e.target.value))}
-              className="w-full px-2 py-1 border rounded text-xs"
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Max Tries:</label>
-            <input
-              type="number"
-              value={maxTries}
-              onChange={(e) => setMaxTries(Number(e.target.value))}
-              className="w-full px-2 py-1 border rounded text-xs"
-            />
-          </div>
-          <div>
-            <label className="flex items-center gap-2 font-medium">
-              <input
-                type="checkbox"
-                checked={autoretry}
-                onChange={(e) => setAutoretry(e.target.checked)}
-              />
-              Auto-retry
-            </label>
-          </div>
-        </div>
       </div>
 
       <div>
