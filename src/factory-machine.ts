@@ -1,12 +1,12 @@
 import { StateEventTransitionSenders } from "./factory-machine-event-api";
 import { MatchCases, MatchInvocation, match } from "./match-case";
-import {
-  ResolveEvent,
-  StateMachine,
-  StateMachineEvent,
-} from "./state-machine";
+import { ResolveEvent, StateMachine, StateMachineEvent } from "./state-machine";
 import { createTransitionMachine } from "./transition-machine";
-import { FlatMemberUnion, KeysWithZeroArgs } from "./utility-types";
+import {
+  FlatMemberUnion,
+  KeysWithZeroArgs,
+  KeysWithZeroRequiredArgs,
+} from "./utility-types";
 
 export function createMachine<
   SF extends AnyStatesFactory,
@@ -16,7 +16,7 @@ export function createMachine<
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroArgs<FC["states"]> | FactoryState<FC["states"]>,
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>,
 ): FactoryMachine<FC> {
   const initialState = (
     typeof init === "string" ? states[init]({}) : init

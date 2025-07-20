@@ -40,3 +40,11 @@ type FunctionWithParameters<F> = F extends (...args: infer Args) => any
 export type KeysWithZeroArgs<T> = {
   [K in keyof T]: FunctionWithParameters<T[K]> extends true ? never : K;
 }[keyof T];
+
+export type KeysWithZeroRequiredArgs<T> = {
+  [K in keyof T]: T[K] extends (...args: infer Args) => any
+    ? Args extends [] | [undefined?]
+      ? K
+      : never
+    : never;
+}[keyof T];

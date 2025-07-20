@@ -7,7 +7,7 @@ import type { Stopwatch } from "../stopwatch-common/types";
  */
 export function StopwatchView({ machine }: { machine: Stopwatch }) {
   const stopwatch = machine;
-  console.log("StopwatchView", stopwatch);
+  // console.log("StopwatchView", stopwatch);
   const state = stopwatch.getState();
   // Generate color class based on state
   const stateColorClass = state.match({

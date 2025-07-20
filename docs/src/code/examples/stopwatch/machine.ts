@@ -1,31 +1,41 @@
-import { facade, setup, enter, when, effect } from "matchina";
+import {
+  facade,
+  setup,
+  enter,
+  when,
+  effect,
+  zen,
+  createMachine,
+} from "matchina";
 
 export const createStopwatchMachine = () => {
+  const states = {
+    Stopped: (elapsed = 0) => ({ elapsed }),
+    Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
+    Suspended: (elapsed = 0) => ({ elapsed }),
+  };
   const model = Object.assign(
-    facade(
-      // State data creators
-      {
-        Stopped: (elapsed = 0) => ({ elapsed }),
-        Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
-        Suspended: (elapsed = 0) => ({ elapsed }),
-      },
-      // Transitions
-      {
-        Stopped: { start: "Ticking" },
-        Ticking: {
-          _tick: "Ticking",
-          stop: "Stopped",
-          suspend: "Suspended",
-          reset: "Stopped",
+    zen(
+      createMachine(
+        // State data creators
+        states,
+        // Transitions
+        {
+          Stopped: { start: "Ticking" },
+          Ticking: {
+            _tick: "Ticking",
+            stop: "Stopped",
+            suspend: "Suspended",
+            reset: "Stopped",
+          },
+          Suspended: {
+            resume: "Ticking",
+            stop: "Stopped",
+            reset: "Stopped",
+          },
         },
-        Suspended: {
-          resume: "Ticking",
-          stop: "Stopped",
-          reset: "Stopped",
-        },
-      },
-      // Initial state
-      "Stopped",
+        states.Stopped(0),
+      ),
     ),
     {
       elapsed: 0,
