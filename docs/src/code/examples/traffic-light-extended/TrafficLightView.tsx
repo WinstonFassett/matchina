@@ -26,6 +26,7 @@ export const ExtendedTrafficLightView = ({
 
   useMachine(machine.data);
   const data = machine.data.getState();
+  console.log("data", data);
   const walkWarningDuration = data.data.walkWarningDuration;
 
   const [timeRemaining, setTimeRemaining] = useState(
@@ -33,13 +34,14 @@ export const ExtendedTrafficLightView = ({
   );
   const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
   const [isBlinking, setIsBlinking] = useState(false);
-  const [walkBlinking, setWalkBlinking] = useState(true);
+  const [walkBlinking, setWalkBlinking] = useState(false);
 
+  // console.log("isBlinking", isBlinking);
   const progressPercent = Math.max(
     0,
     Math.min(100, (timeRemaining / currentState.data.duration) * 100),
   );
-
+  console.log("walk warning duration", walkWarningDuration);
   // Set initial walk warning duration
   useEffect(() => {
     if (walkWarningDuration) {
@@ -73,11 +75,14 @@ export const ExtendedTrafficLightView = ({
       ? 500
       : null,
   );
-
+  console.log("walkTimeRemaining", walkTimeRemaining);
   // Handle walk signal blinking
   useIntervalEffect(
-    () => setWalkBlinking((prev) => !prev),
-    walkTimeRemaining > 0 ? 500 : null,
+    () => {
+      console.log("walkBlinking", walkBlinking);
+      setWalkBlinking((prev) => !prev);
+    },
+    walkWarningDuration && walkTimeRemaining > 0 ? 500 : null,
   );
 
   return (
