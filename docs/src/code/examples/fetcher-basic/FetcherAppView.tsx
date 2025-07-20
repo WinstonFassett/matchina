@@ -1,3 +1,4 @@
+import { useMachine } from "@lib/src/integrations/react";
 import { useState } from "react";
 
 interface FetcherAppViewProps {
@@ -6,6 +7,7 @@ interface FetcherAppViewProps {
 
 export function FetcherAppView({ machine }: FetcherAppViewProps) {
   const [url, setUrl] = useState("https://httpbin.org/delay/1");
+  useMachine(machine);
   const state = machine.getState();
 
   const handleFetch = () => {
@@ -34,7 +36,7 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
         </div>
       </div>
 
-      <div className="p-3 bg-gray-50 rounded">
+      <div className="p-3 rounded bg-gray-100 dark:bg-gray-800">
         {state.match({
           Idle: () => <span>Ready to fetch data</span>,
           Pending: ({ params }: any) => (
