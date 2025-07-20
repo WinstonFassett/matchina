@@ -6,10 +6,10 @@ import type { Stopwatch } from "../stopwatch-common/types";
  * and available actions based on the current state.
  */
 export function StopwatchView({ machine }: { machine: Stopwatch }) {
-  const stopwatch = machine;
+  const state = machine.getState();
 
   // Generate color class based on state
-  const stateColorClass = stopwatch.state.match({
+  const stateColorClass = state.match({
     Stopped: () => "text-red-500",
     Ticking: () => "text-green-500",
     Suspended: () => "text-yellow-500",
@@ -18,23 +18,23 @@ export function StopwatchView({ machine }: { machine: Stopwatch }) {
   return (
     <div className="p-4 rounded border">
       {/* State display */}
-      <div className={`inline ${stateColorClass}`}>{stopwatch.state.key}</div>
+      <div className={`inline ${stateColorClass}`}>{state.key}</div>
 
       {/* Elapsed time */}
       <div className="text-4xl font-bold my-4">
-        {(stopwatch.elapsed / 1000).toFixed(1)}s
+        {(machine.elapsed / 1000).toFixed(1)}s
       </div>
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2">
-        {getStateEvents(stopwatch.machine.transitions, stopwatch.state.key)
+        {getStateEvents(machine.transitions, state.key)
           .filter((event) => !event.startsWith("_"))
           .map((event) => (
             <button
               className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
               key={event}
               onClick={() => {
-                (stopwatch as any)[event]();
+                (machine as any)[event]();
               }}
             >
               {event}

@@ -1,11 +1,12 @@
-import { facade } from "matchina";
+import { defineStates, createMachine, zen } from "matchina";
 import { useMachine } from "matchina/react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useStateEffects, useEventTypeEffect } from "../lib/matchina-hooks";
 import { tickEffect } from "../lib/tick-effect";
 
 export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
+
   const effects = useMemo(
     () => ({
       clear: () => setElapsed(0),
@@ -20,42 +21,46 @@ export function useStopwatch() {
     }),
     [],
   );
+
   // Define the state machine
-  const stopwatch = useMemo(
-    () =>
-      Object.assign(
-        facade(
-          {
-            Stopped: { effects: [effects.clear] },
-            Ticking: { effects: [effects.run] },
-            Suspended: {},
-          },
-          {
-            Stopped: {
-              start: "Ticking",
-            },
-            Ticking: {
-              stop: "Stopped",
-              suspend: "Suspended",
-              clear: "Ticking",
-            },
-            Suspended: {
-              stop: "Stopped",
-              resume: "Ticking",
-              clear: "Suspended",
-            },
-          },
-          "Stopped",
-        ),
-        {
-          elapsed,
+  const stopwatch = useMemo(() => {
+    // Define states using defineStates
+    const states = defineStates({
+      Stopped: { effects: [effects.clear] },
+      Ticking: { effects: [effects.run] },
+      Suspended: {},
+    });
+
+    // Create the base machine with states, transitions, and initial state
+    const baseMachine = createMachine(
+      states,
+      {
+        Stopped: {
+          start: "Ticking",
         },
-      ),
-    [],
-  );
-  useMachine(stopwatch.machine);
-  useStateEffects(stopwatch.state);
-  useEventTypeEffect(stopwatch.change, effects);
+        Ticking: {
+          stop: "Stopped",
+          suspend: "Suspended",
+          clear: "Ticking",
+        },
+        Suspended: {
+          stop: "Stopped",
+          resume: "Ticking",
+          clear: "Suspended",
+        },
+      },
+      "Stopped",
+    );
+
+    // Use zen to enhance the machine with utility methods
+    return Object.assign(zen(baseMachine), {
+      elapsed,
+    });
+  }, []);
+
+  useMachine(stopwatch);
+  useStateEffects(stopwatch.getState());
+  useEventTypeEffect(stopwatch.getChange(), effects);
   stopwatch.elapsed = elapsed;
   return stopwatch;
 }

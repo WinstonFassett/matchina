@@ -1,4 +1,4 @@
-import { facade, onLifecycle, when } from "matchina";
+import { defineStates, createMachine, zen, onLifecycle, when } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 import { StopwatchDevView } from "./stopwatch-common/StopwatchDevView";
@@ -9,44 +9,47 @@ import { tickEffect } from "./lib/tick-effect";
 function useStopwatch() {
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
   const [elapsed, setElapsed] = useState(0);
+
   // Define the state machine
-  const stopwatch = useMemo(
-    () =>
-      Object.assign(
-        facade(
-          {
-            Stopped: {},
-            Ticking: {},
-            Suspended: {},
-          },
-          {
-            Stopped: {
-              start: "Ticking",
-            },
-            Ticking: {
-              stop: "Stopped",
-              suspend: "Suspended",
-              clear: "Ticking",
-            },
-            Suspended: {
-              stop: "Stopped",
-              resume: "Ticking",
-              clear: "Suspended",
-            },
-          },
-          "Stopped",
-        ),
-        {
-          startTime,
-          elapsed,
+  const stopwatch = useMemo(() => {
+    // Define states using defineStates
+    const states = defineStates({
+      Stopped: {},
+      Ticking: {},
+      Suspended: {},
+    });
+
+    // Create the base machine with states, transitions, and initial state
+    const baseMachine = createMachine(
+      states,
+      {
+        Stopped: {
+          start: "Ticking",
         },
-      ),
-    [],
-  );
+        Ticking: {
+          stop: "Stopped",
+          suspend: "Suspended",
+          clear: "Ticking",
+        },
+        Suspended: {
+          stop: "Stopped",
+          resume: "Ticking",
+          clear: "Suspended",
+        },
+      },
+      "Stopped",
+    );
+
+    // Use zen to enhance the machine with utility methods
+    return Object.assign(zen(baseMachine), {
+      startTime,
+      elapsed,
+    });
+  }, []);
 
   useEffect(
     () =>
-      onLifecycle(stopwatch.machine, {
+      onLifecycle(stopwatch, {
         "*": {
           enter: when(
             (ev) => ev.to.is("Ticking"),
@@ -90,7 +93,7 @@ function useStopwatch() {
     [stopwatch],
   );
 
-  useMachine(stopwatch.machine);
+  useMachine(stopwatch);
   stopwatch.startTime = startTime;
   stopwatch.elapsed = elapsed;
   return stopwatch;

@@ -1,14 +1,15 @@
 import { getAvailableActions as getStateEvents } from "matchina";
 import type { Stopwatch } from "../stopwatch-common/types";
+import { useMachine } from "@lib/src/integrations/react";
 
 /**
  * A simple Stopwatch UI component that displays the current state, elapsed time,
  * and available actions based on the current state.
  */
 export function StopwatchView({ machine }: { machine: Stopwatch }) {
-  const stopwatch = machine;
-  // console.log("StopwatchView", stopwatch);
-  const state = stopwatch.getState();
+  useMachine(machine);
+  // console.log("StopwatchView", machine);
+  const state = machine.getState();
   // Generate color class based on state
   const stateColorClass = state.match({
     Stopped: () => "text-red-500",
@@ -23,19 +24,19 @@ export function StopwatchView({ machine }: { machine: Stopwatch }) {
 
       {/* Elapsed time */}
       <div className="text-4xl font-bold my-4">
-        {(stopwatch.elapsed / 1000).toFixed(1)}s
+        {(machine.elapsed / 1000).toFixed(1)}s
       </div>
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2">
-        {getStateEvents(stopwatch.transitions, state.key)
+        {getStateEvents(machine.transitions, state.key)
           .filter((event) => !event.startsWith("_"))
           .map((event) => (
             <button
               className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
               key={event}
               onClick={() => {
-                (stopwatch as any)[event]();
+                (machine as any)[event]();
               }}
             >
               {event}

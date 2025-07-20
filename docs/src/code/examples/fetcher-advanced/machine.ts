@@ -134,7 +134,7 @@ export function createFetcher(
     fetcher.setup(
       ...autoRetryStates.map((stateName) =>
         effect(
-          whenState(stateName, (_ev) => {
+          whenState(stateName, () => {
             if (fetcher.tries < maxTries) {
               const backoff = 1000 * fetcher.tries;
               const timer = setTimeout(() => {
