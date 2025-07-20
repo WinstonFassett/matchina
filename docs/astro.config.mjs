@@ -50,7 +50,7 @@ export default defineConfig({
               link: "/guides/quickstart",
             },
             {
-              label: "What's in the Box",
+              label: "About Matchina",
               link: "/guides/inside",
             },
           ],
@@ -248,10 +248,10 @@ export default defineConfig({
         //     { label: "Example Guide", slug: "guides/example" },
         //   ],
         // },
-        {
-          label: "Reference",
-          autogenerate: { directory: "reference" },
-        },
+        // {
+        //   label: "Reference",
+        //   autogenerate: { directory: "reference" },
+        // },
       ],
       customCss: ["./src/styles/global.css"],
     }),

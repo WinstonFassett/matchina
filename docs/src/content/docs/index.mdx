@@ -23,21 +23,11 @@ hero:
       icon: external
 ---
 
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-## What is Matchina?
-
-Matchina is a TypeScript-first, lightweight toolkit for building type-safe state machines, with powerful pattern matching and async handling. It provides:
-
-- **Strongly-typed state machines** with full type inference
-- **Tagged unions** via the `matchbox` pattern for discriminated types
-- **Type-safe transitions** with smart parameter inference
-- **Promise integration** for handling async operations safely
-- **Nano-sized, opt-in primitives** for state machines and async logic
-- **Composable APIs** that work together or standalone
-
-## Key Features
+{/* ## Key Features */}
 
 <Tabs>
   <TabItem label="TypeScript-First">
@@ -108,14 +98,6 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
   </TabItem>
 </Tabs>
 
-## Why Matchina?
-
-- **Lightweight**: Each feature is just a few hundred bytes
-- **TypeScript-First**: Full type inference and safety
-- **Composable**: Use only what you need
-- **No Dependencies**: Zero runtime dependencies
-- **React Integration**: First-class support for React
-
 ## Quick Installation
 
 ```sh
@@ -124,66 +106,60 @@ npm install matchina
 
 ## Get Started
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <a
+<CardGrid>
+  <LinkCard
+    title="📚 Quick Start Guide"
     href="./guides/quickstart/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>📚 Quickstart Guide</h3>
-    <p>Get up and running with Matchina in minutes</p>
-  </a>
-  <a
-    href="./guides/union-machines/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>🧩 Type-Safe Unions</h3>
-    <p>Learn about Matchbox for tagged unions</p>
-  </a>
-  <a
+    description="Get up and running with Matchina in minutes"
+  />
+  <LinkCard
+    title="⚙️ State Machines Guide"
     href="./guides/machines/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>⚙️ Factory Machines</h3>
-    <p>Create full state machines with TypeScript inference</p>
-  </a>
-  <a
+    description="Learn how to build complex state machines with type safety"
+  />
+  <LinkCard
+    title="⏳ Promise Machines Guide"
     href="./guides/promises/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>⏳ Async Operations</h3>
-    <p>Manage async flows with promise machines</p>
-  </a>
-</div>
+    description="Manage async operations with type-safe promise machines"
+  />
+  <LinkCard
+    title="🛡️ Type Guards Guide"
+    href="./guides/typeguards/"
+    description="Understand type-safe state handling with Matchina"
+  />
+  <LinkCard
+    title="⚛️ React Integration Guide"
+    href="./guides/integrations/"
+    description="Integrate state machines with React components"
+  />
+  <LinkCard
+    title="🧩 Type-Safe Unions"
+    href="./guides/union-machines/"
+    description="Learn about Matchbox for tagged unions"
+  />
+</CardGrid>
 
 ## Explore Examples
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <a
+<CardGrid>
+  <LinkCard
+    title="🔄 Toggle"
     href="./examples/toggle/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>🔄 Toggle</h3>
-    <p>Simple on/off toggle state machine</p>
-  </a>
-  <a
-    href="./examples/fetch-simple/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>📡 Data Fetching</h3>
-    <p>Type-safe async data fetching</p>
-  </a>
-  <a
+    description="Simple on/off toggle state machine"
+  />
+  <LinkCard
+    title="📡 Data Fetching"
+    href="./examples/fetcher-advanced/"
+    description="Type-safe async data fetching"
+  />
+  <LinkCard
+    title="🚦 Traffic Light"
     href="./examples/traffic-light/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>🚦 Traffic Light</h3>
-    <p>State machine with automatic transitions</p>
-  </a>
-  <a
+    description="State machine with automatic transitions"
+  />
+  <LinkCard
+    title="📝 Form Validation"
     href="./examples/form/"
-    class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
-  >
-    <h3>📝 Form Validation</h3>
-    <p>Form with validation state machine</p>
-  </a>
-</div>
+    description="Form with validation state machine"
+  />
+</CardGrid>
