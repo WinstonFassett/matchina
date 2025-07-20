@@ -1,46 +1,160 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash
+title: Welcome to Matchina
+description: A TypeScript-first, lightweight toolkit for building type-safe state machines with powerful pattern matching and async handling.
 hero:
   title: |
-    Welcome to Starlight with
+    Type-Safe State
     <span
       class="font-black text-transparent
         bg-clip-text bg-gradient-to-b
         from-accent-700 to-accent-400
         dark:from-accent-500 dark:to-accent-200"
     >
-      Tailwind
+      Matchina
     </span>
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: Build strongly-typed state machines with powerful pattern matching
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Quick Start
+      link: ./guides/quickstart/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+      variant: primary
+    - text: GitHub
+      link: https://github.com/winstonfassett/matchina
       icon: external
-      variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import CodeBlock from "@components/CodeBlock.astro";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-## Next steps
+## What is Matchina?
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+Matchina is a TypeScript-first, lightweight toolkit for building type-safe state machines, with powerful pattern matching and async handling. It provides:
+
+- **Strongly-typed state machines** with full type inference
+- **Tagged unions** via the `matchbox` pattern for discriminated types 
+- **Type-safe transitions** with smart parameter inference
+- **Promise integration** for handling async operations safely
+- **Nano-sized, opt-in primitives** for state machines and async logic
+- **Composable APIs** that work together or standalone
+
+## Key Features
+
+<Tabs>
+  <TabItem label="TypeScript-First">
+    ```ts twoslash
+    import { facade } from "matchina";
+    // TypeScript automatically infers parameter types based on destination states
+    const player = facade(
+      {
+        Idle: undefined,
+        Playing: (trackId: string) => ({ trackId }),
+        Paused: (trackId: string) => ({ trackId }),
+        Stopped: undefined,
+      },
+      {
+        Idle: { 
+          start: (trackId: string) => "Playing" // Parameter type matches Playing state
+        },
+        // ...transitions
+      },
+      "Idle"
+    );
+
+    // Full type safety for state transitions
+    player.start("song-123");  // ✓ TypeScript knows this needs a trackId
+    player.start();            // ✗ Error: Expected 1 argument, but got 0
+    ```
+  </TabItem>
+  <TabItem label="Pattern Matching">
+    ```ts
+    // Use pattern matching to handle different states
+    const message = player.state.match({
+      Idle: () => "Not playing",
+      Playing: ({ trackId }) => `Now playing: ${trackId}`,
+      Paused: ({ trackId }) => `Paused: ${trackId}`,
+      Stopped: () => "Stopped",
+    });
+    ```
+  </TabItem>
+  <TabItem label="Type Guards">
+    ```ts
+    // Type guards automatically narrow types
+    if (player.state.is("Playing")) {
+      // TypeScript knows player.state.data has trackId
+      console.log(player.state.data.trackId);  // ✓ Type-safe
+    }
+    ```
+  </TabItem>
+  <TabItem label="Promise Handling">
+    ```ts
+    // Create a promise machine for async operations
+    const fetcher = createPromiseMachine(
+      (id: string) => fetch(`/api/data/${id}`).then(r => r.json())
+    );
+    
+    // Type-safe state handling
+    const ui = fetcher.getState().match({
+      Idle: () => "Ready to fetch data",
+      Pending: ({params}) => `Loading data for ${params[0]}...`,
+      Resolved: (data) => `Data loaded: ${JSON.stringify(data)}`,
+      Rejected: (error) => `Error: ${error.message}`
+    });
+    ```
+  </TabItem>
+</Tabs>
+
+## Why Matchina?
+
+- **Lightweight**: Each feature is just a few hundred bytes
+- **TypeScript-First**: Full type inference and safety
+- **Composable**: Use only what you need
+- **No Dependencies**: Zero runtime dependencies
+- **React Integration**: First-class support for React
+
+## Quick Installation
+
+```sh
+npm install matchina
+```
+
+## Get Started
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <a href="./guides/quickstart/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>📚 Quickstart Guide</h3>
+    <p>Get up and running with Matchina in minutes</p>
+  </a>
+  <a href="./guides/union-machines/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>🧩 Type-Safe Unions</h3>
+    <p>Learn about Matchbox for tagged unions</p>
+  </a>
+  <a href="./guides/machines/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>⚙️ Factory Machines</h3>
+    <p>Create full state machines with TypeScript inference</p>
+  </a>
+  <a href="./guides/promises/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>⏳ Async Operations</h3>
+    <p>Manage async flows with promise machines</p>
+  </a>
+</div>
+
+## Explore Examples
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <a href="./examples/toggle/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>🔄 Toggle</h3>
+    <p>Simple on/off toggle state machine</p>
+  </a>
+  <a href="./examples/fetch-simple/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>📡 Data Fetching</h3>
+    <p>Type-safe async data fetching</p>
+  </a>
+  <a href="./examples/traffic-light/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>🚦 Traffic Light</h3>
+    <p>State machine with automatic transitions</p>
+  </a>
+  <a href="./examples/form/" class="card p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow">
+    <h3>📝 Form Validation</h3>
+    <p>Form with validation state machine</p>
+  </a>
+</div>
