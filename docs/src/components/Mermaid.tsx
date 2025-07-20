@@ -58,7 +58,6 @@ const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
       /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/,
     );
     if (viewBoxMatch && viewBoxMatch[1]) {
-      console.log("viewBoxMatch", viewBoxMatch);
       const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);
       setDimensions({ width, height });
     }
