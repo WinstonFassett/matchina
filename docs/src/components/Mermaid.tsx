@@ -65,9 +65,11 @@ const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
   return (
     <div
       ref={ref}
-      style={{
-        minHeight: `${dimensions.height}px`,
-      }}
+      style={
+        {
+          // minHeight: `${dimensions.height}px`,
+        }
+      }
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
