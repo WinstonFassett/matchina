@@ -3,6 +3,7 @@ import { Markdown } from "astro-remote";
 import CodeSpan from "./CodeSpan.astro";
 import Heading from "./Heading.astro";
 import Note from "./Note.astro";
+import { Code } from "@astrojs/starlight/components";
 // import { codeToHtml } from 'shikiji';
 // import {
 //   rendererRich,
@@ -12,7 +13,12 @@ import Note from "./Note.astro";
 export const theme = "material-theme-ocean";
 
 export let html = ``;
-const { lang, code: rawCode, showLines = true, twoslash = false } = Astro.props;
+const {
+  lang,
+  code: rawCode,
+  showLines = false,
+  twoslash = false,
+} = Astro.props;
 
 // Use Twoslash only when explicitly requested
 // if (twoslash && ['ts', 'tsx'].includes(lang)) {
@@ -61,6 +67,11 @@ function mapPaths(s: string) {
     />
   ) : (
     // : <div set:html={html} />
-    <div>TODO: code block</div>
+    <Code
+      code={applyCut(mapPaths(rawCode))}
+      lang={lang}
+      twoslash={twoslash}
+      showLines={showLines}
+    />
   )
 }
