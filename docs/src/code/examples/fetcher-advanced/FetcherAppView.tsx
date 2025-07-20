@@ -49,15 +49,15 @@ export function FetcherAppView({ machine }: FetcherAppViewProps) {
       </div>
 
       <div className="mt-4">
-        <h4 className="text-sm font-medium mb-1">Response Data:</h4>
+        <h4 className="text-sm font-medium mb-1">Response:</h4>
         <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm">
           <pre>
             {state.match({
-              Resolved: (data: any) => JSON.stringify(data, null, 2),
+              Resolved: (data: any) => "Success!",
               Error: (error: Error) => `Error: ${error?.message}`,
               NetworkError: (error: Error) =>
                 `Network Error: ${error?.message}`,
-              _: () => "No data available",
+              _: () => "n/a",
             })}
           </pre>
         </div>
