@@ -4,6 +4,7 @@ import { FetcherAppView } from "./FetcherAppView";
 
 export default function FetcherExample() {
   const fetcher = useFetcher();
+  console.log("FetcherExample", fetcher);
 
   return (
     <MachineExampleWithChart

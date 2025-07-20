@@ -13,7 +13,7 @@ import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 ## Interactive Fetcher Example
 
 <div className="not-content">
-  <FetcherExample client:visible />
+  <FetcherExample client:only="react" />
 </div>
 
 ## About This Example
@@ -35,7 +35,7 @@ The promise machine pattern is ideal for managing any asynchronous operation, fr
 
 <CodeBlock lang="typescript" code={hooksCode} />
 
-## Component Implementation 
+## Component Implementation
 
 <CodeBlock lang="jsx" code={viewCode} />
 
