@@ -1,7 +1,15 @@
 .node rect {
-  fill: transparent; /* Transparent background */
+  fill: transparent;
 }
 
 .node text {
-  fill: currentColor; /* Text color matches current color */
+  fill: currentColor;
+}
+
+.edgeLabel {
+  background-color: transparent;
+}
+
+.nodeLabel p {
+  color: inherit !important;
 }

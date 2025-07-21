@@ -154,28 +154,43 @@ export const StateMachineMermaidDiagram = memo(
     const debouncedStateKey = useDebouncedValue(stateKey, 60);
     const onRender = useCallback(
       (el: HTMLElement) => {
-        el.querySelectorAll("span.edgeLabel").forEach((el) => {
-          const fqn = el.innerHTML;
-          const parts = fqn.split("<br>");
-          const type = parts[1];
-          const state = parts[0];
-          const action = actions?.[type];
-          el.innerHTML = type;
-          el.addEventListener("click", () => {
-            action?.();
+        console.log("onRender", el);
+        setTimeout(() => {
+          el.querySelectorAll("span.edgeLabel").forEach((span) => {
+            // Find the <p> inside the span
+            const p = span.querySelector("p");
+            if (!p) return;
+            // Get the text, split on line breaks
+            const lines = Array.from(p.childNodes)
+              .map((node) =>
+                node.nodeType === Node.ELEMENT_NODE &&
+                (node as HTMLElement).tagName === "BR"
+                  ? "\n"
+                  : node.textContent,
+              )
+              .join("")
+              .split("\n");
+            const [state, type] = lines;
+            const action = actions?.[type];
+            p.innerHTML = type; // Show only the event type
+            p.style.cursor = action ? "pointer" : "default";
+            p.onclick = action ? () => action() : null;
+            if (action && state === debouncedStateKey) {
+              p.style.backgroundColor = "var(--sl-color-gray-5)";
+              p.style.color = "var(--sl-color-accent-high)";
+              p.style.textDecoration = "underline";
+            } else {
+              p.style.backgroundColor = "var(--sl-color-bg)";
+              // p.style.backgroundColor = "transparent";
+              p.style.color = "var(--sl-color-gray-3)";
+              // p.style.textDecoration = "none";
+            }
+            console.log("ok", span, state, debouncedStateKey);
           });
-          if (action && state === debouncedStateKey) {
-            (el as HTMLElement).style.cssText =
-              `background-color: var(--sl-color-gray-5); color: var(--sl-color-accent-high); cursor: pointer; text-decoration: underline;`;
-          } else {
-            (el as HTMLElement).style.cssText =
-              `background-color: transparent;  color: var(--sl-color-gray-3)`;
-          }
-        });
+        }, 1);
       },
-      [actions, debouncedStateKey],
+      [debouncedStateKey],
     );
-
     if (!chart) return <div>NO CHART!!!</div>;
 
     return (
