@@ -9,25 +9,28 @@ import viewCode from "@code/examples/auth-flow/AuthFlowView.tsx?raw";
 import indexCode from "@code/examples/auth-flow/index.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
-A complete authentication flow with login, registration, and password reset functionality. This example demonstrates how state machines can elegantly manage complex UI flows with multiple forms and async operations.
+A robust authentication flow using a state machine to coordinate login, registration, and password reset. This example demonstrates how to separate UI form state from business logic, and how to handle async effects and error propagation in a predictable way.
 
 <div className="not-content">
   <AuthFlowExample client:visible />
 </div>
 
-## Implementation Details
+## Key Patterns
 
-This authentication flow demonstrates sophisticated state machine patterns:
+- **State machine for flow, not form state**: The machine tracks which step the user is in (login, register, reset, etc.), but the view manages the actual form fields. This keeps the machine focused on transitions and error handling, not UI details.
+- **Async effects in dedicated states**: Async logic (API calls) is triggered by entering states like `LoggingIn`, `Registering`, or `RequestingPasswordReset`. The machine handles success/failure and transitions accordingly.
+- **Error propagation**: Errors from async operations are passed back to the relevant form state, so the view can display them.
+- **Minimal transitions**: Only transitions that represent real user intent or async results are modeled. There are no events for every keystroke or field update.
+- **Composable, testable logic**: Each state and transition is explicit and can be tested in isolation.
 
-- **Multiple form states** - Login, registration, and password reset forms with validation
-- **Async operations** - Simulated API calls for authentication, registration, and password reset
-- **Error handling** - Form validation and API error states
-- **State persistence** - Form data is preserved when navigating between states
-- **Type safety** - Full TypeScript support for all states and transitions
+## How to Use This Pattern
 
-The demo comes prepopulated with sample data for easy testing. Use the manual control buttons in async states to test success/failure scenarios, or let the auto-success timer complete after 500ms.
+- **Put UI state in the view**: Use React state/hooks for form fields. Only call the machine when the user submits a form or triggers a navigation.
+- **Let the machine handle flow and validation**: The machine decides what state comes next, and how to handle errors or async results.
+- **Trigger side effects on state entry**: Use lifecycle hooks or effects to run async logic when entering a state, not in response to UI events.
+- **Propagate errors through state**: Pass error messages as part of the state data, so the view can render them.
 
-## Source Code
+## Example Code
 
 <CodeTabs
   files={[
@@ -37,273 +40,16 @@ The demo comes prepopulated with sample data for easy testing. Use the manual co
   ]}
 />
 
-## How It Works
+## Why This Works
 
-The authentication flow uses a state machine to manage the complex interactions between different forms and async operations:
+- **Predictable transitions**: The machine enforces valid flows—users can’t skip steps or get into impossible states.
+- **Separation of concerns**: UI code is simple and focused on rendering; the machine handles business logic and error cases.
+- **Easy to extend**: Add new states (e.g., email verification) or transitions without rewriting the whole flow.
 
-1. **State Management**: Each form (login, register, password reset) is a separate state with its own data
-2. **Validation**: Form validation happens during state transitions using guards
-3. **Async Operations**: Loading states handle API calls for authentication, registration, and password reset
-4. **Error Handling**: Errors are captured and displayed in the appropriate form states
-5. **Navigation**: Users can move between forms while preserving their input data
+## When to Use This Pattern
 
-The machine ensures that users can only perform valid actions in each state, preventing impossible UI states and providing a smooth user experience.
+- Multi-step forms where the flow depends on user actions or async results
+- Flows with error handling, retries, or conditional navigation
+- Anywhere you want to keep UI logic and business logic clearly separated
 
-## Creating the Machine
-
-Now we can create the authentication machine:
-
-```ts
-// Create the authentication machine with inline transitions
-const authMachine = matchina(
-  authStates,
-  {
-    LoggedOut: {
-      // ... transitions for LoggedOut state
-    },
-    LoginForm: {
-      // ... transitions for LoginForm state
-    },
-    // ... transitions for other states
-  },
-  "LoggedOut", // Initial state
-);
-```
-
-## Lifecycle Hooks
-
-Let's add lifecycle hooks to handle the async processes:
-
-```ts
-// Mock API services
-const authApi = {
-  login: async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Simulate authentication logic
-    if (email === "user@example.com" && password === "password") {
-      return {
-        id: "123",
-        name: "Test User",
-        email: "user@example.com",
-        avatar: "https://i.pravatar.cc/150?u=123",
-      };
-    }
-
-    throw new Error("Invalid email or password");
-  },
-
-  register: async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Simulate registration logic
-    if (email === "taken@example.com") {
-      throw new Error("Email is already taken");
-    }
-
-    return { success: true };
-  },
-
-  requestPasswordReset: async (email: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Simulate password reset logic
-    if (email === "notfound@example.com") {
-      throw new Error("Email not found");
-    }
-
-    return { success: true };
-  },
-};
-
-// Setup lifecycle hooks
-setup(authMachine, {
-  enter: {
-    // Handle login process
-    LoggingIn: async ({ data }) => {
-      try {
-        const user = await authApi.login(data.email, data.password);
-
-        // Store in localStorage (in a real app)
-        localStorage.setItem("authToken", "sample-jwt-token");
-        localStorage.setItem("user", JSON.stringify(user));
-
-        // Transition to logged in state
-        authMachine.success(user);
-      } catch (error) {
-        authMachine.failure(error.message);
-      }
-    },
-
-    // Handle registration process
-    Registering: async ({ data }) => {
-      try {
-        await authApi.register(data.name, data.email, data.password);
-
-        // Transition to success state
-        authMachine.success();
-      } catch (error) {
-        authMachine.failure(error.message);
-      }
-    },
-
-    // Handle password reset process
-    RequestingPasswordReset: async ({ data }) => {
-      try {
-        await authApi.requestPasswordReset(data.email);
-
-        // Transition to success state
-        authMachine.success();
-      } catch (error) {
-        authMachine.failure(error.message);
-      }
-    },
-
-    // Initialize authentication
-    LoggedOut: () => {
-      // Check for stored token
-      const storedToken = localStorage.getItem("authToken");
-      const storedUser = localStorage.getItem("user");
-
-      if (storedToken && storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          // Auto-login
-          authMachine.autoLogin(user);
-        } catch (e) {
-          // Invalid stored data, clear it
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("user");
-        }
-      }
-    },
-
-    // Cleanup on logout
-    LoggedIn: () => {
-      // Return cleanup function that runs on leaving LoggedIn state
-      return () => {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-      };
-    },
-  },
-});
-```
-
-## React Integration
-
-Here's how you might use this authentication machine in a React application:
-
-```tsx
-import { useLifecycle } from "matchina/react";
-import { useMemo, useState, FormEvent } from "react";
-
-function AuthApp() {
-  // Create the auth machine
-  const authMachine = useMemo(() => /* auth machine creation */, []);
-
-  // Get the machine and lifecycle API
-  const [machine, lifecycle] = useLifecycle(authMachine);
-
-  // Setup lifecycle hooks
-  useEffect(() => {
-    lifecycle.onEnter("LoggingIn", async ({ data }) => {
-      try {
-        // Actual API call
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-
-        const user = await response.json();
-
-        // Store token
-        localStorage.setItem('authToken', user.token);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        machine.success(user);
-      } catch (error) {
-        machine.failure(error.message);
-      }
-    });
-
-    // Similar implementations for other async states...
-  }, [machine, lifecycle]);
-
-  // Render different components based on state
-  return (
-    <div className="auth-container">
-      {machine.state.match({
-        LoggedOut: () => (
-          <div className="auth-welcome">
-            <h1>Welcome to Our App</h1>
-            <button onClick={() => machine.showLogin()}>Log In</button>
-            <button onClick={() => machine.showRegister()}>Register</button>
-          </div>
-        ),
-
-        LoginForm: ({ email, password, error }) => (
-          <LoginFormComponent
-            email={email}
-            password={password}
-            error={error}
-            onEmailChange={(e) => machine.updateEmail(e.target.value)}
-            onPasswordChange={(e) => machine.updatePassword(e.target.value)}
-            onSubmit={(e) => {
-              e.preventDefault();
-              machine.login();
-            }}
-            onRegisterClick={() => machine.goToRegister()}
-            onForgotPasswordClick={() => machine.goToPasswordReset()}
-          />
-        ),
-
-        // Similarly define components for other states...
-
-        LoggedIn: ({ user }) => (
-          <div className="user-dashboard">
-            <header>
-              <img src={user.avatar} alt={user.name} />
-              <h2>Welcome, {user.name}</h2>
-              <button onClick={() => machine.logout()}>Log Out</button>
-            </header>
-            <main>
-              {/* Dashboard content */}
-            </main>
-          </div>
-        )
-      })}
-    </div>
-  );
-}
-```
-
-## Benefits of State Machine Auth
-
-Using state machines for authentication provides several advantages:
-
-1. **Predictable Flow** - Users can only perform valid actions in each state
-2. **Form Preservation** - Input data is maintained when switching between forms
-3. **Error Handling** - Validation and API errors are handled consistently
-4. **Type Safety** - Full TypeScript support prevents runtime errors
-5. **Testability** - Each state and transition can be tested independently
-
-## Next Steps
-
-This authentication flow demonstrates how state machines can manage complex UI interactions. You might want to explore:
-
-- [Checkout Flow](/examples/checkout) - Multiple coordinated state machines
-- [Form Validation](/examples/form) - Reusable form state machine patterns
-- [State Effects Guide](/guides/effects) - Managing side effects in state machines
+For more on effect management and advanced patterns, see the [State Effects Guide](/guides/effects).

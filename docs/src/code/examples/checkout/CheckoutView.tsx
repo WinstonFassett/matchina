@@ -1,4 +1,4 @@
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 import { type CheckoutMachine } from "./machine";
 
 export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {

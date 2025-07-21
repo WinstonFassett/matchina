@@ -1,41 +1,62 @@
 import { matchina, defineStates } from "matchina";
 
-export const createAuthMachine = () => {
-  const states = defineStates({
-    LoggedOut: () => ({}),
+const states = defineStates({
+  LoggedOut: () => ({}),
 
-    LoginForm: (
-      email: string = "demo@example.com",
-      password: string = "password123",
-      error?: string | null,
-    ) => ({ email, password, error }),
+  LoginForm: ({
+    email = "demo@example.com",
+    password = "password123",
+    error = undefined,
+  }: {
+    email?: string;
+    password?: string;
+    error?: string | null;
+  } = {}) => ({ email, password, error }),
 
-    RegisterForm: (
-      name: string = "Demo User",
-      email: string = "demo@example.com",
-      error?: string | null,
-    ) => ({ name, email, error }),
+  RegisterForm: ({
+    name = "Demo User",
+    email = "demo@example.com",
+    error = undefined,
+  }: {
+    name?: string;
+    email?: string;
+    error?: string | null;
+  } = {}) => ({ name, email, error }),
 
-    PasswordResetForm: (
-      email: string = "demo@example.com",
-      error?: string | null,
-    ) => ({ email, error }),
+  PasswordResetForm: ({
+    email = "demo@example.com",
+    error = undefined,
+  }: {
+    email?: string;
+    error?: string | null;
+  } = {}) => ({ email, error }),
 
-    PasswordResetSent: (email: string) => ({ email }),
+  PasswordResetSent: ({ email }: { email: string }) => ({ email }),
 
-    LoggingIn: (email: string, password: string) => ({ email, password }),
-    Registering: (name: string, email: string) => ({ name, email }),
-    RequestingPasswordReset: (email: string) => ({ email }),
+  LoggingIn: ({ email, password }: { email: string; password: string }) => ({
+    email,
+    password,
+  }),
+  Registering: ({ name, email }: { name: string; email: string }) => ({
+    name,
+    email,
+  }),
+  RequestingPasswordReset: ({ email }: { email: string }) => ({ email }),
 
-    LoggedIn: (user: {
+  LoggedIn: ({
+    user,
+  }: {
+    user: {
       id: string;
       name: string;
       email: string;
       avatar?: string;
-    }) => ({ user }),
-  });
+    };
+  }) => ({ user }),
+});
 
-  const machine = matchina(
+export const createAuthMachine = () => {
+  return matchina(
     states,
     {
       LoggedOut: {
@@ -44,8 +65,6 @@ export const createAuthMachine = () => {
       },
 
       LoginForm: {
-        updateEmail: "LoginForm",
-        updatePassword: "LoginForm",
         login: "LoggingIn",
         goToRegister: "RegisterForm",
         goToPasswordReset: "PasswordResetForm",
@@ -53,15 +72,11 @@ export const createAuthMachine = () => {
       },
 
       RegisterForm: {
-        updateName: "RegisterForm",
-        updateEmail: "RegisterForm",
         register: "Registering",
         goToLogin: "LoginForm",
         cancel: "LoggedOut",
       },
-
       PasswordResetForm: {
-        updateEmail: "PasswordResetForm",
         requestReset: "RequestingPasswordReset",
         goToLogin: "LoginForm",
         cancel: "LoggedOut",
@@ -69,16 +84,37 @@ export const createAuthMachine = () => {
 
       LoggingIn: {
         success: "LoggedIn",
-        failure: "LoginForm",
+        failure:
+          (error: string) =>
+          ({ from }) => {
+            return states.LoginForm({
+              email: from.data.email,
+              password: from.data.password,
+              error,
+            });
+          },
       },
 
       Registering: {
         success: "LoggedIn",
-        failure: "RegisterForm",
+        failure:
+          (error: string) =>
+          ({ from }) =>
+            states.RegisterForm({
+              name: from.data.name,
+              email: from.data.email,
+              error,
+            }),
       },
       RequestingPasswordReset: {
         success: "PasswordResetSent",
-        failure: "PasswordResetForm",
+        failure:
+          (error: string) =>
+          ({ from }) =>
+            states.PasswordResetForm({
+              email: from.data.email,
+              error,
+            }),
       },
 
       PasswordResetSent: {
@@ -91,8 +127,6 @@ export const createAuthMachine = () => {
     },
     states.LoggedOut(),
   );
-
-  return machine;
 };
 
 export type AuthMachine = ReturnType<typeof createAuthMachine>;

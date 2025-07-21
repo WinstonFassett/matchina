@@ -1,5 +1,196 @@
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
 import { type AuthMachine } from "./machine";
+import React, { useState } from "react";
+
+function LoginFormView({ data, machine, handleAutoSuccess }: any) {
+  const [email, setEmail] = useState(data.email || "");
+  const [password, setPassword] = useState(data.password || "");
+  React.useEffect(() => {
+    setEmail(data.email || "");
+    setPassword(data.password || "");
+  }, [data.email, data.password]);
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Log In</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        {/* Show error if exists */}
+        {data.error && (
+          <div className="text-red-500 mb-4">
+            <p className="text-sm">{data.error}</p>
+          </div>
+        )}
+        <button
+          onClick={() =>
+            handleAutoSuccess(() => machine.login({ email, password }))
+          }
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Log In
+        </button>
+        <div className="text-center space-y-2">
+          <button
+            onClick={() => machine.goToPasswordReset()}
+            className="text-blue-500 hover:underline text-sm"
+          >
+            Forgot Password?
+          </button>
+          <div>
+            <span className="text-sm opacity-70">Don't have an account? </span>
+            <button
+              onClick={() => machine.goToRegister()}
+              className="text-blue-500 hover:underline text-sm"
+            >
+              Register
+            </button>
+          </div>
+          <button
+            onClick={() => machine.cancel()}
+            className="text-current/50 hover:underline text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegisterFormView({ data, machine, handleAutoSuccess }: any) {
+  const [name, setName] = useState(data.name || "");
+  const [email, setEmail] = useState(data.email || "");
+  React.useEffect(() => {
+    setName(data.name || "");
+    setEmail(data.email || "");
+  }, [data.name, data.email]);
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Register</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+        {/* Show error if exists */}
+        {data.error && (
+          <div className="text-red-500 mb-4">
+            <p className="text-sm">{data.error}</p>
+          </div>
+        )}
+        <button
+          onClick={() =>
+            handleAutoSuccess(() => machine.register({ name, email }))
+          }
+          className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Register
+        </button>
+        <div className="text-center space-y-2">
+          <div>
+            <span className="text-sm opacity-70">
+              Already have an account?{" "}
+            </span>
+            <button
+              onClick={() => machine.goToLogin()}
+              className="text-blue-500 hover:underline text-sm"
+            >
+              Log In
+            </button>
+          </div>
+          <button
+            onClick={() => machine.cancel()}
+            className="text-current/50 hover:underline text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PasswordResetFormView({ data, machine, handleAutoSuccess }: any) {
+  const [email, setEmail] = useState(data.email || "");
+  React.useEffect(() => {
+    setEmail(data.email || "");
+  }, [data.email]);
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        {/* Show error if exists */}
+        {data.error && (
+          <div className="text-red-500 mb-4">
+            <p className="text-sm">{data.error}</p>
+          </div>
+        )}
+        <button
+          onClick={() =>
+            handleAutoSuccess(() => machine.requestReset({ email }))
+          }
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Send Reset Link
+        </button>
+        <div className="text-center space-y-2">
+          <button
+            onClick={() => machine.goToLogin()}
+            className="text-blue-500 hover:underline text-sm"
+          >
+            Back to Log In
+          </button>
+          <br />
+          <button
+            onClick={() => machine.cancel()}
+            className="text-current/50 hover:underline text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
   useMachine(machine);
@@ -14,24 +205,28 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
       if (state.is("LoggingIn")) {
         const data = state.data as { email: string; password: string };
         machine.success({
-          id: "user-123",
-          name: "Demo User",
-          email: data.email,
-          avatar: "https://i.pravatar.cc/150?u=demo",
+          user: {
+            id: "user-123",
+            name: "Demo User",
+            email: data.email,
+            avatar: "https://i.pravatar.cc/150?u=demo",
+          },
         });
       } else if (state.is("Registering")) {
         const data = state.data as { name: string; email: string };
         machine.success({
-          id: "user-123",
-          name: data.name,
-          email: data.email,
-          avatar: "https://i.pravatar.cc/150?u=" + data.email,
+          user: {
+            id: "user-123",
+            name: data.name,
+            email: data.email,
+            avatar: "https://i.pravatar.cc/150?u=" + data.email,
+          },
         });
       } else if (state.is("RequestingPasswordReset")) {
         const data = state.data as { email: string };
-        machine.success(data.email);
+        machine.success({ email: data.email });
       }
-    }, 500);
+    }, 1500);
   };
 
   return (
@@ -58,167 +253,27 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
         ),
 
         LoginForm: (data) => (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Log In</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) => machine.updateEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Password
-                </label>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) =>
-                    machine.updateEmail(e.target.value, data.password, null)
-                  }
-                  className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button
-                onClick={() =>
-                  handleAutoSuccess(() =>
-                    machine.login(data.email, data.password),
-                  )
-                }
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Log In
-              </button>
-              <div className="text-center space-y-2">
-                <button
-                  onClick={() => machine.goToPasswordReset()}
-                  className="text-blue-500 hover:underline text-sm"
-                >
-                  Forgot Password?
-                </button>
-                <div>
-                  <span className="text-sm opacity-70">
-                    Don't have an account?{" "}
-                  </span>
-                  <button
-                    onClick={() => machine.goToRegister()}
-                    className="text-blue-500 hover:underline text-sm"
-                  >
-                    Register
-                  </button>
-                </div>
-                <button
-                  onClick={() => machine.cancel()}
-                  className="text-current/50 hover:underline text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+          <LoginFormView
+            data={data}
+            machine={machine}
+            handleAutoSuccess={handleAutoSuccess}
+          />
         ),
 
         RegisterForm: (data) => (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Register</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <input
-                  type="text"
-                  value={data.name}
-                  onChange={(e) =>
-                    machine.updateName(e.target.value, data.email)
-                  }
-                  className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) =>
-                    machine.updateEmail(data.name, e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <button
-                onClick={() =>
-                  handleAutoSuccess(() =>
-                    machine.register(data.name, data.email),
-                  )
-                }
-                className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                Register
-              </button>
-              <div className="text-center space-y-2">
-                <div>
-                  <span className="text-sm opacity-70">
-                    Already have an account?{" "}
-                  </span>
-                  <button
-                    onClick={() => machine.goToLogin()}
-                    className="text-blue-500 hover:underline text-sm"
-                  >
-                    Log In
-                  </button>
-                </div>
-                <button
-                  onClick={() => machine.cancel()}
-                  className="text-current/50 hover:underline text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+          <RegisterFormView
+            data={data}
+            machine={machine}
+            handleAutoSuccess={handleAutoSuccess}
+          />
         ),
 
         PasswordResetForm: (data) => (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) => machine.updateEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button
-                onClick={() =>
-                  handleAutoSuccess(() => machine.requestReset(data.email))
-                }
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Send Reset Link
-              </button>
-              <div className="text-center space-y-2">
-                <button
-                  onClick={() => machine.goToLogin()}
-                  className="text-blue-500 hover:underline text-sm"
-                >
-                  Back to Log In
-                </button>
-                <br />
-                <button
-                  onClick={() => machine.cancel()}
-                  className="text-current/50 hover:underline text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+          <PasswordResetFormView
+            data={data}
+            machine={machine}
+            handleAutoSuccess={handleAutoSuccess}
+          />
         ),
 
         LoggingIn: (data) => (
@@ -234,10 +289,12 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                 <button
                   onClick={() =>
                     machine.success({
-                      id: "user-123",
-                      name: "Demo User",
-                      email: data.email,
-                      avatar: "https://i.pravatar.cc/150?u=demo",
+                      user: {
+                        id: "user-123",
+                        name: "Demo User",
+                        email: data.email,
+                        avatar: "https://i.pravatar.cc/150?u=demo",
+                      },
                     })
                   }
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
@@ -268,10 +325,12 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                 <button
                   onClick={() =>
                     machine.success({
-                      id: "user-123",
-                      name: data.name,
-                      email: data.email,
-                      avatar: "https://i.pravatar.cc/150?u=" + data.email,
+                      user: {
+                        id: "user-123",
+                        name: data.name,
+                        email: data.email,
+                        avatar: "https://i.pravatar.cc/150?u=" + data.email,
+                      },
                     })
                   }
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
@@ -300,7 +359,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
               <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => machine.success(data.email)}
+                  onClick={() => machine.success({ email: data.email })}
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                 >
                   Reset Success
