@@ -46,6 +46,50 @@ Unlike the counter example which focuses on state data, or the toggle example wi
 - The view component uses `state.match()` to elegantly handle different UI states
 - Pattern matching is type-safe and ensures all states are handled
 
+## How This Example Works
+
+This traffic light example demonstrates the core components of a Matchina state machine:
+
+1. **State Definition**: We define three states (`Red`, `Yellow`, `Green`), each with associated data (a message).
+
+   ```ts
+   const states = defineStates({
+     Green: () => ({ message: "Go" }),
+     Yellow: () => ({ message: "Prepare to stop" }),
+     Red: () => ({ message: "Stop" }),
+   });
+   ```
+
+2. **Machine Creation**: The state machine is created using `matchina()`, which takes:
+
+   - The defined states
+   - A transition map describing allowed state changes (using the `next` event)
+   - An initial state (`"Red"`)
+
+   ```ts
+   return matchina(
+     states,
+     {
+       Green: { next: "Yellow" },
+       Yellow: { next: "Red" },
+       Red: { next: "Green" },
+     },
+     "Red",
+   );
+   ```
+
+3. **State Transitions**: The machine cycles through states when `machine.next()` is called.
+
+4. **State Access**: The current state is accessed using `machine.getState()`, which provides:
+
+   - The state key (`currentState.key`)
+   - Type-safe access to state data (`currentState.data.message`)
+   - Methods for state checking (`currentState.is("Red")`)
+
+5. **Type Safety**: TypeScript ensures type safety throughout, preventing invalid state references.
+
+For a minimal introduction, see the [Quick Start](/guides/quickstart).
+
 ## Extensions
 
 This basic implementation can be extended in several ways:
