@@ -42,8 +42,9 @@ export function ShippingForm({
         </div>
       )}
       {missingFields.length > 0 && (
-        <div className="mb-4 p-3 border border-yellow-400 text-yellow-800 rounded">
-          Please fill in: {missingFields.join(", ")}
+        <div className="mb-4 p-3 border border-yellow-400 text-yellow-900 rounded bg-yellow-50">
+          <span className="font-semibold">Missing:</span>{" "}
+          {missingFields.join(", ")}
         </div>
       )}
       <div className="space-y-4 mb-6">
@@ -135,8 +136,9 @@ export function PaymentForm({
         </div>
       )}
       {missingFields.length > 0 && (
-        <div className="mb-4 p-3 border border-yellow-400 text-yellow-800 rounded">
-          Please fill in: {missingFields.join(", ")}
+        <div className="mb-4 p-3 border border-yellow-400 text-yellow-900 rounded bg-yellow-50">
+          <span className="font-semibold">Missing:</span>{" "}
+          {missingFields.join(", ")}
         </div>
       )}
       <div className="mb-6 p-4 rounded border border-current/10">
@@ -214,6 +216,81 @@ export function PaymentForm({
           Place Order
         </button>
       </div>
+    </div>
+  );
+}
+
+export function CartForm({
+  data,
+  machine,
+}: {
+  data: CartData;
+  machine: CheckoutMachine;
+}) {
+  const [items, setItems] = useState(data.items);
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
+      ),
+    );
+  };
+
+  const total = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
+      <div className="space-y-4 mb-6">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="flex justify-between items-center p-4 border rounded border-current/10"
+          >
+            <div>
+              <h3 className="font-semibold">{item.name}</h3>
+              <p className="opacity-70">${item.price.toFixed(2)} each</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="mr-2">Qty:</label>
+              <input
+                type="number"
+                min={0}
+                value={item.quantity}
+                onChange={(e) =>
+                  handleQuantityChange(item.id, Number(e.target.value))
+                }
+                className="w-16 px-2 py-1 border border-current/20 rounded text-center"
+              />
+              <span className="font-semibold">
+                ${(item.price * item.quantity).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="border-t pt-4 mb-6 border-current/10">
+        <div className="flex justify-between text-xl font-bold">
+          <span>Total: ${total.toFixed(2)}</span>
+        </div>
+      </div>
+      {total <= 0 ? (
+        <div className="text-center text-yellow-700 mb-4">
+          Your cart is empty. Add items to proceed.
+        </div>
+      ) : (
+        <button
+          onClick={() => machine.proceedToShipping({ cart: { items, total } })}
+          className="w-full px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
+          disabled={total <= 0}
+        >
+          Proceed to Shipping
+        </button>
+      )}
     </div>
   );
 }

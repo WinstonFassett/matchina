@@ -1,7 +1,7 @@
 import { useMachine } from "matchina/react";
 import type { CheckoutMachine } from "./machine";
 import React from "react";
-import { ShippingForm, PaymentForm } from "./subforms";
+import { CartForm, ShippingForm, PaymentForm } from "./subforms";
 
 export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
   useMachine(machine);
@@ -27,41 +27,7 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
   return (
     <div className="max-w-2xl mx-auto rounded-lg border border-current/20 p-6">
       {currentState.match({
-        Cart: (data) => (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
-            <div className="space-y-4 mb-6">
-              {data.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-center p-4 border rounded border-current/10"
-                >
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="opacity-70">${item.price.toFixed(2)} each</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span>Qty: {item.quantity}</span>
-                    <span className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="border-t pt-4 mb-6 border-current/10">
-              <div className="flex justify-between text-xl font-bold">
-                <span>Total: ${data.total.toFixed(2)}</span>
-              </div>
-            </div>
-            <button
-              onClick={() => machine.proceedToShipping({ cart: data })}
-              className="w-full px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-            >
-              Proceed to Shipping
-            </button>
-          </div>
-        ),
+        Cart: (data) => <CartForm data={data} machine={machine} />,
         Shipping: (data) => <ShippingForm data={data} machine={machine} />,
         Payment: (data) => (
           <PaymentForm
