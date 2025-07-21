@@ -205,10 +205,6 @@ export default defineConfig({
               label: "Advanced",
               items: [
                 {
-                  label: "Form Validation",
-                  link: "/examples/form",
-                },
-                {
                   label: "Authentication Flow",
                   link: "/examples/auth-flow",
                 },
