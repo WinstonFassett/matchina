@@ -1,7 +1,7 @@
 import { useMachine } from "matchina/react";
 import type { CheckoutMachine } from "./machine";
 import React from "react";
-import { CartForm, ShippingForm, PaymentForm } from "./subforms";
+import { CartForm, ShippingForm, PaymentForm } from "./forms";
 
 export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
   useMachine(machine);
