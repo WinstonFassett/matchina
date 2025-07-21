@@ -205,20 +205,20 @@ export default defineConfig({
               label: "Advanced",
               items: [
                 {
+                  label: "Traffic Light Simulator",
+                  link: "/examples/traffic-light-extended",
+                },
+                {
                   label: "Authentication Flow",
                   link: "/examples/auth-flow",
                 },
                 {
-                  label: "Paren Checker",
-                  link: "/examples/paren-checker",
-                },
-                {
-                  label: "Traffic Light with Pedestrian Crossing",
-                  link: "/examples/traffic-light-extended",
-                },
-                {
                   label: "Checkout Flow",
                   link: "/examples/checkout",
+                },
+                {
+                  label: "Paren Checker",
+                  link: "/examples/paren-checker",
                 },
               ],
             },
