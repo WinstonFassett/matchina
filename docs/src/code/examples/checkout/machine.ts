@@ -5,29 +5,42 @@ export type CartData = {
   items: Array<{ id: string; name: string; price: number; quantity: number }>;
   total: number;
 };
-export type ShippingData = {
-  cart: CartData;
+export type ShippingForm = {
   address: string;
   city: string;
   zipCode: string;
   error?: string | null;
 };
-export type PaymentData = {
-  shipping: ShippingData;
+export type PaymentForm = {
   cardNumber: string;
   expiryDate: string;
   cvv: string;
   error?: string | null;
 };
+export type ShippingData = {
+  cart: CartData;
+  shipping: ShippingForm;
+};
+export type PaymentData = {
+  cart: CartData;
+  shipping: ShippingForm;
+  payment: PaymentForm;
+};
 export type ProcessingData = {
-  payment: PaymentData;
+  cart: CartData;
+  shipping: ShippingForm;
+  payment: PaymentForm;
 };
 export type SuccessData = {
-  processing: ProcessingData;
+  cart: CartData;
+  shipping: ShippingForm;
+  payment: PaymentForm;
   orderId: string;
 };
 export type FailedData = {
-  processing: ProcessingData;
+  cart: CartData;
+  shipping: ShippingForm;
+  payment: PaymentForm;
   error: string;
 };
 
@@ -43,40 +56,58 @@ export const createCheckoutMachine = () => {
 
     Shipping: ({
       cart,
-      address = "",
-      city = "",
-      zipCode = "",
-      error = null,
-    }: Partial<ShippingData> & { cart: CartData }) => ({
+      shipping = { address: "", city: "", zipCode: "", error: null },
+    }: {
+      cart: CartData;
+      shipping?: Partial<ShippingForm>;
+    }) => ({
       cart,
-      address,
-      city,
-      zipCode,
-      error,
+      shipping: {
+        address: shipping.address ?? "",
+        city: shipping.city ?? "",
+        zipCode: shipping.zipCode ?? "",
+        error: shipping.error ?? null,
+      },
     }),
 
     Payment: ({
+      cart,
       shipping,
-      cardNumber = "",
-      expiryDate = "",
-      cvv = "",
-      error = null,
-    }: Partial<PaymentData> & { shipping: ShippingData }) => ({
+      payment = { cardNumber: "", expiryDate: "", cvv: "", error: null },
+    }: {
+      cart: CartData;
+      shipping: ShippingForm;
+      payment?: Partial<PaymentForm>;
+    }) => ({
+      cart,
       shipping,
-      cardNumber,
-      expiryDate,
-      cvv,
-      error,
+      payment: {
+        cardNumber: payment.cardNumber ?? "",
+        expiryDate: payment.expiryDate ?? "",
+        cvv: payment.cvv ?? "",
+        error: payment.error ?? null,
+      },
     }),
 
-    Processing: ({ payment }: { payment: PaymentData }) => ({ payment }),
+    Processing: ({ cart, shipping, payment }: ProcessingData) => ({
+      cart,
+      shipping,
+      payment,
+    }),
 
-    Success: ({ processing, orderId }: SuccessData) => ({
-      processing,
+    Success: ({ cart, shipping, payment, orderId }: SuccessData) => ({
+      cart,
+      shipping,
+      payment,
       orderId,
     }),
 
-    Failed: ({ processing, error }: FailedData) => ({ processing, error }),
+    Failed: ({ cart, shipping, payment, error }: FailedData) => ({
+      cart,
+      shipping,
+      payment,
+      error,
+    }),
   });
 
   const machine = matchina(
