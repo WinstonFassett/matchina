@@ -117,7 +117,9 @@ function PaymentForm({ data, machine, handleAsyncProcessing }: any) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Expiry Date</label>
+            <label className="block text-sm font-medium mb-1">
+              Expiry Date
+            </label>
             <input
               type="text"
               value={expiryDate}
@@ -252,11 +254,13 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
             </div>
           );
         },
-        Shipping: (data) => (
-          <ShippingForm data={data} machine={machine} />
-        ),
+        Shipping: (data) => <ShippingForm data={data} machine={machine} />,
         Payment: (data) => (
-          <PaymentForm data={data} machine={machine} handleAsyncProcessing={handleAsyncProcessing} />
+          <PaymentForm
+            data={data}
+            machine={machine}
+            handleAsyncProcessing={handleAsyncProcessing}
+          />
         ),
         Processing: () => (
           <div className="text-center">

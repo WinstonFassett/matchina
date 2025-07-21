@@ -1,5 +1,36 @@
 import { matchina, defineStates } from "matchina";
 
+// --- Types for each step ---
+export type CartData = {
+  items: Array<{ id: string; name: string; price: number; quantity: number }>;
+  total: number;
+};
+export type ShippingData = {
+  cart: CartData;
+  address: string;
+  city: string;
+  zipCode: string;
+  error?: string | null;
+};
+export type PaymentData = {
+  shipping: ShippingData;
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  error?: string | null;
+};
+export type ProcessingData = {
+  payment: PaymentData;
+};
+export type SuccessData = {
+  processing: ProcessingData;
+  orderId: string;
+};
+export type FailedData = {
+  processing: ProcessingData;
+  error: string;
+};
+
 export const createCheckoutMachine = () => {
   const states = defineStates({
     Cart: ({
@@ -8,15 +39,7 @@ export const createCheckoutMachine = () => {
         { id: "2", name: "Bluetooth Speaker", price: 49.99, quantity: 2 },
       ],
       total = 199.97,
-    }: {
-      items?: Array<{
-        id: string;
-        name: string;
-        price: number;
-        quantity: number;
-      }>;
-      total?: number;
-    } = {}) => ({ items, total }),
+    }: Partial<CartData> = {}) => ({ items, total }),
 
     Shipping: ({
       cart,
@@ -24,13 +47,13 @@ export const createCheckoutMachine = () => {
       city = "",
       zipCode = "",
       error = null,
-    }: {
-      cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
-      address?: string;
-      city?: string;
-      zipCode?: string;
-      error?: string | null;
-    }) => ({ cart, address, city, zipCode, error }),
+    }: Partial<ShippingData> & { cart: CartData }) => ({
+      cart,
+      address,
+      city,
+      zipCode,
+      error,
+    }),
 
     Payment: ({
       shipping,
@@ -38,81 +61,22 @@ export const createCheckoutMachine = () => {
       expiryDate = "",
       cvv = "",
       error = null,
-    }: {
-      shipping: {
-        cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
-        address: string;
-        city: string;
-        zipCode: string;
-        error?: string | null;
-      };
-      cardNumber?: string;
-      expiryDate?: string;
-      cvv?: string;
-      error?: string | null;
-    }) => ({ shipping, cardNumber, expiryDate, cvv, error }),
+    }: Partial<PaymentData> & { shipping: ShippingData }) => ({
+      shipping,
+      cardNumber,
+      expiryDate,
+      cvv,
+      error,
+    }),
 
-    Processing: ({
-      payment,
-    }: {
-      payment: {
-        shipping: {
-          cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
-          address: string;
-          city: string;
-          zipCode: string;
-          error?: string | null;
-        };
-        cardNumber: string;
-        expiryDate: string;
-        cvv: string;
-        error?: string | null;
-      };
-    }) => ({ payment }),
+    Processing: ({ payment }: { payment: PaymentData }) => ({ payment }),
 
-    Success: ({
+    Success: ({ processing, orderId }: SuccessData) => ({
       processing,
       orderId,
-    }: {
-      processing: {
-        payment: {
-          shipping: {
-            cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
-            address: string;
-            city: string;
-            zipCode: string;
-            error?: string | null;
-          };
-          cardNumber: string;
-          expiryDate: string;
-          cvv: string;
-          error?: string | null;
-        };
-      };
-      orderId: string;
-    }) => ({ processing, orderId }),
+    }),
 
-    Failed: ({
-      processing,
-      error,
-    }: {
-      processing: {
-        payment: {
-          shipping: {
-            cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
-            address: string;
-            city: string;
-            zipCode: string;
-            error?: string | null;
-          };
-          cardNumber: string;
-          expiryDate: string;
-          cvv: string;
-          error?: string | null;
-        };
-      };
-      error: string;
-    }) => ({ processing, error }),
+    Failed: ({ processing, error }: FailedData) => ({ processing, error }),
   });
 
   const machine = matchina(
