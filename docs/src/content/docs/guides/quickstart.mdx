@@ -10,6 +10,13 @@ import indexCode from "@code/examples/traffic-light/index.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
+Matchina is a TypeScript library for building type-safe state machines with clear transition definitions. It provides:
+
+- **Type-safe state transitions**: Define exactly which state can transition to which other states
+- **State-specific data**: Each state can have its own typed data structure
+- **Simple API**: Create and interact with state machines through a clean, intuitive API
+- **TypeScript integration**: Full type safety and IDE autocompletion
+
 ## Installation
 
 ```sh
@@ -34,12 +41,50 @@ Here's a simple traffic light state machine that demonstrates Matchina's core co
   ]}
 />
 
+## How This Example Works
+
+This traffic light example demonstrates the core components of a Matchina state machine:
+
+1. **State Definition**: We define three states (`Red`, `Yellow`, `Green`), each with associated data (a message).
+   ```ts
+   const states = defineStates({
+     Green: () => ({ message: "Go" }),
+     Yellow: () => ({ message: "Prepare to stop" }),
+     Red: () => ({ message: "Stop" }),
+   });
+   ```
+
+2. **Machine Creation**: The state machine is created using `matchina()`, which takes:
+   - The defined states
+   - A transition map describing allowed state changes (using the `next` event)
+   - An initial state (`"Red"`)
+   ```ts
+   return matchina(
+     states,
+     {
+       Green: { next: "Yellow" },
+       Yellow: { next: "Red" },
+       Red: { next: "Green" },
+     },
+     "Red",
+   );
+   ```
+
+3. **State Transitions**: The machine cycles through states when `machine.next()` is called.
+
+4. **State Access**: The current state is accessed using `machine.getState()`, which provides:
+   - The state key (`currentState.key`)
+   - Type-safe access to state data (`currentState.data.message`)
+   - Methods for state checking (`currentState.is("Red")`)
+
+5. **Type Safety**: TypeScript ensures type safety throughout, preventing invalid state references.
+
 ## Key Concepts Demonstrated
 
-- **State Definition**: Define states with data
-- **Transition Definition**: Specify allowed state changes
-- **Pattern Matching**: Handle different states with type safety
-- **React Integration**: Use state machines in React components
+- **State Definition**: Define states with typed data using `defineStates()`
+- **Machine Creation**: Create a state machine with `matchina()` by specifying states, transitions, and initial state
+- **Transition Definition**: Define allowed state transitions as a simple object structure
+- **React Integration**: Integrate state machines in React components with `useMachine()`
 
 ## Next Steps
 

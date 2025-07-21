@@ -21,12 +21,13 @@ A traffic light state machine that cycles through Red, Yellow, and Green states,
 
 This example demonstrates:
 
+- Defining states with typed data using `defineStates()`
 - Creating a machine with multiple distinct states (Red, Yellow, Green)
 - Cyclical transitions between states in a defined sequence
-- Using the `withApi` helper to create a clean API for transitions
-- Leveraging pattern matching with `state.match()` for UI rendering
+- State-based UI rendering with conditional styling
+- Type-safe state handling throughout the application
 
-Unlike the counter example which used data within a state, or the toggle example with just two states, this traffic light example shows how to model a system with a clear sequence of states.
+Unlike the counter example which focuses on state data, or the toggle example with just two states, this traffic light example shows how to model a system with a clear sequence of states and associated messages.
 
 ## Machine Code
 

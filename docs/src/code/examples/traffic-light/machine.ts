@@ -1,24 +1,21 @@
-import { createMachine, defineStates, withApi } from "matchina";
+import { defineStates, matchina } from "matchina";
+
+const states = defineStates({
+  Green: () => ({ message: "Go" }),
+  Yellow: () => ({ message: "Prepare to stop" }),
+  Red: () => ({ message: "Stop" }),
+});
 
 export const createTrafficLightMachine = () => {
-
-  const states = defineStates({
-    Green: () => ({ message: 'Go' }),
-    Yellow: () => ({ message: 'Prepare to stop' }),
-    Red: () => ({ message: 'Stop' })
-  });
-  
-  const machine = withApi(createMachine(
+  return matchina(
     states,
     {
-      Green: { next: 'Yellow' },
-      Yellow: { next: 'Red' },
-      Red: { next: 'Green' }
+      Green: { next: "Yellow" },
+      Yellow: { next: "Red" },
+      Red: { next: "Green" },
     },
-    'Red'
-  ));
-  
-  return machine;
+    "Red",
+  );
 };
 
 export type TrafficLightMachine = ReturnType<typeof createTrafficLightMachine>;
