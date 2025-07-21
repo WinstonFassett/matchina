@@ -4,7 +4,10 @@ description: Multi-step checkout process with cart, shipping, and payment
 ---
 
 import CheckoutExample from "@code/examples/checkout/example";
+import typesCode from "@code/examples/checkout/types.ts?raw";
+import statesCode from "@code/examples/checkout/states.ts?raw";
 import machineCode from "@code/examples/checkout/machine.ts?raw";
+import formsCode from "@code/examples/checkout/forms.tsx?raw";
 import viewCode from "@code/examples/checkout/CheckoutView.tsx?raw";
 import indexCode from "@code/examples/checkout/index.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
@@ -31,7 +34,10 @@ The demo includes sample cart items and simulates payment processing with a 70% 
 
 <CodeTabs
   files={[
+    { name: "types.ts", code: typesCode },
+    { name: "states.ts", code: statesCode },
     { name: "machine.ts", code: machineCode },
+    { name: "forms.tsx", code: formsCode },
     { name: "CheckoutView.tsx", code: viewCode },
     { name: "index.tsx", code: indexCode },
   ]}

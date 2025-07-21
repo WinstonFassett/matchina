@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import type { CheckoutMachine } from "./machine";
 import type {
-  CheckoutMachine,
   ShippingData,
   PaymentData,
   CartData,
   ShippingForm as ShippingFormType,
   PaymentForm as PaymentFormType,
-} from "./machine";
+} from "./types";
 
 function getMissing(fields: Record<string, string>) {
   return Object.entries(fields)
@@ -21,7 +21,10 @@ export function ShippingForm({
   data: ShippingData;
   machine: CheckoutMachine;
 }) {
-  const { cart, shipping } = data;
+  const {
+    cart,
+    shipping = { address: "", city: "", zipCode: "", error: null },
+  } = data;
   const [address, setAddress] = useState(shipping.address || "");
   const [city, setCity] = useState(shipping.city || "");
   const [zipCode, setZipCode] = useState(shipping.zipCode || "");
