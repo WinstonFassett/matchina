@@ -8,6 +8,12 @@ import type {
   PaymentForm as PaymentFormType,
 } from "./machine";
 
+function getMissing(fields: Record<string, string>) {
+  return Object.entries(fields)
+    .filter(([_, v]) => !v.trim())
+    .map(([k]) => k);
+}
+
 export function ShippingForm({
   data,
   machine,
@@ -24,12 +30,20 @@ export function ShippingForm({
     setCity(shipping.city || "");
     setZipCode(shipping.zipCode || "");
   }, [shipping.address, shipping.city, shipping.zipCode]);
+
+  const missingFields = getMissing({ address, city, zipCode });
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
       {shipping.error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
           {shipping.error}
+        </div>
+      )}
+      {missingFields.length > 0 && (
+        <div className="mb-4 p-3 border border-yellow-400 text-yellow-800 rounded">
+          Please fill in: {missingFields.join(", ")}
         </div>
       )}
       <div className="space-y-4 mb-6">
@@ -39,7 +53,7 @@ export function ShippingForm({
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+            className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("address") ? "border-yellow-400" : ""}`}
             placeholder="123 Main Street"
           />
         </div>
@@ -50,7 +64,7 @@ export function ShippingForm({
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("city") ? "border-yellow-400" : ""}`}
               placeholder="New York"
             />
           </div>
@@ -60,7 +74,7 @@ export function ShippingForm({
               type="text"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
-              className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("zipCode") ? "border-yellow-400" : ""}`}
               placeholder="10001"
             />
           </div>
@@ -75,13 +89,14 @@ export function ShippingForm({
         </button>
         <button
           onClick={() => {
-            if (!address || !city || !zipCode) return;
+            if (missingFields.length > 0) return;
             machine.proceedToPayment({
               cart,
               shipping: { address, city, zipCode },
             });
           }}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
+          disabled={missingFields.length > 0}
         >
           Continue to Payment
         </button>
@@ -108,12 +123,20 @@ export function PaymentForm({
     setExpiryDate(payment.expiryDate || "");
     setCvv(payment.cvv || "");
   }, [payment.cardNumber, payment.expiryDate, payment.cvv]);
+
+  const missingFields = getMissing({ cardNumber, expiryDate, cvv });
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
       {payment.error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
           {payment.error}
+        </div>
+      )}
+      {missingFields.length > 0 && (
+        <div className="mb-4 p-3 border border-yellow-400 text-yellow-800 rounded">
+          Please fill in: {missingFields.join(", ")}
         </div>
       )}
       <div className="mb-6 p-4 rounded border border-current/10">
@@ -130,7 +153,7 @@ export function PaymentForm({
             type="text"
             value={cardNumber}
             onChange={(e) => setCardNumber(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+            className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("cardNumber") ? "border-yellow-400" : ""}`}
             placeholder="1234 5678 9012 3456"
           />
         </div>
@@ -143,7 +166,7 @@ export function PaymentForm({
               type="text"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("expiryDate") ? "border-yellow-400" : ""}`}
               placeholder="MM/YY"
             />
           </div>
@@ -153,7 +176,7 @@ export function PaymentForm({
               type="text"
               value={cvv}
               onChange={(e) => setCvv(e.target.value)}
-              className="w-full px-3 py-2 border border-current/20 rounded focus:outline-none focus:ring-2"
+              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("cvv") ? "border-yellow-400" : ""}`}
               placeholder="123"
             />
           </div>
@@ -178,7 +201,7 @@ export function PaymentForm({
         </button>
         <button
           onClick={() => {
-            if (!cardNumber || !expiryDate || !cvv) return;
+            if (missingFields.length > 0) return;
             handleAsyncProcessing({
               cart,
               shipping,
@@ -186,6 +209,7 @@ export function PaymentForm({
             });
           }}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
+          disabled={missingFields.length > 0}
         >
           Place Order
         </button>
