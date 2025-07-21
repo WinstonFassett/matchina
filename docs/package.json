@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
+    "dev:pdf": "npx starlight-to-pdf http://localhost:4321",
     "start": "astro dev",
     "check": "astro check",
     "build": "rm -rf dist && astro check && astro build",
