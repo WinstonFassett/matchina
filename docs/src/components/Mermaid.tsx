@@ -9,7 +9,8 @@ const useMermaid = (id: string, content: string): string | null => {
   useEffect(() => {
     let isCancelled = false;
 
-    mermaid.mermaidAPI.render(id, content).then((svgraph) => {
+    mermaid.render(id, content).then((svgraph) => {
+      console.log("Mermaid rendered:", svgraph.svg);
       if (!isCancelled) {
         setSvg(svgraph.svg);
       }
