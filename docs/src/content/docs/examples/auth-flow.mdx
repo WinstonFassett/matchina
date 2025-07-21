@@ -15,6 +15,16 @@ A robust authentication flow using a state machine to coordinate login, registra
   <AuthFlowExample client:visible />
 </div>
 
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "AuthFlowView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
 ## Key Patterns
 
 - **State machine for flow, not form state**: The machine tracks which step the user is in (login, register, reset, etc.), but the view manages the actual form fields. This keeps the machine focused on transitions and error handling, not UI details.
@@ -29,16 +39,6 @@ A robust authentication flow using a state machine to coordinate login, registra
 - **Let the machine handle flow and validation**: The machine decides what state comes next, and how to handle errors or async results.
 - **Trigger side effects on state entry**: Use lifecycle hooks or effects to run async logic when entering a state, not in response to UI events.
 - **Propagate errors through state**: Pass error messages as part of the state data, so the view can render them.
-
-## Example Code
-
-<CodeTabs
-  files={[
-    { name: "machine.ts", code: machineCode },
-    { name: "AuthFlowView.tsx", code: viewCode },
-    { name: "index.tsx", code: indexCode },
-  ]}
-/>
 
 ## Why This Works
 
