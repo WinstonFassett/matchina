@@ -19,68 +19,100 @@ export const createCheckoutMachine = () => {
     } = {}) => ({ items, total }),
 
     Shipping: ({
-      items,
-      total,
+      cart,
       address = "",
       city = "",
       zipCode = "",
       error = null,
     }: {
-      items: Array<{ id: string; name: string; price: number; quantity: number }>;
-      total: number;
+      cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
       address?: string;
       city?: string;
       zipCode?: string;
       error?: string | null;
-    }) => ({ items, total, address, city, zipCode, error }),
+    }) => ({ cart, address, city, zipCode, error }),
 
     Payment: ({
-      items,
-      total,
-      shippingAddress,
+      shipping,
       cardNumber = "",
       expiryDate = "",
       cvv = "",
       error = null,
     }: {
-      items: Array<{ id: string; name: string; price: number; quantity: number }>;
-      total: number;
-      shippingAddress: { address: string; city: string; zipCode: string };
+      shipping: {
+        cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
+        address: string;
+        city: string;
+        zipCode: string;
+        error?: string | null;
+      };
       cardNumber?: string;
       expiryDate?: string;
       cvv?: string;
       error?: string | null;
-    }) => ({ items, total, shippingAddress, cardNumber, expiryDate, cvv, error }),
+    }) => ({ shipping, cardNumber, expiryDate, cvv, error }),
 
     Processing: ({
-      items,
-      total,
-      shippingAddress,
+      payment,
     }: {
-      items: Array<{ id: string; name: string; price: number; quantity: number }>;
-      total: number;
-      shippingAddress: { address: string; city: string; zipCode: string };
-    }) => ({ items, total, shippingAddress }),
+      payment: {
+        shipping: {
+          cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
+          address: string;
+          city: string;
+          zipCode: string;
+          error?: string | null;
+        };
+        cardNumber: string;
+        expiryDate: string;
+        cvv: string;
+        error?: string | null;
+      };
+    }) => ({ payment }),
 
     Success: ({
+      processing,
       orderId,
-      items,
-      total,
     }: {
+      processing: {
+        payment: {
+          shipping: {
+            cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
+            address: string;
+            city: string;
+            zipCode: string;
+            error?: string | null;
+          };
+          cardNumber: string;
+          expiryDate: string;
+          cvv: string;
+          error?: string | null;
+        };
+      };
       orderId: string;
-      items: Array<{ id: string; name: string; price: number; quantity: number }>;
-      total: number;
-    }) => ({ orderId, items, total }),
+    }) => ({ processing, orderId }),
 
     Failed: ({
+      processing,
       error,
-      items,
-      total,
     }: {
+      processing: {
+        payment: {
+          shipping: {
+            cart: { items: Array<{ id: string; name: string; price: number; quantity: number }>; total: number };
+            address: string;
+            city: string;
+            zipCode: string;
+            error?: string | null;
+          };
+          cardNumber: string;
+          expiryDate: string;
+          cvv: string;
+          error?: string | null;
+        };
+      };
       error: string;
-      items: Array<{ id: string; name: string; price: number; quantity: number }>;
-      total: number;
-    }) => ({ error, items, total }),
+    }) => ({ processing, error }),
   });
 
   const machine = matchina(
@@ -89,26 +121,21 @@ export const createCheckoutMachine = () => {
       Cart: {
         proceedToShipping: "Shipping",
       },
-
       Shipping: {
         proceedToPayment: "Payment",
         backToCart: "Cart",
       },
-
       Payment: {
         placeOrder: "Processing",
         backToShipping: "Shipping",
       },
-
       Processing: {
         success: "Success",
         failure: "Failed",
       },
-
       Success: {
         newOrder: "Cart",
       },
-
       Failed: {
         retry: "Payment",
         backToCart: "Cart",
