@@ -19,34 +19,33 @@ Factory Machines combine state factories with transitions to create complete sta
   const {(getState, send)} = fsm(states, transitions, initialState) 
 ```
 
-## Creating Factory Machines
+## Creating Factory Machines and Using matchina
 
-To create a factory machine, you always start by defining your states using `defineStates`:
+To create a state machine, always start by defining your states using `defineStates`:
 
 ```ts
-const TaskStates = defineStates({
-  Idle: () => ({}),
-  Loading: (query: string) => ({ query }),
-  Success: (query: string, results: string[]) => ({ query, results }),
-  Error: (query: string, message: string) => ({ query, message })
+const states = defineStates({
+  S1: () => ({}),
+  S2: () => ({})
 });
 ```
 
-You can then create a machine with:
+You can then create and use a machine in several ways:
 
 ```ts
-const machine = createMachine(TaskStates, transitions, TaskStates.Idle());
+// Basic factory machine
+const { getState, send } = createMachine(states, { S1: { e1: "S2" }, S2: { e2: "S1" } }, states.S1());
+
+// With matchina (zen wrapper for ergonomic API)
+const { getState, send, e1, e2 } = matchina(states, { S1: { e1: "S2" }, S2: { e2: "S1" } }, states.S1());
+
+// Or, equivalently, zen-wrapped factory machine
+const { getState, send, e1, e2 } = zen(createMachine(states, { S1: { e1: "S2" }, S2: { e2: "S1" } }, states.S1()));
 ```
 
-You control the machine by calling:
-
-```ts
-machine.send(type, ...params);
-```
-
-If you want a convenience API (e.g. ergonomic methods for each event), you can:
-- Enhance the machine with `zen(machine)`
-- Or use `matchina(states, transitions, init)`, which wraps the machine and provides a convenient API
+- `createMachine` gives you `.getState()` and `.send(type, ...params)`.
+- `matchina` (or `zen(createMachine(...))`) gives you `.getState()`, `.send(type, ...params)`, and direct methods for each event (e.g. `.e1()`, `.e2()`).
+- The APIs are otherwise equivalent; `matchina` is just a convenience wrapper.
 
 ---
 
@@ -83,18 +82,19 @@ A transition handler can take one of these forms:
 
 ---
 
-## Using Factory Machines
+## Using Factory Machines and matchina
 
-When using a factory machine directly (without API wrappers), trigger transitions by calling:
-
-```ts
-machine.send(type, ...params)
-```
+- With `createMachine`, trigger transitions by calling:
+  ```ts
+  machine.send(type, ...params)
+  ```
+- With `matchina` or `zen`, you can also call event methods directly:
+  ```ts
+  machine.e1(...params)
+  ```
 
 - `type` is the event name (string)
 - `...params` are the parameters for the transition (if any)
-
-> If you use `zen`, `matchina`, or similar wrappers, you get ergonomic methods for triggering transitions (e.g. `machine.search(query)`).
 
 ### Getting Current State
 
@@ -113,13 +113,9 @@ Pattern matching on state is only available if your state factory supports it (e
 
 ---
 
-## Note on matchina
-
-`matchina` is a higher-level API that combines state factories and transitions into a single call, and provides ergonomic transition methods. This page focuses on the lower-level factory machine pattern, but you can use `matchina` for a more streamlined experience.
-
 ## Next Steps
 
-Now that you understand Factory Machines, explore these related guides:
+Now that you understand Factory Machines and matchina, explore these related guides:
 
 - [Lifecycle & Hooks](./lifecycle/) - Add hooks for intercepting state changes
 - [Effects](./effects/) - Manage side effects with the effects system
