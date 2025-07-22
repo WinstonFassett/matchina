@@ -16,68 +16,7 @@ A minimal (pure) state machine in Matchina looks like this:
 const { getState, send } = createMachine(states, transitions, initialState);
 ```
 
-## States
 
-Matchina supports two approaches to working with states:
-
-- States as raw values
-- States from state factories
-
-### Primitive States
-
-The simplest form of state is a primitive key-value representation:
-
-```ts
-interface State {
-  key: string;
-}
-```
-
-While this primitive state model is supported, it offers limited type safety and requires manual type assertions when working with state data.
-
-### State Factories
-
-The real power of Matchina comes from **state factories** created with `matchboxFactory` or `defineStates`. These enable:
-
-- Type-safe state creation with proper parameter inference
-- Exhaustive pattern matching
-- Built-in type guards
-- Rich state data with full TypeScript inference
-
-State factories are the recommended approach for most applications, as they provide a much better developer experience and stronger type safety.
-
-## Core Interfaces
-
-In addition to `getState` and `send`, machines internally include several lifecycle methods and hook support for more advanced control.
-
-Here are the core interfaces that define a Matchina state machine:
-
-<CodeBlock code={stateMachineCode} lang="ts" />
-
-If you prefer to only expose a minimal interface to consumers, you can use the `pure` API wrapper:
-
-```ts
-import { pure } from "matchina";
-// a pure state machine interface with ONLY getState and send
-const { getState, send } = pure(
-  createMachine(states, transitions, initialState),
-);
-```
-
-## State Machine Lifecycle
-
-When a state transition occurs, the following lifecycle hooks are called in order:
-
-1. **resolve** - Maps event to a transition, determining the target state
-2. **guard** - Determines if the transition is allowed to proceed
-3. **handle** - First opportunity to handle the event (can cancel by returning undefined)
-4. **before** - Called before the state change (can cancel by returning undefined)
-5. **update** - Updates the internal state reference
-6. **effect** - Perform side effects during the transition
-7. **leave** - Called when leaving the current state
-8. **enter** - Called when entering the new state
-9. **notify** - Notifies subscribers of the state change
-10. **after** - Final hook, called after the transition completes
 
 ## Related Topics
 

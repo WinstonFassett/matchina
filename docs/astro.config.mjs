@@ -75,6 +75,15 @@ export default defineConfig({
               label: "Matchbox Factories",
               link: "/guides/matchbox-factories",
             },
+            // pattern matching and exhaustiveness checking, type inference (guards, casting, etc.)
+            {
+              label: "Pattern Matching",
+              link: "/guides/pattern-matching",
+            },
+            {
+              label: "Type Inference",
+              link: "/guides/matchbox-typescript-inference",
+            },
           ],
         },
         {
@@ -83,6 +92,14 @@ export default defineConfig({
             {
               label: "States",
               link: "/guides/states",
+            },
+            {
+              label: "State Machines",
+              link: "/guides/state-machines",
+            },
+            {
+              label: "Lifecycle & Hooks",
+              link: "/guides/lifecycle",
             },
             {
               label: "Transition Machines",
@@ -97,17 +114,19 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
-              label: "Lifecycle & Hooks",
-              link: "/guides/lifecycle",
+              label: "API Wrappers",
+              link: "/guides/api-wrappers",
+            },
+
+            {
+              label: "Hooks API",
+              link: "/guides/hooks",
             },
             {
               label: "Effects",
               link: "/guides/effects",
             },
-            {
-              label: "API Wrappers",
-              link: "/guides/api-wrappers",
-            },
+
             {
               label: "React Integration",
               link: "/guides/integrations",
@@ -129,10 +148,6 @@ export default defineConfig({
             {
               label: "Tagged Unions",
               link: "/guides/union-machines",
-            },
-            {
-              label: "Hooks API",
-              link: "/guides/hooks",
             },
             {
               label: "Context",

@@ -1,0 +1,56 @@
+---
+title: State Machines
+# description: Core interface definitions for Matchina state machines
+---
+
+import CodeBlock from "@components/CodeBlock.astro";
+import stateMachineCode from "@lib/src/state-machine.ts?raw";
+
+## What is a state machine?
+
+{/* At the heart of Matchina is a well-defined state machine interface that governs how state transitions occur and how events flow through the system. */}
+
+A minimal (pure) state machine in Matchina looks like this:
+
+```ts
+const { getState, send } = createMachine(states, transitions, initialState);
+```
+
+## Core Interfaces
+
+In addition to `getState` and `send`, machines internally include several lifecycle methods and hook support for more advanced control.
+
+Here are the core interfaces that define a Matchina state machine:
+
+<CodeBlock code={stateMachineCode} lang="ts" />
+
+If you prefer to only expose a minimal interface to consumers, you can use the `pure` API wrapper:
+
+```ts
+import { pure } from "matchina";
+// a pure state machine interface with ONLY getState and send
+const { getState, send } = pure(
+  createMachine(states, transitions, initialState),
+);
+```
+
+## State Machine Lifecycle
+
+When a state transition occurs, the following lifecycle hooks are called in order:
+
+1. **resolve** - Maps event to a transition, determining the target state
+2. **guard** - Determines if the transition is allowed to proceed
+3. **handle** - First opportunity to handle the event (can cancel by returning undefined)
+4. **before** - Called before the state change (can cancel by returning undefined)
+5. **update** - Updates the internal state reference
+6. **effect** - Perform side effects during the transition
+7. **leave** - Called when leaving the current state
+8. **enter** - Called when entering the new state
+9. **notify** - Notifies subscribers of the state change
+10. **after** - Final hook, called after the transition completes
+
+## Related Topics
+
+- [State Factory Machines](/guides/machines) - Create and configure complete state machines
+- [Lifecycle & Hooks](/guides/lifecycle) - Detailed guide to the lifecycle system
+- [Effects](/guides/effects) - Managing side effects in state machines
