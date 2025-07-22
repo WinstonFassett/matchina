@@ -12,7 +12,7 @@ export const TrafficLightView = ({
   return (
     <div className="flex flex-col items-center">
       <div className="bg-gray-800 p-4 rounded-lg mb-4">
-        <div className="flex flex-col space-y-4 items-center">
+        <div className="flex flex-row space-x-4 items-center">
           {/* Red light */}
           <div
             className={`w-16 h-16 rounded-full ${
