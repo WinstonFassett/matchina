@@ -99,6 +99,7 @@ export default defineConfig({
         },
         {
           label: "How To",
+          collapsed: true,
           items: [
             {
               label: "Type Inference",
@@ -124,6 +125,7 @@ export default defineConfig({
         },
         {
           label: "Examples",
+          collapsed: true,
           items: [
             {
               label: "Basic",
@@ -226,6 +228,7 @@ export default defineConfig({
         },
         {
           label: "Appendix",
+          collapsed: true,
           items: [
             {
               label: "Timsy Inspiration",
