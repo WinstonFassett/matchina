@@ -84,6 +84,14 @@ export default defineConfig({
               label: "Type Inference",
               link: "/guides/matchbox-typescript-inference",
             },
+            {
+              label: "Type Guards",
+              link: "/guides/typeguards",
+            },
+            {
+              label: "MOAR Tagged Unions",
+              link: "/guides/union-machines",
+            },
           ],
         },
         {
@@ -131,30 +139,22 @@ export default defineConfig({
               label: "React Integration",
               link: "/guides/integrations",
             },
-          ],
-        },
-        {
-          label: "How To",
-          collapsed: true,
-          items: [
             {
               label: "Type Inference",
               link: "/guides/typescript-inference",
             },
-            {
-              label: "Type Guards",
-              link: "/guides/typeguards",
-            },
-            {
-              label: "Tagged Unions",
-              link: "/guides/union-machines",
-            },
-            {
-              label: "Context",
-              link: "/guides/context",
-            },
           ],
         },
+        // {
+        //   label: "How To",
+        //   collapsed: true,
+        //   items: [
+        //     {
+        //       label: "Context",
+        //       link: "/guides/context",
+        //     },
+        //   ],
+        // },
         {
           label: "Examples",
           collapsed: true,
