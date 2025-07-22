@@ -40,6 +40,15 @@ export function MachineExampleWithChart({
       {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
 
       <div className="flex flex-col md:flex-row gap-4 w-full">
+        {/* Mermaid diagram */}
+        <div className="flex-1">
+          <StateMachineMermaidDiagram
+            config={config}
+            stateKey={currentState.key}
+            actions={actions as any}
+          />
+        </div>
+
         {/* App View */}
         <div className="flex-1">
           {AppView ? (
@@ -64,15 +73,6 @@ export function MachineExampleWithChart({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Mermaid diagram */}
-        <div className="flex-1">
-          <StateMachineMermaidDiagram
-            config={config}
-            stateKey={currentState.key}
-            actions={actions as any}
-          />
         </div>
       </div>
 
