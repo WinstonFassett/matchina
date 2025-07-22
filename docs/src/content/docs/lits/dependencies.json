@@ -1,0 +1,437 @@
+{
+    "src/match-case": {
+        "url": "src/match-case.md",
+        "dependencies": []
+    },
+    "src/utility-types": {
+        "url": "src/utility-types.md",
+        "dependencies": []
+    },
+    "src/matchbox-factory": {
+        "url": "src/matchbox-factory.md",
+        "dependencies": [
+            "src/match-case",
+            "src/utility-types"
+        ]
+    },
+    "src/define-states": {
+        "url": "src/define-states.md",
+        "dependencies": [
+            "src/matchbox-factory"
+        ]
+    },
+    "node_modules/astro/components/index": {
+        "url": "node_modules/astro/components/index.md",
+        "dependencies": [
+            "node_modules/astro/components/Code.astro",
+            "node_modules/astro/components/Debug.astro"
+        ]
+    },
+    "node_modules/astro/components/Code.astro": {
+        "dependencies": []
+    },
+    "node_modules/astro/components/Debug.astro": {
+        "dependencies": []
+    },
+    "src/state-machine": {
+        "url": "src/state-machine.md",
+        "dependencies": []
+    },
+    "src/transition-machine": {
+        "url": "src/transition-machine.md",
+        "dependencies": [
+            "src/state-machine"
+        ]
+    },
+    "src/factory-machine": {
+        "url": "src/factory-machine.md",
+        "dependencies": [
+            "src/factory-machine-event-api",
+            "src/match-case",
+            "src/state-machine",
+            "src/transition-machine",
+            "src/utility-types"
+        ]
+    },
+    "src/factory-machine-event-api": {
+        "url": "src/factory-machine-event-api.md",
+        "dependencies": [
+            "src/factory-machine",
+            "src/utility-types"
+        ]
+    },
+    "src/ext/funcware/funcware": {
+        "url": "src/ext/funcware/funcware.md",
+        "dependencies": []
+    },
+    "src/ext/abortable": {
+        "url": "src/ext/abortable.md",
+        "dependencies": []
+    },
+    "src/ext/funcware/abortable": {
+        "url": "src/ext/funcware/abortable.md",
+        "dependencies": [
+            "src/utility-types",
+            "src/ext/abortable",
+            "src/ext/funcware/funcware"
+        ]
+    },
+    "src/ext/funcware/iff": {
+        "url": "src/ext/funcware/iff.md",
+        "dependencies": [
+            "src/ext/funcware/funcware"
+        ]
+    },
+    "src/ext/methodware/enhance-method": {
+        "url": "src/ext/methodware/enhance-method.md",
+        "dependencies": [
+            "src/ext/funcware/funcware"
+        ]
+    },
+    "src/ext/methodware/method-enhancer": {
+        "url": "src/ext/methodware/method-enhancer.md",
+        "dependencies": [
+            "src/ext/funcware/funcware",
+            "src/ext/methodware/enhance-method"
+        ]
+    },
+    "src/ext/funcware/tap": {
+        "url": "src/ext/funcware/tap.md",
+        "dependencies": [
+            "src/ext/methodware/method-enhancer",
+            "src/ext/methodware/enhance-method",
+            "src/ext/funcware/funcware"
+        ]
+    },
+    "src/ext/setup": {
+        "url": "src/ext/setup.md",
+        "dependencies": []
+    },
+    "src/ext/index": {
+        "url": "src/ext/index.md",
+        "dependencies": [
+            "src/ext/funcware/funcware",
+            "src/ext/funcware/abortable",
+            "src/ext/funcware/iff",
+            "src/ext/funcware/tap",
+            "src/ext/methodware/enhance-method",
+            "src/ext/methodware/method-enhancer",
+            "src/ext/setup",
+            "src/ext/abortable"
+        ]
+    },
+    "src/extras/iff": {
+        "url": "src/extras/iff.md",
+        "dependencies": []
+    },
+    "src/extras/when": {
+        "url": "src/extras/when.md",
+        "dependencies": []
+    },
+    "src/match-filters": {
+        "url": "src/match-filters.md",
+        "dependencies": []
+    },
+    "src/match-change": {
+        "url": "src/match-change.md",
+        "dependencies": [
+            "src/match-filters",
+            "src/state-machine"
+        ]
+    },
+    "src/types": {
+        "url": "src/types.md",
+        "dependencies": []
+    },
+    "src/state-machine-hooks": {
+        "url": "src/state-machine-hooks.md",
+        "dependencies": [
+            "src/ext",
+            "src/ext/abortable",
+            "src/ext/funcware/funcware",
+            "src/match-change",
+            "src/match-filters",
+            "src/state-machine",
+            "src/types",
+            "src/utility-types"
+        ]
+    },
+    "src/ext": {
+        "dependencies": []
+    },
+    "src/factory-machine-hooks": {
+        "url": "src/factory-machine-hooks.md",
+        "dependencies": [
+            "src/ext",
+            "src/extras/iff",
+            "src/extras/when",
+            "src/factory-machine",
+            "src/match-change",
+            "src/match-filters",
+            "src/state-machine",
+            "src/state-machine-hooks",
+            "src/types"
+        ]
+    },
+    "src/factory-machine-lifecycle-types": {
+        "url": "src/factory-machine-lifecycle-types.md",
+        "dependencies": [
+            "src/ext/abortable",
+            "src/ext/funcware/funcware",
+            "src/factory-machine",
+            "src/state-machine",
+            "src/types"
+        ]
+    },
+    "src/factory-machine-lifecycle": {
+        "url": "src/factory-machine-lifecycle.md",
+        "dependencies": [
+            "src/ext",
+            "src/ext/setup",
+            "src/factory-machine",
+            "src/factory-machine-lifecycle-types",
+            "src/state-machine-hooks",
+            "src/match-change"
+        ]
+    },
+    "src/factory-machine-transition-helpers": {
+        "url": "src/factory-machine-transition-helpers.md",
+        "dependencies": [
+            "src/factory-machine",
+            "src/state-machine"
+        ]
+    },
+    "src/extras/effects": {
+        "url": "src/extras/effects.md",
+        "dependencies": [
+            "src/matchbox-factory",
+            "src/match-case"
+        ]
+    },
+    "src/extras/bind-effects": {
+        "url": "src/extras/bind-effects.md",
+        "dependencies": [
+            "src/match-case",
+            "src/matchbox-factory",
+            "src/extras/effects"
+        ]
+    },
+    "src/extras/delay": {
+        "url": "src/extras/delay.md",
+        "dependencies": []
+    },
+    "src/extras/nanosubscriber": {
+        "url": "src/extras/nanosubscriber.md",
+        "dependencies": []
+    },
+    "src/extras/with-nanosubscribe": {
+        "url": "src/extras/with-nanosubscribe.md",
+        "dependencies": [
+            "src/state-machine",
+            "src/extras/nanosubscriber"
+        ]
+    },
+    "src/extras/with-reset": {
+        "url": "src/extras/with-reset.md",
+        "dependencies": [
+            "src/factory-machine",
+            "src/state-machine"
+        ]
+    },
+    "src/extras/zen": {
+        "url": "src/extras/zen.md",
+        "dependencies": [
+            "src/ext",
+            "src/factory-machine",
+            "src/factory-machine-event-api"
+        ]
+    },
+    "src/matchina": {
+        "url": "src/matchina.md",
+        "dependencies": [
+            "src/extras/zen",
+            "src/factory-machine",
+            "src/utility-types"
+        ]
+    },
+    "src/promise-machine": {
+        "url": "src/promise-machine.md",
+        "dependencies": [
+            "src/factory-machine",
+            "src/define-states"
+        ]
+    },
+    "src/promise-handle": {
+        "url": "src/promise-handle.md",
+        "dependencies": [
+            "src/promise-machine"
+        ]
+    },
+    "src/promise-machine-hooks": {
+        "url": "src/promise-machine-hooks.md",
+        "dependencies": [
+            "src/ext"
+        ]
+    },
+    "src/state-machine-actions": {
+        "url": "src/state-machine-actions.md",
+        "dependencies": [
+            "src/transition-machine"
+        ]
+    },
+    "src/state-machine-pure": {
+        "url": "src/state-machine-pure.md",
+        "dependencies": [
+            "src/state-machine"
+        ]
+    },
+    "src/index": {
+        "url": "src/index.md",
+        "dependencies": [
+            "src/define-states",
+            "src/ext",
+            "src/extras/bind-effects",
+            "src/extras/delay",
+            "src/extras/effects",
+            "src/extras/when",
+            "src/extras/with-nanosubscribe",
+            "src/extras/with-reset",
+            "src/extras/zen",
+            "src/factory-machine",
+            "src/factory-machine-event-api",
+            "src/factory-machine-hooks",
+            "src/factory-machine-lifecycle",
+            "src/factory-machine-transition-helpers",
+            "src/matchbox-factory",
+            "src/matchina",
+            "src/extras/nanosubscriber",
+            "src/promise-handle",
+            "src/promise-machine",
+            "src/promise-machine-hooks",
+            "src/state-machine",
+            "src/state-machine-actions",
+            "src/state-machine-hooks",
+            "src/state-machine-pure",
+            "src/transition-machine",
+            "src/types",
+            "src/match-change",
+            "src/match-filters"
+        ]
+    },
+    "src/ext/ensure-property": {
+        "url": "src/ext/ensure-property.md",
+        "dependencies": [
+            "src/ext/setup"
+        ]
+    },
+    "src/integrations/react": {
+        "url": "src/integrations/react.md",
+        "dependencies": [
+            "react"
+        ]
+    },
+    "react": {
+        "dependencies": []
+    },
+    "test/effects.test": {
+        "url": "test/effects.test.md",
+        "dependencies": [
+            "vitest",
+            "src/extras/effects",
+            "src/define-states",
+            "src",
+            "src/extras/bind-effects"
+        ]
+    },
+    "vitest": {
+        "dependencies": []
+    },
+    "src": {
+        "dependencies": []
+    },
+    "test/lifecycle.test": {
+        "url": "test/lifecycle.test.md",
+        "dependencies": [
+            "vitest",
+            "src/factory-machine-event-api",
+            "src/factory-machine-lifecycle",
+            "src/promise-machine"
+        ]
+    },
+    "test/machine.test": {
+        "url": "test/machine.test.md",
+        "dependencies": [
+            "vitest",
+            "src/define-states",
+            "src"
+        ]
+    },
+    "test/matchbox.test": {
+        "url": "test/matchbox.test.md",
+        "dependencies": [
+            "vitest",
+            "src/matchbox-factory"
+        ]
+    },
+    "test/method.test": {
+        "url": "test/method.test.md",
+        "dependencies": [
+            "vitest",
+            "src/ext",
+            "src/extras/when"
+        ]
+    },
+    "test/promise.test": {
+        "url": "test/promise.test.md",
+        "dependencies": [
+            "vitest",
+            "src/promise-machine",
+            "src/extras/delay",
+            "src"
+        ]
+    },
+    "test/states.test": {
+        "url": "test/states.test.md",
+        "dependencies": [
+            "vitest",
+            "src/define-states"
+        ]
+    },
+    "test/typeguards.test": {
+        "url": "test/typeguards.test.md",
+        "dependencies": [
+            "vitest",
+            "src/match-change"
+        ]
+    },
+    "test/usage.test": {
+        "url": "test/usage.test.md",
+        "dependencies": [
+            "vitest",
+            "src/define-states",
+            "src/factory-machine",
+            "src/state-machine-hooks",
+            "src/ext/setup",
+            "src/transition-machine"
+        ]
+    },
+    "test/with-subscribe.test": {
+        "url": "test/with-subscribe.test.md",
+        "dependencies": [
+            "vitest",
+            "src",
+            "src/extras/with-nanosubscribe"
+        ]
+    },
+    "test/vitest-console-groups/buffered-console": {
+        "url": "test/vitest-console-groups/buffered-console.md",
+        "dependencies": []
+    },
+    "test/vitest-console-groups/index": {
+        "url": "test/vitest-console-groups/index.md",
+        "dependencies": [
+            "vitest",
+            "test/vitest-console-groups/buffered-console"
+        ]
+    }
+}
