@@ -117,7 +117,9 @@ const taskMachine = matchina(
 
 ## Transition Types
 
-Factory machine transitions are defined as an object mapping each state key to a set of event handlers. Each event handler can be one of three forms, as described by the type:
+Factory machine transitions are defined as an object mapping each state key to a set of event handlers. Each event handler can be one of three forms.
+
+{/* as described by the type:
 
 ```ts
 export type FactoryMachineTransitions<SF extends AnyStatesFactory> = object & {
@@ -141,6 +143,22 @@ export type FactoryMachineTransition<
       },
     ) => FactoryState<SF>);
 ```
+
+**Transition handler forms (in plain English):**
+
+1. **String key result**: The handler returns a state key (string). Parameters are inferred from the destination state.
+   ```ts
+   search: "Loading"
+   ```
+2. **Parameter function returns state instance**: The handler is a function that takes parameters (inferred from the destination state) and returns a state instance.
+   ```ts
+   search: (query: string) => TaskStates.Loading(query)
+   ```
+3. **Parameter function returns event function**: The handler is a function that takes parameters and returns another function, which receives an event object (`{ type, from, to }`) and returns a state instance.
+   ```ts
+   success: (results: string[]) => (ev) => TaskStates.Success(ev.from.data.query, results)
+   ```
+ */}
 
 ### 1. String Transitions (State Key)
 
