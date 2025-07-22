@@ -117,60 +117,78 @@ const taskMachine = matchina(
 
 ## Transition Types
 
-Factory machines support different kinds of transitions:
+Factory machine transitions are defined as an object mapping each state key to a set of event handlers. Each event handler can be one of three forms, as described by the type:
 
-### 1. String Transitions
+```ts
+export type FactoryMachineTransitions<SF extends AnyStatesFactory> = object & {
+  [FromStateKey in string & keyof SF]?: {
+    [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
+  };
+};
 
-The simplest form that preserves compatible data:
+export type FactoryMachineTransition<
+  SF extends AnyStatesFactory,
+  FromStateKey extends keyof SF = keyof SF,
+  EventKey extends string = any,
+> =
+  | keyof SF
+  | ((...params: any[]) => FactoryState<SF>)
+  | ((...params: any[]) => (
+      ev: ResolveEvent<
+        FactoryMachineEvent<{ states: SF; transitions: any }>
+      > & {
+        from: FactoryState<SF, FromStateKey>;
+      },
+    ) => FactoryState<SF>);
+```
+
+### 1. String Transitions (State Key)
+
+Transition to another state by returning the state key as a string. Data is preserved if compatible.
 
 ```ts
 {
   Playing: {
-    pause: "Paused"  // Simple transition to Paused state
+    pause: "Paused" // Transition to Paused state
   }
 }
 ```
 
-### 2. Function Transitions
+### 2. Function Transitions (With Parameters)
 
-Return a string for the target state:
+Transition by returning a new state using a function that takes parameters. This is useful for passing data to the next state.
 
 ```ts
 {
   Idle: {
-    search: (query: string) => "Loading"  // With parameters
+    search: (query: string) => TaskStates.Loading(query)
   }
 }
 ```
 
-### 3. State Factory Transitions
+### 3. Event Object Transitions (Full Control)
 
-Return a new state using the state factory:
+Transition by returning a new state using a function that receives an event object, which includes the event parameters and the `from` state. This allows for advanced logic and full access to the previous state and event data.
 
 ```ts
 {
   Loading: {
-    success: (results: string[]) => (state) => {
-      return TaskStates.Success(state.data.query, results);
+    success: (results: string[]) => (ev) => {
+      // ev.from is the previous state
+      // ev contains event parameters
+      return TaskStates.Success(ev.from.data.query, results);
     }
   }
 }
 ```
 
-### 4. State Update Transitions
+**Summary Table:**
 
-Return a modified version of the current state:
-
-```ts
-{
-  Counting: {
-    increment: (state) => ({
-      ...state,
-      data: { count: state.data.count + 1 }
-    })
-  }
-}
-```
+| Form                | Example                                      | Use Case                                 |
+|---------------------|----------------------------------------------|------------------------------------------|
+| String (state key)  | `pause: "Paused"`                            | Simple state change, preserve data       |
+| Function            | `search: (q) => TaskStates.Loading(q)`       | Pass parameters to next state            |
+| Event object        | `success: (r) => (ev) => ...`                | Full access to event and previous state  |
 
 ## Using Factory Machines
 
@@ -221,7 +239,7 @@ const ui = taskMachine.getState().match({
 
 ## Advanced Pattern: Preserving State Data
 
-Transitions often need to preserve data from the previous state. There are multiple ways to do this:
+Transitions often need to preserve data from the previous state. There are multiple ways to do this, matching the allowed transition forms:
 
 ### 1. Using String Transitions (Auto Preservation)
 
@@ -234,13 +252,16 @@ Transitions often need to preserve data from the previous state. There are multi
 }
 ```
 
-### 2. Using State Access in Function Transitions
+### 2. Using Event Object in Function Transitions
+
+The function receives a change event object `{ type, from, to }`, giving you access to the previous state and event type.
 
 ```ts
 {
   Error: {
-    retry: (state) => {
-      // Access previous state data
+    retry: (event) => {
+      // event: { type, from, to }
+      // Access previous state data via event.from
       return "Loading";  // Original query is preserved
     }
   }
@@ -249,12 +270,15 @@ Transitions often need to preserve data from the previous state. There are multi
 
 ### 3. Using State Factory for Complete Control
 
+For the most control, return a function that receives the event object and returns a new state using the state factory:
+
 ```ts
 {
   Loading: {
-    success: (results: string[]) => (state) => {
+    success: (results: string[]) => (event) => {
+      // event: { type, from, to }
       // Use state factory with data from current state
-      return TaskStates.Success(state.data.query, results);
+      return TaskStates.Success(event.from.data.query, results);
     }
   }
 }
