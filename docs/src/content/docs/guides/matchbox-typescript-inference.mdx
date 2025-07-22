@@ -2,14 +2,39 @@
 title: Type Guards
 description: Master type guards for type-safe state handling and narrowing
 ---
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
+import lightPatternMatchingRaw from "../../../code/examples/matchbox-usage/light-pattern-matching.ts?raw";
+import lightTypeGuardsRaw from "../../../code/examples/matchbox-usage/light-type-guards.ts?raw";
+import lightDefaultCaseRaw from "../../../code/examples/matchbox-usage/light-default-case.ts?raw";
+import lightCastingRaw from "../../../code/examples/matchbox-usage/light-casting.ts?raw";
+import lightCustomTagRaw from "../../../code/examples/matchbox-usage/light-custom-tag.ts?raw";
+import lightAdvancedMatchingRaw from "../../../code/examples/matchbox-usage/light-advanced-matching.ts?raw";
+import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-union.ts?raw";
+import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
+import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
+import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
 
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/usage-typeguards.ts?raw";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 
 ## What are Type Guards?
 
 Type guards are a powerful feature in TypeScript that help narrow down types. In Matchina, type guards allow you to safely work with different state types by automatically narrowing the type based on the state key.
+
+## Type Guards
+
+Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
+
+<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
+
+## Type Casting
+
+Use the `as` method for type-safe casting with runtime validation:
+
+<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
 
 ## Using the `.is()` Method
 

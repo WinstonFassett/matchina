@@ -1,0 +1,66 @@
+---
+title: TypeScript Inference Tips
+description: Learn how to get the most out of TypeScript's type inference with Matchina
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeTabs from "@components/CodeTabs.astro";
+import usageInferenceFull from "@code/examples/usage-inference-full.ts?raw";
+import usageInferenceBroken from "@code/examples/usage-inference-broken.ts?raw";
+
+{/* ## Introduction
+
+One of Matchina's greatest strengths is its excellent TypeScript support. However, to get the most out of the type system, there are certain patterns you should follow and others you should avoid. This guide explains how to maintain full type inference when working with Matchina state machines. */}
+
+## TL;DR
+
+To ensure the best developer experience with Matchina:
+
+1. **Define your transitions inside your `createMachine` function call**
+2. **Avoid standalone transition objects**: These break TypeScript's ability to validate your code
+3. **Let TypeScript help you**: Embrace the rich type checking and autocomplete features
+
+## Recommended Patterns
+
+### Inline Transitions
+
+For full type inference to work properly, these transitions should be defined inside `createMachine()` rather than as standalone objects.
+
+Benefits of this approach:
+
+- Full type checking between states and transitions
+- Autocomplete for state names in transitions
+- Parameter type checking for transition functions
+- Prevents common errors like typos in state names
+
+## Comparing Practices
+
+Compare the type support for inline transitions versus standalone transition objects:
+
+<CodeTabs
+  files={[
+    {
+      name: "usage-inference-full.ts",
+      code: usageInferenceFull,
+      lang: "ts",
+      twoslash: true,
+    },
+    {
+      name: "usage-inference-broken.ts",
+      code: usageInferenceBroken,
+      lang: "ts",
+      twoslash: true,
+    },
+  ]}
+/>
+{/* 
+## Developer Experience Benefits
+
+Using the recommended patterns gives you:
+
+1. **Better autocompletion**: IDE suggestions for state names when defining transitions
+2. **Immediate feedback**: Errors are caught during development instead of at runtime
+3. **Refactoring support**: Renaming states will automatically flag outdated transitions
+4. **Parameter validation**: TypeScript checks that transition parameters match state requirements */}
+
+Following these practices will help you catch errors earlier, write more reliable code, and get the most out of Matchina's TypeScript integration.

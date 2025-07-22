@@ -46,47 +46,12 @@ You can create a factory using the `matchboxFactory` function. This factory then
 
 <CodeBlock code={lightBasicRaw} lang="ts" twoslash={true} />
 
-## Pattern Matching
-
-The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
-
-<CodeBlock code={lightPatternMatchingRaw} lang="ts" twoslash={true} />
-
-## Type Guards
-
-Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
-
-<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
-
-## Using Default Cases
-
-Sometimes you want to handle multiple states with a single case, or provide a fallback:
-
-<CodeBlock code={lightDefaultCaseRaw} lang="ts" twoslash={true} />
-
-## Non-Exhaustive Matching
-
-You can opt-out of exhaustiveness checking by passing `false` as the second argument:
-
-<CodeBlock code={nonExhaustiveRaw} lang="ts" twoslash={true} />
-
-## Type Casting
-
-Use the `as` method for type-safe casting with runtime validation:
-
-<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
 
 ## Custom Tag Property
 
 By default, the tag property is named `tag`, but you can customize it:
 
 <CodeBlock code={lightCustomTagRaw} lang="ts" twoslash={true} />
-
-## Advanced Pattern Matching
-
-Tagged unions created with `matchboxFactory` can handle complex scenarios with nested data:
-
-<CodeBlock code={lightAdvancedMatchingRaw} lang="ts" twoslash={true} />
 
 ## Conclusion
 

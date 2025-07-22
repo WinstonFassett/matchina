@@ -84,10 +84,10 @@ export default defineConfig({
               label: "Type Inference",
               link: "/guides/matchbox-typescript-inference",
             },
-            {
-              label: "Type Guards",
-              link: "/guides/typeguards",
-            },
+            // {
+            //   label: "Type Guards",
+            //   link: "/guides/typeguards",
+            // },
             {
               label: "MOAR Tagged Unions",
               link: "/guides/union-machines",
@@ -95,24 +95,20 @@ export default defineConfig({
           ],
         },
         {
-          label: "Machines",
+          label: "Creating Machines",
           items: [
+            {
+              label: "Interfaces",
+              link: "/guides/state-machines",
+            },
             {
               label: "States",
               link: "/guides/states",
             },
-            {
-              label: "State Machines",
-              link: "/guides/state-machines",
-            },
-            {
-              label: "Lifecycle & Hooks",
-              link: "/guides/lifecycle",
-            },
-            {
-              label: "Transition Machines",
-              link: "/guides/transition-machines",
-            },
+            // {
+            //   label: "Transition Machines",
+            //   link: "/guides/transition-machines",
+            // },
             {
               label: "Factory Machines",
               link: "/guides/machines",
@@ -125,23 +121,32 @@ export default defineConfig({
               label: "API Wrappers",
               link: "/guides/api-wrappers",
             },
+            {
+              label: "Type Inference",
+              link: "/guides/machine-inference",
+            },
+          ],
+        },
+        {
+          label: "Using Machines",
+          items: [
+            {
+              label: "Change Lifecycle",
+              link: "/guides/lifecycle",
+            },
+            {
+              label: "Change Hooks",
+              link: "/guides/lifecycle-hooks",
+            },
 
             {
               label: "Hooks API",
               link: "/guides/hooks",
             },
-            {
-              label: "Effects",
-              link: "/guides/effects",
-            },
 
             {
               label: "React Integration",
               link: "/guides/integrations",
-            },
-            {
-              label: "Type Inference",
-              link: "/guides/typescript-inference",
             },
           ],
         },
@@ -256,6 +261,13 @@ export default defineConfig({
                 },
               ],
             },
+          ],
+        },
+        {
+          label: "Extras",
+          items: [
+            { label: "Effects", link: "/guides/effects" },
+            // { label: "Subscriptions", link: "/guides/subscriptions" },
           ],
         },
         {

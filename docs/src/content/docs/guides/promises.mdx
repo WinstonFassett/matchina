@@ -83,7 +83,7 @@ if (state.is("Rejected")) {
 }
 ```
 
-### 3. Pattern Matching
+{/* ### 3. Pattern Matching
 
 Use pattern matching for exhaustive state handling:
 
@@ -94,9 +94,9 @@ const ui = fetcher.getState().match({
   Resolved: (data) => `Data loaded: ${JSON.stringify(data)}`,
   Rejected: (error) => `Error: ${error.message}`
 });
-```
+``` */}
 
-## Adding Lifecycle Hooks
+{/* ## Adding Lifecycle Hooks
 
 Promise machines support all standard lifecycle hooks:
 
@@ -147,14 +147,14 @@ setup(adder)(
     }
   })
 );
-```
+``` */}
 
-## Complete Example
+{/* ## Complete Example
 
 Here's a complete example with hooks and error handling:
 
-<CodeBlock lang={"js"} code={code} />
-
+<CodeBlock lang={"js"} code={code} /> */}
+{/* 
 ## Real-world Data Fetching Example
 
 Here's a more practical example of a type-safe data fetching machine:
@@ -220,7 +220,7 @@ function UserProfile({ userId }: { userId: string }) {
     Rejected: (error) => <div>Error: {error.message}</div>
   });
 }
-```
+``` */}
 
 ## Next Steps
 
