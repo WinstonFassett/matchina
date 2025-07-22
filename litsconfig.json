@@ -1,4 +1,8 @@
 {
-    "outDir": "docs/src/content/lits-md",
-    "outputFormat": "markdown"
+    "outDir": "docs/src/content/docs/lits",
+    "outputFormat": "markdown",
+    "baseDir": ".",
+    "templates": {
+        "md": "lit-templates/md-template.ts"
+    }
 }

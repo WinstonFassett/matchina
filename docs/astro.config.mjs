@@ -291,10 +291,10 @@ export default defineConfig({
         //     { label: "Example Guide", slug: "guides/example" },
         //   ],
         // },
-        // {
-        //   label: "Reference",
-        //   autogenerate: { directory: "reference" },
-        // },
+        {
+          label: "Reference",
+          autogenerate: { directory: "lits" },
+        },
       ],
       customCss: ["./src/styles/global.css"],
     }),
