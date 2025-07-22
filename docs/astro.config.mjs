@@ -59,8 +59,8 @@ export default defineConfig({
           label: "Core Concepts",
           items: [
             {
-              label: "Matchbox Factories",
-              link: "/guides/matchbox",
+              label: "Tagged Unions",
+              link: "/guides/unions",
             },
             {
               label: "State Machines",
@@ -69,10 +69,27 @@ export default defineConfig({
           ],
         },
         {
+          label: "Tagged Unions",
+          items: [
+            {
+              label: "Matchbox Factories",
+              link: "/guides/matchbox-factories",
+            },
+          ],
+        },
+        {
           label: "Machines",
           items: [
             {
-              label: "Creating Machines",
+              label: "States",
+              link: "/guides/states",
+            },
+            {
+              label: "Transition Machines",
+              link: "/guides/transition-machines",
+            },
+            {
+              label: "Factory Machines",
               link: "/guides/machines",
             },
             {

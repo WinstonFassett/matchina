@@ -1,0 +1,61 @@
+
+## Example: Todo List Machine
+
+Here's a complete example of a todo list machine:
+
+```ts
+import { matchina } from "matchina";
+
+const todoMachine = matchina(
+  // States
+  {
+    Empty: () => ({}),
+    Active: (todos: string[]) => ({ todos }),
+    Saving: (todos: string[]) => ({ todos }),
+    Error: (message: string, todos?: string[]) => ({ message, todos })
+  },
+  // Transitions
+  {
+    Empty: {
+      add: (todo: string) => "Active"
+    },
+    Active: {
+      add: (todo: string, state) => ({
+        ...state,
+        data: { todos: [...state.data.todos, todo] }
+      }),
+      remove: (index: number, state) => {
+        const newTodos = [...state.data.todos];
+        newTodos.splice(index, 1);
+        return newTodos.length === 0 
+          ? "Empty" 
+          : { ...state, data: { todos: newTodos } };
+      },
+      save: "Saving"
+    },
+    Saving: {
+      success: "Active",
+      error: (message: string) => "Error"
+    },
+    Error: {
+      dismiss: (state) => 
+        state.data.todos?.length 
+          ? { key: "Active", data: { todos: state.data.todos } } 
+          : "Empty"
+    }
+  },
+  "Empty"
+);
+
+// Usage
+todoMachine.add("Learn Matchina");
+todoMachine.add("Build a state machine");
+todoMachine.save();
+
+// Simulate API error
+setTimeout(() => {
+  todoMachine.error("Failed to save todos");
+}, 1000);
+```
+
+<MachineDemo />
