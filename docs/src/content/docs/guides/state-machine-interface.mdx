@@ -8,7 +8,7 @@ import stateMachineCode from "@lib/src/state-machine.ts?raw";
 
 ## What is a state machine?
 
-At the heart of Matchina is a well-defined state machine interface that governs how state transitions occur and how events flow through the system.
+{/* At the heart of Matchina is a well-defined state machine interface that governs how state transitions occur and how events flow through the system. */}
 
 A minimal (pure) state machine in Matchina looks like this:
 
@@ -19,6 +19,9 @@ const { getState, send } = createMachine(states, transitions, initialState);
 ## States
 
 Matchina supports two approaches to working with states:
+
+- States as raw values
+- States from state factories
 
 ### Primitive States
 
