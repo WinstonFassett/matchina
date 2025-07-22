@@ -44,7 +44,10 @@
     "test": "bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
     "publish:lib": "npm publish --access public",
-    "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"
+    "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'",
+    "lits": "npx litscript",
+    "lits-watch": "npx litscript --watch",
+    "lits-serve": "npx litscript --serve"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",
