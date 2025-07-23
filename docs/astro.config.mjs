@@ -6,6 +6,27 @@ import react from "@astrojs/react";
 import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs";
+import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
+
+// export default defineConfig({
+//   integrations: [
+//     starlight({
+//       plugins: [
+//         // Generate the documentation.
+
+//       ],
+//       sidebar: [
+//         {
+//           label: 'Guides',
+//           items: [{ label: 'Example Guide', link: '/guides/example/' }],
+//         },
+//         // Add the generated sidebar group to the sidebar.
+//         typeDocSidebarGroup,
+//       ],
+//       title: 'My Docs',
+//     }),
+//   ],
+// })
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
@@ -26,6 +47,13 @@ export default defineConfig({
   },
   integrations: [
     starlight({
+      plugins: [
+        starlightTypeDoc({
+          entryPoints: ["../src/index.ts"],
+          tsconfig: "../tsconfig.typedoc.json",
+          output: "docs/src/content/docs/reference",
+        }),
+      ],
       expressiveCode: {
         themes: ["material-theme-ocean"],
       },
@@ -295,6 +323,7 @@ export default defineConfig({
         //   label: "Reference",
         //   autogenerate: { directory: "reference" },
         // },
+        typeDocSidebarGroup,
       ],
       customCss: ["./src/styles/global.css"],
     }),
