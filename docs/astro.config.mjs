@@ -118,8 +118,8 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
-              label: "API Wrappers",
-              link: "/guides/api-wrappers",
+              label: "Machine Enhancers",
+              link: "/guides/machine-enhancers",
             },
             {
               label: "Type Inference",
