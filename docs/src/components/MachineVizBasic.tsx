@@ -44,7 +44,7 @@ export const MachineVizBasic = memo(
                         className={`bg-none border-none p-0 m-0 text-xs focus:outline-none italic font-normal
                           ${!disabled ? "text-blue-700 dark:text-blue-300 underline cursor-pointer" : "text-neutral-400 cursor-default"}`}
                         onClick={() => actions?.[event]()}
-                        disabled={disabled}
+                        disabled={false}
                         tabIndex={disabled ? -1 : 0}
                         type="button"
                         style={{ background: "none" }}
