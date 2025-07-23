@@ -36,68 +36,6 @@ console.log(circle.key);       // "Circle"
 console.log(rectangle.data);   // { width: 10, height: 20 }
 ```
 
-## Pattern Matching with Exhaustive Checking
-
-One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
-
-```ts
-// Calculate area with pattern matching
-const getArea = (shape) => shape.match({
-  Circle: ({ radius }) => Math.PI * radius * radius,
-  Rectangle: ({ width, height }) => width * height,
-  Triangle: ({ base, height }) => (base * height) / 2,
-});
-
-console.log(getArea(circle));      // 78.54...
-console.log(getArea(rectangle));   // 200
-console.log(getArea(triangle));    // 60
-
-// TypeScript error if you forget a case!
-const getPerimeter = (shape) => shape.match({
-  Circle: ({ radius }) => 2 * Math.PI * radius,
-  Rectangle: ({ width, height }) => 2 * (width + height),
-  // Error: Property 'Triangle' is missing in type '...'
-});
-```
-
-## Type Guards with Type Narrowing
-
-Matchbox provides type guards with the `is` method for type-safe narrowing:
-
-```ts
-// Type guard with automatic type narrowing
-if (circle.is("Circle")) {
-  // TypeScript knows circle.data has radius
-  console.log(`Radius: ${circle.data.radius}`);
-  
-  // These would be TypeScript errors:
-  // console.log(circle.data.width);  // Error: Property 'width' does not exist...
-  // console.log(circle.data.base);   // Error: Property 'base' does not exist...
-}
-
-// Use in a filter
-const circles = [circle, rectangle, triangle].filter(s => s.is("Circle"));
-// TypeScript knows circles contains only Circle shapes
-```
-
-## Type-Safe Casting with Runtime Validation
-
-Use the `as` method for type-safe casting with runtime validation:
-
-```ts
-try {
-  // Safe casting
-  const asCircle = circle.as("Circle");
-  console.log(asCircle.data.radius);  // Works fine
-  
-  // Runtime error - rectangle is not a Circle
-  const wrongCast = rectangle.as("Circle");
-  // This line will never execute
-  console.log(wrongCast.data.radius);
-} catch (e) {
-  console.error("Cast failed:", e.message);  // "Expected Circle, got Rectangle"
-}
-```
 
 ## Practical Applications
 

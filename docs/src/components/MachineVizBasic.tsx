@@ -26,34 +26,27 @@ export const MachineVizBasic = memo(
             <div className="font-semibold mb-0.5 text-center text-xs tracking-wide text-blue-700 dark:text-blue-300">
               {key}
             </div>
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-row flex-wrap gap-2">
               {transitions.length === 0 ? (
                 <span className="italic text-neutral-400 text-xs">
-                  No transitions
+                  {/* No transitions */}
                 </span>
               ) : (
                 transitions.map(([event, targetRaw]) => {
                   const target = String(targetRaw);
                   const disabled = !isActive || !actions?.[event];
                   return (
-                    <div
-                      key={event}
-                      className="flex items-center gap-0.5 leading-tight"
-                    >
-                      <button
-                        className={`bg-none border-none p-0 m-0 text-xs focus:outline-none italic font-normal
+                    <button
+                      className={`bg-none border-none p-0 m-0 text-xs focus:outline-none italic font-normal
                           ${!disabled ? "text-blue-700 dark:text-blue-300 underline cursor-pointer" : "text-neutral-400 cursor-default"}`}
-                        onClick={() => actions?.[event]()}
-                        disabled={false}
-                        tabIndex={disabled ? -1 : 0}
-                        type="button"
-                        style={{ background: "none" }}
-                      >
-                        {event}
-                      </button>
-                      <span className="text-sm mx-0.5">→</span>
-                      <span className="font-medium text-xs">{target}</span>
-                    </div>
+                      onClick={() => actions?.[event]()}
+                      disabled={false}
+                      tabIndex={disabled ? -1 : 0}
+                      type="button"
+                      style={{ background: "none" }}
+                    >
+                      {event}
+                    </button>
                   );
                 })
               )}
