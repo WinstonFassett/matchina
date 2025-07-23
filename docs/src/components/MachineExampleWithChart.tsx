@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, type ComponentType } from "react";
 import { createApi } from "matchina";
 import type { FactoryMachine, FactoryState } from "matchina";
-import StateMachineMermaidDiagram from "./MachineViz";
+import MachineVizBasic from "./MachineVizBasic";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { useMachine } from "matchina/react";
 
@@ -9,7 +9,7 @@ interface MachineExampleWithChartProps {
   machine: FactoryMachine<any> & any;
   AppView?: ComponentType<
     {
-      machine: FactoryMachine<any> & T;
+      machine: FactoryMachine<any> & any;
     } & Record<string, any>
   >;
   showRawState?: boolean;
@@ -42,7 +42,7 @@ export function MachineExampleWithChart({
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Mermaid diagram */}
         <div className="flex-1">
-          <StateMachineMermaidDiagram
+          <MachineVizBasic
             config={config}
             stateKey={currentState.key}
             actions={actions as any}
