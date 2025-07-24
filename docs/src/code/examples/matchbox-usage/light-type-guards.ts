@@ -1,9 +1,9 @@
-import { matchboxFactory } from 'matchina';
-
+import { matchboxFactory } from "matchina";
+// ---cut---
 // Create a Light matchbox with On/Off states
 const Light = matchboxFactory({
   Off: undefined,
-  On: (percentage = 100) => ({ percentage })
+  On: (percentage = 100) => ({ percentage }),
 });
 
 // Create light instances
@@ -14,13 +14,15 @@ const light2 = Light.On(75);
 if (light2.is("On")) {
   // TypeScript knows light2.data has percentage
   console.log(`Brightness: ${light2.data.percentage}%`);
-  
+
   // This would be a TypeScript error:
   // console.log(light2.data.invalid); // Error: Property 'invalid' does not exist
 }
 
 // Type guards can be used in conditions
-function getBrightness(light: ReturnType<typeof Light.Off> | ReturnType<typeof Light.On>) {
+function getBrightness(
+  light: ReturnType<typeof Light.Off> | ReturnType<typeof Light.On>,
+) {
   if (light.is("Off")) {
     return 0;
   }

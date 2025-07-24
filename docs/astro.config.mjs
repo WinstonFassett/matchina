@@ -81,16 +81,8 @@ export default defineConfig({
               link: "/guides/pattern-matching",
             },
             {
-              label: "Type Inference",
+              label: "Type Safety",
               link: "/guides/matchbox-typescript-inference",
-            },
-            // {
-            //   label: "Type Guards",
-            //   link: "/guides/typeguards",
-            // },
-            {
-              label: "MOAR Tagged Unions",
-              link: "/guides/union-machines",
             },
           ],
         },
@@ -131,11 +123,11 @@ export default defineConfig({
           label: "Using Machines",
           items: [
             {
-              label: "Change Lifecycle",
+              label: "Lifecycle",
               link: "/guides/lifecycle",
             },
             {
-              label: "Change Hooks",
+              label: "Hooks",
               link: "/guides/lifecycle-hooks",
             },
             {
