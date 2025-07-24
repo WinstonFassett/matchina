@@ -7,31 +7,46 @@ import { LifecycleDemo } from "@components/LifecycleDemo";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 
-## Configure multiple hooks with `onLifecycle`
+The `onLifecycle` function lets you intercept all sorts of state changes and events in your machine through a single hook call and configuration. 
 
-You can combine multiple hooks to create sophisticated behavior:
 
 ```ts
 onLifecycle(machine, {
-  Idle: {
+  SomeStateKey: {
+    enter: ({ from, to }) => { /* ... */ },
+    exit: ({ from, to }) => { /* ... */ },
     on: {
-      execute: {
-        after: ({ type, from, to }) => {
-          console.log("Executing from Idle to Pending");
-        }
-      }
+      someEventType: {
+        before: ({ type }) => { /* ... */ },
+        after: ({ type }) => { /* ... */ },
+      },
     },
-    exit: ({ type, from, to }) => {
-      console.log("Exiting Idle state");
-    }
   },
-  Pending: {
-    enter: ({ type, from, to }) => {
-      console.log("Entering Pending state");
-    }
-  }
+  "*": {
+    on: {
+      "*": {
+        after: (ev) => { /* ... */ },
+      },
+    },
+  },
 });
 ```
+
+## `onLifecycle` Configuration
+
+Its configuration options are organized as follows:
+
+- **State names** (e.g. `Idle`, `Pending`) are top-level keys. Use `"*"` for all states.
+- **Hooks** like `enter`, `exit`, and `on` go inside each state:
+  - `enter`: runs when entering the state.
+  - `exit`: runs when exiting the state.
+  - `on`: handles events within the state.
+
+Inside `on`, **event names** (e.g. `execute`, `reject`, `resolve`) are keys. Use `"*"` for all events.
+
+Each event or hook can have:
+- `before`: runs before the transition.
+- `after`: runs after the transition.
 
 ## Interactive Example
 
