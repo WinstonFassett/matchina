@@ -4,6 +4,7 @@ description: Learn about the different Machine Enhancers for state machines in M
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeBlock from "@components/CodeBlock.astro";
 
 Matchina provides several Machine Enhancers that enhance the usability of state machines while simplifying their interfaces for different use cases. These wrappers include:
 
@@ -12,10 +13,78 @@ Matchina provides several Machine Enhancers that enhance the usability of state 
 - **zen**: Mixes an event API into the machine
 - **pure**: Provides a minimal interface with only the essential methods
 
+<CodeBlock
+  code={`import { defineStates, createMachine, matchina, type FactoryMachineTransitions } from "matchina";
+import { createApi, withApi, zen, pure } from "matchina";
+// ---cut---
+const states = defineStates({
+  Idle: () => ({}),
+  Counting: (count: number) => ({ count }),
+});
+
+const transitions = {
+  Idle: { start: "Counting" },
+  Counting: {
+    increment: (state) => ({
+      ...state,
+      data: { count: state.data.count + 1 },
+    }),
+    reset: "Idle",
+  },
+} satisfies FactoryMachineTransitions<typeof states>;
+
+const initialState = "Idle";
+
+const plainFactoryMachine = createMachine(states, transitions, initialState);
+const api = createApi(plainFactoryMachine);
+const zenMachine = zen(createMachine(states, transitions, initialState));
+const alsoZen = matchina(states, transitions, initialState);
+const pureVersion = pure(zenMachine);`}
+  lang="ts"
+  twoslash={false}
+/>
+
+## When to Use Each Enhancer
+
+<Tabs>
+  <TabItem label="createApi">
+    Use `createApi` when:
+    - You want to expose a simplified event-sending interface
+    - You're building a public API for your state machine
+    - You want fully typed event handlers with proper parameter types
+  </TabItem>
+
+  <TabItem label="withApi">
+    Use `withApi` when:
+    - You want to enhance an existing machine with a flat event API
+    - You need to keep the original machine structure intact
+    - You want to provide a simplified interface for sending events
+  </TabItem>
+
+  <TabItem label="zen">
+    Use `zen` when: 
+    - You need both event methods and state access in a clean
+    package 
+    - You're using the machine within a component or module 
+    - You want to
+    easily integrate with frameworks like React 
+    - You appreciate a more functional, fluent interface
+  </TabItem>
+
+  <TabItem label="pure">
+    Use `pure` when:
+    - You want to enforce a minimal interface
+    - You're passing the machine to code that should only read state and send events
+    - You're implementing the dependency inversion principle
+    - You want to hide implementation details
+  </TabItem>
+</Tabs>
+
+
 ## createApi
 
 The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
-
+{/* 
 ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
@@ -38,11 +107,11 @@ const toggleApi = createApi(toggleMachine);
 
 // Now you can simply call the event methods
 toggleApi.TOGGLE();
-```
+``` */}
 
 The generated API is fully typed, with the correct parameter types for each event handler:
 
-```ts twoslash
+{/* ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { createApi } from "matchina";
@@ -101,13 +170,13 @@ const enhancedMachine = withApi(toggleMachine);
 
 // Now you can use the machine with its API
 enhancedMachine.api.TOGGLE();
-```
+``` */}
 
 ## withApi
 
 The `withApi` function enhances a machine by adding an `api` property that provides a flat event API for sending events. This is useful when you want to keep the original machine intact while providing a simplified interface for event handling.
 
-```ts twoslash
+{/* ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { withApi } from "matchina";
@@ -126,14 +195,14 @@ const toggleMachine = createMachine({
 const enhancedMachine = withApi(toggleMachine);
 // Now you can use the machine with its API
 enhancedMachine.api.TOGGLE();
-```
+``` */}
 
 The `withApi` function is particularly useful when you want to maintain the original machine's structure while providing a more user-friendly interface for sending events.
 
 ## zen
 
 The `zen` enhancer builds on top of `createApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
-
+{/* 
 ```ts twoslash
 // @noErrors
 import { createMachine, zen } from "matchina";
@@ -164,7 +233,7 @@ console.log(toggle.change); // { from: 'off', to: 'on' } or similar
 
 // Access the underlying machine if needed
 const machine = toggle.machine;
-```
+``` */}
 
 The `zen` enhancer is ideal for React components and other scenarios where you want a simple, unified interface.
 
@@ -175,6 +244,7 @@ However, be careful not to define event names that conflict with the machine's p
 
 The `pure` wrapper provides the most minimal interface for a state machine, exposing only the essential `getState` and `send` methods. This is useful when you want to limit access to the machine's functionality or when you're passing the machine to code that only needs these core capabilities.
 
+{/* 
 ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
@@ -199,43 +269,7 @@ const pureMachine = pure(toggleMachine);
 console.log(pureMachine.getState()); // 'off'
 pureMachine.send("TOGGLE"); // transitions to 'on'
 console.log(pureMachine.getState()); // 'on'
-```
-
-## When to Use Each Enhancer
-
-<Tabs>
-  <TabItem label="createApi">
-    Use `createApi` when:
-    - You want to expose a simplified event-sending interface
-    - You're building a public API for your state machine
-    - You want fully typed event handlers with proper parameter types
-  </TabItem>
-
-  <TabItem label="withApi">
-    Use `withApi` when:
-    - You want to enhance an existing machine with a flat event API
-    - You need to keep the original machine structure intact
-    - You want to provide a simplified interface for sending events
-  </TabItem>
-
-  <TabItem label="zen">
-    Use `zen` when: 
-    - You need both event methods and state access in a clean
-    package 
-    - You're using the machine within a component or module 
-    - You want to
-    easily integrate with frameworks like React 
-    - You appreciate a more functional, fluent interface
-  </TabItem>
-
-  <TabItem label="pure">
-    Use `pure` when:
-    - You want to enforce a minimal interface
-    - You're passing the machine to code that should only read state and send events
-    - You're implementing the dependency inversion principle
-    - You want to hide implementation details
-  </TabItem>
-</Tabs>
+``` */}
 
 {/* ## Example: Combining Wrappers
 
