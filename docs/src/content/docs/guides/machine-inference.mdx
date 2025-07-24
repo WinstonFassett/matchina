@@ -33,6 +33,10 @@ Benefits of this approach:
 - Parameter type checking for transition functions
 - Prevents common errors like typos in state names
 
+### Use `satisfies` for Standalone Transitions
+
+When defining transitions as standalone variables, use the `satisfies FactoryMachineTransitions<typeof states>`  to ensure they match the expected type. This provides additional type safety and helps catch errors early.
+
 ## Comparing Practices
 
 Compare the type support for inline transitions versus standalone transition objects:
@@ -40,15 +44,15 @@ Compare the type support for inline transitions versus standalone transition obj
 <CodeTabs
   files={[
     {
-      name: "usage-inference-full.ts",
+      name: "Full Inference inside Functions",
       code: usageInferenceFull,
-      lang: "ts",
+      language: "ts",
       twoslash: true,
     },
     {
-      name: "usage-inference-broken.ts",
+      name: "Standalone Transition Inference",
       code: usageInferenceBroken,
-      lang: "ts",
+      language: "ts",
       twoslash: true,
     },
   ]}

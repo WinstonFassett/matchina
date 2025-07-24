@@ -30,3 +30,5 @@ const machine = matchina(
 
 machine.st;
 //        ^|
+
+// nice!
