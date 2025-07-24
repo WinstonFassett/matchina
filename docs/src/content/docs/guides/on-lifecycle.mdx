@@ -39,43 +39,54 @@ onLifecycle(machine, {
   <LifecycleDemo client:only="react" />
 </div>
 
-Here's the code behind this example:
+Here's the onLifecycle logging code behind this example:
 
 ```ts
-onLifecycle(machine, {
+ onLifecycle(machine, {
   Idle: {
     on: {
-      execute: {
-        after: ({ type, from, to }) => {
+      executing: {
+        after: ({ type, from, to, params }) => {
           console.log(
-            "Specific state and event:",
-            type, // MUST equal 'execute'
-            "from", from.key, // Idle
-            "to", to.key, // Pending
+            "after Idle.executing:",
+            type,
+            from.key,
+            to.key,
+            Object.keys(params),
           );
-        }
-      }
+        },
+      },
     },
-    exit: ({ type, from, to }) => {
-      console.log(
-        "Exit Idle:",
-        type, // Any transition FROM idle
-        "from", from.key, // Idle
-        "to", to.key, // Any destination
-      );
-    }
   },
-  Pending: {
-    enter: ({ type, from, to }) => {
-      console.log(
-        "Enter Pending:",
-        type, // Any transition TO Pending
-        "from", from.key, // Any source
-        "to", to.key, // Pending
-      );
-    }
-  }
-});
+  "*": {
+    on: {
+      "*": {
+        after: (ev) => {
+          console.log(`[${ev.type}]:`, ev.to.key, ev.to.data);
+        },
+      },
+      reject: {
+        after: ({ type, from, to }) => {
+          const { name, stack, message } = to.data;
+          console.log(
+            "after",
+            type,
+            "from",
+            from.key,
+            name,
+            message,
+            stack,
+          );
+        },
+      },
+      resolve: {
+        before: ({ type, from: _from, to: { data } }) => {
+          console.log("before", type, data);
+        },
+      },
+    },
+  },
+})
 ```
 
 

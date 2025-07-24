@@ -155,11 +155,11 @@ export function LifecycleDemo({}) {
             )}
           </pre>
         </div>
-        <div className="flex-1 min-h-0 bg-gray-50 dark:bg-gray-800 rounded p-4 border border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="overflow-hidden flex-1 min-h-0 bg-gray-50 dark:bg-gray-800 rounded p-4 border border-gray-200 dark:border-gray-700 flex flex-col">
           <h3 className="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-200">
             Logs
           </h3>
-          <pre className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-wrap flex-1 min-h-0 overflow-y-auto rounded bg-gray-100 dark:bg-gray-900 p-2">
+          <pre className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words max-w-full flex-1 min-h-0 overflow-y-auto rounded bg-gray-100 dark:bg-gray-900 p-2">
             {logs.join("\n")}
           </pre>
         </div>

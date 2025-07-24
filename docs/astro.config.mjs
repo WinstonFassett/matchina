@@ -142,12 +142,6 @@ export default defineConfig({
               label: "onLifecycle",
               link: "/guides/on-lifecycle",
             },
-
-            {
-              label: "Hooks API",
-              link: "/guides/hooks",
-            },
-
             {
               label: "React Integration",
               link: "/guides/integrations",
