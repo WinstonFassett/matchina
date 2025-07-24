@@ -1,0 +1,90 @@
+---
+title: Lifecycle & Hooks
+description: Intercept and react to state changes with lifecycle hooks
+---
+
+import { LifecycleDemo } from "@components/LifecycleDemo";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+
+## Configure multiple hooks with `onLifecycle`
+
+You can combine multiple hooks to create sophisticated behavior:
+
+```ts
+onLifecycle(machine, {
+  Idle: {
+    on: {
+      execute: {
+        after: ({ type, from, to }) => {
+          console.log("Executing from Idle to Pending");
+        }
+      }
+    },
+    exit: ({ type, from, to }) => {
+      console.log("Exiting Idle state");
+    }
+  },
+  Pending: {
+    enter: ({ type, from, to }) => {
+      console.log("Entering Pending state");
+    }
+  }
+});
+```
+
+## Interactive Example
+
+<div className="not-content">
+  <LifecycleDemo client:only="react" />
+</div>
+
+Here's the code behind this example:
+
+```ts
+onLifecycle(machine, {
+  Idle: {
+    on: {
+      execute: {
+        after: ({ type, from, to }) => {
+          console.log(
+            "Specific state and event:",
+            type, // MUST equal 'execute'
+            "from", from.key, // Idle
+            "to", to.key, // Pending
+          );
+        }
+      }
+    },
+    exit: ({ type, from, to }) => {
+      console.log(
+        "Exit Idle:",
+        type, // Any transition FROM idle
+        "from", from.key, // Idle
+        "to", to.key, // Any destination
+      );
+    }
+  },
+  Pending: {
+    enter: ({ type, from, to }) => {
+      console.log(
+        "Enter Pending:",
+        type, // Any transition TO Pending
+        "from", from.key, // Any source
+        "to", to.key, // Pending
+      );
+    }
+  }
+});
+```
+
+
+## Next Steps
+
+Now that you understand lifecycle hooks, explore these related guides:
+
+- [Effects](/guides/effects) - Learn about the dedicated effects system
+- [Factory Machines](/guides/machines) - Create complete state machines
+- [Promise Machines](/guides/promises) - Handle async operations with state machines
+- [React Integration](/guides/integrations) - Use lifecycle hooks with React
+```

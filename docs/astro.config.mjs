@@ -138,6 +138,10 @@ export default defineConfig({
               label: "Change Hooks",
               link: "/guides/lifecycle-hooks",
             },
+            {
+              label: "onLifecycle",
+              link: "/guides/on-lifecycle",
+            },
 
             {
               label: "Hooks API",
