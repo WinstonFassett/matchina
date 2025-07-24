@@ -15,6 +15,8 @@ This makes complex state modeling and data handling more robust and maintainable
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
 
 import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
 import lightPatternMatchingRaw from "../../../code/examples/matchbox-usage/light-pattern-matching.ts?raw";
@@ -35,3 +37,20 @@ The `matchboxFactory` function creates factories for working with tagged unions 
 Tagged unions (also known as discriminated unions or sum types) are a powerful way to represent data that can be one of several distinct types, each with its own structure:
 
 <CodeBlock code={tsNativeUnionRaw} lang="ts" twoslash={true} />
+
+## How to Create a Tagged Union Matchbox Factory
+
+Use `matchboxFactory` or `defineStates`, which calls `matchboxFactory` and uses `key` for its tag property.
+
+<CardGrid>
+  <LinkCard
+    title="📦 matchboxFactory"
+    href="./matchbox-factories/"
+    description="Create type-safe tagged union factories with pattern matching"
+  />
+  <LinkCard
+    title="🔧 defineStates"
+    href="./states/"
+    description="Define state machines with type-safe tagged unions"
+  />
+</CardGrid>
