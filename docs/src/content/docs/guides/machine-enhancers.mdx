@@ -13,36 +13,24 @@ Matchina provides several Machine Enhancers that enhance the usability of state 
 - **zen**: Mixes an event API into the machine
 - **pure**: Provides a minimal interface with only the essential methods
 
-<CodeBlock
-  code={`import { defineStates, createMachine, matchina, type FactoryMachineTransitions } from "matchina";
-import { createApi, withApi, zen, pure } from "matchina";
-// ---cut---
-const states = defineStates({
-  Idle: () => ({}),
-  Counting: (count: number) => ({ count }),
-});
+## Usage
 
-const transitions = {
-  Idle: { start: "Counting" },
-  Counting: {
-    increment: (state) => ({
-      ...state,
-      data: { count: state.data.count + 1 },
-    }),
-    reset: "Idle",
-  },
-} satisfies FactoryMachineTransitions<typeof states>;
-
-const initialState = "Idle";
-
+```ts
 const plainFactoryMachine = createMachine(states, transitions, initialState);
+plainFactoryMachine.send('someEvent', 1, 2, 3);
+
 const api = createApi(plainFactoryMachine);
+api.someEvent(1, 2, 3);
+
 const zenMachine = zen(createMachine(states, transitions, initialState));
+zenMachine.someEvent(1, 2, 3);
+
 const alsoZen = matchina(states, transitions, initialState);
-const pureVersion = pure(zenMachine);`}
-  lang="ts"
-  twoslash={false}
-/>
+alsoZen.someEvent(1, 2, 3);
+
+const pureVersion = pure(zenMachine);
+pureVersion.send('someEvent', 1, 2, 3);
+  ```
 
 ## When to Use Each Enhancer
 
