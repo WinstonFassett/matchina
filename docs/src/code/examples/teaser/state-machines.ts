@@ -1,14 +1,15 @@
 import { defineStates, matchina } from "matchina";
 
-const { Fee, Fi, Fo, Fum } = defineStates({
+const states = defineStates({
   Fee: undefined,
   Fi: () => ({}),
   Fo: (name: string) => ({ name }),
   Fum: (name: string, age: number) => ({ name, age }),
 });
+
 // ---cut-before---
 const giant = matchina(
-  { Fee, Fi, Fo, Fum },
+  states,
   {
     Fee: { toFi: "Fi" },
     Fi: { toFo: "Fo" },
