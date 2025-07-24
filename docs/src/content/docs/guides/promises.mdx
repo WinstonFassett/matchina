@@ -28,37 +28,26 @@ Promise machines have four built-in states:
 Create a promise machine by wrapping any async function:
 
 ```ts
-import { createPromiseMachine } from "matchina";
-
-// Create a promise machine for data fetching
-const fetcher = createPromiseMachine(
-  async (url: string, options?: RequestInit) => {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(`Failed with status ${response.status}`);
-    }
-    return response.json();
-  }
+const promiseToAdd = (a: number, b: number) => new Promise<number>(
+  (resolve) => setTimeout(() => resolve(a + b), 500)
 );
+const adder = createPromiseMachine(promiseToAdd);
 ```
 
 ## Using Promise Machines
 
 ### 1. Executing the Promise
 
-Call the `execute` method with the proper parameters:
+Call the `execute` method with parameters and await the result:
 
 ```ts
-// Execute with type-safe parameters
-const promise = fetcher.execute("/api/users", { method: "GET" });
 
-// The returned promise resolves to the result or rejects with the error
-try {
-  const result = await promise;
-  console.log("Data fetched:", result);
-} catch (error) {
-  console.error("Fetch failed:", error);
-}
+// Trigger addition and await result
+await adder.execute(2, 3);
+
+// Alternative: Await promise from state (if currently pending)
+const state = adder.getState();
+if (state.is("Pending")) await state.data.promise;
 ```
 
 ### 2. Checking State
@@ -66,21 +55,15 @@ try {
 Access the current state with type-safe properties:
 
 ```ts
-const state = fetcher.getState();
+const state = adder.getState();
 
-if (state.is("Pending")) {
-  console.log("Loading data with params:", state.data.params);
-  // You can await the promise directly
-  const result = await state.data.promise;
-}
-
-if (state.is("Resolved")) {
-  console.log("Data loaded:", state.data);
-}
-
-if (state.is("Rejected")) {
-  console.error("Error:", state.data.message);
-}
+// Pattern match on state for messaging
+const message = adder.getState().match({
+  Idle: () => "Ready to add.",
+  Pending: (params) => `Adding: ${params}`,
+  Resolved: (result) => `Result: ${result}`,
+  Rejected: (error) => `Error: ${error}`,
+});
 ```
 
 {/* ### 3. Pattern Matching
