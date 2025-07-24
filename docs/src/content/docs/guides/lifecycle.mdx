@@ -3,20 +3,87 @@ title: Lifecycle
 description: Machine transition lifecycle
 ---
 
+import Mermaid from "../../../components/Mermaid";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+# Transition Flow: Lifecycle Hooks
 
-## State Machine Lifecycle
+When you call `machine.send(type, ...params)`, the following flow occurs:
 
-When a state transition occurs, the following lifecycle hooks are called in order:
+<div className="flex flex-col sm:flex-row gap-8 items-start">
+ <div className="flex-1 min-w-[260px] p-4">
+    {/*
+      Markdown content starts here
+    */}
+    ## Step-by-step
 
-1. **resolve** - Maps event to a transition, determining the target state
-2. **guard** - Determines if the transition is allowed to proceed
-3. **handle** - First opportunity to handle the event (can cancel by returning undefined)
-4. **before** - Called before the state change (can cancel by returning undefined)
-5. **update** - Updates the internal state reference
-6. **effect** - Perform side effects during the transition
-7. **leave** - Called when leaving the current state
-8. **enter** - Called when entering the new state
-9. **notify** - Notifies subscribers of the state change
-10. **after** - Final hook, called after the transition completes
+    ### 1. **`send`**
+    
+    Called with an event type and parameters.
+
+    ### 2. **`resolveExit`**
+    
+    Determines the target state for the event.
+
+    ### 3. **`guard`**
+    
+    Checks if the transition is allowed.  
+
+       - If `false`, exit early.
+    ### 4. **`handle`**
+    
+    First opportunity to process the event.  
+
+       - If returns `undefined`, exit early.
+    ### 5. **`before`**
+    
+    Called before the state change.  
+
+       - If returns `undefined`, exit early.
+    ### 6. **`update`**
+    
+    Updates the internal state.
+
+    ### 7. **`effect`**
+    
+    Runs side effects.
+
+    ### 8. **`leave`**
+    
+    Called when leaving the previous state.
+
+    ### 9. **`enter`**
+    
+    Called when entering the new state.
+
+    ### 10. **`notify`**
+    
+    Notifies subscribers.
+
+    ### 11. **`after`**
+    
+    Final hook after transition completes.
+
+    ## Early exits
+    
+    - If `guard` returns `false`, or `handle`/`before` return `undefined`, the transition stops and no further steps run.
+  </div>
+  <div className="flex-1 min-w-[260px] rounded-lg p-4 bg-gray-100 dark:bg-gray-800">
+      <Mermaid client:only="react" content={`flowchart TD
+        S[send] --> R[resolveExit]
+        R --> G{guard}
+        G -- false --> X[exit]
+        G -- true --> H{handle}
+        H -- undefined --> X
+        H -- value --> B{before}
+        B -- undefined --> X
+        B -- value --> U[update]
+        U --> E[effect]
+        E --> L[leave]
+        L --> N[enter]
+        N --> O[notify]
+        O --> A[after]
+      `} />
+  </div>
+ 
+</div>
