@@ -194,12 +194,12 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
       
       {showLayoutDialog && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-start justify-end p-4" 
+          className="fixed inset-0 z-50 flex items-start justify-end" 
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowLayoutDialog(false);
           }}
         >
-          <div className="mt-16 mr-4">
+          <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
             <LayoutPanel 
               options={layoutOptions} 
               onOptionsChange={handleLayoutChange} 
