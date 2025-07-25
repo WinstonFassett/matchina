@@ -53,13 +53,38 @@ export const useStateMachineEdges = (
   const transitions = useMemo(() => extractTransitions(machine), [machine]);
 
   const updateEdges = useCallback(() => {
+    if (!machine || nodes.length === 0) return;
+    
     const nodePositions = new Map(
       nodes.map(node => [node.id, node.position])
     );
-
-    const createEdges = useCallback(() => {
-      if (!machine || !nodePositions) return [];
-    edgeGroups.forEach((groupTransitions, key) => {
+    
+    // Group transitions by source-target pairs to handle multiple events between same nodes
+    const edgeGroupMap = new Map<string, Transition[]>();
+    const selfTransitionMap = new Map<string, Transition[]>();
+    
+    // Organize transitions into groups
+    transitions.forEach(transition => {
+      if (transition.from === transition.to) {
+        // Self-transition
+        if (!selfTransitionMap.has(transition.from)) {
+          selfTransitionMap.set(transition.from, []);
+        }
+        selfTransitionMap.get(transition.from)!.push(transition);
+      } else {
+        // Regular transition
+        const key = `${transition.from}-${transition.to}`;
+        if (!edgeGroupMap.has(key)) {
+          edgeGroupMap.set(key, []);
+        }
+        edgeGroupMap.get(key)!.push(transition);
+      }
+    });
+    
+    const newEdges: Edge[] = [];
+    
+    // Process regular transitions
+    edgeGroupMap.forEach((groupTransitions, key) => {
       const [from, to] = key.split('-');
       const fromPos = nodePositions.get(from);
       const toPos = nodePositions.get(to);
@@ -69,9 +94,6 @@ export const useStateMachineEdges = (
       const connectionPoints = optimizeEdgeConnections(fromPos, toPos);
       
       // For multiple transitions between the same nodes, distribute them evenly
-      // based on the number of transitions
-      const multiEdgeOffset = groupTransitions.length > 1 ? 10 : 0;
-      
       groupTransitions.forEach((transition, index) => {
         const isTransitionFromPrevious = previousState === transition.from && currentState === transition.to;
         const isPossibleExit = transition.from === currentState;
@@ -141,7 +163,7 @@ export const useStateMachineEdges = (
     });
     
     // Process self-transitions with special loop handling
-    selfTransitions.forEach((stateTransitions, stateId) => {
+    selfTransitionMap.forEach((stateTransitions, stateId) => {
       const nodePos = nodePositions.get(stateId);
       if (!nodePos) return;
       
@@ -194,7 +216,7 @@ export const useStateMachineEdges = (
     // Sort edges by z-index to ensure proper layering
     const sortedEdges = newEdges.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
     setEdges(sortedEdges);
-  }, [transitions, nodes, currentState, previousState, setEdges]);
+  }, [transitions, nodes, currentState, previousState, setEdges, machine, edgesClickable]);
 
   return {
     edges,
