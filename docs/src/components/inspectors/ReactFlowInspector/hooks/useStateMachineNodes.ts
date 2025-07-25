@@ -260,6 +260,8 @@ export const useStateMachineNodes = (
         // Keep positions but ELK will recalculate based on layout options
       }));
       
+      console.log('Forcing layout with key:', forceLayoutKey);
+      
       // Use ELK to calculate optimal layout with current layout options
       getLayoutedElements(currentNodePositions, initialEdges, layoutOptions || getDefaultLayoutOptions())
         .then(({ nodes: layoutedNodes }) => {
@@ -267,15 +269,13 @@ export const useStateMachineNodes = (
           setHasManualChanges(false);
           setIsLayouting(false);
           setIsLayoutComplete(true); // Signal that layout is complete
-          // Reset the flag after a short delay to allow for re-triggering
-          setTimeout(() => setIsLayoutComplete(false), 1000);
         })
         .catch((error) => {
           console.error('Re-layout failed:', error);
           setIsLayouting(false);
         });
     }
-  }, [forceLayoutKey, transitions, nodes, layoutOptions, setNodes]);
+  }, [forceLayoutKey]); // Only depend on forceLayoutKey to prevent re-layouts during dragging
 
   return {
     nodes,
