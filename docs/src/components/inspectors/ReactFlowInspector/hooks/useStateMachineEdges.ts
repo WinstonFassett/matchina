@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react';
-import { Edge, MarkerType, Node, useEdgesState } from 'reactflow';
+import { MarkerType, useEdgesState } from 'reactflow';
+import type { Edge, Node } from 'reactflow';
 import { optimizeEdgeConnections } from '../utils/layoutCalculator';
 
 interface Transition {

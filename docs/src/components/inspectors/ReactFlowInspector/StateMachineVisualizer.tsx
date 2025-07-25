@@ -15,7 +15,7 @@ import MachineControls from './MachineControls';
 import { useStateMachineFlow } from './StateMachineFlow';
 import LayoutPanel, { LayoutOptions } from './LayoutPanel';
 import ExportPanel from './ExportPanel';
-import { getDefaultLayoutOptions } from '../utils/elkLayout';
+import { getDefaultLayoutOptions } from './utils/elkLayout';
 import { saveLayoutSettings, loadLayoutSettings, LayoutSettings, clearNodePositions } from '../utils/layoutStorage';
 import { useStateMachineNodes } from '../hooks/useStateMachineNodes'
 const nodeTypes = {

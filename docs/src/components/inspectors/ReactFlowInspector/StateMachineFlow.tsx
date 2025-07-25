@@ -3,7 +3,7 @@ import React from 'react';
 import { useMachine } from '@xstate/react';
 import { useStateMachineNodes } from '../hooks/useStateMachineNodes';
 import { useStateMachineEdges } from '../hooks/useStateMachineEdges';
-import { LayoutOptions } from '../utils/elkLayout';
+import type { LayoutOptions } from '../utils/elkLayout';
 
 export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOptions?: LayoutOptions) => {
   const [current, send] = useMachine(machine, {

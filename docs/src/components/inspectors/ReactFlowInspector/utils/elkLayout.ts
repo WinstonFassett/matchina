@@ -1,5 +1,6 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { Node, Edge } from 'reactflow';
+import { Position } from 'reactflow';
+import type { Node, Edge } from 'reactflow';
 
 const elk = new ELK();
 
@@ -161,8 +162,8 @@ export const getLayoutedElements = async (
       nodes: layoutedGraph.children?.map((node_1) => ({
         ...node_1,
         position: { x: node_1.x || 0, y: node_1.y || 0 },
-        targetPosition: isHorizontal ? 'left' : 'top',
-        sourcePosition: isHorizontal ? 'right' : 'bottom',
+        targetPosition: isHorizontal ? Position.Left : Position.Top,
+        sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
       })) || [],
       edges: edges,
     };

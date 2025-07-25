@@ -1,8 +1,8 @@
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import { useNodesState } from 'reactflow';
 import type { Node } from 'reactflow';
-import { getLayoutedElements, getDefaultLayoutOptions } from './elkLayout';
-import type { LayoutOptions } from './elkLayout';
+import { getLayoutedElements, getDefaultLayoutOptions } from './utils/elkLayout';
+import type { LayoutOptions } from './utils/elkLayout';
 
 // Extract transitions from machine for ELK layout
 const extractTransitionsForLayout = (definition: any) => {

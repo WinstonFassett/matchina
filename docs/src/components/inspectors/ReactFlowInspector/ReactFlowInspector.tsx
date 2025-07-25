@@ -16,8 +16,10 @@ import CustomEdge from './CustomEdge';
 import LayoutPanel from './LayoutPanel';
 import { useStateMachineNodes } from './hooks/useStateMachineNodes';
 import { useStateMachineEdges } from './hooks/useStateMachineEdges';
-import { getDefaultLayoutOptions, LayoutOptions } from './utils/elkLayout';
-import { saveLayoutSettings, loadLayoutSettings, LayoutSettings } from './utils/layoutStorage';
+import { getDefaultLayoutOptions } from './utils/elkLayout';
+import type { LayoutOptions } from './utils/elkLayout';
+import { saveLayoutSettings, loadLayoutSettings } from './utils/layoutStorage';
+import type { LayoutSettings } from './utils/layoutStorage';
 
 // Add CSS for edge animations
 const edgeAnimationStyles = `
@@ -100,8 +102,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     definition,
     nodes,
     value,
-    previousState,
-    lastTriggeredEvent
+    previousState
   );
 
   // Update edges when nodes change (positions or states)
