@@ -93,6 +93,7 @@ export default function ForceGraphInspector({
   prevState,
   dispatch,
 }: ForceGraphInspectorProps) {
+  const baseFontSize = 4;
   console.log("ForceGraphInspector", valueFromProp, lastEvent, prevState);
   const ref = useRef<HTMLDivElement>(null);
   const graphInstance = useRef<any>(null);
@@ -130,13 +131,14 @@ export default function ForceGraphInspector({
         .linkDirectionalArrowRelPos(1)
         .nodeCanvasObjectMode(() => "after")
         .nodeCanvasObject((node: any, ctx: CanvasRenderingContext2D) => {
+          // Font and size scaling
           const label = node.name;
-          const fontSize = 14; // Fixed font size
+          const fontSize = baseFontSize;
           const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
           ctx.font = `${fontSize}px ${fontFamily}`;
           const textWidth = ctx.measureText(label).width;
-          const paddingX = 8,
-            paddingY = 4;
+          const paddingX = baseFontSize * 0.75,
+            paddingY = baseFontSize * 0.5;
           const rectWidth = textWidth + paddingX * 2;
           const rectHeight = fontSize + paddingY * 2;
           ctx.save();
@@ -147,7 +149,7 @@ export default function ForceGraphInspector({
             "--card-border",
             "#222",
           );
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 0.5;
           ctx.fillStyle =
             node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
           ctx.roundRect(
@@ -155,7 +157,7 @@ export default function ForceGraphInspector({
             node.y - rectHeight / 2,
             rectWidth,
             rectHeight,
-            8,
+            6,
           );
           ctx.fill();
           ctx.stroke();
@@ -167,14 +169,13 @@ export default function ForceGraphInspector({
         })
         .nodePointerAreaPaint(
           (node: any, color: string, ctx: CanvasRenderingContext2D) => {
-            // Match the node rectangle for pointer events
             const label = node.name;
-            const fontSize = 14;
+            const fontSize = baseFontSize;
             const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
             ctx.font = `${fontSize}px ${fontFamily}`;
             const textWidth = ctx.measureText(label).width;
-            const paddingX = 8,
-              paddingY = 4;
+            const paddingX = baseFontSize * 0.75,
+              paddingY = baseFontSize * 0.5;
             const rectWidth = textWidth + paddingX * 2;
             const rectHeight = fontSize + paddingY * 2;
             ctx.save();
@@ -185,7 +186,7 @@ export default function ForceGraphInspector({
               node.y - rectHeight / 2,
               rectWidth,
               rectHeight,
-              8,
+              6,
             );
             ctx.fill();
             ctx.restore();
@@ -198,7 +199,7 @@ export default function ForceGraphInspector({
         .linkCanvasObject((link: any, ctx: CanvasRenderingContext2D) => {
           // Draw edge label with background
           const value = valueRef.current;
-          const fontSize = 12; // Fixed font size for edge labels
+          const fontSize = baseFontSize * 0.85;
           const LABEL_NODE_MARGIN = Graph.nodeRelSize() * 2;
           const start = link.source;
           const end = link.target;
@@ -242,13 +243,13 @@ export default function ForceGraphInspector({
             "rgba(255,255,255,0.85)",
           );
           ctx.strokeStyle = getCssVar(ref, "--forcegraph-label-border", "#ccc");
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.roundRect(
             -bckgDimensions[0] / 2,
             -bckgDimensions[1] / 2,
             ...bckgDimensions,
-            6,
+            5,
           );
           ctx.fill();
           ctx.stroke();
