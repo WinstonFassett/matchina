@@ -124,8 +124,8 @@ export default function ForceGraphInspector({
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
-      Graph.height(300)
-        .width(300)
+      Graph.height(320)
+        .width(320)
         .linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
@@ -309,14 +309,21 @@ export default function ForceGraphInspector({
         });
       // Increase node spacing and collision radius
       if (Graph.d3Force) {
-        const charge = Graph.d3Force("charge");
-        console.log("charge", charge.strength());
+        // const charge = Graph.d3Force("charge");
+        // console.log("charge", charge.strength());
         // if (charge) charge.strength(-300); // Less negative for less huge spacing
         // if (!Graph.d3Force("collide")) {
         //   Graph.d3Force("collide", (node: any) => 18); // Smaller collision radius
         // } else {
         //   Graph.d3Force("collide").radius(18);
         // }
+        const charge = Graph.d3Force("charge");
+        if (charge) charge.strength(-50); // Default is -120, less negative = more spacing
+
+        // Reduce link strength to weaken connections
+        const linkForce = Graph.d3Force("link");
+        if (linkForce) linkForce.strength(0.05); // Default is 1, lower = weaker links
+
         Graph.d3Force("center");
       }
       // Assign curvature for self-loops and parallel edges
