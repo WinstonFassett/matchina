@@ -3,6 +3,7 @@ import { createApi } from "matchina";
 import type { FactoryMachine, FactoryState } from "matchina";
 import MachineVizBasic from "./MachineVizBasic";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
+import ReactFlowInspector from "./inspectors/ReactFlowInspector";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { useMachine } from "matchina/react";
 
@@ -15,6 +16,7 @@ interface MachineExampleWithChartProps {
   >;
   showRawState?: boolean;
   title?: string;
+  inspectorType?: 'mermaid' | 'force-graph' | 'react-flow';
 }
 
 /**
@@ -27,6 +29,7 @@ export function MachineExampleWithChart({
   AppView,
   showRawState = false,
   title,
+  inspectorType = 'react-flow',
 }: MachineExampleWithChartProps) {
   useMachine(machine);
   const currentState = machine.getState();
@@ -43,21 +46,33 @@ export function MachineExampleWithChart({
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Mermaid diagram */}
         <div className="flex-1">
-          {/* <MachineVizBasic
-            config={config}
-            stateKey={currentState.key}
-            actions={actions as any}
-          /> */}
-          <StateForceGraph
-            value={currentState.key}
-            lastEvent={lastChange?.type}
-            prevState={lastChange.from?.key}
-            mode={currentState.data}
-            // lastEvent={previous.action}
-            // prevState={previous.state}
-            definition={config}
-            dispatch={({ type }) => machine.send(type)}
-          />
+          {inspectorType === 'mermaid' && (
+            <MachineVizBasic
+              config={config}
+              stateKey={currentState.key}
+              actions={actions as any}
+            />
+          )}
+          {inspectorType === 'force-graph' && (
+            <StateForceGraph
+              value={currentState.key}
+              lastEvent={lastChange?.type}
+              prevState={lastChange.from?.key}
+              mode={currentState.data}
+              definition={config}
+              dispatch={({ type }) => machine.send(type)}
+            />
+          )}
+          {inspectorType === 'react-flow' && (
+            <ReactFlowInspector
+              value={currentState.key}
+              lastEvent={lastChange?.type}
+              prevState={lastChange.from?.key}
+              mode={currentState.data}
+              definition={config}
+              dispatch={({ type }) => machine.send(type)}
+            />
+          )}
         </div>
 
         {/* App View */}
