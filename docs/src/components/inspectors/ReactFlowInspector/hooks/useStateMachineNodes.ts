@@ -237,9 +237,12 @@ export const useStateMachineNodes = (
     hasInitialized.current = false;
   }, [machine]);
   
-  // Force re-layout when forceLayoutKey changes
+  // Force re-layout ONLY when forceLayoutKey changes (user clicks layout button)
+  // This prevents automatic re-layouts during manual dragging
   useEffect(() => {
-    if (forceLayoutKey !== undefined && hasInitialized.current && !isLayouting) {
+    // Only trigger layout when forceLayoutKey changes explicitly
+    // and we're not already layouting
+    if (forceLayoutKey !== undefined && hasInitialized.current && !isLayouting && !hasManualChanges) {
       setIsLayouting(true);
       
       // Create edges for ELK layout
@@ -257,19 +260,22 @@ export const useStateMachineNodes = (
         // Keep the same position but ELK will recalculate
       }));
       
+      console.log('Forcing layout with key:', forceLayoutKey);
+      
       // Use ELK to calculate optimal layout with current layout options
       getLayoutedElements(currentNodePositions, initialEdges, layoutOptions || getDefaultLayoutOptions())
         .then(({ nodes: layoutedNodes }) => {
           setNodes(layoutedNodes);
           setHasManualChanges(false);
           setIsLayouting(false);
+          setIsLayoutComplete(true); // Signal that layout is complete
         })
         .catch((error) => {
           console.error('Re-layout failed:', error);
           setIsLayouting(false);
         });
     }
-  }, [forceLayoutKey, transitions, nodes, layoutOptions, setNodes]);
+  }, [forceLayoutKey]); // Only depend on forceLayoutKey to prevent re-layouts during dragging
 
   return {
     nodes,
