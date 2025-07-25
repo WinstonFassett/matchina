@@ -22,7 +22,7 @@ import { getAlgorithmInfo, getAvailableAlgorithms } from "./utils/elkLayout";
 
 const LayoutPanel: React.FC<LayoutPanelProps> = memo(
   ({ options, onOptionsChange }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
+    // Always open when shown in the portal
     const debounceRef = useRef<NodeJS.Timeout>();
     const algorithmConfig = getAlgorithmInfo(options.algorithm);
     const availableAlgorithms = getAvailableAlgorithms();
@@ -56,20 +56,16 @@ const LayoutPanel: React.FC<LayoutPanelProps> = memo(
     }, []);
 
     return (
-      <div className="bg-white rounded-lg shadow-lg border">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors w-full"
-        >
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-xs">
+        <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-t-lg w-full">
           <span className="text-lg">⚙️</span>
           Layout Options
-          <span className="ml-auto text-xs text-gray-500">
+          <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
             {algorithmConfig.name}
           </span>
-        </button>
+        </div>
 
-        {isOpen && (
-          <div className="border-t p-4 space-y-4 max-h-96 overflow-y-auto">
+        <div className="border-t p-4 space-y-4 max-h-96 overflow-y-auto">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Algorithm
@@ -239,7 +235,6 @@ const LayoutPanel: React.FC<LayoutPanelProps> = memo(
               </label>
             </div>
           </div>
-        )}
       </div>
     );
   },

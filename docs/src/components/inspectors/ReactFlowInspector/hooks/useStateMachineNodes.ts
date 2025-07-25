@@ -9,9 +9,11 @@ import { saveNodePositions, loadNodePositions, clearNodePositions } from '../uti
 const extractTransitionsForLayout = (machine: any) => {
   const transitions: Array<{ from: string; to: string; event: string }> = [];
   
-  if (!machine?.config?.states) return transitions;
+  // Get states object from either machine.config.states or machine.states
+  const states = machine?.config?.states || machine?.states;
+  if (!states) return transitions;
 
-  Object.entries(machine.config.states).forEach(([stateName, stateConfig]: [string, any]) => {
+  Object.entries(states).forEach(([stateName, stateConfig]: [string, any]) => {
     if (!stateConfig?.on) return;
     
     Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
@@ -60,10 +62,11 @@ export const useStateMachineNodes = (
     }
   }, [key, setNodes]);
 
-  // Extract states from any machine structure
+  // Extract states from any machine structure (works with both machine.config.states and direct machine.states)
   const states = useMemo(() => {
-    if (!machine?.config?.states) return [];
-    return Object.keys(machine.config.states);
+    if (machine?.config?.states) return Object.keys(machine.config.states);
+    if (machine?.states) return Object.keys(machine.states);
+    return [];
   }, [machine]);
 
   // Extract transitions for ELK layout
@@ -83,7 +86,7 @@ export const useStateMachineNodes = (
   useEffect(() => {
     if (!hasInitialized.current && states.length > 0 && !isLayouting) {
       // Try to load saved positions first
-      const machineId = machine?.id || 'unknown';
+      const machineId = machine?.id || machine?.config?.id || 'unknown';
       const savedPositions = loadNodePositions(machineId);
       
       if (savedPositions && savedPositions.length === states.length) {
@@ -190,7 +193,7 @@ export const useStateMachineNodes = (
       
       // Save positions after a short delay to avoid excessive saves
       setTimeout(() => {
-        const machineId = machine?.id || 'unknown';
+        const machineId = machine?.id || machine?.config?.id || 'unknown';
         const positions = nodes.map(node => ({
           id: node.id,
           x: node.position.x,
@@ -206,10 +209,11 @@ export const useStateMachineNodes = (
 
   // Clear saved positions and force relayout
   const forceRelayout = useCallback(() => {
+    const machineId = machine?.id || machine?.config?.id || 'unknown';
     clearNodePositions(machineId);
     setHasManualChanges(false);
     hasInitialized.current = false;
-  }, [machine?.id]);
+  }, [machine]);
 
   return {
     nodes,

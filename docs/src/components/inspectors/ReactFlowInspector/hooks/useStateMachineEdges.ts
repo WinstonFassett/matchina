@@ -12,9 +12,11 @@ interface Transition {
 const extractTransitions = (machine: any): Transition[] => {
   const transitions: Transition[] = [];
   
-  if (!machine?.config?.states) return transitions;
+  // Get states object from either machine.config.states or machine.states
+  const states = machine?.config?.states || machine?.states;
+  if (!states) return transitions;
 
-  Object.entries(machine.config.states).forEach(([stateName, stateConfig]: [string, any]) => {
+  Object.entries(states).forEach(([stateName, stateConfig]: [string, any]) => {
     if (!stateConfig?.on) return;
     
     Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
