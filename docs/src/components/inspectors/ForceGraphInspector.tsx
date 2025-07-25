@@ -135,20 +135,27 @@ export default function ForceGraphInspector({
           const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
           ctx.font = `${fontSize}px ${fontFamily}`;
           const textWidth = ctx.measureText(label).width;
-          const paddingX = 8, paddingY = 4;
+          const paddingX = 8,
+            paddingY = 4;
           const rectWidth = textWidth + paddingX * 2;
           const rectHeight = fontSize + paddingY * 2;
           ctx.save();
           ctx.beginPath();
-          ctx.strokeStyle = getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
+          ctx.strokeStyle = getCssVar(
+            ref,
+            "--forcegraph-node-border",
+            "--card-border",
+            "#222",
+          );
           ctx.lineWidth = 2;
-          ctx.fillStyle = node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+          ctx.fillStyle =
+            node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
           ctx.roundRect(
             node.x - rectWidth / 2,
             node.y - rectHeight / 2,
             rectWidth,
             rectHeight,
-            8
+            8,
           );
           ctx.fill();
           ctx.stroke();
@@ -158,29 +165,32 @@ export default function ForceGraphInspector({
           ctx.fillText(label, node.x, node.y);
           ctx.restore();
         })
-        .nodePointerAreaPaint((node: any, color: string, ctx: CanvasRenderingContext2D) => {
-          // Match the node rectangle for pointer events
-          const label = node.name;
-          const fontSize = 14;
-          const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
-          ctx.font = `${fontSize}px ${fontFamily}`;
-          const textWidth = ctx.measureText(label).width;
-          const paddingX = 8, paddingY = 4;
-          const rectWidth = textWidth + paddingX * 2;
-          const rectHeight = fontSize + paddingY * 2;
-          ctx.save();
-          ctx.beginPath();
-          ctx.fillStyle = color;
-          ctx.roundRect(
-            node.x - rectWidth / 2,
-            node.y - rectHeight / 2,
-            rectWidth,
-            rectHeight,
-            8
-          );
-          ctx.fill();
-          ctx.restore();
-        })
+        .nodePointerAreaPaint(
+          (node: any, color: string, ctx: CanvasRenderingContext2D) => {
+            // Match the node rectangle for pointer events
+            const label = node.name;
+            const fontSize = 14;
+            const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            const textWidth = ctx.measureText(label).width;
+            const paddingX = 8,
+              paddingY = 4;
+            const rectWidth = textWidth + paddingX * 2;
+            const rectHeight = fontSize + paddingY * 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.roundRect(
+              node.x - rectWidth / 2,
+              node.y - rectHeight / 2,
+              rectWidth,
+              rectHeight,
+              8,
+            );
+            ctx.fill();
+            ctx.restore();
+          },
+        )
         .nodeId("id")
         .nodeLabel("name")
         .nodeAutoColorBy("name")
@@ -224,7 +234,13 @@ export default function ForceGraphInspector({
           ctx.save();
           ctx.translate(textPos.x, textPos.y);
           ctx.rotate(textAngle);
-          ctx.fillStyle = getCssVar(ref, "--forcegraph-bg", "--card", "--color-gray-50", "rgba(255,255,255,0.85)");
+          ctx.fillStyle = getCssVar(
+            ref,
+            "--forcegraph-bg",
+            "--card",
+            "--color-gray-50",
+            "rgba(255,255,255,0.85)",
+          );
           ctx.strokeStyle = getCssVar(ref, "--forcegraph-label-border", "#ccc");
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -232,7 +248,7 @@ export default function ForceGraphInspector({
             -bckgDimensions[0] / 2,
             -bckgDimensions[1] / 2,
             ...bckgDimensions,
-            6
+            6,
           );
           ctx.fill();
           ctx.stroke();
@@ -244,10 +260,23 @@ export default function ForceGraphInspector({
         })
         .linkColor((link: any) => {
           const value = valueRef.current;
-          if (value === link.source.name && canFire(definition, value, link.name)) {
-            return getCssVar(ref, "--primary", "--forcegraph-primary", "#1e40af");
+          if (
+            value === link.source.name &&
+            canFire(definition, value, link.name)
+          ) {
+            return getCssVar(
+              ref,
+              "--primary",
+              "--forcegraph-primary",
+              "#1e40af",
+            );
           } else {
-            return getCssVar(ref, "--secondary", "--forcegraph-secondary", "#4b5563");
+            return getCssVar(
+              ref,
+              "--secondary",
+              "--forcegraph-secondary",
+              "#4b5563",
+            );
           }
         })
         .linkDirectionalParticleColor(() =>
@@ -262,14 +291,15 @@ export default function ForceGraphInspector({
       // Increase node spacing and collision radius
       if (Graph.d3Force) {
         const charge = Graph.d3Force("charge");
-        if (charge) charge.strength(-300); // Less negative for less huge spacing
-        if (!Graph.d3Force("collide")) {
-          Graph.d3Force("collide", (node: any) => 18); // Smaller collision radius
-        } else {
-          Graph.d3Force("collide").radius(18);
-        }
+        console.log("charge", charge.strength());
+        // if (charge) charge.strength(-300); // Less negative for less huge spacing
+        // if (!Graph.d3Force("collide")) {
+        //   Graph.d3Force("collide", (node: any) => 18); // Smaller collision radius
+        // } else {
+        //   Graph.d3Force("collide").radius(18);
+        // }
+        Graph.d3Force("center");
       }
-      Graph.d3Force("center");
       // Assign curvature for self-loops and parallel edges
       let selfLoopLinks: Record<string, any[]> = {};
       let sameNodesLinks: Record<string, any[]> = {};
