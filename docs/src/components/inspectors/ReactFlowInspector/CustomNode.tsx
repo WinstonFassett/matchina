@@ -1,31 +1,30 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import type { NodeProps } from 'reactflow';
 
-interface CustomNodeData {
-  label: string;
-  isActive: boolean;
-  isPrevious: boolean;
+interface CustomNodeProps {
+  data: {
+    label: string;
+    isActive: boolean;
+    isPrevious: boolean;
+  };
 }
 
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
-  const { label, isActive, isPrevious } = data;
-  
+const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
   const getNodeStyle = () => {
-    if (isActive) {
+    if (data.isActive) {
       return 'bg-blue-600 text-white border-blue-700 shadow-lg';
     }
-    if (isPrevious) {
+    if (data.isPrevious) {
       return 'bg-blue-200 text-blue-900 border-blue-300 shadow-md';
     }
     return 'bg-white text-gray-800 border-gray-300';
   };
 
   return (
-    <div
+    <div 
       className={`px-4 py-2 rounded-lg border-2 min-w-[100px] text-center font-medium transition-all duration-300 ${getNodeStyle()}`}
     >
-      {/* Connection handles on all 4 sides - invisible but functional */}
+      {/* Connection handles on all 4 sides */}
       <Handle
         type="target"
         position={Position.Top}
@@ -35,7 +34,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Top}
-        id="top-source"
+        id="top"
         className="w-3 h-3 !bg-transparent border-0 opacity-0"
       />
       
@@ -48,7 +47,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Right}
-        id="right-source"
+        id="right"
         className="w-3 h-3 !bg-transparent border-0 opacity-0"
       />
       
@@ -61,7 +60,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        id="bottom-source"
+        id="bottom"
         className="w-3 h-3 !bg-transparent border-0 opacity-0"
       />
       
@@ -74,11 +73,11 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Left}
-        id="left-source"
+        id="left"
         className="w-3 h-3 !bg-transparent border-0 opacity-0"
       />
       
-      {label}
+      {data.label}
     </div>
   );
 };

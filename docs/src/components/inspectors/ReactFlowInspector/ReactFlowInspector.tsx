@@ -6,14 +6,18 @@ import ReactFlow, {
   MarkerType,
   ReactFlowProvider,
   BackgroundVariant,
+  Panel,
 } from 'reactflow';
-import type { NodeTypes } from 'reactflow';
+import type { NodeTypes, EdgeTypes } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import CustomNode from './CustomNode';
-import { useStateMachineNodes } from './useStateMachineNodes';
-import { useStateMachineEdges } from './useStateMachineEdges';
-import { getDefaultLayoutOptions } from './elkLayout';
+import CustomEdge from './CustomEdge';
+import LayoutPanel from './LayoutPanel';
+import { useStateMachineNodes } from './hooks/useStateMachineNodes';
+import { useStateMachineEdges } from './hooks/useStateMachineEdges';
+import { getDefaultLayoutOptions, LayoutOptions } from './utils/elkLayout';
+import { saveLayoutSettings, loadLayoutSettings, LayoutSettings } from './utils/layoutStorage';
 
 // Add CSS for edge animations
 const edgeAnimationStyles = `
@@ -40,6 +44,10 @@ const nodeTypes: NodeTypes = {
   custom: CustomNode as any, // Type assertion to avoid complex generic issues
 };
 
+const edgeTypes: EdgeTypes = {
+  custom: CustomEdge as any,
+};
+
 const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   value,
   definition,
@@ -51,6 +59,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   const [previousState, setPreviousState] = useState<string | null>(null);
   const [lastTriggeredEvent, setLastTriggeredEvent] = useState<string | undefined>(lastEvent);
   const instanceId = useRef(Math.random().toString(36).substring(2, 9));
+  const [showLayoutPanel, setShowLayoutPanel] = useState(false);
   
   // Track state changes for previous state highlighting
   useEffect(() => {
@@ -62,13 +71,28 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     }
   }, [value, prevState, lastEvent]);
 
-  const layoutOptions = useMemo(() => getDefaultLayoutOptions(), []);
+  // Load saved layout settings or use defaults
+  const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
+    const saved = loadLayoutSettings();
+    return saved || getDefaultLayoutOptions();
+  });
+  
+  const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
+    setLayoutOptions(newOptions);
+    saveLayoutSettings(newOptions);
+  }, []);
+
+  // Use a key to force remount when definition changes
+  const machineKey = useRef<number>(0);
+  useEffect(() => {
+    machineKey.current += 1;
+  }, [definition]);
 
   const { nodes, onNodesChange, isInitialized } = useStateMachineNodes(
     definition,
     value,
     previousState,
-    undefined,
+    machineKey.current,
     layoutOptions
   );
 
@@ -97,18 +121,20 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   }, [dispatch]);
 
   return (
-    <div className="w-full h-[320px] border border-gray-200 rounded">
+    <div className="w-full h-[320px] border border-gray-200 rounded relative">
       <style>{edgeAnimationStyles}</style>
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onEdgeClick={handleEdgeClick}
           connectionLineType={ConnectionLineType.SmoothStep}
           defaultEdgeOptions={{
+            type: 'custom',
             markerEnd: { type: MarkerType.ArrowClosed },
           }}
           fitView
@@ -121,6 +147,29 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             position="bottom-right"
           />
           <Background variant={"dots" as BackgroundVariant} gap={20} size={1} />
+          
+          {/* Layout Options Button */}
+          <Panel position="top-right">
+            <button 
+              onClick={() => setShowLayoutPanel(!showLayoutPanel)}
+              className="bg-white p-2 rounded-md shadow-md border border-gray-200 flex items-center gap-1 text-xs font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+              Layout
+            </button>
+          </Panel>
+          
+          {/* Layout Panel */}
+          {showLayoutPanel && (
+            <Panel position="top-right" className="mt-10">
+              <LayoutPanel 
+                options={layoutOptions} 
+                onOptionsChange={handleLayoutChange} 
+              />
+            </Panel>
+          )}
         </ReactFlow>
       </ReactFlowProvider>
     </div>

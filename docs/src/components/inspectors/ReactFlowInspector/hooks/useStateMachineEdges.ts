@@ -1,7 +1,6 @@
 import { useMemo, useCallback } from 'react';
-import { MarkerType, useEdgesState } from 'reactflow';
-import type { Edge, Node } from 'reactflow';
-import { optimizeEdgeConnections } from './utils/layoutCalculator';
+import { Edge, MarkerType, Node, useEdgesState } from 'reactflow';
+import { optimizeEdgeConnections } from '../utils/layoutCalculator';
 
 interface Transition {
   from: string;
@@ -9,18 +8,30 @@ interface Transition {
   event: string;
 }
 
-const extractTransitions = (definition: any): Transition[] => {
+const extractTransitions = (machine: any): Transition[] => {
   const transitions: Transition[] = [];
   
-  if (!definition?.states) return transitions;
+  if (!machine?.config?.states) return transitions;
 
-  Object.entries(definition.states).forEach(([stateName, stateConfig]: [string, any]) => {
+  Object.entries(machine.config.states).forEach(([stateName, stateConfig]: [string, any]) => {
     if (!stateConfig?.on) return;
     
-    Object.entries(stateConfig.on).forEach(([event, target]: [string, any]) => {
-      if (target) {
-        transitions.push({ from: stateName, to: target, event });
+    Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
+      let targets: string[] = [];
+      
+      if (typeof transitionConfig === 'string') {
+        targets = [transitionConfig];
+      } else if (Array.isArray(transitionConfig)) {
+        targets = transitionConfig.map(config => 
+          typeof config === 'string' ? config : config?.target
+        ).filter(Boolean);
+      } else if (transitionConfig?.target) {
+        targets = [transitionConfig.target];
       }
+      
+      targets.forEach(target => {
+        transitions.push({ from: stateName, to: target, event });
+      });
     });
   });
 
@@ -28,15 +39,14 @@ const extractTransitions = (definition: any): Transition[] => {
 };
 
 export const useStateMachineEdges = (
-  definition: any,
+  machine: any,
   nodes: Node[],
   currentState: string,
-  previousState: string | null,
-  lastEvent?: string
+  previousState: string | null
 ) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const transitions = useMemo(() => extractTransitions(definition), [definition]);
+  const transitions = useMemo(() => extractTransitions(machine), [machine]);
 
   const updateEdges = useCallback(() => {
     const nodePositions = new Map(
@@ -65,11 +75,7 @@ export const useStateMachineEdges = (
       const connectionPoints = optimizeEdgeConnections(fromPos, toPos);
       
       groupTransitions.forEach((transition, index) => {
-        const isTransitionFromPrevious = 
-          previousState === transition.from && 
-          currentState === transition.to && 
-          lastEvent === transition.event;
-        
+        const isTransitionFromPrevious = previousState === transition.from && currentState === transition.to;
         const isPossibleExit = transition.from === currentState;
         
         // Calculate z-index based on priority: recent transition > current exits > inactive
@@ -130,7 +136,7 @@ export const useStateMachineEdges = (
     // Sort edges by z-index to ensure proper layering
     const sortedEdges = newEdges.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
     setEdges(sortedEdges);
-  }, [transitions, nodes, currentState, previousState, lastEvent, setEdges]);
+  }, [transitions, nodes, currentState, previousState, setEdges]);
 
   return {
     edges,
