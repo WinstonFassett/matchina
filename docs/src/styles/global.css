@@ -15,3 +15,21 @@
 Add additional Tailwind styles to this file:
 https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
 */
+
+:root {
+	--primary: var(--sl-color-accent);
+	--secondary: var(--sl-color-gray-4);
+	--accent: var(--sl-color-accent-high);
+	--card: var(--sl-color-bg);
+	/* main background */
+	--font-sans: var(--sl-font-system, 'Atkinson Hyperlegible', sans-serif);
+	--forcegraph-bg: var(--sl-color-bg-nav, rgba(255, 255, 255, 0.7));
+}
+
+html[data-theme='dark'] {
+	--primary: var(--sl-color-accent-high);
+	--secondary: var(--sl-color-gray-2);
+	--accent: var(--sl-color-accent);
+	--card: var(--sl-color-bg);
+	--forcegraph-bg: var(--sl-color-bg-nav, rgba(24, 24, 27, 0.7));
+}
