@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import { useNodesState } from 'reactflow';
-import type { Node } from 'reactflow';
+import type { Node, NodeChange } from 'reactflow';
 import { getLayoutedElements, getDefaultLayoutOptions } from '../utils/elkLayout';
 import type { LayoutOptions } from '../utils/elkLayout';
 import { saveNodePositions, loadNodePositions, clearNodePositions } from '../utils/layoutStorage';
@@ -43,13 +43,15 @@ export const useStateMachineNodes = (
   currentState: string,
   previousState: string | null,
   key?: number,
-  layoutOptions?: LayoutOptions
+  layoutOptions?: LayoutOptions,
+  forceLayoutKey?: number
 ) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const hasInitialized = useRef(false);
+  const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>();
   const currentMachineId = useRef<string | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
-  const currentLayoutOptions = layoutOptions || getDefaultLayoutOptions();
+  const [isLayoutComplete, setIsLayoutComplete] = useState(false);
   const [hasManualChanges, setHasManualChanges] = useState(false);
 
   // Reset when key changes (machine switch)
@@ -135,18 +137,26 @@ export const useStateMachineNodes = (
         : [];
 
       // Use ELK to calculate optimal layout
-      getLayoutedElements(initialNodes, initialEdges, currentLayoutOptions)
+      getLayoutedElements(initialNodes, initialEdges, layoutOptions || getDefaultLayoutOptions())
         .then(({ nodes: layoutedNodes }) => {
           setNodes(layoutedNodes);
           hasInitialized.current = true;
           setHasManualChanges(false);
           setIsLayouting(false);
+          setIsLayoutComplete(true); // Signal that layout is complete
+          // Reset the flag after a short delay to allow for re-triggering
+          setTimeout(() => setIsLayoutComplete(false), 1000);
         })
         .catch((error) => {
           console.error('Layout failed, using fallback:', error);
           // Fallback to simple grid layout if ELK fails
           const fallbackNodes = initialNodes.map((node, index) => ({
             ...node,
+            data: {
+              ...node.data,
+              // Ensure node has a valid shape for ELK layout
+              elkNodeShape: 'rectangle'
+            },
             position: { 
               x: (index % 3) * 200, 
               y: Math.floor(index / 3) * 100 
@@ -156,9 +166,12 @@ export const useStateMachineNodes = (
           hasInitialized.current = true;
           setHasManualChanges(false);
           setIsLayouting(false);
+          setIsLayoutComplete(true); // Signal that layout is complete
+          // Reset the flag after a short delay to allow for re-triggering
+          setTimeout(() => setIsLayoutComplete(false), 1000);
         });
     }
-  }, [states, setNodes, currentState, previousState, isLayouting, key, currentLayoutOptions, transitions]);
+  }, [states, setNodes, currentState, previousState, isLayouting, key, layoutOptions, transitions]);
 
   // Update node states without changing positions
   const updateNodeStates = useCallback(() => {
@@ -181,19 +194,28 @@ export const useStateMachineNodes = (
     }
   }, [updateNodeStates]);
 
-  // Save node positions when they change (for manual positioning)
-  const handleNodesChange = useCallback((changes: any[]) => {
-    // Check if this is a position change
-    const hasPositionChange = changes.some(change => 
-      change.type === 'position' && change.position
+  // Handle node changes (position, selection, etc)
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    // Check if this is a position change (dragging)
+    const positionChanges = changes.filter(change => 
+      change.type === 'position'
     );
     
-    if (hasPositionChange) {
+    // Track if user is actively dragging
+    const isDragging = positionChanges.some(change => 
+      change.type === 'position' && 
+      'dragging' in change && 
+      change.dragging === true
+    );
+    
+    // If user is dragging, mark as having manual changes
+    if (isDragging) {
       setHasManualChanges(true);
       
-      // Save positions after a short delay to avoid excessive saves
-      setTimeout(() => {
-        const machineId = machine?.id || machine?.config?.id || 'unknown';
+      // Save node positions with debounce
+      const machineId = machine?.id || machine?.config?.id || 'unknown';
+      clearTimeout(savePositionsTimeout.current);
+      savePositionsTimeout.current = setTimeout(() => {
         const positions = nodes.map(node => ({
           id: node.id,
           x: node.position.x,
@@ -214,6 +236,40 @@ export const useStateMachineNodes = (
     setHasManualChanges(false);
     hasInitialized.current = false;
   }, [machine]);
+  
+  // Force re-layout when forceLayoutKey changes
+  useEffect(() => {
+    if (forceLayoutKey !== undefined && hasInitialized.current && !isLayouting) {
+      setIsLayouting(true);
+      
+      // Create edges for ELK layout
+      const initialEdges = transitions.length > 0 
+        ? transitions.map((transition, index) => ({
+            id: `${transition.from}-${transition.to}-${transition.event}-${index}`,
+            source: transition.from,
+            target: transition.to,
+          }))
+        : [];
+      
+      // Use current node positions as starting point
+      const currentNodePositions = nodes.map(node => ({
+        ...node,
+        // Keep the same position but ELK will recalculate
+      }));
+      
+      // Use ELK to calculate optimal layout with current layout options
+      getLayoutedElements(currentNodePositions, initialEdges, layoutOptions || getDefaultLayoutOptions())
+        .then(({ nodes: layoutedNodes }) => {
+          setNodes(layoutedNodes);
+          setHasManualChanges(false);
+          setIsLayouting(false);
+        })
+        .catch((error) => {
+          console.error('Re-layout failed:', error);
+          setIsLayouting(false);
+        });
+    }
+  }, [forceLayoutKey, transitions, nodes, layoutOptions, setNodes]);
 
   return {
     nodes,
@@ -221,6 +277,7 @@ export const useStateMachineNodes = (
     isInitialized: hasInitialized.current,
     isLayouting,
     hasManualChanges,
+    isLayoutComplete,
     relayout: forceRelayout
   };
 };

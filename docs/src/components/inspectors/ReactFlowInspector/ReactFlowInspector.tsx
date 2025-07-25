@@ -8,6 +8,7 @@ import ReactFlow, {
   ReactFlowProvider,
   BackgroundVariant,
   Panel,
+  useReactFlow,
 } from 'reactflow';
 import type { NodeTypes, EdgeTypes } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -41,6 +42,7 @@ interface ReactFlowInspectorProps {
   prevState?: string;
   dispatch: (event: { type: string }) => void;
   mode?: any;
+  edgesClickable?: boolean; // Controls whether edges can be clicked to trigger transitions
 }
 
 const nodeTypes: NodeTypes = {
@@ -58,6 +60,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   prevState,
   dispatch,
   mode,
+  edgesClickable = true, // Default to true for backward compatibility
 }) => {
   const [previousState, setPreviousState] = useState<string | null>(null);
   const [lastTriggeredEvent, setLastTriggeredEvent] = useState<string | undefined>(lastEvent);
@@ -80,9 +83,14 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     return saved || getDefaultLayoutOptions();
   });
   
+  // Force re-layout when options change
+  const [forceLayoutKey, setForceLayoutKey] = useState<number>(0);
+  
   const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
     setLayoutOptions(newOptions);
     saveLayoutSettings(newOptions);
+    // Force immediate re-layout
+    setForceLayoutKey(prev => prev + 1);
   }, []);
 
   // Use a key to force remount when definition changes
@@ -91,19 +99,36 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     machineKey.current += 1;
   }, [definition]);
 
-  const { nodes, onNodesChange, isInitialized } = useStateMachineNodes(
+  const reactFlowInstanceRef = useRef<any>(null);
+
+  const { nodes, onNodesChange, isInitialized, isLayoutComplete } = useStateMachineNodes(
     definition,
     value,
     previousState,
     machineKey.current,
-    layoutOptions
+    layoutOptions,
+    forceLayoutKey
   );
+  
+  // Fit view when layout is complete
+  useEffect(() => {
+    if (isLayoutComplete && reactFlowInstanceRef.current) {
+      setTimeout(() => {
+        reactFlowInstanceRef.current?.fitView({
+          padding: 0.3,
+          includeHiddenNodes: false,
+          duration: 800 // Animate the zoom/pan over 800ms
+        });
+      }, 50); // Small delay to ensure nodes are properly positioned
+    }
+  }, [isLayoutComplete]);
 
   const { edges, onEdgesChange, updateEdges } = useStateMachineEdges(
     definition,
     nodes,
     value,
-    previousState
+    previousState,
+    edgesClickable
   );
 
   // Update edges when nodes change (positions or states)

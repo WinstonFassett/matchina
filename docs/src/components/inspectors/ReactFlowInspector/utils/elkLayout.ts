@@ -56,7 +56,7 @@ const getElkOptions = (options: LayoutOptions) => {
         
         // Crossing minimization - thoroughness equivalent
         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-        'elk.layered.crossingMinimization.semiInteractive': 'false',
+        'elk.layered.crossingMinimization.semiInteractive': 'true',
         
         // Cycle breaking
         'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
@@ -74,6 +74,9 @@ const getElkOptions = (options: LayoutOptions) => {
         
         // Consider model order
         'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+        
+        // Aspect ratio
+        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
       };
 
     case 'stress':
@@ -82,10 +85,14 @@ const getElkOptions = (options: LayoutOptions) => {
         // Stress-specific options that work
         'elk.stress.iterationLimit': '500',
         'elk.stress.epsilon': '0.0001',
+        // Use both nodeSpacing and layerSpacing for better control
         'elk.stress.desiredEdgeLength': options.layerSpacing.toString(),
+        'elk.spacing.nodeNode': options.nodeSpacing.toString(), // Override base option
         'elk.stress.dimension': 'XY',
         // Aspect ratio for stress layout
         'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        // Thoroughness affects quality
+        'elk.stress.quality': Math.max(1, Math.min(10, options.thoroughness || 7)).toString(),
       };
 
     case 'mrtree':
@@ -94,21 +101,30 @@ const getElkOptions = (options: LayoutOptions) => {
         // Tree-specific options
         'elk.mrtree.searchOrder': 'DFS',
         'elk.mrtree.weighting': 'DESCENDANTS',
+        // Layer spacing affects tree levels
+        'elk.layered.spacing.nodeNodeBetweenLayers': options.layerSpacing.toString(),
         // Aspect ratio works for tree
         'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        // Compact components affects tree layout
+        'elk.mrtree.compaction': options.compactComponents ? 'true' : 'false',
       };
 
     case 'force':
       return {
         ...baseOptions,
-        // Force-directed options that actually affect layout
+        // Force-directed options with better controls
         'elk.force.iterations': '300',
-        'elk.force.repulsion': (options.layerSpacing / 20).toString(), // Scale with layer spacing
-        'elk.force.attraction': '0.1',
-        'elk.force.temperature': '0.001',
+        // Node repulsion based on node spacing
+        'elk.force.repulsion': (options.nodeSpacing / 10).toString(),
+        // Edge attraction based on layer spacing
+        'elk.force.attraction': (options.layerSpacing / 300).toString(),
+        // Temperature affects convergence
+        'elk.force.temperature': ((options.thoroughness || 7) / 1000).toString(),
         'elk.force.model': 'FRUCHTERMAN_REINGOLD',
         // Aspect ratio
         'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        // Compact components affects force layout
+        'elk.force.useCoarseGraining': options.compactComponents ? 'true' : 'false',
       };
 
     case 'sporeOverlap':
@@ -117,6 +133,8 @@ const getElkOptions = (options: LayoutOptions) => {
         // Spore overlap options
         'elk.sporeOverlap.overlapRemovalStrategy': 'SCAN_LINE',
         'elk.sporeOverlap.spillOverToParentHierarchyLevel': 'false',
+        // Node spacing is critical for overlap removal
+        'elk.spacing.nodeNode': (options.nodeSpacing * 1.5).toString(), // Override base option
         // Aspect ratio works well here
         'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
       };
@@ -184,15 +202,15 @@ export const getLayoutedElements = async (
 export const getDefaultLayoutOptions = (): LayoutOptions => ({
   direction: 'RIGHT',
   algorithm: 'layered',
-  nodeSpacing: 80,
-  layerSpacing: 120,
-  edgeSpacing: 15,
+  nodeSpacing: 120,      // Increased from 80
+  layerSpacing: 150,     // Increased from 120
+  edgeSpacing: 30,       // Increased from 15
   thoroughness: 7,
   aspectRatio: 1.6,
   compactComponents: false,
-  separateComponents: false,
-  edgeNodeSpacing: 20,
-  componentSpacing: 40,
+  separateComponents: true, // Changed to true to better separate components
+  edgeNodeSpacing: 40,    // Increased from 20
+  componentSpacing: 80,   // Increased from 40
 });
 
 // Algorithm metadata for UI - only working algorithms
