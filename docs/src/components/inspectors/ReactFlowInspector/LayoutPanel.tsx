@@ -189,24 +189,7 @@ const LayoutPanel: React.FC<LayoutPanelProps> = memo(
               </div>
             )}
 
-            {algorithmConfig.hasAspectRatio && (
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Aspect Ratio: {options.aspectRatio || 1.6}
-                </label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="3.0"
-                  step="0.1"
-                  value={options.aspectRatio || 1.6}
-                  onChange={(e) =>
-                    handleChange("aspectRatio", parseFloat(e.target.value))
-                  }
-                  className="w-full accent-blue-600"
-                />
-              </div>
-            )}
+            {/* Aspect ratio controls removed as they don't work properly */}
 
             <div className="space-y-2">
               {options.algorithm === "layered" && (

@@ -12,7 +12,7 @@ export interface LayoutOptions {
   edgeSpacing: number;
   // Algorithm-specific options
   thoroughness?: number;
-  aspectRatio?: number;
+  // aspectRatio removed as it doesn't work properly
   compactComponents?: boolean;
   separateComponents?: boolean;
   // Additional spacing controls
@@ -40,9 +40,7 @@ const getElkOptions = (options: LayoutOptions) => {
     'elk.spacing.edgeNode': (options.edgeNodeSpacing || 20).toString(),
     'elk.spacing.componentComponent': (options.componentSpacing || 40).toString(),
     'elk.separateConnectedComponents': options.separateComponents ? 'true' : 'false',
-    // Apply aspect ratio to all algorithms as a base option
-    // This ensures it's respected regardless of algorithm
-    'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+    // Aspect ratio removed as it doesn't work properly
   };
 
   // Algorithm-specific options that actually work
@@ -79,7 +77,7 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
         
         // Aspect ratio
-        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        
       };
 
     case 'stress':
@@ -92,8 +90,7 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.stress.desiredEdgeLength': options.layerSpacing.toString(),
         'elk.spacing.nodeNode': options.nodeSpacing.toString(), // Override base option
         'elk.stress.dimension': 'XY',
-        // Additional aspect ratio fine-tuning for stress
-        'elk.stress.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        // Aspect ratio removed as it doesn't work properly
         // Thoroughness affects quality
         'elk.stress.quality': Math.max(1, Math.min(10, options.thoroughness || 7)).toString(),
       };
@@ -106,8 +103,6 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.mrtree.weighting': 'DESCENDANTS',
         // Layer spacing affects tree levels
         'elk.layered.spacing.nodeNodeBetweenLayers': options.layerSpacing.toString(),
-        // Aspect ratio works for tree
-        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
         // Compact components affects tree layout
         'elk.mrtree.compaction': options.compactComponents ? 'true' : 'false',
       };
@@ -125,7 +120,7 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.force.temperature': ((options.thoroughness || 7) / 1000).toString(),
         'elk.force.model': 'FRUCHTERMAN_REINGOLD',
         // Aspect ratio
-        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        
         // Compact components affects force layout
         'elk.force.useCoarseGraining': options.compactComponents ? 'true' : 'false',
       };
@@ -138,8 +133,6 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.sporeOverlap.spillOverToParentHierarchyLevel': 'false',
         // Node spacing is critical for overlap removal
         'elk.spacing.nodeNode': (options.nodeSpacing * 1.5).toString(), // Override base option
-        // Aspect ratio works well here
-        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
       };
 
     default:
@@ -209,7 +202,7 @@ export const getDefaultLayoutOptions = (): LayoutOptions => ({
   layerSpacing: 150,     // Increased from 120
   edgeSpacing: 30,       // Increased from 15
   thoroughness: 7,
-  aspectRatio: 1.6,
+  // aspectRatio removed as it doesn't work properly
   compactComponents: false,
   separateComponents: true, // Changed to true to better separate components
   edgeNodeSpacing: 40,    // Increased from 20

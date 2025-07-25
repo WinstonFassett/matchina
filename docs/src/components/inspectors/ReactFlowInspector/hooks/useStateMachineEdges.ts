@@ -168,11 +168,8 @@ export const useStateMachineEdges = (
       const nodePos = nodePositions.get(stateId);
       if (!nodePos) return;
       
-      // Distribute self-transitions around the node
-      // Force specific positions based on event name to ensure consistent placement
+      // Distribute self-transitions around the node evenly
       stateTransitions.forEach((transition, index) => {
-        // Use event name to determine position to ensure consistency
-        // This ensures the same event always appears in the same position
         const isTransitionFromPrevious = previousState === transition.from && currentState === transition.to;
         const isPossibleExit = transition.from === currentState;
         
@@ -210,12 +207,8 @@ export const useStateMachineEdges = (
             isClickable: edgesClickable && transition.from === currentState,
             isSelfTransition: true,
             selfLoopOffset: 30,  // Smaller offset to keep loops closer to nodes
-            // Use consistent positioning based on event name
-            // This ensures each self-transition gets its own position
-            selfLoopIndex: transition.event === 'tick' ? 0 : 
-                          transition.event === '_tick' ? 1 : 
-                          transition.event === 'clear' ? 2 : 
-                          index % 4 // Fallback to index-based distribution
+            // Distribute around the 4 sides of the node based on index
+            selfLoopIndex: index % 4
           }
         });
       });
