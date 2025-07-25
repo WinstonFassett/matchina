@@ -131,7 +131,6 @@ export default function ForceGraphInspector({
         .linkDirectionalArrowRelPos(1)
         .nodeCanvasObjectMode(() => "after")
         .nodeCanvasObject((node: any, ctx: CanvasRenderingContext2D) => {
-          // Font and size scaling
           const label = node.name;
           const fontSize = baseFontSize;
           const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
@@ -143,15 +142,20 @@ export default function ForceGraphInspector({
           const rectHeight = fontSize + paddingY * 2;
           ctx.save();
           ctx.beginPath();
-          ctx.strokeStyle = getCssVar(
-            ref,
-            "--forcegraph-node-border",
-            "--card-border",
-            "#222",
-          );
+
+          // Highlight active state
+          const isActive = node.id === valueRef.current;
+          ctx.strokeStyle =
+            // isActive
+            // ? getCssVar(ref, "--primary", "#1e40af")
+            // :
+            getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
           ctx.lineWidth = 0.5;
-          ctx.fillStyle =
-            node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+
+          ctx.fillStyle = isActive
+            ? getCssVar(ref, "--primary", "#1e40af")
+            : node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+
           ctx.roundRect(
             node.x - rectWidth / 2,
             node.y - rectHeight / 2,
@@ -161,9 +165,12 @@ export default function ForceGraphInspector({
           );
           ctx.fill();
           ctx.stroke();
+
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillStyle = getCssVar(ref, "--forcegraph-label", "#222");
+          ctx.fillStyle = isActive
+            ? getCssVar(ref, "--card", "#fff")
+            : getCssVar(ref, "--forcegraph-label", "#222");
           ctx.fillText(label, node.x, node.y);
           ctx.restore();
         })
@@ -235,14 +242,23 @@ export default function ForceGraphInspector({
           ctx.save();
           ctx.translate(textPos.x, textPos.y);
           ctx.rotate(textAngle);
-          ctx.fillStyle = getCssVar(
-            ref,
-            "--forcegraph-bg",
-            "--card",
-            "--color-gray-50",
-            "rgba(255,255,255,0.85)",
-          );
-          ctx.strokeStyle = getCssVar(ref, "--forcegraph-label-border", "#ccc");
+
+          // Highlight possible edge
+          const isPossible =
+            value === link.source.name && canFire(definition, value, link.name);
+
+          ctx.fillStyle = isPossible
+            ? getCssVar(ref, "--primary", "#1e40af")
+            : getCssVar(
+                ref,
+                "--forcegraph-edge-bg",
+                "--card",
+                "--color-gray-50",
+                "rgba(255,255,255,0.85)",
+              );
+          ctx.strokeStyle = isPossible
+            ? getCssVar(ref, "--primary", "#1e40af")
+            : getCssVar(ref, "--forcegraph-label-border", "#ccc");
           ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.roundRect(
@@ -255,7 +271,9 @@ export default function ForceGraphInspector({
           ctx.stroke();
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillStyle = getCssVar(ref, "--forcegraph-label", "#222");
+          ctx.fillStyle = isPossible
+            ? getCssVar(ref, "--card", "#fff")
+            : getCssVar(ref, "--forcegraph-edge-label", "#222");
           ctx.fillText(link.name, 0, 0);
           ctx.restore();
         })
