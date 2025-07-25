@@ -33,6 +33,17 @@ type ForceGraphInspectorProps = {
   dispatch: (event: { type: string }) => void;
 };
 
+// Utility: Detect dark mode
+function isDarkMode(ref: React.RefObject<HTMLElement | null>) {
+  if (!ref.current) return false;
+  return (
+    getComputedStyle(ref.current)
+      .getPropertyValue("color-scheme")
+      .includes("dark") ||
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+}
+
 function findNode(nodes: { id: string }[], id: string) {
   return nodes.find((it) => it.id === id);
 }
@@ -120,38 +131,65 @@ export default function ForceGraphInspector({
         .nodeCanvasObjectMode(() => "after")
         .nodeCanvasObject((node: any, ctx: CanvasRenderingContext2D) => {
           const label = node.name;
-          const fontSize = 6;
-          const value = valueRef.current;
+          const fontSize = 14; // Fixed font size
           const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
-          const activeColor = getCssVar(
-            ref,
-            "--primary",
-            "--forcegraph-primary",
-            "--color-accent-700",
-            "#1e40af",
-          );
-          console.log("activeColor", activeColor);
-          const inactiveColor = getCssVar(
-            ref,
-            "--secondary",
-            "--forcegraph-secondary",
-            "--color-gray-700",
-            "#374151",
-          );
           ctx.font = `${fontSize}px ${fontFamily}`;
-          ctx.textAlign = "left";
+          const textWidth = ctx.measureText(label).width;
+          const paddingX = 8, paddingY = 4;
+          const rectWidth = textWidth + paddingX * 2;
+          const rectHeight = fontSize + paddingY * 2;
+          ctx.save();
+          ctx.beginPath();
+          ctx.strokeStyle = getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
+          ctx.lineWidth = 2;
+          ctx.fillStyle = node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+          ctx.roundRect(
+            node.x - rectWidth / 2,
+            node.y - rectHeight / 2,
+            rectWidth,
+            rectHeight,
+            8
+          );
+          ctx.fill();
+          ctx.stroke();
+          ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillStyle = node.name === value ? activeColor : inactiveColor;
-          ctx.fillText(label, node.x - 2, node.y);
+          ctx.fillStyle = getCssVar(ref, "--forcegraph-label", "#222");
+          ctx.fillText(label, node.x, node.y);
+          ctx.restore();
+        })
+        .nodePointerAreaPaint((node: any, color: string, ctx: CanvasRenderingContext2D) => {
+          // Match the node rectangle for pointer events
+          const label = node.name;
+          const fontSize = 14;
+          const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
+          ctx.font = `${fontSize}px ${fontFamily}`;
+          const textWidth = ctx.measureText(label).width;
+          const paddingX = 8, paddingY = 4;
+          const rectWidth = textWidth + paddingX * 2;
+          const rectHeight = fontSize + paddingY * 2;
+          ctx.save();
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.roundRect(
+            node.x - rectWidth / 2,
+            node.y - rectHeight / 2,
+            rectWidth,
+            rectHeight,
+            8
+          );
+          ctx.fill();
+          ctx.restore();
         })
         .nodeId("id")
         .nodeLabel("name")
         .nodeAutoColorBy("name")
         .linkCanvasObjectMode(() => "after")
         .linkCanvasObject((link: any, ctx: CanvasRenderingContext2D) => {
+          // Draw edge label with background
           const value = valueRef.current;
-          const MAX_FONT_SIZE = 4;
-          const LABEL_NODE_MARGIN = Graph.nodeRelSize() * 1.5;
+          const fontSize = 12; // Fixed font size for edge labels
+          const LABEL_NODE_MARGIN = Graph.nodeRelSize() * 2;
           const start = link.source;
           const end = link.target;
           if (typeof start !== "object" || typeof end !== "object") return;
@@ -178,86 +216,42 @@ export default function ForceGraphInspector({
           if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
           const label = `${link.name}`;
           const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
-          ctx.font = `1px ${fontFamily}`;
-          const fontSize = Math.min(
-            MAX_FONT_SIZE,
-            maxTextLength / ctx.measureText(label).width,
-          );
           ctx.font = `${fontSize}px ${fontFamily}`;
           const textWidth = ctx.measureText(label).width;
           const bckgDimensions = [textWidth, fontSize].map(
-            (n) => n + fontSize * 0.2,
+            (n) => n + fontSize * 0.4,
           ) as [number, number];
           ctx.save();
           ctx.translate(textPos.x, textPos.y);
           ctx.rotate(textAngle);
-          // Use forcegraph-bg, then card, then fallback
-          const bgColor = getCssVar(
-            ref,
-            "--forcegraph-bg",
-            "--card",
-            "--color-gray-50",
-            "rgba(255,255,255,0.7)",
-          );
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(
+          ctx.fillStyle = getCssVar(ref, "--forcegraph-bg", "--card", "--color-gray-50", "rgba(255,255,255,0.85)");
+          ctx.strokeStyle = getCssVar(ref, "--forcegraph-label-border", "#ccc");
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(
             -bckgDimensions[0] / 2,
             -bckgDimensions[1] / 2,
             ...bckgDimensions,
+            6
           );
-          const activeColor = getCssVar(
-            ref,
-            "--primary",
-            "--forcegraph-primary",
-            "--color-accent-700",
-            "#1e40af",
-          );
-          const inactiveColor = getCssVar(
-            ref,
-            "--secondary",
-            "--forcegraph-secondary",
-            "--color-gray-600",
-            "#4b5563",
-          );
-          const color =
-            value === link.source.name && canFire(definition, value, link.name)
-              ? activeColor
-              : inactiveColor;
+          ctx.fill();
+          ctx.stroke();
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillStyle = color;
+          ctx.fillStyle = getCssVar(ref, "--forcegraph-label", "#222");
           ctx.fillText(link.name, 0, 0);
           ctx.restore();
         })
         .linkColor((link: any) => {
           const value = valueRef.current;
-          const activeColor = getCssVar(
-            ref,
-            "--primary",
-            "--forcegraph-primary",
-            "--color-accent-700",
-            "#1e40af",
-          );
-          const inactiveColor = getCssVar(
-            ref,
-            "--secondary",
-            "--forcegraph-secondary",
-            "--color-gray-600",
-            "#4b5563",
-          );
-          return value === link.source.name &&
-            canFire(definition, value, link.name)
-            ? activeColor
-            : inactiveColor;
+          if (value === link.source.name && canFire(definition, value, link.name)) {
+            return getCssVar(ref, "--primary", "--forcegraph-primary", "#1e40af");
+          } else {
+            return getCssVar(ref, "--secondary", "--forcegraph-secondary", "#4b5563");
+          }
         })
         .linkDirectionalParticleColor(() =>
-          getCssVar(
-            ref,
-            "--accent",
-            "--forcegraph-accent",
-            "--color-accent-400",
-            "teal",
-          ),
+          getCssVar(ref, "--accent", "--forcegraph-accent", "teal"),
         )
         .linkDirectionalParticleSpeed(0.04)
         .linkDirectionalParticleWidth(8)
@@ -265,6 +259,17 @@ export default function ForceGraphInspector({
         .onLinkClick(({ name }: { name: string }) => {
           dispatch({ type: name });
         });
+      // Increase node spacing and collision radius
+      if (Graph.d3Force) {
+        const charge = Graph.d3Force("charge");
+        if (charge) charge.strength(-300); // Less negative for less huge spacing
+        if (!Graph.d3Force("collide")) {
+          Graph.d3Force("collide", (node: any) => 18); // Smaller collision radius
+        } else {
+          Graph.d3Force("collide").radius(18);
+        }
+      }
+      Graph.d3Force("center");
       // Assign curvature for self-loops and parallel edges
       let selfLoopLinks: Record<string, any[]> = {};
       let sameNodesLinks: Record<string, any[]> = {};
