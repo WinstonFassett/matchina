@@ -35,45 +35,81 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
   if (data?.isSelfTransition) {
     // Get the index of this self-transition to distribute around the node
     const loopIndex = data.selfLoopIndex || 0;
-    const offset = data.selfLoopOffset || 30;
     
-    // Define directions for self-loops: top, right, bottom, left
-    const directions = [
-      { x: 0, y: -1, label: { x: 0, y: -1.5 } },     // top
-      { x: 1, y: 0, label: { x: 1.5, y: 0 } },       // right
-      { x: 0, y: 1, label: { x: 0, y: 1.5 } },       // bottom
-      { x: -1, y: 0, label: { x: -1.5, y: 0 } },     // left
+    // Use larger offset for better visibility
+    const offset = 60;
+    
+    // Node dimensions - use actual node size
+    const nodeWidth = 150;
+    const nodeHeight = 50;
+    const halfWidth = nodeWidth / 2;
+    const halfHeight = nodeHeight / 2;
+    
+    // Calculate actual connection points at the node edges
+    // This ensures self-transitions connect properly to node boundaries
+    const positions = [
+      // Top
+      {
+        x: sourceX,
+        y: sourceY - halfHeight,
+        offsetX: 0,
+        offsetY: -offset,
+        labelOffsetX: 0,
+        labelOffsetY: -offset - 15
+      },
+      // Right
+      {
+        x: sourceX + halfWidth,
+        y: sourceY,
+        offsetX: offset,
+        offsetY: 0,
+        labelOffsetX: offset + 15,
+        labelOffsetY: 0
+      },
+      // Bottom
+      {
+        x: sourceX,
+        y: sourceY + halfHeight,
+        offsetX: 0,
+        offsetY: offset,
+        labelOffsetX: 0,
+        labelOffsetY: offset + 15
+      },
+      // Left
+      {
+        x: sourceX - halfWidth,
+        y: sourceY,
+        offsetX: -offset,
+        offsetY: 0,
+        labelOffsetX: -offset - 15,
+        labelOffsetY: 0
+      }
     ];
     
-    // Pick a direction based on the index
-    const direction = directions[loopIndex % directions.length];
+    // Get position based on index
+    const pos = positions[loopIndex % positions.length];
     
-    // Calculate control points for the loop - make them more circular
-    const radius = offset * 0.8; // Smaller radius to keep loops closer to node edges
-    const nodeSize = 75; // More accurate node size
-    
-    // Start point at the edge of the node in the given direction
-    // Use exact node edge positions rather than center offset
-    const startX = sourceX + direction.x * (nodeSize / 2);
-    const startY = sourceY + direction.y * (nodeSize / 2);
+    // Calculate control points for a circular loop
+    // Start from the exact edge of the node
+    const startX = pos.x;
+    const startY = pos.y;
     
     // Control points for a circular curve
-    // Use cubic bezier curves to create a more circular loop
-    const cp1x = startX + direction.x * radius + direction.y * radius;
-    const cp1y = startY + direction.y * radius - direction.x * radius;
+    const cp1x = startX + pos.offsetX - pos.offsetY * 0.5;
+    const cp1y = startY + pos.offsetY + pos.offsetX * 0.5;
     
-    const cp2x = startX + direction.x * radius - direction.y * radius;
-    const cp2y = startY + direction.y * radius + direction.x * radius;
+    const cp2x = startX + pos.offsetX + pos.offsetY * 0.5;
+    const cp2y = startY + pos.offsetY - pos.offsetX * 0.5;
     
-    // SVG path for a self-loop in the given direction
+    // Create a circular path that returns to the same point
     const selfLoopPath = `
       M ${startX} ${startY}
       C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${startX} ${startY}
     `;
     
-    // Calculate label position for self-loop
-    const labelX = sourceX + direction.label.x * radius * 2;
-    const labelY = sourceY + direction.label.y * radius * 2;
+    // Position label outside the loop
+    const labelX = sourceX + pos.labelOffsetX;
+    const labelY = sourceY + pos.labelOffsetY;
     
     return (
       <>

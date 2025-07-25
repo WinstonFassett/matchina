@@ -57,31 +57,8 @@ export const useStateMachineEdges = (
       nodes.map(node => [node.id, node.position])
     );
 
-    // Group transitions by node pairs to handle multiple events between same states
-    // Also track self-transitions separately
-    const edgeGroups = new Map<string, Transition[]>();
-    const selfTransitions = new Map<string, Transition[]>();
-    
-    transitions.forEach(transition => {
-      // Handle self-transitions separately
-      if (transition.from === transition.to) {
-        if (!selfTransitions.has(transition.from)) {
-          selfTransitions.set(transition.from, []);
-        }
-        selfTransitions.get(transition.from)!.push(transition);
-      } else {
-        // Regular transitions between different nodes
-        const key = `${transition.from}-${transition.to}`;
-        if (!edgeGroups.has(key)) {
-          edgeGroups.set(key, []);
-        }
-        edgeGroups.get(key)!.push(transition);
-      }
-    });
-
-    const newEdges: Edge[] = [];
-    
-    // Process regular transitions between different nodes
+    const createEdges = useCallback(() => {
+      if (!machine || !nodePositions) return [];
     edgeGroups.forEach((groupTransitions, key) => {
       const [from, to] = key.split('-');
       const fromPos = nodePositions.get(from);
