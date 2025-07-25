@@ -318,11 +318,11 @@ export default function ForceGraphInspector({
         //   Graph.d3Force("collide").radius(18);
         // }
         const charge = Graph.d3Force("charge");
-        if (charge) charge.strength(-50); // Default is -120, less negative = more spacing
+        // if (charge) charge.strength(-100); // Default is -120, less negative = more spacing
 
         // Reduce link strength to weaken connections
         const linkForce = Graph.d3Force("link");
-        if (linkForce) linkForce.strength(0.05); // Default is 1, lower = weaker links
+        if (linkForce) linkForce.strength(0.01); // Default is 1, lower = weaker links
 
         Graph.d3Force("center");
       }
