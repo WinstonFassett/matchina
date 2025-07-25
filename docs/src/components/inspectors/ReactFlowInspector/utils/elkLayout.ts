@@ -40,6 +40,9 @@ const getElkOptions = (options: LayoutOptions) => {
     'elk.spacing.edgeNode': (options.edgeNodeSpacing || 20).toString(),
     'elk.spacing.componentComponent': (options.componentSpacing || 40).toString(),
     'elk.separateConnectedComponents': options.separateComponents ? 'true' : 'false',
+    // Apply aspect ratio to all algorithms as a base option
+    // This ensures it's respected regardless of algorithm
+    'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
   };
 
   // Algorithm-specific options that actually work
@@ -89,8 +92,8 @@ const getElkOptions = (options: LayoutOptions) => {
         'elk.stress.desiredEdgeLength': options.layerSpacing.toString(),
         'elk.spacing.nodeNode': options.nodeSpacing.toString(), // Override base option
         'elk.stress.dimension': 'XY',
-        // Aspect ratio for stress layout
-        'elk.aspectRatio': (options.aspectRatio || 1.6).toString(),
+        // Additional aspect ratio fine-tuning for stress
+        'elk.stress.aspectRatio': (options.aspectRatio || 1.6).toString(),
         // Thoroughness affects quality
         'elk.stress.quality': Math.max(1, Math.min(10, options.thoroughness || 7)).toString(),
       };

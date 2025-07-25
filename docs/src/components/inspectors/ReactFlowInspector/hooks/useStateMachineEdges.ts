@@ -191,22 +191,22 @@ export const useStateMachineEdges = (
           },
           style: {
             stroke: isTransitionFromPrevious ? '#60a5fa' : isPossibleExit ? '#2563eb' : '#94a3b8',
-            strokeWidth: isTransitionFromPrevious ? 3 : isPossibleExit ? 2.5 : 1.5,
+            strokeWidth: isTransitionFromPrevious ? 4 : isPossibleExit ? 3 : 2,  // Thicker lines for better visibility
             cursor: isPossibleExit ? 'pointer' : 'default',
-            opacity: isTransitionFromPrevious ? 1 : isPossibleExit ? 0.9 : 0.4,
+            opacity: isTransitionFromPrevious ? 1 : isPossibleExit ? 0.9 : 0.6,  // Higher opacity for better visibility
             zIndex,
           },
           labelStyle: { 
-            fontSize: '10px',
+            fontSize: '11px',  // Slightly larger font
             fill: isTransitionFromPrevious ? '#60a5fa' : isPossibleExit ? '#2563eb' : '#94a3b8',
-            fontWeight: 500,
+            fontWeight: isTransitionFromPrevious ? 700 : 500,  // Bold for active transitions
           },
           zIndex,
           data: { 
             event: transition.event,
             isClickable: edgesClickable && transition.from === currentState,
             isSelfTransition: true,
-            selfLoopOffset: 40,
+            selfLoopOffset: 30,  // Smaller offset to keep loops closer to nodes
             selfLoopIndex: index % 4 // Distribute around the 4 sides of the node
           }
         });

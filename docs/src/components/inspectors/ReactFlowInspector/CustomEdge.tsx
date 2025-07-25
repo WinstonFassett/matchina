@@ -49,10 +49,11 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     const direction = directions[loopIndex % directions.length];
     
     // Calculate control points for the loop - make them more circular
-    const radius = offset * 1.2; // Larger radius for more pronounced loops
-    const nodeSize = 40; // Approximate node size
+    const radius = offset * 0.8; // Smaller radius to keep loops closer to node edges
+    const nodeSize = 75; // More accurate node size
     
     // Start point at the edge of the node in the given direction
+    // Use exact node edge positions rather than center offset
     const startX = sourceX + direction.x * (nodeSize / 2);
     const startY = sourceY + direction.y * (nodeSize / 2);
     
@@ -103,38 +104,23 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     );
   }
   
-  // For regular edges between different nodes
-  // Use bezier for some edges and smoothstep for others based on the edge ID
-  // This helps distinguish between multiple edges between the same nodes
-  const useSmooth = id.includes('-') && id.split('-')[2]?.charCodeAt(0) % 2 === 0;
+  // For regular edges between different nodes - always use bezier curves
+  // Vary the curvature slightly based on the edge ID to distinguish multiple edges
+  const curvature = id.includes('-') && id.split('-')[2]?.charCodeAt(0) % 2 === 0 ? 0.3 : 0.2;
   
-  let edgePath, labelX, labelY;
-  
-  if (useSmooth) {
-    [edgePath, labelX, labelY] = getSmoothStepPath({
-      sourceX,
-      sourceY,
-      sourcePosition,
-      targetX,
-      targetY,
-      targetPosition,
-      borderRadius: 16,
-    });
-  } else {
-    [edgePath, labelX, labelY] = getBezierPath({
-      sourceX,
-      sourceY,
-      sourcePosition,
-      targetX,
-      targetY,
-      targetPosition,
-      curvature: 0.25,
-    });
-  }
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+    curvature,
+  });
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+      <BaseEdge path={edgePath || ''} markerEnd={markerEnd} style={style} />
       {label && (
         <EdgeLabelRenderer>
           <div

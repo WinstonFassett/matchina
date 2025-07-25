@@ -46,7 +46,7 @@ export const useStateMachineNodes = (
   layoutOptions?: LayoutOptions,
   forceLayoutKey?: number
 ) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
   const hasInitialized = useRef(false);
   const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>();
   const currentMachineId = useRef<string | null>(null);
@@ -237,9 +237,11 @@ export const useStateMachineNodes = (
     hasInitialized.current = false;
   }, [machine]);
   
-  // Force re-layout when forceLayoutKey changes
+  // Force re-layout ONLY when forceLayoutKey changes (layout button clicked)
+  // This prevents auto-layout during normal dragging operations
   useEffect(() => {
-    if (forceLayoutKey !== undefined && hasInitialized.current && !isLayouting) {
+    // Only trigger layout if forceLayoutKey changed and is not the initial value
+    if (forceLayoutKey !== undefined && forceLayoutKey > 0 && hasInitialized.current && !isLayouting) {
       setIsLayouting(true);
       
       // Create edges for ELK layout
@@ -251,10 +253,11 @@ export const useStateMachineNodes = (
           }))
         : [];
       
-      // Use current node positions as starting point
+      // If user has made manual changes, preserve those positions as starting points
+      // Otherwise use the current node positions
       const currentNodePositions = nodes.map(node => ({
         ...node,
-        // Keep the same position but ELK will recalculate
+        // Keep positions but ELK will recalculate based on layout options
       }));
       
       // Use ELK to calculate optimal layout with current layout options
@@ -263,6 +266,9 @@ export const useStateMachineNodes = (
           setNodes(layoutedNodes);
           setHasManualChanges(false);
           setIsLayouting(false);
+          setIsLayoutComplete(true); // Signal that layout is complete
+          // Reset the flag after a short delay to allow for re-triggering
+          setTimeout(() => setIsLayoutComplete(false), 1000);
         })
         .catch((error) => {
           console.error('Re-layout failed:', error);
