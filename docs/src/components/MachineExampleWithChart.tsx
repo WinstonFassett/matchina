@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, type ComponentType } from "react";
 import { createApi } from "matchina";
 import type { FactoryMachine, FactoryState } from "matchina";
 import MachineVizBasic from "./MachineVizBasic";
+import MachineViz from "./MachineViz";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
 import ReactFlowInspector from "./inspectors/ReactFlowInspector";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -16,7 +17,7 @@ interface MachineExampleWithChartProps {
   >;
   showRawState?: boolean;
   title?: string;
-  inspectorType?: 'mermaid' | 'force-graph' | 'react-flow';
+  inspectorType?: 'mermaid' | 'force-graph' | 'react-flow' | 'basic';
 }
 
 /**
@@ -46,8 +47,15 @@ export function MachineExampleWithChart({
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Mermaid diagram */}
         <div className="flex-1">
-          {inspectorType === 'mermaid' && (
+          {inspectorType === 'basic' && (
             <MachineVizBasic
+              config={config}
+              stateKey={currentState.key}
+              actions={actions as any}
+            />
+          )}
+          {inspectorType === 'mermaid' && (
+            <MachineViz
               config={config}
               stateKey={currentState.key}
               actions={actions as any}

@@ -12,6 +12,7 @@ export default function CounterExample() {
       machine={machine as any}
       AppView={CounterView}
       showRawState={true}
+      inspectorType="force-graph"
     />
   );
 }

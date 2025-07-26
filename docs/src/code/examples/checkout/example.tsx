@@ -10,6 +10,7 @@ export default function CheckoutExample() {
       machine={machine as any}
       AppView={CheckoutView}
       showRawState={true}
+      inspectorType="react-flow"
     />
   );
 }
