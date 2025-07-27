@@ -3,9 +3,8 @@ import {
   AnyStatesFactory,
   createMachine,
   FactoryMachineContext,
-  FactoryMachineEvent,
   FactoryMachineTransitions,
-  FactoryState,
+  FactoryState
 } from "./factory-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
