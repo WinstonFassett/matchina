@@ -1,3 +1,6 @@
+import { match, MatchCases } from "./match-case";
+import { Simplify } from "./utility-types";
+
 /**
  * FactoryShape defines the shape of a factory object, mapping string keys (tags) to constructor functions.
  */
