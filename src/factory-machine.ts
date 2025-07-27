@@ -15,7 +15,6 @@ export function createMachine<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>,
 ): FactoryMachine<FC> {
-  
   // Fix type for initialState to match createTransitionMachine's expectation
   const initialState = typeof init === "string" ? states[init]({}) : (init as ReturnType<SF[keyof SF]>);
   
@@ -31,7 +30,6 @@ export function createMachine<
       return to ? new FactoryMachineEventImpl<E>(ev.type, ev.from, to, ev.params) as E : undefined;
     },
   }) as any;
-  
 }
 
 export function resolveNextState<FC extends FactoryMachineContext<any>>(

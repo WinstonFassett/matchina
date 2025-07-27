@@ -1,7 +1,6 @@
 import { zen } from "./extras/zen";
 import { StateFactory } from "./state";
-import {
-  createMachine} from "./factory-machine";
+import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
   FactoryMachineTransitions,

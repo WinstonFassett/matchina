@@ -2,19 +2,16 @@ import {
   HasMethod,
   MethodOf,
   abortable,
-  tap,
+  enhanceMethod,
   methodEnhancer,
   setup,
-  enhanceMethod,
+  tap,
 } from "./ext";
-import { Setup } from "./function-types";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
-import { Funcware } from "./function-types";
+import { Effect, Func, Funcware, Middleware, Setup } from "./function-types";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { HasFilterValues } from "./match-filters";
-import { StateMachineEvent, StateMachine } from "./state-machine-types";
-import { Effect, Middleware } from "./function-types";
-import { Func } from "./function-types";
+import { StateMachine, StateMachineEvent } from "./state-machine-types";
 
 // #region Adapters
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
