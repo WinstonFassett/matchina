@@ -6,8 +6,8 @@ import {
   methodEnhancer,
   setup,
   enhanceMethod,
-  Setup,
 } from "./ext";
+import { Setup } from "./function-types";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { Funcware } from "./function-types";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
