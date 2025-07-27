@@ -49,7 +49,7 @@ export const useStateMachineEdges = (
   machine: any,
   nodes: Node[],
   currentState: string,
-  previousState: string | null,
+  previousState?: string,
   edgesClickable: boolean = true
 ) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);

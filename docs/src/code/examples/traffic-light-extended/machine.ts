@@ -76,7 +76,7 @@ export const createExtendedTrafficLightMachine = () => {
 
   setup(machine)(
     enter(
-      whenState("Red", (ev) => {
+      whenState("Red", (_ev) => {
         const state = machine.data.getState();
         if (state.data.crossingRequested) {
           queueMicrotask(machine.api.crossingRequested);
@@ -84,7 +84,7 @@ export const createExtendedTrafficLightMachine = () => {
       })
     ),
     enter(
-      whenState("RedWithPedestrianRequest", (ev) => {
+      whenState("RedWithPedestrianRequest", (_ev) => {
         machine.data.send("change", {
           crossingRequested: false,
         });

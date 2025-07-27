@@ -18,7 +18,7 @@ light.match({
 */
 
 // Handling all cases works
-const action = light.match({
+export const action = light.match({
   Red: () => "Stop",
   Yellow: () => "Caution",
   Green: () => "Go",

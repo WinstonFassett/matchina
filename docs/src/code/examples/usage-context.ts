@@ -2,8 +2,7 @@ import {
   createApi,
   createMachine,
   createPromiseMachine,
-  defineStates,
-  updateState,
+  defineStates
 } from "matchina";
 
 // ---cut---
@@ -88,8 +87,7 @@ const m5 = createMachine(
       increment:
         (inc = 1) =>
         (ev) =>
-          updateState(({ count }) => ({ count: count + inc }))(ev),
-      // increment2: (inc=1) => updateState(),
+          oneState.State({ ...ev.from.data, count: ev.from.data.count + inc }),
       decrement:
         (dec = 1) =>
         (ev) =>

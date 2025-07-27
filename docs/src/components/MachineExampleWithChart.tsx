@@ -1,12 +1,12 @@
-import { useMemo, useState, useEffect, type ComponentType } from "react";
+import type { FactoryMachine } from "matchina";
 import { createApi } from "matchina";
-import type { FactoryMachine, FactoryState } from "matchina";
-import MachineVizBasic from "./MachineVizBasic";
+import { useMachine } from "matchina/react";
+import { useMemo, type ComponentType } from "react";
+import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import MachineViz from "./MachineViz";
+import MachineVizBasic from "./MachineVizBasic";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
 import ReactFlowInspector from "./inspectors/ReactFlowInspector";
-import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { useMachine } from "matchina/react";
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -66,7 +66,6 @@ export function MachineExampleWithChart({
               value={currentState.key}
               lastEvent={lastChange?.type}
               prevState={lastChange.from?.key}
-              mode={currentState.data}
               definition={config}
               dispatch={({ type }) => machine.send(type)}
             />

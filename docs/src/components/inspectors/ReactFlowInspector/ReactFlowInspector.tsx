@@ -1,33 +1,30 @@
 import React, {
-  useState,
+  useCallback,
   useEffect,
   useRef,
-  useCallback,
-  useMemo,
+  useState
 } from "react";
 import { createPortal } from "react-dom";
+import type { EdgeTypes, NodeTypes } from "reactflow";
 import ReactFlow, {
-  Controls,
   Background,
-  ConnectionLineType,
-  MarkerType,
-  ReactFlowProvider,
   BackgroundVariant,
+  ConnectionLineType,
+  Controls,
+  MarkerType,
   Panel,
-  useReactFlow,
+  ReactFlowProvider
 } from "reactflow";
-import type { NodeTypes, EdgeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 
-import CustomNode from "./CustomNode";
 import CustomEdge from "./CustomEdge";
+import CustomNode from "./CustomNode";
 import LayoutPanel from "./LayoutPanel";
-import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
 import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
-import { getDefaultLayoutOptions } from "./utils/elkLayout";
+import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
 import type { LayoutOptions } from "./utils/elkLayout";
-import { saveLayoutSettings, loadLayoutSettings } from "./utils/layoutStorage";
-import type { LayoutSettings } from "./utils/layoutStorage";
+import { getDefaultLayoutOptions } from "./utils/elkLayout";
+import { loadLayoutSettings, saveLayoutSettings } from "./utils/layoutStorage";
 
 // Add CSS for edge animations
 const edgeAnimationStyles = `
@@ -63,27 +60,26 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   value,
   definition,
   lastEvent,
-  prevState,
+  prevState: previousState,
   dispatch,
-  mode,
   edgesClickable = true, // Default to true for backward compatibility
 }) => {
-  const [previousState, setPreviousState] = useState<string | null>(null);
-  const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
-    string | undefined
-  >(lastEvent);
-  const instanceId = useRef(Math.random().toString(36).substring(2, 9));
+  // const [previousState, setPreviousState] = useState<string | null>(null);
+  // const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
+  //   string | undefined
+  // >(lastEvent);
+  // const instanceId = useRef(Math.random().toString(36).substring(2, 9));
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
 
   // Track state changes for previous state highlighting
-  useEffect(() => {
-    if (prevState) {
-      setPreviousState(prevState);
-    }
-    if (lastEvent) {
-      setLastTriggeredEvent(lastEvent);
-    }
-  }, [value, prevState, lastEvent]);
+  // useEffect(() => {
+  //   if (prevState) {
+  //     setPreviousState(prevState);
+  //   }
+  //   if (lastEvent) {
+  //     // setLastTriggeredEvent(lastEvent);
+  //   }
+  // }, [value, prevState, lastEvent]);
 
   // Load saved layout settings or use defaults
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {

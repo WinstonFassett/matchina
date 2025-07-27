@@ -24,7 +24,7 @@ console.log(pending.status); // 'Pending'
 // 2. Advanced pattern matching with type safety
 function processResponse<T>(
   response:
-    | ReturnType<typeof Response.Success<T>>
+    | ReturnType<typeof Response.Success>
     | ReturnType<typeof Response.Error>
     | ReturnType<typeof Response.Pending>
 ) {
@@ -34,9 +34,9 @@ function processResponse<T>(
       // data is typed as T
       return { processed: true, result: data };
     },
-    Error: ({ code, message }) => {
+    Error: () => {
       // TypeScript knows error has code and message
-      return { processed: false, errorCode: code, errorMessage: message };
+      // return { processed: false, errorCode: code, errorMessage: message };
     },
     Pending: () => {
       // TypeScript knows pending has timestamp
@@ -48,7 +48,7 @@ function processResponse<T>(
 // 3. Type narrowing with exhaustive checking
 function handleResponse<T>(
   response:
-    | ReturnType<typeof Response.Success<T>>
+    | ReturnType<typeof Response.Success>
     | ReturnType<typeof Response.Error>
     | ReturnType<typeof Response.Pending>
 ) {
@@ -57,10 +57,10 @@ function handleResponse<T>(
     return response.data;
   } else if (response.is("Error")) {
     // TypeScript knows response is Error type
-    throw new Error(`API Error ${response.code}: ${response.message}`);
+    throw new Error(`API Error ${response.data.code}: ${response.data.message}`);
   } else {
     // TypeScript knows this must be Pending
-    console.log(`Waiting since ${new Date(response.timestamp).toISOString()}`);
+    console.log(`Waiting since ${new Date(response.data.timestamp).toISOString()}`);
     return null;
   }
 }

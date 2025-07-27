@@ -18,7 +18,7 @@ const status = light.match({
 console.log(status); // "The light is on at 30% brightness"
 
 // TypeScript requires all cases to be handled
-const powerStatus = light.match({
+export const powerStatus = light.match({
   Off: () => false,
   On: () => true,
 });

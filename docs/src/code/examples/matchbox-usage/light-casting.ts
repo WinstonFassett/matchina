@@ -22,7 +22,7 @@ try {
 }
 
 // Practical example: only adjust brightness for "On" lights
-function adjustBrightness(
+export function adjustBrightness(
   light: ReturnType<typeof Light.Off> | ReturnType<typeof Light.On>,
   adjustment: number
 ) {

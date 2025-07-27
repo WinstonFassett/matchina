@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 type StateMachineDefinition = {
   states: Record<
@@ -19,12 +19,6 @@ type Diagram = {
   }[];
 };
 
-type Change = {
-  type: string;
-  from: string;
-  to: string;
-};
-
 type ForceGraphInspectorProps = {
   value: string;
   definition: StateMachineDefinition;
@@ -32,17 +26,6 @@ type ForceGraphInspectorProps = {
   prevState?: string;
   dispatch: (event: { type: string }) => void;
 };
-
-// Utility: Detect dark mode
-function isDarkMode(ref: React.RefObject<HTMLElement | null>) {
-  if (!ref.current) return false;
-  return (
-    getComputedStyle(ref.current)
-      .getPropertyValue("color-scheme")
-      .includes("dark") ||
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-}
 
 function findNode(nodes: { id: string }[], id: string) {
   return nodes.find((it) => it.id === id);

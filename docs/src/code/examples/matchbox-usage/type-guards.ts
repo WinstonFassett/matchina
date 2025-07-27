@@ -14,11 +14,11 @@ if (response.is("Success")) {
 
 if (response.is("Error")) {
   // TypeScript knows this is an Error variant
-  console.log(response.data.error.message);
+  // console.log(response.data.error.message);
 }
 
 // Type guard in a function parameter
-function handleSuccess(
+export function handleSuccess(
   response: ReturnType<(typeof Response)[keyof typeof Response]>
 ) {
   if (response.is("Success")) {

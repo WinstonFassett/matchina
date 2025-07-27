@@ -1,7 +1,7 @@
-import { defineStates, createMachine, zen } from "matchina";
+import { createMachine, defineStates, zen } from "matchina";
 import { useMachine } from "matchina/react";
-import { useState, useMemo, useRef, useEffect } from "react";
-import { useStateEffects, useEventTypeEffect } from "../lib/matchina-hooks";
+import { useMemo, useState } from "react";
+import { useEventTypeEffect, useStateEffects } from "../lib/matchina-hooks";
 import { tickEffect } from "../lib/tick-effect";
 
 export function useStopwatch() {

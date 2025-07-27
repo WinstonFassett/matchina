@@ -52,14 +52,14 @@ const extractTransitionsForLayout = (machine: any) => {
 export const useStateMachineNodes = (
   machine: any,
   currentState: string,
-  previousState: string | null,
+  previousState?: string,
   key?: number,
   layoutOptions?: LayoutOptions,
   forceLayoutKey?: number
 ) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
   const hasInitialized = useRef(false);
-  const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>();
+  const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const currentMachineId = useRef<string | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
   const [isLayoutComplete, setIsLayoutComplete] = useState(false);

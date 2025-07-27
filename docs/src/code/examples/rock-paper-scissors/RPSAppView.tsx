@@ -59,7 +59,7 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
           </div>
         ),
 
-        PlayerChose: ({ playerMove, playerScore, computerScore }) => (
+        PlayerChose: ({ playerMove }) => (
           <div className="text-center">
             <h3 className="text-lg mb-3">You chose {getIcon(playerMove)}</h3>
             <p className="mb-4">Computer is choosing...</p>

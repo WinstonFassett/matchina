@@ -21,7 +21,7 @@ console.log(result.data); // { data: "hello" }
 
 // ---cut---
 // Example 2: Pattern matching with exhaustive checking
-function handleResult(result) {
+export function handleResult() {
   return result.match({
     Success: ({ data }) => `Got data: ${JSON.stringify(data)}`,
     Error: ({ message }) => `Error: ${message}`,

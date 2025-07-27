@@ -12,3 +12,5 @@ const off = Light.Off();
 const onFull = Light.On(); // Uses default 100%
 const dimmed = Light.On(50); // 50% brightness
 const { percentage } = dimmed.data;
+
+export { off, onFull, dimmed, percentage };

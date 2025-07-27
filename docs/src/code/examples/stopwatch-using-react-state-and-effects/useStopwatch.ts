@@ -62,9 +62,9 @@ export function useStopwatch() {
   stopwatch.elapsed = elapsed;
   useMachine(stopwatch);
   useEffect(() => {
-    if (stopwatch.changeProperty.type === "clear") {
-      effects.clear();
-    }
+    // if (stopwatch.changeProperty.type === "clear") {
+    //   effects.clear();
+    // }
     return stopwatch.getState().match(
       {
         Ticking: effects.run,

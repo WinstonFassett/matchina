@@ -14,7 +14,7 @@ type Shape = ReturnType<(typeof shapes)[keyof typeof shapes]>;
 const someShape: Shape = shapes.Circle(5);
 
 // ---cut---
-const optionalNickname = someShape.match(
+export const optionalNickname = someShape.match(
   {
     Circle: ({ radius }) => `Circle with radius ${radius}`,
     Square: ({ side }) => `Square with side ${side}`,

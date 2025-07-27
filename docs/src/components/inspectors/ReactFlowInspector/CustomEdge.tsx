@@ -1,11 +1,10 @@
 import React from "react";
+import type { EdgeProps as ReactFlowEdgeProps } from "reactflow";
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
-  getSmoothStepPath,
+  getBezierPath
 } from "reactflow";
-import type { EdgeProps as ReactFlowEdgeProps } from "reactflow";
 
 interface CustomEdgeData {
   event: string;

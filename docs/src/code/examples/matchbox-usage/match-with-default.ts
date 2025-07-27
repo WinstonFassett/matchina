@@ -14,7 +14,7 @@ type Shape = ReturnType<(typeof shapes)[keyof typeof shapes]>;
 const someShape: Shape = shapes.Circle(5);
 
 // ---cut---
-const cornerCount = someShape.match({
+export const cornerCount = someShape.match({
   Circle: () => 0,
   _: () => 4, // Default case for Square and Rectangle
 });

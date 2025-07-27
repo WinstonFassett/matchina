@@ -5,6 +5,7 @@ export interface LayoutOptions {
   direction: "DOWN" | "RIGHT" | "UP" | "LEFT";
   algorithm: string;
   nodeSpacing: number;
+  edgeNodeSpacing?: number;
   layerSpacing: number;
   edgeSpacing: number;
   thoroughness?: number;
@@ -23,7 +24,7 @@ import { getAlgorithmInfo, getAvailableAlgorithms } from "./utils/elkLayout";
 const LayoutPanel: React.FC<LayoutPanelProps> = memo(
   ({ options, onOptionsChange }) => {
     // Always open when shown in the portal
-    const debounceRef = useRef<NodeJS.Timeout>();
+    const debounceRef = useRef<NodeJS.Timeout>(null);
     const algorithmConfig = getAlgorithmInfo(options.algorithm);
     const availableAlgorithms = getAvailableAlgorithms();
 

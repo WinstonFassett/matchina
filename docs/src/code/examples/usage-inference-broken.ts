@@ -1,10 +1,8 @@
 // @noErrors
 import {
   defineStates,
-  createMachine,
-  zen,
-  type FactoryMachineTransitions,
   matchina,
+  type FactoryMachineTransitions
 } from "matchina";
 
 const states = defineStates({
@@ -30,7 +28,7 @@ const invalidTransitions = {
 
 const invalidMachine = matchina(
   states,
-  invalidTransitions, // invalid because not typed correctly
+  invalidTransitions as any, // invalid because not typed correctly
   "Idle"
 );
 
@@ -53,7 +51,7 @@ const transitionsWithSatisfies = {
 
 const validMachine = matchina(states, transitionsWithSatisfies, "Idle");
 
-validMachine.st;
+validMachine.start("track-123"); // Idle -> Playing
 //             ^|
 
 // correctly typed

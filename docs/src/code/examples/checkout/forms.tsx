@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import type { CheckoutMachine } from "./machine";
 import type {
-  ShippingData,
-  PaymentData,
   CartData,
-  ShippingForm as ShippingFormType,
-  PaymentForm as PaymentFormType,
+  PaymentData,
+  ShippingData
 } from "./types";
 
 function getMissing(fields: Record<string, string>) {

@@ -28,7 +28,7 @@ const machine = matchina(
   "Idle"
 );
 
-machine.st;
+machine.start("track-123"); // Idle -> Playing
 //        ^|
 
 // nice!

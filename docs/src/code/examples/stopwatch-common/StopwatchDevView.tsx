@@ -7,12 +7,12 @@ import { StopwatchView } from "./StopwatchView";
 
 export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
   const config = useMemo(
-    () => getXStateDefinition(stopwatch.machine),
-    [stopwatch.machine]
+    () => getXStateDefinition(stopwatch as any),
+    [stopwatch]
   );
   const actions = useMemo(
-    () => createApi(stopwatch.machine, stopwatch.state.key),
-    [stopwatch.state]
+    () => createApi(stopwatch as any),
+    [stopwatch.getState()]
   );
 
   return (
@@ -21,13 +21,13 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
         <StopwatchView stopwatch={stopwatch} />
         <StateMachineMermaidDiagram
           config={config}
-          stateKey={stopwatch.state.key}
+          stateKey={stopwatch.getState().key}
           actions={actions}
         />
       </div>
       <pre className="text-xs flex-1">
-        {JSON.stringify(stopwatch.state.data, null, 2)}
-        {/* {JSON.stringify(getXStateDefinition(stopwatch.machine), null, 2)} */}
+        {JSON.stringify(stopwatch.getState().data, null, 2)}
+        {/* {JSON.stringify(getXStateDefinition(stopwatch), null, 2)} */}
       </pre>
     </div>
   );
