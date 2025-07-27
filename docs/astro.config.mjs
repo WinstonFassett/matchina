@@ -1,11 +1,9 @@
 // @ts-check
-import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
-import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
-import { fileURLToPath } from "url";
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 import path from "path";
-import fs from "fs";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
