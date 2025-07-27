@@ -1,7 +1,7 @@
 import { FactoryMachineEvent } from "./factory-machine";
-import { ResolveEvent, StateMachineEvent } from "./state-machine";
+import { ResolveEvent } from "./state-machine";
 
-const { assign } = Object;
+export const { assign } = Object;
 
 export const updateState =
   <E extends FactoryMachineEvent<any>>(

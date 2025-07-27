@@ -13,7 +13,6 @@ export function matchina<
   SF extends AnyStatesFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
 >(
   states: SF,
   transitions: TC,

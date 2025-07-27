@@ -4,7 +4,6 @@ import { ResolveEvent, StateMachine, StateMachineEvent } from "./state-machine";
 import { createTransitionMachine } from "./transition-machine";
 import {
   FlatMemberUnion,
-  KeysWithZeroArgs,
   KeysWithZeroRequiredArgs,
 } from "./utility-types";
 
@@ -124,6 +123,7 @@ export type FactoryMachineTransition<
       ev: ResolveEvent<
         FactoryMachineEvent<{ states: SF; transitions: any }>
       > & {
+        type: EventKey;
         from: FactoryState<SF, FromStateKey>;
       },
     ) => FactoryState<SF>);

@@ -1,7 +1,7 @@
 import { StateMachineEvent, StateMachine, ResolveEvent } from "./state-machine";
 
 export const EmptyTransform = <E>(event: E) => event;
-export const EmptyEffect = <E>(event: E) => {};
+export const EmptyEffect = <E>(_event: E) => {};
 
 export type TransitionRecord = {
   [from: string]: {
@@ -41,7 +41,7 @@ export function createTransitionMachine<E extends StateMachineEvent>(
         return { ...ev, to } as E; // TODO: use Object.assign
       }
     },
-    guard: (ev: E) => true,
+    guard: (ev: E) => !!ev,
     transition(change: E) {
       if (!machine.guard(change)) {
         return;

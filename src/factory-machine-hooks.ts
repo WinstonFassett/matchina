@@ -58,8 +58,7 @@ export const afterEvent = <
   });
 
 export const onBeforeEvent = <
-  E extends FactoryMachineEvent<any>,
-  K extends E["type"],
+  E extends FactoryMachineEvent<any>
 >(
   m: StateMachine<E>,
   type: E["type"],

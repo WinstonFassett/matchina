@@ -1,7 +1,5 @@
 import {
   SpecRecord,
-  MatchboxFactoryFromData,
-  MemberOf,
   MemberFromDataSpecs,
   matchboxFactory,
 } from "../matchbox-factory";
