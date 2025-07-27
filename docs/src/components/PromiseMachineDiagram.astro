@@ -8,4 +8,4 @@ const config = getXStateDefinition(machine as FactoryMachine<any>)
 const actions = createApi(machine)
 ---
 
-<StateMachineMermaidDiagram config={config} stateKey={machine.getState().key} client:visible actions={actions}  />
+<StateMachineMermaidDiagram config={config} stateKey={machine.getState().key} client:only="react" actions={actions}  />
