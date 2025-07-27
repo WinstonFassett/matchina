@@ -48,9 +48,30 @@ export default defineConfig({
     starlight({
       plugins: [
         starlightTypeDoc({
+          sidebar: {
+            label: "Reference"
+          },
           entryPoints: ["../src/index.ts"],
           tsconfig: "../tsconfig.typedoc.json",
           output: "reference",
+          typeDoc: {
+              "entryPointStrategy": "expand",
+              "excludePrivate": true,
+              "excludeInternal": true,
+              categorizeByGroup: false,
+              groupOrder: ["Functions", "Variables", "Classes", "*"],
+              "navigation": {
+                "includeGroups": true,
+                "includeCategories": true
+              },
+              // "plugin": [
+              //   "typedoc-plugin-internal-external",
+              //   "typedoc-plugin-inline-sources"
+              // ]
+
+
+              // "excludeNotDocumented": true
+          }
         }),
       ],
       expressiveCode: {
