@@ -82,8 +82,8 @@ export type MemberCreateFromDataSpecs<
  * CreatorsFromDataSpecs maps each tag in DataSpecs to a constructor function for its variant.
  * Each constructor uses MemberCreateFromDataSpecs to create a Matchbox member for the tag.
  *
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag.
+ * Used internally to build the set of variant constructors for a tagged union.
+ * Most users will interact with this via matchboxFactory or UnionFromDataSpecs.
  */
 export type CreatorsFromDataSpecs<DataSpecs, TagProp extends string> = {
   [T in keyof DataSpecs]: MemberCreateFromDataSpecs<T, DataSpecs, TagProp>;
@@ -92,8 +92,7 @@ export type CreatorsFromDataSpecs<DataSpecs, TagProp extends string> = {
 /**
  * UnionFromDataSpecs is an alias for CreatorsFromDataSpecs, representing the full set of variant constructors.
  *
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag (default: "tag").
+ * Used as the main output type for matchboxFactory, giving you a factory for all variants.
  */
 export type UnionFromDataSpecs<
   DataSpecs,
@@ -103,8 +102,7 @@ export type UnionFromDataSpecs<
 /**
  * MatchboxFactoryFromData is an alias for UnionFromDataSpecs, representing the factory for creating Matchbox variants.
  *
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag (default: "tag").
+ * Provided for semantic clarity; use when you want to emphasize the factory aspect in your code/docs.
  */
 export type MatchboxFactoryFromData<
   DataSpecs,
@@ -115,8 +113,8 @@ export type MatchboxFactoryFromData<
  * FactoryFromDataSpecs maps each tag in DataSpecs to a constructor function for its variant.
  * If the spec is a function, the constructor accepts its arguments; otherwise, it returns the variant with the value.
  *
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag.
+ * Used to infer the type of the factory object returned by matchboxFactory.
+ * This is the core type for building variant constructors from a spec record.
  */
 export type FactoryFromDataSpecs<DataSpecs, TagProp extends string> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer R
@@ -128,9 +126,8 @@ export type FactoryFromDataSpecs<DataSpecs, TagProp extends string> = {
  * MemberFromDataSpecs creates the type for a single Matchbox member from its data specification.
  * Includes the data, tag property, and member extension methods (is, as, match).
  *
- * @template Tag - The tag value.
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag.
+ * Used to represent the type of a single variant instance, including its API methods.
+ * This is the main type returned by each variant constructor in the factory.
  */
 export type MemberFromDataSpecs<
   Tag extends keyof DataSpecs,
@@ -147,8 +144,7 @@ export type MemberFromDataSpecs<
  * - as: Casts to a specific variant, throws if the tag does not match.
  * - match: Pattern matching for variant data.
  *
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag.
+ * Used to add ergonomic API methods to each variant instance, making them easy to work with.
  */
 export interface MemberExtensionsFromDataSpecs<
   DataSpecs,
@@ -167,7 +163,8 @@ export interface MemberExtensionsFromDataSpecs<
  * MatchMemberData provides pattern matching for variant data.
  * Accepts a cases object mapping tags to handler functions, and an optional exhaustiveness flag.
  *
- * @template DataSpecs - The record of data specifications.
+ * Used to enable exhaustive and type-safe pattern matching on variant instances.
+ * This is the main API for working with data in a tagged union.
  */
 interface MatchMemberData<DataSpecs> {
   <A, Exhaustive extends boolean = true>(
