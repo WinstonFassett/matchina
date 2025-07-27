@@ -12,7 +12,7 @@ import { AbortableEventHandler } from "./ext/abortable";
 import { Funcware } from "./ext/funcware/funcware";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { HasFilterValues } from "./match-filters";
-import { StateMachineEvent, StateMachine } from "./state-machine";
+import { StateMachineEvent, StateMachine } from "./state-machine-types";
 import { Effect, Middleware } from "./function-types";
 import { Func } from "./utility-types";
 

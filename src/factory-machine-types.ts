@@ -1,0 +1,75 @@
+import { StateEventTransitionSenders } from "./factory-machine-event-api";
+import { MatchInvocation } from "./match-case";
+import { StateFactory } from "./state";
+import { ResolveEvent, StateMachine, StateMachineEvent } from "./state-machine-types";
+import { FlatMemberUnion } from "./utility-types";
+
+export type FactoryState<
+  States extends StateFactory,
+  StateKey extends keyof States = keyof States
+> = ReturnType<States[StateKey]>;
+
+export interface FactoryMachineContext<
+  SF extends StateFactory = StateFactory
+> {
+  states: SF;
+  transitions: FactoryMachineTransitions<SF>;
+}
+
+export interface FactoryMachine<FC extends FactoryMachineContext<any>> extends StateMachine<FactoryMachineEvent<FC>> {
+  states: FC["states"];
+  transitions: FC["transitions"];
+}
+
+export type FactoryMachineTransitions<SF extends StateFactory> = {
+  [FromStateKey in keyof SF]?: {
+    [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
+  };
+};
+
+export type FactoryMachineTransition<
+  SF extends StateFactory,
+  FromStateKey extends keyof SF = keyof SF,
+  EventKey extends string = any
+> = keyof SF |
+  ((...params: any[]) => FactoryState<SF>) |
+  ((...params: any[]) => (
+    ev: ResolveEvent<
+      FactoryMachineEvent<{ states: SF; transitions: any; }>
+    > & {
+      type: EventKey;
+      from: FactoryState<SF, FromStateKey>;
+    }
+  ) => FactoryState<SF>);
+
+export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
+  [K in keyof FC["transitions"]]: {
+    [E in keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
+  }[keyof FC["transitions"][K]];
+}[keyof FC["transitions"]];
+
+export type FactoryMachineTransitionEvent<
+  FC extends FactoryMachineContext<any>,
+  FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
+  EventKey extends keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
+  ToKey extends FC["transitions"][FromKey][EventKey] = FC["transitions"][FromKey][EventKey]
+> = StateMachineEvent<FactoryState<FC["states"]>> &
+  FactoryMachineEventApi<FC> & {
+    from: FactoryState<
+      FC["states"], FromKey extends keyof FC["states"] ? FromKey : any
+    >;
+    type: EventKey;
+  } & (ToKey extends keyof FC["states"] ? {
+    params: Parameters<FC["states"][ToKey]>;
+    to: FactoryState<FC["states"], ToKey>;
+  } : ToKey extends (...args: infer A) => (...innerArgs: any[]) => infer R ? {
+    params: A;
+    to: R;
+  } : ToKey extends (...args: infer A) => infer R ? {
+    params: A;
+    to: R;
+  } : never);
+type FactoryMachineEventApi<FC extends FactoryMachineContext<any>> = {
+  get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
+  match: MatchInvocation<FlatMemberUnion<StateEventTransitionSenders<FC>>>;
+};

@@ -1,10 +1,10 @@
 import { AbortableEventHandler, setup } from "./ext";
 import { iff } from "./extras/iff";
 import { EntryListener, ExitListener, when } from "./extras/when";
-import { FactoryMachineEvent, FactoryState } from "./factory-machine";
+import { FactoryMachineEvent, FactoryState } from "./factory-machine-types";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { FilterValues, HasFilterValues } from "./match-filters";
-import { StateMachine } from "./state-machine";
+import { StateMachine } from "./state-machine-types";
 import { after, before, enter, guard, leave } from "./state-machine-hooks";
 import { Effect } from "./function-types";
 

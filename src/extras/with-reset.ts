@@ -1,5 +1,5 @@
-import { FactoryState } from "../factory-machine";
-import type { StateMachine } from "../state-machine";
+import { FactoryState } from "../factory-machine-types";
+import type { StateMachine } from "../state-machine-types";
 
 export const resetMachine = <T extends StateMachine<any>>(
   machine: T & Partial<{ reset: () => void }>,

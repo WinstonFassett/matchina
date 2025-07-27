@@ -1,8 +1,10 @@
 import {
-  FactoryMachine,
-  FactoryMachineEvent,
   createMachine,
 } from "./factory-machine";
+import {
+  FactoryMachine,
+  FactoryMachineEvent
+} from "./factory-machine-types";
 import { States, defineStates } from "./define-states";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {

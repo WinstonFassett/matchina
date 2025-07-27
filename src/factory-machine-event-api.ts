@@ -1,8 +1,8 @@
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineTransitionEvent,
-} from "./factory-machine";
+  FactoryMachineTransitionEvent
+} from "./factory-machine-types";
 import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
 export function createApi<

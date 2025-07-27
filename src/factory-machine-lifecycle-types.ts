@@ -3,9 +3,9 @@ import { Funcware } from "./ext/funcware/funcware";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,
-  FactoryMachineTransitionEvent,
-} from "./factory-machine";
-import { StateMachine, StateMachineEvent } from "./state-machine";
+  FactoryMachineTransitionEvent
+} from "./factory-machine-types";
+import { StateMachine, StateMachineEvent } from "./state-machine-types";
 import { Effect, Middleware } from "./function-types";
 
 type TransitionHookExtensions<E extends StateMachineEvent> = {

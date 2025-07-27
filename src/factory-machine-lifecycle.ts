@@ -3,8 +3,8 @@ import { Disposer, disposers } from "./ext/setup";
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineEvent,
-} from "./factory-machine";
+  FactoryMachineEvent
+} from "./factory-machine-types";
 import {
   StateEventHookConfig,
   StateHookConfig,

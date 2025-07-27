@@ -1,5 +1,5 @@
-import { FactoryMachineEvent } from "./factory-machine";
-import { ResolveEvent } from "./state-machine";
+import { FactoryMachineEvent } from "./factory-machine-types";
+import { ResolveEvent } from "./state-machine-types";
 
 export const { assign } = Object;
 
