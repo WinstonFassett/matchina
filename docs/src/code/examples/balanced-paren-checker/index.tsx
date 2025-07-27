@@ -1,9 +1,9 @@
+import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { createApi } from "matchina";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 
 export function BalancedParenthesesDemo() {
   const [checkerVersion, setCheckerVersion] = useState({});

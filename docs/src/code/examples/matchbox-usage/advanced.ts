@@ -46,7 +46,7 @@ function processResponse<T>(
 }
 
 // 3. Type narrowing with exhaustive checking
-function handleResponse<T>(
+export function handleResponse<T>(
   response:
     | ReturnType<typeof Response.Success>
     | ReturnType<typeof Response.Error>

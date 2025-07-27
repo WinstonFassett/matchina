@@ -10,7 +10,7 @@ const HttpStatus = matchboxFactory({
 const status = HttpStatus.NotFound();
 
 // Using a default case
-const message = status.match({
+export const message = status.match({
   OK: () => "Everything is fine",
   NotFound: () => "Resource not found",
   _: () => "An error occurred", // Handles all other cases

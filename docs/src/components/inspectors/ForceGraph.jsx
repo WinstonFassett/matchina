@@ -70,7 +70,7 @@ export default function StateForceGraph({
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
         .nodeCanvasObjectMode(() => "after")
-        .nodeCanvasObject((node, ctx, globalScale) => {
+        .nodeCanvasObject((node, ctx, _globalScale) => {
           // if (node.name !== Graph.value) {
           //   return;
           // }
@@ -280,7 +280,7 @@ export default function StateForceGraph({
   useEffect(() => {
     // console.log("lastEvent", lastEvent);
     if (!lastEvent) return;
-    const { links } = diagram;
+    // const { links } = diagram;
     if (prevState) {
       // console.log("event", prevState, lastEvent);
       const { type } = lastEvent;

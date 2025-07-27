@@ -292,6 +292,8 @@ export default defineConfig({
     react(),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(+)
+    ],
   },
 });

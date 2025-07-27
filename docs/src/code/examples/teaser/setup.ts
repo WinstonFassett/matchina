@@ -15,10 +15,10 @@ fo.key; // "Fo"
 fo.is("Fo"); // true
 fo.data; // { name: "John" }
 
-const { name } = fo.data; // { name: "John" }
-const { age } = states.Fum("Jane", 30).data; // { name: "Jane", age: 30 }
+export const { name } = fo.data; // { name: "John" }
+export const { age } = states.Fum("Jane", 30).data; // { name: "Jane", age: 30 }
 // ---cut-after---
 
 const { Fee, Fi, Fo, Fum } = states;
-
 export { Fee, Fi, Fo, Fum };
+

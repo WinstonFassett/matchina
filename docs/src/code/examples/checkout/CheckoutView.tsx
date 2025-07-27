@@ -36,7 +36,7 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
             handleAsyncProcessing={handleAsyncProcessing}
           />
         ),
-        Processing: (data) => (
+        Processing: (_data) => (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Processing Order...</h2>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-current mx-auto mb-4"></div>

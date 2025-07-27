@@ -32,8 +32,8 @@ export const MachineVizBasic = memo(
                   {/* No transitions */}
                 </span>
               ) : (
-                transitions.map(([event, targetRaw]) => {
-                  const target = String(targetRaw);
+                transitions.map(([event, _targetRaw]) => {
+                  // const target = String(targetRaw);
                   const disabled = !isActive || !actions?.[event];
                   return (
                     <button

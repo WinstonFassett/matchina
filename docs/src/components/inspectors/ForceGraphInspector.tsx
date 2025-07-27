@@ -210,8 +210,8 @@ export default function ForceGraphInspector({
             );
           }
           const relLink = { x: end.x - start.x, y: end.y - start.y };
-          const maxTextLength =
-            Math.sqrt(relLink.x ** 2 + relLink.y ** 2) - LABEL_NODE_MARGIN * 2;
+          // const maxTextLength =
+          //   Math.sqrt(relLink.x ** 2 + relLink.y ** 2) - LABEL_NODE_MARGIN * 2;
           let textAngle = Math.atan2(relLink.y, relLink.x);
           if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
           if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
@@ -300,7 +300,7 @@ export default function ForceGraphInspector({
         // } else {
         //   Graph.d3Force("collide").radius(18);
         // }
-        const charge = Graph.d3Force("charge");
+        // const charge = Graph.d3Force("charge");
         // if (charge) charge.strength(-100); // Default is -120, less negative = more spacing
 
         // Reduce link strength to weaken connections

@@ -27,7 +27,7 @@ export function StopwatchApp({ machine }: { machine: Stopwatch }) {
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2">
-        {getStateEvents(stopwatch.machine.transitions, stopwatch.getState().key)
+        {getStateEvents(stopwatch.transitions, stopwatch.getState().key)
           .filter((event) => !event.startsWith("_"))
           .map((event) => (
             <button
