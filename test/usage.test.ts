@@ -96,7 +96,7 @@ describe("factory-machine", () => {
             Resolved: (ev) => ev.ok,
             Rejected: (ev) => ev.err.message,
             _: () => false,
-          }),
+          }, false),
         ),
       ),
     );

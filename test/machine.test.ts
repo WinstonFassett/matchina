@@ -40,13 +40,13 @@ describe("createMachine", () => {
         machine.states.Initial().match({
           Initial: () => 100,
           _: () => 0,
-        }),
+        }, false),
       ).toBe(100);
 
       expect(
         machine.states.Initial().match({
           _: () => 1,
-        }),
+        }, false),
       ).toBe(1);
 
       expect(() =>

@@ -50,7 +50,7 @@ describe("matchboxFactory", () => {
           Box.C("test").match({
             A: () => "A",
             _: (...args) => `other ${JSON.stringify(args)}`,
-          }),
+          }, false),
         ).toBe('other [{"data":"test"}]');
       });
       it("should throw with unmatched", () => {

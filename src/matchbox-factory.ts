@@ -1,4 +1,4 @@
-import { match, MatchCases } from "./match-case";
+import { match } from "./match-case";
 import { Simplify } from "./utility-types";
 
 /**
@@ -109,6 +109,24 @@ export type MatchboxMember<
   MatchboxMemberApi<DataSpecs, TagProp>;
 
 /**
+ * Add conditional type for match cases to support exhaustiveness and fallback (_)
+ * - _ is always allowed
+ * - If _ is present, all tag cases become optional (exhaustiveness is satisfied)
+ * - If _ is not present and exhaustive is true, all tags are required
+ */
+type MatchCases<
+  DataSpecs,
+  A,
+  Exhaustive extends boolean = true
+> =
+  // If _ is present, all tags are optional (exhaustiveness is satisfied)
+  (Partial<{ [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }> & { _?: (...args: any[]) => A })
+  // Otherwise, if exhaustive, all tags are required
+  | (Exhaustive extends true
+      ? { [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }
+      : Partial<{ [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }>);
+
+/**
  * MatchboxMemberApi provides type-safe methods for working with a Matchbox member:
  * - is: Type predicate for narrowing to a specific variant.
  * - as: Casts to a specific variant, throws if the tag does not match.
@@ -119,10 +137,8 @@ export type MatchboxMember<
 export interface MatchboxMemberApi<DataSpecs, TagProp extends string> {
   is: <T extends keyof DataSpecs>(key: T) => this is MatchboxMember<T, DataSpecs, TagProp>;
   as: <T extends keyof DataSpecs>(key: T) => MatchboxMember<T, DataSpecs, TagProp>;
-  match: <A, Exhaustive extends boolean = true>(
-    cases: { [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A },
-    exhaustive?: Exhaustive
-  ) => A;
+  match<A>(cases: MatchCases<DataSpecs, A, true>, exhaustive?: boolean): A;
+  match<A>(cases: MatchCases<DataSpecs, A, false>, exhaustive: boolean): A;
 }
 
 /**
@@ -230,18 +246,24 @@ class MemberImpl<
     return this.getTag() === tag;
   }
 
-  /**
-   * Pattern matching for variant data.
-   * @param casesObj - An object mapping tags to handler functions.
-   * @param exhaustive - Whether to enforce exhaustiveness (default: true).
-   */
-  match<A>(
-    casesObj: MatchCases<MemberData<Config>, A>,
-    exhaustive = true,
-  ): any {
+  match<A>(casesObj: MatchCases<Config, A, true>, exhaustive?: boolean): any;
+  match<A>(casesObj: MatchCases<Config, A, false>, exhaustive: boolean): any;
+  match<A>(casesObj: MatchCases<Config, A, boolean>, exhaustive?: boolean): any {
     const tag = this.getTag();
     const data = this.data;
-    return match(exhaustive, casesObj, tag, data);
+    if (exhaustive === false) {
+      const fallback = (casesObj as any)["_"];
+      const fn = (casesObj as any)[tag] ?? fallback;
+      return typeof fn === "function" ? fn(data) : undefined;
+    }
+    if (typeof (casesObj as any)[tag] === "function") {
+      return (casesObj as any)[tag](data);
+    }
+    const fallback = (casesObj as any)["_"];
+    if (typeof fallback === "function") {
+      return fallback(data);
+    }
+    throw new Error(`Match did not handle key: '${tag}'`);
   }
 }
 
