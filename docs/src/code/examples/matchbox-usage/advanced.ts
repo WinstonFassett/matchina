@@ -57,10 +57,14 @@ export function handleResponse(
     return response.data;
   } else if (response.is("Error")) {
     // TypeScript knows response is Error type
-    throw new Error(`API Error ${response.data.code}: ${response.data.message}`);
+    throw new Error(
+      `API Error ${response.data.code}: ${response.data.message}`
+    );
   } else {
     // TypeScript knows this must be Pending
-    console.log(`Waiting since ${new Date(response.data.timestamp).toISOString()}`);
+    console.log(
+      `Waiting since ${new Date(response.data.timestamp).toISOString()}`
+    );
     return null;
   }
 }

@@ -2,7 +2,7 @@ import {
   createApi,
   createMachine,
   createPromiseMachine,
-  defineStates
+  defineStates,
 } from "matchina";
 
 // ---cut---

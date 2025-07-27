@@ -18,7 +18,9 @@ export function StopwatchApp({ machine }: { machine: Stopwatch }) {
   return (
     <div className="p-4 rounded border">
       {/* State display */}
-      <div className={`inline ${stateColorClass}`}>{stopwatch.getState().key}</div>
+      <div className={`inline ${stateColorClass}`}>
+        {stopwatch.getState().key}
+      </div>
 
       {/* Elapsed time */}
       <div className="text-4xl font-bold my-4">

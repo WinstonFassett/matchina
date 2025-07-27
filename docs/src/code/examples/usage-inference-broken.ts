@@ -2,7 +2,7 @@
 import {
   defineStates,
   matchina,
-  type FactoryMachineTransitions
+  type FactoryMachineTransitions,
 } from "matchina";
 
 const states = defineStates({

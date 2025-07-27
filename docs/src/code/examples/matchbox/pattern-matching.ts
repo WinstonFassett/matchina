@@ -5,7 +5,7 @@ const lightStates = matchboxFactory({
   Off: undefined,
   On: (brightness = 100) => ({ brightness }),
 });
-type LightState = ReturnType<typeof lightStates[keyof typeof lightStates]>;
+type LightState = ReturnType<(typeof lightStates)[keyof typeof lightStates]>;
 
 // Create instances
 const off = lightStates.Off();

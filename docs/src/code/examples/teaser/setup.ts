@@ -21,4 +21,3 @@ export const { age } = states.Fum("Jane", 30).data; // { name: "Jane", age: 30 }
 
 const { Fee, Fi, Fo, Fum } = states;
 export { Fee, Fi, Fo, Fum };
-

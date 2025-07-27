@@ -72,22 +72,21 @@ pureVersion.send("someEvent", 1, 2, 3);
 
 The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
 
-
-{/* ````ts twoslash
+{/\* ````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { createApi } from "matchina";
 
 const toggleMachine = createMachine({
-  initial: "off",
-  states: {
-    off: {
-      on: { TOGGLE: "on" },
-    },
-    on: {
-      on: { TOGGLE: "off" },
-    },
-  },
+initial: "off",
+states: {
+off: {
+on: { TOGGLE: "on" },
+},
+on: {
+on: { TOGGLE: "off" },
+},
+},
 });
 
 // Create a flat event API
@@ -95,7 +94,8 @@ const toggleApi = createApi(toggleMachine);
 
 // Now you can simply call the event methods
 toggleApi.TOGGLE();
-```  */}
+
+````*/}
 
 The generated API is fully typed, with the correct parameter types for each event handler:
 
@@ -327,4 +327,4 @@ In this example:
 
 - Internal code uses the `createApi` wrapper for typed event methods
 - External code only receives the `pure` interface with limited capabilities
-- The authentication logic is encapsulated, with only necessary parts exposed */}
+- The authentication logic is encapsulated, with only necessary parts exposed \*/}
