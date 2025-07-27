@@ -1,5 +1,4 @@
-import { defineStates, createMachine, zen, delay } from "matchina";
-import { useMachine } from "matchina/react";
+import { createMachine, defineStates, delay, zen } from "matchina";
 
 const pairs = [
   ["${", "}"],

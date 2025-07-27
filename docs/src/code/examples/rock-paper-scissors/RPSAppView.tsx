@@ -33,7 +33,7 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
 
       {/* Game content based on state */}
       {machine.getState().match({
-        WaitingForPlayer: ({ computerScore, playerScore }) => (
+        WaitingForPlayer: () => (
           <div className="text-center">
             <h3 className="text-lg mb-3">Choose your move:</h3>
             <div className="flex justify-center gap-4">

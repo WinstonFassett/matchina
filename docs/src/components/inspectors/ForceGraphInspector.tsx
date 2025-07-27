@@ -190,7 +190,7 @@ export default function ForceGraphInspector({
           // Draw edge label with background
           const value = valueRef.current;
           const fontSize = baseFontSize * 0.85;
-          const LABEL_NODE_MARGIN = Graph.nodeRelSize() * 2;
+          // const LABEL_NODE_MARGIN = Graph.nodeRelSize() * 2;
           const start = link.source;
           const end = link.target;
           if (typeof start !== "object" || typeof end !== "object") return;

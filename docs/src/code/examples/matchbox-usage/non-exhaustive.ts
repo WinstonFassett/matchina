@@ -9,7 +9,7 @@ const Animal = matchboxFactory({
 const pet = Animal.Dog("Rex");
 
 // Non-exhaustive matching (second parameter set to false)
-const sound = pet.match(
+export const sound = pet.match(
   {
     Dog: () => "Woof",
     Cat: () => "Meow",

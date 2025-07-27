@@ -1,9 +1,3 @@
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const path = require("path");
-
-// For resolving the matchina module correctly in Twoslash
 export default {
   compilerOptions: {
     paths: {

@@ -14,7 +14,7 @@ type Shape = ReturnType<(typeof shapes)[keyof typeof shapes]>;
 const someShape: Shape = shapes.Circle(5);
 
 // ---cut---
-const area = someShape.match({
+export const area = someShape.match({
   Circle: ({ radius }) => Math.PI * radius * radius,
   Square: ({ side }) => side * side,
   Rectangle: ({ width, height }) => width * height,

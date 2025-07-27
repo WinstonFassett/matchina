@@ -6,15 +6,7 @@ import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definitio
 import { balancedParenthesesChecker } from "./machine";
 
 export function BalancedParenthesesDemo() {
-  const [checkerVersion, setCheckerVersion] = useState({});
-  const checker = useMemo(() => balancedParenthesesChecker(), [checkerVersion]);
-
-  // With zen, the machine methods are directly on the object
-  const state = checker.getState();
-  const actions = useMemo(
-    () => createApi(checker, state.key),
-    [checker, state]
-  );
+  const checker = useMemo(() => balancedParenthesesChecker(), []);
   return (
     <div>
       <MachineExampleWithChart

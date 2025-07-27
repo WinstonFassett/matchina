@@ -13,7 +13,7 @@ const baseMachine = createMachine(
   states,
   {
     Idle: {
-      start: (trackId: string) => (ev) => states.Playing(trackId),
+      start: (trackId: string) => (_ev) => states.Playing(trackId),
     },
     Playing: {
       pause: () => (ev) => states.Paused(ev.from.data.trackId),

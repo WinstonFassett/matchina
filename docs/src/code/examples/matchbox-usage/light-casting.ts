@@ -16,7 +16,7 @@ try {
 
   // This will throw because light is not in the "Off" state
   const asOff = light.as("Off");
-  console.log("This line will never execute");
+  console.log("This line will never execute", asOff);
 } catch (e: any) {
   console.error("Cast failed:", e.message); // "Attempted to cast On as Off"
 }

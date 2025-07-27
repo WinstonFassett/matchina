@@ -1,7 +1,6 @@
 import { useMachine } from "matchina/react";
+import { CartForm, PaymentForm, ShippingForm } from "./forms";
 import type { CheckoutMachine } from "./machine";
-import React from "react";
-import { CartForm, ShippingForm, PaymentForm } from "./forms";
 
 export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
   useMachine(machine);
@@ -13,7 +12,7 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
     setTimeout(() => {
       if (Math.random() > 0.3) {
         const orderId =
-          "ORD-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+          "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
         machine.success({ ...data, orderId });
       } else {
         machine.failure({

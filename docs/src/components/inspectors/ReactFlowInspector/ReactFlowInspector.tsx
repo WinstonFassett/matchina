@@ -59,7 +59,7 @@ const edgeTypes: EdgeTypes = {
 const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   value,
   definition,
-  lastEvent,
+  // lastEvent,
   prevState: previousState,
   dispatch,
   edgesClickable = true, // Default to true for backward compatibility

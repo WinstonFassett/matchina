@@ -22,7 +22,7 @@ console.log(error.status); // 'Error'
 console.log(pending.status); // 'Pending'
 
 // 2. Advanced pattern matching with type safety
-function processResponse<T>(
+export function processResponse(
   response:
     | ReturnType<typeof Response.Success>
     | ReturnType<typeof Response.Error>
@@ -46,7 +46,7 @@ function processResponse<T>(
 }
 
 // 3. Type narrowing with exhaustive checking
-export function handleResponse<T>(
+export function handleResponse(
   response:
     | ReturnType<typeof Response.Success>
     | ReturnType<typeof Response.Error>
