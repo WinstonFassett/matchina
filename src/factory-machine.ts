@@ -46,7 +46,9 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
   ev: ResolveEvent<FactoryMachineEvent<FC>>,
   states: FC["states"],
 ) {
-  if (!transition) return undefined;
+  if (!transition) {
+    return undefined
+  }
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
