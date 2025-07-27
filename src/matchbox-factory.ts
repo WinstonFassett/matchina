@@ -1,16 +1,9 @@
-// export type Spec = ((...args: any[]) => any) | any;
-// export type Specs = Record<string, Spec>;
-
 import { match, MatchCases } from "./match-case";
 import { Simplify } from "./utility-types";
 
-interface AnyFactory {
+interface FactoryShape {
   [key: string]: (...args: unknown[]) => unknown;
 }
-
-type TFactory<T, K extends string = string> = {
-  [key in K]: (...args: unknown[]) => T;
-};
 
 type AFactoryMember<TagProp extends string, Tag extends string, Data> = {
   data: Data;
@@ -21,7 +14,7 @@ type AFactoryMember<TagProp extends string, Tag extends string, Data> = {
 
 type MemberOfFactory<
   TagProp extends string,
-  F extends AnyFactory,
+  F extends FactoryShape,
   D,
   K extends string & keyof F = string & keyof F,
 > = ReturnType<F[K]> &
@@ -30,26 +23,12 @@ type MemberOfFactory<
 
 export interface FactoryMemberApi<
   TagProp extends string,
-  F extends AnyFactory,
+  F extends FactoryShape,
 > {
   is: <K extends keyof F>(key: K) => this is MemberOfFactory<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => MemberOfFactory<TagProp, F, K>;
   match: MatchMemberData<ExtractMemberTypes<F>>;
 }
-
-type MatchboxFactory<TagProp extends string> = {
-  // [key: string]: (...args: unknown[]) => FactoryMember<any, any, K>;
-  [K in string]: (...args: unknown[]) => MemberOfFactory<TagProp, any, any, K>;
-};
-
-// type MatchboxFactory<
-//   TagProp extends string = "tag",
-//   Creators extends TFactory<any> = TFactory<any>,
-// > = {
-//   [K in keyof Creators]: (
-//     ...args: Parameters<Creators[K]>
-//   ) => FactoryMember<Creators, MemberData<Creators>, K>;
-// };
 
 export type UnionFromDataSpecs<
   DataSpecs,
@@ -122,7 +101,7 @@ export type SpecRecord<Val = any> = {
 } & { _?: never };
 
 export type MemberOf<
-  Factory extends AnyFactory,
+  Factory extends FactoryShape,
   Key extends keyof Factory = keyof Factory,
 > = ReturnType<Factory[Key]>;
 
