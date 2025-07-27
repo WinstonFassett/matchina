@@ -25,7 +25,7 @@ const machine = matchina(
       resume: "Playing",
     },
   },
-  "Idle",
+  "Idle"
 );
 
 machine.st;

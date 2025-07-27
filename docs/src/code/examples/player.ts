@@ -23,7 +23,7 @@ const baseMachine = createMachine(
     },
     Stopped: { start: "Playing" },
   },
-  "Idle",
+  "Idle"
 );
 
 // Use zen to enhance the machine with utility methods

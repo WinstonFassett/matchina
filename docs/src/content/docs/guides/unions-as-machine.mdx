@@ -3,7 +3,7 @@ title: Unions as Machines
 description: Learn how to implement a state machine using matchboxes for states and events
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
 
 # Unions as Machines
@@ -73,6 +73,7 @@ const transition = (state: State, event: Event) =>
 ```
 
 This function uses pattern matching to:
+
 1. Check the current state
 2. Within each state case, check the event type
 3. Return the new state based on the state-event combination
@@ -186,33 +187,34 @@ const states = matchboxFactory({
 }, "key");
 
 const events = matchboxFactory({
-  start: (id: string) => ({ id }),
-  complete: (result: any) => ({ result }),
-  fail: (error: string) => ({ error }),
-  retry: () => ({})
+start: (id: string) => ({ id }),
+complete: (result: any) => ({ result }),
+fail: (error: string) => ({ error }),
+retry: () => ({})
 }, "type");
 
 // Transition function would handle all combinations
-```
+
+````
   </TabItem>
   <TabItem label="With Side Effects">
 ```ts
 function createMachineWithEffects(initialState: State) {
   let currentState = initialState;
-  
+
   // Effects map
   const effects = {
     onEnterDone: (result: number) => {
       console.log(`Task completed with result: ${result}`);
     }
   };
-  
+
   return {
     getState: () => currentState,
     send(event: Event) {
       const prevState = currentState;
       currentState = transition(currentState, event);
-      
+
       // Run effects when state changes
       if (prevState.key !== currentState.key) {
         if (currentState.is("Done")) {
@@ -222,7 +224,8 @@ function createMachineWithEffects(initialState: State) {
     }
   };
 }
-```
+````
+
   </TabItem>
 </Tabs>
 

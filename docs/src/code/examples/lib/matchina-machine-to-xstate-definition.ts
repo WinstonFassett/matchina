@@ -29,10 +29,10 @@ export function getXStateDefinition<
         definition.states[from].on[event] = resolveState(
           machine.states,
           from,
-          entry,
+          entry
         ).key;
       });
-    },
+    }
   );
   return definition;
 }

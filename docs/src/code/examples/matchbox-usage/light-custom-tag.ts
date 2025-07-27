@@ -1,10 +1,13 @@
-import { matchboxFactory } from 'matchina';
+import { matchboxFactory } from "matchina";
 
 // Create a Light matchbox with a custom tag property name
-const Light = matchboxFactory({
-  Off: undefined,
-  On: (percentage = 100) => ({ percentage })
-}, 'state'); // Using 'state' instead of default 'tag'
+const Light = matchboxFactory(
+  {
+    Off: undefined,
+    On: (percentage = 100) => ({ percentage }),
+  },
+  "state"
+); // Using 'state' instead of default 'tag'
 
 const light = Light.On(60);
 
@@ -19,7 +22,7 @@ if (light.is("On")) {
 
 const message = light.match({
   On: ({ percentage }) => `On: ${percentage}%`,
-  Off: () => "Off"
+  Off: () => "Off",
 });
 
 console.log(message); // "On: 60%"

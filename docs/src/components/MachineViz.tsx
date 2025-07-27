@@ -97,7 +97,7 @@ ${rows.join("\n")}
           if (targetStateEntry) {
             const targetStateKey = targetStateEntry;
             rows.push(
-              `    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetStateKey}[${targetStateKey}]`,
+              `    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetStateKey}[${targetStateKey}]`
             );
             // rows.push(`${indent()}${stateKey} --> ${state.key}: ${eventType}`);
             renderedStates.add(stateKey);
@@ -166,7 +166,7 @@ export const StateMachineMermaidDiagram = memo(
                 node.nodeType === Node.ELEMENT_NODE &&
                 (node as HTMLElement).tagName === "BR"
                   ? "\n"
-                  : node.textContent,
+                  : node.textContent
               )
               .join("")
               .split("\n");
@@ -189,7 +189,7 @@ export const StateMachineMermaidDiagram = memo(
           });
         }, 1);
       },
-      [debouncedStateKey],
+      [debouncedStateKey]
     );
     if (!chart) return <div>NO CHART!!!</div>;
 
@@ -206,7 +206,7 @@ export const StateMachineMermaidDiagram = memo(
         {/*<pre>{JSON.stringify(definition, null, 2)}</pre>*/}
       </div>
     );
-  },
+  }
 );
 
 export default StateMachineMermaidDiagram;

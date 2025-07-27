@@ -18,17 +18,17 @@ export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   [key: string]: Func;
 } & {
   transition: (
-    middleware: Middleware<E>,
+    middleware: Middleware<E>
   ) => Funcware<StateMachine<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
   resolveExit: <F extends StateMachine<E>["resolveExit"]>(
-    resolveFn: F,
+    resolveFn: F
   ) => Funcware<F>;
   guard: (
-    guardFn: StateMachine<E>["guard"],
+    guardFn: StateMachine<E>["guard"]
   ) => Funcware<StateMachine<E>["guard"]>;
   handle: (
-    handleFn: StateMachine<E>["handle"],
+    handleFn: StateMachine<E>["handle"]
   ) => Funcware<StateMachine<E>["handle"]>;
   before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
   leave: Transform<Effect<E>, Funcware<Effect<E>>>;
@@ -65,13 +65,13 @@ const hookSetup =
     ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
   ) =>
     methodEnhancer<K>(key)(HookAdapters[key](...config)) as (
-      target: T,
+      target: T
     ) => () => void;
 
 const composeHandlers =
   <E extends StateMachineEvent>(
     outer: (value: E) => E | undefined,
-    inner: (value: E) => E | undefined,
+    inner: (value: E) => E | undefined
   ): ((value: E) => E | undefined) =>
   (ev) =>
     outer(inner(ev) as any);
@@ -79,7 +79,7 @@ const composeHandlers =
 const combineGuards =
   <E extends StateMachineEvent>(
     first: (value: E) => boolean,
-    next: (value: E) => boolean,
+    next: (value: E) => boolean
   ): ((value: E) => boolean) =>
   (ev) => {
     const res = first(ev) && next(ev);
@@ -146,7 +146,7 @@ export const setupTransition = <
 ) => change(filter, ...setups)(machine);
 
 function middlewareToFuncware<E>(
-  middleware: Middleware<E>,
+  middleware: Middleware<E>
 ): Funcware<(change: E) => void> {
   return (next) => (ev) => {
     middleware(ev, next);

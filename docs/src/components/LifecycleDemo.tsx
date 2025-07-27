@@ -12,7 +12,7 @@ function useAdder() {
       Object.assign(zen(machine), {
         reset: createReset(machine, machine.states.Idle()),
       }),
-    [machine],
+    [machine]
   );
   useMachine(wrapper);
   return wrapper;
@@ -45,7 +45,7 @@ export function LifecycleDemo({}) {
                 type,
                 from.key,
                 to.key,
-                Object.keys(params),
+                Object.keys(params)
               );
             },
           },
@@ -68,7 +68,7 @@ export function LifecycleDemo({}) {
                 from.key,
                 name,
                 message,
-                stack,
+                stack
               );
             },
           },
@@ -151,7 +151,7 @@ export function LifecycleDemo({}) {
                 "Last Change": change,
               },
               null,
-              2,
+              2
             )}
           </pre>
         </div>

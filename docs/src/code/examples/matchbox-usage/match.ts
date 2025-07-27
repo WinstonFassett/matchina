@@ -6,7 +6,7 @@ const shapes = matchboxFactory(
     Square: (side: number) => ({ side }),
     Rectangle: (width: number, height: number) => ({ width, height }),
   },
-  "type",
+  "type"
 );
 
 type Shape = ReturnType<(typeof shapes)[keyof typeof shapes]>;

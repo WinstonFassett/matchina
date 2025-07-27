@@ -7,7 +7,7 @@ export const methodEnhancer =
   (target: T) => {
     return enhanceMethod(target, methodName, fn);
   };
-  
+
 export type HasMethod<K extends string> = {
   [key in K]: (...args: any[]) => any;
 };

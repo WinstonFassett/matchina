@@ -5,7 +5,7 @@ const states = matchboxFactory(
     Idle: () => ({}),
     Done: (x: number) => ({ result: x }),
   },
-  "key",
+  "key"
 );
 
 const events = matchboxFactory(
@@ -13,7 +13,7 @@ const events = matchboxFactory(
     add: (x: number, y: number) => ({ x, y }),
     square: (x: number) => x,
   },
-  "type",
+  "type"
 );
 
 states.Idle().key; // "Idle"

@@ -23,7 +23,7 @@ const m4 = createMachine(
     Resolved: {},
     Rejected: {},
   },
-  "Idle",
+  "Idle"
 );
 m4.getChange().to.key = "Pending";
 
@@ -41,9 +41,9 @@ setup(m4)(
         Resolved: (ev) => ev.ok,
         Rejected: (ev) => ev.err,
         _: () => false,
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 
 m4.send("execute", 1);

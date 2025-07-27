@@ -61,7 +61,7 @@ export const MachineVizBasic = memo(
         {stateBoxes}
       </div>
     );
-  },
+  }
 );
 
 export default MachineVizBasic;

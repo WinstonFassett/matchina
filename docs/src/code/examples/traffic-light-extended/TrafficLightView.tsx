@@ -17,7 +17,7 @@ export const ExtendedTrafficLightView = ({
   const walkWarningDuration = data.data.walkWarningDuration;
 
   const [timeRemaining, setTimeRemaining] = useState(
-    currentState.data.duration,
+    currentState.data.duration
   );
   const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -25,7 +25,7 @@ export const ExtendedTrafficLightView = ({
 
   const progressPercent = Math.max(
     0,
-    Math.min(100, (timeRemaining / currentState.data.duration) * 100),
+    Math.min(100, (timeRemaining / currentState.data.duration) * 100)
   );
   // Set initial walk warning duration
   useEffect(() => {
@@ -44,13 +44,13 @@ export const ExtendedTrafficLightView = ({
   // Handle light countdown
   useIntervalEffect(
     () => setTimeRemaining((prev) => Math.max(0, prev - 100)),
-    currentState.data.duration > 0 ? 100 : null,
+    currentState.data.duration > 0 ? 100 : null
   );
 
   // Handle walk countdown
   useIntervalEffect(
     () => setWalkTimeRemaining((prev) => Math.max(0, prev - 100)),
-    walkTimeRemaining > 0 ? 100 : null,
+    walkTimeRemaining > 0 ? 100 : null
   );
 
   // Handle traffic light blinking
@@ -58,13 +58,13 @@ export const ExtendedTrafficLightView = ({
     () => setIsBlinking((prev) => !prev),
     currentState.is("FlashingYellow") || currentState.is("FlashingRed")
       ? 500
-      : null,
+      : null
   );
   useIntervalEffect(
     () => {
       setWalkBlinking((prev) => !prev);
     },
-    walkTimeRemaining > 0 ? 500 : null,
+    walkTimeRemaining > 0 ? 500 : null
   );
 
   return (
@@ -82,7 +82,7 @@ export const ExtendedTrafficLightView = ({
                   FlashingRed: () => (isBlinking ? "bg-red-600" : "bg-red-900"),
                   _: () => "bg-red-900",
                 },
-                false,
+                false
               )}`}
             />
             {/* Yellow light */}
@@ -94,7 +94,7 @@ export const ExtendedTrafficLightView = ({
                     isBlinking ? "bg-yellow-400" : "bg-yellow-900",
                   _: () => "bg-yellow-900",
                 },
-                false,
+                false
               )}`}
             />
             {/* Green light */}
@@ -104,7 +104,7 @@ export const ExtendedTrafficLightView = ({
                   Green: () => "bg-green-500",
                   _: () => "bg-green-900",
                 },
-                false,
+                false
               )}`}
             />
           </div>
@@ -168,7 +168,7 @@ export const ExtendedTrafficLightView = ({
                     Red: () => "bg-red-600",
                     RedWithPedestrianRequest: () => "bg-red-600",
                   },
-                  false,
+                  false
                 )}`}
                 style={{ width: `${progressPercent}%` }}
               ></div>

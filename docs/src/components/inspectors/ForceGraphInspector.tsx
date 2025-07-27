@@ -51,7 +51,7 @@ function findNode(nodes: { id: string }[], id: string) {
 function canFire(
   machine: StateMachineDefinition,
   state: string,
-  event: string,
+  event: string
 ) {
   const mode = machine.states[state];
   return mode && mode.on && mode.on[event];
@@ -64,7 +64,7 @@ function getQuadraticXY(
   cp1x: number,
   cp1y: number,
   ex: number,
-  ey: number,
+  ey: number
 ) {
   return {
     x: (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * cp1x + t * t * ex,
@@ -161,7 +161,7 @@ export default function ForceGraphInspector({
             node.y - rectHeight / 2,
             rectWidth,
             rectHeight,
-            6,
+            6
           );
           ctx.fill();
           ctx.stroke();
@@ -193,11 +193,11 @@ export default function ForceGraphInspector({
               node.y - rectHeight / 2,
               rectWidth,
               rectHeight,
-              6,
+              6
             );
             ctx.fill();
             ctx.restore();
-          },
+          }
         )
         .nodeId("id")
         .nodeLabel("name")
@@ -223,7 +223,7 @@ export default function ForceGraphInspector({
               link.__controlPoints[0],
               link.__controlPoints[1],
               end.x,
-              end.y,
+              end.y
             );
           }
           const relLink = { x: end.x - start.x, y: end.y - start.y };
@@ -237,7 +237,7 @@ export default function ForceGraphInspector({
           ctx.font = `${fontSize}px ${fontFamily}`;
           const textWidth = ctx.measureText(label).width;
           const bckgDimensions = [textWidth, fontSize].map(
-            (n) => n + fontSize * 0.4,
+            (n) => n + fontSize * 0.4
           ) as [number, number];
           ctx.save();
           ctx.translate(textPos.x, textPos.y);
@@ -254,7 +254,7 @@ export default function ForceGraphInspector({
                 "--forcegraph-edge-bg",
                 "--card",
                 "--color-gray-50",
-                "rgba(255,255,255,0.85)",
+                "rgba(255,255,255,0.85)"
               );
           ctx.strokeStyle = isPossible
             ? getCssVar(ref, "--primary", "#1e40af")
@@ -265,7 +265,7 @@ export default function ForceGraphInspector({
             -bckgDimensions[0] / 2,
             -bckgDimensions[1] / 2,
             ...bckgDimensions,
-            5,
+            5
           );
           ctx.fill();
           ctx.stroke();
@@ -287,19 +287,19 @@ export default function ForceGraphInspector({
               ref,
               "--primary",
               "--forcegraph-primary",
-              "#1e40af",
+              "#1e40af"
             );
           } else {
             return getCssVar(
               ref,
               "--secondary",
               "--forcegraph-secondary",
-              "#4b5563",
+              "#4b5563"
             );
           }
         })
         .linkDirectionalParticleColor(() =>
-          getCssVar(ref, "--accent", "--forcegraph-accent", "teal"),
+          getCssVar(ref, "--accent", "--forcegraph-accent", "teal")
         )
         .linkDirectionalParticleSpeed(0.04)
         .linkDirectionalParticleWidth(8)
@@ -390,7 +390,7 @@ export default function ForceGraphInspector({
     const Graph = graphInstance.current;
     if (Graph && lastEvent && prevState) {
       const link = diagram.links.find(
-        (it) => it.source.id === prevState && it.name === lastEvent,
+        (it) => it.source.id === prevState && it.name === lastEvent
       );
       if (link) {
         setTimeout(() => {

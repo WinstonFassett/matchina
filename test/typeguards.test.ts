@@ -14,7 +14,7 @@ describe("typeguards", () => {
           type: "change",
           to: "b",
           from: "a",
-        }),
+        })
       ).toBe(true);
     });
     it("matches on multiple values", () => {
@@ -28,7 +28,7 @@ describe("typeguards", () => {
           type: "change",
           // from: ["a"],
           // to: ["b", "c"] as const,
-        } as const),
+        } as const)
       ).toBe(true);
     });
     it("matches on undefined values", () => {
@@ -42,7 +42,7 @@ describe("typeguards", () => {
           type: "change",
           to: undefined,
           from: undefined,
-        }),
+        })
       ).toBe(true);
     });
   });

@@ -17,7 +17,7 @@ Matchina provides several Machine Enhancers that enhance the usability of state 
 
 ```ts
 const plainFactoryMachine = createMachine(states, transitions, initialState);
-plainFactoryMachine.send('someEvent', 1, 2, 3);
+plainFactoryMachine.send("someEvent", 1, 2, 3);
 
 const api = createApi(plainFactoryMachine);
 api.someEvent(1, 2, 3);
@@ -29,8 +29,8 @@ const alsoZen = matchina(states, transitions, initialState);
 alsoZen.someEvent(1, 2, 3);
 
 const pureVersion = pure(zenMachine);
-pureVersion.send('someEvent', 1, 2, 3);
-  ```
+pureVersion.send("someEvent", 1, 2, 3);
+```
 
 ## When to Use Each Enhancer
 
@@ -42,22 +42,22 @@ pureVersion.send('someEvent', 1, 2, 3);
     - You want fully typed event handlers with proper parameter types
   </TabItem>
 
-  <TabItem label="withApi">
-    Use `withApi` when:
-    - You want to enhance an existing machine with a flat event API
-    - You need to keep the original machine structure intact
-    - You want to provide a simplified interface for sending events
-  </TabItem>
+{" "}
 
-  <TabItem label="zen">
-    Use `zen` when: 
-    - You need both event methods and state access in a clean
-    package 
-    - You're using the machine within a component or module 
-    - You want to
-    easily integrate with frameworks like React 
-    - You appreciate a more functional, fluent interface
-  </TabItem>
+<TabItem label="withApi">
+  Use `withApi` when: - You want to enhance an existing machine with a flat
+  event API - You need to keep the original machine structure intact - You want
+  to provide a simplified interface for sending events
+</TabItem>
+
+{" "}
+
+<TabItem label="zen">
+  Use `zen` when: - You need both event methods and state access in a clean
+  package - You're using the machine within a component or module - You want to
+  easily integrate with frameworks like React - You appreciate a more
+  functional, fluent interface
+</TabItem>
 
   <TabItem label="pure">
     Use `pure` when:
@@ -68,12 +68,12 @@ pureVersion.send('someEvent', 1, 2, 3);
   </TabItem>
 </Tabs>
 
-
 ## createApi
 
 The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
-{/* 
-```ts twoslash
+{/\*
+
+````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { createApi } from "matchina";
@@ -132,11 +132,11 @@ const api = createApi(counterMachine);
 // TypeScript knows these need a number parameter
 api.INCREMENT(1);
 api.DECREMENT(2);
-```
+````
 
 You can also use the `withApi` helper to add the API directly to your machine:
 
-```ts twoslash
+````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { withApi } from "matchina";
@@ -190,7 +190,7 @@ The `withApi` function is particularly useful when you want to maintain the orig
 ## zen
 
 The `zen` enhancer builds on top of `createApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
-{/* 
+{/*
 ```ts twoslash
 // @noErrors
 import { createMachine, zen } from "matchina";
@@ -232,7 +232,7 @@ However, be careful not to define event names that conflict with the machine's p
 
 The `pure` wrapper provides the most minimal interface for a state machine, exposing only the essential `getState` and `send` methods. This is useful when you want to limit access to the machine's functionality or when you're passing the machine to code that only needs these core capabilities.
 
-{/* 
+{/*
 ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
@@ -321,10 +321,10 @@ function authenticateUser(username, password) {
 
 // External API only exposes the pure machine
 export { publicMachine, authenticateUser };
-```
+````
 
 In this example:
 
 - Internal code uses the `createApi` wrapper for typed event methods
 - External code only receives the `pure` interface with limited capabilities
-- The authentication logic is encapsulated, with only necessary parts exposed */}
+- The authentication logic is encapsulated, with only necessary parts exposed \*/}

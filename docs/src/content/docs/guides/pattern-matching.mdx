@@ -2,6 +2,7 @@
 title: Pattern Matching
 description: "Using matchboxFactory for type-safe tagged unions and pattern matching in TypeScript"
 ---
+
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
 
@@ -42,4 +43,3 @@ Sometimes you want to handle multiple states with a single case, or provide a fa
 You can opt-out of exhaustiveness checking by passing `false` as the second argument:
 
 <CodeBlock code={matchNonExhaustiveRaw} lang="ts" twoslash={true} />
-

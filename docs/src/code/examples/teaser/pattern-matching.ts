@@ -15,7 +15,7 @@ const giant = matchina(
     Fo: { toFum: "Fum" },
     Fum: { toFee: "Fee" },
   },
-  "Fee",
+  "Fee"
 );
 // ---cut-before---
 const nickname = giant.getState().match({

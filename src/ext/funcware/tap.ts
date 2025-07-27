@@ -4,7 +4,7 @@ import { Funcware } from "../../function-types";
 
 export const tap =
   <K extends string, T extends HasMethod<K>>(
-    fn: T[K],
+    fn: T[K]
   ): Funcware<MethodOf<HasMethod<K>, K>> =>
   (inner) =>
   (...params) => {

@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import { Effect } from "../function-types";
 
-
 export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
   getChange: () => Change;
@@ -21,7 +20,7 @@ export function useMachine<Change>(machine: {
         machine.notify = orig;
       };
     },
-    [machine],
+    [machine]
   );
   const onGetChange = useCallback(() => machine.getChange(), [machine]);
   React.useSyncExternalStore(onSubscribe, onGetChange, onGetChange);

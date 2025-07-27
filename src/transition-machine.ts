@@ -1,4 +1,8 @@
-import { StateMachineEvent, StateMachine, ResolveEvent } from "./state-machine-types";
+import {
+  StateMachineEvent,
+  StateMachine,
+  ResolveEvent,
+} from "./state-machine-types";
 
 export const EmptyTransform = <E>(event: E) => event;
 export const EmptyEffect = <E>(_event: E) => {};
@@ -14,7 +18,7 @@ export interface TransitionContext {
 
 export function createTransitionMachine<E extends StateMachineEvent>(
   transitions: TransitionRecord,
-  initialState: E["from"],
+  initialState: E["from"]
 ) {
   let lastChange = {
     type: "__initialize",

@@ -8,11 +8,11 @@ import { StopwatchView } from "./StopwatchView";
 export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
   const config = useMemo(
     () => getXStateDefinition(stopwatch.machine),
-    [stopwatch.machine],
+    [stopwatch.machine]
   );
   const actions = useMemo(
     () => createApi(stopwatch.machine, stopwatch.state.key),
-    [stopwatch.state],
+    [stopwatch.state]
   );
 
   return (

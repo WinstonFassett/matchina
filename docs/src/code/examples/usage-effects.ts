@@ -26,8 +26,8 @@ const machine = withApi(
       Pending: { next: "Done" },
       Done: {},
     },
-    "Idle",
-  ),
+    "Idle"
+  )
 );
 
 bindEffects(machine, (state) => state.data.effects as any, {

@@ -13,7 +13,7 @@ export function BalancedParenthesesDemo() {
   const state = checker.getState();
   const actions = useMemo(
     () => createApi(checker, state.key),
-    [checker, state],
+    [checker, state]
   );
   return (
     <div>
@@ -26,7 +26,6 @@ export function BalancedParenthesesDemo() {
     </div>
   );
 }
-
 
 export function BalancedParentheses() {
   const [input, setInput] = useState("");
@@ -46,7 +45,7 @@ export function BalancedParentheses() {
     if (isAppend) {
       console.log("isAppend", prevInputDebounced, input);
       checker.append(
-        input.slice(prevInputDebounced ? prevInputDebounced.length : 0),
+        input.slice(prevInputDebounced ? prevInputDebounced.length : 0)
       );
     } else {
       console.log("restarting checker");
@@ -58,7 +57,7 @@ export function BalancedParentheses() {
   const state = checker.getState();
   const actions = useMemo(
     () => createApi(checker, state.key),
-    [checker, state],
+    [checker, state]
   );
   return (
     <div>

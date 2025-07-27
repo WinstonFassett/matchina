@@ -1,10 +1,14 @@
 import { MatchCases } from "../match-case-types";
-import { matchboxFactory, MatchboxMember, TaggedTypes } from "../matchbox-factory";
+import {
+  matchboxFactory,
+  MatchboxMember,
+  TaggedTypes,
+} from "../matchbox-factory";
 
 export type AnyEffect = MatchboxMember<any, any, "effect">;
 
 export function defineEffects<EffectsConfig extends TaggedTypes>(
-  config: EffectsConfig,
+  config: EffectsConfig
 ) {
   return matchboxFactory(config, "effect");
 }
@@ -19,7 +23,7 @@ export function handleEffects<
     any,
     Exhaustive
   >,
-  exhaustive = false as Exhaustive,
+  exhaustive = false as Exhaustive
 ) {
   console.log("handleEffects", exhaustive, effects);
   if (!effects) {

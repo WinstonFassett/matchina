@@ -4,7 +4,7 @@ import { Disposer } from "./function-types";
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineEvent
+  FactoryMachineEvent,
 } from "./factory-machine-types";
 import {
   StateEventHookConfig,
@@ -15,7 +15,7 @@ import { ChangeEventKeyFilter, matchChange } from "./match-change";
 
 export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
-  config: StateHookConfig<FC>,
+  config: StateHookConfig<FC>
 ) {
   const d = [] as Disposer[];
   for (const key in config) {
@@ -30,7 +30,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         machine,
         { to: stateKey } as any,
         { enter } as any,
-        d,
+        d
       );
     }
     if (leave) {
@@ -38,7 +38,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         machine,
         { from: stateKey } as any,
         { leave } as any,
-        d,
+        d
       );
     }
     if (on) {
@@ -52,7 +52,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
           machine,
           { from: stateKey, type: eventKey } as any,
           eventConfig as StateHookConfig<FC>,
-          d,
+          d
         );
       }
     }
@@ -64,7 +64,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   filter: ChangeEventKeyFilter<FactoryMachineEvent<FC>>,
   config: StateEventHookConfig<FactoryMachineEvent<FC>> | StateHookConfig<FC>,
-  d: Disposer[],
+  d: Disposer[]
 ) {
   for (const phase in config) {
     const hook = config[phase as keyof typeof config];
@@ -78,9 +78,9 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
           phase as keyof FactoryMachine<FC>,
           iff(
             (ev: FactoryMachineEvent<FC>) => matchChange(ev, filter as any),
-            (hookHandler as any)?.(hook, machine) ?? hook,
-          ) as any,
-        ),
+            (hookHandler as any)?.(hook, machine) ?? hook
+          ) as any
+        )
       );
     }
   }

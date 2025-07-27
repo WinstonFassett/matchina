@@ -7,8 +7,7 @@
 
 export type TaggedTypes<T = any> = {
   [k: string]: T;
-} & { _?: never; };
-
+} & { _?: never };
 
 /**
  * TagDataCreators defines the shape of a factory object, mapping string keys (tags) to constructor functions.
@@ -43,7 +42,11 @@ type Matchbox<
  * @template Tag - The tag value.
  * @template Data - The data associated with this variant.
  */
-export type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
+export type MatchboxInstance<
+  TagProp extends string,
+  Tag extends string,
+  Data,
+> = {
   data: Data;
   getTag: () => Tag;
 } & {
@@ -67,10 +70,9 @@ export interface MatchboxApi<
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
   match: <A, Exhaustive extends boolean = true>(
     cases: { [K in keyof F]: (data: ReturnType<F[K]>) => A },
-    exhaustive?: Exhaustive,
+    exhaustive?: Exhaustive
   ) => A;
 }
-
 
 /**
  * MatchboxFactory is the main output type for matchboxFactory.
@@ -90,7 +92,7 @@ export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
 export type MatchboxMember<
   Tag extends keyof DataSpecs,
   DataSpecs,
-  TagProp extends string
+  TagProp extends string,
 > = ((DataSpecs[Tag] extends (...args: any[]) => any
   ? { data: ReturnType<DataSpecs[Tag]> }
   : { data: DataSpecs[Tag] }) & { [_ in TagProp]: Tag }) &
@@ -102,17 +104,17 @@ export type MatchboxMember<
  * - If _ is present, all tag cases become optional (exhaustiveness is satisfied)
  * - If _ is not present and exhaustive is true, all tags are required
  */
-type MatchCases<
-  DataSpecs,
-  A,
-  Exhaustive extends boolean = true
-> =
+type MatchCases<DataSpecs, A, Exhaustive extends boolean = true> =
   // If _ is present, all tags are optional (exhaustiveness is satisfied)
-  (Partial<{ [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }> & { _?: (...args: any[]) => A })
+  | (Partial<{
+      [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+    }> & { _?: (...args: any[]) => A })
   // Otherwise, if exhaustive, all tags are required
   | (Exhaustive extends true
       ? { [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }
-      : Partial<{ [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }>);
+      : Partial<{
+          [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+        }>);
 
 /**
  * MatchboxMemberApi provides type-safe methods for working with a Matchbox member:
@@ -123,8 +125,12 @@ type MatchCases<
  * The match method is defined inline for clarity and simplicity.
  */
 export interface MatchboxMemberApi<DataSpecs, TagProp extends string> {
-  is: <T extends keyof DataSpecs>(key: T) => this is MatchboxMember<T, DataSpecs, TagProp>;
-  as: <T extends keyof DataSpecs>(key: T) => MatchboxMember<T, DataSpecs, TagProp>;
+  is: <T extends keyof DataSpecs>(
+    key: T
+  ) => this is MatchboxMember<T, DataSpecs, TagProp>;
+  as: <T extends keyof DataSpecs>(
+    key: T
+  ) => MatchboxMember<T, DataSpecs, TagProp>;
   match<A>(cases: MatchCases<DataSpecs, A, true>, exhaustive?: boolean): A;
   match<A>(cases: MatchCases<DataSpecs, A, false>, exhaustive: boolean): A;
 }
@@ -149,9 +155,11 @@ export function matchboxFactory<
   Config extends TaggedTypes | string,
   TagProp extends string = "tag",
   R = MatchboxFactory<
-    Config extends ReadonlyArray<string> ? {
-      [K in Config[number]]: (data: any) => any;
-    } : Config,
+    Config extends ReadonlyArray<string>
+      ? {
+          [K in Config[number]]: (data: any) => any;
+        }
+      : Config,
     TagProp
   >,
 >(config: Config, tagProp = "tag" as TagProp): R {
@@ -170,7 +178,7 @@ export function matchboxFactory<
       return matchbox<Config, any, TagProp>(
         tag,
         typeof spec === "function" ? spec(...args) : spec,
-        tagProp,
+        tagProp
       );
     };
   }
@@ -192,7 +200,7 @@ export function matchbox<
 >(
   tag: Tag,
   data: any,
-  tagProp: TagProp = "tag" as TagProp,
+  tagProp: TagProp = "tag" as TagProp
 ): MatchboxMember<Tag, DataSpecs, TagProp> {
   return new MatchboxImpl<DataSpecs, Tag, TagProp>(tag, data, tagProp) as any;
 }
@@ -207,7 +215,7 @@ class MatchboxImpl<
   constructor(
     tag: Tag,
     public data: Config[Tag],
-    tagProp: TagProp = "tag" as TagProp,
+    tagProp: TagProp = "tag" as TagProp
   ) {
     Object.assign(this, {
       [tagProp]: tag,
@@ -237,7 +245,10 @@ class MatchboxImpl<
 
   match<A>(casesObj: MatchCases<Config, A, true>, exhaustive?: boolean): any;
   match<A>(casesObj: MatchCases<Config, A, false>, exhaustive: boolean): any;
-  match<A>(casesObj: MatchCases<Config, A, boolean>, exhaustive?: boolean): any {
+  match<A>(
+    casesObj: MatchCases<Config, A, boolean>,
+    exhaustive?: boolean
+  ): any {
     const tag = this.getTag();
     const data = this.data;
     if (exhaustive === false) {
@@ -255,4 +266,3 @@ class MatchboxImpl<
     throw new Error(`Match did not handle key: '${tag}'`);
   }
 }
-

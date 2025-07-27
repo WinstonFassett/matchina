@@ -33,8 +33,8 @@ const machine = withApi(
         MOUSE_UP: () => () => states.IDLE(),
       },
     },
-    "IDLE",
-  ),
+    "IDLE"
+  )
 );
 
 machine.api.MOUSE_DOWN(2);

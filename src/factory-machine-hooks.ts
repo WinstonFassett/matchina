@@ -13,7 +13,7 @@ export const beforeEvent = <
   K extends E["type"],
 >(
   type: K,
-  fn: AbortableEventHandler<E & { type: K }>,
+  fn: AbortableEventHandler<E & { type: K }>
 ) =>
   before<StateMachine<E>>((ev, abort) => {
     if (ev.type === type) {
@@ -25,7 +25,7 @@ export const whenFromState = <
   K extends E["from"]["key"],
 >(
   stateKey: K,
-  fn: EntryListener<E & { from: FactoryState<E["machine"]["states"], K> }>,
+  fn: EntryListener<E & { from: FactoryState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 
 export const whenState = <
@@ -33,7 +33,7 @@ export const whenState = <
   K extends keyof E["machine"]["states"],
 >(
   stateKey: K,
-  fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>,
+  fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.to.key === stateKey, fn);
 
 export const whenEventType = <
@@ -41,7 +41,7 @@ export const whenEventType = <
   K extends E["type"],
 >(
   type: K,
-  fn: EntryListener<E & { type: K }>,
+  fn: EntryListener<E & { type: K }>
 ) => when<E>((ev) => ev.type === type, fn as any);
 
 export const afterEvent = <
@@ -49,7 +49,7 @@ export const afterEvent = <
   K extends E["type"],
 >(
   type: K,
-  fn: Effect<E & { type: K }>,
+  fn: Effect<E & { type: K }>
 ) =>
   after<StateMachine<E>>((ev) => {
     if (ev.type === type) {
@@ -57,12 +57,10 @@ export const afterEvent = <
     }
   });
 
-export const onBeforeEvent = <
-  E extends FactoryMachineEvent<any>
->(
+export const onBeforeEvent = <E extends FactoryMachineEvent<any>>(
   m: StateMachine<E>,
   type: E["type"],
-  fn: AbortableEventHandler<E & { type: E["type"] }>,
+  fn: AbortableEventHandler<E & { type: E["type"] }>
 ) => setup(m)(beforeEvent(type, fn));
 
 export const onLeftState = <
@@ -71,7 +69,7 @@ export const onLeftState = <
 >(
   m: StateMachine<E>,
   stateKey: K,
-  fn: ExitListener<E & { from: FactoryState<E["machine"]["states"], K> }>,
+  fn: ExitListener<E & { from: FactoryState<E["machine"]["states"], K> }>
 ) => setup(m)(leave(whenFromState(stateKey, fn)));
 
 export const onEnteredState = <
@@ -80,7 +78,7 @@ export const onEnteredState = <
 >(
   m: StateMachine<E>,
   stateKey: K,
-  fn: ExitListener<E & { from: FactoryState<E["machine"]["states"], K> }>,
+  fn: ExitListener<E & { from: FactoryState<E["machine"]["states"], K> }>
 ) => setup(m)(enter(whenState(stateKey, fn)));
 
 export const onAfterEvent = <
@@ -89,7 +87,7 @@ export const onAfterEvent = <
 >(
   m: StateMachine<E>,
   type: K,
-  fn: Effect<E & { type: K }>,
+  fn: Effect<E & { type: K }>
 ) => setup(m)(afterEvent<E, K>(type, fn));
 
 export const onGuardEvent = <
@@ -98,7 +96,7 @@ export const onGuardEvent = <
 >(
   m: StateMachine<E>,
   type: K,
-  fn: StateMachine<E & { type: K }>["guard"],
+  fn: StateMachine<E & { type: K }>["guard"]
 ) =>
   setup(m)(
     guard((ev) => {
@@ -106,7 +104,7 @@ export const onGuardEvent = <
         return fn(ev as any);
       }
       return true;
-    }),
+    })
   );
 
 export const whenEvent = <
@@ -124,8 +122,8 @@ export const whenEvent = <
           to: { key: FV["to"] };
           from: { key: FV["from"] };
         }
-      >,
-  ) => any,
+      >
+  ) => any
 ) => when<E>((ev) => matchChange(ev, filter), fn as any);
 
 export const iffEvent = <
@@ -143,6 +141,6 @@ export const iffEvent = <
           to: { key: FV["to"] };
           from: { key: FV["from"] };
         }
-      >,
-  ) => any,
+      >
+  ) => any
 ) => iff((ev) => matchChange(ev, filter), fn);

@@ -60,7 +60,7 @@ const transitions: Transitions = {
 const machine = createMachine<MyStates, Transitions>(
   states,
   transitions,
-  "Idle",
+  "Idle"
 );
 
 machine.states.Bar(1).data.bar === 1;
@@ -78,7 +78,7 @@ const slowAddingMachine = createPromiseMachine(
   async (a: number, b: number, t: number = 1000) => {
     await delay(t);
     return a + b;
-  },
+  }
 );
 
 slowAddingMachine.execute(1, 2);
@@ -95,7 +95,7 @@ lastChange.to.match(
       console.log(err.name, err.message);
     },
   },
-  false,
+  false
 );
 const { from } = lastChange;
 console.log(`Transitioned from ${from.key} to ${lastChange.to.key}`);
@@ -116,7 +116,7 @@ lastChange.match(
       console.log(err.name, err.message);
     },
   },
-  false,
+  false
 );
 
 if (lastChange.to.is("Pending")) {

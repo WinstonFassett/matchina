@@ -17,7 +17,7 @@ interface MachineExampleWithChartProps {
   >;
   showRawState?: boolean;
   title?: string;
-  inspectorType?: 'mermaid' | 'force-graph' | 'react-flow' | 'basic';
+  inspectorType?: "mermaid" | "force-graph" | "react-flow" | "basic";
 }
 
 /**
@@ -30,7 +30,7 @@ export function MachineExampleWithChart({
   AppView,
   showRawState = false,
   title,
-  inspectorType = 'react-flow',
+  inspectorType = "react-flow",
 }: MachineExampleWithChartProps) {
   useMachine(machine);
   const currentState = machine.getState();
@@ -47,21 +47,21 @@ export function MachineExampleWithChart({
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Mermaid diagram */}
         <div className="flex-1">
-          {inspectorType === 'basic' && (
+          {inspectorType === "basic" && (
             <MachineVizBasic
               config={config}
               stateKey={currentState.key}
               actions={actions as any}
             />
           )}
-          {inspectorType === 'mermaid' && (
+          {inspectorType === "mermaid" && (
             <MachineViz
               config={config}
               stateKey={currentState.key}
               actions={actions as any}
             />
           )}
-          {inspectorType === 'force-graph' && (
+          {inspectorType === "force-graph" && (
             <StateForceGraph
               value={currentState.key}
               lastEvent={lastChange?.type}
@@ -71,7 +71,7 @@ export function MachineExampleWithChart({
               dispatch={({ type }) => machine.send(type)}
             />
           )}
-          {inspectorType === 'react-flow' && (
+          {inspectorType === "react-flow" && (
             <ReactFlowInspector
               value={currentState.key}
               lastEvent={lastChange?.type}
@@ -102,7 +102,7 @@ export function MachineExampleWithChart({
                       >
                         {action}
                       </button>
-                    ),
+                    )
                 )}
               </div>
             </div>

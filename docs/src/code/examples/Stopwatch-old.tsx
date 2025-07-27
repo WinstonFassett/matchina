@@ -37,7 +37,7 @@ function useStopwatch() {
           clear: "Suspended",
         },
       },
-      "Stopped",
+      "Stopped"
     );
 
     // Use zen to enhance the machine with utility methods
@@ -56,7 +56,7 @@ function useStopwatch() {
             () =>
               tickEffect(() => {
                 setElapsed(Date.now() - (stopwatch.startTime ?? 0));
-              }),
+              })
           ),
           on: {
             start: {
@@ -90,7 +90,7 @@ function useStopwatch() {
           },
         },
       }),
-    [stopwatch],
+    [stopwatch]
   );
 
   useMachine(stopwatch);

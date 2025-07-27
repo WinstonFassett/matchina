@@ -21,7 +21,7 @@ const sharedState = createMachine(
         }),
     },
   },
-  sharedStates.State({ key: "State", crossingRequested: false }),
+  sharedStates.State({ key: "State", crossingRequested: false })
 );
 
 // Common transitions that all normal states can use
@@ -59,7 +59,7 @@ export const createExtendedTrafficLightMachine = () => {
         reset: "Red",
       },
     },
-    "Red",
+    "Red"
   );
 
   // Simple and clean with withApi
@@ -81,14 +81,14 @@ export const createExtendedTrafficLightMachine = () => {
         if (state.data.crossingRequested) {
           queueMicrotask(machine.api.crossingRequested);
         }
-      }),
+      })
     ),
     enter(
       whenState("RedWithPedestrianRequest", (ev) => {
         machine.data.send("change", {
           crossingRequested: false,
         });
-      }),
+      })
     ),
     enter((ev) => {
       if (walkWarnTimer) {
@@ -132,7 +132,7 @@ export const createExtendedTrafficLightMachine = () => {
       timer = setTimeout(() => {
         machine.api.next();
       }, duration);
-    }),
+    })
   );
   // start it
   machine.send("next");

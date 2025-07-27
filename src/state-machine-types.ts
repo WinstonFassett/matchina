@@ -1,4 +1,4 @@
-import { State } from "./state"
+import { State } from "./state";
 
 export interface StateMachineEvent<
   To extends State = State,

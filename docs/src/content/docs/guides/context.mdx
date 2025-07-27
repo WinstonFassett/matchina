@@ -3,7 +3,7 @@ title: Using Context in State Machines
 description: Learn how to add and manage data context in Matchina state machines
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## What is State Context?
 
@@ -26,7 +26,7 @@ const states = matchbox({
   Idle: () => ({ lastUpdated: null }),
   Loading: (resourceId: string) => ({ resourceId, startTime: Date.now() }),
   Success: (data: any) => ({ data, receivedAt: Date.now() }),
-  Error: (message: string) => ({ message, occurredAt: Date.now() })
+  Error: (message: string) => ({ message, occurredAt: Date.now() }),
 });
 ```
 
@@ -47,7 +47,7 @@ const message = machine.state.match({
   Idle: () => "No data loaded yet",
   Loading: ({ resourceId }) => `Loading resource ${resourceId}...`,
   Success: ({ data }) => `Loaded ${data.items.length} items`,
-  Error: ({ message }) => `Error: ${message}`
+  Error: ({ message }) => `Error: ${message}`,
 });
 ```
 
@@ -62,7 +62,7 @@ const dataMachine = matchina(
   states,
   {
     Idle: {
-      load: (resourceId: string) => "Loading"
+      load: (resourceId: string) => "Loading",
     },
     Loading: {
       // Transform loading state to success with data
@@ -70,13 +70,13 @@ const dataMachine = matchina(
       // Transform loading state to error with message
       failure: (message: string) => "Error",
       // Transition back to idle without parameters
-      cancel: "Idle"
+      cancel: "Idle",
     },
     Success: {
       reload: (state) => ({
-        key: "Loading", 
-        data: { resourceId: state.data.data.id }
-      })
+        key: "Loading",
+        data: { resourceId: state.data.data.id },
+      }),
     },
     Error: {
       retry: (state) => {
@@ -84,12 +84,12 @@ const dataMachine = matchina(
         if (state.from?.is("Loading")) {
           return {
             key: "Loading",
-            data: { resourceId: state.from.data.resourceId }
+            data: { resourceId: state.from.data.resourceId },
           };
         }
         return "Idle";
-      }
-    }
+      },
+    },
   },
   "Idle"
 );
@@ -105,10 +105,10 @@ Sometimes you want to preserve context data when transitioning between states. Y
   toggleLoading: (state) => ({
     key: state.is("Loading") ? "Idle" : "Loading",
     // Copy data from current state
-    data: state.is("Loading") 
+    data: state.is("Loading")
       ? { lastUpdated: Date.now() } // Going to Idle
-      : { resourceId: "default", startTime: Date.now() } // Going to Loading
-  })
+      : { resourceId: "default", startTime: Date.now() }, // Going to Loading
+  });
 }
 ```
 
@@ -127,15 +127,15 @@ setup(machine, {
     Success: ({ data }) => {
       // Store data in localStorage when entering Success state
       localStorage.setItem("cachedData", JSON.stringify(data));
-    }
+    },
   },
   leave: {
     Loading: ({ data }, toState) => {
       // Calculate and log loading time when leaving Loading state
       const loadTime = Date.now() - data.startTime;
       console.log(`Loading ${data.resourceId} took ${loadTime}ms`);
-    }
-  }
+    },
+  },
 });
 ```
 

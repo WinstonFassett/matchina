@@ -1,7 +1,7 @@
 import { StateMachineEvent, StateMachine } from "./state-machine-types";
 
 export function pure<E extends StateMachineEvent>(
-  machine: StateMachine<E>,
+  machine: StateMachine<E>
 ): PureStateMachine<E> {
   const { getState, send } = machine;
   return {

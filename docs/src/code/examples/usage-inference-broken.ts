@@ -31,7 +31,7 @@ const invalidTransitions = {
 const invalidMachine = matchina(
   states,
   invalidTransitions, // invalid because not typed correctly
-  "Idle",
+  "Idle"
 );
 
 invalidMachine; // never

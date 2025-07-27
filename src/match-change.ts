@@ -58,7 +58,7 @@ type ChangeFilterTuple = [type?: string, from?: string, to?: string];
 function getFilter(
   parts:
     | ChangeFilterTuple
-    | [filter: { type?: string; from?: string; to?: string }],
+    | [filter: { type?: string; from?: string; to?: string }]
 ): [type?: string, from?: string, to?: string] {
   if (parts.length === 1 && typeof parts[0] === "object") {
     const filter = parts[0];

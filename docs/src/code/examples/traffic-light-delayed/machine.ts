@@ -26,7 +26,7 @@ export const createTrafficLight = () => {
       Green: { next: "Yellow" },
       Yellow: { next: "Red" },
     },
-    "Red",
+    "Red"
   );
 
   // Use zen to enhance the machine with utility methods
@@ -43,10 +43,10 @@ export const createTrafficLight = () => {
               Red: () => 2000,
               Green: () => 2000,
               Yellow: () => 1000,
-            }),
-          ),
-      ),
-    ),
+            })
+          )
+      )
+    )
   );
   machine.next();
   return machine;

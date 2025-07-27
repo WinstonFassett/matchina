@@ -27,7 +27,7 @@ const baseMachine = createMachine(
       start: (trackId: string) => () => states.Playing(trackId),
     },
   },
-  "Idle",
+  "Idle"
 );
 
 // Use zen to enhance the machine with utility methods
@@ -40,7 +40,7 @@ console.log(player.getState().data); // e.g., { trackId: "track-123" }
 console.log(
   "Is playing track 123:",
   player.getState().is("Playing") &&
-    player.getState().data.trackId === "track-123",
+    player.getState().data.trackId === "track-123"
 );
 player.pause(); // Playing -> Paused (trackId carried over)
 player.resume(); // Paused -> Playing (trackId carried over)

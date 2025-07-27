@@ -1,13 +1,17 @@
-import { useCallback, useMemo, useEffect, useRef } from 'react';
-import React from 'react';
-import { useMachine } from '@xstate/react';
-import { useStateMachineNodes } from '../hooks/useStateMachineNodes';
-import { useStateMachineEdges } from '../hooks/useStateMachineEdges';
-import type { LayoutOptions } from '../utils/elkLayout';
+import { useCallback, useMemo, useEffect, useRef } from "react";
+import React from "react";
+import { useMachine } from "@xstate/react";
+import { useStateMachineNodes } from "../hooks/useStateMachineNodes";
+import { useStateMachineEdges } from "../hooks/useStateMachineEdges";
+import type { LayoutOptions } from "../utils/elkLayout";
 
-export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOptions?: LayoutOptions) => {
+export const useStateMachineFlow = (
+  machine: any,
+  machineKey?: number,
+  layoutOptions?: LayoutOptions
+) => {
   const [current, send] = useMachine(machine, {
-    snapshot: undefined // Force fresh start
+    snapshot: undefined, // Force fresh start
   });
   const [previousState, setPreviousState] = React.useState<string | null>(null);
   const lastKnownState = useRef<string | null>(null);
@@ -21,12 +25,15 @@ export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOpt
   // Track state changes for previous state highlighting
   useEffect(() => {
     const currentStateValue = String(current.value);
-    
-    if (lastKnownState.current && lastKnownState.current !== currentStateValue) {
+
+    if (
+      lastKnownState.current &&
+      lastKnownState.current !== currentStateValue
+    ) {
       setPreviousState(lastKnownState.current);
       lastKnownState.current = currentStateValue;
     }
-    
+
     lastKnownState.current = currentStateValue;
   }, [current.value]);
 
@@ -54,22 +61,29 @@ export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOpt
 
   // Get available events for current state - works with any machine structure
   const availableEvents = useMemo(() => {
-    const currentStateConfig = machine?.config?.states?.[current.value as string];
+    const currentStateConfig =
+      machine?.config?.states?.[current.value as string];
     return currentStateConfig?.on ? Object.keys(currentStateConfig.on) : [];
   }, [current.value, machine]);
 
-  const handleEventTrigger = useCallback((event: string) => {
-    send({ type: event } as any);
-  }, [send]);
+  const handleEventTrigger = useCallback(
+    (event: string) => {
+      send({ type: event } as any);
+    },
+    [send]
+  );
 
-  const handleEdgeClick = useCallback((event: React.MouseEvent, edge: any) => {
-    event.stopPropagation();
-    const eventType = edge.data?.event;
-    const isClickable = edge.data?.isClickable;
-    if (eventType && isClickable) {
-      send({ type: eventType } as any);
-    }
-  }, [send]);
+  const handleEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: any) => {
+      event.stopPropagation();
+      const eventType = edge.data?.event;
+      const isClickable = edge.data?.isClickable;
+      if (eventType && isClickable) {
+        send({ type: eventType } as any);
+      }
+    },
+    [send]
+  );
 
   return {
     nodes,
@@ -80,6 +94,6 @@ export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOpt
     currentState: String(current.value),
     availableEvents,
     onEventTrigger: handleEventTrigger,
-    hasManualChanges: false // This will be overridden by the actual hook
+    hasManualChanges: false, // This will be overridden by the actual hook
   };
 };

@@ -16,7 +16,7 @@ export default function StateForceGraph({
   lastEvent,
   prevState,
   definition,
-  dispatch
+  dispatch,
 }) {
   const valueLatest = React.useRef();
   const lastProps = React.useRef({ lastEvent, prevState, value });
@@ -57,8 +57,8 @@ export default function StateForceGraph({
   useEffect(() => {
     let Graph;
     let isMounted = true;
-    import('force-graph').then((module) => {
-      if (!isMounted) return
+    import("force-graph").then((module) => {
+      if (!isMounted) return;
       console.log("imported force-graph", module);
       // console.log("ref.current", ref.current);
       Graph = new module.default(ref.current);
@@ -106,7 +106,7 @@ export default function StateForceGraph({
           // calculate label positioning
           let textPos = Object.assign(
             ...["x", "y"].map((c) => ({
-              [c]: start[c] + (end[c] - start[c]) / 2 // calc middle point
+              [c]: start[c] + (end[c] - start[c]) / 2, // calc middle point
             }))
           );
 
@@ -171,7 +171,7 @@ export default function StateForceGraph({
           );
           const color =
             valueLatest.current === link.source.name &&
-              canFire(definition, valueLatest.current, link.name)
+            canFire(definition, valueLatest.current, link.name)
               ? "blue"
               : "darkgrey";
           ctx.textAlign = "center";
@@ -182,11 +182,11 @@ export default function StateForceGraph({
         })
         .linkColor((link) =>
           valueLatest.current === link.source.name &&
-            canFire(definition, valueLatest.current, link.name)
+          canFire(definition, valueLatest.current, link.name)
             ? "blue"
             : lastProps.current.prevState === link.source.name &&
-              lastProps.current.lastEvent &&
-              lastProps.current.lastEvent.type === link.name
+                lastProps.current.lastEvent &&
+                lastProps.current.lastEvent.type === link.name
               ? "teal"
               : "darkgrey"
         )
@@ -247,9 +247,6 @@ export default function StateForceGraph({
         });
 
       console.log("made graph", Graph);
-
-
-
     });
     return () => {
       // console.log("unmounting");
@@ -314,6 +311,6 @@ export default function StateForceGraph({
 function getQuadraticXY(t, sx, sy, cp1x, cp1y, ex, ey) {
   return {
     x: (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * cp1x + t * t * ex,
-    y: (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * cp1y + t * t * ey
+    y: (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * cp1y + t * t * ey,
   };
 }

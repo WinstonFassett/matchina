@@ -28,7 +28,7 @@ const giant = matchina(
       goFee: "Fee",
     },
   },
-  "Fee",
+  "Fee"
 );
 
 giant.goFi(); // Fee -> Fi

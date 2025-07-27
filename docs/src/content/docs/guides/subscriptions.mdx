@@ -9,9 +9,9 @@ For observing state changes without affecting them, you can use `subscribe`:
 
 ```ts
 // Subscribe to all state changes
-const unsubscribe = counter.subscribe(state => {
+const unsubscribe = counter.subscribe((state) => {
   console.log(`State changed to: ${state.key}`);
-  
+
   if (state.is("Counting")) {
     console.log(`Current count: ${state.data.count}`);
   }

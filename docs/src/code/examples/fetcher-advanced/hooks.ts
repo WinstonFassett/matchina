@@ -9,7 +9,7 @@ export const useAdvancedFetcher = (
     maxTries: 5,
     timeout: 2000,
     autoretry: true,
-  },
+  }
 ) => {
   const { method, maxTries, timeout, autoretry } = options;
   const fetcher = useMemo(() => {

@@ -6,6 +6,3 @@ export type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
 export type Func<A = any, R = any> = (...args: A[]) => R;
 export type Funcware<F extends (...params: any[]) => any> = (inner: F) => F;
-
-
-

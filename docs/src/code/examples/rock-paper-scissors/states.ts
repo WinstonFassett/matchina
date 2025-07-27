@@ -10,7 +10,7 @@ export const states = defineStates({
   PlayerChose: (
     playerMove: Move,
     playerScore: number,
-    computerScore: number,
+    computerScore: number
   ) => ({
     playerMove,
     playerScore,
@@ -20,7 +20,7 @@ export const states = defineStates({
     playerMove: Move,
     computerMove: Move,
     playerScore: number,
-    computerScore: number,
+    computerScore: number
   ) => ({
     playerMove,
     computerMove,
@@ -32,7 +32,7 @@ export const states = defineStates({
     computerMove: Move,
     roundWinner: "player" | "computer" | "tie",
     playerScore: number,
-    computerScore: number,
+    computerScore: number
   ) => ({
     playerMove,
     computerMove,
@@ -43,7 +43,7 @@ export const states = defineStates({
   GameOver: (
     winner: "player" | "computer",
     playerScore: number,
-    computerScore: number,
+    computerScore: number
   ) => ({
     winner,
     playerScore,

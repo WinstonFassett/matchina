@@ -20,7 +20,7 @@ type Options = RequestInit & {
 
 export function createFetcher(
   defaultUrl: string,
-  defaultOptions: Options = {},
+  defaultOptions: Options = {}
 ) {
   const states = defineStates({
     Idle: undefined,
@@ -64,7 +64,7 @@ export function createFetcher(
       TimedOut: canRefetch,
       Refetching: { "": "Fetching" },
     },
-    "Idle",
+    "Idle"
   );
   const fetcher = extend(zen(machine), {
     fetch: (url?: string, options?: RequestInit) => {
@@ -110,7 +110,7 @@ export function createFetcher(
           const timer = setTimeout(fetcher.timeout, timeout);
           return () => clearTimeout(timer);
         }
-      }),
+      })
     ),
     effect(
       whenState("ProcessingResponse", (ev) => {
@@ -118,15 +118,15 @@ export function createFetcher(
         delay(1000).then(() => {
           resolveResponseData(ev.to.data).then(fetcher.resolve);
         });
-      }),
+      })
     ),
     autotransition(),
     effect(
       whenEventType("abort", (ev) => {
         ev.from.data.abort.abort();
-      }),
+      })
     ),
-    guard((ev) => (ev.type === "refetch" ? fetcher.tries < maxTries : true)),
+    guard((ev) => (ev.type === "refetch" ? fetcher.tries < maxTries : true))
   );
   if (defaultOptions.autoretry) {
     const autoRetryStates = ["NetworkError", "TimedOut", "Error"] as const;
@@ -144,9 +144,9 @@ export function createFetcher(
                 clearTimeout(timer);
               };
             }
-          }),
-        ),
-      ),
+          })
+        )
+      )
     );
   }
   return fetcher;
@@ -157,7 +157,7 @@ type Assign<Source, Destination> = Omit<Source, keyof Destination> &
 
 function extend<Source extends object, Destination>(
   source: Source,
-  destination: Destination,
+  destination: Destination
 ): Assign<Source, Destination> {
   return Object.assign(source, destination) as Assign<Source, Destination>;
 }

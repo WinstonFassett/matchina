@@ -4,28 +4,36 @@ description: Intercept and react to state changes with lifecycle hooks
 ---
 
 import { LifecycleDemo } from "@components/LifecycleDemo";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-
-The `onLifecycle` function lets you intercept all sorts of state changes and events in your machine through a single hook call and configuration. 
-
+The `onLifecycle` function lets you intercept all sorts of state changes and events in your machine through a single hook call and configuration.
 
 ```ts
 onLifecycle(machine, {
   SomeStateKey: {
-    enter: ({ from, to }) => { /* ... */ },
-    exit: ({ from, to }) => { /* ... */ },
+    enter: ({ from, to }) => {
+      /* ... */
+    },
+    exit: ({ from, to }) => {
+      /* ... */
+    },
     on: {
       someEventType: {
-        before: ({ type }) => { /* ... */ },
-        after: ({ type }) => { /* ... */ },
+        before: ({ type }) => {
+          /* ... */
+        },
+        after: ({ type }) => {
+          /* ... */
+        },
       },
     },
   },
   "*": {
     on: {
       "*": {
-        after: (ev) => { /* ... */ },
+        after: (ev) => {
+          /* ... */
+        },
       },
     },
   },
@@ -45,6 +53,7 @@ Its configuration options are organized as follows:
 Inside `on`, **event names** (e.g. `execute`, `reject`, `resolve`) are keys. Use `"*"` for all events.
 
 Each event or hook can have:
+
 - `before`: runs before the transition.
 - `after`: runs after the transition.
 
@@ -57,7 +66,7 @@ Each event or hook can have:
 Here's the onLifecycle logging code behind this example:
 
 ```ts
- onLifecycle(machine, {
+onLifecycle(machine, {
   Idle: {
     on: {
       executing: {
@@ -67,7 +76,7 @@ Here's the onLifecycle logging code behind this example:
             type,
             from.key,
             to.key,
-            Object.keys(params),
+            Object.keys(params)
           );
         },
       },
@@ -83,15 +92,7 @@ Here's the onLifecycle logging code behind this example:
       reject: {
         after: ({ type, from, to }) => {
           const { name, stack, message } = to.data;
-          console.log(
-            "after",
-            type,
-            "from",
-            from.key,
-            name,
-            message,
-            stack,
-          );
+          console.log("after", type, "from", from.key, name, message, stack);
         },
       },
       resolve: {
@@ -101,9 +102,8 @@ Here's the onLifecycle logging code behind this example:
       },
     },
   },
-})
+});
 ```
-
 
 ## Next Steps
 
@@ -113,4 +113,7 @@ Now that you understand lifecycle hooks, explore these related guides:
 - [Factory Machines](/guides/machines) - Create complete state machines
 - [Promise Machines](/guides/promises) - Handle async operations with state machines
 - [React Integration](/guides/integrations) - Use lifecycle hooks with React
+
+```
+
 ```

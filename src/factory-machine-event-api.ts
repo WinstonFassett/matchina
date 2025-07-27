@@ -1,7 +1,7 @@
 import {
   FactoryMachine,
   FactoryMachineContext,
-  FactoryMachineTransitionEvent
+  FactoryMachineTransitionEvent,
 } from "./factory-machine-types";
 import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 

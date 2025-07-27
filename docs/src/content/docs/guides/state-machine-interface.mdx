@@ -2,6 +2,7 @@
 title: State Machine Interface
 description: Core interface definitions for Matchina state machines
 ---
+
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
 
 import CodeBlock from "@components/CodeBlock.astro";
@@ -17,10 +18,9 @@ A minimal (pure) state machine in Matchina looks like this:
 const { getState, send } = createMachine(states, transitions, initialState);
 ```
 
-
 ## How to Create a State Machine
 
-After first defining your states (i.e. by using `defineStates` or `matchboxFactory`), you can create a state machine using the `createMachine` for a minimal factory machine, or `matchina` for a machine wrapped with `zen`, giving it a convenience API for firing events. 
+After first defining your states (i.e. by using `defineStates` or `matchboxFactory`), you can create a state machine using the `createMachine` for a minimal factory machine, or `matchina` for a machine wrapped with `zen`, giving it a convenience API for firing events.
 
 <CardGrid>
   <LinkCard
@@ -34,7 +34,6 @@ After first defining your states (i.e. by using `defineStates` or `matchboxFacto
     description="Enhance your state machines with additional functionality" />
 
 </CardGrid>
-
 
 ## Related Topics
 

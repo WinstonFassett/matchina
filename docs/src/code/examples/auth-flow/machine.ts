@@ -125,7 +125,7 @@ export const createAuthMachine = () => {
         logout: "LoggedOut",
       },
     },
-    states.LoggedOut(),
+    states.LoggedOut()
   );
 };
 

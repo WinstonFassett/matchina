@@ -11,7 +11,7 @@ export class FactoryMachineEventImpl<E extends FactoryMachineEvent<any>> {
     type: E["type"],
     from: E["from"],
     to: E["to"],
-    params: E["params"],
+    params: E["params"]
   ) {
     this.type = type;
     this.from = from;
@@ -28,7 +28,7 @@ export class FactoryMachineEventImpl<E extends FactoryMachineEvent<any>> {
       exhaustive,
       cases,
       this.type,
-      ...this.params,
+      ...this.params
     );
   }
 }

@@ -14,7 +14,7 @@ export function useStopwatch() {
         startTime,
         elapsed,
       }),
-    [],
+    []
   );
   useEffect(
     () =>
@@ -25,7 +25,7 @@ export function useStopwatch() {
             () =>
               tickEffect(() => {
                 setElapsed(Date.now() - (stopwatch.startTime ?? 0));
-              }),
+              })
           ),
           on: {
             start: {
@@ -59,7 +59,7 @@ export function useStopwatch() {
           },
         },
       }),
-    [stopwatch],
+    [stopwatch]
   );
   useMachine(stopwatch);
   stopwatch.startTime = startTime;

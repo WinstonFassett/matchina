@@ -7,11 +7,9 @@ export function bindEffects<
   Exhaustive extends boolean = false,
 >(
   machine: { effect: (val: any) => void },
-  getEffects: (
-    state: any,
-  ) => AnyEffect[] | undefined,
+  getEffects: (state: any) => AnyEffect[] | undefined,
   matchers: MatchCases<EffectsConfig, any, Exhaustive>,
-  exhaustive = false as Exhaustive,
+  exhaustive = false as Exhaustive
 ) {
   const origEffect = machine.effect;
   const machineEffects = origEffect.bind(machine);

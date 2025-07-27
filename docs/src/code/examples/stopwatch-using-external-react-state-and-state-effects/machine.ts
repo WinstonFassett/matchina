@@ -3,7 +3,7 @@ import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = (
   elapsed: number,
-  setElapsed: (elapsed: number) => void,
+  setElapsed: (elapsed: number) => void
 ) => {
   const effects = {
     clear: () => setElapsed(0),
@@ -42,13 +42,13 @@ export const createStopwatchMachine = (
             clear: "Suspended",
           },
         },
-        "Stopped",
-      ),
+        "Stopped"
+      )
     ),
     {
       elapsed,
       effects,
-    },
+    }
   );
 
   return stopwatch;

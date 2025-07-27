@@ -25,7 +25,7 @@ export function matchFilters<
   C extends NestableFilters<T>,
 >(item: T, condition: C): item is T & HasFilterValues<T, C> {
   return Object.keys(condition).every((key) =>
-    matchKey(condition[key as keyof C], item[key]),
+    matchKey(condition[key as keyof C], item[key])
   );
 }
 

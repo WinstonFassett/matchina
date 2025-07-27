@@ -25,7 +25,7 @@ const runMachine = createMachine(
       switch: () => () => states.BAZ(),
     },
   },
-  "FOO",
+  "FOO"
 );
 
 const machine = withNanoSubscribe(withApi(runMachine));
@@ -41,8 +41,8 @@ const unsubscribe = machine.subscribe
       const { type, from, to, params } = change;
       console.log(
         `Change detected: type=${type}, from=${from.key}, to=${to.key}, params=${JSON.stringify(
-          params,
-        )}`,
+          params
+        )}`
       );
       change.match({
         switch: function (..._args: any[]) {

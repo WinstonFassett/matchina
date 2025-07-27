@@ -30,7 +30,7 @@ If you prefer to only expose a minimal interface to consumers, you can use the `
 import { pure } from "matchina";
 // a pure state machine interface with ONLY getState and send
 const { getState, send } = pure(
-  createMachine(states, transitions, initialState),
+  createMachine(states, transitions, initialState)
 );
 ```
 

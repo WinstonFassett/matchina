@@ -5,7 +5,7 @@ description: Manage side effects with the Matchina effects system
 
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/usage-effects.ts?raw";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## What are Effects?
 
@@ -30,11 +30,11 @@ const counter = matchina(
     Idle: () => ({ count: 0 }),
     Counting: (count: number) => ({ count }),
     // Define an effect state that has a specific effect type
-    Milestone: (count: number) => ({ count, effect: "Notify" as const })
+    Milestone: (count: number) => ({ count, effect: "Notify" as const }),
   },
   {
-    Idle: { 
-      start: "Counting" 
+    Idle: {
+      start: "Counting",
     },
     Counting: {
       increment: (state) => {
@@ -45,11 +45,11 @@ const counter = matchina(
         }
         return { ...state, data: { count: newCount } };
       },
-      reset: "Idle"
+      reset: "Idle",
     },
     Milestone: {
-      acknowledge: "Counting"
-    }
+      acknowledge: "Counting",
+    },
   },
   "Idle"
 );
@@ -73,7 +73,7 @@ setup(counter)(
     Notify: ({ data }) => {
       // Show notification for milestone
       alert(`Milestone reached: ${data.count}`);
-    }
+    },
   })
 );
 ```
@@ -87,7 +87,7 @@ import { setup, effect } from "matchina";
 
 // Add general effect handler
 setup(counter)(
-  effect(ev => {
+  effect((ev) => {
     // Check if event has an effect
     if (ev.to.data.effect === "Notify") {
       alert(`Milestone reached: ${ev.to.data.count}`);
@@ -103,12 +103,15 @@ setup(counter)(
 With `bindEffects`, you can ensure that all effects are handled:
 
 ```ts
-bindEffects({
-  Notify: ({ data }) => {
-    // Handle Notify effect
+bindEffects(
+  {
+    Notify: ({ data }) => {
+      // Handle Notify effect
+    },
+    // TypeScript error if you have other effect types not handled here
   },
-  // TypeScript error if you have other effect types not handled here
-}, { exhaustive: true });
+  { exhaustive: true }
+);
 ```
 
 ### Non-exhaustive Handling
@@ -116,13 +119,16 @@ bindEffects({
 For optional handling, use non-exhaustive mode:
 
 ```ts
-bindEffects({
-  // Only handle some effects
-  Notify: ({ data }) => {
-    // Handle Notify effect
+bindEffects(
+  {
+    // Only handle some effects
+    Notify: ({ data }) => {
+      // Handle Notify effect
+    },
+    // No error if other effect types exist
   },
-  // No error if other effect types exist
-}, { exhaustive: false });
+  { exhaustive: false }
+);
 ```
 
 ## Combining Effects with Transitions
@@ -136,10 +142,10 @@ const todoMachine = matchina(
     Active: (todos: string[]) => ({ todos }),
     Saving: (todos: string[]) => ({ todos }),
     // Effect state
-    SyncRequired: (todos: string[]) => ({ 
-      todos, 
-      effect: "AutoSync" as const 
-    })
+    SyncRequired: (todos: string[]) => ({
+      todos,
+      effect: "AutoSync" as const,
+    }),
   },
   {
     // ...transitions
@@ -147,15 +153,15 @@ const todoMachine = matchina(
       add: (todo: string, state) => {
         const todos = [...state.data.todos, todo];
         // Transition to effect state when we have 5+ items
-        return todos.length >= 5 
-          ? "SyncRequired" 
+        return todos.length >= 5
+          ? "SyncRequired"
           : { ...state, data: { todos } };
-      }
+      },
     },
     SyncRequired: {
       // After sync, go back to Active state
-      syncComplete: "Active"
-    }
+      syncComplete: "Active",
+    },
   },
   "Idle"
 );
@@ -169,7 +175,7 @@ setup(todoMachine)(
         // Transition when sync completes
         machine.syncComplete();
       });
-    }
+    },
   })
 );
 ```

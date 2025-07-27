@@ -4,7 +4,7 @@ description: Machine transition lifecycle
 ---
 
 import Mermaid from "../../../components/Mermaid";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 # Transition Flow: Lifecycle Hooks
 
@@ -18,55 +18,56 @@ When you call `machine.send(type, ...params)`, the following flow occurs:
     ## Step-by-step
 
     ### 1. **`send`**
-    
+
     Called with an event type and parameters.
 
     ### 2. **`resolveExit`**
-    
+
     Determines the target state for the event.
 
     ### 3. **`guard`**
-    
-    Checks if the transition is allowed.  
+
+    Checks if the transition is allowed.
 
        - If `false`, exit early.
     ### 4. **`handle`**
-    
-    First opportunity to process the event.  
+
+    First opportunity to process the event.
 
        - If returns `undefined`, exit early.
     ### 5. **`before`**
-    
-    Called before the state change.  
+
+    Called before the state change.
 
        - If returns `undefined`, exit early.
     ### 6. **`update`**
-    
+
     Updates the internal state.
 
     ### 7. **`effect`**
-    
+
     Runs side effects.
 
     ### 8. **`leave`**
-    
+
     Called when leaving the previous state.
 
     ### 9. **`enter`**
-    
+
     Called when entering the new state.
 
     ### 10. **`notify`**
-    
+
     Notifies subscribers.
 
     ### 11. **`after`**
-    
+
     Final hook after transition completes.
 
     ## Early exits
-    
+
     - If `guard` returns `false`, or `handle`/`before` return `undefined`, the transition stops and no further steps run.
+
   </div>
   <div className="flex-1 min-w-[260px] rounded-lg p-4 bg-gray-100 dark:bg-gray-800">
       <Mermaid client:only="react" content={`flowchart TD

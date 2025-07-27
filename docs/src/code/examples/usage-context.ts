@@ -8,7 +8,7 @@ import {
 
 // ---cut---
 const machine = createPromiseMachine(
-  (x: number) => new Promise((resolve) => setTimeout(resolve, x)),
+  (x: number) => new Promise((resolve) => setTimeout(resolve, x))
 );
 machine.execute(1100);
 
@@ -41,7 +41,7 @@ const m2 = createMachine(
     Rejected: {},
     Resolved: {},
   },
-  Idle(),
+  Idle()
 );
 
 const m2Api = createApi(m2);
@@ -67,7 +67,7 @@ const counter = createMachine(
           counterStates.Idle({ count: ev.from.data.count - dec }),
     },
   },
-  counterStates.Idle(),
+  counterStates.Idle()
 );
 
 const counterApi = createApi(counter);
@@ -98,7 +98,7 @@ const m5 = createMachine(
         oneState.State({ ...ev.from.data, count }),
     },
   },
-  oneState.State({ count: 0, meta: { name: "howdy" } }),
+  oneState.State({ count: 0, meta: { name: "howdy" } })
 );
 
 const api5 = createApi(m5);

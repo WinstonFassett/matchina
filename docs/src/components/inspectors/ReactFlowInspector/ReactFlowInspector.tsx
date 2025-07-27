@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { createPortal } from "react-dom";
 import ReactFlow, {
   Controls,
   Background,
@@ -9,19 +15,19 @@ import ReactFlow, {
   BackgroundVariant,
   Panel,
   useReactFlow,
-} from 'reactflow';
-import type { NodeTypes, EdgeTypes } from 'reactflow';
-import 'reactflow/dist/style.css';
+} from "reactflow";
+import type { NodeTypes, EdgeTypes } from "reactflow";
+import "reactflow/dist/style.css";
 
-import CustomNode from './CustomNode';
-import CustomEdge from './CustomEdge';
-import LayoutPanel from './LayoutPanel';
-import { useStateMachineNodes } from './hooks/useStateMachineNodes';
-import { useStateMachineEdges } from './hooks/useStateMachineEdges';
-import { getDefaultLayoutOptions } from './utils/elkLayout';
-import type { LayoutOptions } from './utils/elkLayout';
-import { saveLayoutSettings, loadLayoutSettings } from './utils/layoutStorage';
-import type { LayoutSettings } from './utils/layoutStorage';
+import CustomNode from "./CustomNode";
+import CustomEdge from "./CustomEdge";
+import LayoutPanel from "./LayoutPanel";
+import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
+import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
+import { getDefaultLayoutOptions } from "./utils/elkLayout";
+import type { LayoutOptions } from "./utils/elkLayout";
+import { saveLayoutSettings, loadLayoutSettings } from "./utils/layoutStorage";
+import type { LayoutSettings } from "./utils/layoutStorage";
 
 // Add CSS for edge animations
 const edgeAnimationStyles = `
@@ -63,10 +69,12 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   edgesClickable = true, // Default to true for backward compatibility
 }) => {
   const [previousState, setPreviousState] = useState<string | null>(null);
-  const [lastTriggeredEvent, setLastTriggeredEvent] = useState<string | undefined>(lastEvent);
+  const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
+    string | undefined
+  >(lastEvent);
   const instanceId = useRef(Math.random().toString(36).substring(2, 9));
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
-  
+
   // Track state changes for previous state highlighting
   useEffect(() => {
     if (prevState) {
@@ -82,15 +90,15 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     const saved = loadLayoutSettings();
     return saved || getDefaultLayoutOptions();
   });
-  
+
   // Force re-layout when options change
   const [forceLayoutKey, setForceLayoutKey] = useState<number>(0);
-  
+
   const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
     setLayoutOptions(newOptions);
     saveLayoutSettings(newOptions);
     // Force immediate re-layout
-    setForceLayoutKey(prev => prev + 1);
+    setForceLayoutKey((prev) => prev + 1);
   }, []);
 
   // Use a key to force remount when definition changes
@@ -101,15 +109,16 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   const reactFlowInstanceRef = useRef<any>(null);
 
-  const { nodes, onNodesChange, isInitialized, isLayoutComplete } = useStateMachineNodes(
-    definition,
-    value,
-    previousState,
-    machineKey.current,
-    layoutOptions,
-    forceLayoutKey
-  );
-  
+  const { nodes, onNodesChange, isInitialized, isLayoutComplete } =
+    useStateMachineNodes(
+      definition,
+      value,
+      previousState,
+      machineKey.current,
+      layoutOptions,
+      forceLayoutKey
+    );
+
   // Fit view when layout is complete
   useEffect(() => {
     if (isLayoutComplete && reactFlowInstanceRef.current) {
@@ -117,7 +126,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
         reactFlowInstanceRef.current?.fitView({
           padding: 0.3,
           includeHiddenNodes: false,
-          duration: 800 // Animate the zoom/pan over 800ms
+          duration: 800, // Animate the zoom/pan over 800ms
         });
       }, 50); // Small delay to ensure nodes are properly positioned
     }
@@ -138,14 +147,17 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     }
   }, [nodes, updateEdges, isInitialized]);
 
-  const handleEdgeClick = useCallback((event: React.MouseEvent, edge: any) => {
-    event.stopPropagation();
-    const eventType = edge.data?.event;
-    const isClickable = edge.data?.isClickable;
-    if (eventType && isClickable) {
-      dispatch({ type: eventType });
-    }
-  }, [dispatch]);
+  const handleEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: any) => {
+      event.stopPropagation();
+      const eventType = edge.data?.event;
+      const isClickable = edge.data?.isClickable;
+      if (eventType && isClickable) {
+        dispatch({ type: eventType });
+      }
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -162,28 +174,43 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             onEdgeClick={handleEdgeClick}
             connectionLineType={ConnectionLineType.SmoothStep}
             defaultEdgeOptions={{
-              type: 'custom',
+              type: "custom",
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
             fitView
             fitViewOptions={{ padding: 0.3, includeHiddenNodes: true }}
           >
-            <Controls 
+            <Controls
               showZoom={true}
               showFitView={true}
               showInteractive={false}
               position="bottom-right"
             />
-            <Background variant={"dots" as BackgroundVariant} gap={20} size={1} />
-            
+            <Background
+              variant={"dots" as BackgroundVariant}
+              gap={20}
+              size={1}
+            />
+
             {/* Layout Options Button */}
             <Panel position="top-right">
-              <button 
+              <button
                 onClick={() => setShowLayoutDialog(!showLayoutDialog)}
                 className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16m-7 6h7"
+                  />
                 </svg>
                 Layout
               </button>
@@ -191,23 +218,24 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
           </ReactFlow>
         </ReactFlowProvider>
       </div>
-      
-      {showLayoutDialog && createPortal(
-        <div 
-          className="fixed inset-0 z-50 flex items-start justify-end" 
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowLayoutDialog(false);
-          }}
-        >
-          <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
-            <LayoutPanel 
-              options={layoutOptions} 
-              onOptionsChange={handleLayoutChange} 
-            />
-          </div>
-        </div>,
-        document.body
-      )}
+
+      {showLayoutDialog &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-end"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowLayoutDialog(false);
+            }}
+          >
+            <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
+              <LayoutPanel
+                options={layoutOptions}
+                onOptionsChange={handleLayoutChange}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 };

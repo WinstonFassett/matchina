@@ -11,7 +11,7 @@ export function getStateValues<S extends AnyStatesFactory>(states: S) {
 export function resolveState<S extends AnyStatesFactory>(
   states: AnyStatesFactory,
   from: string,
-  entry: TransitionEntry<any>,
+  entry: TransitionEntry<any>
 ): FactoryState<S> {
   if (typeof entry === "string") {
     return states[entry]({} as any); // as FactoryState<S>

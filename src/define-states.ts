@@ -1,7 +1,7 @@
 import {
   matchboxFactory,
   MatchboxMemberApi,
-  TaggedTypes
+  TaggedTypes,
 } from "./matchbox-factory";
 
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {

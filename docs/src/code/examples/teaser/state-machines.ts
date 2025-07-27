@@ -16,7 +16,7 @@ const giant = matchina(
     Fo: { toFum: "Fum" },
     Fum: { toFee: "Fee" },
   },
-  "Fee",
+  "Fee"
 );
 
 giant.getState().is("Fee"); // true

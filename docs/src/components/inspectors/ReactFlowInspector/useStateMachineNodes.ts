@@ -1,24 +1,31 @@
-import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import { useNodesState } from 'reactflow';
-import type { Node } from 'reactflow';
-import { getLayoutedElements, getDefaultLayoutOptions } from './utils/elkLayout';
-import type { LayoutOptions } from './utils/elkLayout';
+import { useMemo, useCallback, useRef, useEffect, useState } from "react";
+import { useNodesState } from "reactflow";
+import type { Node } from "reactflow";
+import {
+  getLayoutedElements,
+  getDefaultLayoutOptions,
+} from "./utils/elkLayout";
+import type { LayoutOptions } from "./utils/elkLayout";
 
 // Extract transitions from machine for ELK layout
 const extractTransitionsForLayout = (definition: any) => {
   const transitions: Array<{ from: string; to: string; event: string }> = [];
-  
+
   if (!definition?.states) return transitions;
 
-  Object.entries(definition.states).forEach(([stateName, stateConfig]: [string, any]) => {
-    if (!stateConfig?.on) return;
-    
-    Object.entries(stateConfig.on).forEach(([event, target]: [string, any]) => {
-      if (target) {
-        transitions.push({ from: stateName, to: target, event });
-      }
-    });
-  });
+  Object.entries(definition.states).forEach(
+    ([stateName, stateConfig]: [string, any]) => {
+      if (!stateConfig?.on) return;
+
+      Object.entries(stateConfig.on).forEach(
+        ([event, target]: [string, any]) => {
+          if (target) {
+            transitions.push({ from: stateName, to: target, event });
+          }
+        }
+      );
+    }
+  );
 
   return transitions;
 };
@@ -52,7 +59,10 @@ export const useStateMachineNodes = (
   }, [definition]);
 
   // Extract transitions for ELK layout
-  const transitions = useMemo(() => extractTransitionsForLayout(definition), [definition]);
+  const transitions = useMemo(
+    () => extractTransitionsForLayout(definition),
+    [definition]
+  );
 
   // Reset when definition changes
   useEffect(() => {
@@ -68,27 +78,28 @@ export const useStateMachineNodes = (
   useEffect(() => {
     if (!hasInitialized.current && states.length > 0 && !isLayouting) {
       setIsLayouting(true);
-      
+
       // Create initial nodes without positions (ELK will calculate them)
       const initialNodes: Node[] = states.map((state) => ({
         id: state,
         position: { x: 0, y: 0 }, // Temporary position
-        data: { 
+        data: {
           label: state.charAt(0).toUpperCase() + state.slice(1),
           isActive: currentState === state,
-          isPrevious: previousState === state
+          isPrevious: previousState === state,
         },
-        type: 'custom',
+        type: "custom",
       }));
 
       // Create edges for ELK layout
-      const initialEdges = transitions.length > 0 
-        ? transitions.map((transition, index) => ({
-            id: `${transition.from}-${transition.to}-${transition.event}-${index}`,
-            source: transition.from,
-            target: transition.to,
-          }))
-        : [];
+      const initialEdges =
+        transitions.length > 0
+          ? transitions.map((transition, index) => ({
+              id: `${transition.from}-${transition.to}-${transition.event}-${index}`,
+              source: transition.from,
+              target: transition.to,
+            }))
+          : [];
 
       // Use ELK to calculate optimal layout
       getLayoutedElements(initialNodes, initialEdges, currentLayoutOptions)
@@ -98,32 +109,41 @@ export const useStateMachineNodes = (
           setIsLayouting(false);
         })
         .catch((error) => {
-          console.error('Layout failed, using fallback:', error);
+          console.error("Layout failed, using fallback:", error);
           // Fallback to simple grid layout if ELK fails
           const fallbackNodes = initialNodes.map((node, index) => ({
             ...node,
-            position: { 
-              x: (index % 3) * 200, 
-              y: Math.floor(index / 3) * 100 
-            }
+            position: {
+              x: (index % 3) * 200,
+              y: Math.floor(index / 3) * 100,
+            },
           }));
           setNodes(fallbackNodes);
           hasInitialized.current = true;
           setIsLayouting(false);
         });
     }
-  }, [states, setNodes, currentState, previousState, isLayouting, key, currentLayoutOptions, transitions]);
+  }, [
+    states,
+    setNodes,
+    currentState,
+    previousState,
+    isLayouting,
+    key,
+    currentLayoutOptions,
+    transitions,
+  ]);
 
   // Update node states without changing positions
   const updateNodeStates = useCallback(() => {
-    setNodes(currentNodes => 
-      currentNodes.map(node => ({
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
         ...node,
         data: {
           ...node.data,
           isActive: currentState === node.id,
-          isPrevious: previousState === node.id
-        }
+          isPrevious: previousState === node.id,
+        },
       }))
     );
   }, [currentState, previousState, setNodes]);
@@ -139,6 +159,6 @@ export const useStateMachineNodes = (
     nodes,
     onNodesChange,
     isInitialized: hasInitialized.current,
-    isLayouting
+    isLayouting,
   };
 };

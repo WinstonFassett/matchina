@@ -2,7 +2,7 @@ import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,
-  FactoryMachineTransitionEvent
+  FactoryMachineTransitionEvent,
 } from "./factory-machine-types";
 import { Effect, Funcware, Middleware } from "./function-types";
 import { StateMachine, StateMachineEvent } from "./state-machine-types";

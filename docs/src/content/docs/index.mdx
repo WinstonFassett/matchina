@@ -36,33 +36,34 @@ import { Code } from "@astrojs/starlight/components";
 
 {/* ## Key Features */}
 
-<CodeTabs files={[
-  {   
-    name: "TypeScript-First",
-    code: setupCode,
-    language: "ts",
-    twoslash: true,
-  },
-  {
-    name: "State Machines",
-    code: machineCode,
-    language: "ts",
-    twoslash: true,
-  },
-  {
-    name: "Pattern Matching",
-    code: patternMatchingCode,
-    language: "ts",
-    twoslash: true,
-  },
-  {
-    name: "Type Guards",
-    code: typeGuardsCode,
-    language: "ts",
-    twoslash: true,
-  },
-]}>
-</CodeTabs>
+<CodeTabs
+  files={[
+    {
+      name: "TypeScript-First",
+      code: setupCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "State Machines",
+      code: machineCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "Pattern Matching",
+      code: patternMatchingCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "Type Guards",
+      code: typeGuardsCode,
+      language: "ts",
+      twoslash: true,
+    },
+  ]}
+></CodeTabs>
 
 ## Quick Installation
 
@@ -103,8 +104,6 @@ npm install matchina
     href="./guides/matchbox-factories/"
     description="Create type-safe tagged union factories with pattern matching"
   />
-
-
 
 </CardGrid>
 

@@ -1,9 +1,10 @@
-
 export type MatchCases<
   Record,
   A,
-  Exhaustive extends boolean = true
-> = Exhaustive extends true ? (Cases<Record, A> & { _?: never; }) | PartialCases<Record, A> : AnyCases<Record, A>;
+  Exhaustive extends boolean = true,
+> = Exhaustive extends true
+  ? (Cases<Record, A> & { _?: never }) | PartialCases<Record, A>
+  : AnyCases<Record, A>;
 
 export type Cases<Record, A> = {
   [T in keyof Record]: (value: Record[T]) => A;
@@ -27,8 +28,10 @@ export interface MatchInvocation<Specs extends FuncRecord> {
 export type MatchInvocationCases<
   R extends FuncRecord,
   A,
-  Exhaustive extends boolean = true
-> = Exhaustive extends true ? (InvocationCases<R, A> & { _?: never; }) | PartialInvocationCases<R, A> : AnyInvocationCases<R, A>;
+  Exhaustive extends boolean = true,
+> = Exhaustive extends true
+  ? (InvocationCases<R, A> & { _?: never }) | PartialInvocationCases<R, A>
+  : AnyInvocationCases<R, A>;
 type InvocationCases<R extends FuncRecord, A> = {
   [T in keyof R]: (...params: Parameters<R[T]>) => A;
 };

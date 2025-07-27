@@ -1,5 +1,12 @@
 import { FactoryMachineEventImpl } from "./factory-machine-event";
-import { FactoryMachine, FactoryMachineContext, FactoryMachineEvent, FactoryMachineTransition, FactoryMachineTransitions, FactoryState } from "./factory-machine-types";
+import {
+  FactoryMachine,
+  FactoryMachineContext,
+  FactoryMachineEvent,
+  FactoryMachineTransition,
+  FactoryMachineTransitions,
+  FactoryState,
+} from "./factory-machine-types";
 import { StateFactory } from "./state";
 import { ResolveEvent } from "./state-machine-types";
 import { createTransitionMachine } from "./transition-machine";
@@ -13,29 +20,41 @@ export function createMachine<
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>,
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
 ): FactoryMachine<FC> {
   // Fix type for initialState to match createTransitionMachine's expectation
-  const initialState = typeof init === "string" ? states[init]({}) : (init as ReturnType<SF[keyof SF]>);
-  
+  const initialState =
+    typeof init === "string"
+      ? states[init]({})
+      : (init as ReturnType<SF[keyof SF]>);
+
   return Object.assign(
     createTransitionMachine<E>(
-      transitions as any, 
+      transitions as any,
       // Explicit cast to E['from'] to satisfy createTransitionMachine's type
-      initialState as E['from']
-    ), {
-    states,
-    resolveExit: (ev: ResolveEvent<E>): E | undefined => {
-      const to = resolveNextState<FC>(transitions, states, ev);
-      return to ? new FactoryMachineEventImpl<E>(ev.type, ev.from, to, ev.params) as E : undefined;
-    },
-  }) as any;
+      initialState as E["from"]
+    ),
+    {
+      states,
+      resolveExit: (ev: ResolveEvent<E>): E | undefined => {
+        const to = resolveNextState<FC>(transitions, states, ev);
+        return to
+          ? (new FactoryMachineEventImpl<E>(
+              ev.type,
+              ev.from,
+              to,
+              ev.params
+            ) as E)
+          : undefined;
+      },
+    }
+  ) as any;
 }
 
 export function resolveNextState<FC extends FactoryMachineContext<any>>(
   transitions: FC["transitions"],
   states: FC["states"],
-  ev: ResolveEvent<FactoryMachineEvent<FC>>,
+  ev: ResolveEvent<FactoryMachineEvent<FC>>
 ) {
   const transition = transitions[ev.from.key]?.[ev.type];
   return resolveExitState(transition, ev, states);
@@ -44,10 +63,10 @@ export function resolveNextState<FC extends FactoryMachineContext<any>>(
 export function resolveExitState<FC extends FactoryMachineContext<any>>(
   transition: FactoryMachineTransition<FC["states"]> | undefined,
   ev: ResolveEvent<FactoryMachineEvent<FC>>,
-  states: FC["states"],
+  states: FC["states"]
 ) {
   if (!transition) {
-    return undefined
+    return undefined;
   }
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);

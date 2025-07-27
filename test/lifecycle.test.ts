@@ -17,8 +17,8 @@ describe("onLifecycle usage", () => {
     let didEnterRejected = 0;
     let count = 0;
 
-    const pm = createPromiseMachine<(x: number) => Promise<number>>(
-      (x) => delayed(15,x)
+    const pm = createPromiseMachine<(x: number) => Promise<number>>((x) =>
+      delayed(15, x)
     );
     // Create machine WITHOUT a promise to drive it
     const api = createApi(pm);
@@ -147,8 +147,8 @@ describe("onLifecycle usage", () => {
               } = change;
               console.log(
                 `${from} wants to ${event} to ${to} with params ${params.join(
-                  ", ",
-                )}`,
+                  ", "
+                )}`
               );
               console.group();
               const accept = params[1][0] > 1;
@@ -177,7 +177,7 @@ describe("onLifecycle usage", () => {
             handle: (event) => {
               console.log("*** HANDLE");
               const num = event.params[1][0];
-              const accept = event.params [1][0] >= 100;
+              const accept = event.params[1][0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
                 console.log("handler rejecting");

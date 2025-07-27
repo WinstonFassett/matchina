@@ -34,7 +34,7 @@ export const createStopwatchMachine = () => {
         clear: "Suspended",
       },
     },
-    "Stopped",
+    "Stopped"
   );
 
   // Use zen to enhance the machine with utility methods
@@ -53,18 +53,18 @@ export const createStopwatchMachine = () => {
           _tick: () =>
             ev.from.data.elapsed + (Date.now() - ev.from.as("Ticking").data.at),
         },
-        false,
+        false
       );
     }),
     effect(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(machine._tick),
-      ),
+        () => tickEffect(machine._tick)
+      )
     ),
     effect((ev) => {
       machine.elapsed = ev.to.data.elapsed;
-    }),
+    })
   );
   return machine;
 };

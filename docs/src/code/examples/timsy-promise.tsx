@@ -4,8 +4,8 @@ import React from "react";
 // ---cut---
 const machine = withApi(
   createPromiseMachine((_id: number) =>
-    fetch("/data").then((response) => response.json()),
-  ),
+    fetch("/data").then((response) => response.json())
+  )
 );
 
 export const DataComponent: React.FC = () => {

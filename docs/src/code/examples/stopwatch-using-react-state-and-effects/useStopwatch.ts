@@ -19,7 +19,7 @@ export function useStopwatch() {
         setElapsed(0);
       },
     }),
-    [],
+    []
   );
 
   // Define the state machine
@@ -49,7 +49,7 @@ export function useStopwatch() {
           clear: "Suspended",
         },
       },
-      "Stopped",
+      "Stopped"
     );
 
     // Use zen to enhance the machine with utility methods
@@ -70,7 +70,7 @@ export function useStopwatch() {
         Ticking: effects.run,
         Stopped: () => effects.clear,
       },
-      false,
+      false
     );
   }, [stopwatch.getState()]);
   return stopwatch;

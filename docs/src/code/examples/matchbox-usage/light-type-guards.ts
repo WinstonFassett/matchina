@@ -21,7 +21,7 @@ if (light2.is("On")) {
 
 // Type guards can be used in conditions
 function getBrightness(
-  light: ReturnType<typeof Light.Off> | ReturnType<typeof Light.On>,
+  light: ReturnType<typeof Light.Off> | ReturnType<typeof Light.On>
 ) {
   if (light.is("Off")) {
     return 0;
