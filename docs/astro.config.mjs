@@ -50,7 +50,7 @@ export default defineConfig({
         starlightTypeDoc({
           entryPoints: ["../src/index.ts"],
           tsconfig: "../tsconfig.typedoc.json",
-          output: "./reference",
+          output: "reference",
         }),
       ],
       expressiveCode: {
