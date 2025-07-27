@@ -5,8 +5,14 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "plugins": [
+      {
+        "name": "@astrojs/ts-plugin"
+      },
+    ]
   },
   "include": ["src", "test"],
-  "exclude": ["src/dev", "docs/node_modules"]
+  "exclude": ["src/dev", "node_modules", "docs/node_modules", "**/*.astro"],
+  
 }

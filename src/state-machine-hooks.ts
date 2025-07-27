@@ -14,7 +14,7 @@ import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { HasFilterValues } from "./match-filters";
 import { StateMachineEvent, StateMachine } from "./state-machine-types";
 import { Effect, Middleware } from "./function-types";
-import { Func } from "./utility-types";
+import { Func } from "./function-types";
 
 // #region Adapters
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {

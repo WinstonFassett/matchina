@@ -1,4 +1,4 @@
-import { Func } from "../../utility-types";
+import { Func } from "../../function-types";
 import { AbortableEventHandler } from "../abortable";
 import { Funcware } from "./funcware";
 
