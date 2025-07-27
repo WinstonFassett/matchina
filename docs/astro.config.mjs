@@ -245,10 +245,11 @@ export default defineConfig({
                   label: "Checkout Flow",
                   link: "/examples/checkout",
                 },
-                {
-                  label: "Paren Checker",
-                  link: "/examples/paren-checker",
-                },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
               ],
             },
           ],
@@ -260,20 +261,20 @@ export default defineConfig({
             // { label: "Subscriptions", link: "/guides/subscriptions" },
           ],
         },
-        {
-          label: "Appendix",
-          collapsed: true,
-          items: [
-            {
-              label: "Timsy Inspiration",
-              link: "/guides/timsy",
-            },
-            {
-              label: "Unions as Machines",
-              link: "/guides/unions-as-machine",
-            },
-          ],
-        },
+        // {
+        //   label: "Appendix",
+        //   collapsed: true,
+        //   items: [
+        //     {
+        //       label: "Timsy Inspiration",
+        //       link: "/guides/timsy",
+        //     },
+        //     {
+        //       label: "Unions as Machines",
+        //       link: "/guides/unions-as-machine",
+        //     },
+        //   ],
+        // },
         // {
         //   label: "Guides",
         //   items: [
