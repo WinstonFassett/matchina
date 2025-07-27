@@ -1,4 +1,4 @@
-import { Funcware } from "./funcware";
+import { Funcware } from "../../function-types";
 
 export const iff =
   <F extends (...params: any[]) => any>(

@@ -1,4 +1,4 @@
-import { MatchCases } from "../match-case";
+import { MatchCases } from "../match-case-types";
 import { TaggedTypes } from "../matchbox-factory";
 import { AnyEffect, handleEffects } from "./effects";
 

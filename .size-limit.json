@@ -72,10 +72,6 @@
     "import": "{ onLifecycle}"
   },
   {
-    "name": "factory-machine-transition-helpers",
-    "path": "src/factory-machine-transition-helpers.ts"
-  },
-  {
     "name": "react-dist",
     "path": "src/integrations/react.ts",
     "import": "{ useMachine }",

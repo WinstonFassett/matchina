@@ -1,5 +1,6 @@
 import { enhanceMethod, iff } from "./ext";
-import { Disposer, disposers } from "./ext/setup";
+import { disposers } from "./ext/setup";
+import { Disposer } from "./function-types";
 import {
   FactoryMachine,
   FactoryMachineContext,

@@ -1,5 +1,4 @@
-export type Setup<T> = (target: T) => Disposer;
-export type Disposer = () => void;
+import { Disposer, Setup } from "../function-types";
 
 /**
  * Run cleanup functions in reverse order

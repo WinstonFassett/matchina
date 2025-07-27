@@ -1,5 +1,6 @@
 import { FactoryMachineEvent } from "./factory-machine-types";
-import { MatchCases, match } from "./match-case";
+import { match } from "./match-case";
+import { MatchCases } from "./match-case-types";
 
 export class FactoryMachineEventImpl<E extends FactoryMachineEvent<any>> {
   constructor(

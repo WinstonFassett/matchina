@@ -1,6 +1,6 @@
 import { HasMethod } from "../methodware/method-enhancer";
 import { MethodOf } from "../methodware/enhance-method";
-import { Funcware } from "./funcware";
+import { Funcware } from "../../function-types";
 
 export const tap =
   <K extends string, T extends HasMethod<K>>(

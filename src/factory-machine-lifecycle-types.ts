@@ -1,5 +1,5 @@
-import { AbortableEventHandler } from "./ext/abortable";
-import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventHandler } from "./ext/abortable-event-handler";
+import { Funcware } from "./function-types";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
+import { Effect } from "../function-types";
 
-export type Listen<T> = (value: T) => void;
 
 export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
@@ -10,7 +10,7 @@ export function useMachine<Change>(machine: {
     throw new Error("useMachine requires a machine instance");
   }
   const onSubscribe = useCallback(
-    (listener: Listen<Change>) => {
+    (listener: Effect<Change>) => {
       const orig = machine.notify;
       const bound = orig.bind(machine);
       machine.notify = (ev) => {

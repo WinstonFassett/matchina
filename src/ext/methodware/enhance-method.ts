@@ -1,4 +1,4 @@
-import { Funcware } from "../funcware/funcware";
+import { Funcware } from "../../function-types";
 
 const noop = () => {};
 
