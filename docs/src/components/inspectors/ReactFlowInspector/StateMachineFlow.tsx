@@ -1,14 +1,18 @@
 import { useCallback, useMemo, useEffect, useRef } from 'react';
 import React from 'react';
-import { useMachine } from '@xstate/react';
-import { useStateMachineNodes } from '../hooks/useStateMachineNodes';
-import { useStateMachineEdges } from '../hooks/useStateMachineEdges';
-import type { LayoutOptions } from '../utils/elkLayout';
+import { useStateMachineNodes } from './hooks/useStateMachineNodes';
+import { useStateMachineEdges } from './hooks/useStateMachineEdges';
+import type { LayoutOptions } from './utils/elkLayout';
+import { useMachine } from '@lib/src/integrations/react';
 
 export const useStateMachineFlow = (machine: any, machineKey?: number, layoutOptions?: LayoutOptions) => {
-  const [current, send] = useMachine(machine, {
-    snapshot: undefined // Force fresh start
-  });
+  // const [current, send] = useMachine(machine, {
+  //   snapshot: undefined // Force fresh start
+  // });
+  useMachine(machine)
+  const current = machine.getState();
+  const send = machine.send;
+  
   const [previousState, setPreviousState] = React.useState<string | null>(null);
   const lastKnownState = useRef<string | null>(null);
 
