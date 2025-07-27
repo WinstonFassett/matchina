@@ -78,27 +78,60 @@ export type MemberCreateFromDataSpecs<
     => MemberFromDataSpecs<Tag, DataSpecs, TagProp>;
 
     
+/**
+ * CreatorsFromDataSpecs maps each tag in DataSpecs to a constructor function for its variant.
+ * Each constructor uses MemberCreateFromDataSpecs to create a Matchbox member for the tag.
+ *
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag.
+ */
 export type CreatorsFromDataSpecs<DataSpecs, TagProp extends string> = {
   [T in keyof DataSpecs]: MemberCreateFromDataSpecs<T, DataSpecs, TagProp>;
 };
 
+/**
+ * UnionFromDataSpecs is an alias for CreatorsFromDataSpecs, representing the full set of variant constructors.
+ *
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag (default: "tag").
+ */
 export type UnionFromDataSpecs<
   DataSpecs,
   TagProp extends string = "tag",
 > = CreatorsFromDataSpecs<DataSpecs, TagProp>;
 
+/**
+ * MatchboxFactoryFromData is an alias for UnionFromDataSpecs, representing the factory for creating Matchbox variants.
+ *
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag (default: "tag").
+ */
 export type MatchboxFactoryFromData<
   DataSpecs,
   TagProp extends string = "tag",
 > = UnionFromDataSpecs<DataSpecs, TagProp>;
 
-
+/**
+ * FactoryFromDataSpecs maps each tag in DataSpecs to a constructor function for its variant.
+ * If the spec is a function, the constructor accepts its arguments; otherwise, it returns the variant with the value.
+ *
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag.
+ */
 export type FactoryFromDataSpecs<DataSpecs, TagProp extends string> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer R
     ? (...args: P) => MemberFromDataSpecs<T, DataSpecs, TagProp>
     : () => MemberFromDataSpecs<T, DataSpecs, TagProp>;
 };
 
+/**
+ * MemberFromDataSpecs creates the type for a single Matchbox member from its data specification.
+ * Includes the data, tag property, and member extension methods (is, as, match).
+ *
+ * @template Tag - The tag value.
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag.
+ */
 export type MemberFromDataSpecs<
   Tag extends keyof DataSpecs,
   DataSpecs,
@@ -108,6 +141,15 @@ export type MemberFromDataSpecs<
   : { data: DataSpecs[Tag] }) & { [_ in TagProp]: Tag }) &
   MemberExtensionsFromDataSpecs<DataSpecs, TagProp>;
 
+/**
+ * MemberExtensionsFromDataSpecs provides type-safe methods for working with a Matchbox member:
+ * - is: Type predicate for narrowing to a specific variant.
+ * - as: Casts to a specific variant, throws if the tag does not match.
+ * - match: Pattern matching for variant data.
+ *
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag.
+ */
 export interface MemberExtensionsFromDataSpecs<
   DataSpecs,
   TagProp extends string,
@@ -121,6 +163,12 @@ export interface MemberExtensionsFromDataSpecs<
   match: MatchMemberData<DataSpecs>;
 }
 
+/**
+ * MatchMemberData provides pattern matching for variant data.
+ * Accepts a cases object mapping tags to handler functions, and an optional exhaustiveness flag.
+ *
+ * @template DataSpecs - The record of data specifications.
+ */
 interface MatchMemberData<DataSpecs> {
   <A, Exhaustive extends boolean = true>(
     cases: MatchCases<MemberData<DataSpecs>, A, Exhaustive>,
