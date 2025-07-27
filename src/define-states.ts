@@ -1,15 +1,15 @@
 import {
-  SpecRecord,
   matchboxFactory,
   MatchboxMemberApi,
 } from "./matchbox-factory";
+import { TaggedTypes } from "./tagged-types";
 
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;
 } & MatchboxMemberApi<Specs, "key">;
 
-export type States<Specs extends SpecRecord> = {
+export type States<Specs extends TaggedTypes> = {
   [T in string & keyof Specs]: CreateState<Specs, T>;
 };
 
@@ -31,6 +31,6 @@ type StateData<Spec> = Spec extends (...args: any[]) => any
   ? ReturnType<Spec>
   : Spec;
 
-export function defineStates<Config extends SpecRecord>(config: Config) {
+export function defineStates<Config extends TaggedTypes>(config: Config) {
   return matchboxFactory(config, "key") as States<Config>;
 }

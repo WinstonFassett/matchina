@@ -1,9 +1,9 @@
-import { Simplify } from "./utility-types";
+import { TaggedTypes } from "./tagged-types";
 
 /**
  * FactoryShape defines the shape of a factory object, mapping string keys (tags) to constructor functions.
  */
-interface FactoryShape {
+interface NamedPayloadCreators {
   [key: string]: (...args: unknown[]) => unknown;
 }
 
@@ -18,7 +18,7 @@ interface FactoryShape {
  */
 type Matchbox<
   TagProp extends string,
-  F extends FactoryShape,
+  F extends NamedPayloadCreators,
   D,
   K extends string & keyof F = string & keyof F,
 > = ReturnType<F[K]> &
@@ -51,7 +51,7 @@ export type MatchboxInstance<TagProp extends string, Tag extends string, Data> =
  */
 export interface MatchboxApi<
   TagProp extends string,
-  F extends FactoryShape,
+  F extends NamedPayloadCreators,
 > {
   is: <K extends keyof F>(key: K) => this is Matchbox<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
@@ -61,23 +61,6 @@ export interface MatchboxApi<
   ) => A;
 }
 
-/**
- * MemberCreateFromDataSpecs creates a constructor function for a Matchbox variant from its data specification.
- * If the spec is a function, the constructor accepts its arguments.
- * Otherwise, it returns the variant with the given value.
- *
- * @template Tag - The tag value.
- * @template DataSpecs - The record of data specifications.
- * @template TagProp - The property name used for the tag.
- */
-export type MemberCreateFromDataSpecs<
-  Tag extends keyof DataSpecs,
-  DataSpecs,
-  TagProp extends string,
-> = DataSpecs[Tag] extends (...args: infer P) => infer _R
-  ? (...args: P) => MatchboxMember<Tag, DataSpecs, TagProp>
-  : () // value?: Specs[Tag]
-    => MatchboxMember<Tag, DataSpecs, TagProp>;
 
 /**
  * MatchboxFactory is the main output type for matchboxFactory.
@@ -157,14 +140,15 @@ export type MemberData<DataSpecs> = {
  * variant constructors, type predicates and `match` function.
  */
 export function matchboxFactory<
-  Config extends SpecRecord | string,
+  Config extends TaggedTypes | string,
   TagProp extends string = "tag",
   R = MatchboxFactory<
-    Config extends ReadonlyArray<string> ? SpecFromStrings<Config> : Config,
+    Config extends ReadonlyArray<string> ? {
+      [K in Config[number]]: (data: any) => any;
+    } : Config,
     TagProp
   >,
 >(config: Config, tagProp = "tag" as TagProp): R {
-  // Fix Array#reduce lint error by using a for loop
   if (Array.isArray(config)) {
     const spec: Record<string, (data: any) => any> = {};
     for (const tag of config as string[]) {
@@ -175,7 +159,7 @@ export function matchboxFactory<
 
   const createObj: any = {};
   for (const tag in config) {
-    const spec = (config as SpecRecord)[tag];
+    const spec = (config as TaggedTypes)[tag];
     createObj[tag] = (...args: any) => {
       return matchbox<Config, any, TagProp>(
         tag,
@@ -204,10 +188,10 @@ export function matchbox<
   data: any,
   tagProp: TagProp = "tag" as TagProp,
 ): MatchboxMember<Tag, DataSpecs, TagProp> {
-  return new MemberImpl<DataSpecs, Tag, TagProp>(tag, data, tagProp) as any;
+  return new MatchboxImpl<DataSpecs, Tag, TagProp>(tag, data, tagProp) as any;
 }
 
-class MemberImpl<
+class MatchboxImpl<
   Config,
   Tag extends keyof Config = keyof Config,
   TagProp extends string = "tag",
@@ -266,81 +250,3 @@ class MemberImpl<
   }
 }
 
-// #region WIP
-
-/**
- * _ExtractMemberTypes maps each key in T to the type of its 'data' property, if present.
- * Useful for extracting the data types from a record of Matchbox members.
- *
- * @template T - The record of Matchbox members.
- */
-type _ExtractMemberTypes<T> = {
-  [K in keyof T]: T[K] extends { data: infer D } ? D : never;
-};
-
-/**
- * ExtractSpec maps each key in T to a function type that returns the type of its 'data' property.
- * If the member is a function, preserves its parameters and return type.
- *
- * @template T - The record of Matchbox members.
- */
-type ExtractSpec<T> = Simplify<{
-  [K in keyof T]: T[K] extends (...args: infer P) => { data: infer D }
-    ? (...args: P) => D
-    : never;
-}>;
-
-/**
- * FactoryFromMembers creates a factory type from a record of member functions.
- * Each factory method constructs a Matchbox member from its arguments.
- *
- * @template TagProp - The property name used for the tag.
- * @template T - The record of member functions.
- */
-type FactoryFromMembers<
-  TagProp extends string,
-  T extends Record<string, (...args: any[]) => any>,
-> = {
-  [K in keyof T]: (
-    ...args: Parameters<T[K]>
-  ) => MatchboxMember<K, ExtractSpec<T>, TagProp>;
-};
-
-/**
- * factoryFromMembers creates a factory object from a record of member functions.
- * Returns the input members typed as a factory for constructing Matchbox members.
- *
- * @param members - The record of member functions.
- * @returns A factory object for constructing Matchbox members.
- */
-export function factoryFromMembers<
-  TagProp extends string,
-  T extends Record<string, (...args: any[]) => any>,
->(members: T) {
-  return members as FactoryFromMembers<TagProp, T>;
-}
-
-// #endregion
-
-/**
- * SpecRecord is a utility type for defining a record of tag-value pairs.
- * Used to specify the shape of the configuration for a Matchbox factory.
- *
- * @template Val - The value type for each tag.
- */
-export type SpecRecord<Val = any> = {
-  [k: string]: Val;
-} & { _?: never };
-
-/**
- * SpecFromStrings creates a spec record from an array of string tags.
- * Each tag maps to a function accepting data and returning any value.
- *
- * @template Config - The array of string tags.
- */
-export type SpecFromStrings<Config> =
-  Config extends ReadonlyArray<string>
-    ? {
-        [K in Config[number]]: (data: any) => any;
-      }
-    : never;

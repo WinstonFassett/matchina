@@ -1,9 +1,9 @@
 import { MatchCases } from "../match-case";
-import { SpecRecord } from "../matchbox-factory";
+import { TaggedTypes } from "../tagged-types";
 import { AnyEffect, handleEffects } from "./effects";
 
 export function bindEffects<
-  EffectsConfig extends SpecRecord,
+  EffectsConfig extends TaggedTypes,
   Exhaustive extends boolean = false,
 >(
   machine: { effect: (val: any) => void },

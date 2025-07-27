@@ -23,7 +23,7 @@ export * from "./state-machine-actions";
 export * from "./state-machine-hooks";
 export * from "./state-machine-pure";
 export * from "./transition-machine";
-export * from "./types";
+export * from "./function-types";
 // match-change
 export * from "./match-change";
 export * from "./match-filters";

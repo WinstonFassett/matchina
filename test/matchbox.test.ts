@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { factoryFromMembers } from "../src/_ExtractMemberTypes";
 import {
   MatchboxFactory,
-  SpecFromStrings,
-  factoryFromMembers,
-  matchboxFactory,
+  matchboxFactory
 } from "../src/matchbox-factory";
 
 describe("matchboxFactory", () => {
@@ -100,7 +99,7 @@ describe("matchboxFactory", () => {
   });
   describe("from string array", () => {
     const strings = ["A", "B", "C"] as const;
-    type TestSpecType = SpecFromStrings<typeof strings>;
+    // type TestSpecType = SpecFromStrings<typeof strings>;
 
     it("should create a matchboxFactory with a spec of { key: identityFunction }", () => {
       const Box = matchboxFactory(["A", "B", "C"] as const, "testKey");

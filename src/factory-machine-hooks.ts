@@ -6,7 +6,7 @@ import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { FilterValues, HasFilterValues } from "./match-filters";
 import { StateMachine } from "./state-machine";
 import { after, before, enter, guard, leave } from "./state-machine-hooks";
-import { Effect } from "./types";
+import { Effect } from "./function-types";
 
 export const beforeEvent = <
   E extends FactoryMachineEvent<any>,

@@ -13,7 +13,7 @@ import { Funcware } from "./ext/funcware/funcware";
 import { ChangeEventKeyFilter, matchChange } from "./match-change";
 import { HasFilterValues } from "./match-filters";
 import { StateMachineEvent, StateMachine } from "./state-machine";
-import { Effect, Middleware } from "./types";
+import { Effect, Middleware } from "./function-types";
 import { Func } from "./utility-types";
 
 // #region Adapters
