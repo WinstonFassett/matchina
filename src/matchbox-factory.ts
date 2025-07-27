@@ -5,13 +5,6 @@ interface FactoryShape {
   [key: string]: (...args: unknown[]) => unknown;
 }
 
-type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
-  data: Data;
-  getTag: () => Tag;
-} & {
-  [_ in TagProp]: Tag;
-};
-
 type Matchbox<
   TagProp extends string,
   F extends FactoryShape,
@@ -21,6 +14,13 @@ type Matchbox<
   MatchboxInstance<TagProp, K, D> &
   MatchboxApi<TagProp, F>;
 
+export type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
+  data: Data;
+  getTag: () => Tag;
+} & {
+  [_ in TagProp]: Tag;
+};
+
 export interface MatchboxApi<
   TagProp extends string,
   F extends FactoryShape,
@@ -29,6 +29,21 @@ export interface MatchboxApi<
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
   match: MatchMemberData<ExtractMemberTypes<F>>;
 }
+
+
+export type MemberCreateFromDataSpecs<
+  Tag extends keyof DataSpecs,
+  DataSpecs,
+  TagProp extends string,
+> = DataSpecs[Tag] extends (...args: infer P) => infer R
+  ? (...args: P) => MemberFromDataSpecs<Tag, DataSpecs, TagProp>
+  : () // value?: Specs[Tag]
+    => MemberFromDataSpecs<Tag, DataSpecs, TagProp>;
+
+    
+export type CreatorsFromDataSpecs<DataSpecs, TagProp extends string> = {
+  [T in keyof DataSpecs]: MemberCreateFromDataSpecs<T, DataSpecs, TagProp>;
+};
 
 export type UnionFromDataSpecs<
   DataSpecs,
@@ -40,18 +55,6 @@ export type MatchboxFactoryFromData<
   TagProp extends string = "tag",
 > = UnionFromDataSpecs<DataSpecs, TagProp>;
 
-export type CreatorsFromDataSpecs<DataSpecs, TagProp extends string> = {
-  [T in keyof DataSpecs]: MemberCreateFromDataSpecs<T, DataSpecs, TagProp>;
-};
-
-export type MemberCreateFromDataSpecs<
-  Tag extends keyof DataSpecs,
-  DataSpecs,
-  TagProp extends string,
-> = DataSpecs[Tag] extends (...args: infer P) => infer R
-  ? (...args: P) => MemberFromDataSpecs<Tag, DataSpecs, TagProp>
-  : () // value?: Specs[Tag]
-    => MemberFromDataSpecs<Tag, DataSpecs, TagProp>;
 
 export type FactoryFromDataSpecs<DataSpecs, TagProp extends string> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer R
@@ -110,17 +113,6 @@ export type SpecFromStrings<Config> =
       }
     : never;
 
-const fruits = ["apple", "orange", "banana"] as const;
-type F = SpecFromStrings<typeof fruits>;
-
-type Fruit = (typeof fruits)[number];
-
-const strings = ["A", "B", "C"] as const;
-type S = typeof strings;
-type X = Record<(typeof strings)[number], any>;
-
-type TestSpecType = SpecFromStrings<typeof strings>;
-
 /**
  * Create a tagged union from a record mapping tags to value types, along with associated
  * variant constructors, type predicates and `match` function.
@@ -154,7 +146,7 @@ export function matchboxFactory<
       );
     };
   }
-  return createObj as R; // UnionFromDataSpecs<Config, TagProp>;
+  return createObj as R;
 }
 
 export function matchbox<
