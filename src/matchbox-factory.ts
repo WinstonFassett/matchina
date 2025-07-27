@@ -1,10 +1,19 @@
-import { match, MatchCases } from "./match-case";
-import { Simplify } from "./utility-types";
-
+/**
+ * FactoryShape defines the shape of a factory object, mapping string keys (tags) to constructor functions.
+ */
 interface FactoryShape {
   [key: string]: (...args: unknown[]) => unknown;
 }
 
+/**
+ * Matchbox is a type representing a single variant instance in the tagged union.
+ * It combines the constructed value, tag, data, and API methods for type narrowing and pattern matching.
+ *
+ * @template TagProp - The property name used for the tag (default: "tag").
+ * @template F - The factory shape.
+ * @template D - The data type for this variant.
+ * @template K - The tag value for this variant.
+ */
 type Matchbox<
   TagProp extends string,
   F extends FactoryShape,
@@ -14,6 +23,14 @@ type Matchbox<
   MatchboxInstance<TagProp, K, D> &
   MatchboxApi<TagProp, F>;
 
+/**
+ * MatchboxInstance is the shape of a single Matchbox variant instance.
+ * Contains the data and tag, plus a getter for the tag property.
+ *
+ * @template TagProp - The property name used for the tag.
+ * @template Tag - The tag value.
+ * @template Data - The data associated with this variant.
+ */
 export type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
   data: Data;
   getTag: () => Tag;
@@ -21,6 +38,15 @@ export type MatchboxInstance<TagProp extends string, Tag extends string, Data> =
   [_ in TagProp]: Tag;
 };
 
+/**
+ * MatchboxApi provides type-safe methods for working with Matchbox instances:
+ * - is: Type predicate for narrowing to a specific variant.
+ * - as: Casts to a specific variant, throws if the tag does not match.
+ * - match: Pattern matching for variant data.
+ *
+ * @template TagProp - The property name used for the tag.
+ * @template F - The factory shape.
+ */
 export interface MatchboxApi<
   TagProp extends string,
   F extends FactoryShape,
@@ -30,7 +56,15 @@ export interface MatchboxApi<
   match: MatchMemberData<ExtractMemberTypes<F>>;
 }
 
-
+/**
+ * MemberCreateFromDataSpecs creates a constructor function for a Matchbox variant from its data specification.
+ * If the spec is a function, the constructor accepts its arguments.
+ * Otherwise, it returns the variant with the given value.
+ *
+ * @template Tag - The tag value.
+ * @template DataSpecs - The record of data specifications.
+ * @template TagProp - The property name used for the tag.
+ */
 export type MemberCreateFromDataSpecs<
   Tag extends keyof DataSpecs,
   DataSpecs,
