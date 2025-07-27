@@ -56,7 +56,10 @@ export interface MatchboxApi<
 > {
   is: <K extends keyof F>(key: K) => this is Matchbox<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
-  match: MatchMemberData<ExtractMemberTypes<F>>;
+  match: <A, Exhaustive extends boolean = true>(
+    cases: { [K in keyof F]: (data: ReturnType<F[K]>) => A },
+    exhaustive?: Exhaustive,
+  ) => A;
 }
 
 /**
@@ -72,10 +75,10 @@ export type MemberCreateFromDataSpecs<
   Tag extends keyof DataSpecs,
   DataSpecs,
   TagProp extends string,
-> = DataSpecs[Tag] extends (...args: infer P) => infer R
-  ? (...args: P) => MemberFromDataSpecs<Tag, DataSpecs, TagProp>
+> = DataSpecs[Tag] extends (...args: infer P) => infer _R
+  ? (...args: P) => MatchboxMember<Tag, DataSpecs, TagProp>
   : () // value?: Specs[Tag]
-    => MemberFromDataSpecs<Tag, DataSpecs, TagProp>;
+    => MatchboxMember<Tag, DataSpecs, TagProp>;
 
 /**
  * MatchboxFactory is the main output type for matchboxFactory.
@@ -85,7 +88,7 @@ export type MemberCreateFromDataSpecs<
  * This replaces UnionFromDataSpecs, CreatorsFromDataSpecs, and MatchboxFactoryFromData for clarity and simplicity.
  */
 export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
-  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer R
+  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer _R
     ? (...args: P) => MatchboxMember<T, DataSpecs, TagProp>
     : () => MatchboxMember<T, DataSpecs, TagProp>;
 };
@@ -146,11 +149,12 @@ export function matchboxFactory<
     TagProp
   >,
 >(config: Config, tagProp = "tag" as TagProp): R {
+  // Fix Array#reduce lint error by using a for loop
   if (Array.isArray(config)) {
-    const spec = (config as string[]).reduce((obj, tag) => {
-      obj[tag] = (data: any) => data;
-      return obj;
-    }, {} as Record<string, (data: any) => any>);
+    const spec: Record<string, (data: any) => any> = {};
+    for (const tag of config as string[]) {
+      spec[tag] = (data: any) => data;
+    }
     return matchboxFactory(spec, tagProp) as R;
   }
 

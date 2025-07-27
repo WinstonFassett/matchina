@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  MatchboxFactoryFromData,
+  MatchboxFactory,
   SpecFromStrings,
   factoryFromMembers,
   matchboxFactory,
@@ -12,7 +12,7 @@ describe("matchboxFactory", () => {
     B: { id: 1 },
     C: (data: string) => ({ data }),
   } as const;
-  let Box: MatchboxFactoryFromData<typeof testConfig, "testKey">;
+  let Box: MatchboxFactory<typeof testConfig, "testKey">;
   beforeEach(() => {
     Box = matchboxFactory(testConfig, "testKey");
   });

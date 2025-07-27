@@ -1,6 +1,6 @@
 import { MatchCases } from "../match-case";
-import { MatchboxFactoryFromData, MemberOf, SpecRecord } from "../matchbox-factory";
-import { handleEffects } from "./effects";
+import { SpecRecord, MatchboxMember } from "../matchbox-factory";
+import { handleEffects, AnyEffect } from "./effects";
 
 export function bindEffects<
   EffectsConfig extends SpecRecord,
@@ -9,14 +9,13 @@ export function bindEffects<
   machine: { effect: (val: any) => void },
   getEffects: (
     state: any,
-  ) => MemberOf<MatchboxFactoryFromData<EffectsConfig, "effect">>[] | undefined,
-  matchers: MatchCases<SpecRecord, any, Exhaustive>,
+  ) => AnyEffect[] | undefined,
+  matchers: MatchCases<EffectsConfig, any, Exhaustive>,
   exhaustive = false as Exhaustive,
 ) {
   const origEffect = machine.effect;
   const machineEffects = origEffect.bind(machine);
   machine.effect = (ev) => {
-    // console.log('EFFECT!', ev)
     machineEffects(ev);
     handleEffects(getEffects(ev.to), matchers, exhaustive);
   };

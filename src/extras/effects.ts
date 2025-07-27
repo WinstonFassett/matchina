@@ -1,11 +1,7 @@
-import {
-  SpecRecord,
-  MemberFromDataSpecs,
-  matchboxFactory,
-} from "../matchbox-factory";
+import { MatchboxMember, SpecRecord, matchboxFactory } from "../matchbox-factory";
 import { MatchCases } from "../match-case";
 
-export type AnyEffect = MemberFromDataSpecs<any, any, "effect">;
+export type AnyEffect = MatchboxMember<any, any, "effect">;
 
 export function defineEffects<EffectsConfig extends SpecRecord>(
   config: EffectsConfig,
