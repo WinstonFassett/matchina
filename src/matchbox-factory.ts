@@ -12,7 +12,7 @@ type AFactoryMember<TagProp extends string, Tag extends string, Data> = {
   [_ in TagProp]: Tag;
 };
 
-type MemberOfFactory<
+type Matchbox<
   TagProp extends string,
   F extends FactoryShape,
   D,
@@ -25,8 +25,8 @@ export interface FactoryMemberApi<
   TagProp extends string,
   F extends FactoryShape,
 > {
-  is: <K extends keyof F>(key: K) => this is MemberOfFactory<TagProp, F, K>;
-  as: <K extends keyof F>(key: K) => MemberOfFactory<TagProp, F, K>;
+  is: <K extends keyof F>(key: K) => this is Matchbox<TagProp, F, K>;
+  as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
   match: MatchMemberData<ExtractMemberTypes<F>>;
 }
 
@@ -165,7 +165,7 @@ export function matchbox<
   tag: Tag,
   data: any,
   tagProp: TagProp = "tag" as TagProp,
-): MemberOfFactory<
+): Matchbox<
   TagProp,
   FactoryFromDataSpecs<DataSpecs, TagProp>,
   DataSpecs[Tag]
