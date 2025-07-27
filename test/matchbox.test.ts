@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { factoryFromMembers } from "../src/_ExtractMemberTypes";
+import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
 import {
   MatchboxFactory,
   matchboxFactory

@@ -1,9 +1,19 @@
-import { TaggedTypes } from "./tagged-types";
+/**
+ * TaggedTypes is a utility type for defining a record of tag-value pairs.
+ * Used to specify the shape of the configuration for a Matchbox factory.
+ *
+ * @template T - The value type for each tag.
+ */
+
+export type TaggedTypes<T = any> = {
+  [k: string]: T;
+} & { _?: never; };
+
 
 /**
- * FactoryShape defines the shape of a factory object, mapping string keys (tags) to constructor functions.
+ * TagDataCreators defines the shape of a factory object, mapping string keys (tags) to constructor functions.
  */
-interface NamedPayloadCreators {
+interface TagDataCreators {
   [key: string]: (...args: unknown[]) => unknown;
 }
 
@@ -18,7 +28,7 @@ interface NamedPayloadCreators {
  */
 type Matchbox<
   TagProp extends string,
-  F extends NamedPayloadCreators,
+  F extends TagDataCreators,
   D,
   K extends string & keyof F = string & keyof F,
 > = ReturnType<F[K]> &
@@ -51,7 +61,7 @@ export type MatchboxInstance<TagProp extends string, Tag extends string, Data> =
  */
 export interface MatchboxApi<
   TagProp extends string,
-  F extends NamedPayloadCreators,
+  F extends TagDataCreators,
 > {
   is: <K extends keyof F>(key: K) => this is Matchbox<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
@@ -66,8 +76,6 @@ export interface MatchboxApi<
  * MatchboxFactory is the main output type for matchboxFactory.
  * It maps each tag in DataSpecs to a constructor function for its variant.
  * If the spec is a function, the constructor accepts its arguments; otherwise, it returns the variant with the value.
- *
- * This replaces UnionFromDataSpecs, CreatorsFromDataSpecs, and MatchboxFactoryFromData for clarity and simplicity.
  */
 export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer _R
@@ -78,8 +86,6 @@ export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
 /**
  * MatchboxMember creates the type for a single Matchbox variant instance from its data specification.
  * Includes the data, tag property, and member extension methods (is, as, match).
- *
- * This replaces MemberFromDataSpecs for clarity and simplicity.
  */
 export type MatchboxMember<
   Tag extends keyof DataSpecs,
@@ -102,11 +108,11 @@ type MatchCases<
   Exhaustive extends boolean = true
 > =
   // If _ is present, all tags are optional (exhaustiveness is satisfied)
-  (Partial<{ [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }> & { _?: (...args: any[]) => A })
+  (Partial<{ [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }> & { _?: (...args: any[]) => A })
   // Otherwise, if exhaustive, all tags are required
   | (Exhaustive extends true
-      ? { [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }
-      : Partial<{ [K in keyof DataSpecs]: (data: MemberData<DataSpecs>[K]) => A }>);
+      ? { [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }
+      : Partial<{ [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A }>);
 
 /**
  * MatchboxMemberApi provides type-safe methods for working with a Matchbox member:
@@ -124,12 +130,12 @@ export interface MatchboxMemberApi<DataSpecs, TagProp extends string> {
 }
 
 /**
- * MemberData maps each tag in DataSpecs to its corresponding value type.
+ * MatchboxData maps each tag in DataSpecs to its corresponding value type.
  * If the spec is a function, uses its return type; otherwise, uses the value type directly.
  *
  * Used for pattern matching and type inference in MatchboxMember and related APIs.
  */
-export type MemberData<DataSpecs> = {
+export type MatchboxData<DataSpecs> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: any[]) => any
     ? ReturnType<DataSpecs[T]>
     : DataSpecs[T];
