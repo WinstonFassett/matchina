@@ -1,10 +1,34 @@
 import { createApi } from "matchina";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
+import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 
 export function BalancedParenthesesDemo() {
+  const [checkerVersion, setCheckerVersion] = useState({});
+  const checker = useMemo(() => balancedParenthesesChecker(), [checkerVersion]);
+
+  // With zen, the machine methods are directly on the object
+  const state = checker.getState();
+  const actions = useMemo(
+    () => createApi(checker, state.key),
+    [checker, state],
+  );
+  return (
+    <div>
+      <MachineExampleWithChart
+        machine={checker}
+        showRawState={true}
+        inspectorType="force-graph"
+        AppView={BalancedParentheses}
+      />
+    </div>
+  );
+}
+
+
+export function BalancedParentheses() {
   const [input, setInput] = useState("");
   const inputDebounced = useDebounce(input, 100);
   const prevInputDebounced = usePrevious(inputDebounced);
