@@ -68,8 +68,6 @@ export type MemberFromDataSpecs<
   : { data: DataSpecs[Tag] }) & { [_ in TagProp]: Tag }) &
   MemberExtensionsFromDataSpecs<DataSpecs, TagProp>;
 
-type AnyMember = { data: any };
-
 export interface MemberExtensionsFromDataSpecs<
   DataSpecs,
   TagProp extends string,
