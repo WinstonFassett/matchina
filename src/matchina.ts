@@ -1,6 +1,6 @@
 import { zen } from "./extras/zen";
+import { StateFactory } from "./state";
 import {
-  AnyStatesFactory,
   createMachine,
   FactoryMachineContext,
   FactoryMachineTransitions,
@@ -9,7 +9,7 @@ import {
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 export function matchina<
-  SF extends AnyStatesFactory,
+  SF extends StateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
 >(

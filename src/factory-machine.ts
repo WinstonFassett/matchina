@@ -1,5 +1,6 @@
 import { StateEventTransitionSenders } from "./factory-machine-event-api";
 import { MatchCases, MatchInvocation, match } from "./match-case";
+import { StateFactory } from "./state";
 import { ResolveEvent, StateMachine, StateMachineEvent } from "./state-machine";
 import { createTransitionMachine } from "./transition-machine";
 import {
@@ -8,7 +9,7 @@ import {
 } from "./utility-types";
 
 export function createMachine<
-  SF extends AnyStatesFactory,
+  SF extends StateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
   E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
@@ -86,10 +87,12 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
   }
 }
 
-export type AnyStatesFactory = Record<string, (...params: any) => any>;
+export interface TagDataCreators {
+  [key: string]: (...args: unknown[]) => unknown;
+}
 
 export type FactoryState<
-  States extends AnyStatesFactory,
+  States extends StateFactory,
   StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
 
@@ -100,20 +103,20 @@ export interface FactoryMachine<FC extends FactoryMachineContext<any>>
 }
 
 export interface FactoryMachineContext<
-  SF extends AnyStatesFactory = AnyStatesFactory,
+  SF extends StateFactory = StateFactory,
 > {
   states: SF;
   transitions: FactoryMachineTransitions<SF>;
 }
 
-export type FactoryMachineTransitions<SF extends AnyStatesFactory> = object & {
-  [FromStateKey in string & keyof SF]?: {
+export type FactoryMachineTransitions<SF extends StateFactory> = {
+  [FromStateKey in keyof SF]?: {
     [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
   };
 };
 
 export type FactoryMachineTransition<
-  SF extends AnyStatesFactory,
+  SF extends StateFactory,
   FromStateKey extends keyof SF = keyof SF,
   EventKey extends string = any,
 > =

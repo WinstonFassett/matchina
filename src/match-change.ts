@@ -1,5 +1,5 @@
 import { FlatFilters, HasFilterValues, matchKey } from "./match-filters";
-import { State } from "./state-machine";
+import { State } from "./state";
 
 export type StateChangeEvent = {
   type: string;

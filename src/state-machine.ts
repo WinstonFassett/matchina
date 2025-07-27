@@ -1,6 +1,4 @@
-export interface State {
-  key: string;
-}
+import { State } from "./state"
 
 export interface StateMachineEvent<
   To extends State = State,
