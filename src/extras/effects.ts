@@ -1,6 +1,5 @@
-import { MatchboxMember, matchboxFactory } from "../matchbox-factory";
-import { TaggedTypes } from "../tagged-types";
 import { MatchCases } from "../match-case";
+import { matchboxFactory, MatchboxMember, TaggedTypes } from "../matchbox-factory";
 
 export type AnyEffect = MatchboxMember<any, any, "effect">;
 

@@ -1,5 +1,5 @@
 import { MatchCases } from "../match-case";
-import { TaggedTypes } from "../tagged-types";
+import { TaggedTypes } from "../matchbox-factory";
 import { AnyEffect, handleEffects } from "./effects";
 
 export function bindEffects<
