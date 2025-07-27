@@ -21,16 +21,6 @@ import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/usage-typeguards.ts?raw";
 
-{/\* ## What are Type Guards?
-
-Type guards are a powerful feature in TypeScript that help narrow down types. In Matchina, type guards allow you to safely work with different state types by automatically narrowing the type based on the state key. \*/}
-
-Given the following matchbox factory:
-
-<CodeBlock code={matchSetupRaw} lang="ts" twoslash={false} />
-
-{/\*
-
 ## Pattern Matching with Exhaustive Checking
 
 One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
