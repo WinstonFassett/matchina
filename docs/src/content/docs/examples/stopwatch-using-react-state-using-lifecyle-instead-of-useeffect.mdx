@@ -2,7 +2,7 @@
 title: Stopwatch with React State and Lifecycle Hooks
 ---
 
-import StopwatchExample from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect";
+import { Stopwatch } from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect";
 import machineCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine.ts?raw";
 import hookCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/useStopwatch.ts?raw";
 import indexCode from "@code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/index.tsx?raw";
@@ -13,7 +13,7 @@ import CodeTabs from "@components/CodeTabs.astro";
 ## Interactive Stopwatch Example
 
 <div className="not-content">
-  <StopwatchExample client:visible />
+  <Stopwatch client:only="react" />
 </div>
 
 ## About This Example

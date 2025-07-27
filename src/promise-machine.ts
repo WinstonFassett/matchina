@@ -1,15 +1,12 @@
-import {
-  FactoryMachine,
-  FactoryMachineEvent,
-  createMachine,
-} from "./factory-machine";
+import { createMachine } from "./factory-machine";
+import { FactoryMachine, FactoryMachineEvent } from "./factory-machine-types";
 import { States, defineStates } from "./define-states";
 
 export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Idle: undefined;
   Pending: (
     promise: Promise<Awaited<ReturnType<F>>>,
-    params: Parameters<F>,
+    params: Parameters<F>
   ) => { promise: Promise<Awaited<ReturnType<F>>>; params: Parameters<F> };
   Rejected: (error: E) => E;
   Resolved: (data: Awaited<ReturnType<F>>) => Awaited<ReturnType<F>>;
@@ -49,7 +46,7 @@ export type PromiseCallback = (...args: any[]) => Promise<any>;
 export function createPromiseMachine<
   F extends PromiseCallback = PromiseCallback,
 >(
-  makePromise?: F,
+  makePromise?: F
 ): PromiseMachine<F> & {
   execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
 } {

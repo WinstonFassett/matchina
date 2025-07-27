@@ -4,13 +4,13 @@ import {
   enter,
   leave,
   onExecute,
-  setup
+  setup,
 } from "matchina";
 
 // --- 1. Create a promise machine for async addition ---
 const adder = createPromiseMachine(
   (a: number, b: number) =>
-    new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 500)),
+    new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 500))
 );
 
 // Everything below here is strongly typed and checked by TypeScript
@@ -24,14 +24,13 @@ setup(adder)(
     return execute(a, b);
   }),
   enter(
-    (ev) => ev.to.is("Pending") && console.log("Started addition:", ev.to.data),
+    (ev) => ev.to.is("Pending") && console.log("Started addition:", ev.to.data)
   ),
   leave((ev) => ev.from.is("Pending") && console.log("Leaving pending state")),
   effect(
     (ev) =>
-      ev.type === "resolve" &&
-      console.log("Promise resolved with:", ev.to.data),
-  ),
+      ev.type === "resolve" && console.log("Promise resolved with:", ev.to.data)
+  )
 );
 
 // --- 3. Use the machine ---

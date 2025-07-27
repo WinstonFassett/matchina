@@ -1,5 +1,3 @@
-export type Func<A = any, R = any> = (...args: A[]) => R;
-
 export type Members<T> = T[keyof T];
 
 export type MemberReturnType<
@@ -29,17 +27,8 @@ export type Simplify<T> = DrainOuterGeneric<
     [K in keyof T]: T[K];
   } & object
 >;
+
 export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never;
-
-type FunctionWithParameters<F> = F extends (...args: infer Args) => any
-  ? Args extends []
-    ? false
-    : true
-  : false;
-
-export type KeysWithZeroArgs<T> = {
-  [K in keyof T]: FunctionWithParameters<T[K]> extends true ? never : K;
-}[keyof T];
 
 export type KeysWithZeroRequiredArgs<T> = {
   [K in keyof T]: T[K] extends (...args: infer Args) => any

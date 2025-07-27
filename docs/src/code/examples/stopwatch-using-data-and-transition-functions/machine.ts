@@ -25,7 +25,7 @@ export const createStopwatchMachine = () => {
       Ticking: {
         _tick: () => (ev) =>
           states.Ticking(
-            !ev ? 0 : ev?.from.data.elapsed + (Date.now() - ev?.from.data.at),
+            !ev ? 0 : ev?.from.data.elapsed + (Date.now() - ev?.from.data.at)
           ),
         stop: "Stopped",
         suspend: () => (ev) => states.Suspended(ev?.from.data.elapsed),
@@ -37,7 +37,7 @@ export const createStopwatchMachine = () => {
         clear: "Suspended",
       },
     },
-    "Stopped",
+    "Stopped"
   );
 
   // Use zen to enhance the machine with utility methods
@@ -48,12 +48,12 @@ export const createStopwatchMachine = () => {
     enter(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(machine._tick),
-      ),
+        () => tickEffect(machine._tick)
+      )
     ),
     effect((ev) => {
       machine.elapsed = ev.to.data.elapsed ?? 0;
-    }),
+    })
   );
   return machine;
 };

@@ -54,7 +54,7 @@ export function FetcherAppView({ machine, onReset }: FetcherAppViewProps) {
           Pending: ({ params }: any) => (
             <span>Fetching from {params[0]}...</span>
           ),
-          Resolved: (data: any) => (
+          Resolved: (_data: any) => (
             <div className="text-green-600">
               <div>Success!</div>
             </div>

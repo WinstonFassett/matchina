@@ -1,4 +1,11 @@
-import { createMachine, defineStates, effect, setup, whenState, withApi } from "matchina";
+import {
+  createMachine,
+  defineStates,
+  effect,
+  setup,
+  whenState,
+  withApi,
+} from "matchina";
 import { useMachine } from "matchina/react";
 import React from "react";
 
@@ -26,17 +33,19 @@ const createDataMachine = () => {
         LOADED: {},
         ERROR: {},
       },
-      "NOT_LOADED",
-    ),
+      "NOT_LOADED"
+    )
   );
   setup(machine)(
-    effect(whenState("NOT_LOADED", () => {    
-      fetch("/data")
-        .then((response) => response.json())
-        .then(machine.api.loadSuccess)
-        .catch(machine.api.loadError)
-    }))
-  )
+    effect(
+      whenState("NOT_LOADED", () => {
+        fetch("/data")
+          .then((response) => response.json())
+          .then(machine.api.loadSuccess)
+          .catch(machine.api.loadError);
+      })
+    )
+  );
   return machine;
 };
 

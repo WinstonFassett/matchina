@@ -35,7 +35,7 @@ function getLangFromExtension(filename: string): string {
 
 <Tabs>
   {
-    files.map((file, index) => (
+    files.map((file) => (
       <TabItem label={file.name}>
         <CodeBlock
           code={file.code}

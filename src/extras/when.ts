@@ -13,5 +13,3 @@ export function when<E>(test: (ev: E) => any, entryListener: EntryListener<E>) {
     }
   };
 }
-
-const noop = () => {};

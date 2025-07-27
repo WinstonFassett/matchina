@@ -20,7 +20,7 @@ describe("withSubscribe", () => {
           stop: states.Idle,
         },
       },
-      "Idle",
+      "Idle"
     );
     const e = withApi(inner);
 
@@ -46,8 +46,8 @@ describe("withSubscribe", () => {
             stop: states.Idle,
           },
         },
-        "Idle",
-      ),
+        "Idle"
+      )
     );
     const subscriber = vi.fn();
     const subscription = machine.subscribe(subscriber);
@@ -168,8 +168,8 @@ describe("withSubscribe", () => {
             stop: states.Idle,
           },
         },
-        "Idle",
-      ),
+        "Idle"
+      )
     );
 
     const subscriber = vi.fn();

@@ -4,7 +4,7 @@ description: Intercept and react to state changes with lifecycle hooks
 ---
 
 import { LifecycleDemo } from "@components/LifecycleDemo";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## What are Lifecycle Hooks?
 
@@ -29,26 +29,26 @@ import { matchina, setup, guard } from "matchina";
 const counter = matchina(
   {
     Idle: () => ({ count: 0 }),
-    Counting: (count: number) => ({ count })
+    Counting: (count: number) => ({ count }),
   },
   {
-    Idle: { 
-      start: "Counting" 
+    Idle: {
+      start: "Counting",
     },
     Counting: {
       increment: (state) => ({
-        ...state, 
-        data: { count: state.data.count + 1 }
+        ...state,
+        data: { count: state.data.count + 1 },
       }),
-      reset: "Idle"
-    }
+      reset: "Idle",
+    },
   },
   "Idle"
 );
 
 // Add a guard to prevent counting above 10
 setup(counter)(
-  guard(ev => {
+  guard((ev) => {
     if (ev.type !== "increment") return true;
     if (!ev.from.is("Counting")) return true;
     return ev.from.data.count < 10; // Only allow if count < 10
@@ -63,9 +63,9 @@ Enter hooks run when entering a specific state:
 ```ts
 setup(counter)(
   // Enter hook - log when entering specific states
-  enter(ev => {
+  enter((ev) => {
     console.log(`Entering state: ${ev.to.key}`);
-    
+
     if (ev.to.is("Counting") && ev.to.data.count === 10) {
       console.log("Maximum count reached!");
     }
@@ -80,9 +80,9 @@ Leave hooks run when leaving a specific state:
 ```ts
 setup(counter)(
   // Leave hook - log when leaving states
-  leave(ev => {
+  leave((ev) => {
     console.log(`Leaving state: ${ev.from.key}`);
-    
+
     if (ev.from.is("Counting") && ev.to.is("Idle")) {
       console.log("Counter reset!");
     }
@@ -97,7 +97,7 @@ Effect hooks run after state transitions and can be used for side effects:
 ```ts
 setup(counter)(
   // Effect hook - run side effects after transitions
-  effect(ev => {
+  effect((ev) => {
     if (ev.to.is("Counting") && ev.to.data.count % 5 === 0) {
       console.log(`Milestone: ${ev.to.data.count}`);
     }
@@ -111,10 +111,18 @@ You can combine multiple hooks using the `setup` function:
 
 ```ts
 setup(counter)(
-  guard(ev => { /* guard logic */ }),
-  enter(ev => { /* enter logic */ }),
-  leave(ev => { /* leave logic */ }),
-  effect(ev => { /* effect logic */ })
+  guard((ev) => {
+    /* guard logic */
+  }),
+  enter((ev) => {
+    /* enter logic */
+  }),
+  leave((ev) => {
+    /* leave logic */
+  }),
+  effect((ev) => {
+    /* effect logic */
+  })
 );
 ```
 
@@ -124,80 +132,23 @@ Each hook receives an event object with context about the transition:
 
 ```ts
 type LifecycleEvent = {
-  type: string;      // The transition type (e.g., "increment")
-  from: State;       // The state before transition
-  to: State;         // The state after transition
-  params: any[];     // Parameters passed to the transition
-}
-```
-
-## Interactive Example
-
-<LifecycleDemo client:visible />
-
-Here's the code behind this example:
-
-```ts
-onLifecycle(machine, {
-  Idle: {
-    on: {
-      execute: {
-        after: ({ type, from, to }) => {
-          console.log(
-            "Specific state and event:",
-            type, // MUST equal 'execute'
-            "from", from.key, // Idle
-            "to", to.key, // Pending
-          );
-        }
-      }
-    },
-    exit: ({ type, from, to }) => {
-      console.log(
-        "Exit Idle:",
-        type, // Any transition FROM idle
-        "from", from.key, // Idle
-        "to", to.key, // Any destination
-      );
-    }
-  },
-  Pending: {
-    enter: ({ type, from, to }) => {
-      console.log(
-        "Enter Pending:",
-        type, // Any transition TO Pending
-        "from", from.key, // Any source
-        "to", to.key, // Pending
-      );
-    }
-  }
-});
-```
-
-## Advanced Pattern: State Change Subscriptions
-
-For observing state changes without affecting them, you can use `subscribe`:
-
-```ts
-// Subscribe to all state changes
-const unsubscribe = counter.subscribe(state => {
-  console.log(`State changed to: ${state.key}`);
-  
-  if (state.is("Counting")) {
-    console.log(`Current count: ${state.data.count}`);
-  }
-});
-
-// Later, when no longer needed:
-unsubscribe();
+  type: string; // The transition type (e.g., "increment")
+  from: State; // The state before transition
+  to: State; // The state after transition
+  params: any[]; // Parameters passed to the transition
+};
 ```
 
 ## Next Steps
 
 Now that you understand lifecycle hooks, explore these related guides:
 
+- [onLifecycle](/guides/on-lifecycle) - Learn how to use the `onLifecycle` API for logging and debugging
 - [Effects](/guides/effects) - Learn about the dedicated effects system
 - [Factory Machines](/guides/machines) - Create complete state machines
 - [Promise Machines](/guides/promises) - Handle async operations with state machines
 - [React Integration](/guides/integrations) - Use lifecycle hooks with React
+
+```
+
 ```

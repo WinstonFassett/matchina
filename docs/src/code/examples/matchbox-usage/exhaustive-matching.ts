@@ -1,9 +1,9 @@
-import { matchboxFactory } from 'matchina';
+import { matchboxFactory } from "matchina";
 
 const TrafficLight = matchboxFactory({
   Red: () => ({}),
   Yellow: () => ({}),
-  Green: () => ({})
+  Green: () => ({}),
 });
 
 const light = TrafficLight.Red();
@@ -18,8 +18,8 @@ light.match({
 */
 
 // Handling all cases works
-const action = light.match({
-  Red: () => 'Stop',
-  Yellow: () => 'Caution',
-  Green: () => 'Go'
+export const action = light.match({
+  Red: () => "Stop",
+  Yellow: () => "Caution",
+  Green: () => "Go",
 });

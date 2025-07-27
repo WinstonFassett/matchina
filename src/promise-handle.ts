@@ -10,7 +10,7 @@ export const handlePromise =
     makePromise: F,
     trigger = "execute" as Type,
     resolve = "resolve" as Resolve,
-    reject = "reject" as Reject,
+    reject = "reject" as Reject
   ) =>
   (machine: PromiseMachine<F>) => {
     const next = machine.handle;

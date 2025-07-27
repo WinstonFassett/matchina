@@ -23,7 +23,7 @@ export function createRPSMachine() {
               playerMove,
               randomMove(),
               playerScore,
-              computerScore,
+              computerScore
             );
           },
       },
@@ -39,7 +39,7 @@ export function createRPSMachine() {
               computerMove,
               winner,
               playerScore + (winner === "player" ? 1 : 0),
-              computerScore + (winner === "computer" ? 1 : 0),
+              computerScore + (winner === "computer" ? 1 : 0)
             );
           },
       },
@@ -61,7 +61,7 @@ export function createRPSMachine() {
         newGame: "WaitingForPlayer",
       },
     },
-    states.WaitingForPlayer(0, 0),
+    states.WaitingForPlayer(0, 0)
   );
   return Object.assign(zen(machine), {
     randomMove,

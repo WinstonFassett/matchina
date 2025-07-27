@@ -1,5 +1,5 @@
 import { FlatFilters, HasFilterValues, matchKey } from "./match-filters";
-import { State } from "./state-machine";
+import { State } from "./state";
 
 export type StateChangeEvent = {
   type: string;
@@ -58,7 +58,7 @@ type ChangeFilterTuple = [type?: string, from?: string, to?: string];
 function getFilter(
   parts:
     | ChangeFilterTuple
-    | [filter: { type?: string; from?: string; to?: string }],
+    | [filter: { type?: string; from?: string; to?: string }]
 ): [type?: string, from?: string, to?: string] {
   if (parts.length === 1 && typeof parts[0] === "object") {
     const filter = parts[0];
@@ -66,46 +66,3 @@ function getFilter(
   }
   return parts as any;
 }
-
-export const isEntry = <E extends StateChangeEvent>(
-  ev: E,
-  to: E["to"]["key"],
-  type?: E["type"],
-  from?: E["from"]["key"],
-) => matchChange<E>(ev, type, from, to);
-
-export const isExit = <E extends StateChangeEvent>(
-  ev: E,
-  from: E["from"]["key"],
-  to?: E["to"]["key"],
-  type?: E["type"],
-) => matchChange<E>(ev, type, from, to);
-
-export const entryware =
-  <E extends StateChangeEvent>(
-    ...params:
-      | [
-          to: E["to"]["key"] | ChangeEventKeyFilter<E>,
-          handler: (ev: E) => void | ((ev: E) => void),
-        ]
-      | [
-          to: E["to"]["key"] | ChangeEventKeyFilter<E>,
-          type: E["type"],
-          handler: (ev: E) => void | ((ev: E) => void),
-        ]
-      | [
-          to: E["to"]["key"] | ChangeEventKeyFilter<E>,
-          type: E["type"],
-          from: E["from"]["key"],
-          handler: (ev: E) => void,
-        ]
-  ) =>
-  (ev: E) => {
-    const handler = params.at(-1) as (ev: E) => any;
-    const filters = params.slice(0, -1);
-    const filter = getFilter(filters as any);
-    // const filter = getFilter([)
-    if (isEntry(ev, filter[0]!, filter[1], filter[2])) {
-      return handler(ev);
-    }
-  };

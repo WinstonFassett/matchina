@@ -20,13 +20,13 @@ const makeMachine = () => {
           (done: string) =>
           ({ type }) => {
             return states[done === "DONE" ? "Done" : "Initial"](
-              type === "doneAdvFunc",
+              type === "doneAdvFunc"
             );
           },
       },
       Done: {},
     },
-    "Initial",
+    "Initial"
   );
   const m2 = withApi(m);
   return m2;
@@ -37,22 +37,28 @@ describe("createMachine", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {
       expect(
-        machine.states.Initial().match({
-          Initial: () => 100,
-          _: () => 0,
-        }),
+        machine.states.Initial().match(
+          {
+            Initial: () => 100,
+            _: () => 0,
+          },
+          false
+        )
       ).toBe(100);
 
       expect(
-        machine.states.Initial().match({
-          _: () => 1,
-        }),
+        machine.states.Initial().match(
+          {
+            _: () => 1,
+          },
+          false
+        )
       ).toBe(1);
 
       expect(() =>
         machine.states.Initial().match({
           InvalidKey: () => 1,
-        } as any),
+        } as any)
       ).toThrow();
 
       expect(
@@ -60,8 +66,8 @@ describe("createMachine", () => {
           {
             Done: (ok) => ok,
           },
-          false,
-        ),
+          false
+        )
       ).toStrictEqual({ ok: true, msg: "test message" });
     });
   });

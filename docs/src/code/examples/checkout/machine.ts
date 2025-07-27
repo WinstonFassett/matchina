@@ -46,7 +46,7 @@ export const createCheckoutMachine = () =>
         { id: "2", name: "Bluetooth Speaker", price: 49.99, quantity: 2 },
       ],
       total: 199.97,
-    }),
+    })
   );
 
 export type CheckoutMachine = ReturnType<typeof createCheckoutMachine>;

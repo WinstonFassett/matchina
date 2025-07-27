@@ -1,5 +1,4 @@
-import { defineStates, createMachine, zen, delay } from "matchina";
-import { useMachine } from "matchina/react";
+import { createMachine, defineStates, delay, zen } from "matchina";
 
 const pairs = [
   ["${", "}"],
@@ -18,7 +17,7 @@ function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 const tokenRegex = new RegExp(
-  `[${Object.keys(pairsByOpen).map(escapeRegExp).join("")}|${Object.keys(pairsByClose).map(escapeRegExp).join("")}]`,
+  `[${Object.keys(pairsByOpen).map(escapeRegExp).join("")}|${Object.keys(pairsByClose).map(escapeRegExp).join("")}]`
 );
 console.log({ tokenRegex });
 function matchNextPair(str: string) {
@@ -64,7 +63,7 @@ export const balancedParenthesesChecker = (initialText?: string) => {
       },
       Invalid: {},
     },
-    "Valid",
+    "Valid"
   );
   const controller = new AbortController();
   const logic = Object.assign(zen(machine), {
@@ -96,7 +95,7 @@ export const balancedParenthesesChecker = (initialText?: string) => {
           console.log("next match", nextMatch);
           const [nextTokenIndex, nextTokenPair, nextTokenType] = nextMatch;
           logic.text = logic.text.slice(
-            nextTokenIndex + nextTokenPair[nextTokenType].length,
+            nextTokenIndex + nextTokenPair[nextTokenType].length
           );
           const isOpen = nextTokenType === 0;
           const state = machine.getState();

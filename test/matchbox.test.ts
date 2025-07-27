@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  MatchboxFactoryFromData,
-  SpecFromStrings,
-  factoryFromMembers,
-  matchboxFactory,
-} from "../src/matchbox-factory";
+import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
+import { MatchboxFactory, matchboxFactory } from "../src/matchbox-factory";
 
 describe("matchboxFactory", () => {
   const testConfig = {
@@ -12,7 +8,7 @@ describe("matchboxFactory", () => {
     B: { id: 1 },
     C: (data: string) => ({ data }),
   } as const;
-  let Box: MatchboxFactoryFromData<typeof testConfig, "testKey">;
+  let Box: MatchboxFactory<typeof testConfig, "testKey">;
   beforeEach(() => {
     Box = matchboxFactory(testConfig, "testKey");
   });
@@ -42,15 +38,18 @@ describe("matchboxFactory", () => {
             A: () => "A",
             B: () => "B",
             C: () => "C",
-          }),
+          })
         ).toBe("C");
       });
       it("should match with _ and partial exhaustive", () => {
         expect(
-          Box.C("test").match({
-            A: () => "A",
-            _: (...args) => `other ${JSON.stringify(args)}`,
-          }),
+          Box.C("test").match(
+            {
+              A: () => "A",
+              _: (...args) => `other ${JSON.stringify(args)}`,
+            },
+            false
+          )
         ).toBe('other [{"data":"test"}]');
       });
       it("should throw with unmatched", () => {
@@ -58,7 +57,7 @@ describe("matchboxFactory", () => {
           Box.C("test").match({
             A: () => "A",
             B: () => "B",
-          } as any),
+          } as any)
         ).toThrowErrorMatchingInlineSnapshot(`"Match did not handle key: 'C'"`);
       });
     });
@@ -70,7 +69,7 @@ describe("matchboxFactory", () => {
       {
         C: ({ data }) => data,
       },
-      false,
+      false
     );
     expect(matched).toBe("test");
   });
@@ -83,7 +82,7 @@ describe("matchboxFactory", () => {
     it("should throw an error when the tag is incorrect", () => {
       const box = Box.A();
       expect(() => box.as("B")).toThrowError(
-        `Attempted to cast ${box.testKey} as B`,
+        `Attempted to cast ${box.testKey} as B`
       );
     });
   });
@@ -100,7 +99,7 @@ describe("matchboxFactory", () => {
   });
   describe("from string array", () => {
     const strings = ["A", "B", "C"] as const;
-    type TestSpecType = SpecFromStrings<typeof strings>;
+    // type TestSpecType = SpecFromStrings<typeof strings>;
 
     it("should create a matchboxFactory with a spec of { key: identityFunction }", () => {
       const Box = matchboxFactory(["A", "B", "C"] as const, "testKey");
@@ -120,7 +119,7 @@ describe("matchboxFactory", () => {
           A: (a) => a,
           B: (b) => b,
           C: (c) => c,
-        }),
+        })
       );
       expect(values).toEqual(["A", { name: "B" }, false]);
     });

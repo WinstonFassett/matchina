@@ -1,12 +1,11 @@
-import { AbortableEventHandler } from "./ext/abortable";
-import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransitionEvent,
-} from "./factory-machine";
-import { StateMachine, StateMachineEvent } from "./state-machine";
-import { Effect, Middleware } from "./types";
+} from "./factory-machine-types";
+import { Effect, Funcware, Middleware } from "./function-types";
+import { StateMachine, StateMachineEvent } from "./state-machine-types";
 
 type TransitionHookExtensions<E extends StateMachineEvent> = {
   begin: AbortableEventHandler<E>;

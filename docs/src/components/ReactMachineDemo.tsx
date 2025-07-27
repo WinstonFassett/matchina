@@ -60,7 +60,7 @@ export function ReactMachineDemo({}) {
             "Last Change": machine.getChange(),
           },
           null,
-          2,
+          2
         )}
       </pre>
     </div>

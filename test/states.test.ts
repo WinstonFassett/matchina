@@ -21,7 +21,7 @@ describe("createStates", () => {
         Loading: undefined,
         Loaded: undefined,
         Error: undefined,
-      }),
+      })
     );
   });
   describe("populates data from config", () => {

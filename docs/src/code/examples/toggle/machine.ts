@@ -5,23 +5,25 @@ export const createToggleMachine = () => {
     On: () => ({}),
     Off: () => ({}),
   });
-  
+
   // Create a machine with proper transitions
-  const machine = withApi(createMachine(
-    states,
-    {
-      On: {
-        toggle: 'Off',
-        turnOff: 'Off',
+  const machine = withApi(
+    createMachine(
+      states,
+      {
+        On: {
+          toggle: "Off",
+          turnOff: "Off",
+        },
+        Off: {
+          toggle: "On",
+          turnOn: "On",
+        },
       },
-      Off: {
-        toggle: 'On',
-        turnOn: 'On',
-      },
-    },
-    states.Off() // Start in the Off state
-  ));
-  
+      states.Off() // Start in the Off state
+    )
+  );
+
   return machine;
 };
 

@@ -6,5 +6,12 @@ import { createToggleMachine } from "./machine";
 // Main export for importing in MDX documentation
 export default function ToggleExample() {
   const machine = useMemo(createToggleMachine, []);
-  return <MachineExampleWithChart machine={machine as any} AppView={ToggleView} showRawState={true} />;
+  return (
+    <MachineExampleWithChart
+      machine={machine as any}
+      AppView={ToggleView}
+      showRawState={true}
+      inspectorType="force-graph"
+    />
+  );
 }

@@ -3,86 +3,37 @@ title: React Integration
 description: Use Matchina state machines with React components
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-## React Hooks for Matchina
-
-Matchina provides React hooks that make it easy to use state machines in your React components. These hooks provide:
-
-1. **Automatic re-rendering** when machine state changes
-2. **Type-safe access** to state and transitions
-3. **Lifecycle management** for event handlers
-4. **Performance optimizations** to prevent unnecessary renders
-
-## The useMachine Hook
-
-The basic hook for using a machine in React is `useMachine`:
+## In a nutshell
 
 ```tsx
 import { useMachine } from "matchina/react";
-import { matchina } from "matchina";
-
-// Create a counter machine
-const counterMachine = matchina(
-  {
-    Idle: () => ({ count: 0 }),
-    Counting: (count: number) => ({ count })
-  },
-  {
-    Idle: { 
-      start: "Counting" 
-    },
-    Counting: {
-      increment: (state) => ({
-        ...state, 
-        data: { count: state.data.count + 1 }
-      }),
-      decrement: (state) => ({
-        ...state, 
-        data: { count: Math.max(0, state.data.count - 1) }
-      }),
-      reset: "Idle"
-    }
-  },
-  "Idle"
-);
-
-// Use the machine in a React component
-function Counter() {
-  // Subscribe to the machine state
-  useMachine(counterMachine);
-  
-  return (
-    <div>
-      {counterMachine.state.match({
-        Idle: () => (
-          <>
-            <p>Counter is idle</p>
-            <button onClick={() => counterMachine.start()}>
-              Start Counting
-            </button>
-          </>
-        ),
-        Counting: ({ count }) => (
-          <>
-            <p>Count: {count}</p>
-            <button onClick={() => counterMachine.increment()}>
-              Increment
-            </button>
-            <button onClick={() => counterMachine.decrement()}>
-              Decrement
-            </button>
-            <button onClick={() => counterMachine.reset()}>
-              Reset
-            </button>
-          </>
-        )
-      })}
-    </div>
-  );
-}
 ```
 
+Then, inside your component,
+
+```ts
+useMachine(machine);
+```
+
+That's it!
+
+## Example
+
+```tsx
+import { useMachine } from "matchina/react";
+
+const MyComponent = () => {
+  useMachine(machine);
+  return (
+    <div>
+      State: {machine.state}
+      <button onClick={() => machine.send("next")}>Next</button>
+    </div>
+  );
+};
+```
 
 ## Performance Considerations
 
@@ -98,18 +49,17 @@ When using state machines with React, consider these tips for better performance
 // Good - Selective rendering with pattern matching
 function UserView() {
   useMachine(userMachine);
-  
+
   // Only the relevant section will re-render when state changes
   return (
     <div>
       <Header /> {/* Won't re-render on state changes */}
       <Sidebar /> {/* Won't re-render on state changes */}
-      
       {userMachine.state.match({
         Loading: () => <LoadingSpinner />,
         Error: ({ message }) => <ErrorMessage message={message} />,
         LoggedIn: (user) => <UserProfile user={user} />,
-        LoggedOut: () => <LoginForm onLogin={userMachine.login} />
+        LoggedOut: () => <LoginForm onLogin={userMachine.login} />,
       })}
     </div>
   );

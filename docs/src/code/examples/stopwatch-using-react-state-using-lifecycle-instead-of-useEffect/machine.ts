@@ -26,7 +26,7 @@ export const createStopwatch = () => {
         clear: "Suspended",
       },
     },
-    "Stopped",
+    "Stopped"
   );
 
   // Use zen to enhance the machine with utility methods

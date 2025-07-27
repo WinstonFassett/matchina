@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import type { CheckoutMachine } from "./machine";
-import type {
-  ShippingData,
-  PaymentData,
-  CartData,
-  ShippingForm as ShippingFormType,
-  PaymentForm as PaymentFormType,
-} from "./types";
+import type { CartData, PaymentData, ShippingData } from "./types";
 
 function getMissing(fields: Record<string, string>) {
   return Object.entries(fields)
@@ -235,14 +229,14 @@ export function CartForm({
   const handleQuantityChange = (id: string, quantity: number) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
-      ),
+        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
+      )
     );
   };
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0,
+    0
   );
 
   return (

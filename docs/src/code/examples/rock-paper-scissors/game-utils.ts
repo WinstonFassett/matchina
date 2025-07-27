@@ -2,7 +2,7 @@ import type { Move } from "./states";
 
 export function determineWinner(
   playerMove: Move,
-  computerMove: Move,
+  computerMove: Move
 ): "player" | "computer" | "tie" {
   if (playerMove === computerMove) return "tie";
   if (

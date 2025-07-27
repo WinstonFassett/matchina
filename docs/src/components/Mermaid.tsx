@@ -10,7 +10,6 @@ const useMermaid = (id: string, content: string): string | null => {
     let isCancelled = false;
 
     mermaid.render(id, content).then((svgraph) => {
-      console.log("Mermaid rendered:", svgraph.svg);
       if (!isCancelled) {
         setSvg(svgraph.svg);
       }
@@ -46,17 +45,17 @@ export const Mermaid = React.memo(
         <MemoizedInlineSvg svg={svg} ref={elRef} />
       </div>
     );
-  },
+  }
 );
 
 interface InlineSvgProps {
   svg: string;
 }
 const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
   useEffect(() => {
     const viewBoxMatch = svg?.match(
-      /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/,
+      /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/
     );
     if (viewBoxMatch && viewBoxMatch[1]) {
       const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);

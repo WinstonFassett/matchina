@@ -1,21 +1,19 @@
+import { MatchCases } from "../match-case-types";
 import {
-  SpecRecord,
-  MatchboxFactoryFromData,
-  MemberOf,
-  MemberFromDataSpecs,
   matchboxFactory,
+  MatchboxMember,
+  TaggedTypes,
 } from "../matchbox-factory";
-import { MatchCases } from "../match-case";
 
-export type AnyEffect = MemberFromDataSpecs<any, any, "effect">;
+export type AnyEffect = MatchboxMember<any, any, "effect">;
 
-export function defineEffects<EffectsConfig extends SpecRecord>(
-  config: EffectsConfig,
+export function defineEffects<EffectsConfig extends TaggedTypes>(
+  config: EffectsConfig
 ) {
   return matchboxFactory(config, "effect");
 }
 export function handleEffects<
-  EffectsConfig extends SpecRecord,
+  EffectsConfig extends TaggedTypes,
   Exhaustive extends boolean = true,
 >(
   effects: undefined | AnyEffect[],
@@ -25,7 +23,7 @@ export function handleEffects<
     any,
     Exhaustive
   >,
-  exhaustive = false as Exhaustive,
+  exhaustive = false as Exhaustive
 ) {
   console.log("handleEffects", exhaustive, effects);
   if (!effects) {

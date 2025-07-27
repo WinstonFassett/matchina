@@ -25,78 +25,45 @@ hero:
 
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import setupCode from "@code/examples/teaser/setup.ts?raw";
+import machineCode from "@code/examples/teaser/state-machines.ts?raw";
+import patternMatchingCode from "@code/examples/teaser/pattern-matching.ts?raw";
+import typeGuardsCode from "@code/examples/teaser/typeguards.ts?raw";
+
+import { Code } from "@astrojs/starlight/components";
 
 {/* ## Key Features */}
 
-<Tabs>
-  <TabItem label="TypeScript-First">
-    ```ts twoslash
-    import { defineStates, createMachine, zen } from "matchina";
-    // TypeScript automatically infers parameter types based on destination states
-    const states = defineStates({
-      Idle: undefined,
-      Playing: (trackId: string) => ({ trackId }),
-      Paused: (trackId: string) => ({ trackId }),
-      Stopped: undefined,
-    });
-    
-    const baseMachine = createMachine(
-      states,
-      {
-        Idle: { 
-          start: (trackId: string) => "Playing" // Parameter type matches Playing state
-        },
-        // ...transitions
-      },
-      "Idle"
-    );
-    
-    const player = zen(baseMachine);
-
-    // Full type safety for state transitions
-    player.start("song-123");  // ✓ TypeScript knows this needs a trackId
-    player.start();            // ✗ Error: Expected 1 argument, but got 0
-    ```
-
-  </TabItem>
-  <TabItem label="Pattern Matching">
-    ```ts
-    // Use pattern matching to handle different states
-    const message = player.state.match({
-      Idle: () => "Not playing",
-      Playing: ({ trackId }) => `Now playing: ${trackId}`,
-      Paused: ({ trackId }) => `Paused: ${trackId}`,
-      Stopped: () => "Stopped",
-    });
-    ```
-  </TabItem>
-  <TabItem label="Type Guards">
-    ```ts
-    // Type guards automatically narrow types
-    if (player.state.is("Playing")) {
-      // TypeScript knows player.state.data has trackId
-      console.log(player.state.data.trackId);  // ✓ Type-safe
-    }
-    ```
-  </TabItem>
-  <TabItem label="Promise Handling">
-    ```ts
-    // Create a promise machine for async operations
-    const fetcher = createPromiseMachine(
-      (id: string) => fetch(`/api/data/${id}`).then(r => r.json())
-    );
-    
-    // Type-safe state handling
-    const ui = fetcher.getState().match({
-      Idle: () => "Ready to fetch data",
-      Pending: ({params}) => `Loading data for ${params[0]}...`,
-      Resolved: (data) => `Data loaded: ${JSON.stringify(data)}`,
-      Rejected: (error) => `Error: ${error.message}`
-    });
-    ```
-  </TabItem>
-</Tabs>
+<CodeTabs
+  files={[
+    {
+      name: "TypeScript-First",
+      code: setupCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "State Machines",
+      code: machineCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "Pattern Matching",
+      code: patternMatchingCode,
+      language: "ts",
+      twoslash: true,
+    },
+    {
+      name: "Type Guards",
+      code: typeGuardsCode,
+      language: "ts",
+      twoslash: true,
+    },
+  ]}
+></CodeTabs>
 
 ## Quick Installation
 
@@ -124,7 +91,7 @@ npm install matchina
   />
   <LinkCard
     title="🛡️ Type Guards Guide"
-    href="./guides/typeguards/"
+    href="./guides/matchbox-typescript-inference/"
     description="Understand type-safe state handling with Matchina"
   />
   <LinkCard
@@ -132,11 +99,12 @@ npm install matchina
     href="./guides/integrations/"
     description="Integrate state machines with React components"
   />
-  <LinkCard
-    title="🧩 Type-Safe Unions"
-    href="./guides/union-machines/"
-    description="Learn about Matchbox for tagged unions"
+  <LinkCard    
+    title="🧩 Matchbox Factories"
+    href="./guides/matchbox-factories/"
+    description="Create type-safe tagged union factories with pattern matching"
   />
+
 </CardGrid>
 
 ## Explore Examples

@@ -1,7 +1,4 @@
 // @ts-check
-import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
-import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -27,9 +24,11 @@ import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 //     }),
 //   ],
 // })
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
 
 // https://astro.build/config
 export default defineConfig({
@@ -109,16 +108,8 @@ export default defineConfig({
               link: "/guides/pattern-matching",
             },
             {
-              label: "Type Inference",
+              label: "Type Safety",
               link: "/guides/matchbox-typescript-inference",
-            },
-            // {
-            //   label: "Type Guards",
-            //   link: "/guides/typeguards",
-            // },
-            {
-              label: "MOAR Tagged Unions",
-              link: "/guides/union-machines",
             },
           ],
         },
@@ -146,8 +137,8 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
-              label: "API Wrappers",
-              link: "/guides/api-wrappers",
+              label: "Machine Enhancers",
+              link: "/guides/machine-enhancers",
             },
             {
               label: "Type Inference",
@@ -159,19 +150,17 @@ export default defineConfig({
           label: "Using Machines",
           items: [
             {
-              label: "Change Lifecycle",
+              label: "Lifecycle",
               link: "/guides/lifecycle",
             },
             {
-              label: "Change Hooks",
+              label: "Hooks",
               link: "/guides/lifecycle-hooks",
             },
-
             {
-              label: "Hooks API",
-              link: "/guides/hooks",
+              label: "onLifecycle",
+              link: "/guides/on-lifecycle",
             },
-
             {
               label: "React Integration",
               link: "/guides/integrations",
@@ -283,10 +272,11 @@ export default defineConfig({
                   label: "Checkout Flow",
                   link: "/examples/checkout",
                 },
-                {
-                  label: "Paren Checker",
-                  link: "/examples/paren-checker",
-                },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
               ],
             },
           ],
@@ -298,20 +288,20 @@ export default defineConfig({
             // { label: "Subscriptions", link: "/guides/subscriptions" },
           ],
         },
-        {
-          label: "Appendix",
-          collapsed: true,
-          items: [
-            {
-              label: "Timsy Inspiration",
-              link: "/guides/timsy",
-            },
-            {
-              label: "Unions as Machines",
-              link: "/guides/unions-as-machine",
-            },
-          ],
-        },
+        // {
+        //   label: "Appendix",
+        //   collapsed: true,
+        //   items: [
+        //     {
+        //       label: "Timsy Inspiration",
+        //       link: "/guides/timsy",
+        //     },
+        //     {
+        //       label: "Unions as Machines",
+        //       link: "/guides/unions-as-machine",
+        //     },
+        //   ],
+        // },
         // {
         //   label: "Guides",
         //   items: [
@@ -330,6 +320,8 @@ export default defineConfig({
     react(),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      // tailwindcss()
+    ],
   },
 });

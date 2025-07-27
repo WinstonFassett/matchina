@@ -5,7 +5,7 @@ const states = matchboxFactory(
     Idle: () => ({}),
     Done: (x: number) => ({ result: x }),
   },
-  "key",
+  "key"
 );
 type State = ReturnType<(typeof states)[keyof typeof states]>;
 
@@ -13,7 +13,7 @@ const events = matchboxFactory(
   {
     execute: (x: number) => x,
   },
-  "type",
+  "type"
 );
 type Event = ReturnType<(typeof events)[keyof typeof events]>;
 

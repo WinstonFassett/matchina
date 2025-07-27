@@ -1,10 +1,8 @@
 // @noErrors
 import {
   defineStates,
-  createMachine,
-  zen,
-  type FactoryMachineTransitions,
   matchina,
+  type FactoryMachineTransitions,
 } from "matchina";
 
 const states = defineStates({
@@ -13,7 +11,7 @@ const states = defineStates({
   Paused: (trackId: string) => ({ trackId }),
   Stopped: undefined,
 });
-
+// ---cut---
 // ❌ BAD PRACTICE: Standalone transitions have no types
 const invalidTransitions = {
   Idle: {
@@ -30,28 +28,30 @@ const invalidTransitions = {
 
 const invalidMachine = matchina(
   states,
-  invalidTransitions, // invalid because not typed correctly
-  "Idle",
+  invalidTransitions as any, // invalid because not typed correctly
+  "Idle"
 );
 
 invalidMachine; // never
 
-// Workaround: use `as const` to type transitions
-// But you will not get type safety within them
-const transitionsAsConst = {
+// Workaround: use `satisfies` to type transitions
+const transitionsWithSatisfies = {
   Idle: {
     start: "Playing",
   },
   Playing: {
     pause: "Paused",
     stop: "Stopped",
+    replay: () => (ev) => states.Playing(ev.from.data.trackId),
   },
   Paused: {
     resume: "Playing",
   },
-} as const;
+} satisfies FactoryMachineTransitions<typeof states>;
 
-const validMachine = matchina(states, transitionsAsConst, "Idle");
+const validMachine = matchina(states, transitionsWithSatisfies, "Idle");
 
-validMachine.st;
+validMachine.start("track-123"); // Idle -> Playing
 //             ^|
+
+// correctly typed

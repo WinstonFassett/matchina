@@ -14,7 +14,7 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **TypeScript-first design** with powerful type inference
 - **Nano-sized, opt-in primitives** for state machines and async logic
 - **Composable APIs** that work together or standalone
-- Inspired by [Timsy](https://github.com/christianalfoni/timsy), [Unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
+- Inspired by [suchipi/safety-match](https://github.com/suchipi/safety-match), [christianalfoni/timsy](https://github.com/christianalfoni/timsy), [pelotom/unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
 
 ## Philosophy & Inspiration
 

@@ -1,0 +1,330 @@
+---
+title: Machine Enhancers
+description: Learn about the different Machine Enhancers for state machines in Matchina
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeBlock from "@components/CodeBlock.astro";
+
+Matchina provides several Machine Enhancers that enhance the usability of state machines while simplifying their interfaces for different use cases. These wrappers include:
+
+- **createApi**: Creates a flat event API for a factory machine
+- **withApi**: Enhances a machine with an `api` for sending events
+- **zen**: Mixes an event API into the machine
+- **pure**: Provides a minimal interface with only the essential methods
+
+## Usage
+
+```ts
+const plainFactoryMachine = createMachine(states, transitions, initialState);
+plainFactoryMachine.send("someEvent", 1, 2, 3);
+
+const api = createApi(plainFactoryMachine);
+api.someEvent(1, 2, 3);
+
+const zenMachine = zen(createMachine(states, transitions, initialState));
+zenMachine.someEvent(1, 2, 3);
+
+const alsoZen = matchina(states, transitions, initialState);
+alsoZen.someEvent(1, 2, 3);
+
+const pureVersion = pure(zenMachine);
+pureVersion.send("someEvent", 1, 2, 3);
+```
+
+## When to Use Each Enhancer
+
+<Tabs>
+  <TabItem label="createApi">
+    Use `createApi` when:
+    - You want to expose a simplified event-sending interface
+    - You're building a public API for your state machine
+    - You want fully typed event handlers with proper parameter types
+  </TabItem>
+
+{" "}
+
+<TabItem label="withApi">
+  Use `withApi` when: - You want to enhance an existing machine with a flat
+  event API - You need to keep the original machine structure intact - You want
+  to provide a simplified interface for sending events
+</TabItem>
+
+{" "}
+
+<TabItem label="zen">
+  Use `zen` when: - You need both event methods and state access in a clean
+  package - You're using the machine within a component or module - You want to
+  easily integrate with frameworks like React - You appreciate a more
+  functional, fluent interface
+</TabItem>
+
+  <TabItem label="pure">
+    Use `pure` when:
+    - You want to enforce a minimal interface
+    - You're passing the machine to code that should only read state and send events
+    - You're implementing the dependency inversion principle
+    - You want to hide implementation details
+  </TabItem>
+</Tabs>
+
+## createApi
+
+The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
+
+{/* ````ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { createApi } from "matchina";
+
+const toggleMachine = createMachine({
+initial: "off",
+states: {
+off: {
+on: { TOGGLE: "on" },
+},
+on: {
+on: { TOGGLE: "off" },
+},
+},
+});
+
+// Create a flat event API
+const toggleApi = createApi(toggleMachine);
+
+// Now you can simply call the event methods
+toggleApi.TOGGLE();
+
+````*/}
+
+The generated API is fully typed, with the correct parameter types for each event handler:
+
+{/* ```ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { createApi } from "matchina";
+
+const counterMachine = createMachine({
+  initial: "idle",
+  context: { count: 0 },
+  states: {
+    idle: {
+      on: {
+        INCREMENT: {
+          target: "idle",
+          action: (ctx, params: [number]) => {
+            ctx.count += params[0];
+          },
+        },
+        DECREMENT: {
+          target: "idle",
+          action: (ctx, params: [number]) => {
+            ctx.count -= params[0];
+          },
+        },
+      },
+    },
+  },
+});
+
+const api = createApi(counterMachine);
+
+// TypeScript knows these need a number parameter
+api.INCREMENT(1);
+api.DECREMENT(2);
+````
+
+You can also use the `withApi` helper to add the API directly to your machine:
+
+````ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { withApi } from "matchina";
+
+const toggleMachine = createMachine({
+  initial: "off",
+  states: {
+    off: {
+      on: { TOGGLE: "on" },
+    },
+    on: {
+      on: { TOGGLE: "off" },
+    },
+  },
+});
+
+// Enhance the machine with an API
+const enhancedMachine = withApi(toggleMachine);
+
+// Now you can use the machine with its API
+enhancedMachine.api.TOGGLE();
+``` */}
+
+## withApi
+
+The `withApi` function enhances a machine by adding an `api` property that provides a flat event API for sending events. This is useful when you want to keep the original machine intact while providing a simplified interface for event handling.
+
+{/* ```ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { withApi } from "matchina";
+const toggleMachine = createMachine({
+  initial: "off",
+  states: {
+    off: {
+      on: { TOGGLE: "on" },
+    },
+    on: {
+      on: { TOGGLE: "off" },
+    },
+  },
+});
+// Enhance the machine with an API
+const enhancedMachine = withApi(toggleMachine);
+// Now you can use the machine with its API
+enhancedMachine.api.TOGGLE();
+``` */}
+
+The `withApi` function is particularly useful when you want to maintain the original machine's structure while providing a more user-friendly interface for sending events.
+
+## zen
+
+The `zen` enhancer builds on top of `createApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
+{/*
+```ts twoslash
+// @noErrors
+import { createMachine, zen } from "matchina";
+
+const toggleMachine = createMachine({
+  initial: "off",
+  states: {
+    off: {
+      on: { TOGGLE: "on" },
+    },
+    on: {
+      on: { TOGGLE: "off" },
+    },
+  },
+});
+
+// Create a zen enhancer
+const toggle = zen(toggleMachine);
+
+// Send events using the flat API
+toggle.TOGGLE();
+
+// Access the current state
+console.log(toggle.state); // 'off' or 'on'
+
+// Access the last state change
+console.log(toggle.change); // { from: 'off', to: 'on' } or similar
+
+// Access the underlying machine if needed
+const machine = toggle.machine;
+``` */}
+
+The `zen` enhancer is ideal for React components and other scenarios where you want a simple, unified interface.
+
+However, be careful not to define event names that conflict with the machine's properties or methods, as this can lead to unexpected behavior. The `zen` enhancer does not handle naming conflicts.
+
+
+## pure
+
+The `pure` wrapper provides the most minimal interface for a state machine, exposing only the essential `getState` and `send` methods. This is useful when you want to limit access to the machine's functionality or when you're passing the machine to code that only needs these core capabilities.
+
+{/*
+```ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { pure } from "matchina";
+
+const toggleMachine = createMachine({
+  initial: "off",
+  states: {
+    off: {
+      on: { TOGGLE: "on" },
+    },
+    on: {
+      on: { TOGGLE: "off" },
+    },
+  },
+});
+
+// Create a pure state machine interface
+const pureMachine = pure(toggleMachine);
+
+// Only getState and send are available
+console.log(pureMachine.getState()); // 'off'
+pureMachine.send("TOGGLE"); // transitions to 'on'
+console.log(pureMachine.getState()); // 'on'
+``` */}
+
+{/* ## Example: Combining Wrappers
+
+You can combine wrappers for different scenarios. Here's an example of using `createApi` internally and exposing a `pure` interface externally:
+
+```ts twoslash
+// @noErrors
+import { createMachine } from "matchina";
+import { createApi, pure } from "matchina";
+
+// Create a complex machine
+const authMachine = createMachine({
+  initial: "signedOut",
+  context: { username: "", error: null },
+  states: {
+    signedOut: {
+      on: {
+        LOGIN: {
+          target: "authenticating",
+          action: (ctx, [username, password]) => {
+            ctx.username = username;
+          },
+        },
+      },
+    },
+    authenticating: {
+      on: {
+        SUCCESS: "signedIn",
+        FAILURE: {
+          target: "signedOut",
+          action: (ctx, [error]) => {
+            ctx.error = error;
+          },
+        },
+      },
+    },
+    signedIn: {
+      on: { LOGOUT: "signedOut" },
+    },
+  },
+});
+
+// For internal use, create a typed API
+const api = createApi(authMachine);
+
+// For external consumers, provide only the pure interface
+const publicMachine = pure(authMachine);
+
+// Internal usage
+function authenticateUser(username, password) {
+  api.LOGIN(username, password);
+  // Simulate auth process
+  setTimeout(() => {
+    if (username === "admin" && password === "password") {
+      api.SUCCESS();
+    } else {
+      api.FAILURE(new Error("Invalid credentials"));
+    }
+  }, 1000);
+}
+
+// External API only exposes the pure machine
+export { publicMachine, authenticateUser };
+````
+
+In this example:
+
+- Internal code uses the `createApi` wrapper for typed event methods
+- External code only receives the `pure` interface with limited capabilities
+- The authentication logic is encapsulated, with only necessary parts exposed */}

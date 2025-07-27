@@ -9,7 +9,7 @@ export function StopwatchApp({ machine }: { machine: Stopwatch }) {
   const stopwatch = machine;
 
   // Generate color class based on state
-  const stateColorClass = stopwatch.state.match({
+  const stateColorClass = stopwatch.getState().match({
     Stopped: () => "text-red-500",
     Ticking: () => "text-green-500",
     Suspended: () => "text-yellow-500",
@@ -18,7 +18,9 @@ export function StopwatchApp({ machine }: { machine: Stopwatch }) {
   return (
     <div className="p-4 rounded border">
       {/* State display */}
-      <div className={`inline ${stateColorClass}`}>{stopwatch.state.key}</div>
+      <div className={`inline ${stateColorClass}`}>
+        {stopwatch.getState().key}
+      </div>
 
       {/* Elapsed time */}
       <div className="text-4xl font-bold my-4">
@@ -27,7 +29,7 @@ export function StopwatchApp({ machine }: { machine: Stopwatch }) {
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2">
-        {getStateEvents(stopwatch.machine.transitions, stopwatch.state.key)
+        {getStateEvents(stopwatch.transitions, stopwatch.getState().key)
           .filter((event) => !event.startsWith("_"))
           .map((event) => (
             <button

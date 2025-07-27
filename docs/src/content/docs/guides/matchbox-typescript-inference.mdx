@@ -1,7 +1,8 @@
 ---
-title: Type Guards
-description: Master type guards for type-safe state handling and narrowing
+title: Type safety with Matchbox
+description: Master type inference in Matchbox for tagged unions and pattern matching
 ---
+
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
@@ -15,45 +16,36 @@ import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-un
 import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
 import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
 import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
+import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?raw";
 
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/usage-typeguards.ts?raw";
 
+## Pattern Matching with Exhaustive Checking
 
-## What are Type Guards?
-
-Type guards are a powerful feature in TypeScript that help narrow down types. In Matchina, type guards allow you to safely work with different state types by automatically narrowing the type based on the state key.
-
-## Type Guards
-
-Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
-
-<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
-
-## Type Casting
-
-Use the `as` method for type-safe casting with runtime validation:
-
-<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
-
-## Using the `.is()` Method
-
-The `.is()` method is a type predicate that narrows the state type based on the key:
+One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
 
 ````ts
-import { matchbox } from "matchina";
-
-// Create a state factory
-const Shape = matchbox({
-  Circle: (radius: number) => ({ radius }),
-  Rectangle: (width: number, height: number) => ({ width, height }),
-  Triangle: (base: number, height: number) => ({ base, height }),
+// Calculate area with pattern matching
+const getArea = (shape) => shape.match({
+  Circle: ({ radius }) => Math.PI * radius * radius,
+  Rectangle: ({ width, height }) => width * height,
+  Triangle: ({ base, height }) => (base * height) / 2,
 });
 
-// Create some shapes
-const circle = Shape.Circle(5);
-const rectangle = Shape.Rectangle(10, 20);
+// TypeScript error if you forget a case!
+const getPerimeter = (shape) => shape.match({
+  Circle: ({ radius }) => 2 * Math.PI * radius,
+  Rectangle: ({ width, height }) => 2 * (width + height),
+  // Error: Property 'Triangle' is missing in type '...'
+});
+``` */}
 
+{/* ## Type Guards with Type Narrowing
+
+Matchbox provides type guards with the `is` method for type-safe narrowing:
+
+```ts
 // Type guard with automatic type narrowing
 if (circle.is("Circle")) {
   // TypeScript knows circle.data has radius
@@ -64,107 +56,22 @@ if (circle.is("Circle")) {
   // console.log(circle.data.base);   // Error: Property 'base' does not exist...
 }
 
-// Type guard in array filter
-const shapes = [circle, rectangle, Shape.Triangle(5, 10)];
-const circles = shapes.filter(s => s.is("Circle"));
-
+// Use in a filter
+const circles = [circle, rectangle, triangle].filter(s => s.is("Circle"));
 // TypeScript knows circles contains only Circle shapes
-circles.forEach(circle => {
-  // Safe access to circle-specific properties
-  console.log(`Circle radius: ${circle.data.radius}`);
-## Using the `.as()` Method
+``` */}
 
-The `.as()` method attempts to cast a state to a specific type with runtime validation:
+## Type Guards
 
-```ts
-// Safe casting with runtime validation
-try {
-  // This works because circle is actually a Circle
-  const asCircle = circle.as("Circle");
-  console.log(asCircle.data.radius);
+Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
 
-  // This throws because rectangle is not a Circle
-  const wrongCast = rectangle.as("Circle");
-  // This line will never execute
-  console.log(wrongCast.data.radius);
-} catch (e) {
-  console.error("Cast failed:", e.message);  // "Expected Circle, got Rectangle"
-}
-````
+<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
 
-## Using the `.match()` Method
+## Type-Safe Casting with Runtime Validation
 
-The `.match()` method allows exhaustive pattern matching based on the state key:
+Use the `as` method for type-safe casting with runtime validation:
 
-```ts
-// Calculate area with pattern matching
-const getArea = (shape) =>
-  shape.match({
-    Circle: ({ radius }) => Math.PI * radius * radius,
-    Rectangle: ({ width, height }) => width * height,
-    Triangle: ({ base, height }) => (base * height) / 2,
-  });
-
-console.log(getArea(circle)); // 78.54...
-console.log(getArea(rectangle)); // 200
-
-// TypeScript error if you forget a case!
-const getPerimeter = (shape) =>
-  shape.match({
-    Circle: ({ radius }) => 2 * Math.PI * radius,
-    Rectangle: ({ width, height }) => 2 * (width + height),
-    // Error: Property 'Triangle' is missing in type '...'
-  });
-```
-
-## Type Guards in State Machines
-
-Type guards are especially useful when working with state machines:
-
-```ts
-import { matchina } from "matchina";
-
-const playerMachine = matchina(
-  {
-    Idle: () => ({}),
-    Loading: (trackId: string) => ({ trackId }),
-    Playing: (trackId: string, startTime: number) => ({ trackId, startTime }),
-    Paused: (trackId: string, position: number) => ({ trackId, position }),
-    Error: (message: string) => ({ message }),
-  },
-  // Transitions omitted for brevity
-  {
-    /* transitions */
-  },
-  "Idle",
-);
-
-// Get current state
-const state = playerMachine.getState();
-
-// Type narrowing with is()
-if (state.is("Playing")) {
-  // TypeScript knows state.data has trackId and startTime
-  const { trackId, startTime } = state.data;
-  console.log(
-    `Playing ${trackId} since ${new Date(startTime).toLocaleTimeString()}`,
-  );
-} else if (state.is("Paused")) {
-  // TypeScript knows state.data has trackId and position
-  const { trackId, position } = state.data;
-  console.log(`Paused ${trackId} at position ${position}`);
-}
-
-// Pattern matching for exhaustive handling
-const ui = state.match({
-  Idle: () => "Ready to play",
-  Loading: ({ trackId }) => `Loading ${trackId}...`,
-  Playing: ({ trackId, startTime }) =>
-    `Playing ${trackId} (started at ${new Date(startTime).toLocaleTimeString()})`,
-  Paused: ({ trackId, position }) => `Paused ${trackId} at ${position} seconds`,
-  Error: ({ message }) => `Error: ${message}`,
-});
-```
+<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
 
 ## Advanced Type Guards with Filters
 
@@ -172,7 +79,7 @@ Matchina also provides filter functions for more complex type guards:
 
 ```ts
 import { matchbox, withKey, withData } from "matchina";
-
+// ---cut---
 const Shape = matchbox({
   Circle: (radius: number, color: string = "black") => ({ radius, color }),
   Rectangle: (width: number, height: number, color: string = "black") => ({
@@ -207,13 +114,15 @@ const largeCircles = shapes.filter(
   (shape) => shape.is("Circle") && shape.data.radius > 7,
 );
 console.log(`Found ${largeCircles.length} large circles`);
-```
+````
+
+{/*
 
 ## Complete Example
 
 Here's a complete example demonstrating various type guard features:
 
-<CodeBlock twoslash lang="ts" code={code} />
+<CodeBlock twoslash lang="ts" code={code} /> */}
 
 ## Benefits of Type Guards
 

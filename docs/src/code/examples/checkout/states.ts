@@ -1,4 +1,4 @@
-import { defineStates } from "@lib/src";
+import { defineStates } from "matchina";
 import type {
   CartData,
   ShippingForm,

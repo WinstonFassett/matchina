@@ -1,6 +1,5 @@
 import { TransitionRecord } from "./transition-machine";
 
-
 export function getAvailableActions(
   transitions: TransitionRecord,
   state: string

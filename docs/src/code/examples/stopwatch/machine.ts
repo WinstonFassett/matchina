@@ -35,7 +35,7 @@ export const createStopwatchMachine = () => {
         clear: "Suspended",
       },
     },
-    states.Stopped(),
+    states.Stopped()
   );
 
   // Use zen to enhance the machine with utility methods
@@ -60,13 +60,13 @@ export const createStopwatchMachine = () => {
     enter(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(machine._tick),
-      ),
+        () => tickEffect(machine._tick)
+      )
     ),
     // Effect for all transitions - update elapsed field
     effect((ev) => {
       machine.elapsed = ev?.to.data.elapsed ?? 0;
-    }),
+    })
   );
 
   return machine;

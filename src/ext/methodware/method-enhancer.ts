@@ -1,4 +1,4 @@
-import { Funcware } from "../funcware/funcware";
+import { Funcware } from "../../function-types";
 import { MethodOf, enhanceMethod } from "./enhance-method";
 
 export const methodEnhancer =
@@ -7,6 +7,7 @@ export const methodEnhancer =
   (target: T) => {
     return enhanceMethod(target, methodName, fn);
   };
+
 export type HasMethod<K extends string> = {
   [key in K]: (...args: any[]) => any;
 };

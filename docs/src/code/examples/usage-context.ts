@@ -3,12 +3,11 @@ import {
   createMachine,
   createPromiseMachine,
   defineStates,
-  updateState,
 } from "matchina";
 
 // ---cut---
 const machine = createPromiseMachine(
-  (x: number) => new Promise((resolve) => setTimeout(resolve, x)),
+  (x: number) => new Promise((resolve) => setTimeout(resolve, x))
 );
 machine.execute(1100);
 
@@ -41,7 +40,7 @@ const m2 = createMachine(
     Rejected: {},
     Resolved: {},
   },
-  Idle(),
+  Idle()
 );
 
 const m2Api = createApi(m2);
@@ -67,7 +66,7 @@ const counter = createMachine(
           counterStates.Idle({ count: ev.from.data.count - dec }),
     },
   },
-  counterStates.Idle(),
+  counterStates.Idle()
 );
 
 const counterApi = createApi(counter);
@@ -88,8 +87,7 @@ const m5 = createMachine(
       increment:
         (inc = 1) =>
         (ev) =>
-          updateState(({ count }) => ({ count: count + inc }))(ev),
-      // increment2: (inc=1) => updateState(),
+          oneState.State({ ...ev.from.data, count: ev.from.data.count + inc }),
       decrement:
         (dec = 1) =>
         (ev) =>
@@ -98,7 +96,7 @@ const m5 = createMachine(
         oneState.State({ ...ev.from.data, count }),
     },
   },
-  oneState.State({ count: 0, meta: { name: "howdy" } }),
+  oneState.State({ count: 0, meta: { name: "howdy" } })
 );
 
 const api5 = createApi(m5);

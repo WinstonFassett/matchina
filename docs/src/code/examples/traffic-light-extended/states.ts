@@ -12,7 +12,7 @@ export interface CommonStateProps {
 }
 export const sharedStates = defineStates({
   State: (
-    props: CommonStateProps = { key: "State", crossingRequested: false },
+    props: CommonStateProps = { key: "State", crossingRequested: false }
   ) => props,
 });
 export const states = defineStates({

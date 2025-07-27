@@ -31,7 +31,7 @@ describe("createPromiseMachine", () => {
         // console.log('execute')
         await delay(1);
         throw new Error("custom error");
-      }),
+      })
     );
 
     const initialState = machine.getState();
@@ -56,11 +56,11 @@ describe("createPromiseMachine", () => {
           ...PromiseTransitions,
           Pending: { ...PromiseTransitions.Pending, cancel: "Idle" },
         },
-        "Idle",
+        "Idle"
       );
       const api = createApi(machine);
       expect(machine.getState().key).toBe("Idle");
-      api.executing(Promise.resolve(), [])
+      api.executing(Promise.resolve(), []);
       expect(machine.getState().key).toBe("Pending");
       api.cancel();
       expect(machine.getState().key).toBe("Idle");

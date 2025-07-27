@@ -1,3 +1,4 @@
+import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { createApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
@@ -5,6 +6,20 @@ import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definitio
 import { balancedParenthesesChecker } from "./machine";
 
 export function BalancedParenthesesDemo() {
+  const checker = useMemo(() => balancedParenthesesChecker(), []);
+  return (
+    <div>
+      <MachineExampleWithChart
+        machine={checker}
+        showRawState={true}
+        inspectorType="force-graph"
+        AppView={BalancedParentheses}
+      />
+    </div>
+  );
+}
+
+export function BalancedParentheses() {
   const [input, setInput] = useState("");
   const inputDebounced = useDebounce(input, 100);
   const prevInputDebounced = usePrevious(inputDebounced);
@@ -22,7 +37,7 @@ export function BalancedParenthesesDemo() {
     if (isAppend) {
       console.log("isAppend", prevInputDebounced, input);
       checker.append(
-        input.slice(prevInputDebounced ? prevInputDebounced.length : 0),
+        input.slice(prevInputDebounced ? prevInputDebounced.length : 0)
       );
     } else {
       console.log("restarting checker");
@@ -34,7 +49,7 @@ export function BalancedParenthesesDemo() {
   const state = checker.getState();
   const actions = useMemo(
     () => createApi(checker, state.key),
-    [checker, state],
+    [checker, state]
   );
   return (
     <div>
@@ -52,7 +67,7 @@ export function BalancedParenthesesDemo() {
 }
 
 function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
+  const ref = useRef<T>(undefined);
 
   useEffect(() => {
     ref.current = value;

@@ -1,17 +1,16 @@
-import type { AnyStatesFactory, FactoryState } from "matchina";
+import type { FactoryState } from "matchina";
 import type { TransitionEntry } from "./utility-types";
+
+export type AnyStatesFactory = Record<string, (...params: any) => any>;
 
 export function getStateValues<S extends AnyStatesFactory>(states: S) {
   return Object.entries(states).map(([, value]) => value({}));
 }
-// function resolveExitState(states: AnyStatesFactory, to: any): any {
-//   return typeof to === 'string' ? resolveState(states, to) :
-// }
 
 export function resolveState<S extends AnyStatesFactory>(
   states: AnyStatesFactory,
   from: string,
-  entry: TransitionEntry<any>,
+  entry: TransitionEntry<any>
 ): FactoryState<S> {
   if (typeof entry === "string") {
     return states[entry]({} as any); // as FactoryState<S>

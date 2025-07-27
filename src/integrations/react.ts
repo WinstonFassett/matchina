@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
-
-export type Listen<T> = (value: T) => void;
+import { Effect } from "../function-types";
 
 export function useMachine<Change>(machine: {
   notify: (ev: Change) => void;
@@ -10,7 +9,7 @@ export function useMachine<Change>(machine: {
     throw new Error("useMachine requires a machine instance");
   }
   const onSubscribe = useCallback(
-    (listener: Listen<Change>) => {
+    (listener: Effect<Change>) => {
       const orig = machine.notify;
       const bound = orig.bind(machine);
       machine.notify = (ev) => {
@@ -21,7 +20,7 @@ export function useMachine<Change>(machine: {
         machine.notify = orig;
       };
     },
-    [machine],
+    [machine]
   );
   const onGetChange = useCallback(() => machine.getChange(), [machine]);
   React.useSyncExternalStore(onSubscribe, onGetChange, onGetChange);

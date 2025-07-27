@@ -10,7 +10,7 @@ The key advantages are:
 - Built-in type guards and assertions
 - Excellent type inference
 
-This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.ypeScript"
+This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime TypeScript"
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
@@ -23,6 +23,7 @@ import lightDefaultCaseRaw from "../../../code/examples/matchbox-usage/light-def
 import lightCastingRaw from "../../../code/examples/matchbox-usage/light-casting.ts?raw";
 import lightCustomTagRaw from "../../../code/examples/matchbox-usage/light-custom-tag.ts?raw";
 import lightAdvancedMatchingRaw from "../../../code/examples/matchbox-usage/light-advanced-matching.ts?raw";
+import matchboxTagsRaw from "../../../code/examples/matchbox-usage/matchbox-tags.ts?raw";
 import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-union.ts?raw";
 import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
 import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
@@ -46,12 +47,11 @@ You can create a factory using the `matchboxFactory` function. This factory then
 
 <CodeBlock code={lightBasicRaw} lang="ts" twoslash={true} />
 
-
 ## Custom Tag Property
 
 By default, the tag property is named `tag`, but you can customize it:
 
-<CodeBlock code={lightCustomTagRaw} lang="ts" twoslash={true} />
+<CodeBlock code={matchboxTagsRaw} lang="ts" twoslash={true} />
 
 ## Conclusion
 

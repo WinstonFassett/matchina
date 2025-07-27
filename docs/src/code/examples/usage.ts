@@ -24,7 +24,7 @@ import {
   whenEventType,
   whenFromState,
   withNanoSubscribe,
-  type StateMachineEvent
+  type StateMachineEvent,
 } from "matchina";
 
 const m1 = createTransitionMachine<
@@ -42,7 +42,7 @@ const m1 = createTransitionMachine<
       stop: { key: "Idle" },
     },
   },
-  { key: "Idle", payload: "whatever" },
+  { key: "Idle", payload: "whatever" }
 );
 
 m1.send("start", "Bob");
@@ -54,7 +54,7 @@ m1.send("stop", { forever: true });
 setup(m1)(
   guard((ev) => ev.type === "start"),
   // when((ev) => ev.type === "start", fn),
-  leave((ev) => console.log("before", ev)),
+  leave((ev) => console.log("before", ev))
 );
 
 const m2 = createTransitionMachine(
@@ -69,12 +69,12 @@ const m2 = createTransitionMachine(
   { key: "Idle", data: undefined } as {
     key: "Idle" | "Pending" | "Done";
     data: undefined;
-  },
+  }
 );
 
 createSetup<typeof m2>(
   guard((ev) => !!ev),
-  leave((ev) => console.log("before", ev)),
+  leave((ev) => console.log("before", ev))
 )(m2);
 
 const states = defineStates({
@@ -92,7 +92,7 @@ const m4 = createMachine(
     Resolved: {},
     Rejected: {},
   },
-  states.Idle(),
+  states.Idle()
 );
 // m4.getChange().to.key ;
 m4.send("execute", 1);
@@ -116,8 +116,8 @@ setup(m4)(
         Resolved: (ev) => ev.ok,
         Rejected: (ev) => ev.err,
         _: () => false,
-      }),
-    ),
+      })
+    )
   ),
   handle((ev) => {
     return ev;
@@ -127,8 +127,8 @@ setup(m4)(
       (ev) => ev.type === "execute",
       (ev) => {
         console.log({ ev });
-      },
-    ),
+      }
+    )
   ),
   enter(
     whenEventType("execute", (_ev) => {
@@ -136,14 +136,14 @@ setup(m4)(
       return (_ev) => {
         console.log("exited condition");
       };
-    }),
+    })
   ),
   notify(
     when(
       (ev) => ev.type === "reject",
       // eslint-disable-next-line unicorn/consistent-function-scoping
-      (_ev) => (_ev) => {},
-    ),
+      (_ev) => (_ev) => {}
+    )
   ),
   notify(
     when(
@@ -153,9 +153,9 @@ setup(m4)(
         return (_ev) => {
           console.log("exited execute state");
         };
-      },
-    ),
-  ),
+      }
+    )
+  )
 );
 
 m4.send("execute", 1);
@@ -170,8 +170,8 @@ onNotify(
     (ev) => ev.type === "execute",
     (ev) => {
       console.log(ev.to.as("Pending"));
-    },
-  ),
+    }
+  )
 );
 
 const api = createApi(m4);
@@ -182,7 +182,7 @@ console.log("state", m4.getChange());
 
 const unsub = notify((ev) => {
   console.log("first notify", ev);
-  unsub()
+  unsub();
 })(m4);
 
 const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
@@ -194,7 +194,7 @@ if (
     type: "execute",
   } as const)
 ) {
-  x.type = 'execute'
+  x.type = "execute";
   x.type = "execute";
 }
 
@@ -251,7 +251,7 @@ console.log(
     reject: (err) => err.message,
     resolve: (ok) => ok.toString(),
     execute: (x) => x.toString(),
-  }),
+  })
 );
 
 if (m5.subscribe) {
@@ -260,8 +260,8 @@ if (m5.subscribe) {
       (ev) => ev.type === "execute",
       (ev1) => (ev2) => {
         console.log("in", ev1, "out", ev2);
-      },
-    ),
+      }
+    )
   );
 }
 
@@ -269,7 +269,7 @@ m5.subscribe(
   whenEvent({ from: "Pending", type: "reject" }, (ev) => {
     ev.type = "reject";
     ev.to.key = "Rejected";
-  }),
+  })
 );
 
 m5.subscribe(
@@ -278,7 +278,7 @@ m5.subscribe(
     ev.from.key = "Pending";
     ev.to.key = "Rejected";
     ev.to.data.err.message = "nope";
-  }),
+  })
 );
 
 setup(m4)(notify(whenFromState("Pending", (_ev) => {})));
@@ -292,8 +292,8 @@ const unsub2 = m5.subscribe(
         console.log("exit", x.to.key);
         unsub2();
       };
-    },
-  ),
+    }
+  )
 );
 
 onLeftState(m4, "Pending", (ev) => {
@@ -313,18 +313,18 @@ setup(m4)(
     },
     effect((_ev) => {}),
     enter((_ev) => {}),
-    guard((_ev) => true),
-  ),
+    guard((_ev) => true)
+  )
 );
 onChangeSetup(
   m4,
   { to: "Pending" },
-  guard((_ev) => true),
+  guard((_ev) => true)
 );
 onChangeSetup(
   m4,
   { type: "execute" },
-  guard((_ev) => true),
+  guard((_ev) => true)
 );
 
 setup(m4)(
@@ -332,7 +332,7 @@ setup(m4)(
     const done = setup(m4)();
     next(ev);
     done();
-  }),
+  })
 );
 
 onLifecycle(m4, {

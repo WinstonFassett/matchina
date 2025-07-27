@@ -1,23 +1,21 @@
 import { zen } from "./extras/zen";
+import { StateFactory } from "./state";
+import { createMachine } from "./factory-machine";
 import {
-  AnyStatesFactory,
-  createMachine,
   FactoryMachineContext,
-  FactoryMachineEvent,
   FactoryMachineTransitions,
   FactoryState,
-} from "./factory-machine";
+} from "./factory-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 export function matchina<
-  SF extends AnyStatesFactory,
+  SF extends StateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>,
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
 ) {
   return zen(createMachine(states, transitions, init));
 }

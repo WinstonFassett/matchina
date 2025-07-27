@@ -1,9 +1,9 @@
-import { matchboxFactory } from 'matchina';
+import { matchboxFactory } from "matchina";
 
 // Create a Light matchbox with On/Off states
 const Light = matchboxFactory({
   Off: undefined,
-  On: (percentage = 100) => ({ percentage })
+  On: (percentage = 100) => ({ percentage }),
 });
 
 const light = Light.On(25);
@@ -11,7 +11,7 @@ const light = Light.On(25);
 // Using the default case (_) for simplified matching
 const isOn = light.match({
   On: () => true,
-  _: () => false // Handles any other case (Off in this example)
+  _: () => false, // Handles any other case (Off in this example)
 });
 
 console.log(isOn); // true
@@ -23,15 +23,18 @@ const brightnessMessage = light.match({
     if (percentage < 70) return "Medium";
     return "Bright";
   },
-  _: () => "Off"
+  _: () => "Off",
 });
 
 console.log(brightnessMessage); // "Dim"
 
 // Default case with non-exhaustive matching (false parameter)
 // Note: This is less type-safe but sometimes convenient
-const simpleCheck = light.match({
-  On: ({ percentage }) => percentage > 50 ? "Bright enough" : "Too dim",
-}, false);
+const simpleCheck = light.match(
+  {
+    On: ({ percentage }) => (percentage > 50 ? "Bright enough" : "Too dim"),
+  },
+  false
+);
 
 console.log(simpleCheck); // "Too dim"
