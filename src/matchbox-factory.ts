@@ -5,7 +5,7 @@ interface FactoryShape {
   [key: string]: (...args: unknown[]) => unknown;
 }
 
-type AFactoryMember<TagProp extends string, Tag extends string, Data> = {
+type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
   data: Data;
   getTag: () => Tag;
 } & {
@@ -18,10 +18,10 @@ type Matchbox<
   D,
   K extends string & keyof F = string & keyof F,
 > = ReturnType<F[K]> &
-  AFactoryMember<TagProp, K, D> &
-  FactoryMemberApi<TagProp, F>;
+  MatchboxInstance<TagProp, K, D> &
+  MatchboxApi<TagProp, F>;
 
-export interface FactoryMemberApi<
+export interface MatchboxApi<
   TagProp extends string,
   F extends FactoryShape,
 > {
