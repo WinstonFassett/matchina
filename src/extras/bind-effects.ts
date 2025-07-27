@@ -1,6 +1,6 @@
 import { MatchCases } from "../match-case";
-import { SpecRecord, MatchboxMember } from "../matchbox-factory";
-import { handleEffects, AnyEffect } from "./effects";
+import { SpecRecord } from "../matchbox-factory";
+import { AnyEffect, handleEffects } from "./effects";
 
 export function bindEffects<
   EffectsConfig extends SpecRecord,

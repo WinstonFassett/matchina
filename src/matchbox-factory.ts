@@ -1,4 +1,3 @@
-import { match } from "./match-case";
 import { Simplify } from "./utility-types";
 
 /**
@@ -252,14 +251,14 @@ class MemberImpl<
     const tag = this.getTag();
     const data = this.data;
     if (exhaustive === false) {
-      const fallback = (casesObj as any)["_"];
+      const fallback = (casesObj as any)._;
       const fn = (casesObj as any)[tag] ?? fallback;
       return typeof fn === "function" ? fn(data) : undefined;
     }
     if (typeof (casesObj as any)[tag] === "function") {
       return (casesObj as any)[tag](data);
     }
-    const fallback = (casesObj as any)["_"];
+    const fallback = (casesObj as any)._;
     if (typeof fallback === "function") {
       return fallback(data);
     }
@@ -270,12 +269,12 @@ class MemberImpl<
 // #region WIP
 
 /**
- * ExtractMemberTypes maps each key in T to the type of its 'data' property, if present.
+ * _ExtractMemberTypes maps each key in T to the type of its 'data' property, if present.
  * Useful for extracting the data types from a record of Matchbox members.
  *
  * @template T - The record of Matchbox members.
  */
-type ExtractMemberTypes<T> = {
+type _ExtractMemberTypes<T> = {
   [K in keyof T]: T[K] extends { data: infer D } ? D : never;
 };
 
