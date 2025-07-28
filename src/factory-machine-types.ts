@@ -1,7 +1,7 @@
 import { StateEventTransitionSenders } from "./factory-machine-api-types";
 import { MatchInvocation } from "./match-case-types";
 import { StateFactory } from "./state";
-import { StateMachine, StateMachineEvent } from "./state-machine";
+import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
 
@@ -61,7 +61,7 @@ export type FactoryMachineTransitionEvent<
     keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends
     FC["transitions"][FromKey][EventKey] = FC["transitions"][FromKey][EventKey],
-> = StateMachineEvent<FactoryState<FC["states"]>> &
+> = TransitionEvent<FactoryState<FC["states"]>> &
   FactoryMachineEventApi<FC> & {
     from: FactoryState<
       FC["states"],

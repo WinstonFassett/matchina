@@ -22,11 +22,11 @@ import {
   whenEventType,
   whenFromState,
   withNanoSubscribe,
-  type StateMachineEvent,
+  type TransitionEvent,
 } from "matchina";
 
 const m1 = createTransitionMachine<
-  StateMachineEvent<{ key: string; payload?: any }> &
+  TransitionEvent<{ key: string; payload?: any }> &
     (
       | { type: "start"; params: [nickname: "Bob" | "Pat"] }
       | { type: "stop"; params: [{ forever: boolean }] }
@@ -47,7 +47,7 @@ m1.send("start", "Bob");
 console.log("state", m1.getChange());
 m1.send("stop", { forever: true });
 
-// const whenStart = <E extends StateMachineEvent>(fn: EntryListener<E>) =>
+// const whenStart = <E extends TransitionEvent>(fn: EntryListener<E>) =>
 
 setup(m1)(
   guard((ev) => ev.type === "start"),

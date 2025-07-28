@@ -19,7 +19,7 @@ import { ResolveEvent } from "./state-machine-types";
  * 10. `notify(ev)` - Notifies subscribers of the change.
  * 11. `after(ev)` - Final hook after transition completes.
  */
-export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
+export interface StateMachine<E extends TransitionEvent = TransitionEvent> {
   /**
    * Returns the current state of the machine (the `to` property of the last change).
    */
@@ -82,7 +82,7 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
 }
 
 /**
- * StateMachineEvent describes a transition event in a state machine. See {@link StateMachine}
+ * TransitionEvent describes a transition event in a state machine. See {@link StateMachine}
  * Includes the event type, parameters, source and target states, and a reference to the machine.
  *
  * @template To - Target state type
@@ -93,7 +93,7 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
  * @property from - The source state for the transition.
  * @property machine - Reference to the state machine instance handling this event.
  */
-export interface StateMachineEvent<
+export interface TransitionEvent<
   To extends State = State,
   From extends State = To,
 > {
@@ -101,5 +101,5 @@ export interface StateMachineEvent<
   params: any[]; // Parameters passed to the event
   to: To; // Target state for the transition
   from: From; // Source state for the transition
-  get machine(): StateMachine<StateMachineEvent<To, From>>; // Reference to the state machine instance
+  get machine(): StateMachine<TransitionEvent<To, From>>; // Reference to the state machine instance
 }

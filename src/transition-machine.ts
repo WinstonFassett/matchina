@@ -1,4 +1,4 @@
-import { StateMachine, StateMachineEvent } from "./state-machine";
+import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 
 const EmptyTransform = <E>(event: E) => event;
@@ -13,7 +13,7 @@ interface TransitionContext {
   transitions: TransitionRecord;
 }
 
-export function createTransitionMachine<E extends StateMachineEvent>(
+export function createTransitionMachine<E extends TransitionEvent>(
   transitions: TransitionRecord,
   initialState: E["from"]
 ) {

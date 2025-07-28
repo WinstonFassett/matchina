@@ -3,7 +3,7 @@ import { Funcware, Middleware, Setup } from "./function-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { HasFilterValues } from "./match-filter-types";
-import { StateMachine, StateMachineEvent } from "./state-machine";
+import { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
 
@@ -18,7 +18,7 @@ const hookSetup =
     ) => () => void;
 
 export const composeHandlers =
-  <E extends StateMachineEvent>(
+  <E extends TransitionEvent>(
     outer: (value: E) => E | undefined,
     inner: (value: E) => E | undefined
   ): ((value: E) => E | undefined) =>
@@ -26,7 +26,7 @@ export const composeHandlers =
     outer(inner(ev) as any);
 
 export const combineGuards =
-  <E extends StateMachineEvent>(
+  <E extends TransitionEvent>(
     first: (value: E) => boolean,
     next: (value: E) => boolean
   ): ((value: E) => boolean) =>
@@ -158,7 +158,7 @@ export const notify = hookSetup("notify");
 // export const onNotify = machineHook("notify");
 
 export const change = <
-  E extends StateMachineEvent,
+  E extends TransitionEvent,
   F extends ChangeEventKeyFilter<E>,
   FE extends E & HasFilterValues<E, F>,
 >(
@@ -178,7 +178,7 @@ export const change = <
 };
 
 export const setupTransition = <
-  E extends StateMachineEvent,
+  E extends TransitionEvent,
   F extends ChangeEventKeyFilter<E>,
 >(
   machine: StateMachine<E>,
