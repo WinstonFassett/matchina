@@ -78,13 +78,13 @@
     "ignore": ["react"]
   },
   {
-    "name": "nanosubscribe",
-    "path": "src/extras/nanosubscriber.ts",
-    "import": "{ nanosubscriber }"
+    "name": "emitter",
+    "path": "src/extras/emitter.ts",
+    "import": "{ emitter }"
   },
   {
-    "name": "with-nanosubscribe",
-    "path": "src/extras/with-nanosubscribe.ts",
-    "import": "{ withNanoSubscribe }"
+    "name": "with-subscribe",
+    "path": "src/extras/with-subscribe.ts",
+    "import": "{ withSubscribe }"
   }
 ]

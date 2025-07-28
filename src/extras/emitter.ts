@@ -9,7 +9,7 @@ type Listen<T> = Effect<T>;
  * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
-type Subscribe<T> = (listener: Listen<T>) => Unsubscribe;
+export type Subscribe<T> = (listener: Listen<T>) => Unsubscribe;
 
 type Unsubscribe = Disposer;
 type Emit<T> = Effect<T>;
@@ -18,7 +18,7 @@ type Emit<T> = Effect<T>;
  * Creates a minimal pub/sub system for values of type T.
  *
  * Usage:
- *   const [subscribe, emit] = nanosubscriber<number>();
+ *   const [subscribe, emit] = emitter<number>();
  *   const unsub = subscribe((v) => console.log(v));
  *   emit(42); // logs 42
  *   unsub(); // removes listener
@@ -26,7 +26,7 @@ type Emit<T> = Effect<T>;
  * @param listeners - Optional initial array of listeners.
  * @returns [subscribe, emit, listeners]
  */
-export const nanosubscriber = <T>(
+export const emitter = <T>(
   listeners = [] as Listen<T>[]
 ): [Subscribe<T>, Emit<T>, Listen<T>[]] => [
   (listener: Listen<T>) => {

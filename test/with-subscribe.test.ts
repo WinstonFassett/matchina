@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createMachine, defineStates, withApi } from "../src";
-import { withNanoSubscribe } from "../src/extras/with-nanosubscribe";
+import { withSubscribe } from "../src/extras/with-subscribe";
 // import { whenEvent } from "../src/factory-machine-hooks";
 
 describe("withSubscribe", () => {
@@ -24,7 +24,7 @@ describe("withSubscribe", () => {
     );
     const e = withApi(inner);
 
-    const machine = withNanoSubscribe(inner);
+    const machine = withSubscribe(inner);
     expect(machine.subscribe).toBeDefined();
     // expect(machine.when).toBeDefined();
     // expect(machine.dispose).toBeDefined();
@@ -35,7 +35,7 @@ describe("withSubscribe", () => {
       Idle: {},
       Running: {},
     });
-    const machine = withNanoSubscribe(
+    const machine = withSubscribe(
       createMachine(
         states,
         {
@@ -60,7 +60,7 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
+  //   const machine = withSubscribe(
   //     createMachine(
   //       states,
   //       {
@@ -90,7 +90,7 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
+  //   const machine = withSubscribe(
   //     createMachine(
   //       states,
   //       {
@@ -121,7 +121,7 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
+  //   const machine = withSubscribe(
   //     createMachine(
   //       states,
   //       {
@@ -157,7 +157,7 @@ describe("withSubscribe", () => {
       Idle: {},
       Running: {},
     });
-    const machine = withNanoSubscribe(
+    const machine = withSubscribe(
       createMachine(
         states,
         {

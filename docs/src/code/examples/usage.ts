@@ -21,7 +21,7 @@ import {
   whenEvent,
   whenEventType,
   whenFromState,
-  withNanoSubscribe,
+  withSubscribe,
   type TransitionEvent,
 } from "matchina";
 
@@ -178,7 +178,7 @@ const unsub = notify((ev) => {
   unsub();
 })(m4);
 
-const m5 = withNanoSubscribe(m4); // .subscribe(ev => {})
+const m5 = withSubscribe(m4); // .subscribe(ev => {})
 export type M4Change = ReturnType<typeof m5.getChange>;
 
 const x = m4.getChange();

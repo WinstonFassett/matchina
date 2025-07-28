@@ -2,7 +2,7 @@ import {
   createMachine,
   defineStates,
   withApi,
-  withNanoSubscribe,
+  withSubscribe,
 } from "matchina";
 
 // ---cut---
@@ -28,7 +28,7 @@ const runMachine = createMachine(
   "FOO"
 );
 
-const machine = withNanoSubscribe(withApi(runMachine));
+const machine = withSubscribe(withApi(runMachine));
 
 machine.api.switch();
 
