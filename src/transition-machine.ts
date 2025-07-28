@@ -44,27 +44,19 @@ export function createTransitionMachine<E extends StateMachineEvent>(
     },
     guard: (ev: E) => !!ev,
     transition(change: E) {
-      if (!machine.guard(change)) {
-        return;
-      }
+      if (!machine.guard(change)) return;      
       let update = machine.handle(change); // process change
-      if (!update) {
-        return;
-      }
+      if (!update) return;      
       update = machine.before(update); // prepare update
-      if (!update) {
-        return;
-      }
+      if (!update) return;      
       machine.update(update); // apply update
-      machine.effect(update); // internal effects
+      machine.effect(update); // trigger effects
       machine.notify(update); // notify consumers
       machine.after(update); // cleanup
     },
     handle: EmptyTransform<E>,
     before: EmptyTransform<E>,
-    update: (update: E) => {
-      lastChange = update;
-    },
+    update: (update: E) => { lastChange = update },
     effect(ev: E) {
       machine.leave(ev); // left previous
       machine.enter(ev); // entered next
