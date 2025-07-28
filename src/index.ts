@@ -12,7 +12,7 @@ export * from "./factory-machine-event-api";
 export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./match-case";
-export * from "./match-case-types";
+// export * from "./match-case-types";
 export * from "./factory-machine-event";
 export * from "./factory-machine-types";
 export * from "./state";

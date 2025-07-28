@@ -7,5 +7,3 @@ export function zen<M extends FactoryMachine<any>>(machine: M) {
     setup: setup(machine),
   });
 }
-
-export type ZenMachine = ReturnType<typeof zen>;
