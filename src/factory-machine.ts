@@ -168,6 +168,5 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
 
 export {
   type FactoryMachine,
-  type FactoryState,
   type FactoryMachineTransitions,
 } from "./factory-machine-types";
