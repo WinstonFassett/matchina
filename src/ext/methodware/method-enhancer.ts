@@ -1,3 +1,9 @@
+import { Disposer, Funcware } from "../../function-types";
+import { enhanceMethod } from "./enhance-method";
+import { MethodOf, HasMethod } from "./method-utility-types";
+
+type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: T) => Disposer;
+
 /**
  * Creates a MethodEnhancer for a method on a target object.
  *
@@ -25,14 +31,7 @@
  *   unenhance();
  *   target.foo('will', 'NOT be', 'enhanced');
  */
-import { Funcware } from "../../function-types";
-import { enhanceMethod } from "./enhance-method";
-import { MethodOf, HasMethod } from "./method-utility-types";
-
-export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: T) => Unenhance;
-export type Unenhance = () => void;
-
-export const methodEnhancer =
+export const createMethodEnhancer =
   <K extends string>(methodName: K) =>
   <T extends HasMethod<K>>(fn: Funcware<MethodOf<T, K>>): MethodEnhancer<K, T> =>
   (target: T) => {

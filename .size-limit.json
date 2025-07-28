@@ -54,7 +54,7 @@
   {
     "name": "method enhancer",
     "path": "src/ext/index.ts",
-    "import": "{ methodEnhancer }"
+    "import": "{ createMethodEnhancer }"
   },
   {
     "name": "machine hooks",

@@ -1,4 +1,4 @@
-import { enhanceMethod, methodEnhancer, setup } from "./ext";
+import { enhanceMethod, createMethodEnhancer, setup } from "./ext";
 import { Funcware, Middleware, Setup } from "./function-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
@@ -13,7 +13,7 @@ const hookSetup =
   <T extends HasMethod<K>>(
     ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
   ) =>
-    methodEnhancer<K>(key)(HookAdapters[key](...config)) as (
+    createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
       target: T
     ) => () => void;
 
