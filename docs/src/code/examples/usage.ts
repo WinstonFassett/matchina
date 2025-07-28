@@ -13,7 +13,6 @@ import {
   matchFilters,
   notify,
   setupTransition as onChangeSetup,
-  onLeftState,
   onLifecycle,
   setup,
   change as setupChange,
@@ -290,13 +289,12 @@ const unsub2 = m5.subscribe(
   )
 );
 
-onLeftState(m4, "Pending", (ev) => {
-  ev.from.key = "Pending";
-  ev.type = "execute";
-  // ev.to.key = 'Resolved'
-});
-
 setup(m4)(
+  effect(
+    whenFromState("Pending", (ev) => {
+      console.log("left Pending state", ev.from.key);
+    })
+  ),
   setupChange(
     { type: "execute" },
     (m) => {
