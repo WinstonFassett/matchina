@@ -4,15 +4,15 @@ import {
 import { ResolveEvent } from "./state-machine-types";
 import { StateMachineEvent } from "./state-machine";
 
-export const EmptyTransform = <E>(event: E) => event;
-export const EmptyEffect = <E>(_event: E) => {};
+const EmptyTransform = <E>(event: E) => event;
+const EmptyEffect = <E>(_event: E) => {};
 
 export type TransitionRecord = {
   [from: string]: {
     [type: string]: string | object;
   };
 };
-export interface TransitionContext {
+interface TransitionContext {
   transitions: TransitionRecord;
 }
 
