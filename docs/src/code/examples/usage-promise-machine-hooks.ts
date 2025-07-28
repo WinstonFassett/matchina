@@ -2,9 +2,9 @@ import {
   createPromiseMachine,
   effect,
   enter,
+  guardExecute,
   leave,
-  onExecute,
-  setup,
+  setup
 } from "matchina";
 
 // --- 1. Create a promise machine for async addition ---
@@ -17,12 +17,9 @@ const adder = createPromiseMachine(
 
 // --- 2. Add lifecycle hooks ---
 setup(adder)(
-  onExecute((execute) => (a: number, b: number) => {
-    if (a < 0 || b < 0) {
-      throw new Error("Both numbers must be non-negative.");
-    }
-    return execute(a, b);
-  }),
+  guardExecute(
+    (a: number, b: number) => a >= 0 && b >= 0
+  ),
   enter(
     (ev) => ev.to.is("Pending") && console.log("Started addition:", ev.to.data)
   ),
