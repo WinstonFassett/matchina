@@ -1,6 +1,7 @@
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { Func, Middleware, Funcware, Effect } from "./function-types";
-import { StateMachineEvent, StateMachine } from "./state-machine-types";
+import { StateMachine } from "./state-machine";
+import { StateMachineEvent } from "./state-machine";
 
 
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {

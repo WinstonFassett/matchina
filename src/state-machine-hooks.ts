@@ -10,7 +10,8 @@ import { Funcware, Middleware, Setup } from "./function-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { HasFilterValues } from "./match-filter-types";
-import { StateMachine, StateMachineEvent } from "./state-machine-types";
+import { StateMachine } from "./state-machine";
+import { StateMachineEvent } from "./state-machine";
 import { HookAdapters } from "./state-machine-hook-adapters";
 
 const machineHook =

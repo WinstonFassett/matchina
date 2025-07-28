@@ -23,7 +23,7 @@ export * from "./extras/nanosubscriber";
 export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./promise-machine-hooks";
-export * from "./state-machine-types";
+export * from "./state-machine";
 export * from "./state-machine-actions";
 export * from "./state-machine-hooks";
 export * from "./state-machine-pure";

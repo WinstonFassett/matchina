@@ -5,7 +5,8 @@ import {
   FactoryMachineTransitionEvent,
 } from "./factory-machine-types";
 import { Effect, Funcware, Middleware } from "./function-types";
-import { StateMachine, StateMachineEvent } from "./state-machine-types";
+import { StateMachine } from "./state-machine";
+import { StateMachineEvent } from "./state-machine";
 
 type TransitionHookExtensions<E extends StateMachineEvent> = {
   begin: AbortableEventHandler<E>;

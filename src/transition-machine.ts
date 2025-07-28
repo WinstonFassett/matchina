@@ -1,8 +1,8 @@
 import {
-  StateMachineEvent,
   StateMachine,
-  ResolveEvent,
-} from "./state-machine-types";
+} from "./state-machine";
+import { ResolveEvent } from "./state-machine-types";
+import { StateMachineEvent } from "./state-machine";
 
 export const EmptyTransform = <E>(event: E) => event;
 export const EmptyEffect = <E>(_event: E) => {};

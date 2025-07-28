@@ -1,4 +1,4 @@
-import type { StateMachine } from "../state-machine-types";
+import type { StateMachine } from "../state-machine";
 import { Subscribe, nanosubscriber } from "./nanosubscriber";
 
 export const withNanoSubscribe = <
