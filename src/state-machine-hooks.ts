@@ -57,17 +57,17 @@ export const after = hookSetup("after");
 export const notify = hookSetup("notify");
 // #endregion
 
-export const onBefore = machineHook("before");
-export const onTransition = machineHook("transition");
-export const onResolveExit = machineHook("resolveExit");
-export const onGuard = machineHook("guard");
-export const onUpdate = machineHook("update");
-export const onHandle = machineHook("handle");
-export const onEffect = machineHook("effect");
-export const onLeave = machineHook("leave");
-export const onEnter = machineHook("enter");
-export const onAfter = machineHook("after");
-export const onNotify = machineHook("notify");
+// export const onBefore = machineHook("before");
+// export const onTransition = machineHook("transition");
+// export const onResolveExit = machineHook("resolveExit");
+// export const onGuard = machineHook("guard");
+// export const onUpdate = machineHook("update");
+// export const onHandle = machineHook("handle");
+// export const onEffect = machineHook("effect");
+// export const onLeave = machineHook("leave");
+// export const onEnter = machineHook("enter");
+// export const onAfter = machineHook("after");
+// export const onNotify = machineHook("notify");
 
 export const change = <
   E extends StateMachineEvent,

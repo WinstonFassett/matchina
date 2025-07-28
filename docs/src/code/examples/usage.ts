@@ -15,7 +15,6 @@ import {
   setupTransition as onChangeSetup,
   onLeftState,
   onLifecycle,
-  onNotify,
   setup,
   change as setupChange,
   transition,
@@ -160,17 +159,12 @@ setup(m4)(
 
 m4.send("execute", 1);
 
-onNotify(m4, (ev) => {
-  console.log("notify", ev);
-});
-
-onNotify(
-  m4,
-  when(
-    (ev) => ev.type === "execute",
-    (ev) => {
-      console.log(ev.to.as("Pending"));
-    }
+setup(m4)(
+  effect((ev) => {
+    console.log("effect", ev.type);
+  }),
+  effect(
+    ev => ev.type === "execute" && console.log("execute s:", ev.to.data.s)
   )
 );
 

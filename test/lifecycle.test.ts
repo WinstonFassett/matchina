@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createApi, withApi } from "../src/factory-machine-event-api";
 import { onLifecycle } from "../src/factory-machine-lifecycle";
-import { createPromiseMachine } from "../src/promise-machine";
+import { createPromiseMachine } from "../src/promise-machine-impl";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {

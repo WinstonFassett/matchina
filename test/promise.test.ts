@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createPromiseMachine,
-  PROMISE_TRANSITIONS,
-} from "../src/promise-machine";
-import { PromiseStates } from "../src/PromiseStates";
+import { createPromiseMachine, PROMISE_STATES, PROMISE_TRANSITIONS } from "../src/promise-machine-impl";
 import { delay, delayer } from "../src/extras/delay";
 import { withApi, createMachine, createApi } from "../src";
 
@@ -51,7 +47,7 @@ describe("createPromiseMachine", () => {
   describe("with extended transitions", () => {
     it("should allow enhancing the transition config", () => {
       const machine = createMachine(
-        PromiseStates,
+        PROMISE_STATES,
         {
           ...PROMISE_TRANSITIONS,
           Pending: { ...PROMISE_TRANSITIONS.Pending, cancel: "Idle" },
