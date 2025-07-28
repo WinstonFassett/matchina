@@ -42,7 +42,7 @@ type Matchbox<
  * @template Tag - The tag value.
  * @template Data - The data associated with this variant.
  */
-export type MatchboxInstance<
+type MatchboxInstance<
   TagProp extends string,
   Tag extends string,
   Data,
@@ -141,7 +141,7 @@ export interface MatchboxMemberApi<DataSpecs, TagProp extends string> {
  *
  * Used for pattern matching and type inference in MatchboxMember and related APIs.
  */
-export type MatchboxData<DataSpecs> = {
+type MatchboxData<DataSpecs> = {
   [T in keyof DataSpecs]: DataSpecs[T] extends (...args: any[]) => any
     ? ReturnType<DataSpecs[T]>
     : DataSpecs[T];
