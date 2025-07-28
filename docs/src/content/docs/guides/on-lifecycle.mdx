@@ -16,11 +16,11 @@ The `onLifecycle` function lets you intercept all sorts of state changes and eve
 
 | State-level hooks (top-level) | Event-level hooks (inside `on`) |
 |------------------------------|---------------------------------|
-| `enter` — when entering state | `before` — before event transition |
-| `leave` — when leaving state  | `after` — after event transition  |
-| `notify` — after state change |                                 |
-| `effect` — side effects       |                                 |
-| `transition`, `resolveExit`, `guard`, `update`, `handle`, `after` — advanced lifecycle hooks | |
+| `enter`  when entering state | `before`  before event transition |
+| `leave`  when leaving state  | `after`  after event transition  |
+| `notify`  after state change |                                 |
+| `effect`  side effects       |                                 |
+| `transition`, `resolveExit`, `guard`, `update`, `handle`, `after`  advanced lifecycle hooks | |
 
 ## Wildcard Usage
 You can use `"*"` for states and events to match all states or all events. For example, to run a handler for every event regardless of prior state:
@@ -62,6 +62,8 @@ Inside `on`, **event names** (e.g. `execute`, `reject`, `resolve`) are keys. Use
 Each event or hook can have:
 - `before`: runs before the transition.
 - `after`: runs after the transition.
+- **Direct effect handler:** You can use a function directly for an event key, e.g. `on: { tick: (ev) => {} }` (runs as the effect hook for `tick`).
+- **Effects map:** You can batch assign effect handlers using `on: { effects: { tick: fn, jump: fn } }`.
 
 ## Typing Benefits
 - Handlers receive fully typed event objects, matching the machine's state/event types.
@@ -74,7 +76,11 @@ Each event or hook can have:
   onLifecycle(machine, {
     "*": {
       on: {
-        "*": { after: (ev) => console.log(ev) }
+        "*": { after: (ev) => console.log(ev) },
+        tick: (ev) => console.log("tick effect", ev), // direct effect handler
+        effects: {
+          jump: (ev) => console.log("jump effect", ev),
+        },
       }
     }
   });
@@ -112,15 +118,18 @@ Here's the onLifecycle logging code behind this example:
 onLifecycle(machine, {
   Idle: {
     on: {
-      executing: {
-        after: ({ type, from, to, params }) => {
-          console.log(
-            "after Idle.executing:",
-            type,
-            from.key,
-            to.key,
-            Object.keys(params)
-          );
+      executing: (ev) => {
+        console.log("Idle.executing effect:", ev.type, ev.from.key, ev.to.key);
+      },
+      effects: {
+        tick: (ev) => {
+          console.log("Idle.tick effect:", ev.type, ev.from.key, ev.to.key);
+        },
+      },
+      // Old style still works:
+      resolve: {
+        before: ({ type, from, to, params }) => {
+          console.log("before Idle.resolve:", type, from.key, to.key, Object.keys(params));
         },
       },
     },

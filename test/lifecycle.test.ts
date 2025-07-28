@@ -314,6 +314,19 @@ describe("onLifecycle usage", () => {
     expect(didBeforeResolve).toBe(8);
     expect(didAfterResolve).toBe(9);
     expect(didEnterRejected).toBe(10);
+
+    // Ergonomic event hook styles test
+    onLifecycle(machine, {
+      Idle: {
+        on: {
+          executing: (ev: any) => {
+            expect(ev.type).toBe("executing");
+            expect(ev.from.key).toBe("Idle");
+            expect(ev.to.key).toBe("Pending");
+          },
+        },
+      },
+    });
   });
 });
 

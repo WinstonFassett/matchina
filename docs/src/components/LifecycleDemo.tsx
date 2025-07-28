@@ -17,7 +17,6 @@ function useAdder() {
   useMachine(wrapper);
   return wrapper;
 }
-// ...existing imports...
 
 export function LifecycleDemo({}) {
   const machine = useAdder();
@@ -38,16 +37,13 @@ export function LifecycleDemo({}) {
     return onLifecycle(machine, {
       Idle: {
         on: {
-          executing: {
-            after: ({ type, from, to, params }) => {
-              console.log(
-                "after Idle.executing:",
-                type,
-                from.key,
-                to.key,
-                Object.keys(params)
-              );
-            },
+          executing: (ev) => {
+            console.log(
+              "Idle.executing effect:",
+              ev.type,
+              ev.from.key,
+              ev.to.key
+            );
           },
         },
       },
@@ -167,4 +163,3 @@ export function LifecycleDemo({}) {
     </div>
   );
 }
-// ...existing code...

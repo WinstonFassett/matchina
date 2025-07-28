@@ -16,7 +16,7 @@ import { ChangeEventKeyFilter } from "./match-change-types";
 
 /**
  * Registers lifecycle hooks for a FactoryMachine, allowing fine-grained control over state transitions.
- * Supports wildcards for state and event keys, and ensures handlers are strongly typed.
+ * Supports wildcards for state and event keys, direct entry handlers, and ensures handlers are strongly typed.
  * Returns a disposer to remove all registered hooks.
  *
  * ## Supported Hook Adapter Names
@@ -29,11 +29,13 @@ import { ChangeEventKeyFilter } from "./match-change-types";
  * - {@link transition}, {@link resolveExit}, {@link guard}, {@link update}, {@link handle}, {@link after} — advanced hooks for full lifecycle control
  *
  * **Event-level hooks (inside `on`):**
+ * - Direct entry handler: `on.event = fn` — runs as entry for event (after leave, before effect)
+ * - Full hook object: `on.event = { before, effect, after }`
  * - {@link before} — runs before the event transition
  * - {@link after} — runs after the event transition
  *
  * ## Wildcard Behavior
- * - Use `"*"` as a state or event key to match all states/events.
+ * - Use "*" as a state or event key to match all states/events.
  * - Example: `{ "*": { enter: fn } }` runs `enter` for every state.
  * - You can also put event handlers like `on.executing` in the wildcard to match all prior states:
  *   ```typescript
@@ -51,9 +53,9 @@ import { ChangeEventKeyFilter } from "./match-change-types";
  * - Return types are enforced, e.g. `guard` returns boolean, `handle` returns event or undefined.
  *
  * ## Structure & Sequence
- * - Top-level keys are state names (or `"*"` for all states).
+ * - Top-level keys are state names (or "*" for all states).
  * - Inside each state, you can use hooks (`enter`, `leave`, etc.) and the `on` block for event-specific hooks.
- * - Inside `on`, event names (or `"*"`) map to event hooks (`before`, `after`).
+ * - Inside `on`, event names (or "*") map to event hooks (`before`, `after`), direct entry handlers, or full hook objects.
  * - Hooks are registered in the order: enter, leave, on (event-specific).
  * - For each event, matching hooks are evaluated in the order they are registered.
  * - Wildcard hooks are applied after specific hooks for the same phase.
@@ -68,13 +70,15 @@ import { ChangeEventKeyFilter } from "./match-change-types";
  *       executing: {
  *         before: (ev) => {}, // before executing event
  *         after: (ev) => {},  // after executing event
- *       }
+ *       },
+ *       tick: (ev) => {}, // direct entry handler for tick
  *     }
  *   },
  *   "*": {
  *     notify: (ev) => {}, // handler for all states
  *     on: {
- *       "*": { after: (ev) => {} } // handler for all events
+ *       "*": { after: (ev) => {} }, // handler for all events
+ *       tick: (ev) => {}, // direct entry handler for tick on all states
  *     }
  *   }
  * });
@@ -119,12 +123,23 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         if (!eventConfig) {
           continue;
         }
-        useFilteredEventConfigs(
-          machine,
-          { from: stateKey, type: eventKey } as any,
-          eventConfig as StateHookConfig<FC>,
-          disposers
-        );
+        if (typeof eventConfig === "function") {
+          // Direct entry handler: runs after leave, before effect
+          useFilteredEventConfigs(
+            machine,
+            { from: stateKey, type: eventKey } as any,
+            { entry: eventConfig } as any,
+            disposers
+          );
+        } else if (eventConfig && typeof eventConfig === "object") {
+          // Full hook object: register all phases
+          useFilteredEventConfigs(
+            machine,
+            { from: stateKey, type: eventKey } as any,
+            eventConfig as StateEventHookConfig<FactoryMachineEvent<FC>>,
+            disposers
+          );
+        }
       }
     }
   }

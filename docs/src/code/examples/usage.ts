@@ -328,13 +328,30 @@ setup(m4)(
 );
 
 onLifecycle(m4, {
+  Idle: {
+    on: {
+      // Direct effect handler for 'executing'
+      execute: (ev) => {
+        console.log("Idle.execute entry:", ev.type, ev.from.key, ev.to.key);
+      },      
+    },
+  },
   "*": {
     on: {
       "*": {
-        transition: (ev, next) => {
-          const done = setup(m4)();
-          next(ev);
-          done();
+        after: (ev) => {
+          console.log(`[${ev.type}]:`, ev.to.key, ev.to.data);
+        },
+      },
+      reject: {
+        after: ({ type, from, to }) => {
+          const { name, stack, message } = to.data;
+          console.log("after", type, "from", from.key, name, message, stack);
+        },
+      },
+      resolve: {
+        before: ({ type, from: _from, to: { data } }) => {
+          console.log("before", type, data);
         },
       },
     },
