@@ -4,8 +4,8 @@ import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
   FactoryMachineTransitions,
-  FactoryState,
 } from "./factory-machine-types";
+import { FactoryState } from "./state";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 export function matchina<
