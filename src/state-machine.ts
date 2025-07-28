@@ -1,4 +1,3 @@
-import { State } from "./factory-state";
 import { ResolveEvent } from "./state-machine-types";
 
 /**

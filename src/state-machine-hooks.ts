@@ -1,13 +1,14 @@
-import { createMethodEnhancer, enhanceMethod, setup } from "./ext";
+import { createMethodEnhancer } from "./ext";
 import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
-import { Setup } from "./function-types";
-import { matchChange } from "./match-change";
-import { ChangeEventKeyFilter } from "./match-change-types";
-import { HasFilterValues } from "./match-filter-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
-
+/**
+ * Creates a lifecycle hook enhancer for a given StateMachine method key.
+ * Returns a function that applies the hook and provides a disposer to remove it.
+ *
+ * Usage: `hookSetup("before")(config)(machine)`
+ */
 const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
   <T extends HasMethod<K>>(
@@ -17,6 +18,12 @@ const hookSetup =
       target: T
     ) => () => void;
 
+/**
+ * Composes two event handler functions for a state machine lifecycle method.
+ * The inner handler runs first, then the outer handler receives its result.
+ *
+ * Usage: `composeHandlers(outer, inner)(event)`
+ */
 export const composeHandlers =
   <E extends TransitionEvent>(
     outer: (value: E) => E | undefined,
@@ -25,6 +32,12 @@ export const composeHandlers =
   (ev) =>
     outer(inner(ev) as any);
 
+/**
+ * Combines two guard functions for a state machine transition.
+ * Both guards must return true for the transition to proceed.
+ *
+ * Usage: `combineGuards(first, next)(event)`
+ */
 export const combineGuards =
   <E extends TransitionEvent>(
     first: (value: E) => boolean,

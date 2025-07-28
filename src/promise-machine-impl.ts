@@ -14,7 +14,23 @@ export const PROMISE_TRANSITIONS = {
     resolve: "Resolved",
     reject: "Rejected",
   },
-} as const;export function createPromiseMachine<
+} as const;
+
+/**
+ * Creates a state machine for managing promise lifecycles.
+ * Handles Idle, Pending, Resolved, and Rejected states, and transitions for executing, resolving, and rejecting promises.
+ *
+ * @template F - The promise factory function type.
+ * @param makePromise - Optional factory function to create a promise. If omitted, `execute` will throw.
+ * @returns A PromiseMachine instance with an `execute` method to run the promise and manage its state.
+ *
+ * Usage:
+ * ```ts
+ * const machine = createPromiseMachine((...args) => fetch(...args));
+ * machine.execute(url).then(...).catch(...);
+ * ```
+ */
+export function createPromiseMachine<
   F extends PromiseCallback = PromiseCallback
 >(
   makePromise?: F
