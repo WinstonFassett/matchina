@@ -18,7 +18,12 @@ export interface FactoryMachineContext<SF extends StateFactory = StateFactory> {
 /**
  * FactoryMachine is a type-safe state machine that uses a state factory and transitions.
  * It extends the StateMachine interface to provide additional functionality
- * specific to factory-based state machines. See {@link createMachine} for usage.
+ * specific to factory-based state machines.
+ *
+ * See also:
+ *   - {@link createMachine} to create a FactoryMachine instance.
+ *   - {@link TransitionMachine} for a less-typed, event-based state machine.
+ *   - {@link createTransitionMachine} is used internally by FactoryMachine
  */
 export interface FactoryMachine<FC extends FactoryMachineContext<any>>
   extends StateMachine<FactoryMachineEvent<FC>> {
