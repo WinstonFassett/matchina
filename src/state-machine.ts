@@ -7,17 +7,17 @@ import { ResolveEvent } from "./state-machine-types";
  * and side effects. The transition machine implements this interface.
  *
  * Lifecycle steps:
- * 1. send(type, ...params) - Initiates a transition event.
- * 2. resolveExit(ev) - Determines the target state for the event.
- * 3. guard(ev) - Checks if the transition is allowed.
- * 4. handle(ev) - Processes the event, may abort if returns undefined.
- * 5. before(ev) - Prepares for state change, may abort if returns undefined.
- * 6. update(ev) - Applies the state update.
- * 7. effect(ev) - Runs side effects, calls leave/enter hooks.
- * 8. leave(ev) - Called when leaving the previous state.
- * 9. enter(ev) - Called when entering the new state.
- * 10. notify(ev) - Notifies subscribers of the change.
- * 11. after(ev) - Final hook after transition completes.
+ * 1. `send(type, ...params)` - Initiates a transition event.
+ * 2. `resolveExit(ev)` - Determines the target state for the event.
+ * 3. `guard(ev)` - Checks if the transition is allowed.
+ * 4. `handle(ev)` - Processes the event, may abort if returns undefined.
+ * 5. `before(ev)` - Prepares for state change, may abort if returns undefined.
+ * 6. `update(ev)` - Applies the state update.
+ * 7. `effect(ev)` - Runs side effects, calls leave/enter hooks.
+ * 8. `leave(ev)` - Called when leaving the previous state.
+ * 9. `enter(ev)` - Called when entering the new state.
+ * 10. `notify(ev)` - Notifies subscribers of the change.
+ * 11. `after(ev)` - Final hook after transition completes.
  */
 export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
   /**
@@ -82,7 +82,7 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
 }
 
 /**
- * StateMachineEvent describes a transition event in a state machine.
+ * StateMachineEvent describes a transition event in a state machine. See {@link StateMachine}
  * Includes the event type, parameters, source and target states, and a reference to the machine.
  *
  * @template To - Target state type
