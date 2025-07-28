@@ -3,6 +3,23 @@ import { MethodOf } from "./method-utility-types";
 
 const noop = () => {};
 
+/**
+ * Extends a method on a single target using funcware, allowing you to intercept and augment
+ * the method's behavior. The funcware receives the original method and its parameters, and can
+ * return a new value or modify the call.
+ *
+ * This function does not return the enhanced method itself. Instead, it replaces the method on
+ * the target object and returns a disposer function that restores whatever was there before.
+ *
+ * Type parameters `T` and `K` are usually inferred automatically and rarely need to be specified.
+ *
+ * @template T - The target object type
+ * @template K - The key of the method to enhance
+ * @param target - The object containing the method to enhance
+ * @param methodName - The name of the method to enhance
+ * @param extend - Funcware (middleware) that receives the original method and params
+ * @returns A disposer function that restores the previous method when called
+ */
 export function enhanceMethod<T, K extends keyof T>(
   target: T,
   methodName: K,

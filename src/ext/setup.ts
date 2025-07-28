@@ -13,6 +13,7 @@ export const createDisposer = (fns: Disposer[]) => () => {
 };
 
 /**
+ * @function
  * Composes multiple setup functions into a single setup.
  * Each setup receives the target and returns a disposer; all disposers are run in reverse order.
  * @param setups - Setup functions to compose
