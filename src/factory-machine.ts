@@ -12,6 +12,8 @@ import { ResolveEvent } from "./state-machine-types";
 import { createTransitionMachine } from "./transition-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
+export type { FactoryMachine, FactoryState, FactoryMachineTransitions };
+
 export function createMachine<
   SF extends StateFactory,
   TC extends FactoryMachineTransitions<SF>,
