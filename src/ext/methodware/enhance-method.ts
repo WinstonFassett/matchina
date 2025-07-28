@@ -1,4 +1,5 @@
 import { Funcware } from "../../function-types";
+import { MethodOf } from "./method-utility-types";
 
 const noop = () => {};
 
@@ -13,8 +14,3 @@ export function enhanceMethod<T, K extends keyof T>(
     target[methodName] = original;
   };
 }
-export type MethodOf<T, K extends keyof T> = T[K] extends (
-  ...args: any[]
-) => any
-  ? T[K]
-  : never;

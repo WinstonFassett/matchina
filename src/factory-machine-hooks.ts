@@ -1,7 +1,8 @@
 import { setup } from "./ext";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { iff } from "./extras/iff";
-import { EntryListener, ExitListener, when } from "./extras/when";
+import { when } from "./extras/when";
+import { EntryListener, ExitListener } from "./extras/entry-exit-types";
 import { FactoryMachineEvent, FactoryState } from "./factory-machine-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";

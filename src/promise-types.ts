@@ -1,4 +1,4 @@
-import { States } from "./define-states";
+import { States } from "./state-types";
 import { FactoryMachine, FactoryMachineEvent } from "./factory-machine-types";
 
 

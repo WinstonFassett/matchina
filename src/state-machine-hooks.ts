@@ -1,7 +1,5 @@
 import { Adapters } from "./state-machine-hook-adapter-types";
 import {
-  HasMethod,
-  MethodOf,
   enhanceMethod,
   methodEnhancer,
   setup,
@@ -13,6 +11,7 @@ import { HasFilterValues } from "./match-filter-types";
 import { StateMachine } from "./state-machine";
 import { StateMachineEvent } from "./state-machine";
 import { HookAdapters } from "./state-machine-hook-adapters";
+import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
 
 const machineHook =
   <K extends string & keyof Adapters>(key: K) =>

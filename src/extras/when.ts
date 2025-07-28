@@ -1,5 +1,4 @@
-export type ExitListener<E> = (event: E) => void;
-export type EntryListener<E> = (event: E) => void | ExitListener<E>;
+import { EntryListener } from "./entry-exit-types";
 
 export function when<E>(test: (ev: E) => any, entryListener: EntryListener<E>) {
   let exitListener: void | ((ev: E) => void);
