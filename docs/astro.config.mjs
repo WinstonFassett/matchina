@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
+import tailwindcss from '@tailwindcss/vite'
 
 // export default defineConfig({
 //   integrations: [
@@ -342,7 +343,7 @@ export default defineConfig({
   ],
   vite: {
     plugins: [
-      // tailwindcss()
+      tailwindcss()
     ],
   },
 });
