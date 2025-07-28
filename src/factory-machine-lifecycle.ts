@@ -1,5 +1,5 @@
 import { enhanceMethod, iff } from "./ext";
-import { disposers } from "./ext/setup";
+import { createDisposer } from "./ext/setup";
 import { Disposer } from "./function-types";
 import {
   FactoryMachine,
@@ -58,7 +58,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
       }
     }
   }
-  return disposers(d);
+  return createDisposer(d);
 }
 
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(
