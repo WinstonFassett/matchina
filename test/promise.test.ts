@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  PromiseStates,
   createPromiseMachine,
-  PromiseTransitions,
+  PROMISE_TRANSITIONS,
 } from "../src/promise-machine";
+import { PromiseStates } from "../src/PromiseStates";
 import { delay, delayer } from "../src/extras/delay";
 import { withApi, createMachine, createApi } from "../src";
 
@@ -53,8 +53,8 @@ describe("createPromiseMachine", () => {
       const machine = createMachine(
         PromiseStates,
         {
-          ...PromiseTransitions,
-          Pending: { ...PromiseTransitions.Pending, cancel: "Idle" },
+          ...PROMISE_TRANSITIONS,
+          Pending: { ...PROMISE_TRANSITIONS.Pending, cancel: "Idle" },
         },
         "Idle"
       );

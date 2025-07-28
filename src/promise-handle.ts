@@ -1,4 +1,4 @@
-import { PromiseCallback, PromiseMachine } from "./promise-machine";
+import { PromiseCallback, PromiseMachine } from "./promise-types";
 
 export const handlePromise =
   <
