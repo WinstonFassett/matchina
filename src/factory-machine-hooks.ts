@@ -1,4 +1,5 @@
-import { AbortableEventHandler, setup } from "./ext";
+import { setup } from "./ext";
+import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { iff } from "./extras/iff";
 import { EntryListener, ExitListener, when } from "./extras/when";
 import { FactoryMachineEvent, FactoryState } from "./factory-machine-types";
