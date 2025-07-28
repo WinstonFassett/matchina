@@ -2,14 +2,14 @@ import { createMachine } from "./factory-machine";
 import { defineStates } from "./define-states";
 import { PromiseStates, PromiseCallback, PromiseMachine } from "./promise-types";
 
-export const PROMISE_STATES: PromiseStates<any> = defineStates({
+const PROMISE_STATES: PromiseStates<any> = defineStates({
   Idle: undefined,
   Pending: (promise: Promise<any>, params: any[]) => ({ promise, params }),
   Rejected: (error: any) => error,
   Resolved: (data: any) => data,
 });
 
-export const PROMISE_TRANSITIONS = {
+const PROMISE_TRANSITIONS = {
   Idle: { executing: "Pending" },
   Pending: {
     resolve: "Resolved",
