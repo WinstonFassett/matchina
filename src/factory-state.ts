@@ -9,7 +9,9 @@ export interface State {
  * A factory object mapping state keys to state creator functions.
  * Each function returns a State instance (optionally with additional properties).
  */
-export type StateFactory = Record<string, (...args: any[]) => State>;
+export interface StateFactory {
+  [key: string]: (...args: any[]) => State;
+}
 
 /**
  * Infers the return type of a state factory function for a given key.

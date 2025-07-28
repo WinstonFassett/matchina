@@ -4,11 +4,11 @@ import { ResolveEvent } from "./state-machine-types";
 const EmptyTransform = <E>(event: E) => event;
 const EmptyEffect = <E>(_event: E) => {};
 
-export type TransitionRecord = {
+export interface TransitionRecord {
   [from: string]: {
     [type: string]: string | object;
   };
-};
+}
 interface TransitionContext {
   transitions: TransitionRecord;
 }
@@ -34,7 +34,7 @@ interface TransitionContext {
  *
  * See also: FactoryMachine (see createMachine) for a more type-safe, ergonomic API.
  */
-export type TransitionMachine<E extends TransitionEvent> = StateMachine<E> & TransitionContext;
+export interface TransitionMachine<E extends TransitionEvent> extends StateMachine<E>, TransitionContext {}
 
 /**
  * Creates a generic transition-based state machine.
