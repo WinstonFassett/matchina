@@ -1,5 +1,4 @@
-import { HasMethod } from "../methodware/method-utility-types";
-import { MethodOf } from "../methodware/method-utility-types";
+import { HasMethod, MethodOf } from "../methodware/method-utility-types";
 import { Funcware } from "../../function-types";
 
 export const tap =

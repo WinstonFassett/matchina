@@ -17,7 +17,7 @@ type Matchbox<
   TagProp extends string,
   F extends TagDataCreators,
   D,
-  K extends string & keyof F = string & keyof F
+  K extends string & keyof F = string & keyof F,
 > = ReturnType<F[K]> &
   MatchboxInstance<TagProp, K, D> &
   MatchboxApi<TagProp, F>;
@@ -29,16 +29,12 @@ type Matchbox<
  * @template Tag - The tag value.
  * @template Data - The data associated with this variant.
  */
-type MatchboxInstance<
-  TagProp extends string,
-  Tag extends string,
-  Data
-> = {
+type MatchboxInstance<TagProp extends string, Tag extends string, Data> = {
   data: Data;
   getTag: () => Tag;
 } & {
-    [_ in TagProp]: Tag;
-  };
+  [_ in TagProp]: Tag;
+};
 /**
  * MatchboxApi provides type-safe methods for working with Matchbox instances:
  * - is: Type predicate for narrowing to a specific variant.
@@ -51,7 +47,7 @@ type MatchboxInstance<
 
 export interface MatchboxApi<
   TagProp extends string,
-  F extends TagDataCreators
+  F extends TagDataCreators,
 > {
   is: <K extends keyof F>(key: K) => this is Matchbox<TagProp, F, K>;
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
@@ -69,7 +65,9 @@ export interface MatchboxApi<
  */
 
 export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
-  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer _R ? (...args: P) => MatchboxMember<T, DataSpecs, TagProp> : () => MatchboxMember<T, DataSpecs, TagProp>;
+  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: infer P) => infer _R
+    ? (...args: P) => MatchboxMember<T, DataSpecs, TagProp>
+    : () => MatchboxMember<T, DataSpecs, TagProp>;
 };
 /**
  * MatchboxMember creates the type for a single Matchbox variant instance from its data specification.
@@ -79,8 +77,10 @@ export type MatchboxFactory<DataSpecs, TagProp extends string = "tag"> = {
 export type MatchboxMember<
   Tag extends keyof DataSpecs,
   DataSpecs,
-  TagProp extends string
-> = ((DataSpecs[Tag] extends (...args: any[]) => any ? { data: ReturnType<DataSpecs[Tag]>; } : { data: DataSpecs[Tag]; }) & {
+  TagProp extends string,
+> = ((DataSpecs[Tag] extends (...args: any[]) => any
+  ? { data: ReturnType<DataSpecs[Tag]> }
+  : { data: DataSpecs[Tag] }) & {
   [_ in TagProp]: Tag;
 }) &
   MatchboxMemberApi<DataSpecs, TagProp>;
@@ -92,17 +92,17 @@ export type MatchboxMember<
  */
 export type MatchCases<DataSpecs, A, Exhaustive extends boolean = true> =
   // If _ is present, all tags are optional (exhaustiveness is satisfied)
-  (Partial<{
-    [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
-  }> & { _?: (...args: any[]) => A; })
+  | (Partial<{
+      [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+    }> & { _?: (...args: any[]) => A })
   // Otherwise, if exhaustive, all tags are required
-  |
-
-  (Exhaustive extends true ? {
-    [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
-  } : Partial<{
-    [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
-  }>);
+  | (Exhaustive extends true
+      ? {
+          [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+        }
+      : Partial<{
+          [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+        }>);
 /**
  * MatchboxMemberApi provides type-safe methods for working with a Matchbox member:
  * - is: Type predicate for narrowing to a specific variant.
@@ -129,8 +129,10 @@ export interface MatchboxMemberApi<DataSpecs, TagProp extends string> {
  * Used for pattern matching and type inference in MatchboxMember and related APIs.
  */
 type MatchboxData<DataSpecs> = {
-  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: any[]) => any ? ReturnType<DataSpecs[T]> : DataSpecs[T];
-};/**
+  [T in keyof DataSpecs]: DataSpecs[T] extends (...args: any[]) => any
+    ? ReturnType<DataSpecs[T]>
+    : DataSpecs[T];
+}; /**
  * TaggedTypes is a utility type for defining a record of tag-value pairs.
  * Used to specify the shape of the configuration for a Matchbox factory.
  *
@@ -139,5 +141,4 @@ type MatchboxData<DataSpecs> = {
 
 export type TaggedTypes<T = any> = {
   [k: string]: T;
-} & { _?: never; };
-
+} & { _?: never };

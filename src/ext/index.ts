@@ -4,4 +4,3 @@ export * from "./funcware/tap";
 export * from "./methodware/enhance-method";
 export * from "./methodware/method-enhancer";
 export * from "./setup";
-

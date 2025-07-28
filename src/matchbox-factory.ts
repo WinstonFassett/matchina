@@ -1,4 +1,9 @@
-import { MatchboxFactory, MatchboxMember, MatchCases, TaggedTypes } from "./matchbox-factory-types";
+import {
+  MatchboxFactory,
+  MatchboxMember,
+  MatchCases,
+  TaggedTypes,
+} from "./matchbox-factory-types";
 
 /**
  * Create a tagged union from a record mapping tags to value types, along with associated

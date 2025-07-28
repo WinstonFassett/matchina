@@ -2,9 +2,11 @@ import { abortable, tap } from "./ext";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { Effect, Func, Funcware, Middleware } from "./function-types";
 import { StateMachine, StateMachineEvent } from "./state-machine";
-import { combineGuards, composeHandlers, middlewareToFuncware } from "./state-machine-hooks";
-
-
+import {
+  combineGuards,
+  composeHandlers,
+  middlewareToFuncware,
+} from "./state-machine-hooks";
 
 export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   [key: string]: Func;
@@ -30,7 +32,6 @@ export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
   notify: Transform<Effect<E>, Funcware<Effect<E>>>;
 };
 type Transform<I, O = I> = (source: I) => O;
-
 
 export const HookAdapters = {
   transition: middlewareToFuncware,

@@ -30,12 +30,13 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
 
 type ChangeFilterTuple = [type?: string, from?: string, to?: string];
 export function getFilter(
-  parts: ChangeFilterTuple |
-  [filter: { type?: string; from?: string; to?: string; }]): [type?: string, from?: string, to?: string] {
+  parts:
+    | ChangeFilterTuple
+    | [filter: { type?: string; from?: string; to?: string }]
+): [type?: string, from?: string, to?: string] {
   if (parts.length === 1 && typeof parts[0] === "object") {
     const filter = parts[0];
     return [filter.type, filter.from, filter.to];
   }
   return parts as any;
 }
-

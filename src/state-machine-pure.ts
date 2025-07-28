@@ -1,5 +1,4 @@
-import { StateMachine } from "./state-machine";
-import { StateMachineEvent } from "./state-machine";
+import { StateMachine, StateMachineEvent } from "./state-machine";
 
 export function pure<E extends StateMachineEvent>(
   machine: StateMachine<E>

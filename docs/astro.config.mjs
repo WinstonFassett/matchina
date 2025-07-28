@@ -1,5 +1,5 @@
 import react from "@astrojs/react";
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
@@ -26,29 +26,28 @@ export default defineConfig({
       plugins: [
         starlightTypeDoc({
           sidebar: {
-            label: "Reference"
+            label: "Reference",
           },
           entryPoints: ["../src/index.ts"],
           tsconfig: "../tsconfig.typedoc.json",
           output: "reference",
           typeDoc: {
-              "entryPointStrategy": "expand",
-              "excludePrivate": true,
-              "excludeInternal": true,
-              categorizeByGroup: false,
-              groupOrder: ["Interfaces","Functions", "Variables", "*"],
-              "navigation": {
-                "includeGroups": true,
-                "includeCategories": true
-              },
-              // "plugin": [
-              //   "typedoc-plugin-internal-external",
-              //   "typedoc-plugin-inline-sources"
-              // ]
+            entryPointStrategy: "expand",
+            excludePrivate: true,
+            excludeInternal: true,
+            categorizeByGroup: false,
+            groupOrder: ["Interfaces", "Functions", "Variables", "*"],
+            navigation: {
+              includeGroups: true,
+              includeCategories: true,
+            },
+            // "plugin": [
+            //   "typedoc-plugin-internal-external",
+            //   "typedoc-plugin-inline-sources"
+            // ]
 
-
-              // "excludeNotDocumented": true
-          }
+            // "excludeNotDocumented": true
+          },
         }),
       ],
       expressiveCode: {
@@ -318,8 +317,6 @@ export default defineConfig({
     react(),
   ],
   vite: {
-    plugins: [
-      tailwindcss()
-    ],
+    plugins: [tailwindcss()],
   },
 });

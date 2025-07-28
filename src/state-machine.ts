@@ -20,7 +20,7 @@ export interface StateMachine<E extends StateMachineEvent = StateMachineEvent> {
 
 export interface StateMachineEvent<
   To extends State = State,
-  From extends State = To
+  From extends State = To,
 > {
   type: string;
   params: any[];
@@ -28,4 +28,3 @@ export interface StateMachineEvent<
   from: From;
   get machine(): StateMachine<StateMachineEvent<To, From>>;
 }
-

@@ -1,6 +1,4 @@
-import {
-  FactoryMachine,
-} from "./factory-machine-types";
+import { FactoryMachine } from "./factory-machine-types";
 import { FactoryMachineApi, WithApi } from "./factory-machine-api-types";
 
 export function createApi<
@@ -34,7 +32,6 @@ export function createApi<
   return events;
 }
 
-
 export function withApi<M extends FactoryMachine<any>>(target: M) {
   const enhanced = target as WithApi<M>;
   if (enhanced.api) {
@@ -44,5 +41,3 @@ export function withApi<M extends FactoryMachine<any>>(target: M) {
     api: createApi<M>(enhanced),
   }) as WithApi<M>;
 }
-
-

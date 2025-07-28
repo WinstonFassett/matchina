@@ -1,7 +1,6 @@
 import { States } from "./state-types";
 import { FactoryMachine, FactoryMachineEvent } from "./factory-machine-types";
 
-
 export type PromiseTransitions = {
   readonly Idle: {
     readonly executing: "Pending";
@@ -17,7 +16,7 @@ export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Pending: (
     promise: Promise<Awaited<ReturnType<F>>>,
     params: Parameters<F>
-  ) => { promise: Promise<Awaited<ReturnType<F>>>; params: Parameters<F>; };
+  ) => { promise: Promise<Awaited<ReturnType<F>>>; params: Parameters<F> };
   Rejected: (error: E) => E;
   Resolved: (data: Awaited<ReturnType<F>>) => Awaited<ReturnType<F>>;
 };
@@ -32,4 +31,5 @@ export type PromiseMachine<F extends PromiseCallback> = FactoryMachine<{
   states: PromiseStates<F>;
   transitions: PromiseTransitions;
 }>;
-export type PromiseMachineEvent<F extends PromiseCallback> = FactoryMachineEvent<PromiseMachine<F>>;
+export type PromiseMachineEvent<F extends PromiseCallback> =
+  FactoryMachineEvent<PromiseMachine<F>>;

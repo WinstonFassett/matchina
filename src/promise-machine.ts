@@ -1,6 +1,10 @@
 import { createMachine } from "./factory-machine";
 import { defineStates } from "./define-states";
-import { PromiseStates, PromiseCallback, PromiseMachine } from "./promise-types";
+import {
+  PromiseStates,
+  PromiseCallback,
+  PromiseMachine,
+} from "./promise-types";
 
 const PROMISE_STATES: PromiseStates<any> = defineStates({
   Idle: undefined,
