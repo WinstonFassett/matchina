@@ -5,7 +5,7 @@ import {
 import { TaggedTypes } from "../matchbox-factory-types";
 import { MatchboxMember } from "../matchbox-factory-types";
 
-export type AnyEffect = MatchboxMember<any, any, "effect">;
+export type EffectMatchbox = MatchboxMember<any, any, "effect">;
 
 export function defineEffects<EffectsConfig extends TaggedTypes>(
   config: EffectsConfig
@@ -16,7 +16,7 @@ export function handleEffects<
   EffectsConfig extends TaggedTypes,
   Exhaustive extends boolean = true,
 >(
-  effects: undefined | AnyEffect[],
+  effects: undefined | EffectMatchbox[],
   matchers: MatchCases<
     EffectsConfig,
     // MemberOf<MatchboxFactory<EffectsConfig, "effect">>,
