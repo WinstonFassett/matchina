@@ -36,7 +36,7 @@
   "scripts": {
     "build": "npm run build:lib && npm run build:docs",
     "build:lib": "unbuild && size-limit",
-    "test-build": "npm run build:lib && npm --workspace docs run check",
+    "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
     "dev": "vitest dev",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
