@@ -63,7 +63,8 @@ Each event or hook can have:
 - `before`: runs before the transition.
 - `after`: runs after the transition.
 - **Direct effect handler:** You can use a function directly for an event key, e.g. `on: { tick: (ev) => {} }` (runs as the effect hook for `tick`).
-- **Effects map:** You can batch assign effect handlers using `on: { effects: { tick: fn, jump: fn } }`.
+
+> **Direct handler invocation:** When you use a direct handler (function) for an event key, it is invoked during the entry part of the event lifecycle—after update, inside effect, and after leave.
 
 ## Typing Benefits
 - Handlers receive fully typed event objects, matching the machine's state/event types.
@@ -78,9 +79,6 @@ Each event or hook can have:
       on: {
         "*": { after: (ev) => console.log(ev) },
         tick: (ev) => console.log("tick effect", ev), // direct effect handler
-        effects: {
-          jump: (ev) => console.log("jump effect", ev),
-        },
       }
     }
   });
@@ -120,11 +118,6 @@ onLifecycle(machine, {
     on: {
       executing: (ev) => {
         console.log("Idle.executing effect:", ev.type, ev.from.key, ev.to.key);
-      },
-      effects: {
-        tick: (ev) => {
-          console.log("Idle.tick effect:", ev.type, ev.from.key, ev.to.key);
-        },
       },
       // Old style still works:
       resolve: {
