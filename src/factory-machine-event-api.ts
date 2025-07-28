@@ -1,9 +1,7 @@
 import {
   FactoryMachine,
-  FactoryMachineContext,
-  FactoryMachineTransitionEvent,
 } from "./factory-machine-types";
-import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
+import { FactoryMachineApi, WithApi } from "./factory-machine-api-types";
 
 export function createApi<
   M extends FactoryMachine<any>,
@@ -36,13 +34,6 @@ export function createApi<
   return events;
 }
 
-export type FactoryMachineApi<FC extends FactoryMachineContext> = Simplify<
-  object & FlatEventSenders<FC>
->;
-
-export type WithApi<FC extends FactoryMachineContext> = FC & {
-  api: FactoryMachineApi<FC>;
-};
 
 export function withApi<M extends FactoryMachine<any>>(target: M) {
   const enhanced = target as WithApi<M>;
@@ -54,16 +45,4 @@ export function withApi<M extends FactoryMachine<any>>(target: M) {
   }) as WithApi<M>;
 }
 
-export type FlatEventSenders<FC extends FactoryMachineContext> =
-  FlatMemberUnionToIntersection<StateEventTransitionSenders<FC>>;
 
-export type StateEventTransitionSenders<
-  FC extends FactoryMachineContext,
-  K extends keyof FC["transitions"] = keyof FC["transitions"],
-> = {
-  [StateKey in K]: {
-    [EventKey in keyof FC["transitions"][StateKey]]: (
-      ...args: FactoryMachineTransitionEvent<FC, StateKey, EventKey>["params"]
-    ) => void;
-  };
-};

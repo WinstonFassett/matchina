@@ -1,4 +1,4 @@
-import { StateEventTransitionSenders } from "./factory-machine-event-api";
+import { StateEventTransitionSenders } from "./factory-machine-api-types";
 import { MatchInvocation } from "./match-case-types";
 import { StateFactory } from "./state";
 import {
