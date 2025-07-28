@@ -36,7 +36,7 @@ export default defineConfig({
               "excludePrivate": true,
               "excludeInternal": true,
               categorizeByGroup: false,
-              groupOrder: ["Functions", "Interfaces", "Variables", "*"],
+              groupOrder: ["Interfaces","Functions", "Variables", "*"],
               "navigation": {
                 "includeGroups": true,
                 "includeCategories": true
