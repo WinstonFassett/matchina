@@ -1,30 +1,6 @@
-// @ts-check
 import react from "@astrojs/react";
-import { fileURLToPath } from "url";
-import path from "path";
-import fs from "fs";
+import tailwindcss from '@tailwindcss/vite';
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
-import tailwindcss from '@tailwindcss/vite'
-
-// export default defineConfig({
-//   integrations: [
-//     starlight({
-//       plugins: [
-//         // Generate the documentation.
-
-//       ],
-//       sidebar: [
-//         {
-//           label: 'Guides',
-//           items: [{ label: 'Example Guide', link: '/guides/example/' }],
-//         },
-//         // Add the generated sidebar group to the sidebar.
-//         typeDocSidebarGroup,
-//       ],
-//       title: 'My Docs',
-//     }),
-//   ],
-// })
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 
