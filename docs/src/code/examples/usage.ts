@@ -12,10 +12,10 @@ import {
   matchChange,
   matchFilters,
   notify,
-  setupTransition as onChangeSetup,
+  // setupTransition as onChangeSetup,
   onLifecycle,
   setup,
-  change as setupChange,
+  // change as setupChange,
   transition,
   when,
   whenEvent,
@@ -295,29 +295,29 @@ setup(m4)(
       console.log("left Pending state", ev.from.key);
     })
   ),
-  setupChange(
-    { type: "execute" },
-    (m) => {
-      return () => {
-        const e = m.getChange();
-        e.from.key = "Idle";
-      };
-    },
-    effect((_ev) => {}),
-    enter((_ev) => {}),
-    guard((_ev) => true)
-  )
+  // setupChange(
+  //   { type: "execute" },
+  //   (m) => {
+  //     return () => {
+  //       const e = m.getChange();
+  //       e.from.key = "Idle";
+  //     };
+  //   },
+  //   effect((_ev) => {}),
+  //   enter((_ev) => {}),
+  //   guard((_ev) => true)
+  // )
 );
-onChangeSetup(
-  m4,
-  { to: "Pending" },
-  guard((_ev) => true)
-);
-onChangeSetup(
-  m4,
-  { type: "execute" },
-  guard((_ev) => true)
-);
+// onChangeSetup(
+//   m4,
+//   { to: "Pending" },
+//   guard((_ev) => true)
+// );
+// onChangeSetup(
+//   m4,
+//   { type: "execute" },
+//   guard((_ev) => true)
+// );
 
 setup(m4)(
   transition((ev, next) => {

@@ -1,11 +1,11 @@
-import { enhanceMethod, createMethodEnhancer, setup } from "./ext";
+import { createMethodEnhancer, enhanceMethod, setup } from "./ext";
+import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
 import { Funcware, Middleware, Setup } from "./function-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { HasFilterValues } from "./match-filter-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
-import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
 
 
 const hookSetup =
@@ -157,39 +157,39 @@ export const notify = hookSetup("notify");
 // export const onAfter = machineHook("after");
 // export const onNotify = machineHook("notify");
 
-export const change = <
-  E extends TransitionEvent,
-  F extends ChangeEventKeyFilter<E>,
-  FE extends E & HasFilterValues<E, F>,
->(
-  filter: F,
-  ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
-) => {
-  return (machine: StateMachine<E>) => {
-    return enhanceMethod(machine, "transition", (next) => (ev) => {
-      const unsetup = matchChange(ev, filter)
-        ? setup(machine as unknown as StateMachine<FE>)(...setups)
-        : undefined;
-      const result = next(ev);
-      unsetup?.();
-      return result;
-    });
-  };
-};
+// export const change = <
+//   E extends TransitionEvent,
+//   F extends ChangeEventKeyFilter<E>,
+//   FE extends E & HasFilterValues<E, F>,
+// >(
+//   filter: F,
+//   ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
+// ) => {
+//   return (machine: StateMachine<E>) => {
+//     return enhanceMethod(machine, "transition", (next) => (ev) => {
+//       const unsetup = matchChange(ev, filter)
+//         ? setup(machine as unknown as StateMachine<FE>)(...setups)
+//         : undefined;
+//       const result = next(ev);
+//       unsetup?.();
+//       return result;
+//     });
+//   };
+// };
 
-export const setupTransition = <
-  E extends TransitionEvent,
-  F extends ChangeEventKeyFilter<E>,
->(
-  machine: StateMachine<E>,
-  filter: F,
-  ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
-) => change(filter, ...setups)(machine);
+// export const setupTransition = <
+//   E extends TransitionEvent,
+//   F extends ChangeEventKeyFilter<E>,
+// >(
+//   machine: StateMachine<E>,
+//   filter: F,
+//   ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
+// ) => change(filter, ...setups)(machine);
 
-export function middlewareToFuncware<E>(
-  middleware: Middleware<E>
-): Funcware<(change: E) => void> {
-  return (next) => (ev) => {
-    middleware(ev, next);
-  };
-}
+// export function middlewareToFuncware<E>(
+//   middleware: Middleware<E>
+// ): Funcware<(change: E) => void> {
+//   return (next) => (ev) => {
+//     middleware(ev, next);
+//   };
+// }

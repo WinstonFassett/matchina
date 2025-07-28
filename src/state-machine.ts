@@ -102,8 +102,8 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent> {
  * @property machine - Reference to the state machine instance handling this event.
  */
 export interface TransitionEvent<
-  To extends State = State,
-  From extends State = To,
+  To = unknown,
+  From = To,
 > {
   type: string; // The event type string
   params: any[]; // Parameters passed to the event

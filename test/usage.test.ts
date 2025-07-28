@@ -7,7 +7,7 @@ import { createTransitionMachine } from "../src/transition-machine";
 
 describe("setup", () => {
   it("should transition correctly", () => {
-    const machine = createTransitionMachine(
+    const machine = createTransitionMachine<any>(
       {
         Idle: {
           start: { key: "Running" },
@@ -34,7 +34,7 @@ describe("setup", () => {
 
 describe("createSetup", () => {
   it("should transition correctly", () => {
-    const machine = createTransitionMachine(
+    const machine = createTransitionMachine<any>(
       {
         Idle: {
           start: { key: "Running" },

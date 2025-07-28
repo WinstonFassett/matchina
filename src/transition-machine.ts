@@ -78,7 +78,7 @@ export function createTransitionMachine<E extends TransitionEvent>(
       }
     },
     resolveExit(ev) {
-      const to = machine.transitions[ev.from.key][ev.type];
+      const to = machine.transitions[ev.from as any][ev.type];
       if (to) {
         return { ...ev, to } as E; // TODO: use Object.assign
       }
