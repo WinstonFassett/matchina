@@ -5,8 +5,8 @@ import { StateMachine, TransitionEvent } from "./state-machine";
 import {
   combineGuards,
   composeHandlers,
-  middlewareToFuncware,
 } from "./state-machine-hooks";
+import { funcwareFromMiddleware } from "./ext/funcware/from-middleware";
 
 export type Adapters<E extends TransitionEvent = TransitionEvent> = {
   [key: string]: Func;
@@ -34,8 +34,8 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
 type Transform<I, O = I> = (source: I) => O;
 
 export const HookAdapters = {
-  transition: middlewareToFuncware,
-  update: middlewareToFuncware,
+  transition: funcwareFromMiddleware,
+  update: funcwareFromMiddleware,
   resolveExit: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
   guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
   handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
