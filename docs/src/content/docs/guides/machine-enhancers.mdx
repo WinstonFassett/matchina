@@ -72,7 +72,7 @@ pureVersion.send("someEvent", 1, 2, 3);
 
 The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
 
-{/\* ````ts twoslash
+{/* ````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
 import { createApi } from "matchina";
@@ -327,4 +327,4 @@ In this example:
 
 - Internal code uses the `createApi` wrapper for typed event methods
 - External code only receives the `pure` interface with limited capabilities
-- The authentication logic is encapsulated, with only necessary parts exposed \*/}
+- The authentication logic is encapsulated, with only necessary parts exposed */}
