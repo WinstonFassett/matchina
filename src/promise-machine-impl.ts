@@ -18,9 +18,8 @@ export const PROMISE_TRANSITIONS = {
   F extends PromiseCallback = PromiseCallback
 >(
   makePromise?: F
-): PromiseMachine<F> & {
-  execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
-} {
+): PromiseMachine<F> 
+{
   const states = PROMISE_STATES as unknown as PromiseStates<F>;
   const machine = createMachine(states, PROMISE_TRANSITIONS, "Idle");
 

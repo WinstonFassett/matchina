@@ -30,6 +30,8 @@ export type PromiseCallback = (...args: any[]) => Promise<any>;
 export type PromiseMachine<F extends PromiseCallback> = FactoryMachine<{
   states: PromiseStates<F>;
   transitions: PromiseTransitions;
-}>;
+}> & {
+  execute: (...params: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
+};
 export type PromiseMachineEvent<F extends PromiseCallback> =
   FactoryMachineEvent<PromiseMachine<F>>;
