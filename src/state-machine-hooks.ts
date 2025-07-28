@@ -1,59 +1,17 @@
+import { Adapters } from "./state-machine-hook-adapter-types";
 import {
   HasMethod,
   MethodOf,
-  abortable,
   enhanceMethod,
   methodEnhancer,
   setup,
-  tap,
 } from "./ext";
-import { AbortableEventHandler } from "./ext/abortable-event-handler";
-import { Effect, Func, Funcware, Middleware, Setup } from "./function-types";
+import { Funcware, Middleware, Setup } from "./function-types";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { HasFilterValues } from "./match-filter-types";
 import { StateMachine, StateMachineEvent } from "./state-machine-types";
-
-// #region Adapters
-export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
-  [key: string]: Func;
-} & {
-  transition: (
-    middleware: Middleware<E>
-  ) => Funcware<StateMachine<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
-  resolveExit: <F extends StateMachine<E>["resolveExit"]>(
-    resolveFn: F
-  ) => Funcware<F>;
-  guard: (
-    guardFn: StateMachine<E>["guard"]
-  ) => Funcware<StateMachine<E>["guard"]>;
-  handle: (
-    handleFn: StateMachine<E>["handle"]
-  ) => Funcware<StateMachine<E>["handle"]>;
-  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
-  leave: Transform<Effect<E>, Funcware<Effect<E>>>;
-  after: Transform<Effect<E>, Funcware<Effect<E>>>;
-  enter: Transform<Effect<E>, Funcware<Effect<E>>>;
-  effect: Transform<Effect<E>, Funcware<Effect<E>>>;
-  notify: Transform<Effect<E>, Funcware<Effect<E>>>;
-};
-type Transform<I, O = I> = (source: I) => O;
-
-export const HookAdapters = {
-  transition: middlewareToFuncware,
-  update: middlewareToFuncware,
-  resolveExit: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
-  guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
-  handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
-  before: (abortware) => abortable(abortware),
-  leave: tap,
-  after: tap,
-  enter: tap,
-  effect: tap,
-  notify: tap,
-} as Adapters;
-// #endregion
+import { HookAdapters } from "./state-machine-hook-adapters";
 
 const machineHook =
   <K extends string & keyof Adapters>(key: K) =>
@@ -69,7 +27,7 @@ const hookSetup =
       target: T
     ) => () => void;
 
-const composeHandlers =
+export const composeHandlers =
   <E extends StateMachineEvent>(
     outer: (value: E) => E | undefined,
     inner: (value: E) => E | undefined
@@ -77,7 +35,7 @@ const composeHandlers =
   (ev) =>
     outer(inner(ev) as any);
 
-const combineGuards =
+export const combineGuards =
   <E extends StateMachineEvent>(
     first: (value: E) => boolean,
     next: (value: E) => boolean
@@ -146,7 +104,7 @@ export const setupTransition = <
   ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
 ) => change(filter, ...setups)(machine);
 
-function middlewareToFuncware<E>(
+export function middlewareToFuncware<E>(
   middleware: Middleware<E>
 ): Funcware<(change: E) => void> {
   return (next) => (ev) => {
