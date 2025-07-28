@@ -1,4 +1,4 @@
-import { FactoryState } from "../state";
+import { FactoryState } from "../factory-state";
 import type { StateMachine } from "../state-machine";
 
 export const resetMachine = <T extends StateMachine<any>>(

@@ -1,6 +1,6 @@
 import { StateEventTransitionSenders } from "./factory-machine-api-types";
 import { MatchInvocation } from "./match-case-types";
-import { FactoryState, StateFactory } from "./state";
+import { FactoryState, StateFactory } from "./factory-state";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";

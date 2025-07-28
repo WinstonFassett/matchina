@@ -1,11 +1,11 @@
 import { zen } from "./extras/zen";
-import { StateFactory } from "./state";
+import { StateFactory } from "./factory-state";
 import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
   FactoryMachineTransitions,
 } from "./factory-machine-types";
-import { FactoryState } from "./state";
+import { FactoryState } from "./factory-state";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 export function matchina<

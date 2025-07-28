@@ -18,7 +18,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   config: StateHookConfig<FC>
 ) {
-  const d = [] as Disposer[];
+  const disposers = [] as Disposer[];
   for (const key in config) {
     const stateKey = key === "*" ? undefined : key;
     const fromStateConfig = config[key as keyof typeof config];
@@ -31,7 +31,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         machine,
         { to: stateKey } as any,
         { enter } as any,
-        d
+        disposers
       );
     }
     if (leave) {
@@ -39,7 +39,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
         machine,
         { from: stateKey } as any,
         { leave } as any,
-        d
+        disposers
       );
     }
     if (on) {
@@ -53,12 +53,12 @@ export function onLifecycle<FC extends FactoryMachineContext>(
           machine,
           { from: stateKey, type: eventKey } as any,
           eventConfig as StateHookConfig<FC>,
-          d
+          disposers
         );
       }
     }
   }
-  return createDisposer(d);
+  return createDisposer(disposers);
 }
 
 function useFilteredEventConfigs<FC extends FactoryMachineContext>(

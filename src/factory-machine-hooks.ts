@@ -4,7 +4,7 @@ import { iff } from "./extras/iff";
 import { when } from "./extras/when";
 import { EntryListener, ExitListener } from "./extras/entry-exit-types";
 import { FactoryMachineEvent } from "./factory-machine-types";
-import { FactoryState } from "./state";
+import { FactoryState } from "./factory-state";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { FilterValues, HasFilterValues } from "./match-filter-types";

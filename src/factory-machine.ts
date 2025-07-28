@@ -6,8 +6,8 @@ import {
   FactoryMachineTransition,
   FactoryMachineTransitions,
 } from "./factory-machine-types";
-import { FactoryState } from "./state";
-import { StateFactory } from "./state";
+import { FactoryState } from "./factory-state";
+import { StateFactory } from "./factory-state";
 import { ResolveEvent } from "./state-machine-types";
 import { createTransitionMachine } from "./transition-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
