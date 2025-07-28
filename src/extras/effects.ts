@@ -1,9 +1,9 @@
 import { MatchCases } from "../match-case-types";
 import {
   matchboxFactory,
-  MatchboxMember,
-  TaggedTypes,
 } from "../matchbox-factory";
+import { TaggedTypes } from "../matchbox-factory-types";
+import { MatchboxMember } from "../matchbox-factory-types";
 
 export type AnyEffect = MatchboxMember<any, any, "effect">;
 

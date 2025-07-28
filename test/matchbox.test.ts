@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
-import { MatchboxFactory, matchboxFactory } from "../src/matchbox-factory";
+import { matchboxFactory } from "../src/matchbox-factory";
+import { MatchboxFactory } from "../src/matchbox-factory-types";
 
 describe("matchboxFactory", () => {
   const testConfig = {
