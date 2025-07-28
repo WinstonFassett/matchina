@@ -9,8 +9,9 @@ import {
 } from "./ext";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { Effect, Func, Funcware, Middleware, Setup } from "./function-types";
-import { ChangeEventKeyFilter, matchChange } from "./match-change";
-import { HasFilterValues } from "./match-filters";
+import { matchChange } from "./match-change";
+import { ChangeEventKeyFilter } from "./match-change-types";
+import { HasFilterValues } from "./match-filter-types";
 import { StateMachine, StateMachineEvent } from "./state-machine-types";
 
 // #region Adapters

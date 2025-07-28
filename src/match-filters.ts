@@ -1,24 +1,4 @@
-export type FlatFilters<T> = { [K in keyof T]?: SingleValueFilter<T, K> };
-export type SingleValueFilter<T, K extends keyof T> = T[K];
-
-export type NestableFilters<T> = NestedFilter<T> & FlatFilters<T>;
-export type NestedFilter<T> = {
-  [K in keyof T]?: T[K] extends Record<string, any>
-    ? NestableFilters<T[K]>
-    : SingleValueFilter<T, K>;
-};
-
-export type FilterValues<T> = {
-  [K in keyof T]: T[K] extends (infer U)[] ? U : T[K];
-};
-
-export type HasFilterValues<T, C> = T extends T
-  ? {
-      [K in keyof T & keyof C]: T[K] extends C[K] ? true : false;
-    } extends Record<keyof C, true>
-    ? T
-    : never
-  : never;
+import { NestableFilters, HasFilterValues } from "./match-filter-types";
 
 export function matchFilters<
   T extends Record<string, any>,
@@ -47,3 +27,15 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
     ? keyOrKeys.includes(value)
     : keyOrKeys === value;
 }
+
+type ChangeFilterTuple = [type?: string, from?: string, to?: string];
+export function getFilter(
+  parts: ChangeFilterTuple |
+  [filter: { type?: string; from?: string; to?: string; }]): [type?: string, from?: string, to?: string] {
+  if (parts.length === 1 && typeof parts[0] === "object") {
+    const filter = parts[0];
+    return [filter.type, filter.from, filter.to];
+  }
+  return parts as any;
+}
+

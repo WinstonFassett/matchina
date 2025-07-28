@@ -1,27 +1,6 @@
-import { FlatFilters, HasFilterValues, matchKey } from "./match-filters";
-import { State } from "./state";
-
-export type StateChangeEvent = {
-  type: string;
-  from: State;
-  to: State;
-};
-
-export type ChangeEventKeyFilter<E extends StateChangeEvent> = FlatFilters<
-  ChangeEventKeys<E>
->;
-
-export type ChangeEventKeys<E extends StateChangeEvent> = E extends {
-  type: infer T;
-  from: infer F;
-  to: infer To;
-}
-  ? {
-      type: T;
-      from: F extends State ? F["key"] : never;
-      to: To extends State ? To["key"] : never;
-    }
-  : never;
+import { getFilter, matchKey } from "./match-filters";
+import { HasFilterValues } from "./match-filter-types";
+import { StateChangeEvent, ChangeEventKeyFilter } from "./match-change-types";
 
 export function matchChange<
   E extends StateChangeEvent,
@@ -53,16 +32,4 @@ export function matchChange<
   );
 }
 
-type ChangeFilterTuple = [type?: string, from?: string, to?: string];
 
-function getFilter(
-  parts:
-    | ChangeFilterTuple
-    | [filter: { type?: string; from?: string; to?: string }]
-): [type?: string, from?: string, to?: string] {
-  if (parts.length === 1 && typeof parts[0] === "object") {
-    const filter = parts[0];
-    return [filter.type, filter.from, filter.to];
-  }
-  return parts as any;
-}
