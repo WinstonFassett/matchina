@@ -7,6 +7,7 @@ import { FlatMemberUnion } from "./utility-types";
 
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.
+ * This type ensures that parameters are required when they're defined in the state factories.
  */
 export type ExtractEventParams<
   FC extends FactoryMachineContext<any>,
@@ -14,9 +15,11 @@ export type ExtractEventParams<
 > = {
   [StateKey in keyof FC["transitions"]]: {
     [EventKey in keyof FC["transitions"][StateKey] & T]: 
-      ExtractParamTypes<FC, StateKey, EventKey>
+      ExtractParamTypes<FC, StateKey, EventKey> extends [any, ...any[]] ? 
+        ExtractParamTypes<FC, StateKey, EventKey> : 
+        []
   }[keyof FC["transitions"][StateKey] & T]
-}[keyof FC["transitions"]] | [];
+}[keyof FC["transitions"]];
 
 
 export interface FactoryMachineContext<SF extends StateFactory = StateFactory> {
