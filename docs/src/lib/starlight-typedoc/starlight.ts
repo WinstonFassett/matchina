@@ -11,8 +11,7 @@ import {
 } from 'typedoc'
 
 import type { StarlightTypeDocSidebarOptions } from 'starlight-typedoc'
-
-import type { TypeDocDefinitions } from './typedoc'
+import type { TypeDocDefinitions } from './types'
 
 const externalLinkRegex = /^(http|ftp)s?:\/\//
 

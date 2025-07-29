@@ -16,13 +16,13 @@ import {
 } from 'typedoc'
 import type { MarkdownPageEvent, PluginOptions } from 'typedoc-plugin-markdown'
 
-// import type { StarlightTypeDocOptions } from '..'
+import type { StarlightTypeDocOptions, } from 'starlight-typedoc'
 
-// import { StarlightTypeDocLogger } from './logger'
+import { StarlightTypeDocLogger } from './logger'
 import { addFrontmatter } from './markdown'
 import { getRelativeURL, getStarlightTypeDocOutputDirectory } from './starlight'
 import { StarlightTypeDocTheme } from './theme'
-import type { StarlightTypeDocOptions, } from 'starlight-typedoc'
+import type { TypeDocConfig, TypeDocDefinitions, TypeDocOutput } from './types'
 
 const defaultTypeDocConfig: TypeDocConfig = {
   excludeInternal: true,
@@ -202,13 +202,4 @@ export class NoReflectionsError extends Error {
   constructor() {
     super('Failed to generate TypeDoc documentation.')
   }
-}
-
-export type TypeDocConfig = Partial<Omit<TypeDocOptions, 'entryPoints' | 'tsconfig'> & PluginOptions>
-export type TypeDocDefinitions = Record<string, PageDefinition['url']>
-
-interface TypeDocOutput {
-  base: string
-  directory: string
-  path: string
 }
