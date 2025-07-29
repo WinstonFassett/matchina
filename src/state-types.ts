@@ -5,7 +5,7 @@ export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   data: StateData<Specs[Tag]>;
 } & MatchboxMemberApi<Specs, "key">;
 
-export type CreateState<
+type CreateState<
   Specs,
   Tag extends string & keyof Specs,
 > = Specs[Tag] extends (...args: infer P) => infer _R
@@ -18,10 +18,10 @@ type StateData<Spec> = Spec extends (...args: any[]) => any
 /**
  * Utility type for extracting state creator functions from a set of tagged types.
  *
- * Given a tagged type spec (mapping state keys to factory functions or values),
+ * This is a type-level helper for state machine construction: given a tagged type spec (mapping state keys to factory functions or values),
  * `States<Specs>` produces an object type where each key maps to its corresponding state creator function.
  *
- * This is used to generate a set of state constructors for a state machine, ensuring type safety and consistency.
+ * Use this to generate a set of state constructors for a state machine, ensuring type safety and consistency.
  *
  * Example:
  * ```ts
