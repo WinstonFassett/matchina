@@ -8,6 +8,8 @@
     "start": "astro dev",
     "check": "astro check",
     "build:typedoc-theme": "tsc src/lib/starlight-typedoc/register-theme.ts --outDir src/lib/starlight-typedoc/ --module ESNext --target ES2020 --esModuleInterop",
+    "build:typedoc-plugin": "node scripts/build-typedoc-plugin.js",
+    "watch:typedoc-plugin": "node scripts/build-typedoc-plugin.js --watch",
     "build": "npm run build:typedoc-theme && rm -rf dist && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",

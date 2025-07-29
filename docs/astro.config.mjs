@@ -31,8 +31,11 @@ export default defineConfig({
           entryPoints: ["../src/index.ts"],
           tsconfig: "../tsconfig.typedoc.json",
           output: "reference",
+
           typeDoc: {
             entryPointStrategy: "expand",
+            blockTags: ["@deprecated", "@source", "@example"],
+            blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
             excludeInternal: true,
             categorizeByGroup: false,
@@ -41,8 +44,20 @@ export default defineConfig({
               includeGroups: true,
               includeCategories: true,
             },
+            parametersFormat: "table",
+            typeAliasPropertiesFormat: "table",
+            propertyMembersFormat: "table",
+            expandObjects: true,
+            expandParameters: true,
+            indexFormat: "table",
+            interfacePropertiesFormat: "table",
+            interfaceMethodsFormat: "table",
+            interfaceIndexFormat: "table",
+            typeDeclarationFormat: "table",
+
             plugin: [
-              "./src/lib/starlight-typedoc/register-theme.ts",
+              // "./src/lib/starlight-typedoc/register-theme.ts",
+              './dist/typedoc-plugin/register-theme.cjs',
               "typedoc-plugin-inline-sources"
             ],
             theme: "starlight-typedoc-custom"

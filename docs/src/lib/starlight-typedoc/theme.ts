@@ -28,12 +28,21 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
         const customTags: CustomTag[] = []
         const exampleTags: CommentTag[] = []
 
+        console.log('Rendering comment:', comment)
+
         for (const blockTag of comment.blockTags) {
-          if (blockTag.tag === 'example') {
+          if (blockTag.tag === '@source') {
+            console.log('Found source tag:', blockTag)
+          }
+          if (blockTag.tag === '@returns') {
+            console.log('Found returns tag:', blockTag)
+          }
+          if (blockTag.tag === '@example') {
+            console.log('Found example tag:', blockTag)
             exampleTags.push(blockTag)
             continue
           }
-          if (blockTag.tag === 'typeParam') {
+          if (blockTag.tag === '@typeParam') {
             // Skip typeParam headings
             continue
           }
@@ -61,6 +70,7 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
         markdown += superPartials.comment(filteredComment, options)
 
         if (options?.showSummary === false) {
+          console.warn('showSummary is false, skipping summary rendering')
           return markdown
         }
 
@@ -131,7 +141,7 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
     const content =
       blockTag.content.length > 0
         ? this.helpers.getCommentParts(blockTag.content)
-        : 'This API is no longer supported and may be removed in a future release.'
+        : 'This API is no longer supported and may be removed in a future release.!!'
 
     return this.#addAside(markdown, 'caution', 'Deprecated', content)
   }
