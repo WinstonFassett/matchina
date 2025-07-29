@@ -25,6 +25,20 @@ import { FactoryState } from "./factory-state";
 //     }
 //   });
 
+/**
+ * Creates an entry listener that triggers when the event's `from.key` matches the given state key.
+ *
+ * @template E - FactoryMachineEvent type
+ * @template K - State key type
+ * @param stateKey - The state key to match against `from.key`
+ * @param fn - EntryListener to invoke when matched
+ * @returns An entry listener for the specified state key
+ * @example
+ * setup(machine)(
+ *   whenFromState("Idle", handleLeaveIdle),
+ * );
+ * @source Useful for running logic when leaving a specific state in a state machine.
+ */
 export const whenFromState = <
   E extends FactoryMachineEvent<any>,
   K extends E["from"]["key"],
@@ -33,6 +47,20 @@ export const whenFromState = <
   fn: EntryListener<E & { from: FactoryState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 
+/**
+ * Creates an entry listener that triggers when the event's `to.key` matches the given state key.
+ *
+ * @template E - FactoryMachineEvent type
+ * @template K - State key type
+ * @param stateKey - The state key to match against `to.key`
+ * @param fn - EntryListener to invoke when matched
+ * @returns An entry listener for the specified state key
+ * @example
+ * setup(machine)(
+ *   whenState("Active", handleEnterActive),
+ * );
+ * @source Useful for running logic when entering a specific state in a state machine.
+ */
 export const whenState = <
   E extends FactoryMachineEvent<any>,
   K extends keyof E["machine"]["states"],
@@ -41,6 +69,20 @@ export const whenState = <
   fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.to.key === stateKey, fn);
 
+/**
+ * Creates an entry listener that triggers when the event's type matches the given event type.
+ *
+ * @template E - FactoryMachineEvent type
+ * @template K - Event type
+ * @param type - The event type to match
+ * @param fn - EntryListener to invoke when matched
+ * @returns An entry listener for the specified event type
+ * @example
+ * setup(machine)(
+ *   whenEventType("activate", handleActivate),
+ * );
+ * @source Useful for running logic when a specific event type is triggered in a state machine.
+ */
 export const whenEventType = <
   E extends FactoryMachineEvent<any>,
   K extends E["type"],

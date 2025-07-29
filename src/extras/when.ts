@@ -10,7 +10,16 @@ import { EntryListener } from "./entry-exit-types";
  * @param test - Function to test whether to trigger the entryListener.
  * @param entryListener - Function called when test passes; may return an exitListener.
  * @returns A function to handle events, managing entry and exit listeners based on the test.
- * @source
+ * @example
+ * ```ts
+ * const teardown = setup(machine)(
+ *   whenFromState("Idle", fn),
+ *   whenState("Active", fn),
+ *   whenEventType("activate", fn)
+ * );
+ * // Call teardown() to remove listeners
+ * ```
+ * @source Useful for composing conditional event listeners for state machines, enabling modular setup and teardown logic.
  */
 export function when<E>(test: (ev: E) => any, entryListener: EntryListener<E>) {
   let exitListener: void | ((ev: E) => void);
