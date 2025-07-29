@@ -39,12 +39,22 @@ import { createApi } from "./factory-machine-event-api";
  * ```
  */
 /**
+ * Helper type for transition handlers that return a direct value
+ */
+export type DirectTransition<T> = (...args: any[]) => T;
+
+/**
+ * Helper type for transition handlers that return a function
+ */
+export type CurriedTransition<T> = (...args: any[]) => ((change: StoreChange<T>) => T);
+
+/**
  * Extract parameter types from a store transition handler
  */
 export type ExtractStoreParams<
-  TR extends StoreTransitionRecord<any>,
+  TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
   E extends keyof TR
-> = TR[E] extends (...args: infer P) => any ? P : never;
+> = Parameters<TR[E]>;
 
 export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>> {
   getState(): T;
@@ -78,7 +88,7 @@ export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTran
  * ```
  */
 export type StoreTransitionRecord<T, E extends StoreChange<T> = StoreChange<T>> = {
-  [event: string]: (...params: any[]) => T | ((change: StoreChange<T>) => T);
+  [event: string]: DirectTransition<T> | CurriedTransition<T>;
 };
 
 /**
@@ -208,8 +218,8 @@ export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = Stor
 
 // Example with proper type checking
 const store = createStoreMachine(0, {
-  increment: (amt = 1) => (change) => change.from + amt,
-  decrement: (amt = 1) => (change) => change.from - amt,
+  increment: (amt: number = 1) => (change) => change.from + amt,
+  decrement: (amt: number = 1) => (change) => change.from - amt,
   set: (next: number) => next,
   reset: () => 0,
 });
