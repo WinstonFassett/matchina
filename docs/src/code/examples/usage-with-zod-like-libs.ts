@@ -1,4 +1,5 @@
 import {
+  createApi,
   createMachine,
   defineStates,
   matchina
@@ -34,8 +35,12 @@ const m1 = createMachine(
 );
 // m1.send('error', 1) // invalid
 m1.send('error', '1') // valid
-// m1.send('error') // invalid -- error required
+m1.send('error') // invalid -- error required - NOT CHECKING
 
+const m1Api = createApi(m1);
+m1Api.success();
+m1Api.error("An error occurred"); // valid
+m1Api.error(); // invalid -- error required - CHECKS
 
 const m2 = matchina(
   states,
@@ -52,9 +57,10 @@ const m2 = matchina(
 );
 // m2.send('error', 1) // invalid
 m2.send('error', '1') // valid
-// m2.send('error') // invalid -- error required
+m2.send('error') // invalid -- error required - NOT CHECKING
 m2.success();
-m2.error("An error occurred");
+m2.error("An error occurred"); // valid
+m2.error(); // invalid -- error required - CHECKS
 
 
 const states2 = defineStates({
@@ -69,7 +75,7 @@ const machine2 = matchina(
   states2,
   {
   Idle: {
-    start: () => states.Loading(0),
+    start: "Loading",
   },
   Loading: {
     success: () => states.Idle(),
@@ -82,3 +88,5 @@ const machine2 = matchina(
   states2.Idle({})  
 );
 
+machine2.start(0);
+machine2.send("start")
