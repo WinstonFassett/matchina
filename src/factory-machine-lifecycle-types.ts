@@ -66,3 +66,6 @@ type On<
     >
   >;
 };
+
+// Export TransitionHookExtensions from factory-machine-lifecycle-types.ts
+export type { TransitionHookExtensions };
