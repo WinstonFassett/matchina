@@ -1,5 +1,6 @@
 import { FactoryMachineEventImpl } from "./factory-machine-event";
 import {
+  ExtractEventParams,
   FactoryMachine,
   FactoryMachineContext,
   FactoryMachineEvent,
@@ -121,13 +122,18 @@ export function createMachine<
       ? states[init]({})
       : (init as ReturnType<SF[keyof SF]>);
 
-  return Object.assign(
-    createTransitionMachine<E>(
-      transitions as any,
-      initialState as E["from"]
-    ),
+  const baseMachine = createTransitionMachine<E>(
+    transitions as any,
+    initialState as E["from"]
+  );
+  
+  // Create the factory machine with overridden send method
+  const factoryMachine = Object.assign(
+    {},
+    baseMachine,
     {
       states,
+      transitions,
       resolveExit: (ev: ResolveEvent<E>): E | undefined => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
@@ -140,7 +146,9 @@ export function createMachine<
           : undefined;
       },
     }
-  ) as any;
+  );
+  
+  return factoryMachine as FactoryMachine<FC>;
 }
 
 /**
