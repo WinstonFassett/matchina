@@ -12,8 +12,8 @@ type ZenMachine<M extends FactoryMachine<any>> = M & ReturnType<typeof createApi
  * @returns {ZenMachine<M>} The enhanced machine with event API and setup method.
  * @source
  */
-export function zen<M extends FactoryMachine<any>>(machine: M): ZenMachine<M> {
+export function zen<M extends FactoryMachine<any>>(machine: M) {
   return Object.assign(machine, createApi(machine), {
     setup: setup(machine),
-  }) as ZenMachine<M>;
+  })
 }
