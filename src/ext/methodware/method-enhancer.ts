@@ -3,20 +3,20 @@ import { enhanceMethod } from "./enhance-method";
 import { MethodOf, HasMethod } from "./method-utility-types";
 
 /**
- * MethodEnhancer is a function that applies a Funcware middleware to a method on a target object.
+ * MethodEnhancer is a function that applies a Funcware enhancer to a method on a target object.
  *
  * Created by {@link createMethodEnhancer} or {@link methodEnhancer}.
  *
  * Call with a target object to enhance its method, and receive a disposer to restore the original method.
  *
- * See {@link Funcware} for details on the middleware function type.
+ * See {@link Funcware} for details on the enhancer function type.
  */
 export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: T) => Disposer;
 
 /**
  * {@link methodEnhancer} is an alias for {@link createMethodEnhancer}.
  *
- * See {@link Funcware} for the middleware function type used to enhance methods.
+ * See {@link Funcware} for the enhancer function type used to enhance methods.
  * See {@link createMethodEnhancer} for usage details and examples.
  */
 
@@ -31,7 +31,7 @@ export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: 
  * Returns an unenhance function to restore the original method.
  *
  * See {@link MethodEnhancer} for the enhancer function type returned.
- * See {@link Funcware} for the middleware function type. Funcware<F> is a higher-order function:
+ * See {@link Funcware} for the enhancer function type. Funcware<F> is a higher-order function:
  * (...args) => (fn) => F. It lets you wrap or modify the original method logic.
  *
  * @example

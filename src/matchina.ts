@@ -20,25 +20,22 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  * @param init - Initial state key or state object to start the machine.
  * @returns A state machine instance with enhanced ergonomics.
  *
- * Usage:
+ * Example:
  * ```ts
- * import { matchina } from "matchina";
- * import { effect, guard } from "matchina/extras";
+ * import { matchina, effect, guard, defineStates } from "matchina";
  *
- * // Define states and transitions
- * const states = {
- *   Idle: undefined,
- *   Active: (user: string, someCondition: boolean) => ({ user, someCondition }),
- * };
- * const transitions = {
- *   Idle: { activate: "Active" },
- *   Active: { deactivate: "Idle" },
- * };
+ * const machine = matchina(
+ *   defineStates({
+ *     Idle: () => ({}),
+ *     Active: (user: string, someCondition: boolean) => ({ user, someCondition }),
+ *   }),
+ *   {
+ *     Idle: { activate: "Active" },
+ *     Active: { deactivate: "Idle" },
+ *   },
+ *   "Idle"
+ * );
  *
- * // Create a machine with event API and setup support
- * const machine = matchina(states, transitions, "Idle");
- *
- * // Setup: add effect and guard enhancers
  * machine.setup(
  *   effect((ev) => {
  *     console.log("Effect triggered for event:", ev.type);
@@ -46,7 +43,6 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   guard((ev) => ev.to.data.someCondition)
  * );
  *
- * // Now, every state change triggers the effect and guard
  * machine.activate("Alice", true); // Effect runs, guard checks someCondition
  * machine.deactivate();
  * ```

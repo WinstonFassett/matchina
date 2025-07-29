@@ -17,7 +17,7 @@ const noop = () => {};
  * @template K - The key of the method to enhance
  * @param target - The object containing the method to enhance
  * @param methodName - The name of the method to enhance
- * @param extend - Funcware (middleware) that receives the original method and params
+ * @param extend - Funcware (enhancer) that receives the original method and params
  * @returns A disposer function that restores the previous method when called
  * @source This function is useful for dynamically extending or wrapping methods on objects,
  * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,

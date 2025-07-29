@@ -5,7 +5,7 @@ const EmptyTransform = <E>(event: E) => event;
 const EmptyEffect = <E>(_event: E) => {};
 
 /**
- * TransitionRecord defines the structure of state transitions in a TransitionMachine.
+ * TransitionRecord defines the structure of state transitions in a {@link TransitionMachine}.
  * It maps state keys to event types and their corresponding next states.
  *
  * Example:

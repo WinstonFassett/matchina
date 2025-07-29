@@ -1,15 +1,17 @@
-import { Disposer, Effect } from "../function-types";
+import { Disposer, Effect, Setup } from "../function-types";
 
 type Listen<T> = Effect<T>;
 
 /**
  * Subscribes a listener to receive emitted values.
  *
+ * Returned by {@link emitter}.
+ *
  * @group Interfaces
  * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
-export type Subscribe<T> = (listener: Listen<T>) => Unsubscribe;
+export type Subscribe<T> = Setup<Listen<T>>;
 
 type Unsubscribe = Disposer;
 type Emit<T> = Effect<T>;
