@@ -19,7 +19,7 @@ const states = defineStates({
   Error: (message: string) => ({ message }),
 } as const);
 
-const machine = matchina(
+const m1 = createMachine(
   states,
   {
     Idle: {
@@ -32,12 +32,29 @@ const machine = matchina(
   },  
   "Idle"
 );
-machine.send('error', 'aef')
-machine.send("start", 'fk')
-machine.send("start", 'l;kj')
-machine.send("start");
-machine.success();
-machine.error("An error occurred");
+m1.send('error', 1)
+m1.send('error', '1')
+m1.send('error')
+
+
+const m2 = matchina(
+  states,
+  {
+    Idle: {
+      start: "Loading",
+    },
+    Loading: {
+      success: "Idle",
+      error: "Error"
+    }
+  },  
+  "Idle"
+);
+m2.send('error', 1)
+m2.send('error', '1')
+m2.send('error')
+m2.success();
+m2.error("An error occurred");
 
 
 const states2 = defineStates({
