@@ -24,6 +24,10 @@ export const delay = (ms: number) =>
  * @param ms - Milliseconds to delay
  * @param result - Value to resolve after the delay
  * @returns Promise that resolves with the result after the delay
+ * @example
+ * ```ts
+ * await delayed(1000, 'done'); // Resolves with 'done' after 1 second
+ * ```
  */
 export const delayed = async <T>(ms: number, result: T) => {
   await delay(ms);
@@ -42,6 +46,11 @@ export const delayed = async <T>(ms: number, result: T) => {
  * @param ms - Milliseconds to delay
  * @param result - Value to resolve after the delay
  * @returns Async function that resolves with the result after the delay
+ * @example
+ * ```ts
+ * const delayedHello = delayer(500, 'hello');
+ * await delayedHello(); // Resolves with 'hello' after 500ms
+ * ```
  */
 export const delayer =
   <T>(ms: number, result: T) =>

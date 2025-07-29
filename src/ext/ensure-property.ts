@@ -19,10 +19,12 @@
  * with additional computed properties.
  *
  * @example
+ * ```ts
  * // Ensure an object has a 'cache' property, initializing it if missing
  * const obj = {};
  * const withCache = ensureProperty(obj, 'cache', () => new Map());
  * // withCache.cache is now a Map instance
+ * ```
  */
 export function ensureProperty<
   T,

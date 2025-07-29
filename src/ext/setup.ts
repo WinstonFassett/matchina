@@ -13,6 +13,14 @@ import { Disposer, Setup } from "../function-types";
  * @source This function is useful for creating a cleanup routine that ensures all resources are released in the correct order.
  * It is commonly used in setup/teardown patterns where multiple resources need to be cleaned up
  * after use, such as event listeners, subscriptions, or other side effects.
+ *
+ * @example
+ * ```ts
+ * const disposer1 = () => console.log('Cleanup 1');
+ * const disposer2 = () => console.log('Cleanup 2');
+ * const disposeAll = createDisposer([disposer1, disposer2]);
+ * disposeAll(); // Logs 'Cleanup 2' then 'Cleanup 1'
+ * ```
  */
 export const createDisposer = (fns: Disposer[]) => () => {
   for (let i = fns.length - 1; i >= 0; i--) {
@@ -39,6 +47,15 @@ export const createDisposer = (fns: Disposer[]) => () => {
  * making it easier to manage complex initialization logic in applications.
  * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
  * such as in state machines, event handlers, or other components that require setup and teardown logic
+ *
+ * @example
+ * ```ts
+ * const setupA = (target: any) => () => console.log('A cleanup');
+ * const setupB = (target: any) => () => console.log('B cleanup');
+ * const extensionSetup = createSetup(setupA, setupB);
+ * const dispose = extensionSetup({});
+ * dispose(); // Logs 'B cleanup' then 'A cleanup'
+ * ```
  */
 export const createSetup: <T>(...setups: Setup<T>[]) => Setup<T> =
   (...setups) =>
@@ -64,6 +81,16 @@ export const createSetup: <T>(...setups: Setup<T>[]) => Setup<T> =
  * making it easier to manage complex initialization logic in applications.
  * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
  * such as in state machines, event handlers, or other components that require setup and teardown logic
+ *
+ * @example
+ * ```ts
+ * const machine = {};
+ * const setupA = (target: any) => () => console.log('A cleanup');
+ * const setupB = (target: any) => () => console.log('B cleanup');
+ * const machineSetup = setup(machine);
+ * const dispose = machineSetup(setupA, setupB);
+ * dispose(); // Logs 'B cleanup' then 'A cleanup'
+ * ```
  */
 export const setup =
   <T>(target: T): ((...setups: Setup<T>[]) => Disposer) =>
@@ -86,6 +113,17 @@ export const setup =
  * such as when extensions or handlers are added dynamically. It provides a way to manage and dispose
  * all setups applied to a target, making it easier to handle complex initialization and teardown flows
  * in applications like state machines, event-driven systems, or modular components.
+ *
+ * @example
+ * ```ts
+ * const machine = {};
+ * const setupA = (target: any) => () => console.log('A cleanup');
+ * const setupB = (target: any) => () => console.log('B cleanup');
+ * const [add, dispose] = buildSetup(machine);
+ * add(setupA);
+ * add(setupB);
+ * dispose(); // Logs 'B cleanup' then 'A cleanup'
+ * ```
  */
 export const buildSetup = <T>(target: T) => {
   const d: Disposer[] = [];

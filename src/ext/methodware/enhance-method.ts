@@ -23,6 +23,18 @@ const noop = () => {};
  * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,
  * plugin, or extension systems where you want to intercept method calls and restore the original
  * implementation when no longer needed.
+ *
+ * @example
+ * ```ts
+ * // Example: Enhance a method to log calls
+ * const obj = { greet(name) { return `Hello, ${name}`; } };
+ * const disposer = enhanceMethod(obj, 'greet', (next) => (name) => {
+ *   console.log('Calling greet with', name);
+ *   return next(name);
+ * });
+ * obj.greet('World'); // Logs and returns 'Hello, World'
+ * disposer(); // Restores original method
+ * ```
  */
 export function enhanceMethod<T, K extends keyof T>(
   target: T,

@@ -16,12 +16,14 @@ import { AbortableEventHandler } from "../abortable-event-handler";
  * abortable event handling into funcware-based systems for composable control flow.
  *
  * @example
+ * ```ts
  * // Example abortable event handler that aborts if event.cancel is true
  * const abortIfCancelled = (ev, abort) => { if (ev.cancel) abort(); };
  * const handler = (ev) => console.log('Handled:', ev);
  * const abortableHandler = abortable(abortIfCancelled)(handler);
  * abortableHandler({ cancel: true }); // Does not log
  * abortableHandler({ cancel: false }); // Logs 'Handled: ...'
+ * ```
  */
 export const abortable =
   <E>(abortable: AbortableEventHandler<E>): Funcware<Func<E, any>> =>

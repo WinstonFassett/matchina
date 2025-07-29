@@ -57,6 +57,15 @@ import { Middleware, Funcware } from "../../function-types";
  * @source This function is useful for integrating traditional middleware patterns into systems
  * that use functional composition (funcware), such as state machines, event-driven architectures,
  * or custom handler pipelines. It allows you to reuse existing middleware logic in a more composable way.
+ *
+ * @example
+ * ```ts
+ * // Convert classic middleware to funcware
+ * const logger = (ev, next) => { console.log(ev); next(ev); };
+ * const funcwareLogger = funcwareFromMiddleware(logger);
+ * const handler = (ev) => console.log('Handled:', ev);
+ * funcwareLogger(handler)('event'); // Logs 'event' and 'Handled: event'
+ * ```
  */
 export function funcwareFromMiddleware<E>(
   middleware: Middleware<E>
