@@ -26,8 +26,17 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
         filteredComment.modifierTags = new Set<`@${string}`>()
 
         const customTags: CustomTag[] = []
+        const exampleTags: CommentTag[] = []
 
         for (const blockTag of comment.blockTags) {
+          if (blockTag.tag === 'example') {
+            exampleTags.push(blockTag)
+            continue
+          }
+          if (blockTag.tag === 'typeParam') {
+            // Skip typeParam headings
+            continue
+          }
           if (this.#isCustomBlockCommentTagType(blockTag.tag)) {
             customTags.push({ blockTag, type: blockTag.tag })
           } else {
@@ -46,7 +55,10 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
 
         filteredComment.summary = comment.summary.map((part) => this.#parseCommentDisplayPart(part))
 
-        let markdown = superPartials.comment(filteredComment, options)
+        // Render examples first
+        let markdown = exampleTags.map(tag => this.helpers.getCommentParts(tag.content)).join('\n\n')
+        markdown += markdown ? '\n\n' : ''
+        markdown += superPartials.comment(filteredComment, options)
 
         if (options?.showSummary === false) {
           return markdown
@@ -72,6 +84,9 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
             }
           }
         }
+
+        // Remove/demote Return heading: replace '### Returns' with bold text
+        markdown = markdown.replace(/^### Returns/m, '**Returns**')
 
         return markdown
       },
