@@ -47,6 +47,24 @@ m1.send("start", "Bob");
 console.log("state", m1.getChange());
 m1.send("stop", { forever: true });
 
+// const m2AltStates = defineStates({
+//   Idle: undefined,
+//   Running: (payload: string) => ({ payload }),
+// })
+// const m2alt = createTransitionMachine(
+//   {
+//     Idle: {
+//       start: { key: "Running" },
+//     },
+//     Running: {
+//       stop: { key: "Idle" },
+//     },
+//   },
+//   // { key: "Idle", payload: "whatever" }
+//   m2AltStates.Idle()
+// )
+// m2alt.send('')
+
 // const whenStart = <E extends TransitionEvent>(fn: EntryListener<E>) =>
 
 setup(m1)(
@@ -69,6 +87,7 @@ const m2 = createTransitionMachine(
     data: undefined;
   }
 );
+
 
 createSetup<typeof m2>(
   guard((ev) => !!ev),
@@ -94,6 +113,13 @@ const m4 = createMachine(
 );
 // m4.getChange().to.key ;
 m4.send("execute", 1);
+m4.send("resolve", false);
+m4.send('reject', new Error("nope"));
+
+const m4api = createApi(m4);
+m4api.execute(1);
+m4api.resolve(!!m4);
+m4api.reject(new Error("nope"));
 
 // const isChange =
 //   <E extends KeyedChangeEvent>(filter: KeyedChangeEventFilter<E>) =>
