@@ -14,10 +14,10 @@ import {
   type TypeDocOptions,
   ParameterType,
   RendererEvent,
-  type PageDefinition,
+  // Removed unused type
   type ProjectReflection,
 } from 'typedoc'
-import type { MarkdownPageEvent, PluginOptions } from 'typedoc-plugin-markdown'
+import type { MarkdownPageEvent } from 'typedoc-plugin-markdown'
 
 import type { StarlightTypeDocOptions, } from 'starlight-typedoc'
 

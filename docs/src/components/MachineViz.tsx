@@ -146,7 +146,7 @@ export const StateMachineMermaidDiagram = memo(
   }: {
     config: any;
     stateKey: string;
-    actions?: Record<string, () => void>;
+    actions?: Record<string, any>;
   }) => {
     const [id] = useState((lastId++).toString());
     const { states } = config;

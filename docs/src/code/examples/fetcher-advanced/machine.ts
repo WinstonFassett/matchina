@@ -152,7 +152,6 @@ export function createFetcher(
   return fetcher;
 }
 
-type Assign<Source, Destination> = Omit<Source, keyof Destination> &
-  Destination;
+// Removed unused type
 
 export type FetcherMachine = ReturnType<typeof createFetcher>;
