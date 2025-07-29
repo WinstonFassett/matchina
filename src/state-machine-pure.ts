@@ -3,7 +3,6 @@ import { StateMachine, TransitionEvent } from "./state-machine";
 /**
  * Creates a minimal, pure state machine interface exposing only `getState` and `send`.
  * Useful for consumers who only need to read state and dispatch events, without lifecycle hooks.
- * @deprecated
  * @param machine - The full StateMachine instance.
  * @returns A PureStateMachine exposing only `getState` and `send`.
  * @source
