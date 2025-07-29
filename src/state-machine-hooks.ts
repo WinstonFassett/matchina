@@ -10,7 +10,7 @@ import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
  *
  * Usage: `hookSetup("before")(config)(machine)`
  */
-const hookSetup =
+export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
   <T extends HasMethod<K>>(
     ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
