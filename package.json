@@ -26,6 +26,11 @@
       "types": "./dist/integrations/zod.d.ts",
       "import": "./dist/integrations/zod.mjs",
       "require": "./dist/integrations/zod.js"
+    },
+    "./valibot": {
+      "types": "./dist/integrations/valibot.d.ts",
+      "import": "./dist/integrations/valibot.mjs",
+      "require": "./dist/integrations/valibot.js"
     }
   },
   "main": "./dist/index.js",
@@ -63,9 +68,15 @@
     "prettier": "^3.6.2",
     "size-limit": "^10.0.1",
     "unbuild": "^2.0.0",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "zod": "^3.22.4",
+    "valibot": "^1.1.0"
   },
   "dependencies": {
     "@astrojs/ts-plugin": "^1.10.4"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0",
+    "valibot": "^1.0.0"
   }
 }

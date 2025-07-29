@@ -84,6 +84,12 @@
     "ignore": ["zod"]
   },
   {
+    "name": "valibot-dist",
+    "path": "src/integrations/valibot.ts",
+    "import": "{ defineValibotStates }",
+    "ignore": ["valibot"]
+  },
+  {
     "name": "emitter",
     "path": "src/extras/emitter.ts",
     "import": "{ emitter }"
