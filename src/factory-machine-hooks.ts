@@ -1,29 +1,30 @@
-import { setup } from "./ext";
-import { AbortableEventHandler } from "./ext/abortable-event-handler";
-import { iff } from "./extras/iff";
+// import { setup } from "./ext";
+// import { AbortableEventHandler } from "./ext/abortable-event-handler";
+// import { iff } from "./extras/iff";
 import { when } from "./extras/when";
 import { EntryListener, ExitListener } from "./extras/entry-exit-types";
 import { FactoryMachineEvent } from "./factory-machine-types";
 import { FactoryState } from "./factory-state";
-import { matchChange } from "./match-change";
-import { ChangeEventKeyFilter } from "./match-change-types";
-import { FilterValues, HasFilterValues } from "./match-filter-types";
-import { StateMachine } from "./state-machine";
-import { after, before, enter, guard, leave } from "./state-machine-hooks";
-import { Effect } from "./function-types";
+// import { matchChange } from "./match-change";
+// import { ChangeEventKeyFilter } from "./match-change-types";
+// import { FilterValues, HasFilterValues } from "./match-filter-types";
+// import { StateMachine } from "./state-machine";
+// import { after, before, enter, guard, leave } from "./state-machine-hooks";
+// import { Effect } from "./function-types";
 
-export const beforeEvent = <
-  E extends FactoryMachineEvent<any>,
-  K extends E["type"],
->(
-  type: K,
-  fn: AbortableEventHandler<E & { type: K }>
-) =>
-  before<StateMachine<E>>((ev, abort) => {
-    if (ev.type === type) {
-      fn(ev as any, abort);
-    }
-  });
+// export const beforeEvent = <
+//   E extends FactoryMachineEvent<any>,
+//   K extends E["type"],
+// >(
+//   type: K,
+//   fn: AbortableEventHandler<E & { type: K }>
+// ) =>
+//   before<StateMachine<E>>((ev, abort) => {
+//     if (ev.type === type) {
+//       fn(ev as any, abort);
+//     }
+//   });
+
 export const whenFromState = <
   E extends FactoryMachineEvent<any>,
   K extends E["from"]["key"],
@@ -48,18 +49,18 @@ export const whenEventType = <
   fn: EntryListener<E & { type: K }>
 ) => when<E>((ev) => ev.type === type, fn as any);
 
-export const afterEvent = <
-  E extends FactoryMachineEvent<any>,
-  K extends E["type"],
->(
-  type: K,
-  fn: Effect<E & { type: K }>
-) =>
-  after<StateMachine<E>>((ev) => {
-    if (ev.type === type) {
-      fn(ev as any);
-    }
-  });
+// export const afterEvent = <
+//   E extends FactoryMachineEvent<any>,
+//   K extends E["type"],
+// >(
+//   type: K,
+//   fn: Effect<E & { type: K }>
+// ) =>
+//   after<StateMachine<E>>((ev) => {
+//     if (ev.type === type) {
+//       fn(ev as any);
+//     }
+//   });
 
 // export const onBeforeEvent = <E extends FactoryMachineEvent<any>>(
 //   m: StateMachine<E>,
@@ -111,40 +112,40 @@ export const afterEvent = <
 //     })
 //   );
 
-export const whenEvent = <
-  E extends FactoryMachineEvent<any>,
-  F extends ChangeEventKeyFilter<E> = ChangeEventKeyFilter<E>,
-  FV extends FilterValues<F> = FilterValues<F>,
->(
-  filter: F,
-  fn: (
-    ev: E &
-      HasFilterValues<
-        E,
-        {
-          type: FV["type"];
-          to: { key: FV["to"] };
-          from: { key: FV["from"] };
-        }
-      >
-  ) => any
-) => when<E>((ev) => matchChange(ev, filter), fn as any);
+// export const whenEvent = <
+//   E extends FactoryMachineEvent<any>,
+//   F extends ChangeEventKeyFilter<E> = ChangeEventKeyFilter<E>,
+//   FV extends FilterValues<F> = FilterValues<F>,
+// >(
+//   filter: F,
+//   fn: (
+//     ev: E &
+//       HasFilterValues<
+//         E,
+//         {
+//           type: FV["type"];
+//           to: { key: FV["to"] };
+//           from: { key: FV["from"] };
+//         }
+//       >
+//   ) => any
+// ) => when<E>((ev) => matchChange(ev, filter), fn as any);
 
-export const iffEvent = <
-  E extends FactoryMachineEvent<any>,
-  F extends ChangeEventKeyFilter<E> = ChangeEventKeyFilter<E>,
-  FV extends FilterValues<F> = FilterValues<F>,
->(
-  filter: F,
-  fn: (
-    ev: E &
-      HasFilterValues<
-        E,
-        {
-          type: FV["type"];
-          to: { key: FV["to"] };
-          from: { key: FV["from"] };
-        }
-      >
-  ) => any
-) => iff((ev) => matchChange(ev, filter), fn);
+// export const iffEvent = <
+//   E extends FactoryMachineEvent<any>,
+//   F extends ChangeEventKeyFilter<E> = ChangeEventKeyFilter<E>,
+//   FV extends FilterValues<F> = FilterValues<F>,
+// >(
+//   filter: F,
+//   fn: (
+//     ev: E &
+//       HasFilterValues<
+//         E,
+//         {
+//           type: FV["type"];
+//           to: { key: FV["to"] };
+//           from: { key: FV["from"] };
+//         }
+//       >
+//   ) => any
+// ) => iff((ev) => matchChange(ev, filter), fn);

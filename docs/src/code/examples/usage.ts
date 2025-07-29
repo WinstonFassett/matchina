@@ -18,7 +18,7 @@ import {
   // change as setupChange,
   transition,
   when,
-  whenEvent,
+  // whenEvent,
   whenEventType,
   whenFromState,
   withSubscribe,
@@ -258,21 +258,21 @@ if (m5.subscribe) {
   );
 }
 
-m5.subscribe(
-  whenEvent({ from: "Pending", type: "reject" }, (ev) => {
-    ev.type = "reject";
-    ev.to.key = "Rejected";
-  })
-);
+// m5.subscribe(
+//   whenEvent({ from: "Pending", type: "reject" }, (ev) => {
+//     ev.type = "reject";
+//     ev.to.key = "Rejected";
+//   })
+// );
 
-m5.subscribe(
-  whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
-    ev.type = "reject";
-    ev.from.key = "Pending";
-    ev.to.key = "Rejected";
-    ev.to.data.err.message = "nope";
-  })
-);
+// m5.subscribe(
+//   whenEvent({ from: "Pending", type: "reject", to: "Rejected" }, (ev) => {
+//     ev.type = "reject";
+//     ev.from.key = "Pending";
+//     ev.to.key = "Rejected";
+//     ev.to.data.err.message = "nope";
+//   })
+// );
 
 setup(m4)(notify(whenFromState("Pending", (_ev) => {})));
 
