@@ -9,7 +9,9 @@ export interface State {
 /**
  * A factory object mapping state keys to state creator functions.
  * Each function returns a State instance (optionally with additional properties).
- * @source
+ * @source This interface is useful for defining a set of states in a state machine,
+ * allowing for dynamic state creation and management. It ensures that each state can be
+ * uniquely identified by its key, enabling type-safe transitions and state handling.
  */
 export interface StateFactory {
   [key: string]: (...args: any[]) => State;
@@ -21,7 +23,10 @@ export interface StateFactory {
  *
  * @template States - The StateFactory type
  * @template StateKey - The key of the state to infer (defaults to all keys)
- * @source 
+ * @source This utility is useful for ensuring that state objects created by a StateFactory
+ * conform to the expected structure, allowing for type-safe state management in applications.
+ * It helps maintain consistency across state definitions and ensures that state transitions
+ * are handled correctly.
  */
 export type FactoryState<
   States extends StateFactory,

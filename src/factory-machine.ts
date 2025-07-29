@@ -37,6 +37,10 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   - State keys and data are fully inferred
  *   - Pattern matching and type guards are available
  *   - Exhaustive match on state keys
+ *
+ * @source This function is useful for creating a type-safe state factory for state machines,
+ * enabling pattern matching, type guards, and exhaustive handling of state keys. It simplifies
+ * state construction and improves type inference for state-driven logic.
  */
 
 /**
@@ -75,14 +79,31 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   - Exhaustive match on state and event keys
  *   - API for sending events, inspecting state, and matching on state
  *
- * @template SF StateFactory type defining available states
- * @template TC Transitions type mapping state transitions
- * @template FC Context type containing states and transitions
- * @template E Event type for machine events
- * @param states - Object containing state factory functions
- * @param transitions - Object mapping state keys to transition handlers
- * @param init - Initial state key or state instance
- * @returns A FactoryMachine instance with transition logic and state definitions
+ * @source This function is useful for creating type-safe state machines with inferred transitions,
+ * state and event keys, and pattern matching. It enables robust state-driven logic and exhaustive
+ * handling of state and event transitions.
+ */
+
+/**
+ * Resolves the next state for a given event using the provided transitions and states.
+ * @param transitions - Transition handlers for each state
+ * @param states - State factory functions
+ * @param ev - The event to resolve
+ * @returns The next state instance or undefined if no transition exists
+ * @source This function is useful for determining the next state in a state machine based on
+ * the current state, event, and transition handlers. It enables dynamic state resolution and
+ * transition logic.
+ */
+
+/**
+ * Resolves the exit state for a given transition and event.
+ * @param transition - Transition handler or state key
+ * @param ev - The event to resolve
+ * @param states - State factory functions
+ * @returns The resolved state instance or undefined
+ * @source This function is useful for executing transition logic and resolving the resulting state
+ * in a state machine. It supports both direct state transitions and transition handlers for flexible
+ * state management.
  */
 export function createMachine<
   SF extends StateFactory,
@@ -94,7 +115,7 @@ export function createMachine<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
 ): FactoryMachine<FC> {
-  // Fix type for initialState to match createTransitionMachine's expectation
+  
   const initialState =
     typeof init === "string"
       ? states[init]({})
@@ -103,16 +124,10 @@ export function createMachine<
   return Object.assign(
     createTransitionMachine<E>(
       transitions as any,
-      // Explicit cast to E['from'] to satisfy createTransitionMachine's type
       initialState as E["from"]
     ),
     {
       states,
-      /**
-       * Resolves the next event for a given exit event, returning a new event if a transition exists.
-       * @param ev - The event to resolve
-       * @returns A new FactoryMachineEvent if a transition is found, otherwise undefined
-       */
       resolveExit: (ev: ResolveEvent<E>): E | undefined => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
@@ -134,6 +149,9 @@ export function createMachine<
  * @param states - State factory functions
  * @param ev - The event to resolve
  * @returns The next state instance or undefined if no transition exists
+ * @source This function is useful for determining the next state in a state machine based on
+ * the current state, event, and transition handlers. It enables dynamic state resolution and
+ * transition logic.
  */
 export function resolveNextState<FC extends FactoryMachineContext<any>>(
   transitions: FC["transitions"],
@@ -150,6 +168,9 @@ export function resolveNextState<FC extends FactoryMachineContext<any>>(
  * @param ev - The event to resolve
  * @param states - State factory functions
  * @returns The resolved state instance or undefined
+ * @source This function is useful for executing transition logic and resolving the resulting state
+ * in a state machine. It supports both direct state transitions and transition handlers for flexible
+ * state management.
  */
 export function resolveExitState<FC extends FactoryMachineContext<any>>(
   transition: FactoryMachineTransition<FC["states"]> | undefined,
