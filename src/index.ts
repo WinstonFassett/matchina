@@ -28,6 +28,9 @@ export * from "./state-machine-actions";
 export * from "./state-machine-hooks";
 export * from "./state-machine-pure";
 export * from "./transition-machine";
+
+// Export Valibot integration
+export { defineValibotStates } from "./integrations/valibot";
 export * from "./function-types";
 // match-change
 export * from "./match-change";
