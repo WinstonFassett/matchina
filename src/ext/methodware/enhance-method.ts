@@ -19,6 +19,10 @@ const noop = () => {};
  * @param methodName - The name of the method to enhance
  * @param extend - Funcware (middleware) that receives the original method and params
  * @returns A disposer function that restores the previous method when called
+ * @source This function is useful for dynamically extending or wrapping methods on objects,
+ * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,
+ * plugin, or extension systems where you want to intercept method calls and restore the original
+ * implementation when no longer needed.
  */
 export function enhanceMethod<T, K extends keyof T>(
   target: T,

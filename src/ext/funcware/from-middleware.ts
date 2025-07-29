@@ -44,7 +44,20 @@ import { Middleware, Funcware } from "../../function-types";
 //   ...setups: Setup<StateMachine<HasFilterValues<E, F>>>[]
 // ) => change(filter, ...setups)(machine);
 
-
+/**
+ * Converts a classic middleware function into funcware (middleware for functional composition).
+ *
+ * Use cases:
+ * - Adapting middleware patterns to funcware-based systems
+ * - Composing event handlers or state machine transitions with middleware logic
+ *
+ * @template E - The event or change type handled by the middleware
+ * @param middleware - A classic middleware function accepting (event, next)
+ * @returns A funcware function that wraps the next handler with the middleware logic
+ * @source This function is useful for integrating traditional middleware patterns into systems
+ * that use functional composition (funcware), such as state machines, event-driven architectures,
+ * or custom handler pipelines. It allows you to reuse existing middleware logic in a more composable way.
+ */
 export function funcwareFromMiddleware<E>(
   middleware: Middleware<E>
 ): Funcware<(change: E) => void> {

@@ -25,6 +25,9 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  * const machine = matchina(states, transitions, "Idle");
  * machine.send("executing");
  * ```
+ * @source
+ * This function is a wrapper around `createMachine` that enhances the machine with additional utilities.
+ * It provides a more ergonomic API for working with state machines in TypeScript.
  */
 export function matchina<
   SF extends StateFactory,

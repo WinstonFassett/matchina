@@ -2,12 +2,32 @@ import { defineStates } from "./define-states";
 import { createMachine } from "./factory-machine";
 import { PromiseCallback, PromiseMachine, PromiseStates } from "./promise-types";
 
+
+/**
+ * State definitions for the promise state machine.
+ *
+ * States:
+ * - Idle: Initial state, no promise running.
+ * - Pending: Promise is executing, stores the promise and its parameters.
+ * - Rejected: Promise was rejected, stores the error.
+ * - Resolved: Promise was resolved, stores the result data.
+ * @source
+ */
 export const PROMISE_STATES: PromiseStates<any> = defineStates({
   Idle: undefined,
   Pending: (promise: Promise<any>, params: any[]) => ({ promise, params }),
   Rejected: (error: any) => error,
   Resolved: (data: any) => data,
 });
+
+/**
+ * Transition definitions for the promise state machine.
+ *
+ * Transitions:
+ * - Idle: executing → Pending
+ * - Pending: resolve → Resolved, reject → Rejected
+ * @source
+ */
 export const PROMISE_TRANSITIONS = {
   Idle: { executing: "Pending" },
   Pending: {

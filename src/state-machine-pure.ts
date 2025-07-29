@@ -6,6 +6,10 @@ import { StateMachine, TransitionEvent } from "./state-machine";
  *
  * @param machine - The full StateMachine instance.
  * @returns A PureStateMachine exposing only `getState` and `send`.
+ * @source
+ * This function is useful for creating a lightweight wrapper around a state machine,
+ * allowing consumers to interact with the state machine without needing access to its full lifecycle methods.
+ * It provides a simplified interface that focuses on state retrieval and event dispatching.
  */
 export function pure<E extends TransitionEvent>(
   machine: StateMachine<E>

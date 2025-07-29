@@ -14,6 +14,9 @@ import { createMethodEnhancer } from "./ext";
  * const stopGuarding = guardExecute((...args) => args.length > 0)(machine);
  * // Call stopGuarding() to remove the enhancement
  * ```
+ * @source This function is a utility for enhancing promise machines with guard logic, ensuring that certain conditions are met before executing the method.
+ * It creates a method enhancer with a a typed guard that can be applied to a promise machine's `execute` method.
+ * It is useful for ensuring that certain conditions are met before executing the method, enhancing type safety
  */
 export function guardExecute<F extends (...args: any[]) => any>(
   guardFn: (...args: Parameters<F>) => boolean

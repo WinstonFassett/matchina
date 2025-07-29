@@ -1,5 +1,6 @@
 /**
  * Represents a state object with a unique key.
+ * @source
  */
 export interface State {
   key: string;
@@ -8,6 +9,7 @@ export interface State {
 /**
  * A factory object mapping state keys to state creator functions.
  * Each function returns a State instance (optionally with additional properties).
+ * @source
  */
 export interface StateFactory {
   [key: string]: (...args: any[]) => State;
@@ -19,6 +21,7 @@ export interface StateFactory {
  *
  * @template States - The StateFactory type
  * @template StateKey - The key of the state to infer (defaults to all keys)
+ * @source 
  */
 export type FactoryState<
   States extends StateFactory,

@@ -41,6 +41,7 @@ export default defineConfig({
               includeGroups: true,
               includeCategories: true,
             },
+            "plugin": ["typedoc-plugin-inline-sources"]
             // "plugin": [
             //   "typedoc-plugin-internal-external",
             //   "typedoc-plugin-inline-sources"

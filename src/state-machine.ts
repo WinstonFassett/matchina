@@ -99,6 +99,11 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent> {
  * @property to - The target state for the transition.
  * @property from - The source state for the transition.
  * @property machine - Reference to the state machine instance handling this event.
+ * @source
+ * This interface is used throughout Matchina to represent events that trigger state transitions.
+ * It provides a consistent structure for event handling, allowing for type-safe interactions with state machines.
+ * It is used in both FactoryMachine and TransitionMachine implementations.
+ * It is a core part of the Matchina API, enabling developers to define and manage state
  */
 export interface TransitionEvent<
   To = unknown,
