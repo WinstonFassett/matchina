@@ -142,3 +142,50 @@ type MatchboxData<DataSpecs> = {
 export type TaggedTypes<T = any> = {
   [k: string]: T;
 } & { _?: never };
+
+/**
+ * InferMatchboxOutput extracts the output data types for all variants from a MatchboxFactory definition.
+ * Usage: InferMatchboxOutput<typeof factory>
+ */
+export type InferMatchboxOutput<T extends MatchboxFactory<any, any>> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M ? M extends { data: infer D } ? D : never : never;
+};
+
+/**
+ * InferMatchboxInstances extracts the full instance type for each tag from a MatchboxFactory.
+ * Usage: InferMatchboxInstances<typeof factory>
+ * Result: { Foo: (x: number) => { data: { value: number }, tag: 'Foo', ...api }; ... }
+ */
+export type InferMatchboxInstances<T extends MatchboxFactory<any, any>> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M ? (...args: Parameters<T[K]>) => M : never;
+};
+
+/**
+ * SimplifiedMatchbox is a minimal type for a matchbox instance with only data and tag.
+ * The is method infers true if the tag matches, false otherwise.
+ */
+export type SimplifiedMatchbox<T extends { data: any; tag: string }> = {
+  data: T['data'];
+  tag: T['tag'];
+  is: <U extends string>(tag: U) => U extends T['tag'] ? true : false;
+};
+
+/**
+ * SimplifiedMatchboxFactory maps a factory to a factory returning SimplifiedMatchbox for each tag.
+ * Usage: type TestFactorySimple = SimplifiedMatchboxFactory<typeof TestBox>
+ * Then TestFactorySimple.Foo(123) returns a SimplifiedMatchbox
+ */
+export type SimplifiedMatchboxFactory<T extends Record<string, (...args: any[]) => any>> = {
+  [K in keyof T]: (...args: Parameters<T[K]>) => SimplifiedMatchbox<ReturnType<T[K]>>;
+};
+
+// Sample usage for IDE testing:
+// Define a sample matchbox factory
+// const sampleFactory = {
+//   Foo: (x: number) => ({ data: { value: x }, tag: "Foo" }),
+//   Bar: () => ({ data: { message: "hello" }, tag: "Bar" }),
+// };
+
+// // Type: { Foo: { value: number }; Bar: { message: string } }
+// type SampleOutput = InferMatchboxOutput<typeof sampleFactory>;
+// Hover over SampleOutput in your IDE to see the simplified output type
