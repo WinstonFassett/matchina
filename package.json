@@ -21,6 +21,11 @@
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
       "require": "./dist/integrations/react.js"
+    },
+    "./zod": {
+      "types": "./dist/integrations/zod.d.ts",
+      "import": "./dist/integrations/zod.mjs",
+      "require": "./dist/integrations/zod.js"
     }
   },
   "main": "./dist/index.js",

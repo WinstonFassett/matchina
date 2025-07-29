@@ -78,6 +78,12 @@
     "ignore": ["react"]
   },
   {
+    "name": "zod-dist",
+    "path": "src/integrations/zod.ts",
+    "import": "{ defineZodStates }",
+    "ignore": ["zod"]
+  },
+  {
     "name": "emitter",
     "path": "src/extras/emitter.ts",
     "import": "{ emitter }"

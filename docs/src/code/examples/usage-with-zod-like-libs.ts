@@ -2,9 +2,11 @@ import {
   createApi,
   createMachine,
   defineStates,
-  defineZodStates,
   matchina
 } from "matchina";
+// For development, use relative path
+import { defineZodStates } from "../../../../src/integrations/zod";
+// In production, this would be: import { defineZodStates } from "matchina/zod";
 import { z } from "zod";
 
 // Example Zod schemas for states
@@ -92,7 +94,7 @@ const states3 = defineZodStates({
 // const loading3 = states3.Loading({ progress: 5 });
 
 const machine2 = matchina(
-  states2,
+  states3,
   {
   Idle: {
     start: "Loading",
