@@ -16,6 +16,9 @@ const states = defineStates({
   // Idle: () => Object.assign(IdleSchema.parse({}) as z.infer<typeof IdleSchema>, { key: "Idle" }),
   // Loading: (progress: number) => Object.assign(LoadingSchema.parse({ progress }) as z.infer<typeof LoadingSchema>, { key: "Loading" }),
   // Error: Object.assign((message: string) => ErrorSchema.parse({ message }) as z.infer<typeof ErrorSchema>, { key: "Error" }),
+  // Idle: () => ({}),
+  // Loading: (progress: number) => ({ progress }),
+  // Error: (message: string) => ({ message }),
   Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
   Loading: (progress: number) => LoadingSchema.parse({ progress }) as z.infer<typeof LoadingSchema>,
   Error: (message: string) => ErrorSchema.parse({ message }) as z.infer<typeof ErrorSchema>,
@@ -72,7 +75,7 @@ const states2 = defineStates({
 } as const);
 
 // This will now show a type error for the misspelled property
-const loading2 = states2.Loading({ proffffgress: 4 });
+// const loading2 = states2.Loading({ proffffgress: 4 });
 
 // AFTER: Using the new defineZodStates helper
 
@@ -84,7 +87,7 @@ const states3 = defineZodStates({
 
 // Now we get the same type checking but with much cleaner code
 // This will show a type error for the misspelled property
-const loading3 = states3.Loading({ proffffgress: 5 });
+// const loading3 = states3.Loading({ proffffgress: 5 });
 // Correct usage would be:
 // const loading3 = states3.Loading({ progress: 5 });
 
