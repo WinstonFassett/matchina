@@ -232,7 +232,7 @@ store.send("set", 42); // Requires a number parameter
 store.send("reset"); // No parameters required
 
 // These would cause type errors:
-store.send("increment", "not a number"); // Type error: expected number
-store.send("set"); // Type error: missing required parameter
-store.send("unknown"); // Type error: unknown event type
+// store.send("increment", "not a number"); // Type error: expected number
+// store.send("set"); // Type error: missing required parameter
+// store.send("unknown"); // Type error: unknown event type
 console.log(store.getState());
