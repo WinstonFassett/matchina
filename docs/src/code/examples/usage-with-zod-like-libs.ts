@@ -35,12 +35,12 @@ const m1 = createMachine(
 );
 // m1.send('error', 1) // invalid
 m1.send('error', '1') // valid
-m1.send('error') // invalid -- error required - NOT CHECKING
+// m1.send('error') // invalid -- error required
 
 const m1Api = createApi(m1);
 m1Api.success();
 m1Api.error("An error occurred"); // valid
-m1Api.error(); // invalid -- error required - CHECKS
+// m1Api.error(); // invalid -- error required
 
 const m2 = matchina(
   states,
@@ -57,10 +57,10 @@ const m2 = matchina(
 );
 // m2.send('error', 1) // invalid
 m2.send('error', '1') // valid
-m2.send('error') // invalid -- error required - NOT CHECKING
+// m2.send('error') // invalid -- error required
 m2.success();
 m2.error("An error occurred"); // valid
-m2.error(); // invalid -- error required - CHECKS
+// m2.error(); // invalid -- error required
 
 
 const states2 = defineStates({
@@ -89,4 +89,4 @@ const machine2 = matchina(
 );
 
 machine2.start(0);
-machine2.send("start")
+// machine2.send("start") // invalid - start requires a number
