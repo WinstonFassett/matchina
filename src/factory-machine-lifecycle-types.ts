@@ -7,7 +7,7 @@ import {
 import { Effect, Funcware, Middleware } from "./function-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 
-type TransitionHookExtensions<E extends TransitionEvent> = {
+export type TransitionHookExtensions<E extends TransitionEvent> = {
   begin: AbortableEventHandler<E>;
   resolveExit: Funcware<(ev: Partial<E>) => E>;
   transition: Middleware<E>;
@@ -67,5 +67,6 @@ type On<
   >;
 };
 
-// Export TransitionHookExtensions from factory-machine-lifecycle-types.ts
-export type { TransitionHookExtensions };
+export type HookKey = keyof TransitionHookExtensions<any>;
+
+

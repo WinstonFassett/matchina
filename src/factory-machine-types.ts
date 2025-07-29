@@ -4,6 +4,7 @@ import { FactoryState, StateFactory } from "./factory-state";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
+import { FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
 
 export interface FactoryMachineContext<SF extends StateFactory = StateFactory> {
   states: SF;
@@ -87,4 +88,8 @@ export type FactoryMachineTransitionEvent<
 type FactoryMachineEventApi<FC extends FactoryMachineContext<any>> = {
   get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
   match: MatchInvocation<FlatMemberUnion<StateEventTransitionSenders<FC>>>;
-};
+};// Valid state keys and event types for a given context
+
+export type StateKey<FC extends FactoryMachineContext> = keyof FC["states"];
+export type EventType<FC extends FactoryMachineContext> = FactoryMachineEvent<FC>["type"];
+

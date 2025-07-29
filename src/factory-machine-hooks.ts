@@ -3,27 +3,79 @@
 // import { iff } from "./extras/iff";
 import { when } from "./extras/when";
 import { EntryListener, ExitListener } from "./extras/entry-exit-types";
-import { FactoryMachineEvent } from "./factory-machine-types";
+import { EventType, FactoryMachineEvent, StateKey } from "./factory-machine-types";
 import { FactoryState } from "./factory-state";
-// import { matchChange } from "./match-change";
-// import { ChangeEventKeyFilter } from "./match-change-types";
-// import { FilterValues, HasFilterValues } from "./match-filter-types";
-// import { StateMachine } from "./state-machine";
-// import { after, before, enter, guard, leave } from "./state-machine-hooks";
-// import { Effect } from "./function-types";
+import { hookSetup } from './state-machine-hooks';
+import { matchChange } from "./match-change";
+import { HookKey, TransitionHookExtensions } from "./factory-machine-lifecycle-types";
+import { FactoryMachineContext } from "./factory-machine-types";
+import { ChangeEventKeyFilter } from "./match-change-types";
 
-// export const beforeEvent = <
-//   E extends FactoryMachineEvent<any>,
-//   K extends E["type"],
-// >(
-//   type: K,
-//   fn: AbortableEventHandler<E & { type: K }>
-// ) =>
-//   before<StateMachine<E>>((ev, abort) => {
-//     if (ev.type === type) {
-//       fn(ev as any, abort);
-//     }
-//   });
+
+// Strict config type for a single transition hook
+export type TransitionHookConfig<FC extends FactoryMachineContext = FactoryMachineContext> = Partial<{
+  from: StateKey<FC>;
+  to: StateKey<FC>;
+  type: EventType<FC>;
+}> & Partial<{
+  [K in HookKey]: TransitionHookExtensions<FactoryMachineEvent<FC>>[K];
+}>;
+
+/**
+ * Registers one or more transition hooks for a {@link FactoryMachine}.
+ * Each config can specify matching criteria (`from`, `to`, `type`) and any lifecycle hook(s).
+ * Returns a setup function for the machine.
+ *
+ * @source This is the recommended flat API for lifecycle hooks in Matchina. It allows you to declaratively register hooks for specific transitions and phases.
+ *
+ * @example
+ * setup(machine)(
+ *   transitionHooks(
+ *     { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+ *     { from: "Idle", enter: fn, leave: fn },
+ *     { type: "resolve", guard: e => true },
+ *     { effect: globalFn }
+ *   )
+ * )
+ */
+export function transitionHook<FC extends FactoryMachineContext>(
+  config: TransitionHookConfig<FC>
+) {
+  const { from, to, type, ...hooks } = config;
+  return (machine: any) => {
+    return Object.keys(hooks).map((hookKey) => {
+      const fn = (hooks as any)[hookKey];
+      const resolvedHookFn = hookSetup(hookKey as string);
+      // Cast filter to ChangeEventKeyFilter for type compatibility
+      const filter = { from, to, type } as ChangeEventKeyFilter<FactoryMachineEvent<FC>>;
+      return resolvedHookFn(
+        when((ev: FactoryMachineEvent<FC>) => matchChange(ev, filter), fn)
+      )(machine);
+    });
+  };
+}
+
+/**
+ * Registers multiple transition hooks for a {@link FactoryMachine}.
+ * Returns a setup function for the machine.
+ *
+ * @source Use this to compose multiple transition hooks in a single setup call.
+ *
+ * @example
+ * setup(machine)(
+ *   transitionHooks(
+ *     { from: "Idle", type: "start", to: "Running", effect: fn },
+ *     { effect: globalFn }
+ *   )
+ * )
+ */
+export function transitionHooks<FC extends FactoryMachineContext>(
+  ...entries: TransitionHookConfig<FC>[]
+) {
+  return (machine: any) => {
+    return entries.flatMap(entry => transitionHook<FC>(entry)(machine));
+  };
+}
 
 /**
  * Creates an entry listener that triggers when the event's `from.key` matches the given state key.
