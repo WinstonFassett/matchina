@@ -38,11 +38,19 @@ import { createApi } from "./factory-machine-event-api";
  * console.log(counter.getChange()); // { type: "reset", params: [], from: 42, to: 0 }
  * ```
  */
-export interface StoreMachine<T> {
+/**
+ * Extract parameter types from a store transition handler
+ */
+export type ExtractStoreParams<
+  TR extends StoreTransitionRecord<any>,
+  E extends keyof TR
+> = TR[E] extends (...args: infer P) => any ? P : never;
+
+export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>> {
   getState(): T;
   getChange(): StoreChange<T>;
-  send(type: string, ...params: any[]): void;
-  transitions: StoreTransitionRecord<T>;
+  send<E extends keyof TR & string>(type: E, ...params: ExtractStoreParams<TR, E>): void;
+  transitions: TR;
   resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined;
   // Lifecycle hooks
   handle(change: StoreChange<T>): StoreChange<T>;
@@ -130,17 +138,17 @@ const EmptyEffect = <T>(_change: StoreChange<T>) => {};
  * @see TransitionMachine
  * @see FactoryMachine
  */
-export function createStoreMachine<T>(
+export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>>(
   initialValue: T,
-  transitions: StoreTransitionRecord<T>,
-): StoreMachine<T> {
+  transitions: TR,
+): StoreMachine<T, TR> {
   let lastChange: StoreChange<T> = {
     type: "__initialize",
     params: [],
     from: initialValue,
     to: initialValue,
   };
-  const machine: StoreMachine<T> = {
+  const machine: StoreMachine<T, TR> = {
     transitions,
     getState: () => lastChange.to,
     getChange: () => lastChange,
@@ -198,11 +206,23 @@ export function createStoreMachine<T>(
 }
 
 
+// Example with proper type checking
 const store = createStoreMachine(0, {
-  increment: (value) => value + 1,
-  decrement: (value) => value - 1,
-  set: (value, next) => next,
+  increment: (amt = 1) => (change) => change.from + amt,
+  decrement: (amt = 1) => (change) => change.from - amt,
+  set: (next: number) => next,
   reset: () => 0,
-});  
-store.send("increment")
-// const api = createStoreApi(store)
+});
+
+// These calls are now properly type-checked:
+store.send("increment"); // Works with default parameter
+store.send("increment", 5); // Works with explicit parameter
+store.send("decrement"); // Works with default parameter
+store.send("set", 42); // Requires a number parameter
+store.send("reset"); // No parameters required
+
+// These would cause type errors:
+store.send("increment", "not a number"); // Type error: expected number
+store.send("set"); // Type error: missing required parameter
+store.send("unknown"); // Type error: unknown event type
+console.log(store.getState());
