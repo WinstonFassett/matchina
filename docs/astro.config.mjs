@@ -41,12 +41,11 @@ export default defineConfig({
               includeGroups: true,
               includeCategories: true,
             },
-            "plugin": ["typedoc-plugin-inline-sources"]
-            // "plugin": [
-            //   "typedoc-plugin-internal-external",
-            //   "typedoc-plugin-inline-sources"
-            // ]
-
+            plugin: [
+              "./src/lib/starlight-typedoc/register-theme.ts",
+              "typedoc-plugin-inline-sources"
+            ],
+            theme: "starlight-typedoc-custom"
             // "excludeNotDocumented": true
           },
         }),

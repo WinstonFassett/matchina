@@ -1,3 +1,6 @@
+// This file is deprecated and should not be used.
+// It was pulled for reference and education only.
+
 import * as fs from 'node:fs'
 import path from 'node:path'
 import url from 'node:url'
