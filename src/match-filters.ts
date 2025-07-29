@@ -7,6 +7,15 @@ import { NestableFilters, HasFilterValues } from "./match-filter-types";
  * @param item - The object to test.
  * @param condition - The filter conditions to match.
  * @returns True if the item matches all filter conditions.
+ * @source This function is useful for filtering objects based on nested or flat filter criteria.
+ * It enables type-safe filtering and is commonly used in state machines, event systems, and data processing.
+ *
+ * @example
+ * ```ts
+ * const item = { status: "active", role: "admin" };
+ * const filter = { status: "active", role: ["admin", "user"] };
+ * matchFilters(item, filter); // true
+ * ```
  */
 export function matchFilters<
   T extends Record<string, any>,
@@ -25,6 +34,16 @@ export function matchFilters<
  * @param condition - The filter conditions to match.
  * @returns The item, typed as matching the filter values.
  * @throws Error if the item does not match the filter.
+ * @source This function is useful for enforcing that an object matches filter criteria,
+ * throwing an error if not. It is commonly used for validation, assertions, and type narrowing.
+ *
+ * @example
+ * ```ts
+ * const item = { status: "active", role: "admin" };
+ * const filter = { status: "active" };
+ * asFilterMatch(item, filter); // returns item
+ * asFilterMatch(item, { status: "inactive" }); // throws Error
+ * ```
  */
 export function asFilterMatch<
   T extends Record<string, any>,
@@ -43,6 +62,15 @@ export function asFilterMatch<
  * @param keyOrKeys - A single key, array of keys, or undefined.
  * @param value - The value to test.
  * @returns True if the value matches the key(s) or if keyOrKeys is undefined.
+ * @source This function is useful for matching values against filter keys or arrays,
+ * supporting flexible filter logic for data, events, or state transitions.
+ *
+ * @example
+ * ```ts
+ * matchKey(["a", "b"], "a"); // true
+ * matchKey("b", "a"); // false
+ * matchKey(undefined, "a"); // true
+ * ```
  */
 export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   if (keyOrKeys === undefined) {
@@ -59,6 +87,14 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
  *
  * @param parts - Tuple or object describing the filter.
  * @returns A tuple [type, from, to].
+ * @source This function is useful for normalizing filter input for event or state transitions,
+ * making it easier to handle flexible filter formats in APIs and internal logic.
+ *
+ * @example
+ * ```ts
+ * getFilter(["type", "from", "to"]); // ["type", "from", "to"]
+ * getFilter([{ type: "t", from: "f", to: "t" }]); // ["t", "f", "t"]
+ * ```
  */
 type ChangeFilterTuple = [type?: string, from?: string, to?: string];
 export function getFilter(

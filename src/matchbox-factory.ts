@@ -8,6 +8,34 @@ import {
 /**
  * Create a tagged union from a record mapping tags to value types, along with associated
  * variant constructors, type predicates and `match` function.
+ *
+ * @template Config - The configuration object or array of tags
+ * @template TagProp - The property name used for the tag (default: "tag")
+ * @returns An object with constructors for each variant, type predicates, and match function
+ *
+ * @example
+ * ```ts
+ * // Define a union of variants for a Result type
+ * const Result = matchboxFactory({
+ *   Ok: (value: number) => ({ value }),
+ *   Err: (error: string) => ({ error }),
+ * });
+ *
+ * // Create instances
+ * const ok = Result.Ok(42);
+ * const err = Result.Err("fail");
+ *
+ * // Type predicates
+ * ok.is("Ok"); // true
+ * err.is("Err"); // true
+ *
+ * // Pattern matching
+ * const message = ok.match({
+ *   Ok: ({ value }) => `Value: ${value}`,
+ *   Err: ({ error }) => `Error: ${error}`,
+ * });
+ * // message === "Value: 42"
+ * ```
  */
 export function matchboxFactory<
   Config extends TaggedTypes | string,

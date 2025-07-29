@@ -22,12 +22,42 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *
  * Usage:
  * ```ts
+ * import { matchina } from "matchina";
+ * import { effect, guard } from "matchina/extras";
+ *
+ * // Define states and transitions
+ * const states = {
+ *   Idle: undefined,
+ *   Active: (user: string, someCondition: boolean) => ({ user, someCondition }),
+ * };
+ * const transitions = {
+ *   Idle: { activate: "Active" },
+ *   Active: { deactivate: "Idle" },
+ * };
+ *
+ * // Create a machine with event API and setup support
  * const machine = matchina(states, transitions, "Idle");
- * machine.send("executing");
+ *
+ * // Setup: add effect and guard enhancers
+ * machine.setup(
+ *   effect((ev) => {
+ *     console.log("Effect triggered for event:", ev.type);
+ *   }),
+ *   guard((ev) => ev.to.data.someCondition)
+ * );
+ *
+ * // Now, every state change triggers the effect and guard
+ * machine.activate("Alice", true); // Effect runs, guard checks someCondition
+ * machine.deactivate();
  * ```
+ *
+ * @see {@link zen} - for ergonomic machine enhancement and setup support
+ * @see {@link withApi} - for adding event API methods to machines
+ *
  * @source
  * This function is a wrapper around `createMachine` that enhances the machine with additional utilities.
- * It provides a more ergonomic API for working with state machines in TypeScript.
+ * It provides a more ergonomic API for working with state machines in TypeScript, including event trigger methods
+ * and a setup function for adding hooks and enhancers.
  */
 export function matchina<
   SF extends StateFactory,
