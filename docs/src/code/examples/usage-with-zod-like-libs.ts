@@ -11,10 +11,13 @@ const LoadingSchema = z.object({ progress: z.number() });
 const ErrorSchema = z.object({ message: z.string() });
 
 const states = defineStates({
-  Idle: () => IdleSchema.parse({}),
-  Loading: (progress: number) => LoadingSchema.parse({ progress }),
-  Error: (message: string) => ErrorSchema.parse({ message }),
-});
+  // Idle: () => Object.assign(IdleSchema.parse({}) as z.infer<typeof IdleSchema>, { key: "Idle" }),
+  // Loading: (progress: number) => Object.assign(LoadingSchema.parse({ progress }) as z.infer<typeof LoadingSchema>, { key: "Loading" }),
+  // Error: Object.assign((message: string) => ErrorSchema.parse({ message }) as z.infer<typeof ErrorSchema>, { key: "Error" }),
+  Idle: () => ({}),
+  Loading: (progress: number) => ({ progress }),
+  Error: (message: string) => ({ message }),
+} as const);
 
 const machine = matchina(
   states,
@@ -29,8 +32,9 @@ const machine = matchina(
   },  
   "Idle"
 );
-
-machine.start('8');
+machine.send('error', 'aef')
+machine.send("start", 'fk')
+machine.send("start", 'l;kj')
 machine.send("start");
 machine.success();
 machine.error("An error occurred");
