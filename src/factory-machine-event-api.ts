@@ -18,7 +18,7 @@ export function createApi<
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {
-      return machine.send(eventKey, ...(params as any));
+      return (machine as any).send(eventKey, ...(params));
     };
 
   const transitioners: any = {};
