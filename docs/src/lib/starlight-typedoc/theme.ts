@@ -65,9 +65,10 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
         filteredComment.summary = comment.summary.map((part) => this.#parseCommentDisplayPart(part))
 
         // Render examples first
-        let markdown = exampleTags.map(tag => this.helpers.getCommentParts(tag.content)).join('\n\n')
-        markdown += markdown ? '\n\n' : ''
-        markdown += superPartials.comment(filteredComment, options)
+        // let markdown = exampleTags.map(tag => this.helpers.getCommentParts(tag.content)).join('\n\n')
+        // markdown += markdown ? '\n\n' : ''
+        // markdown += 
+        let markdown = superPartials.comment(filteredComment, options)
 
         if (options?.showSummary === false) {
           console.warn('showSummary is false, skipping summary rendering')
