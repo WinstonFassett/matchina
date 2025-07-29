@@ -47,6 +47,10 @@ export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: 
  * unenhance();
  * target.foo('will', 'NOT be', 'enhanced');
  * ```
+ * @source This function is useful for dynamically enhancing methods on objects,
+ * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,
+ * plugin, or extension systems where you want to intercept method calls and restore the original
+ * implementation when no longer needed.
  */
 export const createMethodEnhancer =
   <K extends string>(methodName: K) =>
