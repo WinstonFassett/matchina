@@ -26,26 +26,8 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
         filteredComment.modifierTags = new Set<`@${string}`>()
 
         const customTags: CustomTag[] = []
-        const exampleTags: CommentTag[] = []
-
-        console.log('Rendering comment:', comment)
 
         for (const blockTag of comment.blockTags) {
-          if (blockTag.tag === '@source') {
-            console.log('Found source tag:', blockTag)
-          }
-          if (blockTag.tag === '@returns') {
-            console.log('Found returns tag:', blockTag)
-          }
-          if (blockTag.tag === '@example') {
-            console.log('Found example tag:', blockTag)
-            exampleTags.push(blockTag)
-            continue
-          }
-          if (blockTag.tag === '@typeParam') {
-            // Skip typeParam headings
-            continue
-          }
           if (this.#isCustomBlockCommentTagType(blockTag.tag)) {
             customTags.push({ blockTag, type: blockTag.tag })
           } else {
@@ -64,14 +46,9 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
 
         filteredComment.summary = comment.summary.map((part) => this.#parseCommentDisplayPart(part))
 
-        // Render examples first
-        // let markdown = exampleTags.map(tag => this.helpers.getCommentParts(tag.content)).join('\n\n')
-        // markdown += markdown ? '\n\n' : ''
-        // markdown += 
         let markdown = superPartials.comment(filteredComment, options)
 
         if (options?.showSummary === false) {
-          console.warn('showSummary is false, skipping summary rendering')
           return markdown
         }
 
@@ -95,9 +72,6 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
             }
           }
         }
-
-        // Remove/demote Return heading: replace '### Returns' with bold text
-        markdown = markdown.replace(/^### Returns/m, '**Returns**')
 
         return markdown
       },
@@ -142,7 +116,7 @@ class StarlightTypeDocThemeRenderContext extends MarkdownThemeContext {
     const content =
       blockTag.content.length > 0
         ? this.helpers.getCommentParts(blockTag.content)
-        : 'This API is no longer supported and may be removed in a future release.!!'
+        : 'This API is no longer supported and may be removed in a future release.'
 
     return this.#addAside(markdown, 'caution', 'Deprecated', content)
   }
