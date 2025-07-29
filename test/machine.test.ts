@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "../src";
+import { defineStates } from "../src/define-states";
+import { createMachine, withApi } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -9,7 +9,7 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  const m = createFactoryMachine(
+  const m = createMachine(
     states,
     {
       Initial: {
@@ -20,39 +20,45 @@ const makeMachine = () => {
           (done: string) =>
           ({ type }) => {
             return states[done === "DONE" ? "Done" : "Initial"](
-              type === "doneAdvFunc",
+              type === "doneAdvFunc"
             );
           },
       },
       Done: {},
     },
-    "Initial",
+    "Initial"
   );
   const m2 = withApi(m);
   return m2;
 };
 
-describe("createFactoryMachine", () => {
+describe("createMachine", () => {
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {
       expect(
-        machine.states.Initial().match({
-          Initial: () => 100,
-          _: () => 0,
-        }),
+        machine.states.Initial().match(
+          {
+            Initial: () => 100,
+            _: () => 0,
+          },
+          false
+        )
       ).toBe(100);
 
       expect(
-        machine.states.Initial().match({
-          _: () => 1,
-        }),
+        machine.states.Initial().match(
+          {
+            _: () => 1,
+          },
+          false
+        )
       ).toBe(1);
 
       expect(() =>
         machine.states.Initial().match({
           InvalidKey: () => 1,
-        } as any),
+        } as any)
       ).toThrow();
 
       expect(
@@ -60,8 +66,8 @@ describe("createFactoryMachine", () => {
           {
             Done: (ok) => ok,
           },
-          false,
-        ),
+          false
+        )
       ).toStrictEqual({ ok: true, msg: "test message" });
     });
   });

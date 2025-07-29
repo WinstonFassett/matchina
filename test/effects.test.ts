@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineEffects } from "../src/extras/effects";
-import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "../src";
+import { defineStates } from "../src/define-states";
+import { createMachine, withApi } from "../src";
 import { bindEffects } from "../src/extras/bind-effects";
 
 const effectsConfig = {
@@ -20,18 +20,18 @@ const makeStates = (effects = makeEffects()) => {
 
 const makeMachine = (
   states = makeStates(),
-  initialize = (s: typeof states) => s.Idle(),
+  initialize = (s: typeof states) => s.Idle()
 ) =>
   withApi(
-    createFactoryMachine(
+    createMachine(
       states,
       {
         Idle: { next: "Pending" },
         Pending: { next: "Done" },
         Done: {},
       },
-      initialize(states),
-    ),
+      initialize(states)
+    )
   );
 
 describe("defineEffects", () => {
@@ -86,7 +86,7 @@ describe("runEffectsOnUpdate", () => {
 
     bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
     expect(() => machine.api.next()).toThrowErrorMatchingInlineSnapshot(
-      `"Match did not handle key: 'Notify'"`,
+      `"Match did not handle key: 'Notify'"`
     );
   });
   it("_ should match all unmatched effects regardless of whether match is exhaustive", () => {

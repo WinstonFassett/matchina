@@ -1,4 +1,4 @@
-import { PromiseCallback, PromiseMachine } from "./promise-machine";
+import { PromiseCallback, PromiseMachine } from "./promise-types";
 
 export const handlePromise =
   <
@@ -10,13 +10,13 @@ export const handlePromise =
     makePromise: F,
     trigger = "execute" as Type,
     resolve = "resolve" as Resolve,
-    reject = "reject" as Reject,
+    reject = "reject" as Reject
   ) =>
   (machine: PromiseMachine<F>) => {
     const next = machine.handle;
     machine.handle = (ev) => {
       if (ev.type === trigger) {
-        const promise = makePromise(...(ev.params as Parameters<F>));
+        const promise = makePromise(...(ev.params[1] as Parameters<F>));
         const store = ev as any;
         store.promise = promise;
         store.done = promise

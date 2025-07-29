@@ -1,34 +1,50 @@
-export type FlatFilters<T> = { [K in keyof T]?: SingleValueFilter<T, K> };
-export type SingleValueFilter<T, K extends keyof T> = T[K];
+import { NestableFilters, HasFilterValues } from "./match-filter-types";
 
-export type NestableFilters<T> = NestedFilter<T> & FlatFilters<T>;
-export type NestedFilter<T> = {
-  [K in keyof T]?: T[K] extends Record<string, any>
-    ? NestableFilters<T[K]>
-    : SingleValueFilter<T, K>;
-};
-
-export type FilterValues<T> = {
-  [K in keyof T]: T[K] extends (infer U)[] ? U : T[K];
-};
-
-export type HasFilterValues<T, C> = T extends T
-  ? {
-      [K in keyof T & keyof C]: T[K] extends C[K] ? true : false;
-    } extends Record<keyof C, true>
-    ? T
-    : never
-  : never;
-
+/**
+ * Checks if an item matches all conditions in a filter object.
+ * Returns true if every key in the condition matches the corresponding item value.
+ *
+ * @param item - The object to test.
+ * @param condition - The filter conditions to match.
+ * @returns True if the item matches all filter conditions.
+ * @source This function is useful for filtering objects based on nested or flat filter criteria.
+ * It enables type-safe filtering and is commonly used in state machines, event systems, and data processing.
+ *
+ * @example
+ * ```ts
+ * const item = { status: "active", role: "admin" };
+ * const filter = { status: "active", role: ["admin", "user"] };
+ * matchFilters(item, filter); // true
+ * ```
+ */
 export function matchFilters<
   T extends Record<string, any>,
   C extends NestableFilters<T>,
 >(item: T, condition: C): item is T & HasFilterValues<T, C> {
   return Object.keys(condition).every((key) =>
-    matchKey(condition[key as keyof C], item[key]),
+    matchKey(condition[key as keyof C], item[key])
   );
 }
 
+/**
+ * Asserts that an item matches the filter conditions, returning the item if so.
+ * Throws an error if the item does not match.
+ *
+ * @param item - The object to test.
+ * @param condition - The filter conditions to match.
+ * @returns The item, typed as matching the filter values.
+ * @throws Error if the item does not match the filter.
+ * @source This function is useful for enforcing that an object matches filter criteria,
+ * throwing an error if not. It is commonly used for validation, assertions, and type narrowing.
+ *
+ * @example
+ * ```ts
+ * const item = { status: "active", role: "admin" };
+ * const filter = { status: "active" };
+ * asFilterMatch(item, filter); // returns item
+ * asFilterMatch(item, { status: "inactive" }); // throws Error
+ * ```
+ */
 export function asFilterMatch<
   T extends Record<string, any>,
   C extends NestableFilters<T>,
@@ -39,6 +55,23 @@ export function asFilterMatch<
   throw new Error("not a match");
 }
 
+/**
+ * Checks if a value matches a filter key or array of keys.
+ * Returns true if the value is included in the array or equals the key.
+ *
+ * @param keyOrKeys - A single key, array of keys, or undefined.
+ * @param value - The value to test.
+ * @returns True if the value matches the key(s) or if keyOrKeys is undefined.
+ * @source This function is useful for matching values against filter keys or arrays,
+ * supporting flexible filter logic for data, events, or state transitions.
+ *
+ * @example
+ * ```ts
+ * matchKey(["a", "b"], "a"); // true
+ * matchKey("b", "a"); // false
+ * matchKey(undefined, "a"); // true
+ * ```
+ */
 export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   if (keyOrKeys === undefined) {
     return true;
@@ -46,4 +79,32 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   return Array.isArray(keyOrKeys)
     ? keyOrKeys.includes(value)
     : keyOrKeys === value;
+}
+
+/**
+ * Normalizes filter input to a tuple of [type, from, to].
+ * Accepts either a tuple or an object with type, from, and to properties.
+ *
+ * @param parts - Tuple or object describing the filter.
+ * @returns A tuple [type, from, to].
+ * @source This function is useful for normalizing filter input for event or state transitions,
+ * making it easier to handle flexible filter formats in APIs and internal logic.
+ *
+ * @example
+ * ```ts
+ * getFilter(["type", "from", "to"]); // ["type", "from", "to"]
+ * getFilter([{ type: "t", from: "f", to: "t" }]); // ["t", "f", "t"]
+ * ```
+ */
+type ChangeFilterTuple = [type?: string, from?: string, to?: string];
+export function getFilter(
+  parts:
+    | ChangeFilterTuple
+    | [filter: { type?: string; from?: string; to?: string }]
+): [type?: string, from?: string, to?: string] {
+  if (parts.length === 1 && typeof parts[0] === "object") {
+    const filter = parts[0];
+    return [filter.type, filter.from, filter.to];
+  }
+  return parts as any;
 }

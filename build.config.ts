@@ -7,7 +7,7 @@ const mkdistEntry = {
   pattern: [
     "**",
     "!dev",
-    "!snippets"
+    // "!snippets"
   ],
 } as const
 

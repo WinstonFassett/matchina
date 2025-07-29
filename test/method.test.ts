@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { enhanceMethod, methodEnhancer } from "../src/ext";
+import { enhanceMethod, createMethodEnhancer } from "../src/ext";
 import { when } from "../src/extras/when";
 
 describe("methodExtend", () => {
@@ -42,7 +42,7 @@ describe("methodUse", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const use = methodEnhancer("method");
+    const use = createMethodEnhancer("method");
 
     use((inner) => {
       return (value: string) => {
@@ -59,7 +59,7 @@ describe("methodUse", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const use = methodEnhancer("method");
+    const use = createMethodEnhancer("method");
 
     const restore = use((inner) => {
       return (value: string) => {

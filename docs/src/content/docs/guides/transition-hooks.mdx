@@ -1,0 +1,96 @@
+---
+title: Flat Lifecycle Hooks API
+sidebar_label: transitionHooks
+---
+
+## Flat API: `transitionHooks`
+
+The `transitionHooks` function provides a flat, composable API for registering lifecycle hooks on a [FactoryMachine](../api/factory-machine). Each hook config can specify matching criteria (`from`, `to`, `type`) and any lifecycle phase (`effect`, `before`, `after`, `guard`, etc.).
+
+> **TypeScript Friendly:** All handlers are fully typed, with autocompletion for state/event keys and hook phases.
+
+### Configuration Structure
+
+Each entry to `transitionHooks` is an object with optional `from`, `to`, `type` keys for matching, and one or more lifecycle hook functions:
+
+```ts
+transitionHooks(
+  { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+  { from: "Idle", enter: fn, leave: fn },
+  { type: "resolve", guard: e => true },
+  { effect: globalFn }
+)
+```
+
+You can use wildcards by omitting keys.
+
+### Example (Typechecked)
+
+```ts
+setup(machine)(
+  transitionHooks(
+    { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+    { from: "Idle", enter: fn, leave: fn },
+    { type: "resolve", guard: e => true },
+    { effect: globalFn }
+  )
+);
+```
+
+### Comparison: `transitionHooks` vs `onLifecycle` vs Functional Enhancers
+
+| Feature                | `onLifecycle` (Config Object) | `transitionHooks` (Flat API) | Functional Enhancers (`effect(whenEvent(...))`, etc.) |
+|------------------------|-------------------------------|------------------------------|------------------------------------------------------|
+| Structure              | Nested, grouped by state/event| Flat, composable, per hook   | Pure, composable, per enhancer                       |
+| Modularity             | All-in-one config             | Split across files/modules   | Split, highly modular, functional                    |
+| Readability            | Good for grouped logic        | Good for scanning hooks      | Good for functional composition                      |
+| Type Safety            | Strong                        | Strong                      | Strong                                               |
+| Wildcards              | "*" keys                      | Omit keys                   | Predicate/wildcard via when/whenEvent                |
+| Use Case               | Complex, grouped logic        | Modular, scattered logic    | Functional, advanced composition                     |
+
+**Choose `onLifecycle` for grouped, declarative logic.  
+Choose `transitionHooks` for modular, flat, and composable logic.  
+Choose functional enhancers for pure, highly composable, and advanced functional patterns.**
+
+### Full Example: Mirroring `onLifecycle`
+
+```ts
+setup(machine)(
+  transitionHooks(
+    { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+    { from: "Idle", enter: fn, leave: fn },
+    { type: "resolve", guard: e => true },
+    { effect: globalFn },
+    { type: "tick", effect: tickEffect },
+    { type: "stop", effect: stopEffect },
+    { effect: (ev) => console.log(ev) } // global
+  )
+);
+```
+
+### Alternative: Pure Functional Enhancers
+You can also choose a more pure functional approach using raw transition hook method enhancers:
+
+```ts
+setup(machine)(
+  enter(fn),
+  guard(fn),
+  leave(fn),
+  handle(fn),
+  // ...other enhancers
+)
+```
+This style is ideal for highly modular or functional codebases, and can be mixed with `transitionHooks` or other enhancers.
+
+## See Also
+- [API Reference: transitionHooks](../api/transitionHooks)
+- [Live Example: TransitionHooksDemo](../../code/examples/TransitionHooksDemo.tsx)
+
+### Real-World Pattern
+For modular apps, split hooks across files and import them:
+```ts
+setup(machine)(
+  ...allEnhancers,
+  transitionHooks(...importedHooks)
+)
+```

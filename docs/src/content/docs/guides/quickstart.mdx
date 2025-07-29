@@ -1,79 +1,59 @@
 ---
 title: Quick Start
-description: Get going
+description: Get started with Matchina in minutes
 ---
-import code from '@lib/examples/TrafficLight.tsx?raw'
-import CodeBlock from "@components/CodeBlock.astro";
-import { TrafficLightDemo } from "@components/TrafficLightDemo";
 
+import TrafficLightExample from "@code/examples/traffic-light/example";
+import machineCode from "@code/examples/traffic-light/machine.ts?raw";
+import viewCode from "@code/examples/traffic-light/TrafficLightView.tsx?raw";
+import indexCode from "@code/examples/traffic-light/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-Let's create a traffic light button like this:
+{/* Matchina is a TypeScript library for building type-safe state machines with clear transition definitions. It provides:
 
-<TrafficLightDemo client:visible />
+- **Type-safe state transitions**: Define exactly which state can transition to which other states
+- **State-specific data**: Each state can have its own typed data structure
+- **Simple API**: Create and interact with state machines through a clean, intuitive API
+- **TypeScript integration**: Full type safety and
+  IDE autocompletion */}
 
+## Installation
 
-## Full Code
-<CodeBlock
-  lang={'js'}
-  code={code}
+```sh
+npm install matchina
+```
+
+## Interactive Example: Traffic Light
+
+Here's a simple traffic light state machine that demonstrates Matchina's core concepts:
+
+<div className="not-content">
+  <TrafficLightExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "TrafficLightView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
 />
 
+For a detailed walkthrough and explanation, see the [Traffic Light Example](/examples/traffic-light).
 
-## Step by Step:
+## Key Concepts Demonstrated
 
-### Define States
+- **State Definition**: Define states with typed data using `defineStates()`
+- **Machine Creation**: Create a state machine with `matchina()` by specifying states, transitions, and initial state
+- **Transition Definition**: Define allowed state transitions as a simple object structure
+- **React Integration**: Integrate state machines in React components with `useMachine()`
 
-```tsx
-const states = defineStates({
-  Red: () => "means stop",
-  Yellow: () => "means caution",
-  Green: () => "means go",
-})
-```
+## Next Steps
 
-### Define Transitions
-
-```tsx
-const transitions = {
-  Red: { next: "Green" },
-  Yellow: { next: "Red" },
-  Green: { next: "Yellow" },
-}
-```
-
-### Create Machine with Initial State
-
-```tsx
-const machine = createFactoryMachine(
-  states, 
-  transitions, 
-  "Red"
-)
-```
-
-### Use Machine (React)
-
-```tsx
-export const TrafficLight = () => {
-  useMachine(trafficLight.machine);
-  return (
-   ...
-  );
-}
-```
-
-### `match` cases
-
-```tsx
-trafficLight.state.match({
-  Red: () => "bg-red-500",
-  Yellow: () => "bg-yellow-500",
-  Green: () => "bg-green-500",
-})
-```
-
-### Send machine events
-
-```tsx
-trafficLight.next()
-```
+- **[State Machines](/guides/machines)** - Learn how to build more complex state machines
+- **[React Integration](/guides/integrations)** - Integrate state machines with React components
+- **[Browse Examples](/examples/toggle)** - Explore practical examples
+- **[Type Guards](/guides/typeguards)** - Understand type-safe state handling

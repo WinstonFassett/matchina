@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
-import {
-  PromiseStates,
-  createPromiseMachine,
-  PromiseTransitions,
-} from "../src/promise-machine";
+import { createPromiseMachine, PROMISE_STATES, PROMISE_TRANSITIONS } from "../src/promise-machine-impl";
 import { delay, delayer } from "../src/extras/delay";
-import { withApi, createFactoryMachine, createApi } from "../src";
-
+import { withApi, createMachine, createApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
@@ -15,7 +10,7 @@ describe("createPromiseMachine", () => {
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.api.execute();
+    machine.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
@@ -32,13 +27,13 @@ describe("createPromiseMachine", () => {
         // console.log('execute')
         await delay(1);
         throw new Error("custom error");
-      }),
+      })
     );
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
 
-    machine.api.execute();
+    machine.execute();
     const pendingState = machine.getState();
     expect(pendingState.key).toBe("Pending");
 
@@ -51,17 +46,17 @@ describe("createPromiseMachine", () => {
 
   describe("with extended transitions", () => {
     it("should allow enhancing the transition config", () => {
-      const machine = createFactoryMachine(
-        PromiseStates,
+      const machine = createMachine(
+        PROMISE_STATES,
         {
-          ...PromiseTransitions,
-          Pending: { ...PromiseTransitions.Pending, cancel: "Idle" },
+          ...PROMISE_TRANSITIONS,
+          Pending: { ...PROMISE_TRANSITIONS.Pending, cancel: "Idle" },
         },
-        "Idle",
+        "Idle"
       );
       const api = createApi(machine);
       expect(machine.getState().key).toBe("Idle");
-      api.execute();
+      api.executing(Promise.resolve(), []);
       expect(machine.getState().key).toBe("Pending");
       api.cancel();
       expect(machine.getState().key).toBe("Idle");

@@ -1,16 +1,17 @@
 ---
 title: Parentheses Checker
 ---
-import { BalancedParenthesesDemo } from '@lib/examples/BalancedParenChecker.tsx'
-import code from '@lib/examples/BalancedParenChecker.tsx?raw'
+
+import { BalancedParenthesesDemo } from "@code/examples/balanced-paren-checker";
+import code from "@code/examples/balanced-paren-checker/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 
 <div className="text-4xl text-red-500 text-green-500 text-yellow-500 container w-full flex items-center gap-2 rounded"></div>
 
 <div className="not-content">
-  <BalancedParenthesesDemo client:visible />
+  <BalancedParenthesesDemo client:only="react" />
 </div>
 
-## Full Code 
+## Full Code
 
-<CodeBlock lang='jsx' code={code} />
+<CodeBlock lang="jsx" code={code} />

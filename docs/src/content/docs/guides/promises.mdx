@@ -1,12 +1,213 @@
 ---
-title: Promises
+title: Promise Machines
+description: Handle asynchronous operations with type-safe promise state machines
 ---
+
 import CodeBlock from "@components/CodeBlock.astro";
-import code from '@lib/examples/promise.usage.ts?raw'
+import code from "@code/examples/usage-promise-machine-hooks.ts?raw";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import PromiseMachineDiagram from "@components/PromiseMachineDiagram.astro";
 
-Check it:
+## What are Promise Machines?
 
-<CodeBlock
-  lang={'js'}
-  code={code}
-/>
+Promise Machines provide a type-safe way to manage asynchronous operations with state machines. They automatically track the lifecycle of promises, handling success and error cases with appropriate typing.
+
+<PromiseMachineDiagram />
+
+## Promise Machine States
+
+Promise machines have four built-in states:
+
+1. **Idle** - The initial state before the promise is executed
+2. **Pending** - The promise is in flight (contains `promise` and `params`)
+3. **Resolved** - The promise completed successfully (contains `result`)
+4. **Rejected** - The promise failed (contains `error`)
+
+## Creating a Promise Machine
+
+Create a promise machine by wrapping any async function:
+
+```ts
+const promiseToAdd = (a: number, b: number) =>
+  new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 500));
+const adder = createPromiseMachine(promiseToAdd);
+```
+
+## Using Promise Machines
+
+### 1. Executing the Promise
+
+Call the `execute` method with parameters and await the result:
+
+```ts
+// Trigger addition and await result
+await adder.execute(2, 3);
+
+// Alternative: Await promise from state (if currently pending)
+const state = adder.getState();
+if (state.is("Pending")) await state.data.promise;
+```
+
+### 2. Checking State
+
+Access the current state with type-safe properties:
+
+```ts
+const state = adder.getState();
+
+// Pattern match on state for messaging
+const message = adder.getState().match({
+  Idle: () => "Ready to add.",
+  Pending: (params) => `Adding: ${params}`,
+  Resolved: (result) => `Result: ${result}`,
+  Rejected: (error) => `Error: ${error}`,
+});
+```
+
+{/* ### 3. Pattern Matching
+
+Use pattern matching for exhaustive state handling:
+
+````ts
+const ui = fetcher.getState().match({
+  Idle: () => "Ready to fetch data",
+  Pending: ({params}) => `Loading data from ${params[0]}...`,
+  Resolved: (data) => `Data loaded: ${JSON.stringify(data)}`,
+  Rejected: (error) => `Error: ${error.message}`
+});
+``` */}
+
+{/* ## Adding Lifecycle Hooks
+
+Promise machines support all standard lifecycle hooks:
+
+```ts
+import {
+  createPromiseMachine,
+  setup,
+  effect,
+  guard,
+  enter,
+  leave
+} from "matchina";
+
+// Create a promise machine
+const adder = createPromiseMachine(
+  (a: number, b: number) => new Promise<number>(
+    resolve => setTimeout(() => resolve(a + b), 500)
+  )
+);
+
+// Add lifecycle hooks
+setup(adder)(
+  // Guard to validate parameters
+  guard(ev => {
+    if (ev.type !== "executing") return true;
+    const [a, b] = ev.params[1];
+    return a >= 0 && b >= 0; // Only allow non-negative numbers
+  }),
+
+  // Log when entering pending state
+  enter(ev => {
+    if (ev.to.is("Pending")) {
+      console.log("Started calculation:", ev.to.data.params);
+    }
+  }),
+
+  // Log when leaving pending state
+  leave(ev => {
+    if (ev.from.is("Pending")) {
+      console.log("Leaving pending state");
+    }
+  }),
+
+  // Log when promise resolves
+  effect(ev => {
+    if (ev.type === "resolve") {
+      console.log("Promise resolved with:", ev.to.data);
+    }
+  })
+);
+``` */}
+
+{/* ## Complete Example
+
+Here's a complete example with hooks and error handling:
+
+<CodeBlock lang={"js"} code={code} /> */}
+{/*
+## Real-world Data Fetching Example
+
+Here's a more practical example of a type-safe data fetching machine:
+
+```ts
+import { createPromiseMachine, setup, effect } from "matchina";
+
+// Define User type
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+// Create a typed fetcher
+const userFetcher = createPromiseMachine(
+  async (userId: string): Promise<User> => {
+    const response = await fetch(`/api/users/${userId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user: ${response.statusText}`);
+    }
+    return response.json();
+  }
+);
+
+// Add hooks
+setup(userFetcher)(
+  // Cache user data
+  effect(ev => {
+    if (ev.type === "resolve") {
+      // TypeScript knows ev.to.data is User
+      localStorage.setItem(`user-${ev.to.data.id}`, JSON.stringify(ev.to.data));
+    }
+  })
+);
+
+// Usage in a React component
+function UserProfile({ userId }: { userId: string }) {
+  const [state, setState] = useState(userFetcher.getState());
+
+  useEffect(() => {
+    // Subscribe to state changes
+    const unsubscribe = userFetcher.subscribe(setState);
+
+    // Load user if not already loading or loaded
+    if (state.is("Idle")) {
+      userFetcher.execute(userId);
+    }
+
+    return unsubscribe;
+  }, [userId]);
+
+  // Render based on state
+  return state.match({
+    Idle: () => <div>Ready to load user</div>,
+    Pending: () => <div>Loading user...</div>,
+    Resolved: (user) => (
+      <div>
+        <h1>{user.name}</h1>
+        <p>Email: {user.email}</p>
+      </div>
+    ),
+    Rejected: (error) => <div>Error: {error.message}</div>
+  });
+}
+``` */}
+
+## Next Steps
+
+Now that you understand Promise Machines, explore these related guides:
+
+- [Lifecycle & Hooks](./lifecycle/) - Add more advanced hooks for state changes
+- [Factory Machines](./machines/) - Create regular state machines
+- [React Integration](./integrations/) - Use promise machines in React
+````

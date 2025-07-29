@@ -1,0 +1,43 @@
+---
+title: Stopwatch State Machine
+description: Stopwatch with start, stop, reset functionality
+---
+
+import StopwatchExample from "@code/examples/stopwatch/example";
+import machineCode from "@code/examples/stopwatch/machine.ts?raw";
+import viewCode from "@code/examples/stopwatch/StopwatchView.tsx?raw";
+import indexCode from "@code/examples/stopwatch/index.tsx?raw";
+import tickEffectCode from "@code/examples/lib/tick-effect.ts?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+
+## Interactive Stopwatch Example
+
+<div className="not-content">
+  <StopwatchExample client:only="react" />
+</div>
+
+## Introduction
+
+This example demonstrates a stopwatch state machine with start, stop, and reset functionality. It shows how to manage time-based state and lifecycle hooks for continuous updates.
+
+## State Definition
+
+The stopwatch has three states:
+
+- **Stopped**: The initial state with an elapsed time of 0
+- **Ticking**: The running state that updates elapsed time
+- **Suspended**: A paused state that preserves elapsed time
+
+The machine uses lifecycle hooks to implement the timer functionality, automatically updating the elapsed time when in the Ticking state.
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+    { name: "../lib/tick-effect.ts", code: tickEffectCode },
+  ]}
+/>

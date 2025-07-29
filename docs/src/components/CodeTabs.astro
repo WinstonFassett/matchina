@@ -1,0 +1,48 @@
+---
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+// import { Code } from "@astrojs/starlight/components";
+import CodeBlock from "./CodeBlock.astro";
+
+interface Props {
+  files: {
+    name: string;
+    code: string;
+    language: string;
+    twoslash?: boolean;
+  }[];
+}
+
+const { files } = Astro.props as Props;
+
+function getLangFromExtension(filename: string): string {
+  const ext = filename.split(".").pop();
+  switch (ext) {
+    case "ts":
+      return "ts";
+    case "js":
+      return "javascript";
+    case "jsx":
+      return "jsx";
+    case "tsx":
+      return "tsx";
+    case "py":
+      return "python";
+    default:
+      return "plaintext";
+  }
+}
+---
+
+<Tabs>
+  {
+    files.map((file) => (
+      <TabItem label={file.name}>
+        <CodeBlock
+          code={file.code}
+          lang={file.language ?? getLangFromExtension(file.name)}
+          twoslash={file.twoslash || false}
+        />
+      </TabItem>
+    ))
+  }
+</Tabs>

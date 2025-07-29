@@ -1,0 +1,140 @@
+---
+title: Type safety with Matchbox
+description: Master type inference in Matchbox for tagged unions and pattern matching
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
+import lightPatternMatchingRaw from "../../../code/examples/matchbox-usage/light-pattern-matching.ts?raw";
+import lightTypeGuardsRaw from "../../../code/examples/matchbox-usage/light-type-guards.ts?raw";
+import lightDefaultCaseRaw from "../../../code/examples/matchbox-usage/light-default-case.ts?raw";
+import lightCastingRaw from "../../../code/examples/matchbox-usage/light-casting.ts?raw";
+import lightCustomTagRaw from "../../../code/examples/matchbox-usage/light-custom-tag.ts?raw";
+import lightAdvancedMatchingRaw from "../../../code/examples/matchbox-usage/light-advanced-matching.ts?raw";
+import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-union.ts?raw";
+import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
+import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
+import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
+import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?raw";
+
+import CodeBlock from "@components/CodeBlock.astro";
+import code from "@code/examples/usage-typeguards.ts?raw";
+
+## Pattern Matching with Exhaustive Checking
+
+One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
+
+````ts
+// Calculate area with pattern matching
+const getArea = (shape) => shape.match({
+  Circle: ({ radius }) => Math.PI * radius * radius,
+  Rectangle: ({ width, height }) => width * height,
+  Triangle: ({ base, height }) => (base * height) / 2,
+});
+
+// TypeScript error if you forget a case!
+const getPerimeter = (shape) => shape.match({
+  Circle: ({ radius }) => 2 * Math.PI * radius,
+  Rectangle: ({ width, height }) => 2 * (width + height),
+  // Error: Property 'Triangle' is missing in type '...'
+});
+``` */}
+
+{/* ## Type Guards with Type Narrowing
+
+Matchbox provides type guards with the `is` method for type-safe narrowing:
+
+```ts
+// Type guard with automatic type narrowing
+if (circle.is("Circle")) {
+  // TypeScript knows circle.data has radius
+  console.log(`Radius: ${circle.data.radius}`);
+
+  // These would be TypeScript errors:
+  // console.log(circle.data.width);  // Error: Property 'width' does not exist...
+  // console.log(circle.data.base);   // Error: Property 'base' does not exist...
+}
+
+// Use in a filter
+const circles = [circle, rectangle, triangle].filter(s => s.is("Circle"));
+// TypeScript knows circles contains only Circle shapes
+``` */}
+
+## Type Guards
+
+Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
+
+<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
+
+## Type-Safe Casting with Runtime Validation
+
+Use the `as` method for type-safe casting with runtime validation:
+
+<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
+
+## Advanced Type Guards with Filters
+
+Matchina also provides filter functions for more complex type guards:
+
+```ts
+import { matchbox, withKey, withData } from "matchina";
+// ---cut---
+const Shape = matchbox({
+  Circle: (radius: number, color: string = "black") => ({ radius, color }),
+  Rectangle: (width: number, height: number, color: string = "black") => ({
+    width,
+    height,
+    color,
+  }),
+  Triangle: (base: number, height: number, color: string = "black") => ({
+    base,
+    height,
+    color,
+  }),
+});
+
+const shapes = [
+  Shape.Circle(5, "red"),
+  Shape.Rectangle(10, 20, "blue"),
+  Shape.Circle(8, "green"),
+  Shape.Triangle(15, 10, "red"),
+];
+
+// Filter by key
+const circles = shapes.filter(withKey("Circle"));
+console.log(`Found ${circles.length} circles`);
+
+// Filter by data property
+const redShapes = shapes.filter(withData((data) => data.color === "red"));
+console.log(`Found ${redShapes.length} red shapes`);
+
+// Combine filters
+const largeCircles = shapes.filter(
+  (shape) => shape.is("Circle") && shape.data.radius > 7,
+);
+console.log(`Found ${largeCircles.length} large circles`);
+````
+
+{/*
+
+## Complete Example
+
+Here's a complete example demonstrating various type guard features:
+
+<CodeBlock twoslash lang="ts" code={code} /> */}
+
+## Benefits of Type Guards
+
+- **Type safety**: Prevent runtime errors by catching type mismatches at compile time
+- **Code completion**: Get proper IDE suggestions based on narrowed types
+- **Refactoring safety**: When you change a state's structure, TypeScript will flag all places that need updates
+- **Exhaustive checking**: Ensure all possible states are handled with pattern matching
+
+## Next Steps
+
+Now that you understand type guards, explore these related guides:
+
+- [Matchbox: Type-Safe Unions](./union-machines/) - Learn more about the foundation of type guards
+- [Factory Machines](./machines/) - See how type guards work with state machines
+- [Lifecycle Hooks](./lifecycle/) - Add hooks for intercepting state changes

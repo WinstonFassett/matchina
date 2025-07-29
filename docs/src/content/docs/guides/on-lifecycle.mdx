@@ -1,0 +1,182 @@
+---
+title: Lifecycle & Hooks
+description: Intercept and react to state changes with lifecycle hooks
+---
+
+import { LifecycleDemo } from "@components/LifecycleDemo";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The `onLifecycle` function lets you intercept state changes and events in your machine through a single configuration object. The configuration is strictly keyed by entry state names (or "*" for all states).
+
+> **TypeScript Friendly:** All handlers are fully typed, with autocompletion for event shape and return types.
+
+## Configuration Structure
+
+The configuration object for `onLifecycle` is keyed by entry state names (e.g. `Idle`, `Pending`) or `"*"` for all states. For each state, you can specify:
+
+- `enter`: handler for entering the state
+- `leave`: handler for leaving the state
+- `on`: event configuration object
+
+### Event Configuration (`on`)
+
+The `on` object is keyed by event names (e.g. `start`, `tick`) or `"*"` for all events. For each event, you can provide:
+
+- A direct entry handler (function) for the event (runs as effect)
+- Or an object with any event hook handler from the machine lifecycle:
+  - `before`, `after`, `effect`, `guard`, `handle`, `transition`, `resolveExit`, `update`, `notify`, `end`, etc.
+
+**Note:** Only `enter` and `leave` are valid at the state level. All other hooks must be specified inside `on` for events.
+
+## Wildcard Usage
+You can use `"*"` for states and events to match all states or all events. For example, to run a handler for every event regardless of prior state:
+
+```ts
+onLifecycle(machine, {
+  "*": {
+    on: {
+      "*": {
+        after: (ev) => {
+          // Runs after any event, from any state
+        }
+      }
+    }
+  }
+});
+```
+You can also put event handlers like `on.executing` in the wildcard to match all prior states:
+```ts
+onLifecycle(machine, {
+  "*": {
+    on: {
+      executing: { before: (ev) => {} } // runs before executing event for any state
+    }
+  }
+});
+```
+
+## Example (Typechecked)
+
+```ts
+onLifecycle(machine, {
+  Idle: {
+    enter: (ev) => {}, // when entering Idle
+    leave: (ev) => {}, // when leaving Idle
+    on: {
+      start: {
+        before: (ev) => {}, // before start event
+        effect: (ev) => {}, // effect for start event
+        after: (ev) => {},  // after start event
+        // ...any other event hook from TransitionHookExtensions
+      },
+      tick: (ev) => {}, // direct effect handler for tick event
+    }
+  },
+  "*": {
+    enter: (ev) => {}, // runs for all states
+    leave: (ev) => {},
+    on: {
+      "*": { after: (ev) => {} }, // after any event
+      stop: (ev) => {}, // direct effect handler for stop event
+    }
+  }
+});
+```
+
+## Typing Benefits
+- Handlers receive fully typed event objects, matching the machine's state/event types.
+- Return types are enforced, e.g. `guard` returns boolean, `handle` returns event or undefined.
+- Autocomplete and type safety for all hooks and event payloads.
+
+## Common Patterns
+- **Log every event:**
+  ```ts
+  onLifecycle(machine, {
+    "*": {
+      on: {
+        "*": { after: (ev) => console.log(ev) },
+        tick: (ev) => console.log("tick effect", ev), // direct effect handler
+      }
+    }
+  });
+  ```
+- **Intercept only errors:**
+  ```ts
+  onLifecycle(machine, {
+    "*": {
+      on: {
+        reject: { after: (ev) => console.error(ev) }
+      }
+    }
+  });
+  ```
+- **Run a side effect on every state change:**
+  ```ts
+  onLifecycle(machine, {
+    "*": {
+      enter: (ev) => doSomething(ev),
+      leave: (ev) => doSomethingElse(ev),
+    }
+  });
+  ```
+
+## Interactive Example
+
+Try adding numbers and see how lifecycle hooks log each transition below:
+
+<div className="not-content">
+  <LifecycleDemo client:only="react" />
+</div>
+
+Here's the onLifecycle logging code behind this example:
+
+```ts
+onLifecycle(machine, {
+  Idle: {
+    on: {
+      executing: (ev) => {
+        console.log("Idle.executing effect:", ev.type, ev.from.key, ev.to.key);
+      },
+      resolve: {
+        before: ({ type, from, to, params }) => {
+          console.log("before Idle.resolve:", type, from.key, to.key, Object.keys(params));
+        },
+      },
+    },
+    enter: (ev) => {},
+    leave: (ev) => {},
+  },
+  "*": {
+    on: {
+      "*": {
+        after: (ev) => {
+          console.log(`[${ev.type}]:`, ev.to.key, ev.to.data);
+        },
+      },
+      reject: {
+        after: ({ type, from, to }) => {
+          const { name, stack, message } = to.data;
+          console.log("after", type, "from", from.key, name, message, stack);
+        },
+      },
+      resolve: {
+        before: ({ type, from: _from, to: { data } }) => {
+          console.log("before", type, data);
+        },
+      },
+    },
+    enter: (ev) => {},
+    leave: (ev) => {},
+  },
+});
+```
+
+## Next Steps
+
+Now that you understand lifecycle hooks, explore these related guides:
+
+- [Effects](/guides/effects) - Learn about the dedicated effects system
+- [Factory Machines](/guides/machines) - Create complete state machines
+- [Promise Machines](/guides/promises) - Handle async operations with state machines
+- [React Integration](/guides/integrations) - Use lifecycle hooks with React
+- [API Reference](/api/onLifecycle) - Full API details for `onLifecycle`

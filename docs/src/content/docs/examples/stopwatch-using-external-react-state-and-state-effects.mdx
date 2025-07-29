@@ -1,0 +1,46 @@
+---
+title: Stopwatch with External React State
+---
+
+import StopwatchExample from "@code/examples/stopwatch-using-external-react-state-and-state-effects/example";
+import machineCode from "@code/examples/stopwatch-using-external-react-state-and-state-effects/machine.ts?raw";
+import hookCode from "@code/examples/stopwatch-using-external-react-state-and-state-effects/useStopwatch.ts?raw";
+import indexCode from "@code/examples/stopwatch-using-external-react-state-and-state-effects/index.tsx?raw";
+import viewCode from "@code/examples/stopwatch-using-external-react-state-and-state-effects/StopwatchView.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+## Interactive Stopwatch Example
+
+<div className="not-content">
+  <StopwatchExample client:only="react" />
+</div>
+
+## About This Example
+
+This example demonstrates a state machine with external React state management:
+
+- Uses React's `useState` to manage the elapsed time outside the machine
+- Connects the external state to the machine via props
+- Implements effects as functions that can access and modify the external state
+- Uses utility hooks for state and event effects
+
+This pattern is particularly useful when you need to:
+
+1. Integrate with existing React state management
+2. Share state across multiple components
+3. Keep state management separate from the state machine logic
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "useStopwatch.ts", code: hookCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+<LinkCard title="Learn More About Effects" href="/guides/effects/" />

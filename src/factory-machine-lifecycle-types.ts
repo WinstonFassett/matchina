@@ -1,16 +1,15 @@
-import { AbortableEventHandler } from "./ext/abortable";
-import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransitionEvent,
-} from "./factory-machine";
-import { StateMachine, StateMachineEvent } from "./state-machine";
-import { Effect, Middleware } from "./types";
+} from "./factory-machine-types";
+import { Effect, Funcware, Middleware } from "./function-types";
+import { StateMachine, TransitionEvent } from "./state-machine";
 
-type TransitionHookExtensions<E extends StateMachineEvent> = {
+export type TransitionHookExtensions<E extends TransitionEvent> = {
   begin: AbortableEventHandler<E>;
-  resolve: Funcware<(ev: Partial<E>) => E>;
+  resolveExit: Funcware<(ev: Partial<E>) => E>;
   transition: Middleware<E>;
   guard: StateMachine<E>["guard"];
   handle: StateMachine<E>["handle"];
@@ -46,8 +45,10 @@ export type StateHookConfig<FC extends FactoryMachineContext> = {
   } & StateTransitionHooks<FC, StateKey>;
 };
 
-export type StateEventHookConfig<E extends StateMachineEvent<any, any>> =
-  Partial<TransitionHookExtensions<E>>;
+export type StateEventHookConfig<E extends TransitionEvent<any, any>> =
+  Partial<TransitionHookExtensions<E>>
+  | Effect<E>
+  ;
 
 type On<
   FC extends FactoryMachineContext,
@@ -65,3 +66,7 @@ type On<
     >
   >;
 };
+
+export type HookKey = keyof TransitionHookExtensions<any>;
+
+

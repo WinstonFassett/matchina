@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { defineStates } from "../src/states";
+import { defineStates } from "../src/define-states";
 
 describe("createStates", () => {
   const config = {
@@ -21,7 +21,7 @@ describe("createStates", () => {
         Loading: undefined,
         Loaded: undefined,
         Error: undefined,
-      }),
+      })
     );
   });
   describe("populates data from config", () => {

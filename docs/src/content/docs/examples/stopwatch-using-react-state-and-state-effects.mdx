@@ -1,0 +1,41 @@
+---
+title: Stopwatch with React State and State Effects
+---
+
+import StopwatchExample from "@code/examples/stopwatch-using-react-state-and-state-effects/example";
+import indexCode from "@code/examples/stopwatch-using-react-state-and-state-effects/index.tsx?raw";
+import hookCode from "@code/examples/stopwatch-using-react-state-and-state-effects/useStopwatch.ts?raw";
+import viewCode from "@code/examples/stopwatch-using-react-state-and-state-effects/StopwatchView.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+## Interactive Stopwatch Example
+
+<div className="not-content">
+  <StopwatchExample client:only="react" />
+</div>
+
+## About This Example
+
+This is the cleanest, shortest version of the stopwatch examples, using specialized utility hooks:
+
+- Uses `useStateEffects` and `useEventTypeEffect` for simplified effect management
+- Relies on React for state management like the React-first example
+- Provides a more declarative approach to handling state-specific effects
+
+The key innovation here is using effects tied directly to states and events (like `clear`), which creates a more maintainable separation of concerns.
+
+While this approach is elegant, a more idiomatic pattern would fully separate the machine definition from React into separate files, with effects specified as non-function JS values (strings or objects created by `defineEffects`).
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "useStopwatch.ts", code: hookCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+<LinkCard title="Learn More About Effects" href="/guides/effects/" />

@@ -1,0 +1,55 @@
+---
+title: Authentication Flow
+description: Complete authentication flow with login, registration, and password reset
+---
+
+import AuthFlowExample from "@code/examples/auth-flow/example";
+import machineCode from "@code/examples/auth-flow/machine.ts?raw";
+import viewCode from "@code/examples/auth-flow/AuthFlowView.tsx?raw";
+import indexCode from "@code/examples/auth-flow/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A robust authentication flow using a state machine to coordinate login, registration, and password reset. This example demonstrates how to separate UI form state from business logic, and how to handle async effects and error propagation in a predictable way.
+
+<div className="not-content">
+  <AuthFlowExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "AuthFlowView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Key Patterns
+
+- **State machine for flow, not form state**: The machine tracks which step the user is in (login, register, reset, etc.), but the view manages the actual form fields. This keeps the machine focused on transitions and error handling, not UI details.
+- **Async effects in dedicated states**: Async logic (API calls) is triggered by entering states like `LoggingIn`, `Registering`, or `RequestingPasswordReset`. The machine handles success/failure and transitions accordingly.
+- **Error propagation**: Errors from async operations are passed back to the relevant form state, so the view can display them.
+- **Minimal transitions**: Only transitions that represent real user intent or async results are modeled. There are no events for every keystroke or field update.
+- **Composable, testable logic**: Each state and transition is explicit and can be tested in isolation.
+
+## How to Use This Pattern
+
+- **Put UI state in the view**: Use React state/hooks for form fields. Only call the machine when the user submits a form or triggers a navigation.
+- **Let the machine handle flow and validation**: The machine decides what state comes next, and how to handle errors or async results.
+- **Trigger side effects on state entry**: Use lifecycle hooks or effects to run async logic when entering a state, not in response to UI events.
+- **Propagate errors through state**: Pass error messages as part of the state data, so the view can render them.
+
+## Why This Works
+
+- **Predictable transitions**: The machine enforces valid flows—users can’t skip steps or get into impossible states.
+- **Separation of concerns**: UI code is simple and focused on rendering; the machine handles business logic and error cases.
+- **Easy to extend**: Add new states (e.g., email verification) or transitions without rewriting the whole flow.
+
+## When to Use This Pattern
+
+- Multi-step forms where the flow depends on user actions or async results
+- Flows with error handling, retries, or conditional navigation
+- Anywhere you want to keep UI logic and business logic clearly separated
+
+For more on effect management and advanced patterns, see the [State Effects Guide](/guides/effects).
