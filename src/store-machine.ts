@@ -202,7 +202,7 @@ const store = createStoreMachine(0, {
   increment: (value) => value + 1,
   decrement: (value) => value - 1,
   set: (value, next) => next,
-  reset: 0,
+  reset: () => 0,
 });  
 store.send("increment")
 // const api = createStoreApi(store)

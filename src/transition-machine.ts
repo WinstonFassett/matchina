@@ -90,8 +90,7 @@ export function createTransitionMachine<E extends TransitionEvent>(
   transitions: TransitionRecord,
   initialState: E["from"]
 ): TransitionMachine<E> {
-  // Directly pass transitions as StoreTransitionRecord if compatible
-  const storeMachine = createStoreMachine<E["from"]>(initialState, transitions as unknown as StoreTransitionRecord<E["from"]>);
-  // Cast to TransitionMachine<E>
-  return storeMachine as unknown as TransitionMachine<E>;
+  return createStoreMachine<E["from"]>(
+    initialState, transitions as any
+  ) as unknown as TransitionMachine<E>;
 }
