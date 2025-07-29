@@ -4,6 +4,16 @@ import {
 } from "./factory-machine-types";
 import { Simplify, FlatMemberUnionToIntersection } from "./utility-types";
 
+// Utility type to extract parameter types from transition events
+type ExtractParamTypes<FC extends FactoryMachineContext, StateKey extends keyof FC["transitions"], EventKey extends keyof FC["transitions"][StateKey]> = 
+  FC["transitions"][StateKey][EventKey] extends keyof FC["states"]
+    ? Parameters<FC["states"][FC["transitions"][StateKey][EventKey]]>
+    : FC["transitions"][StateKey][EventKey] extends (...args: infer A) => (...innerArgs: any[]) => infer R
+      ? A
+      : FC["transitions"][StateKey][EventKey] extends (...args: infer A) => infer R
+        ? A
+        : any[];
+
 export type FactoryMachineApi<FC extends FactoryMachineContext> = Simplify<
   object & FlatEventSenders<FC>
 >;
@@ -21,7 +31,8 @@ export type StateEventTransitionSenders<
 > = {
   [StateKey in K]: {
     [EventKey in keyof FC["transitions"][StateKey]]: (
-      ...args: FactoryMachineTransitionEvent<FC, StateKey, EventKey>["params"]
+      // Use our utility type to extract the specific parameter types
+      ...args: ExtractParamTypes<FC, StateKey, EventKey>
     ) => void;
   };
 };
