@@ -37,12 +37,7 @@ export function defineZodStates<
   const stateFactories = {} as Record<string, Function>;
 
   for (const [key, schema] of Object.entries(schemas)) {
-    // For empty schemas (no properties), don't require parameters
-    if (schema instanceof z.ZodObject && Object.keys(schema.shape).length === 0) {
-      stateFactories[key] = () => schema.parse({});
-    } else {
-      stateFactories[key] = (data: any) => schema.parse(data);
-    }
+    stateFactories[key] = (data: any) => schema.parse(data);
   }
 
   return defineStates(stateFactories as unknown as SchemaMap);
