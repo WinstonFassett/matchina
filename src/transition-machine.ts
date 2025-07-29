@@ -1,5 +1,6 @@
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
+import { createStoreMachine, StoreTransitionRecord, StoreChange, StoreMachine } from "./store-machine";
 
 const EmptyTransform = <E>(event: E) => event;
 const EmptyEffect = <E>(_event: E) => {};
@@ -89,54 +90,8 @@ export function createTransitionMachine<E extends TransitionEvent>(
   transitions: TransitionRecord,
   initialState: E["from"]
 ): TransitionMachine<E> {
-  let lastChange = {
-    type: "__initialize",
-    to: initialState,
-  } as E;
-  const machine: TransitionMachine<E> = {
-    transitions,
-    getChange: () => lastChange,
-    getState: () => lastChange.to,
-    send(type, ...params) {
-      const lastChange = machine.getChange();
-      const resolved = machine.resolveExit({
-        type,
-        params,
-        from: lastChange.to,
-      } as ResolveEvent<E>);
-      if (resolved) {
-        machine.transition(resolved);
-      }
-    },
-    resolveExit(ev) {
-      const to = machine.transitions[ev.from as any][ev.type];
-      if (to) {
-        return { ...ev, to } as E; // TODO: use Object.assign
-      }
-    },
-    guard: (ev: E) => !!ev,
-    transition(change: E) {
-      if (!machine.guard(change)) return;      
-      let update = machine.handle(change); // process change
-      if (!update) return;      
-      update = machine.before(update); // prepare update
-      if (!update) return;      
-      machine.update(update); // apply update
-      machine.effect(update); // trigger effects
-      machine.notify(update); // notify consumers
-      machine.after(update); // cleanup
-    },
-    handle: EmptyTransform<E>,
-    before: EmptyTransform<E>,
-    update: (update: E) => { lastChange = update },
-    effect(ev: E) {
-      machine.leave(ev); // left previous
-      machine.enter(ev); // entered next
-    },
-    leave: EmptyEffect<E>,
-    enter: EmptyEffect<E>,
-    notify: EmptyEffect<E>,
-    after: EmptyEffect<E>,
-  };
-  return machine;
+  // Directly pass transitions as StoreTransitionRecord if compatible
+  const storeMachine = createStoreMachine<E["from"]>(initialState, transitions as unknown as StoreTransitionRecord<E["from"]>);
+  // Cast to TransitionMachine<E>
+  return storeMachine as unknown as TransitionMachine<E>;
 }
