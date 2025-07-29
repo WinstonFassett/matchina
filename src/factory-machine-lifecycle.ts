@@ -16,69 +16,64 @@ import { ChangeEventKeyFilter } from "./match-change-types";
 
 /**
  * Registers lifecycle hooks for a FactoryMachine, allowing fine-grained control over state transitions.
- * Supports wildcards for state and event keys, direct entry handlers, and ensures handlers are strongly typed.
- * Returns a disposer to remove all registered hooks.
  *
- * ## Supported Hook Adapter Names
+ * ## Configuration Structure
  *
- * **State-level hooks (top-level):**
- * - {@link enter} — runs when entering the state
- * - {@link leave} — runs when leaving the state
- * - {@link notify} — runs after state change
- * - {@link effect} — runs side effects
- * - {@link transition}, {@link resolveExit}, {@link guard}, {@link update}, {@link handle}, {@link after} — advanced hooks for full lifecycle control
+ * The configuration object is strictly keyed by entry state names (or "*" for all states).
+ * For each state, you can specify:
+ *   - `enter`: handler for entering the state
+ *   - `leave`: handler for leaving the state
+ *   - `on`: event configuration object
  *
- * **Event-level hooks (inside `on`):**
- * - Direct entry handler: `on.event = fn` — runs as entry for event (after leave, before effect)
- * - Full hook object: `on.event = { before, effect, after }`
- * - {@link before} — runs before the event transition
- * - {@link after} — runs after the event transition
+ * ### Event Configuration (`on`)
  *
- * ## Wildcard Behavior
- * - Use "*" as a state or event key to match all states/events.
- * - Example: `{ "*": { enter: fn } }` runs `enter` for every state.
- * - You can also put event handlers like `on.executing` in the wildcard to match all prior states:
- *   ```typescript
- *   onLifecycle(machine, {
- *     "*": {
- *       on: {
- *         executing: { before: (ev) => {} } // runs before executing event for any state
+ * The `on` object is keyed by event names (or "*" for all events). For each event, you can provide:
+ *   - A direct entry handler (function) for the event (runs as effect)
+ *   - Or an object with any event hook handler from the machine lifecycle:
+ *     - `before`, `after`, `effect`, `guard`, `handle`, `transition`, `resolveExit`, `update`, `notify`, `end`, etc.
+ *
+ * **Note:** Only `enter` and `leave` are valid at the state level. All other hooks must be specified inside `on` for events.
+ *
+ * ## Wildcard Usage
+ * You can use "*" for states and events to match all states or all events. For example:
+ *
+ * ```ts
+ * onLifecycle(machine, {
+ *   "*": {
+ *     on: {
+ *       "*": {
+ *         after: (ev) => {
+ *           // Runs after any event, from any state
+ *         }
  *       }
  *     }
- *   });
- *   ```
+ *   }
+ * });
+ * ```
  *
- * ## Typing Benefits
- * - Handlers receive fully typed event objects, matching the machine's state/event types.
- * - Return types are enforced, e.g. `guard` returns boolean, `handle` returns event or undefined.
+ * ## Example (Typechecked)
  *
- * ## Structure & Sequence
- * - Top-level keys are state names (or "*" for all states).
- * - Inside each state, you can use hooks (`enter`, `leave`, etc.) and the `on` block for event-specific hooks.
- * - Inside `on`, event names (or "*") map to event hooks (`before`, `after`), direct entry handlers, or full hook objects.
- * - Hooks are registered in the order: enter, leave, on (event-specific).
- * - For each event, matching hooks are evaluated in the order they are registered.
- * - Wildcard hooks are applied after specific hooks for the same phase.
- *
- * ## Example
- * ```typescript
+ * ```ts
  * onLifecycle(machine, {
  *   Idle: {
- *     enter: (ev) => {}, // handler for entering Idle
- *     leave: (ev) => {}, // handler for leaving Idle
+ *     enter: (ev) => {}, // when entering Idle
+ *     leave: (ev) => {}, // when leaving Idle
  *     on: {
- *       executing: {
- *         before: (ev) => {}, // before executing event
- *         after: (ev) => {},  // after executing event
+ *       start: {
+ *         before: (ev) => {}, // before start event
+ *         effect: (ev) => {}, // effect for start event
+ *         after: (ev) => {},  // after start event
+ *         // ...any other event hook from TransitionHookExtensions
  *       },
- *       tick: (ev) => {}, // direct entry handler for tick
+ *       tick: (ev) => {}, // direct effect handler for tick event
  *     }
  *   },
  *   "*": {
- *     notify: (ev) => {}, // handler for all states
+ *     enter: (ev) => {}, // runs for all states
+ *     leave: (ev) => {},
  *     on: {
- *       "*": { after: (ev) => {} }, // handler for all events
- *       tick: (ev) => {}, // direct entry handler for tick on all states
+ *       "*": { after: (ev) => {} }, // after any event
+ *       stop: (ev) => {}, // direct effect handler for stop event
  *     }
  *   }
  * });
