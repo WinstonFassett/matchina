@@ -22,7 +22,7 @@ import { ResolveEvent } from "./state-machine-types";
  * 10. `notify(ev)` - Notifies subscribers of the change.
  * 11. `after(ev)` - Final hook after transition completes.
  */
-export interface StateMachine<E extends TransitionEvent = TransitionEvent> {
+export interface StateMachine<E extends TransitionEvent<any, any, any[]> = TransitionEvent> {
   /**
    * Returns the current state of the machine (the `to` property of the last change).
    */
@@ -108,10 +108,11 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent> {
 export interface TransitionEvent<
   To = unknown,
   From = To,
+  Params extends any[] = any[],
 > {
   type: string; // The event type string
-  params: any[]; // Parameters passed to the event
+  params: Params; // Parameters passed to the event, can be specified by derived types
   to: To; // Target state for the transition
   from: From; // Source state for the transition
-  get machine(): StateMachine<TransitionEvent<To, From>>; // Reference to the state machine instance
+  get machine(): StateMachine<TransitionEvent<To, From, Params>>; // Reference to the state machine instance
 }
