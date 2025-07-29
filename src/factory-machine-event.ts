@@ -1,6 +1,8 @@
 import { FactoryMachineEvent } from "./factory-machine-types";
 import { match } from "./match-case";
 import { MatchCases } from "./match-case-types";
+import { TransitionEvent } from "./state-machine";
+
 export class FactoryMachineEventImpl<E extends FactoryMachineEvent<any>> {
   public type: E["type"];
   public from: E["from"];

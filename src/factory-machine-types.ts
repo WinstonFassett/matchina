@@ -61,14 +61,7 @@ export type FactoryMachineTransitionEvent<
     keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends
     FC["transitions"][FromKey][EventKey] = FC["transitions"][FromKey][EventKey],
-  ParamType = ToKey extends keyof FC["states"]
-    ? Parameters<FC["states"][ToKey]>
-    : ToKey extends (...args: infer A) => (...innerArgs: any[]) => infer R
-      ? A
-      : ToKey extends (...args: infer A) => infer R
-        ? A
-        : never
-> = TransitionEvent<FactoryState<FC["states"]>, FactoryState<FC["states"], FromKey extends keyof FC["states"] ? FromKey : any>, ParamType extends any[] ? ParamType : never> &
+> = TransitionEvent<FactoryState<FC["states"]>> &
   FactoryMachineEventApi<FC> & {
     from: FactoryState<
       FC["states"],

@@ -108,11 +108,10 @@ export interface StateMachine<E extends TransitionEvent<any, any, any[]> = Trans
 export interface TransitionEvent<
   To = unknown,
   From = To,
-  Params extends any[] = any[],
 > {
   type: string; // The event type string
-  params: Params; // Parameters passed to the event, can be specified by derived types
+  params: any[]; // Parameters passed to the event
   to: To; // Target state for the transition
   from: From; // Source state for the transition
-  get machine(): StateMachine<TransitionEvent<To, From, Params>>; // Reference to the state machine instance
+  get machine(): StateMachine<TransitionEvent<To, From>>; // Reference to the state machine instance
 }
