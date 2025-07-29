@@ -4,7 +4,6 @@ import { FactoryState, StateFactory } from "./factory-state";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
-import { FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
 
 export interface FactoryMachineContext<SF extends StateFactory = StateFactory> {
   states: SF;

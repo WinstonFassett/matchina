@@ -37,19 +37,20 @@ setup(machine)(
 );
 ```
 
-### Comparison: `transitionHooks` vs `onLifecycle`
+### Comparison: `transitionHooks` vs `onLifecycle` vs Functional Enhancers
 
-| Feature                | `onLifecycle` (Config Object) | `transitionHooks` (Flat API) |
-|------------------------|-------------------------------|------------------------------|
-| Structure              | Nested, grouped by state/event| Flat, composable, per hook   |
-| Modularity             | All-in-one config             | Split across files/modules   |
-| Readability            | Good for grouped logic        | Good for scanning hooks      |
-| Type Safety            | Strong                        | Strong                      |
-| Wildcards              | `"*"` keys                    | Omit keys                   |
-| Use Case               | Complex, grouped logic        | Modular, scattered logic    |
+| Feature                | `onLifecycle` (Config Object) | `transitionHooks` (Flat API) | Functional Enhancers (`effect(whenEvent(...))`, etc.) |
+|------------------------|-------------------------------|------------------------------|------------------------------------------------------|
+| Structure              | Nested, grouped by state/event| Flat, composable, per hook   | Pure, composable, per enhancer                       |
+| Modularity             | All-in-one config             | Split across files/modules   | Split, highly modular, functional                    |
+| Readability            | Good for grouped logic        | Good for scanning hooks      | Good for functional composition                      |
+| Type Safety            | Strong                        | Strong                      | Strong                                               |
+| Wildcards              | "*" keys                      | Omit keys                   | Predicate/wildcard via when/whenEvent                |
+| Use Case               | Complex, grouped logic        | Modular, scattered logic    | Functional, advanced composition                     |
 
 **Choose `onLifecycle` for grouped, declarative logic.  
-Choose `transitionHooks` for modular, flat, and composable logic.**
+Choose `transitionHooks` for modular, flat, and composable logic.  
+Choose functional enhancers for pure, highly composable, and advanced functional patterns.**
 
 ### Full Example: Mirroring `onLifecycle`
 

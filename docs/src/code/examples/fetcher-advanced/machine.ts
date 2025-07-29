@@ -66,7 +66,7 @@ export function createFetcher(
     },
     "Idle"
   );
-  const fetcher = extend(zen(machine), {
+  const fetcher = Object.assign(zen(machine), {
     fetch: (url?: string, options?: RequestInit) => {
       fetcher.fetch(url, options);
       return fetcher.promise!;
@@ -154,12 +154,5 @@ export function createFetcher(
 
 type Assign<Source, Destination> = Omit<Source, keyof Destination> &
   Destination;
-
-function extend<Source extends object, Destination>(
-  source: Source,
-  destination: Destination
-): Assign<Source, Destination> {
-  return Object.assign(source, destination) as Assign<Source, Destination>;
-}
 
 export type FetcherMachine = ReturnType<typeof createFetcher>;

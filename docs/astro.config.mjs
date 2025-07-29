@@ -25,6 +25,7 @@ export default defineConfig({
     starlight({
       plugins: [
         starlightTypeDoc({
+          watch: true,
           sidebar: {
             label: "Reference",
           },
@@ -172,6 +173,10 @@ export default defineConfig({
             {
               label: "onLifecycle",
               link: "/guides/on-lifecycle",
+            },
+            {
+              label: "transitionHooks",
+              link: "/guides/transition-hooks",
             },
             {
               label: "React Integration",
