@@ -1,5 +1,6 @@
 import { createMethodEnhancer } from "./ext";
 import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
+import { Disposer } from "./function-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
@@ -16,7 +17,7 @@ const hookSetup =
   ) =>
     createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
       target: T
-    ) => () => void;
+    ) => Disposer;
 
 /**
  * Composes two event handler functions for a state machine lifecycle method.
@@ -51,7 +52,7 @@ export const combineGuards =
 // #region Interceptors
 /**
  * @function before
- * Enhances the state machine's `before` lifecycle method.
+ * Enhances the `before` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.before}.
  *
@@ -60,7 +61,7 @@ export const combineGuards =
 export const before = hookSetup("before");
 /**
  * @function transition
- * Enhances the state machine's `transition` lifecycle method.
+ * Enhances the `transition` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.transition}.
  *
@@ -69,7 +70,7 @@ export const before = hookSetup("before");
 export const transition = hookSetup("transition");
 /**
  * @function resolveExit
- * Enhances the state machine's `resolveExit` lifecycle method.
+ * Enhances the `resolveExit` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.resolveExit}.
  *
@@ -78,7 +79,7 @@ export const transition = hookSetup("transition");
 export const resolveExit = hookSetup("resolveExit");
 /**
  * @function guard
- * Enhances the state machine's `guard` lifecycle method.
+ * Enhances the `guard` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.guard}.
  *
@@ -87,7 +88,7 @@ export const resolveExit = hookSetup("resolveExit");
 export const guard = hookSetup("guard");
 /**
  * @function update
- * Enhances the state machine's `update` lifecycle method.
+ * Enhances the `update` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.update}.
  *
@@ -96,7 +97,7 @@ export const guard = hookSetup("guard");
 export const update = hookSetup("update");
 /**
  * @function handle
- * Enhances the state machine's `handle` lifecycle method.
+ * Enhances the `handle` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.handle}.
  *
@@ -108,7 +109,7 @@ export const handle = hookSetup("handle");
 // #region Effects
 /**
  * @function effect
- * Enhances the state machine's `effect` lifecycle method.
+ * Enhances the `effect` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.effect}.
  *
@@ -117,7 +118,7 @@ export const handle = hookSetup("handle");
 export const effect = hookSetup("effect");
 /**
  * @function leave
- * Enhances the state machine's `leave` lifecycle method.
+ * Enhances the `leave` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.leave}.
  *
@@ -126,7 +127,7 @@ export const effect = hookSetup("effect");
 export const leave = hookSetup("leave");
 /**
  * @function enter
- * Enhances the state machine's `enter` lifecycle method.
+ * Enhances the `enter` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.enter}.
  *
@@ -135,7 +136,7 @@ export const leave = hookSetup("leave");
 export const enter = hookSetup("enter");
 /**
  * @function after
- * Enhances the state machine's `after` lifecycle method.
+ * Enhances the `after` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.after}.
  *
@@ -144,7 +145,7 @@ export const enter = hookSetup("enter");
 export const after = hookSetup("after");
 /**
  * @function notify
- * Enhances the state machine's `notify` lifecycle method.
+ * Enhances the `notify` lifecycle method of a {@link StateMachine}.
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.notify}.
  *

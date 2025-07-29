@@ -1,1 +1,3 @@
-export type AbortableEventHandler<E> = (event: E, abort: () => void) => void;
+import { Disposer } from "../function-types";
+
+export type AbortableEventHandler<E> = (event: E, abort: Disposer) => void;

@@ -64,7 +64,7 @@
   {
     "name": "factory machine hooks",
     "path": "src/factory-machine-hooks.ts",
-    "import": "{ whenEvent }"
+    "import": "{ whenState }"
   },
   {
     "name": "factory-machine-lifecycle",
