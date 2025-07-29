@@ -32,9 +32,9 @@ const m1 = createMachine(
   },  
   "Idle"
 );
-m1.send('error', 1)
-m1.send('error', '1')
-m1.send('error')
+// m1.send('error', 1) // invalid
+m1.send('error', '1') // valid
+// m1.send('error') // invalid -- error required
 
 
 const m2 = matchina(
@@ -50,9 +50,9 @@ const m2 = matchina(
   },  
   "Idle"
 );
-m2.send('error', 1)
-m2.send('error', '1')
-m2.send('error')
+// m2.send('error', 1) // invalid
+m2.send('error', '1') // valid
+// m2.send('error') // invalid -- error required
 m2.success();
 m2.error("An error occurred");
 
