@@ -1,4 +1,4 @@
-import { setup, transitionHooks } from "matchina";
+import { transitionHooks } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import { tickEffect } from "../lib/tick-effect";
@@ -12,25 +12,23 @@ export function useStopwatch() {
       startTime,
       elapsed,
     });
-    setup(machine)(
-      transitionHooks(
-        { to: "Ticking", enter: () => tickEffect(() => {
-          setElapsed(Date.now() - (machine.startTime ?? 0));
-        })},
-        { type: "start", effect: () => {
-          setStartTime(Date.now());
-        }},
-        { from: "Ticking", type: "clear", effect: () => {
-          setStartTime(Date.now());
-        }},
-        { from: "Suspended", type: "clear", effect: () => {
-          setStartTime(undefined);
-        }},
-        { type: "clear", effect: () => setElapsed(0) },
-        { type: "stop", effect: () => setElapsed(0) },
-        { type: "resume", effect: () => setStartTime(Date.now() - (machine.elapsed ?? 0)) }
-      )
-    );
+    machine.setup(transitionHooks(
+      { to: "Ticking", enter: () => tickEffect(() => {
+        setElapsed(Date.now() - (machine.startTime ?? 0));
+      })},
+      { type: "start", effect: () => {
+        setStartTime(Date.now());
+      }},
+      { from: "Ticking", type: "clear", effect: () => {
+        setStartTime(Date.now());
+      }},
+      { from: "Suspended", type: "clear", effect: () => {
+        setStartTime(undefined);
+      }},
+      { type: "clear", effect: () => setElapsed(0) },
+      { type: "stop", effect: () => setElapsed(0) },
+      { type: "resume", effect: () => setStartTime(Date.now() - (machine.elapsed ?? 0)) }
+    ))    
     return machine;
   }, []);
   useMachine(stopwatch);
