@@ -1,0 +1,74 @@
+---
+title: Flat Lifecycle Hooks API
+sidebar_label: transitionHooks
+---
+
+## Flat API: `transitionHooks`
+
+The `transitionHooks` function provides a flat, composable API for registering lifecycle hooks on a [FactoryMachine](../api/factory-machine). Each hook config can specify matching criteria (`from`, `to`, `type`) and any lifecycle phase (`effect`, `before`, `after`, `guard`, etc.).
+
+> **TypeScript Friendly:** All handlers are fully typed, with autocompletion for state/event keys and hook phases.
+
+### Configuration Structure
+
+Each entry to `transitionHooks` is an object with optional `from`, `to`, `type` keys for matching, and one or more lifecycle hook functions:
+
+```ts
+transitionHooks(
+  { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+  { from: "Idle", enter: fn, leave: fn },
+  { type: "resolve", guard: e => true },
+  { effect: globalFn }
+)
+```
+
+You can use wildcards by omitting keys.
+
+### Example (Typechecked)
+
+```ts
+setup(machine)(
+  transitionHooks(
+    { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+    { from: "Idle", enter: fn, leave: fn },
+    { type: "resolve", guard: e => true },
+    { effect: globalFn }
+  )
+);
+```
+
+### Comparison: `transitionHooks` vs `onLifecycle`
+
+| Feature                | `onLifecycle` (Config Object) | `transitionHooks` (Flat API) |
+|------------------------|-------------------------------|------------------------------|
+| Structure              | Nested, grouped by state/event| Flat, composable, per hook   |
+| Modularity             | All-in-one config             | Split across files/modules   |
+| Readability            | Good for grouped logic        | Good for scanning hooks      |
+| Type Safety            | Strong                        | Strong                      |
+| Wildcards              | `"*"` keys                    | Omit keys                   |
+| Use Case               | Complex, grouped logic        | Modular, scattered logic    |
+
+**Choose `onLifecycle` for grouped, declarative logic.  
+Choose `transitionHooks` for modular, flat, and composable logic.**
+
+### Full Example: Mirroring `onLifecycle`
+
+```ts
+setup(machine)(
+  transitionHooks(
+    { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
+    { from: "Idle", enter: fn, leave: fn },
+    { type: "resolve", guard: e => true },
+    { effect: globalFn },
+    { type: "tick", effect: tickEffect },
+    { type: "stop", effect: stopEffect },
+    { effect: (ev) => console.log(ev) } // global
+  )
+);
+```
+
+---
+
+See also:
+- [Lifecycle & Hooks (onLifecycle)](./on-lifecycle)
+- [API Reference: transitionHooks](../api/transitionHooks)

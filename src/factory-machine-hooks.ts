@@ -1,25 +1,23 @@
 // import { setup } from "./ext";
 // import { AbortableEventHandler } from "./ext/abortable-event-handler";
 // import { iff } from "./extras/iff";
+import { createDisposer } from "./ext";
+import { EntryListener } from "./extras/entry-exit-types";
 import { when } from "./extras/when";
-import { EntryListener, ExitListener } from "./extras/entry-exit-types";
-import { EventType, FactoryMachineEvent, StateKey } from "./factory-machine-types";
-import { FactoryState } from "./factory-state";
-import { hookSetup } from './state-machine-hooks';
-import { matchChange } from "./match-change";
 import { HookKey, TransitionHookExtensions } from "./factory-machine-lifecycle-types";
-import { FactoryMachineContext } from "./factory-machine-types";
+import { FactoryMachine, FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
+import { FactoryState } from "./factory-state";
+import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
+import { hookSetup } from './state-machine-hooks';
 
 
 // Strict config type for a single transition hook
-export type TransitionHookConfig<FC extends FactoryMachineContext = FactoryMachineContext> = Partial<{
-  from: StateKey<FC>;
-  to: StateKey<FC>;
-  type: EventType<FC>;
-}> & Partial<{
-  [K in HookKey]: TransitionHookExtensions<FactoryMachineEvent<FC>>[K];
-}>;
+export type TransitionHookConfig<FC extends FactoryMachineContext = FactoryMachineContext> =
+  Partial<ChangeEventKeyFilter<FactoryMachineEvent<FC>>> &
+  Partial<{
+    [K in HookKey]: TransitionHookExtensions<FactoryMachineEvent<FC>>[K];
+  }>;
 
 /**
  * Registers one or more transition hooks for a {@link FactoryMachine}.
@@ -72,8 +70,8 @@ export function transitionHook<FC extends FactoryMachineContext>(
 export function transitionHooks<FC extends FactoryMachineContext>(
   ...entries: TransitionHookConfig<FC>[]
 ) {
-  return (machine: any) => {
-    return entries.flatMap(entry => transitionHook<FC>(entry)(machine));
+  return (machine: FactoryMachine<FC>) => {
+    return createDisposer(entries.flatMap(entry => transitionHook<FC>(entry)(machine)));
   };
 }
 
