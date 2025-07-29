@@ -8,26 +8,15 @@ export function useStopwatch() {
   const [startTime, setStartTime] = useState<number | undefined>(undefined);
   const [elapsed, setElapsed] = useState(0);
   const stopwatch = useMemo(() => {
-    const machine = Object.assign(createStopwatch(), {
-      startTime,
-      elapsed,
-    });
+    const machine = Object.assign(createStopwatch(), { startTime,  elapsed });
     machine.setup(transitionHooks(
-      { to: "Ticking", enter: () => tickEffect(() => {
-        setElapsed(Date.now() - (machine.startTime ?? 0));
-      })},
-      { type: "start", effect: () => {
-        setStartTime(Date.now());
-      }},
-      { from: "Ticking", type: "clear", effect: () => {
-        setStartTime(Date.now());
-      }},
-      { from: "Suspended", type: "clear", effect: () => {
-        setStartTime(undefined);
-      }},
-      { type: "clear", effect: () => setElapsed(0) },
-      { type: "stop", effect: () => setElapsed(0) },
-      { type: "resume", effect: () => setStartTime(Date.now() - (machine.elapsed ?? 0)) }
+      { to: "Ticking", enter: () => tickEffect(() => { setElapsed(Date.now() - (machine.startTime ?? 0)); })},
+      { type: "start", effect: () => { setStartTime(Date.now()); }},
+      { from: "Ticking", type: "clear", effect: () => { setStartTime(Date.now()); }},
+      { from: "Suspended", type: "clear", effect: () => { setStartTime(undefined); }},
+      { type: "clear", effect: () => { setElapsed(0); }},
+      { type: "stop", effect: () => { setElapsed(0); }},
+      { type: "resume", effect: () => { setStartTime(Date.now() - (machine.elapsed ?? 0)); }}
     ))    
     return machine;
   }, []);
