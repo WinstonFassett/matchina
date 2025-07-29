@@ -67,8 +67,29 @@ setup(machine)(
 );
 ```
 
----
+### Alternative: Pure Functional Enhancers
+You can also choose a more pure functional approach using raw transition hook method enhancers:
 
-See also:
-- [Lifecycle & Hooks (onLifecycle)](./on-lifecycle)
+```ts
+setup(machine)(
+  enter(fn),
+  guard(fn),
+  leave(fn),
+  handle(fn),
+  // ...other enhancers
+)
+```
+This style is ideal for highly modular or functional codebases, and can be mixed with `transitionHooks` or other enhancers.
+
+## See Also
 - [API Reference: transitionHooks](../api/transitionHooks)
+- [Live Example: TransitionHooksDemo](../../code/examples/TransitionHooksDemo.tsx)
+
+### Real-World Pattern
+For modular apps, split hooks across files and import them:
+```ts
+setup(machine)(
+  ...allEnhancers,
+  transitionHooks(...importedHooks)
+)
+```
