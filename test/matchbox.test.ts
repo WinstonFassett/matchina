@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
+// import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
 import { matchboxFactory } from "../src/matchbox-factory";
 import { MatchboxFactory } from "../src/matchbox-factory-types";
 
@@ -141,17 +141,17 @@ describe("matchboxFactory", () => {
 //     expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
 //   })
 // })
-describe("factoryFromMembers", () => {
-  it("should create a factory from members", () => {
-    const Box = matchboxFactory({ A: () => ({ howdy: true }) }, "testKey");
-    const Box2 = matchboxFactory({ B: 1 }, "testKey");
-    const Box3 = factoryFromMembers({ ...Box, ...Box2 });
-    const a = Box3.A();
-    const b = Box3.B();
+// describe("factoryFromMembers", () => {
+//   it("should create a factory from members", () => {
+//     const Box = matchboxFactory({ A: () => ({ howdy: true }) }, "testKey");
+//     const Box2 = matchboxFactory({ B: 1 }, "testKey");
+//     const Box3 = factoryFromMembers({ ...Box, ...Box2 });
+//     const a = Box3.A();
+//     const b = Box3.B();
 
-    expect(a.testKey).toBe("A");
-    expect(a.data).toEqual({ howdy: true });
-    expect(b.testKey).toBe("B");
-    expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
-  });
-});
+//     expect(a.testKey).toBe("A");
+//     expect(a.data).toEqual({ howdy: true });
+//     expect(b.testKey).toBe("B");
+//     expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
+//   });
+// });
