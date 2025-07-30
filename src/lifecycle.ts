@@ -59,7 +59,7 @@ export type Lifecycle1<E> = {
   after: Effect<E>;
 };
 
-export function withLifecycle<E, T extends object>(
+export function withLifecycle<T extends object = {}, E = any>(
   target: T,
   update: Effect<E>,
 ): Lifecycle<E> & T {

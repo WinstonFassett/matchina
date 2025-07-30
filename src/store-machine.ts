@@ -189,25 +189,7 @@ export function createStoreMachine<
         }
         const change: StoreChange<T> = { type, params, from, to };
         machine.transition(change);
-      },
-      // resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined {
-      //   const handler = machine.mutations[ev.type];
-      //   if (!handler) return undefined;
-      //   const result = handler(...(ev.params || []));
-      //   let to: T;
-      //   if (typeof result === "function") {
-      //     const change: StoreChange<T> = {
-      //       type: ev.type,
-      //       params: ev.params,
-      //       from: ev.from,
-      //       to: ev.from,
-      //     };
-      //     to = (result as (change: StoreChange<T>) => T)(change);
-      //   } else {
-      //     to = result as T;
-      //   }
-      //   return { ...ev, to };
-      // },
+      },      
     } as StoreMachine<T, TR>,
     (change) => {
       lastChange = change;
