@@ -6,7 +6,7 @@ import {
   FactoryMachineTransition,
   FactoryMachineTransitions
 } from "./factory-machine-types";
-import { FactoryState, StateFactory } from "./factory-state";
+import { FactoryState, KeyedStateFactory } from "./factory-state";
 import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 import { createStoreMachine } from "./store-machine";
@@ -107,7 +107,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  * state management.
  */
 export function createMachine<
-  SF extends StateFactory,
+  SF extends KeyedStateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
   E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>

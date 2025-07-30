@@ -29,7 +29,7 @@ export interface KeyedState {
  * throughout factory machines. The implementation leverages matchbox factories for dynamic and type-safe
  * state construction and transitions.
  */
-export interface StateFactory {
+export interface KeyedStateFactory {
   [key: string]: (...args: any[]) => KeyedState;
 }
 
@@ -52,6 +52,6 @@ export interface StateFactory {
  * state construction and transitions.
  */
 export type FactoryState<
-  States extends StateFactory,
+  States extends KeyedStateFactory,
   StateKey extends keyof States = keyof States
 > = ReturnType<States[StateKey]>;

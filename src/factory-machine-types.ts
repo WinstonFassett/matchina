@@ -1,6 +1,6 @@
 import { StateEventTransitionSenders, ExtractParamTypes } from "./factory-machine-api-types";
 import { MatchInvocation } from "./match-case-types";
-import { FactoryState, StateFactory } from "./factory-state";
+import { FactoryState, KeyedStateFactory } from "./factory-state";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
@@ -23,7 +23,7 @@ export type ExtractEventParams<
 
 
 
-export interface FactoryMachineContext<SF extends StateFactory = StateFactory> {
+export interface FactoryMachineContext<SF extends KeyedStateFactory = KeyedStateFactory> {
   states: SF;
   transitions: FactoryMachineTransitions<SF>;
 }
@@ -56,14 +56,14 @@ export interface FactoryMachine<FC extends FactoryMachineContext<any> = FactoryM
   ): void;
 }
 
-export type FactoryMachineTransitions<SF extends StateFactory> = {
+export type FactoryMachineTransitions<SF extends KeyedStateFactory> = {
   [FromStateKey in keyof SF]?: {
     [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
   };
 };
 
 export type FactoryMachineTransition<
-  SF extends StateFactory,
+  SF extends KeyedStateFactory,
   FromStateKey extends keyof SF = keyof SF,
   EventKey extends string = any,
 > =

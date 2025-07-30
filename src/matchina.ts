@@ -1,5 +1,5 @@
 import { zen } from "./extras/zen";
-import { StateFactory } from "./factory-state";
+import { KeyedStateFactory } from "./factory-state";
 import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
@@ -56,7 +56,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  * and a setup function for adding hooks and enhancers.
  */
 export function matchina<
-  SF extends StateFactory,
+  SF extends KeyedStateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
 >(
