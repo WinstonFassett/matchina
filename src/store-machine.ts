@@ -1,5 +1,5 @@
 import { createApi as createFactoryApi } from "./factory-machine-event-api";
-import { createUpdateLifecycle } from "./Lifecycle";
+import { createUpdateLifecycle, Lifecycle, withLifecycle } from "./Lifecycle";
 import { createApi, withApi } from "./store-machine-api";
 
 export { createApi, withApi };
@@ -159,7 +159,7 @@ export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = Stor
     from: initialValue,
     to: initialValue,
   };
-  const core = {
+  const core: Omit<StoreMachine<T, TR>, keyof Lifecycle<StoreChange<T>>> = {
     mutations: transitions,
     getState: () => lastChange.to,
     getChange: () => lastChange,
@@ -196,12 +196,12 @@ export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = Stor
       }
       return { ...ev, to };
     },
-  } as StoreMachine<T, TR>
-  const machine = createUpdateLifecycle<StoreChange<T>, StoreMachine<T, TR>>(
-    change => lastChange = change,
+  };
+  const machine = withLifecycle(
+    change => (lastChange: StoreChange<T>) => change,
     core
   )
-  return machine;
+  return machine as StoreMachine<T, TR>;
 }
 
 
