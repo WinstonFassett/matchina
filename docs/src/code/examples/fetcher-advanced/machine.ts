@@ -8,6 +8,7 @@ import {
   whenEventType,
   whenState,
   assignEventApi,
+  setup,
 } from "matchina";
 import { autotransition } from "../lib/autotransition";
 
@@ -98,7 +99,7 @@ export function createFetcher(
     }
   };
   const resolveResponseData = (response: Response) => response.json();
-  fetcher.setup(
+  setup(fetcher)(
     enter(
       whenState("Fetching", (ev) => {
         (ev as any).promise = runFetch(ev.to.data.url, {
@@ -131,7 +132,7 @@ export function createFetcher(
   if (defaultOptions.autoretry) {
     const autoRetryStates = ["NetworkError", "TimedOut", "Error"] as const;
 
-    fetcher.setup(
+    setup(fetcher)(
       ...autoRetryStates.map((stateName) =>
         effect(
           whenState(stateName, () => {

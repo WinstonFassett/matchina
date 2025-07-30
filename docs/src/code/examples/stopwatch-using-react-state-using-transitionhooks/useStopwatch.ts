@@ -1,4 +1,4 @@
-import { transitionHooks } from "matchina";
+import { setup, transitionHooks } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import { tickEffect } from "../lib/tick-effect";
@@ -9,7 +9,7 @@ export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
   const stopwatch = useMemo(() => {
     const machine = Object.assign(createStopwatch(), { startTime,  elapsed });
-    machine.setup(transitionHooks(
+    setup(machine)(transitionHooks(
       { to: "Ticking", enter: () => tickEffect(() => { setElapsed(Date.now() - (machine.startTime ?? 0)); })},
       { type: "start", effect: () => { setStartTime(Date.now()); }},
       { from: "Ticking", type: "clear", effect: () => { setStartTime(Date.now()); }},
