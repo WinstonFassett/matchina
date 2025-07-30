@@ -1,5 +1,3 @@
-import { KeyedStateFactory } from "./state-keyed";
-
 /**
  * Represents a state object with a unique key.
  *

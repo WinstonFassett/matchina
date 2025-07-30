@@ -10,7 +10,6 @@ import { FactoryKeyedState } from "./state-keyed";
 import { KeyedStateFactory } from "./state-keyed";
 import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
-import { createStoreMachine } from "./store-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 
@@ -120,23 +119,25 @@ export function createMachine<
   
   const initialState = typeof init === "string" ? states[init]({}) : init;
   
-  const storeMachine = createStoreMachine<E['from'] | E['to']>(
+  // Track lastChange internally instead of using storeMachine
+  let lastChange: E = new FactoryMachineEventImpl<E>(
+    "__initialize" as E["type"],
     initialState as E['from'],
-    {
-      replace: data => ev => data,
-    }
-  );
+    initialState as E['to'],
+    []
+  ) as E;
+  
   const machine = createUpdateLifecycle(
     (ev: E) => {
-      storeMachine.dispatch('replace', ev.to);
+      // Update lastChange directly
+      lastChange = ev;
     },
     {
       states,
       transitions,
-      getChange: () => storeMachine.getChange() as E,
-      getState: () => storeMachine.getState(),
+      getChange: () => lastChange,
+      getState: () => lastChange.to as E['to'],
       send(type: string, ...params: any[]) {
-        const lastChange = machine.getChange();
         const resolved = machine.resolveExit({
           type,
           params,
@@ -156,7 +157,6 @@ export function createMachine<
               ev.params
             ) as E)
           : undefined;
-
       },
     }
   );
