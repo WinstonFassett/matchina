@@ -55,6 +55,33 @@ export interface FactoryMachine<FC extends FactoryMachineContext<any> = FactoryM
   ): void;
 }
 
+/**
+ * @interface
+ * FactoryMachineTransitions defines the structure for transitions in a FactoryMachine.
+ * Each state key maps to an object where each event type maps to a transition function or state key.
+ * This allows for flexible and type-safe transitions between states.
+ * Example:
+ * ```ts
+ * const transitions: FactoryMachineTransitions<MyStateFactory> = {
+ *   Idle: {
+ *     start: "Running",
+ *     reset: (ev) => ev.from,
+ *   },
+ *   Running: {
+ *     complete: "Idle",
+ *     error: (ev) => ({ ...ev.from, error: true }),
+ *   },
+ * };
+ * ```
+ * This structure allows you to define transitions in a way that is both type-safe and flexible,
+ * enabling you to use either direct state keys or transition functions that can take parameters.
+ * @source This is the core type for defining transitions in a FactoryMachine.
+ * It allows you to specify how each state can transition to another state based on events.
+ * It supports both direct state transitions and transition functions that can take parameters.
+ * This structure is essential for building complex state machines with clear and type-safe transitions.
+ * @template SF - The state factory type that defines the states available in the machine.
+ * @template TR - The transition record type that maps event types to transition functions or state keys
+ */
 export type FactoryMachineTransitions<SF extends KeyedStateFactory> = {
   [FromStateKey in keyof SF]?: {
     [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;

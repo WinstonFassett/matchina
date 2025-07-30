@@ -3,6 +3,8 @@ import { Subscribe, emitter } from "./emitter";
 
 /**
  * Enhances a StateMachine with a subscribe method for event notifications.
+ * Powered by {@link emitter}, this function allows external code to subscribe
+ * to events emitted by the state machine.
  *
  * Use cases:
  * - Adding pub/sub capability to state machines
