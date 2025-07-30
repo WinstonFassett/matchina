@@ -1,6 +1,4 @@
 import {
-  createApi,
-  createMachine,
   defineStates,
   matchina
 } from "matchina";
@@ -15,7 +13,7 @@ const LoadingSchema = v.object({ progress: v.number() });
 const ErrorSchema = v.object({ message: v.string() });
 
 // BEFORE: Verbose way to create state factories with Valibot validation
-const states1 = defineStates({
+export const states1 = defineStates({
   Idle: () => v.parse(IdleSchema, {}) as v.InferOutput<typeof IdleSchema>,
   Loading: (data: v.InferOutput<typeof LoadingSchema>) => v.parse(LoadingSchema, data),
   Error: (data: v.InferOutput<typeof ErrorSchema>) => v.parse(ErrorSchema, data),
