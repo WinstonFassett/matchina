@@ -15,7 +15,7 @@ export type StoreMachineApi<
  * WithApi adds an 'api' property to a StoreMachine, providing convenient event sender functions.
  */
 export type WithApi<M extends StoreMachine<any, any>> = M & {
-  api: StoreMachineApi<ReturnType<M["getState"]>, M["mutations"]>;
+  api: StoreMachineApi<ReturnType<M["getState"]>, M["actions"]>;
 };
 
 /**
@@ -39,7 +39,7 @@ export function storeApi<
 >(machine: StoreMachine<T, TR>): StoreMachineApi<T, TR> {
   const api = {} as StoreMachineApi<T, TR>;
   
-  for (const transitionKey in machine.mutations) {
+  for (const transitionKey in machine.actions) {
     const key = transitionKey as keyof TR & string;
     api[key] = ((...params: ExtractStoreParams<TR, typeof key>) => {
       return machine.dispatch(key, ...params);

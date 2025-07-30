@@ -87,7 +87,7 @@ const initialState: AppState = {
 };
 
 // Create store with Immer-powered transitions
-// Notice how transitions only contain core state mutations
+// Notice how transitions only contain core state actions/mutations
 // Side effects like history tracking and stats updates are handled by hooks
 const store = createStoreMachine(initialState, {
   // User-related transitions

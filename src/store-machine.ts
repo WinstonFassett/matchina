@@ -13,7 +13,7 @@ export interface StoreMachine<
     type: E,
     ...params: ExtractStoreParams<TR, E>
   ): void;
-  mutations: TR;
+  actions: TR;
   resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined;
   // Lifecycle hooks
   handle(change: StoreChange<T>): StoreChange<T>;
@@ -112,11 +112,11 @@ export function createStoreMachine<
   };
   const machine = withLifecycle<StoreMachine<T, TR>>(
     {
-      mutations: transitions,
+      actions: transitions,
       getState: () => lastChange.to,
       getChange: () => lastChange,
       dispatch(type, ...params) {
-        const handler = machine.mutations[type];
+        const handler = machine.actions[type];
         if (!handler) return;
         const valueOrFn = handler(...params);
         const from = machine.getState();        
