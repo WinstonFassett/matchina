@@ -16,9 +16,6 @@ import { createTransitionMachine, TransitionMachine } from "./transition-machine
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 
-const EmptyTransform = <E>(event: E) => event;
-const EmptyEffect = <E>(_event: E) => {};
-
 /**
  * defineStates creates a type-safe state factory for your state machine.
  * Each key in the config becomes a state constructor, inferring parameters and data shape.

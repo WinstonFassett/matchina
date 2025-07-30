@@ -1,4 +1,5 @@
 import { createApi as createFactoryApi } from "./factory-machine-event-api";
+import { createUpdateLifecycle } from "./Lifecycle";
 import { createApi, withApi } from "./store-machine-api";
 
 export { createApi, withApi };
@@ -116,10 +117,6 @@ export interface StoreChange<T> {
   from: T;
   to: T;
 }
-
-export const EmptyTransform = <T>(change: StoreChange<T>) => change;
-export const EmptyEffect = <T>(_change: StoreChange<T>) => {};
-
 /**
  * Creates a minimal, event-driven store machine for a single value.
  *
@@ -162,7 +159,7 @@ export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = Stor
     from: initialValue,
     to: initialValue,
   };
-  const machine: StoreMachine<T, TR> = {
+  const core = {
     mutations: transitions,
     getState: () => lastChange.to,
     getChange: () => lastChange,
@@ -199,23 +196,11 @@ export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = Stor
       }
       return { ...ev, to };
     },
-    handle: EmptyTransform,
-    before: EmptyTransform,
-    update(change) { lastChange = change; },
-    effect: EmptyEffect,
-    notify: EmptyEffect,
-    after: EmptyEffect,
-    transition(change: StoreChange<T>) {
-      let update = machine.handle(change);
-      if (!update) return;
-      update = machine.before(update);
-      if (!update) return;
-      machine.update(update);
-      machine.effect(update);
-      machine.notify(update);
-      machine.after(update);
-    },
-  };
+  } as StoreMachine<T, TR>
+  const machine = createUpdateLifecycle<StoreChange<T>, StoreMachine<T, TR>>(
+    change => lastChange = change,
+    core
+  )
   return machine;
 }
 

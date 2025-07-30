@@ -58,7 +58,16 @@ export type Lifecycle1<E> = {
   notify: Effect<E>;
   after: Effect<E>;
 };
-export function createUpdateLifecycle<E, T extends object>(
+
+export function withLifecycle<E, T extends object>(
+  update: Effect<E>,
+  target: T
+): Lifecycle<E> & T {
+  return createUpdateLifecycle(update, target);
+}
+  
+
+export function createUpdateLifecycle<E, T extends object = {}>(
   update: Effect<E>,
   target: T = {} as any
 ): Lifecycle<E> & T {
