@@ -2,7 +2,7 @@ import { setup } from "../ext";
 import { FactoryMachine } from "../factory-machine-types";
 import { eventApi } from "../factory-machine-event-api";
 
-type ZenMachine<M extends FactoryMachine<any>> = M & ReturnType<typeof eventApi> & { setup: ReturnType<typeof setup<M>> };
+type ZenMachine<M extends FactoryMachine<any>> = M & ReturnType<typeof eventApi>;
 
 /**
  * Enhances a FactoryMachine instance with event API and setup functionality.
@@ -13,7 +13,5 @@ type ZenMachine<M extends FactoryMachine<any>> = M & ReturnType<typeof eventApi>
  * @source
  */
 export function zen<M extends FactoryMachine<any>>(machine: M) {
-  return Object.assign(machine, eventApi(machine), {
-    setup: setup(machine),
-  })
+  return Object.assign(machine, eventApi(machine))
 }
