@@ -122,13 +122,12 @@ export function createMachine<
   const storeMachine = createStoreMachine<E['from'] | E['to']>(
     initialState as E['from'],
     {
-      replace: data => data,
-      update: parts => old => ({ ...old, ...parts }),
+      replace: data => ev => data,
     }
   );
   const machine = createUpdateLifecycle(
     (ev: E) => {
-      storeMachine.dispatch('update', ev);
+      storeMachine.dispatch('replace', ev.to);
     },
     {
       states,
