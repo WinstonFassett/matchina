@@ -149,12 +149,18 @@ export function createMachine<
           machine.transition(resolved);
         }
       },
-      resolveExit(ev: ResolveEvent<E>) {
-        const to = transitions[ev.from as any]?.[ev.type];
-        if (to) {
-          return Object.assign({}, ev, { to }) as E;
-        }
-      }
+      resolveExit: (ev: ResolveEvent<E>): E | undefined => {
+        const to = resolveNextState<FC>(transitions, states, ev);
+        return to
+          ? (new FactoryMachineEventImpl<E>(
+              ev.type,
+              ev.from,
+              to,
+              ev.params
+            ) as E)
+          : undefined;
+
+      },
     }
   );
   return machine
