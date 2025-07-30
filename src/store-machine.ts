@@ -1,4 +1,4 @@
-import { withLifecycle } from "./lifecycle";
+import { Lifecycle, withLifecycle } from "./lifecycle";
 import { storeApi, addStoreApi, ExtractStoreParams, CurriedTransition, DirectTransition } from "./store-machine-api";
 
 export { storeApi , addStoreApi };
@@ -6,7 +6,7 @@ export { storeApi , addStoreApi };
 export interface StoreMachine<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
-> {
+> extends Lifecycle<StoreMachine<T, TR>> {
   getState(): T;
   getChange(): StoreChange<T>;
   dispatch<E extends keyof TR & string>(
@@ -15,15 +15,6 @@ export interface StoreMachine<
   ): void;
   actions: TR;
   resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined;
-  // Lifecycle hooks
-  handle(change: StoreChange<T>): StoreChange<T>;
-  before(change: StoreChange<T>): StoreChange<T>;
-  update(change: StoreChange<T>): void;
-  effect(change: StoreChange<T>): void;
-  notify(change: StoreChange<T>): void;
-  after(change: StoreChange<T>): void;
-  transition(change: StoreChange<T>): void;
-  // machine: StoreMachine<T, TR>;
 }
 
 /**
