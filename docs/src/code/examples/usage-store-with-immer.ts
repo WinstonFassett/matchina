@@ -1,260 +1,181 @@
-import { effect, guard, setup, when, update, handle } from "matchina"
+import { effect, setup, when } from "matchina";
 import { produce } from "immer";
 import { createStoreMachine } from "../../../../src/store-machine";
 
-// Define the StoreChange type to match what the store machine expects
-type StoreChange<T> = {
-  from: T;
-  to: T;
-  type: string;
-  params: any[];
-};
+/**
+ * A simple, elegant todo store using Matchina's store machine with Immer integration
+ * Demonstrates:
+ * - Clean state transitions with Immer
+ * - Side effects using hooks
+ * - Persistence with localStorage
+ * - Computed properties
+ */
 
 // Helper for using Immer with store machine transitions
-// This preserves type information while allowing immutable updates
+// The key insight is that transitions need to work with the store's change object
 function mutate<T>(updater: (draft: T) => void) {
   return (change: { from: T }) => {
     return produce(change.from, updater);
   };
 }
 
-// Example with nested state and Immer
-type AppState = {
-  user: {
-    name: string;
-    preferences: {
-      theme: "light" | "dark";
-      notifications: boolean;
-      language: string;
-    };
-    history: string[];
-  };
-  todos: {
-    items: Array<{
-      id: string;
-      text: string;
-      completed: boolean;
-      tags: string[];
-    }>;
-    filter: "all" | "active" | "completed";
-    stats: {
-      total: number;
-      active: number;
-      completed: number;
-    };
-  };
-  ui: {
-    sidebar: {
-      open: boolean;
-      width: number;
-    };
-    modal: {
-      open: boolean;
-      type: string | null;
-      data: any;
-    };
-  };
+// Todo type definition
+type Todo = {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: number;
+};
+
+// Store state definition
+type TodoStore = {
+  todos: Todo[];
+  filter: "all" | "active" | "completed";
+  lastUpdated: number | null;
 };
 
 // Initial state
-const initialState: AppState = {
-  user: {
-    name: "Guest",
-    preferences: {
-      theme: "light",
-      notifications: true,
-      language: "en",
-    },
-    history: [],
-  },
-  todos: {
-    items: [],
-    filter: "all",
-    stats: {
-      total: 0,
-      active: 0,
-      completed: 0,
-    },
-  },
-  ui: {
-    sidebar: {
-      open: false,
-      width: 240,
-    },
-    modal: {
-      open: false,
-      type: null,
-      data: null,
-    },
-  },
+const initialState: TodoStore = {
+  todos: [],
+  filter: "all",
+  lastUpdated: null
 };
 
-// Create store with Immer-powered transitions
-// Notice how transitions only contain core state mutations
-// Side effects like history tracking and stats updates are handled by hooks
-const store = createStoreMachine(initialState, {
-  // User-related transitions
-  updateUserName: (name: string) => mutate<AppState>(draft => {
-    draft.user.name = name;
-  }),
-  
-  setTheme: (theme: "light" | "dark") => mutate<AppState>(draft => {
-    draft.user.preferences.theme = theme;
-  }),
-  
-  toggleNotifications: () => mutate<AppState>(draft => {
-    draft.user.preferences.notifications = !draft.user.preferences.notifications;
-  }),
-  
-  // Todo-related transitions
-  addTodo: (text: string) => mutate<AppState>(draft => {
-    const newTodo = {
+// Create the todo store
+const todoStore = createStoreMachine(initialState, {
+  // Core mutations - focused only on state changes
+  addTodo: (text: string) => mutate<TodoStore>(draft => {
+    draft.todos.push({
       id: Date.now().toString(),
       text,
       completed: false,
-      tags: [],
-    };
-    draft.todos.items.push(newTodo);
-    // Stats are updated in effects
+      createdAt: Date.now()
+    });
+    draft.lastUpdated = Date.now();
   }),
   
-  toggleTodo: (id: string) => mutate<AppState>(draft => {
-    const todo = draft.todos.items.find(item => item.id === id);
+  toggleTodo: (id: string) => mutate<TodoStore>(draft => {
+    const todo = draft.todos.find(todo => todo.id === id);
     if (todo) {
       todo.completed = !todo.completed;
-      // Stats are updated in effects
+      draft.lastUpdated = Date.now();
     }
   }),
   
-  addTodoTag: (id: string, tag: string) => mutate<AppState>(draft => {
-    const todo = draft.todos.items.find(item => item.id === id);
-    if (todo && !todo.tags.includes(tag)) {
-      todo.tags.push(tag);
+  removeTodo: (id: string) => mutate<TodoStore>(draft => {
+    const index = draft.todos.findIndex(todo => todo.id === id);
+    if (index !== -1) {
+      draft.todos.splice(index, 1);
+      draft.lastUpdated = Date.now();
     }
   }),
   
-  // UI-related transitions
-  toggleSidebar: () => mutate<AppState>(draft => {
-    draft.ui.sidebar.open = !draft.ui.sidebar.open;
+  updateTodoText: (id: string, text: string) => mutate<TodoStore>(draft => {
+    const todo = draft.todos.find(todo => todo.id === id);
+    if (todo) {
+      todo.text = text;
+      draft.lastUpdated = Date.now();
+    }
   }),
   
-  resizeSidebar: (width: number) => mutate<AppState>(draft => {
-    draft.ui.sidebar.width = width;
+  setFilter: (filter: TodoStore["filter"]) => mutate<TodoStore>(draft => {
+    draft.filter = filter;
   }),
   
-  openModal: (type: string, data: any = null) => mutate<AppState>(draft => {
-    draft.ui.modal.open = true;
-    draft.ui.modal.type = type;
-    draft.ui.modal.data = data;
-  }),
-  
-  closeModal: () => mutate<AppState>(draft => {
-    draft.ui.modal.open = false;
-    draft.ui.modal.type = null;
-    draft.ui.modal.data = null;
+  clearCompleted: () => mutate<TodoStore>(draft => {
+    draft.todos = draft.todos.filter(todo => !todo.completed);
+    draft.lastUpdated = Date.now();
   }),
 });
 
-// Set up hooks and effects for side effects
-setup(store)(
-  // User history tracking effects
-  effect(
-    when(ev => ev.type === "setTheme", ev => {
-      const theme = ev.to.user.preferences.theme;
-      console.log(`Theme changed to ${theme}`);
-      // Direct mutation of the state in the effect
-      ev.to.user.history.push(`Changed theme to ${theme}`);
-    })
-  ),
+// Create helper functions for computed values instead of properties
+const getFilteredTodos = () => {
+  const state = todoStore.getState();
+  switch (state.filter) {
+    case "active":
+      return state.todos.filter(todo => !todo.completed);
+    case "completed":
+      return state.todos.filter(todo => todo.completed);
+    default:
+      return state.todos;
+  }
+};
+
+const getActiveCount = () => todoStore.getState().todos.filter(todo => !todo.completed).length;
+const getCompletedCount = () => todoStore.getState().todos.filter(todo => todo.completed).length;
+const getTotalCount = () => todoStore.getState().todos.length;
+
+// Set up hooks for side effects
+setup(todoStore)(
+  // Persistence effect - save to localStorage on state changes
+  effect(ev => {
+    // Skip saving when only the filter changes
+    if (ev.type !== "setFilter") {
+      localStorage.setItem("todos", JSON.stringify(ev.to));
+      console.log("Saved todos to localStorage");
+    }
+  }),
   
-  effect(
-    when(ev => ev.type === "toggleNotifications", ev => {
-      const enabled = ev.to.user.preferences.notifications;
-      console.log(`Notifications ${enabled ? "enabled" : "disabled"}`);
-      // Direct mutation of the state in the effect
-      ev.to.user.history.push(`${enabled ? "Enabled" : "Disabled"} notifications`);
-    })
-  ),
-  
-  // Todo stats tracking effects
+  // Logging effect for specific events
   effect(
     when(ev => ev.type === "addTodo", ev => {
-      // Direct mutation of stats in the effect
-      ev.to.todos.stats.total += 1;
-      ev.to.todos.stats.active += 1;
+      const newTodo = ev.to.todos[ev.to.todos.length - 1];
+      console.log(`Added todo: ${newTodo.text}`);
     })
   ),
   
   effect(
     when(ev => ev.type === "toggleTodo", ev => {
       const todoId = ev.params[0];
-      const todo = ev.to.todos.items.find(item => item.id === todoId);
-      
-      if (todo && todo.completed) {
-        // Direct mutation of stats in the effect
-        ev.to.todos.stats.completed += 1;
-        ev.to.todos.stats.active -= 1;
-      } else if (todo && !todo.completed) {
-        ev.to.todos.stats.completed -= 1;
-        ev.to.todos.stats.active += 1;
+      const todo = ev.to.todos.find(t => t.id === todoId);
+      if (todo) {
+        console.log(`Todo '${todo.text}' marked as ${todo.completed ? "completed" : "active"}`);
       }
     })
   ),
   
-  // Logging effect
-  effect(ev => {
-    console.log(`Event: ${ev.type}`, { from: ev.from, to: ev.to, params: ev.params });
-  })
+  effect(
+    when(ev => ev.type === "clearCompleted", ev => {
+      const removedCount = ev.from.todos.length - ev.to.todos.length;
+      console.log(`Cleared ${removedCount} completed todos`);
+    })
+  )
 );
 
+// Initialize from localStorage if available
+try {
+  const savedTodos = localStorage.getItem("todos");
+  if (savedTodos) {
+    const parsed = JSON.parse(savedTodos) as TodoStore;
+    Object.entries(parsed).forEach(([key, value]) => {
+      // Type assertion to make TypeScript happy
+      (todoStore.getState() as any)[key] = value;
+    });
+    console.log("Loaded todos from localStorage");
+  }
+} catch (error) {
+  console.error("Failed to load todos from localStorage", error);
+}
+
 // Example usage
-console.log("Initial state:", JSON.stringify(store.getState(), null, 2));
+console.log("Initial state:", todoStore.getState());
 
-// Update user name
-store.send("updateUserName", "John Doe");
-console.log("After updating user name:", store.getState().user.name);
+// Add some todos
+todoStore.send("addTodo", "Learn Matchina");
+todoStore.send("addTodo", "Master Immer integration");
+todoStore.send("addTodo", "Build awesome apps");
 
-// Change theme (history updated via effect)
-store.send("setTheme", "dark");
-console.log("After changing theme:", store.getState().user.preferences.theme);
-console.log("User history:", store.getState().user.history);
+// Toggle a todo
+const firstTodoId = todoStore.getState().todos[0].id;
+todoStore.send("toggleTodo", firstTodoId);
 
-// Add todos (stats updated via effect)
-store.send("addTodo", "Learn Immer");
-store.send("addTodo", "Use with matchina");
-console.log("After adding todos:", store.getState().todos.stats);
+// Filter todos
+todoStore.send("setFilter", "active");
+console.log("Active todos:", getFilteredTodos());
 
-// Toggle todo completion (stats updated via effect)
-const firstTodoId = store.getState().todos.items[0].id;
-store.send("toggleTodo", firstTodoId);
-console.log("After toggling todo:", store.getState().todos.stats);
-
-// Add tag to todo
-store.send("addTodoTag", firstTodoId, "important");
-console.log("Todo with tag:", store.getState().todos.items[0]);
-
-// UI operations
-store.send("toggleSidebar");
-console.log("Sidebar state:", store.getState().ui.sidebar);
-
-store.send("openModal", "settings", { section: "account" });
-console.log("Modal state:", store.getState().ui.modal);
-
-setup(store)(
-  store => {
-    return ()=> {}
-  },
-  effect(
-    when((ev) => ev.type === 'setTheme', () => {
-      console.log('set theme')
-      return () => {
-        console.log('set theme done')
-      }
-    })
-  ),
-  effect(ev => {
-    const data = ev.to
-    console.log("Effect triggered:", data)
-  })
-
-)
+// Show stats
+console.log("Stats:", {
+  active: getActiveCount(),
+  completed: getCompletedCount(),
+  total: getTotalCount()
+});
