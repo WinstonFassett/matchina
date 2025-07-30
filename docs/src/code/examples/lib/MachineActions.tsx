@@ -1,11 +1,11 @@
 import {
   getAvailableActions,
   type StateMachine,
-  type TransitionRecord,
+  type StoreTransitionRecord,
 } from "matchina";
 import React from "react";
 
-export function MachineActions<T extends TransitionRecord>({
+export function MachineActions<T extends StoreTransitionRecord<any>({
   transitions,
   state,
   send,

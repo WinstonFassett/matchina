@@ -1,5 +1,5 @@
 import { type Draft, produce } from "immer";
-import { effect, setup, when } from "matchina";
+import { effect, setup, when, whenEventType } from "matchina";
 import { createStoreMachine } from "../../../../src/store-machine";
 
 // Helper for using a produce function with store machine transitions
@@ -238,16 +238,14 @@ store.dispatch("openModal", "settings", { section: "account" });
 console.log("Modal state:", store.getState().ui.modal);
 
 setup(store)(
-  store => {
-    return ()=> {}
-  },
   effect(
     when((ev) => ev.type === 'setTheme', () => {
       console.log('set theme')
       return () => {
         console.log('set theme done')
       }
-    })
+    }),
+    
   ),
   effect(ev => {
     const data = ev.to
