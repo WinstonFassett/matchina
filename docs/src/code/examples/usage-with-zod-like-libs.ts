@@ -121,3 +121,44 @@ machine2.send("start", { progress: 1 }); // Valid
 
 // machine2.send("retry", 1,2,3); // Error: too many arguments
 machine2.send("retry"); // Valid
+
+
+// Define and destructure states with inline schemas
+const { Idle, Loading, Error } = defineZodStates({
+  Idle: z.object({}),
+  Loading: z.object({ progress: z.number() }),
+  Error: z.object({ message: z.string() })
+});
+
+// Define and destructure transition schemas
+const { start, success, error, retry } = {
+  start: z.function().args(z.number()),
+  success: z.function().args(),
+  error: z.function().args(z.string()),
+  retry: z.function().args()
+};
+
+// Create machine with validated transitions
+const m3 = matchina(
+  { Idle, Loading, Error },
+  {
+    Idle: {
+      start: start.implement((progress) => Loading({ progress }))
+    },
+    Loading: {
+      success: success.implement(() => Idle()),
+      error: error.implement((message) => Error({ message }))
+    },
+    Error: {
+      retry: retry.implement(() => Idle())
+    }
+  },
+  Idle()
+);
+
+// Usage:
+m3.start(0.5); // Valid
+// m3.start("invalid"); // Runtime error: Expected number, received string
+m3.error("An error occurred"); // Valid
+m3.success(); // Valid
+m3.retry(); // Valid
