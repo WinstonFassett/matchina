@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { defineStates } from '../define-states';
+import { Func } from '../function-types';
 
 /**
  * Creates state factories from Zod schemas
@@ -34,11 +35,11 @@ export function defineZodStates<
     ) => z.infer<T[K]>
   };
 
-  const stateFactories = {} as Record<string, Function>;
+  const stateFactories = {} as Record<string, Func>;
 
   for (const [key, schema] of Object.entries(schemas)) {
     stateFactories[key] = (data: any) => schema.parse(data);
   }
 
-  return defineStates(stateFactories as unknown as SchemaMap);
+  return defineStates(stateFactories);
 }

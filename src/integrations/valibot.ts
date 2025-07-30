@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { defineStates } from '../define-states';
+import { Func } from '../function-types';
 
 /**
  * Creates state factories from Valibot schemas
@@ -34,15 +35,11 @@ export function defineValibotStates<
     ) => v.InferOutput<T[K]>
   };
 
-  const stateFactories = {} as Record<string, Function>;
+  const stateFactories = {} as Record<string, Func>;
 
   for (const [key, schema] of Object.entries(schemas)) {
-    if (schema.type === 'object' && Object.keys((schema as any).entries || {}).length === 0) {
-      stateFactories[key] = () => v.parse(schema, {});
-    } else {
-      stateFactories[key] = (data: any) => v.parse(schema, data);
-    }
+    stateFactories[key] = schema.type === 'object' && Object.keys((schema as any).entries || {}).length === 0 ? () => v.parse(schema, {}) : (data: any) => v.parse(schema, data);
   }
 
-  return defineStates(stateFactories as unknown as SchemaMap);
+  return defineStates(stateFactories);
 }
