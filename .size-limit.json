@@ -1,22 +1,23 @@
 [
   {
     "name": "index",
-    "path": "dist/index.mjs"
+    "path": "src/index.ts",
+    "import": "*"
   },
   {
     "name": "matchbox",
-    "path": "dist/index.mjs",
+    "path": "src/index.ts",
     "import": "{ matchboxFactory }"
   }, 
   {
     "name": "states",
-    "path": "dist/index.mjs",
+    "path": "src/index.ts",
     "import": "{ defineStates }"
   },
   {
-    "name": "machine",
-    "path": "src/transition-machine.ts",
-    "import": "{ createTransitionMachine }"
+    "name": "store-machine",
+    "path": "src/store-machine.ts",
+    "import": "{ createStoreMachine }"
   },
   {
     "name": "pure",

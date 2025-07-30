@@ -1,7 +1,7 @@
-import { createApi as createFactoryApi } from "./factory-machine-event-api";
-import { createApi, withApi } from "./store-machine-api";
+import { withLifecycle } from "./lifecycle";
+import { storeApi, addStoreApi } from "./store-machine-api";
 
-export { createApi, withApi };
+export { storeApi , addStoreApi };
 
 /**
  * StoreMachine is a minimal, event-driven state container for a single value.
@@ -49,21 +49,29 @@ export type DirectTransition<T> = (...args: any[]) => T;
 /**
  * Helper type for transition handlers that return a function
  */
-export type CurriedTransition<T> = (...args: any[]) => ((change: StoreChange<T>) => T);
+export type CurriedTransition<T> = (
+  ...args: any[]
+) => (change: StoreChange<T>) => T;
 
 /**
  * Extract parameter types from a store transition handler
  */
 export type ExtractStoreParams<
   TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
-  E extends keyof TR
+  E extends keyof TR,
 > = Parameters<TR[E]>;
 
-export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>> {
+export interface StoreMachine<
+  T,
+  TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
+> {
   getState(): T;
   getChange(): StoreChange<T>;
-  send<E extends keyof TR & string>(type: E, ...params: ExtractStoreParams<TR, E>): void;
-  transitions: TR;
+  dispatch<E extends keyof TR & string>(
+    type: E,
+    ...params: ExtractStoreParams<TR, E>
+  ): void;
+  mutations: TR;
   resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined;
   // Lifecycle hooks
   handle(change: StoreChange<T>): StoreChange<T>;
@@ -73,6 +81,7 @@ export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTran
   notify(change: StoreChange<T>): void;
   after(change: StoreChange<T>): void;
   transition(change: StoreChange<T>): void;
+  // machine: StoreMachine<T, TR>;
 }
 
 /**
@@ -90,7 +99,9 @@ export interface StoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTran
  * };
  * ```
  */
-export type StoreTransitionRecord<T, E extends StoreChange<T> = StoreChange<T>> = {
+export type StoreTransitionRecord<
+  T,
+> = {
   [event: string]: DirectTransition<T> | CurriedTransition<T>;
 };
 
@@ -115,10 +126,6 @@ export interface StoreChange<T> {
   from: T;
   to: T;
 }
-
-const EmptyTransform = <T>(change: StoreChange<T>) => change;
-const EmptyEffect = <T>(_change: StoreChange<T>) => {};
-
 /**
  * Creates a minimal, event-driven store machine for a single value.
  *
@@ -151,71 +158,40 @@ const EmptyEffect = <T>(_change: StoreChange<T>) => {};
  * @see TransitionMachine
  * @see FactoryMachine
  */
-export function createStoreMachine<T, TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>>(
-  initialValue: T,
-  transitions: TR,
-): StoreMachine<T, TR> {
+export function createStoreMachine<
+  T,
+  TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
+>(initialValue: T, transitions: TR): StoreMachine<T, TR> {
   let lastChange: StoreChange<T> = {
     type: "__initialize",
     params: [],
     from: initialValue,
     to: initialValue,
   };
-  const machine: StoreMachine<T, TR> = {
-    transitions,
-    getState: () => lastChange.to,
-    getChange: () => lastChange,
-    send(type, ...params) {
-      const from = machine.getState();
-      const handler = machine.transitions[type];
-      if (!handler) return;
-      const result = handler(...params);
-      let to: T;
-      if (typeof result === "function") {
-        const change: StoreChange<T> = { type, params, from, to: from };
-        to = (result as (change: StoreChange<T>) => T)(change);
-      } else {
-        to = result as T;
-      }
-      const change: StoreChange<T> = { type, params, from, to };
-      machine.transition(change);
-    },
-    resolveExit(ev: StoreChange<T>): StoreChange<T> | undefined {
-      const handler = machine.transitions[ev.type];
-      if (!handler) return undefined;
-      const result = handler(...(ev.params || []));
-      let to: T;
-      if (typeof result === "function") {
-        const change: StoreChange<T> = {
-          type: ev.type,
-          params: ev.params,
-          from: ev.from,
-          to: ev.from,
-        };
-        to = (result as (change: StoreChange<T>) => T)(change);
-      } else {
-        to = result as T;
-      }
-      return { ...ev, to };
-    },
-    handle: EmptyTransform,
-    before: EmptyTransform,
-    update(change) { lastChange = change; },
-    effect: EmptyEffect,
-    notify: EmptyEffect,
-    after: EmptyEffect,
-    transition(change: StoreChange<T>) {
-      let update = machine.handle(change);
-      if (!update) return;
-      update = machine.before(update);
-      if (!update) return;
-      machine.update(update);
-      machine.effect(update);
-      machine.notify(update);
-      machine.after(update);
-    },
-  };
+  const machine = withLifecycle<StoreMachine<T, TR>>(
+    {
+      mutations: transitions,
+      getState: () => lastChange.to,
+      getChange: () => lastChange,
+      dispatch(type, ...params) {
+        const from = machine.getState();
+        const handler = machine.mutations[type];
+        if (!handler) return;
+        const result = handler(...params);
+        let to: T;
+        if (typeof result === "function") {
+          const change: StoreChange<T> = { type, params, from, to: from };
+          to = (result as (change: StoreChange<T>) => T)(change);
+        } else {
+          to = result as T;
+        }
+        const change: StoreChange<T> = { type, params, from, to };
+        machine.transition(change);
+      },      
+    } as StoreMachine<T, TR>,
+    (change) => {
+      lastChange = change;
+    }
+  );
   return machine;
 }
-
-

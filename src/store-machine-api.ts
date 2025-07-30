@@ -15,7 +15,7 @@ export type StoreMachineApi<
  * WithApi adds an 'api' property to a StoreMachine, providing convenient event sender functions.
  */
 export type WithApi<M extends StoreMachine<any, any>> = M & {
-  api: StoreMachineApi<ReturnType<M["getState"]>, M["transitions"]>;
+  api: StoreMachineApi<ReturnType<M["getState"]>, M["mutations"]>;
 };
 
 /**
@@ -33,16 +33,16 @@ export type WithApi<M extends StoreMachine<any, any>> = M & {
  * todoApi.toggleTodo("123");
  * ```
  */
-export function createApi<
+export function storeApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>
 >(machine: StoreMachine<T, TR>): StoreMachineApi<T, TR> {
   const api = {} as StoreMachineApi<T, TR>;
   
-  for (const transitionKey in machine.transitions) {
+  for (const transitionKey in machine.mutations) {
     const key = transitionKey as keyof TR & string;
     api[key] = ((...params: ExtractStoreParams<TR, typeof key>) => {
-      return machine.send(key, ...params);
+      return machine.dispatch(key, ...params);
     });
   }
   
@@ -63,7 +63,7 @@ export function createApi<
  * enhancedTodoStore.api.addTodo("New task");
  * ```
  */
-export function withApi<
+export function addStoreApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>
 >(machine: StoreMachine<T, TR>): WithApi<StoreMachine<T, TR>> {
@@ -73,6 +73,6 @@ export function withApi<
   }
   
   return Object.assign(machine, {
-    api: createApi(machine),
+    api: storeApi(machine),
   }) as WithApi<StoreMachine<T, TR>>;
 }

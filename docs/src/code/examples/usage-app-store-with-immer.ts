@@ -1,5 +1,5 @@
 import { type Draft, produce } from "immer";
-import { effect, setup, when } from "matchina";
+import { effect, setup, when, whenEventType } from "matchina";
 import { createStoreMachine } from "../../../../src/store-machine";
 
 // Helper for using a produce function with store machine transitions
@@ -208,46 +208,44 @@ setup(store)(
 console.log("Initial state:", JSON.stringify(store.getState(), null, 2));
 
 // Update user name
-store.send("updateUserName", "John Doe");
+store.dispatch("updateUserName", "John Doe");
 console.log("After updating user name:", store.getState().user.name);
 
 // Change theme (history updated via effect)
-store.send("setTheme", "dark");
+store.dispatch("setTheme", "dark");
 console.log("After changing theme:", store.getState().user.preferences.theme);
 console.log("User history:", store.getState().user.history);
 
 // Add todos (stats updated via effect)
-store.send("addTodo", "Learn Immer");
-store.send("addTodo", "Use with matchina");
+store.dispatch("addTodo", "Learn Immer");
+store.dispatch("addTodo", "Use with matchina");
 console.log("After adding todos:", store.getState().todos.stats);
 
 // Toggle todo completion (stats updated via effect)
 const firstTodoId = store.getState().todos.items[0].id;
-store.send("toggleTodo", firstTodoId);
+store.dispatch("toggleTodo", firstTodoId);
 console.log("After toggling todo:", store.getState().todos.stats);
 
 // Add tag to todo
-store.send("addTodoTag", firstTodoId, "important");
+store.dispatch("addTodoTag", firstTodoId, "important");
 console.log("Todo with tag:", store.getState().todos.items[0]);
 
 // UI operations
-store.send("toggleSidebar");
+store.dispatch("toggleSidebar");
 console.log("Sidebar state:", store.getState().ui.sidebar);
 
-store.send("openModal", "settings", { section: "account" });
+store.dispatch("openModal", "settings", { section: "account" });
 console.log("Modal state:", store.getState().ui.modal);
 
 setup(store)(
-  store => {
-    return ()=> {}
-  },
   effect(
     when((ev) => ev.type === 'setTheme', () => {
       console.log('set theme')
       return () => {
         console.log('set theme done')
       }
-    })
+    }),
+    
   ),
   effect(ev => {
     const data = ev.to

@@ -1,20 +1,20 @@
 import { FactoryMachineEventImpl } from "./factory-machine-event";
 import {
-  ExtractEventParams,
   FactoryMachine,
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransition,
-  FactoryMachineTransitions,
+  FactoryMachineTransitions
 } from "./factory-machine-types";
-import { FactoryState } from "./factory-state";
-import { StateFactory } from "./factory-state";
+import { FactoryState, StateFactory } from "./factory-state";
+import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
-import { createTransitionMachine } from "./transition-machine";
+import { createStoreMachine } from "./store-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
+
 /**
- * defineStates creates a type-safe state factory for your state machine.
+ * defineStates creates a type-safelve  state factory for your state machine.
  * Each key in the config becomes a state constructor, inferring parameters and data shape.
  *
  * Example:
@@ -110,29 +110,41 @@ export function createMachine<
   SF extends StateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
+  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>
 >(
   states: SF,
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
 ): FactoryMachine<FC> {
   
-  const initialState =
-    typeof init === "string"
-      ? states[init]({})
-      : (init as ReturnType<SF[keyof SF]>);
-
-  const baseMachine = createTransitionMachine<E>(
-    transitions as any,
-    initialState as E["from"]
-  );
+  const initialState = typeof init === "string" ? states[init]({}) : init;
   
-  // Create the factory machine with overridden send method
-  const factoryMachine = Object.assign(
-    baseMachine,
+  const storeMachine = createStoreMachine<E['from'] | E['to']>(
+    initialState as E['from'],
+    {
+      replace: data => ev => data,
+    }
+  );
+  const machine = createUpdateLifecycle(
+    (ev: E) => {
+      storeMachine.dispatch('replace', ev.to);
+    },
     {
       states,
       transitions,
+      getChange: () => storeMachine.getChange() as E,
+      getState: () => storeMachine.getState(),
+      send(type: string, ...params: any[]) {
+        const lastChange = machine.getChange();
+        const resolved = machine.resolveExit({
+          type,
+          params,
+          from: lastChange.to,
+        } as ResolveEvent<E>);
+        if (resolved) {
+          machine.transition(resolved);
+        }
+      },
       resolveExit: (ev: ResolveEvent<E>): E | undefined => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
@@ -143,11 +155,11 @@ export function createMachine<
               ev.params
             ) as E)
           : undefined;
+
       },
     }
   );
-  
-  return factoryMachine as FactoryMachine<FC>;
+  return machine
 }
 
 /**
@@ -187,14 +199,17 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
   if (!transition) {
     return undefined;
   }
+  
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
   }
+  
   return states[transition as keyof typeof states](...ev.params) as any;
 }
 
 export {
   type FactoryMachine,
-  type FactoryMachineTransitions,
+  type FactoryMachineTransitions
 } from "./factory-machine-types";
+

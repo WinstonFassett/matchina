@@ -1,5 +1,3 @@
-import { TransitionRecord } from "./transition-machine";
-
 /**
  * Returns the list of available action/event types for a given state.
  * Looks up the transition table for the specified state and returns its keys.
@@ -14,7 +12,7 @@ import { TransitionRecord } from "./transition-machine";
  * that can be triggered from that state.
  */
 export function getAvailableActions(
-  transitions: TransitionRecord,
+  transitions: { [key: string]: any },
   state: string
 ) {
   const entry = transitions[state];
