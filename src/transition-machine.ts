@@ -1,3 +1,4 @@
+import { createUpdateLifecycle } from "./Lifecycle";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 
@@ -56,7 +57,9 @@ interface TransitionContext {
  * @see FactoryMachine
  * @see createMachine
  */
-export interface TransitionMachine<E extends TransitionEvent> extends StateMachine<E>, TransitionContext {}
+export interface TransitionMachine<E extends TransitionEvent>
+  extends StateMachine<E>,
+    TransitionContext {}
 
 /**
  * Creates a generic transition-based state machine.
@@ -93,10 +96,20 @@ export function createTransitionMachine<E extends TransitionEvent>(
     type: "__initialize",
     to: initialState,
   } as E;
+
+  const kernelWithLifecycle = createUpdateLifecycle(
+    (ev: E) => {
+      lastChange = ev;
+    },
+    {
+      getChange: () => lastChange,
+      getState: () => lastChange.to,
+    }
+  );
+
   const machine: TransitionMachine<E> = {
+    ...kernelWithLifecycle,
     transitions,
-    getChange: () => lastChange,
-    getState: () => lastChange.to,
     send(type, ...params) {
       const lastChange = machine.getChange();
       const resolved = machine.resolveExit({
@@ -114,29 +127,6 @@ export function createTransitionMachine<E extends TransitionEvent>(
         return { ...ev, to } as E; // TODO: use Object.assign
       }
     },
-    guard: (ev: E) => !!ev,
-    transition(change: E) {
-      if (!machine.guard(change)) return;      
-      let update = machine.handle(change); // process change
-      if (!update) return;      
-      update = machine.before(update); // prepare update
-      if (!update) return;      
-      machine.update(update); // apply update
-      machine.effect(update); // trigger effects
-      machine.notify(update); // notify consumers
-      machine.after(update); // cleanup
-    },
-    handle: EmptyTransform<E>,
-    before: EmptyTransform<E>,
-    update: (update: E) => { lastChange = update },
-    effect(ev: E) {
-      machine.leave(ev); // left previous
-      machine.enter(ev); // entered next
-    },
-    leave: EmptyEffect<E>,
-    enter: EmptyEffect<E>,
-    notify: EmptyEffect<E>,
-    after: EmptyEffect<E>,
   };
   return machine;
 }
