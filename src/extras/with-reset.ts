@@ -1,4 +1,4 @@
-import { FactoryState } from "../factory-state";
+import { FactoryKeyedState } from "../state-keyed";
 import type { StateMachine } from "../state-machine";
 
 /**
@@ -14,7 +14,7 @@ import type { StateMachine } from "../state-machine";
  */
 export const resetMachine = <T extends StateMachine<any>>(
   machine: T & Partial<{ reset: () => void }>,
-  state: FactoryState<ReturnType<T["getState"]>>,
+  state: FactoryKeyedState<ReturnType<T["getState"]>>,
   type = "reset"
 ) => {
   const before = machine.getChange();
@@ -39,7 +39,7 @@ export const resetMachine = <T extends StateMachine<any>>(
 export const createReset =
   <T extends StateMachine<any>>(
     machine: T,
-    state: FactoryState<ReturnType<T["getState"]>>
+    state: FactoryKeyedState<ReturnType<T["getState"]>>
   ) =>
   () => {
     resetMachine(machine, state);
@@ -58,7 +58,7 @@ export const createReset =
  */
 export const withReset = <T extends StateMachine<any>>(
   machine: T & Partial<{ reset: () => void }>,
-  state: FactoryState<ReturnType<T["getState"]>>
+  state: FactoryKeyedState<ReturnType<T["getState"]>>
 ) => {
   if (!machine.reset) {
     machine.reset = createReset(machine, state);

@@ -15,7 +15,7 @@ export * from "./match-case";
 // export * from "./match-case-types";
 // export * from "./factory-machine-event";
 // export * from "./factory-machine-types";
-export * from "./factory-state";
+export * from "./state-keyed";
 // export * from "./utility-types";
 export * from "./matchbox-factory";
 export * from "./matchina";

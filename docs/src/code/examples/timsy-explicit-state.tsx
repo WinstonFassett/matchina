@@ -1,4 +1,4 @@
-import { type FactoryState, defineStates } from "matchina";
+import { type FactoryKeyedState, defineStates } from "matchina";
 import React, { useState } from "react";
 // ---cut---
 const states = defineStates({
@@ -8,7 +8,7 @@ const states = defineStates({
   ERROR: (error: Error) => ({ error }),
 });
 
-type DataState = FactoryState<typeof states>;
+type DataState = FactoryKeyedState<typeof states>;
 
 export const DataComponent: React.FC = () => {
   const [state, setState] = useState<DataState>(states.NOT_LOADED());

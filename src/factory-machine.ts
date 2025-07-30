@@ -6,7 +6,8 @@ import {
   FactoryMachineTransition,
   FactoryMachineTransitions
 } from "./factory-machine-types";
-import { FactoryState, KeyedStateFactory } from "./factory-state";
+import { FactoryKeyedState } from "./state-keyed";
+import { KeyedStateFactory } from "./state-keyed";
 import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 import { createStoreMachine } from "./store-machine";
@@ -114,7 +115,7 @@ export function createMachine<
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ): FactoryMachine<FC> {
   
   const initialState = typeof init === "string" ? states[init]({}) : init;

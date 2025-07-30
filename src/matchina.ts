@@ -1,11 +1,11 @@
 import { zen } from "./extras/zen";
-import { KeyedStateFactory } from "./factory-state";
+import { KeyedStateFactory } from "./state-keyed";
 import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
   FactoryMachineTransitions,
 } from "./factory-machine-types";
-import { FactoryState } from "./factory-state";
+import { FactoryKeyedState } from "./state-keyed";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 /**
@@ -62,7 +62,7 @@ export function matchina<
 >(
   states: SF,
   transitions: TC,
-  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryState<FC["states"]>
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ) {
   return zen(createMachine(states, transitions, init));
 }

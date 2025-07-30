@@ -6,7 +6,7 @@ import { EntryListener } from "./extras/entry-exit-types";
 import { when } from "./extras/when";
 import { HookKey, TransitionHookExtensions } from "./factory-machine-lifecycle-types";
 import { FactoryMachine, FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
-import { FactoryState } from "./factory-state";
+import { FactoryKeyedState } from "./state-keyed";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { hookSetup } from './state-machine-hooks';
@@ -95,7 +95,7 @@ export const whenFromState = <
   K extends E["from"]["key"],
 >(
   stateKey: K,
-  fn: EntryListener<E & { from: FactoryState<E["machine"]["states"], K> }>
+  fn: EntryListener<E & { from: FactoryKeyedState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.from.key === stateKey, fn);
 
 /**
@@ -117,7 +117,7 @@ export const whenState = <
   K extends keyof E["machine"]["states"],
 >(
   stateKey: K,
-  fn: EntryListener<E & { to: FactoryState<E["machine"]["states"], K> }>
+  fn: EntryListener<E & { to: FactoryKeyedState<E["machine"]["states"], K> }>
 ) => when<E>((ev) => ev.to.key === stateKey, fn);
 
 /**

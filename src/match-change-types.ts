@@ -1,5 +1,5 @@
 import { FlatFilters } from "./match-filter-types";
-import { KeyedState } from "./factory-state";
+import { KeyedState } from "./state-keyed";
 
 export type StateChangeEvent = {
   type: string;

@@ -1,4 +1,4 @@
-import type { FactoryState } from "matchina";
+import type { FactoryKeyedState } from "matchina";
 import type { TransitionEntry } from "./utility-types";
 
 export type AnyStatesFactory = Record<string, (...params: any) => any>;
@@ -11,7 +11,7 @@ export function resolveState<S extends AnyStatesFactory>(
   states: AnyStatesFactory,
   from: string,
   entry: TransitionEntry<any>
-): FactoryState<S> {
+): FactoryKeyedState<S> {
   if (typeof entry === "string") {
     return states[entry]({} as any); // as FactoryState<S>
   }

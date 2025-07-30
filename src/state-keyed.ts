@@ -1,3 +1,5 @@
+import { KeyedStateFactory } from "./state-keyed";
+
 /**
  * Represents a state object with a unique key.
  *
@@ -13,7 +15,6 @@
 export interface KeyedState {
   key: string;
 }
-
 /**
  * A factory object mapping state keys to state creator functions.
  * Each function returns a State instance (optionally with additional properties).
@@ -29,11 +30,10 @@ export interface KeyedState {
  * throughout factory machines. The implementation leverages matchbox factories for dynamic and type-safe
  * state construction and transitions.
  */
+
 export interface KeyedStateFactory {
   [key: string]: (...args: any[]) => KeyedState;
-}
-
-/**
+}/**
  * Infers the return type of a state factory function for a given key.
  * Used to type-check state objects created by a StateFactory.
  *
@@ -51,7 +51,9 @@ export interface KeyedStateFactory {
  * throughout factory machines. The implementation leverages matchbox factories for dynamic and type-safe
  * state construction and transitions.
  */
-export type FactoryState<
+
+export type FactoryKeyedState<
   States extends KeyedStateFactory,
   StateKey extends keyof States = keyof States
 > = ReturnType<States[StateKey]>;
+
