@@ -1,11 +1,7 @@
 import { Lifecycle, withLifecycle } from "./lifecycle";
-import {
-  addStoreApi,
-  ExtractStoreParams,
-  storeApi
-} from "./store-machine-api";
+import { storeApi, addStoreApi, ExtractStoreParams, CurriedTransition, DirectTransition } from "./store-machine-api";
 
-export { addStoreApi, storeApi };
+export { storeApi , addStoreApi };
 
 export interface StoreMachine<
   T,
@@ -36,11 +32,11 @@ export interface StoreMachine<
  * };
  * ```
  */
-export interface StoreTransitionRecord<T> {
-  [event: string]: (
-    ...args: any[]
-  ) => T | ((...args: any[]) => (change: StoreChange<T>) => T);
-}
+export type StoreTransitionRecord<
+  T,
+> = {
+  [event: string]: DirectTransition<T> | CurriedTransition<T>;
+};
 
 /**
  * StoreChange describes a change event in a StoreMachine.
@@ -92,7 +88,7 @@ export interface StoreChange<T> {
  * ```
  *
  * @see StoreMachine
- * @see
+ * @see 
  * @see FactoryMachine
  */
 export function createStoreMachine<
@@ -114,13 +110,13 @@ export function createStoreMachine<
         const handler = machine.actions[type];
         if (!handler) return;
         const valueOrFn = handler(...params);
-        const from = machine.getState();
+        const from = machine.getState();        
         const change: StoreChange<T> = { type, params, from, to: from };
         const to = resolveTransitionResult(valueOrFn, change);
         change.to ??= to as T;
         if (change.to === undefined) return;
         machine.transition(change);
-      },
+      },      
     } as StoreMachine<T, TR>,
     (change) => {
       lastChange = change;
@@ -129,15 +125,12 @@ export function createStoreMachine<
   return machine;
 }
 
-function resolveTransitionResult<T>(
-  result: any,
-  change: StoreChange<T>
-): T | undefined {
+function resolveTransitionResult<T>(result: any, change: StoreChange<T>): T | undefined {
   let to: T | undefined;
   if (typeof result === "function") {
     to = (result as (change: StoreChange<T>) => T)(change);
   } else {
     to = result as T;
   }
-  return to;
+  return to;  
 }
