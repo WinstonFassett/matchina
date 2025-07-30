@@ -35,7 +35,7 @@ const states2 = defineValibotStates({
 // This will show a type error for the misspelled property
 // const loading2 = states2.Loading({ proffffgress: 5 });
 // Correct usage would be:
-const loading2 = states2.Loading({ progress: 0.5 });
+// const loading2 = states2.Loading({ proggress: 0.5 });
 
 const machine = matchina(
   states2,
@@ -65,3 +65,60 @@ machine.send("error", { message: "An error occurred" }); // Valid
 
 // machine.send("retry", 1,2,3); // Error: too many arguments
 machine.send("retry"); // Valid
+
+// Helper to create a validated transition function with overloads
+// Overload for transitions with no arguments
+function vTransition<R>(fn: () => R): () => R;
+// Overload for transitions with arguments
+function vTransition<I, O, R>(schema: v.BaseSchema<I, O, any>, fn: (arg: O) => R): (arg: I) => R;
+// Implementation
+function vTransition<I, O, R>(schemaOrFn: v.BaseSchema<I, O, any> | (() => R), fn?: (arg: O) => R): any {
+  // Case 1: No arguments (just a function)
+  if (typeof schemaOrFn === 'function') {
+    return schemaOrFn;
+  }
+  // Case 2: With arguments (schema + function)
+  return (arg: I): R => {
+    const validatedArg = v.parse(schemaOrFn, arg);
+    return (fn as (arg: O) => R)(validatedArg);
+  };
+}
+
+const { Idle, Loading, Error } = defineValibotStates({
+  Idle: v.object({}),
+  Loading: v.object({ progress: v.number() }),
+  Error: v.object({ message: v.string() })
+});
+
+// Define and destructure transition schemas for better readability
+const transitions = {
+  start: (progress: number) => Loading({ progress }),
+  success: () => Idle(),
+  error: (message: string) => Error({ message }),
+  retry: () => Idle()
+};
+
+// Create machine with validated transitions
+const m3 = matchina(
+  { Idle, Loading, Error },
+  {
+    Idle: {
+      start: vTransition(v.number(), transitions.start)
+    },
+    Loading: {
+      success: vTransition(transitions.success),
+      error: vTransition(v.string(), transitions.error)
+    },
+    Error: {
+      retry: vTransition(transitions.retry)
+    }
+  },
+  Idle()
+);
+
+// Usage examples:
+m3.start(42); // Valid
+// m3.start("wrong"); // Runtime error: Expected number, received string
+m3.error("Something went wrong"); // Valid
+m3.success(); // Valid
+m3.retry(); // Valid
