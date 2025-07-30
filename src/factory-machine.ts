@@ -1,23 +1,20 @@
 import { FactoryMachineEventImpl } from "./factory-machine-event";
 import {
-  ExtractEventParams,
   FactoryMachine,
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransition,
-  FactoryMachineTransitions,
+  FactoryMachineTransitions
 } from "./factory-machine-types";
-import { FactoryState } from "./factory-state";
-import { StateFactory } from "./factory-state";
+import { FactoryState, StateFactory } from "./factory-state";
 import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 import { createStoreMachine } from "./store-machine";
-import { createTransitionMachine, TransitionMachine } from "./transition-machine";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 
 /**
- * defineStates creates a type-safe state factory for your state machine.
+ * defineStates creates a type-safelve  state factory for your state machine.
  * Each key in the config becomes a state constructor, inferring parameters and data shape.
  *
  * Example:
@@ -214,5 +211,6 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
 
 export {
   type FactoryMachine,
-  type FactoryMachineTransitions,
+  type FactoryMachineTransitions
 } from "./factory-machine-types";
+
