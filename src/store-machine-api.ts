@@ -33,7 +33,7 @@ export type WithApi<M extends StoreMachine<any, any>> = M & {
  * todoApi.toggleTodo("123");
  * ```
  */
-export function createApi<
+export function storeApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>
 >(machine: StoreMachine<T, TR>): StoreMachineApi<T, TR> {
@@ -73,6 +73,6 @@ export function withApi<
   }
   
   return Object.assign(machine, {
-    api: createApi(machine),
+    api: storeApi(machine),
   }) as WithApi<StoreMachine<T, TR>>;
 }
