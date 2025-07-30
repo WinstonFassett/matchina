@@ -44,7 +44,7 @@ const initialState: TodoStore = {
 // Create the todo store
 const todoStore = createStoreMachine(initialState, {
   // Core mutations - focused only on state changes
-  addTodo: (text: string) => mutate<TodoStore>(draft => {
+  addTodo: (text: string) => mutate(draft => {
     draft.todos.push({
       id: Date.now().toString(),
       text,
@@ -54,7 +54,7 @@ const todoStore = createStoreMachine(initialState, {
     draft.lastUpdated = Date.now();
   }),
   
-  toggleTodo: (id: string) => mutate<TodoStore>(draft => {
+  toggleTodo: (id: string) => mutate(draft => {
     const todo = draft.todos.find(todo => todo.id === id);
     if (todo) {
       todo.completed = !todo.completed;
@@ -62,7 +62,7 @@ const todoStore = createStoreMachine(initialState, {
     }
   }),
   
-  removeTodo: (id: string) => mutate<TodoStore>(draft => {
+  removeTodo: (id: string) => mutate(draft => {
     const index = draft.todos.findIndex(todo => todo.id === id);
     if (index !== -1) {
       draft.todos.splice(index, 1);
@@ -70,7 +70,7 @@ const todoStore = createStoreMachine(initialState, {
     }
   }),
   
-  updateTodoText: (id: string, text: string) => mutate<TodoStore>(draft => {
+  updateTodoText: (id: string, text: string) => mutate(draft => {
     const todo = draft.todos.find(todo => todo.id === id);
     if (todo) {
       todo.text = text;
@@ -78,11 +78,11 @@ const todoStore = createStoreMachine(initialState, {
     }
   }),
   
-  setFilter: (filter: TodoStore["filter"]) => mutate<TodoStore>(draft => {
+  setFilter: (filter: TodoStore["filter"]) => mutate(draft => {
     draft.filter = filter;
   }),
   
-  clearCompleted: () => mutate<TodoStore>(draft => {
+  clearCompleted: () => mutate(draft => {
     draft.todos = draft.todos.filter(todo => !todo.completed);
     draft.lastUpdated = Date.now();
   }),
