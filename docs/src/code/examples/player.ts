@@ -1,4 +1,4 @@
-import { defineStates, createMachine, zen } from "matchina";
+import { defineStates, createMachine, assignEventApi } from "matchina";
 
 // Define states using defineStates
 const states = defineStates({
@@ -26,8 +26,8 @@ const baseMachine = createMachine(
   "Idle"
 );
 
-// Use zen to enhance the machine with utility methods
-export const player = zen(baseMachine);
+//Use assignEventApi to enhance the machine with utility methods
+export const player = assignEventApi(baseMachine);
 
 // Usage:
 player.start(); // Idle/Stopped -> Playing

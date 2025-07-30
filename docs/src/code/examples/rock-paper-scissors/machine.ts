@@ -1,4 +1,4 @@
-import { createMachine, zen } from "matchina";
+import { createMachine, assignEventApi } from "matchina";
 import { states, type Move } from "./states";
 import { randomMove, determineWinner } from "./game-utils";
 
@@ -63,7 +63,7 @@ export function createRPSMachine() {
     },
     states.WaitingForPlayer(0, 0)
   );
-  return Object.assign(zen(machine), {
+  return Object.assign(assignEventApi(machine), {
     randomMove,
   });
 }

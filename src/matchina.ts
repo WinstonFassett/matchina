@@ -1,4 +1,4 @@
-import { zen } from "./extras/zen";
+import { assignEventApi } from "./extras/zen";
 import { KeyedStateFactory } from "./state-keyed";
 import { createMachine } from "./factory-machine";
 import {
@@ -11,7 +11,7 @@ import { eventApi } from "./factory-machine-event-api";
 
 /**
  * Creates a strongly-typed state machine using the provided states, transitions, and initial state.
- * Wraps the machine with additional utilities via `zen` for ergonomic usage.
+ * Wraps the machine with additional utilities via `assignEventApi` for ergonomic usage.
  *
  * @template SF - State factory type
  * @template TC - Transition table type
@@ -48,7 +48,7 @@ import { eventApi } from "./factory-machine-event-api";
  * machine.deactivate();
  * ```
  *
- * @see {@link zen} - for ergonomic machine enhancement and setup support
+ * @see {@link assignEventApi} - for ergonomic machine enhancement and setup support
  * @see {@link addEventApi} - for adding event API methods to machines
  *
  * @source

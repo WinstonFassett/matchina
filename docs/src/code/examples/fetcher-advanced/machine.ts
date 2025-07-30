@@ -7,7 +7,7 @@ import {
   guard,
   whenEventType,
   whenState,
-  zen,
+  assignEventApi,
 } from "matchina";
 import { autotransition } from "../lib/autotransition";
 
@@ -66,7 +66,7 @@ export function createFetcher(
     },
     "Idle"
   );
-  const fetcher = Object.assign(zen(machine), {
+  const fetcher = Object.assign(assignEventApi(machine), {
     fetch: (url?: string, options?: RequestInit) => {
       fetcher.fetch(url, options);
       return fetcher.promise!;

@@ -5,7 +5,7 @@ import {
   enter,
   when,
   effect,
-  zen,
+  assignEventApi,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -40,8 +40,8 @@ export const createStopwatchMachine = () => {
     "Stopped"
   );
 
-  // Use zen to enhance the machine with utility methods
-  const machine = Object.assign(zen(baseMachine), {
+  //Use assignEventApi to enhance the machine with utility methods
+  const machine = Object.assign(assignEventApi(baseMachine), {
     elapsed: 0,
   });
   setup(machine)(

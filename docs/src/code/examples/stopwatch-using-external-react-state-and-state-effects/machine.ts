@@ -1,4 +1,4 @@
-import { createMachine, defineStates, zen } from "matchina";
+import { createMachine, defineStates, assignEventApi } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
 export const createStopwatchMachine = (
@@ -24,7 +24,7 @@ export const createStopwatchMachine = (
   });
 
   const stopwatch = Object.assign(
-    zen(
+    assignEventApi(
       createMachine(
         states,
         {

@@ -4,7 +4,7 @@ import {
   setup,
   effect,
   when,
-  zen,
+  assignEventApi,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -29,8 +29,8 @@ export const createTrafficLight = () => {
     "Red"
   );
 
-  // Use zen to enhance the machine with utility methods
-  const machine = zen(baseMachine);
+  //Use assignEventApi to enhance the machine with utility methods
+  const machine = assignEventApi(baseMachine);
 
   setup(machine)(
     effect(

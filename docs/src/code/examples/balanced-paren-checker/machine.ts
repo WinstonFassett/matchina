@@ -1,4 +1,4 @@
-import { createMachine, defineStates, delay, zen } from "matchina";
+import { createMachine, defineStates, delay, assignEventApi } from "matchina";
 
 const pairs = [
   ["${", "}"],
@@ -66,7 +66,7 @@ export const balancedParenthesesChecker = (initialText?: string) => {
     "Valid"
   );
   const controller = new AbortController();
-  const logic = Object.assign(zen(machine), {
+  const logic = Object.assign(assignEventApi(machine), {
     text: "",
     controller,
     processing: undefined as undefined | Promise<void>,

@@ -1,4 +1,4 @@
-import { defineStates, createMachine, zen } from "matchina";
+import { defineStates, createMachine, assignEventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useState, useMemo, useEffect } from "react";
 import { tickEffect } from "../lib/tick-effect";
@@ -52,8 +52,8 @@ export function useStopwatch() {
       "Stopped"
     );
 
-    // Use zen to enhance the machine with utility methods
-    return Object.assign(zen(baseMachine), {
+    //Use assignEventApi to enhance the machine with utility methods
+    return Object.assign(assignEventApi(baseMachine), {
       elapsed: elapsed,
       setElapsed: setElapsed,
     });

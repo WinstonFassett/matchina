@@ -1,4 +1,4 @@
-import { defineStates, createMachine, zen } from "matchina";
+import { defineStates, createMachine, assignEventApi } from "matchina";
 
 export const createStopwatch = () => {
   // Define states using defineStates
@@ -29,6 +29,6 @@ export const createStopwatch = () => {
     "Stopped"
   );
 
-  // Use zen to enhance the machine with utility methods
-  return zen(baseMachine);
+  //Use assignEventApi to enhance the machine with utility methods
+  return assignEventApi(baseMachine);
 };

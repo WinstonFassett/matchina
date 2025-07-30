@@ -1,4 +1,4 @@
-import { createMachine, defineStates, zen } from "matchina";
+import { createMachine, defineStates, assignEventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import { useEventTypeEffect, useStateEffects } from "../lib/matchina-hooks";
@@ -52,8 +52,8 @@ export function useStopwatch() {
       "Stopped"
     );
 
-    // Use zen to enhance the machine with utility methods
-    return Object.assign(zen(baseMachine), {
+    //Use assignEventApi to enhance the machine with utility methods
+    return Object.assign(assignEventApi(baseMachine), {
       elapsed,
     });
   }, []);

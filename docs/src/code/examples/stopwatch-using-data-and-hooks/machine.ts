@@ -5,7 +5,7 @@ import {
   before,
   effect,
   when,
-  zen,
+  assignEventApi,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -37,12 +37,12 @@ export const createStopwatchMachine = () => {
     "Stopped"
   );
 
-  // Use zen to enhance the machine with utility methods
-  const machine = Object.assign(zen(baseMachine), {
+  //Use assignEventApi to enhance the machine with utility methods
+  const machine = Object.assign(assignEventApi(baseMachine), {
     elapsed: 0,
   });
 
-  // Setup hooks directly on the machine (no need for .machine with zen)
+  // Setup hooks directly on the machine (no need for .machine with assignEventApi)
   setup(machine)(
     before((ev) => {
       ev.to.data.elapsed = ev.match(

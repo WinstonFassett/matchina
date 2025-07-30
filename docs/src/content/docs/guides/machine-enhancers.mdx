@@ -22,7 +22,7 @@ plainFactoryMachine.send("someEvent", 1, 2, 3);
 const api = eventApi(plainFactoryMachine);
 api.someEvent(1, 2, 3);
 
-const zenMachine = zen(createMachine(states, transitions, initialState));
+const zenMachine = assignEventApi(createMachine(states, transitions, initialState));
 zenMachine.someEvent(1, 2, 3);
 
 const alsoZen = matchina(states, transitions, initialState);
@@ -53,7 +53,7 @@ pureVersion.send("someEvent", 1, 2, 3);
 {" "}
 
 <TabItem label="zen">
-  Use `zen` when: - You need both event methods and state access in a clean
+  Use `assignEventApi` when: - You need both event methods and state access in a clean
   package - You're using the machine within a component or module - You want to
   easily integrate with frameworks like React - You appreciate a more
   functional, fluent interface
@@ -187,13 +187,13 @@ enhancedMachine.api.TOGGLE();
 
 The `addEventApi` function is particularly useful when you want to maintain the original machine's structure while providing a more user-friendly interface for sending events.
 
-## zen
+## assignEventApi
 
-The `zen` enhancer builds on top of `eventApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
+The `assignEventApi` enhancer builds on top of `eventApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
 {/*
 ```ts twoslash
 // @noErrors
-import { createMachine, zen } from "matchina";
+import { createMachine, assignEventApi } from "matchina";
 
 const toggleMachine = createMachine({
   initial: "off",
@@ -207,8 +207,8 @@ const toggleMachine = createMachine({
   },
 });
 
-// Create a zen enhancer
-const toggle = zen(toggleMachine);
+// Create a assignEventApi enhancer
+const toggle = assignEventApi(toggleMachine);
 
 // Send events using the flat API
 toggle.TOGGLE();
@@ -223,9 +223,9 @@ console.log(toggle.change); // { from: 'off', to: 'on' } or similar
 const machine = toggle.machine;
 ``` */}
 
-The `zen` enhancer is ideal for React components and other scenarios where you want a simple, unified interface.
+The `assignEventApi` enhancer is ideal for React components and other scenarios where you want a simple, unified interface.
 
-However, be careful not to define event names that conflict with the machine's properties or methods, as this can lead to unexpected behavior. The `zen` enhancer does not handle naming conflicts.
+However, be careful not to define event names that conflict with the machine's properties or methods, as this can lead to unexpected behavior. The `assignEventApi` enhancer does not handle naming conflicts.
 
 
 ## pure

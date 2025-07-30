@@ -47,14 +47,14 @@ const { getState, send, e1, e2 } = matchina(
   states.S1()
 );
 
-// Or, equivalently, zen-wrapped factory machine
-const { getState, send, e1, e2 } = zen(
+// Or, equivalently, assignEventApi-wrapped factory machine
+const { getState, send, e1, e2 } = assignEventApi(
   createMachine(states, { S1: { e1: "S2" }, S2: { e2: "S1" } }, states.S1())
 );
 ```
 
 - `createMachine` gives you `.getState()` and `.send(type, ...params)`.
-- `matchina` (or `zen(createMachine(...))`) gives you `.getState()`, `.send(type, ...params)`, and direct methods for each event (e.g. `.e1()`, `.e2()`).
+- `matchina` (or `assignEventApi(createMachine(...))`) gives you `.getState()`, `.send(type, ...params)`, and direct methods for each event (e.g. `.e1()`, `.e2()`).
 - The APIs are otherwise equivalent; `matchina` is just a convenience wrapper.
 
 ---
@@ -100,7 +100,7 @@ A transition handler can take one of these forms:
   ```ts
   machine.send(type, ...params);
   ```
-- With `matchina` or `zen`, you can also call event methods directly:
+- With `matchina` or `assignEventApi`, you can also call event methods directly:
 
   ```ts
   machine.e1(...params);

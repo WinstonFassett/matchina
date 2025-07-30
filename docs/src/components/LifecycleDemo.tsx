@@ -1,4 +1,4 @@
-import { createPromiseMachine, createReset, onLifecycle, zen } from "matchina";
+import { createPromiseMachine, createReset, onLifecycle, assignEventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -9,7 +9,7 @@ function useAdder() {
   const machine = useMemo(() => createPromiseMachine(slowlyAddTwoNumbers), []);
   const wrapper = useMemo(
     () =>
-      Object.assign(zen(machine), {
+      Object.assign(assignEventApi(machine), {
         reset: createReset(machine, machine.states.Idle()),
       }),
     [machine]
