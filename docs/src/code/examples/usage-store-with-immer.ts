@@ -1,6 +1,6 @@
 import { effect, setup, when } from "matchina";
 import { produce } from "immer";
-import { createStoreMachine } from "../../../../src/store-machine";
+import { addStoreApi, createStoreMachine, storeApi } from "../../../../src/store-machine";
 
 // #region lib
 
@@ -192,12 +192,11 @@ const disposeFilterPersistence = setup(todoStore)(
 );
 
 // Create an API for the todo store
-import { createApi, withApi } from "../../../../src/store-machine";
 
-const todoApi = createApi(todoStore);
+const todoApi = storeApi(todoStore);
 
 // Method 2: Enhance the store with an API property
-const enhancedTodoStore = withApi(todoStore);
+const enhancedTodoStore = addStoreApi(todoStore);
 
 // Example usage
 console.log("Initial state:", todoStore.getState());
