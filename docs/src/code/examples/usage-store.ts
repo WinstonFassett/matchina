@@ -1,4 +1,4 @@
-import { createStoreMachine } from "../../../../src/store-machine";
+import { createStoreMachine } from "matchina";
 
 // Example with proper type checking
 const store = createStoreMachine(0, {

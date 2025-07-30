@@ -1,4 +1,4 @@
-import { StoreMachine, StoreTransitionRecord, ExtractStoreParams } from "./store-machine";
+import { StoreMachine, StoreTransitionRecord, CurriedTransition, DirectTransition } from "./store-machine";
 
 /**
  * StoreMachineApi provides a convenient API for sending events to a store machine.
@@ -76,3 +76,11 @@ export function addStoreApi<
     api: storeApi(machine),
   }) as WithApi<StoreMachine<T, TR>>;
 }
+/**
+ * Extract parameter types from a store transition handler
+ */
+
+export type ExtractStoreParams<
+  TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
+  E extends keyof TR
+> = Parameters<TR[E]>;

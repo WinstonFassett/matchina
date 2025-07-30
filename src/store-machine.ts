@@ -1,5 +1,5 @@
 import { withLifecycle } from "./lifecycle";
-import { storeApi, addStoreApi } from "./store-machine-api";
+import { storeApi, addStoreApi, ExtractStoreParams } from "./store-machine-api";
 
 export { storeApi , addStoreApi };
 
@@ -52,14 +52,6 @@ export type DirectTransition<T> = (...args: any[]) => T;
 export type CurriedTransition<T> = (
   ...args: any[]
 ) => (change: StoreChange<T>) => T;
-
-/**
- * Extract parameter types from a store transition handler
- */
-export type ExtractStoreParams<
-  TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
-  E extends keyof TR,
-> = Parameters<TR[E]>;
 
 export interface StoreMachine<
   T,
