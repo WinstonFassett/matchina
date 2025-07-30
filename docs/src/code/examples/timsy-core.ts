@@ -1,7 +1,7 @@
 import {
   createMachine,
   defineStates,
-  withApi,
+  addEventApi,
   withSubscribe,
 } from "matchina";
 
@@ -28,7 +28,7 @@ const runMachine = createMachine(
   "FOO"
 );
 
-const machine = withSubscribe(withApi(runMachine));
+const machine = withSubscribe(addEventApi(runMachine));
 
 machine.api.switch();
 

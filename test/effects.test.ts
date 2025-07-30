@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defineEffects } from "../src/extras/effects";
 import { defineStates } from "../src/define-states";
-import { createMachine, withApi } from "../src";
+import { createMachine, addEventApi } from "../src";
 import { bindEffects } from "../src/extras/bind-effects";
 
 const effectsConfig = {
@@ -22,7 +22,7 @@ const makeMachine = (
   states = makeStates(),
   initialize = (s: typeof states) => s.Idle()
 ) =>
-  withApi(
+  addEventApi(
     createMachine(
       states,
       {

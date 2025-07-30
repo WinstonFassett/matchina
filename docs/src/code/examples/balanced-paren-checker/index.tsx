@@ -1,5 +1,5 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
-import { createApi } from "matchina";
+import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
 import StateMachineMermaidDiagram from "../../../components/MachineViz";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
@@ -48,7 +48,7 @@ export function BalancedParentheses() {
   // With zen, the machine methods are directly on the object
   const state = checker.getState();
   const actions = useMemo(
-    () => createApi(checker, state.key),
+    () => eventApi(checker, state.key),
     [checker, state]
   );
   return (

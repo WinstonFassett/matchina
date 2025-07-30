@@ -1,5 +1,5 @@
 import { FactoryMachine } from "./factory-machine-types";
-import { FactoryMachineApi, WithApi } from "./factory-machine-api-types";
+import { FactoryMachineApi, addEventApi } from "./factory-machine-api-types";
 
 /**
  * Creates an API object for a FactoryMachine instance, providing event sender functions for each transition.
@@ -10,7 +10,7 @@ import { FactoryMachineApi, WithApi } from "./factory-machine-api-types";
  * @param {K} [filterStateKey] - Optional state key to filter transitions
  * @returns {FactoryMachineApi<M>} An object mapping event keys to sender functions
  */
-export function createApi<
+export function eventApi<
   M extends FactoryMachine<any>,
   K extends keyof M["transitions"] = keyof M["transitions"],
 >(machine: M, filterStateKey?: K): FactoryMachineApi<M> {
@@ -46,14 +46,14 @@ export function createApi<
  *
  * @template M - Type of FactoryMachine
  * @param {M} target - The machine instance to enhance
- * @returns {WithApi<M>} The enhanced machine with an api property
+ * @returns {addEventApi<M>} The enhanced machine with an api property
  */
-export function withApi<M extends FactoryMachine<any>>(target: M): WithApi<M> {
-  const enhanced = target as WithApi<M>;
+export function addEventApi<M extends FactoryMachine<any>>(target: M): addEventApi<M> {
+  const enhanced = target as addEventApi<M>;
   if (enhanced.api) {
     return enhanced;
   }
   return Object.assign(target, {
-    api: createApi<M>(enhanced),
-  }) as WithApi<M>;
+    api: eventApi<M>(enhanced),
+  }) as addEventApi<M>;
 }

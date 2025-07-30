@@ -1,5 +1,5 @@
 import type { FactoryMachine } from "matchina";
-import { createApi } from "matchina";
+import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, type ComponentType } from "react";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -38,7 +38,7 @@ export function MachineExampleWithChart({
   const config = useMemo(() => getXStateDefinition(machine), [machine]);
   machine;
   // Create an API for the actions
-  const actions = useMemo(() => createApi(machine), [machine]);
+  const actions = useMemo(() => eventApi(machine), [machine]);
   const lastChange = machine.getChange();
   return (
     <div className="machine-example">

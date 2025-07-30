@@ -12,9 +12,9 @@ export type StoreMachineApi<
 };
 
 /**
- * WithApi adds an 'api' property to a StoreMachine, providing convenient event sender functions.
+ * addEventApi adds an 'api' property to a StoreMachine, providing convenient event sender functions.
  */
-export type WithApi<M extends StoreMachine<any, any>> = M & {
+export type addEventApi<M extends StoreMachine<any, any>> = M & {
   api: StoreMachineApi<ReturnType<M["getState"]>, M["actions"]>;
 };
 
@@ -28,7 +28,7 @@ export type WithApi<M extends StoreMachine<any, any>> = M & {
  * 
  * @example
  * ```ts
- * const todoApi = createApi(todoStore);
+ * const todoApi = eventApi(todoStore);
  * todoApi.addTodo("New task");
  * todoApi.toggleTodo("123");
  * ```
@@ -55,26 +55,26 @@ export function storeApi<
  * @template T - Type of store state
  * @template TR - Type of store transitions
  * @param {StoreMachine<T, TR>} machine - The store machine instance to enhance
- * @returns {WithApi<StoreMachine<T, TR>>} The enhanced machine with an api property
+ * @returns {addEventApi<StoreMachine<T, TR>>} The enhanced machine with an api property
  * 
  * @example
  * ```ts
- * const enhancedTodoStore = withApi(todoStore);
+ * const enhancedTodoStore = addEventApi(todoStore);
  * enhancedTodoStore.api.addTodo("New task");
  * ```
  */
 export function addStoreApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>
->(machine: StoreMachine<T, TR>): WithApi<StoreMachine<T, TR>> {
-  const enhanced = machine as WithApi<StoreMachine<T, TR>>;
+>(machine: StoreMachine<T, TR>): addEventApi<StoreMachine<T, TR>> {
+  const enhanced = machine as addEventApi<StoreMachine<T, TR>>;
   if (enhanced.api) {
     return enhanced;
   }
   
   return Object.assign(machine, {
     api: storeApi(machine),
-  }) as WithApi<StoreMachine<T, TR>>;
+  }) as addEventApi<StoreMachine<T, TR>>;
 }
 /**
  * Extract parameter types from a store transition handler

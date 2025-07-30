@@ -1,4 +1,4 @@
-import { createMachine, defineStates, createApi } from "matchina";
+import { createMachine, defineStates, eventApi } from "matchina";
 import { produce } from "immer";
 
 // Simple example of using Immer with matchina transitions
@@ -191,8 +191,8 @@ const todoMachine = createMachine(
 );
 
 // Create APIs
-const counterApi = createApi(counterMachine);
-const todoApi = createApi(todoMachine);
+const counterApi = eventApi(counterMachine);
+const todoApi = eventApi(todoMachine);
 
 // Example usage
 console.log("Initial counter state:", counterMachine.getState());

@@ -1,5 +1,5 @@
 import StateMachineMermaidDiagram from "@components/MachineViz";
-import { createApi } from "matchina";
+import { eventApi } from "matchina";
 import { useMemo } from "react";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
 import type { Stopwatch } from "./types";
@@ -11,7 +11,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
     [stopwatch]
   );
   const actions = useMemo(
-    () => createApi(stopwatch as any),
+    () => eventApi(stopwatch as any),
     [stopwatch.getState()]
   );
 

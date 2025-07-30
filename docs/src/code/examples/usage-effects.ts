@@ -3,7 +3,7 @@ import {
   createMachine,
   defineEffects,
   defineStates,
-  withApi,
+  addEventApi,
 } from "matchina";
 
 const myEffects = defineEffects({
@@ -18,7 +18,7 @@ const states = defineStates({
   Done: () => ({ effects: [myEffects.Notify("all done!")] }),
 });
 
-const machine = withApi(
+const machine = addEventApi(
   createMachine(
     states,
     {

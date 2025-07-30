@@ -1,5 +1,5 @@
 import {
-  createApi,
+  eventApi,
   createMachine,
   defineStates,
   matchina
@@ -43,7 +43,7 @@ const m1 = createMachine(
 m1.send('error', '1') // valid
 // m1.send('error') // invalid -- error required
 
-const m1Api = createApi(m1);
+const m1Api = eventApi(m1);
 m1Api.success();
 m1Api.error("An error occurred"); // valid
 // m1Api.error(); // invalid -- error required

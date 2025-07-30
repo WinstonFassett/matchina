@@ -4,7 +4,7 @@ import {
   effect,
   setup,
   whenState,
-  withApi,
+  addEventApi,
 } from "matchina";
 import { useMachine } from "matchina/react";
 import React from "react";
@@ -19,7 +19,7 @@ const states = defineStates({
 });
 
 const createDataMachine = () => {
-  const machine = withApi(
+  const machine = addEventApi(
     createMachine(
       states,
       {

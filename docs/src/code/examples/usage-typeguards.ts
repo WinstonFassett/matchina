@@ -1,5 +1,5 @@
 import {
-  createApi,
+  eventApi,
   createMachine,
   createPromiseMachine,
   defineStates,
@@ -82,7 +82,7 @@ const slowAddingMachine = createPromiseMachine(
 );
 
 slowAddingMachine.execute(1, 2);
-const api = createApi(slowAddingMachine);
+const api = eventApi(slowAddingMachine);
 api.reject(new Error("test"));
 //   ^|
 

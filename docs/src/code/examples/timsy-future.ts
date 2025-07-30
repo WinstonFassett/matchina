@@ -1,4 +1,4 @@
-import { createMachine, defineStates, withApi } from "matchina";
+import { createMachine, defineStates, addEventApi } from "matchina";
 
 // ---cut---
 const states = defineStates({
@@ -7,7 +7,7 @@ const states = defineStates({
   RESIZING: (x: number) => ({ x }),
 });
 
-const machine = withApi(
+const machine = addEventApi(
   createMachine(
     states,
     {

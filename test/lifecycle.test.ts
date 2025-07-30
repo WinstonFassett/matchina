@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createApi, withApi } from "../src/factory-machine-event-api";
+import { eventApi, addEventApi } from "../src/factory-machine-event-api";
 import { onLifecycle } from "../src/factory-machine-lifecycle";
 import { createPromiseMachine } from "../src/promise-machine-impl";
 
@@ -21,9 +21,9 @@ describe("onLifecycle usage", () => {
       delayed(15, x)
     );
     // Create machine WITHOUT a promise to drive it
-    const api = createApi(pm);
+    const api = eventApi(pm);
     // api.resolve(1)
-    const machine = Object.assign(withApi(pm), {
+    const machine = Object.assign(addEventApi(pm), {
       reset() {
         console.log("resetting");
         const before = machine.getChange();

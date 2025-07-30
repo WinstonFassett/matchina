@@ -30,7 +30,7 @@ export type FactoryMachineApi<FC extends FactoryMachineContext> = Simplify<
   object & FlatEventSenders<FC>
 >;
 
-export type WithApi<FC extends FactoryMachineContext> = FC & {
+export type addEventApi<FC extends FactoryMachineContext> = FC & {
   api: FactoryMachineApi<FC>;
 };
 

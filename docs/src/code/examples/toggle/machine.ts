@@ -1,4 +1,4 @@
-import { createMachine, defineStates, withApi } from "matchina";
+import { createMachine, defineStates, addEventApi } from "matchina";
 
 export const createToggleMachine = () => {
   const states = defineStates({
@@ -7,7 +7,7 @@ export const createToggleMachine = () => {
   });
 
   // Create a machine with proper transitions
-  const machine = withApi(
+  const machine = addEventApi(
     createMachine(
       states,
       {

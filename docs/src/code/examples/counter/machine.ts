@@ -1,4 +1,4 @@
-import { createMachine, defineStates, onLifecycle, withApi } from "matchina";
+import { createMachine, defineStates, onLifecycle, addEventApi } from "matchina";
 
 export const createCounterMachine = () => {
   const states = defineStates({
@@ -6,7 +6,7 @@ export const createCounterMachine = () => {
   });
 
   // Create a machine with proper transitions
-  const machine = withApi(
+  const machine = addEventApi(
     createMachine(
       states,
       {

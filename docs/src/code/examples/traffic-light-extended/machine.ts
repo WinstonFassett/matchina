@@ -1,4 +1,4 @@
-import { createMachine, enter, setup, whenState, withApi } from "matchina";
+import { createMachine, enter, setup, whenState, addEventApi } from "matchina";
 import { states, sharedStates, type CommonStateProps } from "./states";
 
 export const walkDuration =
@@ -62,8 +62,8 @@ export const createExtendedTrafficLightMachine = () => {
     "Red"
   );
 
-  // Simple and clean with withApi
-  const machine = Object.assign(withApi(baseMachine), {
+  // Simple and clean with addEventApi
+  const machine = Object.assign(addEventApi(baseMachine), {
     data: sharedState,
     requestCrossing: () => {
       sharedState.send("change", { crossingRequested: true });

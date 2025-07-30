@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { defineStates } from "../src/define-states";
-import { createMachine, withApi } from "../src";
+import { createMachine, addEventApi } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -28,7 +28,7 @@ const makeMachine = () => {
     },
     "Initial"
   );
-  const m2 = withApi(m);
+  const m2 = addEventApi(m);
   return m2;
 };
 

@@ -48,7 +48,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  * ```
  *
  * @see {@link zen} - for ergonomic machine enhancement and setup support
- * @see {@link withApi} - for adding event API methods to machines
+ * @see {@link addEventApi} - for adding event API methods to machines
  *
  * @source
  * This function is a wrapper around `createMachine` that enhances the machine with additional utilities.

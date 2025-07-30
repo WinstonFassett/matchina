@@ -1,5 +1,5 @@
 import {
-  createApi,
+  eventApi,
   createMachine,
   defineStates,
   effect,
@@ -41,7 +41,7 @@ machine.send("execute", 1);
 machine.send("resolve", false);
 machine.send('reject', new Error("nope"));
 
-const m4api = createApi(machine);
+const m4api = eventApi(machine);
 m4api.execute(1);
 m4api.resolve(!!machine);
 m4api.reject(new Error("nope"));
@@ -118,7 +118,7 @@ setup(machine)(
   )
 );
 
-const api = createApi(machine);
+const api = eventApi(machine);
 
 api.execute(1);
 console.log("state", machine.getChange());

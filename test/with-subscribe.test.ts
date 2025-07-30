@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createMachine, defineStates, withApi } from "../src";
+import { createMachine, defineStates, addEventApi } from "../src";
 import { withSubscribe } from "../src/extras/with-subscribe";
 // import { whenEvent } from "../src/factory-machine-hooks";
 
@@ -22,7 +22,7 @@ describe("withSubscribe", () => {
       },
       "Idle"
     );
-    const e = withApi(inner);
+    const e = addEventApi(inner);
 
     const machine = withSubscribe(inner);
     expect(machine.subscribe).toBeDefined();

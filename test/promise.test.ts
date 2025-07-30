@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createPromiseMachine, PROMISE_STATES, PROMISE_TRANSITIONS } from "../src/promise-machine-impl";
 import { delay, delayer } from "../src/extras/delay";
-import { withApi, createMachine, createApi } from "../src";
+import { addEventApi, createMachine, eventApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const machine = withApi(createPromiseMachine(delayer(1, "Resolved Data")));
+    const machine = addEventApi(createPromiseMachine(delayer(1, "Resolved Data")));
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
@@ -22,7 +22,7 @@ describe("createPromiseMachine", () => {
   });
 
   it("should transition to Rejected state on error", async () => {
-    const machine = withApi(
+    const machine = addEventApi(
       createPromiseMachine(async () => {
         // console.log('execute')
         await delay(1);
@@ -54,7 +54,7 @@ describe("createPromiseMachine", () => {
         },
         "Idle"
       );
-      const api = createApi(machine);
+      const api = eventApi(machine);
       expect(machine.getState().key).toBe("Idle");
       api.executing(Promise.resolve(), []);
       expect(machine.getState().key).toBe("Pending");

@@ -1,11 +1,11 @@
-import { createPromiseMachine, withApi, withReset } from "matchina";
+import { createPromiseMachine, addEventApi, withReset } from "matchina";
 import { useMachine } from "matchina/react";
 
 const slowlyAddTwoNumbers = (x: number, y: number, duration = 1000) =>
   new Promise<number>((resolve) => setTimeout(() => resolve(x + y), duration));
 
 const kernel = createPromiseMachine(slowlyAddTwoNumbers);
-const machine = withReset(withApi(kernel), kernel.states.Idle());
+const machine = withReset(addEventApi(kernel), kernel.states.Idle());
 
 export function ReactMachineDemo({}) {
   useMachine(machine);

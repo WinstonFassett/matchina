@@ -8,8 +8,8 @@ import CodeBlock from "@components/CodeBlock.astro";
 
 Matchina provides several Machine Enhancers that enhance the usability of state machines while simplifying their interfaces for different use cases. These wrappers include:
 
-- **createApi**: Creates a flat event API for a factory machine
-- **withApi**: Enhances a machine with an `api` for sending events
+- **eventApi**: Creates a flat event API for a factory machine
+- **addEventApi**: Enhances a machine with an `api` for sending events
 - **zen**: Mixes an event API into the machine
 - **pure**: Provides a minimal interface with only the essential methods
 
@@ -19,7 +19,7 @@ Matchina provides several Machine Enhancers that enhance the usability of state 
 const plainFactoryMachine = createMachine(states, transitions, initialState);
 plainFactoryMachine.send("someEvent", 1, 2, 3);
 
-const api = createApi(plainFactoryMachine);
+const api = eventApi(plainFactoryMachine);
 api.someEvent(1, 2, 3);
 
 const zenMachine = zen(createMachine(states, transitions, initialState));
@@ -35,8 +35,8 @@ pureVersion.send("someEvent", 1, 2, 3);
 ## When to Use Each Enhancer
 
 <Tabs>
-  <TabItem label="createApi">
-    Use `createApi` when:
+  <TabItem label="eventApi">
+    Use `eventApi` when:
     - You want to expose a simplified event-sending interface
     - You're building a public API for your state machine
     - You want fully typed event handlers with proper parameter types
@@ -44,8 +44,8 @@ pureVersion.send("someEvent", 1, 2, 3);
 
 {" "}
 
-<TabItem label="withApi">
-  Use `withApi` when: - You want to enhance an existing machine with a flat
+<TabItem label="addEventApi">
+  Use `addEventApi` when: - You want to enhance an existing machine with a flat
   event API - You need to keep the original machine structure intact - You want
   to provide a simplified interface for sending events
 </TabItem>
@@ -68,14 +68,14 @@ pureVersion.send("someEvent", 1, 2, 3);
   </TabItem>
 </Tabs>
 
-## createApi
+## eventApi
 
-The `createApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
+The `eventApi` function creates a flat event API for a factory machine, simplifying the process of sending events to a machine. This is particularly useful when you want to expose a cleaner interface for transitions without exposing the full machine.
 
 {/* ````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
-import { createApi } from "matchina";
+import { eventApi } from "matchina";
 
 const toggleMachine = createMachine({
 initial: "off",
@@ -90,7 +90,7 @@ on: { TOGGLE: "off" },
 });
 
 // Create a flat event API
-const toggleApi = createApi(toggleMachine);
+const toggleApi = eventApi(toggleMachine);
 
 // Now you can simply call the event methods
 toggleApi.TOGGLE();
@@ -102,7 +102,7 @@ The generated API is fully typed, with the correct parameter types for each even
 {/* ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
-import { createApi } from "matchina";
+import { eventApi } from "matchina";
 
 const counterMachine = createMachine({
   initial: "idle",
@@ -127,19 +127,19 @@ const counterMachine = createMachine({
   },
 });
 
-const api = createApi(counterMachine);
+const api = eventApi(counterMachine);
 
 // TypeScript knows these need a number parameter
 api.INCREMENT(1);
 api.DECREMENT(2);
 ````
 
-You can also use the `withApi` helper to add the API directly to your machine:
+You can also use the `addEventApi` helper to add the API directly to your machine:
 
 ````ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
-import { withApi } from "matchina";
+import { addEventApi } from "matchina";
 
 const toggleMachine = createMachine({
   initial: "off",
@@ -154,20 +154,20 @@ const toggleMachine = createMachine({
 });
 
 // Enhance the machine with an API
-const enhancedMachine = withApi(toggleMachine);
+const enhancedMachine = addEventApi(toggleMachine);
 
 // Now you can use the machine with its API
 enhancedMachine.api.TOGGLE();
 ``` */}
 
-## withApi
+## addEventApi
 
-The `withApi` function enhances a machine by adding an `api` property that provides a flat event API for sending events. This is useful when you want to keep the original machine intact while providing a simplified interface for event handling.
+The `addEventApi` function enhances a machine by adding an `api` property that provides a flat event API for sending events. This is useful when you want to keep the original machine intact while providing a simplified interface for event handling.
 
 {/* ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
-import { withApi } from "matchina";
+import { addEventApi } from "matchina";
 const toggleMachine = createMachine({
   initial: "off",
   states: {
@@ -180,16 +180,16 @@ const toggleMachine = createMachine({
   },
 });
 // Enhance the machine with an API
-const enhancedMachine = withApi(toggleMachine);
+const enhancedMachine = addEventApi(toggleMachine);
 // Now you can use the machine with its API
 enhancedMachine.api.TOGGLE();
 ``` */}
 
-The `withApi` function is particularly useful when you want to maintain the original machine's structure while providing a more user-friendly interface for sending events.
+The `addEventApi` function is particularly useful when you want to maintain the original machine's structure while providing a more user-friendly interface for sending events.
 
 ## zen
 
-The `zen` enhancer builds on top of `createApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
+The `zen` enhancer builds on top of `eventApi` and provides a clean, minimal interface for working with state machines. It combines the event API with easy access to the machine's state and change, along with a setup method for integrations.
 {/*
 ```ts twoslash
 // @noErrors
@@ -261,12 +261,12 @@ console.log(pureMachine.getState()); // 'on'
 
 {/* ## Example: Combining Wrappers
 
-You can combine wrappers for different scenarios. Here's an example of using `createApi` internally and exposing a `pure` interface externally:
+You can combine wrappers for different scenarios. Here's an example of using `eventApi` internally and exposing a `pure` interface externally:
 
 ```ts twoslash
 // @noErrors
 import { createMachine } from "matchina";
-import { createApi, pure } from "matchina";
+import { eventApi, pure } from "matchina";
 
 // Create a complex machine
 const authMachine = createMachine({
@@ -301,7 +301,7 @@ const authMachine = createMachine({
 });
 
 // For internal use, create a typed API
-const api = createApi(authMachine);
+const api = eventApi(authMachine);
 
 // For external consumers, provide only the pure interface
 const publicMachine = pure(authMachine);
@@ -325,6 +325,6 @@ export { publicMachine, authenticateUser };
 
 In this example:
 
-- Internal code uses the `createApi` wrapper for typed event methods
+- Internal code uses the `eventApi` wrapper for typed event methods
 - External code only receives the `pure` interface with limited capabilities
 - The authentication logic is encapsulated, with only necessary parts exposed */}

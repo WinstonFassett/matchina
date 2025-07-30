@@ -1,8 +1,8 @@
 import { useMachine } from "matchina/react";
-import { createPromiseMachine, withApi } from "matchina";
+import { createPromiseMachine, addEventApi } from "matchina";
 import React from "react";
 // ---cut---
-const machine = withApi(
+const machine = addEventApi(
   createPromiseMachine((_id: number) =>
     fetch("/data").then((response) => response.json())
   )

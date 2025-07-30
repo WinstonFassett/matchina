@@ -1,5 +1,5 @@
 import {
-  createApi,
+  eventApi,
   createMachine,
   createPromiseMachine,
   defineStates,
@@ -43,7 +43,7 @@ const m2 = createMachine(
   Idle()
 );
 
-const m2Api = createApi(m2);
+const m2Api = eventApi(m2);
 m2Api.execute("https://google.com");
 m2Api.reject(new Error("nope"));
 m2Api.resolve(1);
@@ -69,7 +69,7 @@ const counter = createMachine(
   counterStates.Idle()
 );
 
-const counterApi = createApi(counter);
+const counterApi = eventApi(counter);
 counterApi.increment(2);
 counterApi.decrement(1);
 
@@ -99,7 +99,7 @@ const m5 = createMachine(
   oneState.State({ count: 0, meta: { name: "howdy" } })
 );
 
-const api5 = createApi(m5);
+const api5 = eventApi(m5);
 api5.increment() // valid because inc is optional
 api5.increment(2) // valid because inc is optional
 // api5.increment(2, 2) // invalid because only 1 param
