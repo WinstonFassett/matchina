@@ -1,22 +1,19 @@
-import { effect, guard, setup, when, update, handle } from "matchina"
-import { produce } from "immer";
+import { type Draft, produce } from "immer";
+import { effect, setup, when } from "matchina";
 import { createStoreMachine } from "../../../../src/store-machine";
 
-// Define the StoreChange type to match what the store machine expects
-type StoreChange<T> = {
-  from: T;
-  to: T;
-  type: string;
-  params: any[];
-};
-
-// Helper for using Immer with store machine transitions
-// This preserves type information while allowing immutable updates
-function mutate<T>(updater: (draft: T) => void) {
-  return (change: { from: T }) => {
-    return produce(change.from, updater);
+// Helper for using a produce function with store machine transitions
+// Use a simplified type for produce that matches your usage
+function createMutate(produceFn: <T>(base: T, recipe: (draft: Draft<T>) => void) => T) {
+  return function <T>(updater: (draft: Draft<T>) => void) {
+    return (change: { from: T }) => {
+      return produceFn(change.from, updater);
+    };
   };
 }
+
+const mutate = createMutate(produce);
+
 
 // Example with nested state and Immer
 type AppState = {
@@ -94,20 +91,20 @@ const initialState: AppState = {
 // Side effects like history tracking and stats updates are handled by hooks
 const store = createStoreMachine(initialState, {
   // User-related transitions
-  updateUserName: (name: string) => mutate<AppState>(draft => {
+  updateUserName: (name: string) => mutate(draft => {
     draft.user.name = name;
   }),
   
-  setTheme: (theme: "light" | "dark") => mutate<AppState>(draft => {
+  setTheme: (theme: "light" | "dark") => mutate(draft => {
     draft.user.preferences.theme = theme;
   }),
   
-  toggleNotifications: () => mutate<AppState>(draft => {
+  toggleNotifications: () => mutate(draft => {
     draft.user.preferences.notifications = !draft.user.preferences.notifications;
   }),
   
   // Todo-related transitions
-  addTodo: (text: string) => mutate<AppState>(draft => {
+  addTodo: (text: string) => mutate(draft => {
     const newTodo = {
       id: Date.now().toString(),
       text,
@@ -118,7 +115,7 @@ const store = createStoreMachine(initialState, {
     // Stats are updated in effects
   }),
   
-  toggleTodo: (id: string) => mutate<AppState>(draft => {
+  toggleTodo: (id: string) => mutate(draft => {
     const todo = draft.todos.items.find(item => item.id === id);
     if (todo) {
       todo.completed = !todo.completed;
@@ -126,7 +123,7 @@ const store = createStoreMachine(initialState, {
     }
   }),
   
-  addTodoTag: (id: string, tag: string) => mutate<AppState>(draft => {
+  addTodoTag: (id: string, tag: string) => mutate(draft => {
     const todo = draft.todos.items.find(item => item.id === id);
     if (todo && !todo.tags.includes(tag)) {
       todo.tags.push(tag);
@@ -134,21 +131,21 @@ const store = createStoreMachine(initialState, {
   }),
   
   // UI-related transitions
-  toggleSidebar: () => mutate<AppState>(draft => {
+  toggleSidebar: () => mutate(draft => {
     draft.ui.sidebar.open = !draft.ui.sidebar.open;
   }),
   
-  resizeSidebar: (width: number) => mutate<AppState>(draft => {
+  resizeSidebar: (width: number) => mutate(draft => {
     draft.ui.sidebar.width = width;
   }),
   
-  openModal: (type: string, data: any = null) => mutate<AppState>(draft => {
+  openModal: (type: string, data: any = null) => mutate(draft => {
     draft.ui.modal.open = true;
     draft.ui.modal.type = type;
     draft.ui.modal.data = data;
   }),
   
-  closeModal: () => mutate<AppState>(draft => {
+  closeModal: () => mutate(draft => {
     draft.ui.modal.open = false;
     draft.ui.modal.type = null;
     draft.ui.modal.data = null;
