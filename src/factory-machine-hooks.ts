@@ -86,7 +86,7 @@ export function transitionHooks<FC extends FactoryMachineContext>(
  * @returns An entry listener for the specified state key
  * @example
  * setup(machine)(
- *   whenFromState("Idle", handleLeaveIdle),
+ *   effect(whenFromState("Idle", handleLeaveIdle)),
  * );
  * @source Useful for running logic when leaving a specific state in a state machine.
  */

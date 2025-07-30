@@ -13,9 +13,9 @@ import { EntryListener } from "./entry-exit-types";
  * @example
  * ```ts
  * const teardown = setup(machine)(
- *   whenFromState("Idle", fn),
- *   whenState("Active", fn),
- *   whenEventType("activate", fn)
+ *   effect(whenFromState("Idle", fn)),
+ *   leave(whenState("Active", fn)),
+ *   enter(whenEventType("activate", fn))
  * );
  * // Call teardown() to remove listeners
  * ```
