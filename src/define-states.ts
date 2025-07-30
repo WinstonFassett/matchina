@@ -32,4 +32,4 @@ export function defineStates<Config extends TaggedTypes>(config: Config) {
   return matchboxFactory(config, "key") as States<Config>;
 }
 
-export { StateMatchbox, States } from "./state-types";
+export type { StateMatchbox, States } from "./state-types";
