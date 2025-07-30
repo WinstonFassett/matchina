@@ -62,5 +62,8 @@
   },
   "dependencies": {
     "@astrojs/ts-plugin": "^1.10.4"
+  },
+  "peerDependencies": {
+    "immer": "^10.1.1"
   }
 }
