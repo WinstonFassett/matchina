@@ -196,7 +196,7 @@ export default defineConfig({
         // },
         {
           label: "Examples",
-          collapsed: true,
+          // collapsed: true,
           items: [
             {
               label: "Basic",
