@@ -6,9 +6,8 @@ import {
   FactoryMachineTransition,
   FactoryMachineTransitions
 } from "./factory-machine-types";
-import { FactoryKeyedState } from "./state-keyed";
-import { KeyedStateFactory } from "./state-keyed";
-import { createUpdateLifecycle } from "./lifecycle";
+import { withLifecycle } from "./lifecycle";
+import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
@@ -119,47 +118,43 @@ export function createMachine<
   
   const initialState = typeof init === "string" ? states[init]({}) : init;
   
-  // Track lastChange internally instead of using storeMachine
   let lastChange: E = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],
     initialState as E['from'],
     initialState as E['to'],
     []
   ) as E;
+
+  const machine = withLifecycle({
+    states,
+    transitions,
+    getChange: () => lastChange,
+    getState: () => lastChange.to,
+    send(type, ...params) {
+      const resolved = machine.resolveExit({
+        type,
+        params,
+        from: lastChange.to,
+      } as ResolveEvent<E>);
+      if (resolved) {
+        machine.transition(resolved);
+      }
+    },    
+    resolveExit: (ev) => {
+      const to = resolveNextState<FC>(transitions, states, ev);
+      return to
+        ? (new FactoryMachineEventImpl(
+            ev.type,
+            ev.from,
+            to,
+            ev.params
+          ))
+        : undefined;
+    },    
+  } as Partial<FactoryMachine<FC>>, (ev: E) => {
+    lastChange = ev
+  }) as FactoryMachine<FC>
   
-  const machine = createUpdateLifecycle(
-    (ev: E) => {
-      // Update lastChange directly
-      lastChange = ev;
-    },
-    {
-      states,
-      transitions,
-      getChange: () => lastChange,
-      getState: () => lastChange.to as E['to'],
-      send(type: string, ...params: any[]) {
-        const resolved = machine.resolveExit({
-          type,
-          params,
-          from: lastChange.to,
-        } as ResolveEvent<E>);
-        if (resolved) {
-          machine.transition(resolved);
-        }
-      },
-      resolveExit: (ev: ResolveEvent<E>): E | undefined => {
-        const to = resolveNextState<FC>(transitions, states, ev);
-        return to
-          ? (new FactoryMachineEventImpl<E>(
-              ev.type,
-              ev.from,
-              to,
-              ev.params
-            ) as E)
-          : undefined;
-      },
-    }
-  );
   return machine
 }
 
