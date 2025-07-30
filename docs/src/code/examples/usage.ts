@@ -1,8 +1,6 @@
 import {
   createApi,
   createMachine,
-  createSetup,
-  createTransitionMachine,
   defineStates,
   effect,
   enter,
@@ -12,87 +10,14 @@ import {
   matchChange,
   matchFilters,
   notify,
-  // setupTransition as onChangeSetup,
   onLifecycle,
   setup,
-  // change as setupChange,
   transition,
   when,
-  // whenEvent,
   whenEventType,
   whenFromState,
-  withSubscribe,
-  type TransitionEvent,
+  withSubscribe
 } from "matchina";
-
-const m1 = createTransitionMachine<
-  TransitionEvent<{ key: string; payload?: any }> &
-    (
-      | { type: "start"; params: [nickname: "Bob" | "Pat"] }
-      | { type: "stop"; params: [{ forever: boolean }] }
-    )
->(
-  {
-    Idle: {
-      start: { key: "Running" },
-    },
-    Running: {
-      stop: { key: "Idle" },
-    },
-  },
-  { key: "Idle", payload: "whatever" }
-);
-
-m1.send("start", "Bob");
-console.log("state", m1.getChange());
-m1.send("stop", { forever: true });
-
-// const m2AltStates = defineStates({
-//   Idle: undefined,
-//   Running: (payload: string) => ({ payload }),
-// })
-// const m2alt = createTransitionMachine(
-//   {
-//     Idle: {
-//       start: { key: "Running" },
-//     },
-//     Running: {
-//       stop: { key: "Idle" },
-//     },
-//   },
-//   // { key: "Idle", payload: "whatever" }
-//   m2AltStates.Idle()
-// )
-// m2alt.send('')
-
-// const whenStart = <E extends TransitionEvent>(fn: EntryListener<E>) =>
-
-setup(m1)(
-  guard((ev) => ev.type === "start"),
-  // when((ev) => ev.type === "start", fn),
-  leave((ev) => console.log("before", ev))
-);
-
-const m2 = createTransitionMachine(
-  {
-    Idle: {
-      start: { key: "Running" },
-    },
-    Running: {
-      stop: { key: "Idle" },
-    },
-  },
-  { key: "Idle", data: undefined } as {
-    key: "Idle" | "Pending" | "Done";
-    data: undefined;
-  }
-);
-
-
-createSetup<typeof m2>(
-  guard((ev) => !!ev),
-  leave((ev) => console.log("before", ev))
-)(m2);
 
 const states = defineStates({
   Idle: undefined,
@@ -101,7 +26,7 @@ const states = defineStates({
   Rejected: (err: Error) => ({ err }),
 });
 
-const m4 = createMachine(
+const machine = createMachine(
   states,
   {
     Idle: { execute: "Pending" },
@@ -112,13 +37,13 @@ const m4 = createMachine(
   states.Idle()
 );
 // m4.getChange().to.key ;
-m4.send("execute", 1);
-m4.send("resolve", false);
-m4.send('reject', new Error("nope"));
+machine.send("execute", 1);
+machine.send("resolve", false);
+machine.send('reject', new Error("nope"));
 
-const m4api = createApi(m4);
+const m4api = createApi(machine);
 m4api.execute(1);
-m4api.resolve(!!m4);
+m4api.resolve(!!machine);
 m4api.reject(new Error("nope"));
 
 // const isChange =
@@ -126,7 +51,7 @@ m4api.reject(new Error("nope"));
 //   (ev: E) =>
 //     isKeyedChangeEvent(ev, filter);
 
-setup(m4)(
+setup(machine)(
   guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
   leave((ev) => {
     if (ev.type === "execute") {
@@ -182,9 +107,9 @@ setup(m4)(
   )
 );
 
-m4.send("execute", 1);
+machine.send("execute", 1);
 
-setup(m4)(
+setup(machine)(
   effect((ev) => {
     console.log("effect", ev.type);
   }),
@@ -193,21 +118,21 @@ setup(m4)(
   )
 );
 
-const api = createApi(m4);
+const api = createApi(machine);
 
 api.execute(1);
-console.log("state", m4.getChange());
+console.log("state", machine.getChange());
 // api.reject(new Error("nope"));
 
 const unsub = notify((ev) => {
   console.log("first notify", ev);
   unsub();
-})(m4);
+})(machine);
 
-const m5 = withSubscribe(m4); // .subscribe(ev => {})
+const m5 = withSubscribe(machine); // .subscribe(ev => {})
 export type M4Change = ReturnType<typeof m5.getChange>;
 
-const x = m4.getChange();
+const x = machine.getChange();
 if (
   matchFilters(x, {
     type: "execute",
@@ -218,7 +143,7 @@ if (
 }
 
 // const e = {} as ReturnType<typeof m4.getChange>;
-const e = m4.getChange();
+const e = machine.getChange();
 
 if (matchChange(e, { from: "Idle" } as const)) {
   e.type = "execute";
@@ -300,7 +225,7 @@ if (m5.subscribe) {
 //   })
 // );
 
-setup(m4)(notify(whenFromState("Pending", (_ev) => {})));
+setup(machine)(notify(whenFromState("Pending", (_ev) => {})));
 
 const unsub2 = m5.subscribe(
   when(
@@ -315,7 +240,7 @@ const unsub2 = m5.subscribe(
   )
 );
 
-setup(m4)(
+setup(machine)(
   effect(
     whenFromState("Pending", (ev) => {
       console.log("left Pending state", ev.from.key);
@@ -345,15 +270,15 @@ setup(m4)(
 //   guard((_ev) => true)
 // );
 
-setup(m4)(
+setup(machine)(
   transition((ev, next) => {
-    const done = setup(m4)();
+    const done = setup(machine)();
     next(ev);
     done();
   })
 );
 
-onLifecycle(m4, {
+onLifecycle(machine, {
   Idle: {
     on: {
       // Direct effect handler for 'executing'

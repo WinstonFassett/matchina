@@ -101,7 +101,6 @@ export interface StoreMachine<
  */
 export type StoreTransitionRecord<
   T,
-  E extends StoreChange<T> = StoreChange<T>,
 > = {
   [event: string]: DirectTransition<T> | CurriedTransition<T>;
 };
