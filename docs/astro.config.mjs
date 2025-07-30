@@ -52,8 +52,8 @@ export default defineConfig({
             expandParameters: true,
             indexFormat: "table",
             interfacePropertiesFormat: "table",
-            interfaceMethodsFormat: "table",
-            interfaceIndexFormat: "table",
+            // interfaceMethodsFormat: "table",
+            // interfaceIndexFormat: "table",
             typeDeclarationFormat: "table",
 
             plugin: [
