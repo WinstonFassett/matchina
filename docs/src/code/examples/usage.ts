@@ -16,7 +16,7 @@ import {
   when,
   whenEventType,
   whenFromState,
-  withSubscribe
+  withSubscribe,
 } from "matchina";
 
 const states = defineStates({
@@ -39,7 +39,7 @@ const machine = createMachine(
 // m4.getChange().to.key ;
 machine.send("execute", 1);
 machine.send("resolve", false);
-machine.send('reject', new Error("nope"));
+machine.send("reject", new Error("nope"));
 
 const m4api = eventApi(machine);
 m4api.execute(1);
@@ -114,7 +114,7 @@ setup(machine)(
     console.log("effect", ev.type);
   }),
   effect(
-    ev => ev.type === "execute" && console.log("execute s:", ev.to.data.s)
+    (ev) => ev.type === "execute" && console.log("execute s:", ev.to.data.s)
   )
 );
 
@@ -245,7 +245,7 @@ setup(machine)(
     whenFromState("Pending", (ev) => {
       console.log("left Pending state", ev.from.key);
     })
-  ),
+  )
   // setupChange(
   //   { type: "execute" },
   //   (m) => {
@@ -284,7 +284,7 @@ onLifecycle(machine, {
       // Direct effect handler for 'executing'
       execute: (ev) => {
         console.log("Idle.execute entry:", ev.type, ev.from.key, ev.to.key);
-      },      
+      },
     },
   },
   "*": {

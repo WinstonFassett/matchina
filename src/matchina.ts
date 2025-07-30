@@ -1,13 +1,11 @@
 import { assignEventApi } from "./extras/zen";
-import { KeyedStateFactory } from "./state-keyed";
 import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
   FactoryMachineTransitions,
 } from "./factory-machine-types";
-import { FactoryKeyedState } from "./state-keyed";
+import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
-import { eventApi } from "./factory-machine-event-api";
 
 /**
  * Creates a strongly-typed state machine using the provided states, transitions, and initial state.

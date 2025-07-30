@@ -1,7 +1,10 @@
 import { defineStates } from "./define-states";
 import { createMachine } from "./factory-machine";
-import { PromiseCallback, PromiseMachine, PromiseStates } from "./promise-types";
-
+import {
+  PromiseCallback,
+  PromiseMachine,
+  PromiseStates,
+} from "./promise-types";
 
 /**
  * State definitions for the promise state machine.
@@ -51,11 +54,8 @@ export const PROMISE_TRANSITIONS = {
  * ```
  */
 export function createPromiseMachine<
-  F extends PromiseCallback = PromiseCallback
->(
-  makePromise?: F
-): PromiseMachine<F> 
-{
+  F extends PromiseCallback = PromiseCallback,
+>(makePromise?: F): PromiseMachine<F> {
   const states = PROMISE_STATES as unknown as PromiseStates<F>;
   const machine = createMachine(states, PROMISE_TRANSITIONS, "Idle");
 
@@ -119,4 +119,3 @@ export function createPromiseMachine<
 
   return Object.assign(machine, { execute });
 }
-

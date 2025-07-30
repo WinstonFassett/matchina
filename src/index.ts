@@ -11,7 +11,7 @@ export * from "./factory-machine";
 export * from "./factory-machine-event-api";
 export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
-export * from './lifecycle'
+export * from "./lifecycle";
 export * from "./match-case";
 // export * from "./match-case-types";
 // export * from "./factory-machine-event";
@@ -28,7 +28,7 @@ export * from "./state-machine";
 export * from "./state-machine-actions";
 export * from "./state-machine-hooks";
 export * from "./state-machine-pure";
-export * from './store-machine'
+export * from "./store-machine";
 
 export * from "./function-types";
 // match-change

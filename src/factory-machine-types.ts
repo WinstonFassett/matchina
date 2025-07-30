@@ -1,7 +1,9 @@
-import { StateEventTransitionSenders, ExtractParamTypes } from "./factory-machine-api-types";
+import {
+  StateEventTransitionSenders,
+  ExtractParamTypes,
+} from "./factory-machine-api-types";
 import { MatchInvocation } from "./match-case-types";
-import { FactoryKeyedState } from "./state-keyed";
-import { KeyedStateFactory } from "./state-keyed";
+import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
@@ -12,19 +14,18 @@ import { FlatMemberUnion } from "./utility-types";
  */
 export type ExtractEventParams<
   FC extends FactoryMachineContext<any>,
-  T extends string
+  T extends string,
 > = {
   [StateKey in keyof FC["transitions"]]: {
-    [EventKey in keyof FC["transitions"][StateKey] & string]: 
-      EventKey extends T ? 
-        ExtractParamTypes<FC, StateKey, EventKey> : 
-        never
-  }[keyof FC["transitions"][StateKey] & string]
-}[keyof FC["transitions"]]
+    [EventKey in keyof FC["transitions"][StateKey] & string]: EventKey extends T
+      ? ExtractParamTypes<FC, StateKey, EventKey>
+      : never;
+  }[keyof FC["transitions"][StateKey] & string];
+}[keyof FC["transitions"]];
 
-
-
-export interface FactoryMachineContext<SF extends KeyedStateFactory = KeyedStateFactory> {
+export interface FactoryMachineContext<
+  SF extends KeyedStateFactory = KeyedStateFactory,
+> {
   states: SF;
   transitions: FactoryMachineTransitions<SF>;
 }
@@ -37,15 +38,16 @@ export interface FactoryMachineContext<SF extends KeyedStateFactory = KeyedState
  * See also:
  *   - {@link createMachine} to create a FactoryMachine instance.
  */
-export interface FactoryMachine<FC extends FactoryMachineContext<any> = FactoryMachineContext>
-  extends Omit<StateMachine<FactoryMachineEvent<FC>>, 'send'> {
+export interface FactoryMachine<
+  FC extends FactoryMachineContext<any> = FactoryMachineContext,
+> extends Omit<StateMachine<FactoryMachineEvent<FC>>, "send"> {
   states: FC["states"];
   transitions: FC["transitions"];
-  
+
   /**
    * Send an event to the state machine with strongly typed parameters based on the event type.
    * This overrides the base StateMachine send method to provide better type checking.
-   * 
+   *
    * @param type - The event type to send
    * @param params - The parameters for the event, typed based on the event type
    */
@@ -140,7 +142,8 @@ export type FactoryMachineTransitionEvent<
 type FactoryMachineEventApi<FC extends FactoryMachineContext<any>> = {
   get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
   match: MatchInvocation<FlatMemberUnion<StateEventTransitionSenders<FC>>>;
-};// Valid state keys and event types for a given context
+}; // Valid state keys and event types for a given context
 
 export type StateKey<FC extends FactoryMachineContext> = keyof FC["states"];
-export type EventType<FC extends FactoryMachineContext> = FactoryMachineEvent<FC>["type"];
+export type EventType<FC extends FactoryMachineContext> =
+  FactoryMachineEvent<FC>["type"];

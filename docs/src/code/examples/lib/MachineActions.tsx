@@ -1,7 +1,4 @@
-import {
-  getAvailableActions,
-  type StateMachine,
-} from "matchina";
+import { getAvailableActions, type StateMachine } from "matchina";
 import React from "react";
 
 export function MachineActions<T extends { [key: string]: any }>({

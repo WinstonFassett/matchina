@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { createPromiseMachine, PROMISE_STATES, PROMISE_TRANSITIONS } from "../src/promise-machine-impl";
+import {
+  createPromiseMachine,
+  PROMISE_STATES,
+  PROMISE_TRANSITIONS,
+} from "../src/promise-machine-impl";
 import { delay, delayer } from "../src/extras/delay";
 import { addEventApi, createMachine, eventApi } from "../src";
 
 describe("createPromiseMachine", () => {
   it("should transition from Idle to Pending and Resolved states", async () => {
-    const machine = addEventApi(createPromiseMachine(delayer(1, "Resolved Data")));
+    const machine = addEventApi(
+      createPromiseMachine(delayer(1, "Resolved Data"))
+    );
 
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");

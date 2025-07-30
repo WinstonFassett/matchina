@@ -4,7 +4,7 @@ import {
   enter,
   guardExecute,
   leave,
-  setup
+  setup,
 } from "matchina";
 
 // --- 1. Create a promise machine for async addition ---
@@ -17,9 +17,7 @@ const adder = createPromiseMachine(
 
 // --- 2. Add lifecycle hooks ---
 setup(adder)(
-  guardExecute(
-    (a: number, b: number) => a >= 0 && b >= 0
-  ),
+  guardExecute((a: number, b: number) => a >= 0 && b >= 0),
   enter(
     (ev) => ev.to.is("Pending") && console.log("Started addition:", ev.to.data)
   ),

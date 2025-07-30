@@ -148,7 +148,11 @@ export type TaggedTypes<T = any> = {
  * Usage: InferMatchboxOutput<typeof factory>
  */
 export type InferMatchboxOutput<T extends MatchboxFactory<any, any>> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => infer M ? M extends { data: infer D } ? D : never : never;
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M
+    ? M extends { data: infer D }
+      ? D
+      : never
+    : never;
 };
 
 /**
@@ -157,7 +161,9 @@ export type InferMatchboxOutput<T extends MatchboxFactory<any, any>> = {
  * Result: { Foo: (x: number) => { data: { value: number }, tag: 'Foo', ...api }; ... }
  */
 export type InferMatchboxInstances<T extends MatchboxFactory<any, any>> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => infer M ? (...args: Parameters<T[K]>) => M : never;
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M
+    ? (...args: Parameters<T[K]>) => M
+    : never;
 };
 
 /**
@@ -165,9 +171,9 @@ export type InferMatchboxInstances<T extends MatchboxFactory<any, any>> = {
  * The is method infers true if the tag matches, false otherwise.
  */
 export type SimplifiedMatchbox<T extends { data: any; tag: string }> = {
-  data: T['data'];
-  tag: T['tag'];
-  is: <U extends string>(tag: U) => U extends T['tag'] ? true : false;
+  data: T["data"];
+  tag: T["tag"];
+  is: <U extends string>(tag: U) => U extends T["tag"] ? true : false;
 };
 
 /**
@@ -175,8 +181,12 @@ export type SimplifiedMatchbox<T extends { data: any; tag: string }> = {
  * Usage: type TestFactorySimple = SimplifiedMatchboxFactory<typeof TestBox>
  * Then TestFactorySimple.Foo(123) returns a SimplifiedMatchbox
  */
-export type SimplifiedMatchboxFactory<T extends Record<string, (...args: any[]) => any>> = {
-  [K in keyof T]: (...args: Parameters<T[K]>) => SimplifiedMatchbox<ReturnType<T[K]>>;
+export type SimplifiedMatchboxFactory<
+  T extends Record<string, (...args: any[]) => any>,
+> = {
+  [K in keyof T]: (
+    ...args: Parameters<T[K]>
+  ) => SimplifiedMatchbox<ReturnType<T[K]>>;
 };
 
 // Sample usage for IDE testing:

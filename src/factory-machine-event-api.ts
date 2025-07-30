@@ -18,7 +18,7 @@ export function eventApi<
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {
-      return (machine as any).send(eventKey, ...(params));
+      return (machine as any).send(eventKey, ...params);
     };
 
   const transitioners: any = {};
@@ -48,7 +48,9 @@ export function eventApi<
  * @param {M} target - The machine instance to enhance
  * @returns {addEventApi<M>} The enhanced machine with an api property
  */
-export function addEventApi<M extends FactoryMachine<any>>(target: M): addEventApi<M> {
+export function addEventApi<M extends FactoryMachine<any>>(
+  target: M
+): addEventApi<M> {
   const enhanced = target as addEventApi<M>;
   if (enhanced.api) {
     return enhanced;

@@ -12,9 +12,11 @@ export const handlePromise =
     resolve = "resolve" as Resolve,
     reject = "reject" as Reject
   ) =>
-  (machine: PromiseMachine<F> & {
-    send: (type: Type | Resolve | Reject, ...params: any[]) => void;
-  }) => {
+  (
+    machine: PromiseMachine<F> & {
+      send: (type: Type | Resolve | Reject, ...params: any[]) => void;
+    }
+  ) => {
     const next = machine.handle;
     machine.handle = (ev) => {
       if (ev.type === trigger) {

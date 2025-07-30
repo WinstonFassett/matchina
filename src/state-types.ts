@@ -5,10 +5,9 @@ export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   data: StateData<Specs[Tag]>;
 } & MatchboxMemberApi<Specs, "key">;
 
-type CreateState<
-  Specs,
-  Tag extends string & keyof Specs,
-> = Specs[Tag] extends (...args: infer P) => infer _R
+type CreateState<Specs, Tag extends string & keyof Specs> = Specs[Tag] extends (
+  ...args: infer P
+) => infer _R
   ? (...args: P) => StateMatchbox<Tag, Specs>
   : () => StateMatchbox<Tag, Specs>;
 type StateData<Spec> = Spec extends (...args: any[]) => any

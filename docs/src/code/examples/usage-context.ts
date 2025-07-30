@@ -100,12 +100,12 @@ const m5 = createMachine(
 );
 
 const api5 = eventApi(m5);
-api5.increment() // valid because inc is optional
-api5.increment(2) // valid because inc is optional
+api5.increment(); // valid because inc is optional
+api5.increment(2); // valid because inc is optional
 // api5.increment(2, 2) // invalid because only 1 param
 console.log("state", m5.getState());
 
 m5.send("increment"); // valid because inc is optional
-m5.send('increment', 2) // valid because inc is optional
+m5.send("increment", 2); // valid because inc is optional
 // m5.send('increment', 4, 4) // invalid because only 1 param
 console.log("state", m5.getState());

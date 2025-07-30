@@ -11,7 +11,9 @@ import { MethodOf, HasMethod } from "./method-utility-types";
  *
  * See {@link Funcware} for details on the enhancer function type.
  */
-export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: T) => Disposer;
+export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (
+  target: T
+) => Disposer;
 
 /**
  * {@link methodEnhancer} is an alias for {@link createMethodEnhancer}.
@@ -54,7 +56,9 @@ export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (target: 
  */
 export const createMethodEnhancer =
   <K extends string>(methodName: K) =>
-  <T extends HasMethod<K>>(fn: Funcware<MethodOf<T, K>>): MethodEnhancer<K, T> =>
+  <T extends HasMethod<K>>(
+    fn: Funcware<MethodOf<T, K>>
+  ): MethodEnhancer<K, T> =>
   (target: T) => {
     return enhanceMethod(target, methodName, fn);
   };

@@ -31,7 +31,7 @@ export interface KeyedState {
 
 export interface KeyedStateFactory {
   [key: string]: (...args: any[]) => KeyedState;
-}/**
+} /**
  * Infers the return type of a state factory function for a given key.
  * Used to type-check state objects created by a StateFactory.
  *
@@ -52,6 +52,5 @@ export interface KeyedStateFactory {
 
 export type FactoryKeyedState<
   States extends KeyedStateFactory,
-  StateKey extends keyof States = keyof States
+  StateKey extends keyof States = keyof States,
 > = ReturnType<States[StateKey]>;
-

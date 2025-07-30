@@ -4,9 +4,11 @@ import { produce } from "immer";
 // Simple example of using Immer with matchina transitions
 
 // Create a helper function to use Immer with transitions
-const withImmer = <T>(fn: (draft: T) => void) => (data: T): T => {
-  return produce(data, fn);
-};
+const withImmer =
+  <T>(fn: (draft: T) => void) =>
+  (data: T): T => {
+    return produce(data, fn);
+  };
 
 // Example 1: Simple counter with nested state
 type CounterState = {
@@ -31,30 +33,34 @@ const counterMachine = createMachine(
   {
     Active: {
       // Using Immer directly
-      increment: (amount = 1) => (ev) => {
-        console.log("Incrementing counter...", ev, amount)
-        return counterStates.Active(
-          produce<CounterState>(ev.from.data, (draft) => {
-            draft.count += amount;
-            draft.history.push(draft.count);
-            draft.metadata.lastUpdated = new Date();
-            draft.metadata.operations.increments += 1;
-          })
-        );
-      },
-      
+      increment:
+        (amount = 1) =>
+        (ev) => {
+          console.log("Incrementing counter...", ev, amount);
+          return counterStates.Active(
+            produce<CounterState>(ev.from.data, (draft) => {
+              draft.count += amount;
+              draft.history.push(draft.count);
+              draft.metadata.lastUpdated = new Date();
+              draft.metadata.operations.increments += 1;
+            })
+          );
+        },
+
       // Using the withImmer helper
-      decrement: (amount = 1) => (ev) => {
-        return counterStates.Active(
-          withImmer<CounterState>((draft) => {
-            draft.count -= amount;
-            draft.history.push(draft.count);
-            draft.metadata.lastUpdated = new Date();
-            draft.metadata.operations.decrements += 1;
-          })(ev.from.data)
-        );
-      },
-      
+      decrement:
+        (amount = 1) =>
+        (ev) => {
+          return counterStates.Active(
+            withImmer<CounterState>((draft) => {
+              draft.count -= amount;
+              draft.history.push(draft.count);
+              draft.metadata.lastUpdated = new Date();
+              draft.metadata.operations.decrements += 1;
+            })(ev.from.data)
+          );
+        },
+
       // Reset with Immer
       reset: () => (ev) => {
         return counterStates.Active(
@@ -66,7 +72,7 @@ const counterMachine = createMachine(
             draft.metadata.operations.decrements = 0;
           })(ev.from.data)
         );
-      }
+      },
     },
   },
   counterStates.Active({
@@ -76,9 +82,9 @@ const counterMachine = createMachine(
       lastUpdated: new Date(),
       operations: {
         increments: 0,
-        decrements: 0
-      }
-    }
+        decrements: 0,
+      },
+    },
   })
 );
 
@@ -118,7 +124,7 @@ const todoMachine = createMachine(
               text,
               completed: false,
               tags: [],
-              createdAt: new Date()
+              createdAt: new Date(),
             };
             draft.todos.push(newTodo);
             draft.stats.total += 1;
@@ -126,15 +132,15 @@ const todoMachine = createMachine(
           })
         );
       },
-      
+
       toggleTodo: (id) => (ev) => {
         return todoStates.List(
           produce<TodoState>(ev.from.data, (draft) => {
-            const todo = draft.todos.find(t => t.id === id);
+            const todo = draft.todos.find((t) => t.id === id);
             if (todo) {
               todo.completed = !todo.completed;
               todo.updatedAt = new Date();
-              
+
               // Update stats
               if (todo.completed) {
                 draft.stats.completed += 1;
@@ -147,11 +153,11 @@ const todoMachine = createMachine(
           })
         );
       },
-      
+
       addTag: (id, tag) => (ev) => {
         return todoStates.List(
           produce<TodoState>(ev.from.data, (draft) => {
-            const todo = draft.todos.find(t => t.id === id);
+            const todo = draft.todos.find((t) => t.id === id);
             if (todo && !todo.tags.includes(tag)) {
               todo.tags.push(tag);
               todo.updatedAt = new Date();
@@ -159,7 +165,7 @@ const todoMachine = createMachine(
           })
         );
       },
-      
+
       setFilter: (filter) => (ev) => {
         return todoStates.List(
           produce<TodoState>(ev.from.data, (draft) => {
@@ -167,17 +173,17 @@ const todoMachine = createMachine(
           })
         );
       },
-      
+
       clearCompleted: () => (ev) => {
         return todoStates.List(
           produce<TodoState>(ev.from.data, (draft) => {
-            draft.todos = draft.todos.filter(t => !t.completed);
+            draft.todos = draft.todos.filter((t) => !t.completed);
             draft.stats.completed = 0;
             draft.stats.total = draft.stats.active;
           })
         );
-      }
-    }
+      },
+    },
   },
   todoStates.List({
     todos: [],
@@ -185,8 +191,8 @@ const todoMachine = createMachine(
     stats: {
       total: 0,
       completed: 0,
-      active: 0
-    }
+      active: 0,
+    },
   })
 );
 
@@ -198,7 +204,10 @@ const todoApi = eventApi(todoMachine);
 console.log("Initial counter state:", counterMachine.getState());
 
 // Debug machine structure
-console.log("Machine transitions:", JSON.stringify(counterMachine.transitions, null, 2));
+console.log(
+  "Machine transitions:",
+  JSON.stringify(counterMachine.transitions, null, 2)
+);
 console.log("Machine API:", Object.keys(counterApi));
 
 try {

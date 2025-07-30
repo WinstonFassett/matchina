@@ -47,10 +47,7 @@ export function BalancedParentheses() {
 
   // With assignEventApi, the machine methods are directly on the object
   const state = checker.getState();
-  const actions = useMemo(
-    () => eventApi(checker, state.key),
-    [checker, state]
-  );
+  const actions = useMemo(() => eventApi(checker, state.key), [checker, state]);
   return (
     <div>
       <textarea value={input} onChange={(ev) => setInput(ev.target.value)} />

@@ -26,7 +26,7 @@ import { ResolveEvent } from "./state-machine-types";
  * Lifecycle steps:
  * 1. `send(type, ...params)` - Initiates a transition event.
  * 2. `resolveExit(ev)` - Determines the target state for the event.
- * 3. `transition(ev)` - Triggers the transition lifecycle, handling all steps for processing a change event. 
+ * 3. `transition(ev)` - Triggers the transition lifecycle, handling all steps for processing a change event.
  * 4. `guard(ev)` - Checks if the transition is allowed.
  * 5. `handle(ev)` - Processes the event, may abort if returns undefined.
  * 6. `before(ev)` - Prepares for state change, may abort if returns undefined.
@@ -57,7 +57,6 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent>
    * Typically looks up transitions using `machine.transitions[ev.from.key][ev.type]`.
    */
   resolveExit(ev: ResolveEvent<E>): E | undefined;
-  
 }
 
 /**
@@ -79,10 +78,7 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent>
  * It provides a consistent structure for event handling, allowing for type-safe interactions with state machines.
  * It is a core part of the Matchina API, enabling developers to define and manage state
  */
-export interface TransitionEvent<
-  To = unknown,
-  From = To,
-> {
+export interface TransitionEvent<To = unknown, From = To> {
   type: string; // The event type string
   params: any[]; // Parameters passed to the event
   to: To; // Target state for the transition

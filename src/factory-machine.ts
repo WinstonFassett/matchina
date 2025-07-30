@@ -4,13 +4,12 @@ import {
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransition,
-  FactoryMachineTransitions
+  FactoryMachineTransitions,
 } from "./factory-machine-types";
 import { withLifecycle } from "./lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
-
 
 /**
  * defineStates creates a type-safelve  state factory for your state machine.
@@ -109,53 +108,50 @@ export function createMachine<
   SF extends KeyedStateFactory,
   TC extends FactoryMachineTransitions<SF>,
   FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
-  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>
+  E extends FactoryMachineEvent<FC> = FactoryMachineEvent<FC>,
 >(
   states: SF,
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ): FactoryMachine<FC> {
-  
   const initialState = typeof init === "string" ? states[init]({}) : init;
-  
+
   let lastChange: E = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],
-    initialState as E['from'],
-    initialState as E['to'],
+    initialState as E["from"],
+    initialState as E["to"],
     []
   ) as E;
 
-  const machine = withLifecycle({
-    states,
-    transitions,
-    getChange: () => lastChange,
-    getState: () => lastChange.to,
-    send(type, ...params) {
-      const resolved = machine.resolveExit({
-        type,
-        params,
-        from: lastChange.to,
-      } as ResolveEvent<E>);
-      if (resolved) {
-        machine.transition(resolved);
-      }
-    },    
-    resolveExit: (ev) => {
-      const to = resolveNextState<FC>(transitions, states, ev);
-      return to
-        ? (new FactoryMachineEventImpl(
-            ev.type,
-            ev.from,
-            to,
-            ev.params
-          ))
-        : undefined;
-    },    
-  } as Partial<FactoryMachine<FC>>, (ev: E) => {
-    lastChange = ev
-  }) as FactoryMachine<FC>
-  
-  return machine
+  const machine = withLifecycle(
+    {
+      states,
+      transitions,
+      getChange: () => lastChange,
+      getState: () => lastChange.to,
+      send(type, ...params) {
+        const resolved = machine.resolveExit({
+          type,
+          params,
+          from: lastChange.to,
+        } as ResolveEvent<E>);
+        if (resolved) {
+          machine.transition(resolved);
+        }
+      },
+      resolveExit: (ev) => {
+        const to = resolveNextState<FC>(transitions, states, ev);
+        return to
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          : undefined;
+      },
+    } as Partial<FactoryMachine<FC>>,
+    (ev: E) => {
+      lastChange = ev;
+    }
+  ) as FactoryMachine<FC>;
+
+  return machine;
 }
 
 /**
@@ -195,17 +191,16 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
   if (!transition) {
     return undefined;
   }
-  
+
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
   }
-  
+
   return states[transition as keyof typeof states](...ev.params) as any;
 }
 
 export {
   type FactoryMachine,
-  type FactoryMachineTransitions
+  type FactoryMachineTransitions,
 } from "./factory-machine-types";
-

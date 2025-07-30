@@ -4,17 +4,24 @@
 import { createDisposer } from "./ext";
 import { EntryListener } from "./extras/entry-exit-types";
 import { when } from "./extras/when";
-import { HookKey, TransitionHookExtensions } from "./factory-machine-lifecycle-types";
-import { FactoryMachine, FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
+import {
+  HookKey,
+  TransitionHookExtensions,
+} from "./factory-machine-lifecycle-types";
+import {
+  FactoryMachine,
+  FactoryMachineContext,
+  FactoryMachineEvent,
+} from "./factory-machine-types";
 import { FactoryKeyedState } from "./state-keyed";
 import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
-import { hookSetup } from './state-machine-hooks';
-
+import { hookSetup } from "./state-machine-hooks";
 
 // Strict config type for a single transition hook
-export type TransitionHookConfig<FC extends FactoryMachineContext = FactoryMachineContext> =
-  Partial<ChangeEventKeyFilter<FactoryMachineEvent<FC>>> &
+export type TransitionHookConfig<
+  FC extends FactoryMachineContext = FactoryMachineContext,
+> = Partial<ChangeEventKeyFilter<FactoryMachineEvent<FC>>> &
   Partial<{
     [K in HookKey]: TransitionHookExtensions<FactoryMachineEvent<FC>>[K];
   }>;
@@ -42,12 +49,13 @@ export function transitionHook<FC extends FactoryMachineContext>(
   const { from, to, type, ...hooks } = config;
   return (machine: any) => {
     return Object.entries(hooks).map(([hookKey, fn]) => {
-      return hookSetup(hookKey)(when(
-        (ev: FactoryMachineEvent<FC>) => {
-          return matchChange(ev, { from, to, type } as ChangeEventKeyFilter<FactoryMachineEvent<FC>>)
-        }, 
-        fn
-      ))(machine);
+      return hookSetup(hookKey)(
+        when((ev: FactoryMachineEvent<FC>) => {
+          return matchChange(ev, { from, to, type } as ChangeEventKeyFilter<
+            FactoryMachineEvent<FC>
+          >);
+        }, fn)
+      )(machine);
     });
   };
 }
@@ -70,9 +78,11 @@ export function transitionHooks<FC extends FactoryMachineContext>(
   ...entries: TransitionHookConfig<FC>[]
 ) {
   return (machine: FactoryMachine<FC>) => {
-    return createDisposer(entries.flatMap(entry => {
-      return transitionHook<FC>(entry)(machine);
-    }));
+    return createDisposer(
+      entries.flatMap((entry) => {
+        return transitionHook<FC>(entry)(machine);
+      })
+    );
   };
 }
 

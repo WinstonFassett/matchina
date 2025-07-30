@@ -19,13 +19,13 @@ describe("setup", () => {
           stop: "Idle",
         },
       },
-      "Idle",
+      "Idle"
     );
     setup(machine)(
       guard((ev) => true),
       leave((ev) => console.log("leave", ev.type)),
       enter((ev) => console.log("enter", ev.type)),
-      enter((value) => {}),
+      enter((value) => {})
     );
     expect(machine.getState().key).toBe("Idle");
     machine.send("start");
@@ -50,12 +50,12 @@ describe("createSetup", () => {
           stop: "Idle",
         },
       },
-      "Idle",
+      "Idle"
     );
 
     createSetup<typeof machine>(
       guard((ev) => true),
-      leave((ev) => console.log("leave", ev.type)),
+      leave((ev) => console.log("leave", ev.type))
     )(machine);
     machine.send("start");
     expect(machine.getState().key).toBe("Running");
@@ -82,7 +82,7 @@ describe("factory-machine", () => {
         Resolved: {},
         Rejected: {},
       },
-      states.Idle(),
+      states.Idle()
     );
 
     setup(machine)(
@@ -100,9 +100,9 @@ describe("factory-machine", () => {
             Resolved: (ev) => ev.ok,
             Rejected: (ev) => ev.err.message,
             _: () => false,
-          }),
-        ),
-      ),
+          })
+        )
+      )
     );
     return machine;
   };
@@ -123,7 +123,7 @@ describe("factory-machine", () => {
     expect(machine.getState().key).toBe("Rejected");
     expect(machine.getState().as("Rejected").data.err).toBeInstanceOf(Error);
     expect(machine.getState().as("Rejected").data.err.message).toBe(
-      "Some error",
+      "Some error"
     );
   });
 });

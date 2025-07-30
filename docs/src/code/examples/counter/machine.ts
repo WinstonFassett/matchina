@@ -1,4 +1,9 @@
-import { createMachine, defineStates, onLifecycle, addEventApi } from "matchina";
+import {
+  createMachine,
+  defineStates,
+  onLifecycle,
+  addEventApi,
+} from "matchina";
 
 export const createCounterMachine = () => {
   const states = defineStates({

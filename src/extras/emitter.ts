@@ -1,4 +1,4 @@
-import { Disposer, Effect, Setup } from "../function-types";
+import { Effect, Setup } from "../function-types";
 
 type Listen<T> = Effect<T>;
 
@@ -13,7 +13,6 @@ type Listen<T> = Effect<T>;
  */
 export type Subscribe<T> = Setup<Listen<T>>;
 
-type Unsubscribe = Disposer;
 type Emit<T> = Effect<T>;
 
 /**

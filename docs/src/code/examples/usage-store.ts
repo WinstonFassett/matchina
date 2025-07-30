@@ -2,8 +2,14 @@ import { createStoreMachine } from "matchina";
 
 // Example with proper type checking
 const store = createStoreMachine(0, {
-  increment: (amt: number = 1) => (change) => change.from + amt,
-  decrement: (amt: number = 1) => (change) => change.from - amt,
+  increment:
+    (amt: number = 1) =>
+    (change) =>
+      change.from + amt,
+  decrement:
+    (amt: number = 1) =>
+    (change) =>
+      change.from - amt,
   set: (next: number) => next,
   reset: () => 0,
 });

@@ -40,7 +40,13 @@ export default defineConfig({
             excludePrivate: true,
             excludeInternal: true,
             categorizeByGroup: false,
-            groupOrder: ["Interfaces", "Functions", "Type Alias", "Variables", "*"],
+            groupOrder: [
+              "Interfaces",
+              "Functions",
+              "Type Alias",
+              "Variables",
+              "*",
+            ],
             navigation: {
               includeGroups: true,
               includeCategories: true,
@@ -58,10 +64,10 @@ export default defineConfig({
 
             plugin: [
               // "./src/lib/starlight-typedoc/register-theme.ts",
-              './dist/typedoc-plugin/register-theme.cjs',
-              "typedoc-plugin-inline-sources"
+              "./dist/typedoc-plugin/register-theme.cjs",
+              "typedoc-plugin-inline-sources",
             ],
-            theme: "starlight-typedoc-custom"
+            theme: "starlight-typedoc-custom",
             // "excludeNotDocumented": true
           },
         }),

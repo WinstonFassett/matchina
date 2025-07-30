@@ -48,44 +48,45 @@ export interface Lifecycle<E> {
   after(ev: E): void;
 }
 
-export function withLifecycle<T extends object = {}, E = any>(
+export function withLifecycle<T extends object = any, E = any>(
   target: T,
-  update: Effect<E>,
+  update: Effect<E>
 ): Lifecycle<E> & T {
   return createUpdateLifecycle(update, target);
 }
-  
-function createUpdateLifecycle<E, T extends object = {}>(
+
+function createUpdateLifecycle<E, T extends object = any>(
   update: Effect<E>,
   target: T = {} as any
 ): Lifecycle<E> & T {
-  const lifecycle: Lifecycle<E> & T = Object.assign(
-    target,
-    {
-      guard: EmptyGuard,
-      handle: EmptyTransform,
-      before: EmptyTransform,
-      update,
-      effect(ev: E) {
-        lifecycle.leave(ev); // left previous
-        lifecycle.enter(ev); // entered next
-      },
-      leave: EmptyEffect,
-      enter: EmptyEffect,
-      notify: EmptyEffect,
-      after: EmptyEffect,  
-      transition(ev: E) {
-        let output = lifecycle.handle(ev);
-        if (!output) return;
-        output = lifecycle.before(output);
-        if (!output) return;
-        lifecycle.update(output);
-        lifecycle.effect(output);
-        lifecycle.notify(output);
-        lifecycle.after(output);
-        return output;
-      },
-    }
-  ) ;
+  const lifecycle: Lifecycle<E> & T = Object.assign(target, {
+    guard: EmptyGuard,
+    handle: EmptyTransform,
+    before: EmptyTransform,
+    update,
+    effect(ev: E) {
+      lifecycle.leave(ev); // left previous
+      lifecycle.enter(ev); // entered next
+    },
+    leave: EmptyEffect,
+    enter: EmptyEffect,
+    notify: EmptyEffect,
+    after: EmptyEffect,
+    transition(ev: E) {
+      let output = lifecycle.handle(ev);
+      if (!output) {
+        return;
+      }
+      output = lifecycle.before(output);
+      if (!output) {
+        return;
+      }
+      lifecycle.update(output);
+      lifecycle.effect(output);
+      lifecycle.notify(output);
+      lifecycle.after(output);
+      return output;
+    },
+  });
   return lifecycle;
 }

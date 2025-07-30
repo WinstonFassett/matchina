@@ -1,38 +1,38 @@
-import type { AstroIntegrationLogger } from 'astro'
-import { LogLevel, Logger } from 'typedoc'
+import type { AstroIntegrationLogger } from "astro";
+import { LogLevel, Logger } from "typedoc";
 
 export class StarlightTypeDocLogger extends Logger {
-  #logger: AstroIntegrationLogger
+  #logger: AstroIntegrationLogger;
 
   constructor(logger: AstroIntegrationLogger) {
-    super()
+    super();
 
-    this.#logger = logger
+    this.#logger = logger;
   }
 
   override log(message: string, level: LogLevel): void {
-    super.log(message, level)
+    super.log(message, level);
 
     if (level < this.level) {
-      return
+      return;
     }
 
     switch (level) {
       case LogLevel.Error: {
-        this.#logger.error(message)
-        break
+        this.#logger.error(message);
+        break;
       }
       case LogLevel.Warn: {
-        this.#logger.warn(message)
-        break
+        this.#logger.warn(message);
+        break;
       }
       case LogLevel.Verbose: {
-        this.#logger.debug(message)
-        break
+        this.#logger.debug(message);
+        break;
       }
       default: {
-        this.#logger.info(message)
-        break
+        this.#logger.info(message);
+        break;
       }
     }
   }

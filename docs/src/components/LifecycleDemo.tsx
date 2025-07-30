@@ -1,4 +1,9 @@
-import { createPromiseMachine, createReset, onLifecycle, assignEventApi } from "matchina";
+import {
+  createPromiseMachine,
+  createReset,
+  onLifecycle,
+  assignEventApi,
+} from "matchina";
 import { useMachine } from "matchina/react";
 import { useEffect, useMemo, useState } from "react";
 

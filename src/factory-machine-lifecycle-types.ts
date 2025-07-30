@@ -46,9 +46,8 @@ export type StateHookConfig<FC extends FactoryMachineContext> = {
 };
 
 export type StateEventHookConfig<E extends TransitionEvent<any, any>> =
-  Partial<TransitionHookExtensions<E>>
-  | Effect<E>
-  ;
+  | Partial<TransitionHookExtensions<E>>
+  | Effect<E>;
 
 type On<
   FC extends FactoryMachineContext,
@@ -68,5 +67,3 @@ type On<
 };
 
 export type HookKey = keyof TransitionHookExtensions<any>;
-
-

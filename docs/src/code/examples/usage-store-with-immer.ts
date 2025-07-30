@@ -1,6 +1,10 @@
 import { effect, setup, when } from "matchina";
 import { produce } from "immer";
-import { addStoreApi, createStoreMachine, storeApi } from "../../../../src/store-machine";
+import {
+  addStoreApi,
+  createStoreMachine,
+  storeApi,
+} from "../../../../src/store-machine";
 
 // #region lib
 
@@ -13,10 +17,11 @@ const localStorage = (() => {
     removeItem: (key: string) => store.delete(key),
     clear: () => store.clear(),
     key: (index: number) => Array.from(store.keys())[index] || null,
-    get length() { return store.size; }
+    get length() {
+      return store.size;
+    },
   };
 })();
-
 
 // Create a generic localStorage persistence setup
 const createLocalStoragePersistence = <T extends object>(options: {
@@ -29,9 +34,9 @@ const createLocalStoragePersistence = <T extends object>(options: {
     key,
     getSlice = (state: any) => state,
     setState = (state: any, saved: any) => Object.assign(state, saved),
-    shouldPersist = () => true
+    shouldPersist = () => true,
   } = options;
-  
+
   return (machine: { getState: () => T }) => {
     // Load data from localStorage on setup
     try {
@@ -44,22 +49,22 @@ const createLocalStoragePersistence = <T extends object>(options: {
     } catch (error) {
       console.error(`Failed to load from localStorage: ${key}`, error);
     }
-    
+
     // Set up the persistence effect
     const dispose = setup(machine as any)(
       effect((ev: any) => {
         // Don't persist on initialization
         if (ev.type === "__initialize") return;
-        
+
         // Check if this event should trigger persistence
         if (!shouldPersist(ev)) return;
-        
+
         const slice = getSlice(ev.to);
         localStorage.setItem(key, JSON.stringify(slice));
         console.log(`Saved to localStorage: ${key} after ${ev.type}`);
       })
     );
-    
+
     // Return cleanup function
     return () => {
       dispose();
@@ -68,7 +73,6 @@ const createLocalStoragePersistence = <T extends object>(options: {
     };
   };
 };
-
 
 /**
  * A simple, elegant todo store using Matchina's store machine with Immer integration
@@ -108,54 +112,60 @@ type TodoStore = {
 const initialState: TodoStore = {
   todos: [],
   filter: "all",
-  lastUpdated: null
+  lastUpdated: null,
 };
 
 // Create the todo store
 const todoStore = createStoreMachine(initialState, {
   // Core mutations - focused only on state changes
-  addTodo: (text: string) => mutate(draft => {
-    draft.todos.push({
-      id: Date.now().toString(),
-      text,
-      completed: false,
-      createdAt: Date.now()
-    });
-    draft.lastUpdated = Date.now();
-  }),
-  
-  toggleTodo: (id: string) => mutate(draft => {
-    const todo = draft.todos.find(todo => todo.id === id);
-    if (todo) {
-      todo.completed = !todo.completed;
+  addTodo: (text: string) =>
+    mutate((draft) => {
+      draft.todos.push({
+        id: Date.now().toString(),
+        text,
+        completed: false,
+        createdAt: Date.now(),
+      });
       draft.lastUpdated = Date.now();
-    }
-  }),
-  
-  removeTodo: (id: string) => mutate(draft => {
-    const index = draft.todos.findIndex(todo => todo.id === id);
-    if (index !== -1) {
-      draft.todos.splice(index, 1);
+    }),
+
+  toggleTodo: (id: string) =>
+    mutate((draft) => {
+      const todo = draft.todos.find((todo) => todo.id === id);
+      if (todo) {
+        todo.completed = !todo.completed;
+        draft.lastUpdated = Date.now();
+      }
+    }),
+
+  removeTodo: (id: string) =>
+    mutate((draft) => {
+      const index = draft.todos.findIndex((todo) => todo.id === id);
+      if (index !== -1) {
+        draft.todos.splice(index, 1);
+        draft.lastUpdated = Date.now();
+      }
+    }),
+
+  updateTodoText: (id: string, text: string) =>
+    mutate((draft) => {
+      const todo = draft.todos.find((todo) => todo.id === id);
+      if (todo) {
+        todo.text = text;
+        draft.lastUpdated = Date.now();
+      }
+    }),
+
+  setFilter: (filter: TodoStore["filter"]) =>
+    mutate((draft) => {
+      draft.filter = filter;
+    }),
+
+  clearCompleted: () =>
+    mutate((draft) => {
+      draft.todos = draft.todos.filter((todo) => !todo.completed);
       draft.lastUpdated = Date.now();
-    }
-  }),
-  
-  updateTodoText: (id: string, text: string) => mutate(draft => {
-    const todo = draft.todos.find(todo => todo.id === id);
-    if (todo) {
-      todo.text = text;
-      draft.lastUpdated = Date.now();
-    }
-  }),
-  
-  setFilter: (filter: TodoStore["filter"]) => mutate(draft => {
-    draft.filter = filter;
-  }),
-  
-  clearCompleted: () => mutate(draft => {
-    draft.todos = draft.todos.filter(todo => !todo.completed);
-    draft.lastUpdated = Date.now();
-  }),
+    }),
 });
 
 // Simple helper to get current todos
@@ -169,13 +179,14 @@ const disposeTodosPersistence = setup(todoStore)(
     setState: (state, saved) => {
       state.todos = saved;
     },
-    shouldPersist: (ev) => [
-      "addTodo", 
-      "toggleTodo", 
-      "removeTodo", 
-      "updateTodoText", 
-      "clearCompleted"
-    ].includes(ev.type)
+    shouldPersist: (ev) =>
+      [
+        "addTodo",
+        "toggleTodo",
+        "removeTodo",
+        "updateTodoText",
+        "clearCompleted",
+      ].includes(ev.type),
   })
 );
 
@@ -187,7 +198,7 @@ const disposeFilterPersistence = setup(todoStore)(
     setState: (state, saved) => {
       state.filter = saved;
     },
-    shouldPersist: (ev) => ev.type === "setFilter"
+    shouldPersist: (ev) => ev.type === "setFilter",
   })
 );
 
@@ -220,7 +231,10 @@ todoApi.setFilter("active");
 
 // Show current state
 console.log("Current state:", todoStore.getState());
-console.log("Active todos:", todoStore.getState().todos.filter(todo => !todo.completed));
+console.log(
+  "Active todos:",
+  todoStore.getState().todos.filter((todo) => !todo.completed)
+);
 
 // Clean up persistence
 disposeTodosPersistence();

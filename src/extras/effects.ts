@@ -44,14 +44,12 @@ export function handleEffects<
   Exhaustive extends boolean = true,
 >(
   effects: undefined | EffectMatchbox[],
-  matchers: MatchCases<
-    EffectsConfig,
-    any,
-    Exhaustive
-  >,
+  matchers: MatchCases<EffectsConfig, any, Exhaustive>,
   exhaustive = false as Exhaustive
 ) {
-  if (!effects) return;
+  if (!effects) {
+    return;
+  }
   for (const effect of effects) {
     effect.match(matchers as any, exhaustive);
   }

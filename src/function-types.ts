@@ -34,7 +34,7 @@ export type Func<A = any, R = any> = (...args: A[]) => R;
  * Funcware is a higher-order function type for enhancing or wrapping methods.
  *
  * Given a function type F, Funcware<F> is:
- * 
+ *
  * ```typescript
  * (...args) => (fn) => F
  * ```

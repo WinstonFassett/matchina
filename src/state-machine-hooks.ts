@@ -1,7 +1,7 @@
 import { createMethodEnhancer } from "./ext";
 import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
 import { Disposer } from "./function-types";
-import { StateMachine, TransitionEvent } from "./state-machine";
+import type { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
 /**
@@ -152,4 +152,3 @@ export const after = hookSetup("after");
  * Usage: `setup(machine)(notify(fn))`
  */
 export const notify = hookSetup("notify");
-
