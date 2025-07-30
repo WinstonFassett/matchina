@@ -1,4 +1,4 @@
-import { createUpdateLifecycle } from "./Lifecycle";
+import { createUpdateLifecycle } from "./lifecycle";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 

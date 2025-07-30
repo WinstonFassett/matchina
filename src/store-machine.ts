@@ -1,5 +1,5 @@
 import { createApi as createFactoryApi } from "./factory-machine-event-api";
-import { createUpdateLifecycle, Lifecycle, withLifecycle } from "./Lifecycle";
+import { createUpdateLifecycle, Lifecycle, withLifecycle } from "./lifecycle";
 import { createApi, withApi } from "./store-machine-api";
 
 export { createApi, withApi };

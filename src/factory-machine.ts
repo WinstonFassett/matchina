@@ -9,7 +9,7 @@ import {
 } from "./factory-machine-types";
 import { FactoryState } from "./factory-state";
 import { StateFactory } from "./factory-state";
-import { createUpdateLifecycle } from "./Lifecycle";
+import { createUpdateLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 import { createStoreMachine } from "./store-machine";
 import { createTransitionMachine, TransitionMachine } from "./transition-machine";
