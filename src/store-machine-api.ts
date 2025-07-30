@@ -96,7 +96,6 @@ export type ExtractStoreParams<
  *   - API for sending events and inspecting state
  *
  * @see createStoreMachine
- * @see TransitionMachine
  * @see FactoryMachine
  *
  * Example usage:

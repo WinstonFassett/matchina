@@ -22,7 +22,6 @@ import { ResolveEvent } from "./state-machine-types";
  *
  * See also:
  *   - {@link FactoryMachine} and {@link createMachine} for strongly-typed factory-based state machines.
- *   - {@link TransitionMachine} and {@link createTransitionMachine} for a less-typed, event-based state machine. Used internally by FactoryMachine.
  *
  * Lifecycle steps:
  * 1. `send(type, ...params)` - Initiates a transition event.
@@ -62,11 +61,10 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent>
 }
 
 /**
- * TransitionEvent describes a transition event in a state machine. See {@link StateMachine}
+ * TransitionEvent describes a transition (change) event in a state machine. See {@link StateMachine}
  * Includes the event type, parameters, source and target states, and a reference to the machine.
  *
  * See also:
- *   - {@link TransitionMachine} and {@link createTransitionMachine}
  *   - {@link FactoryMachine} and {@link createMachine}
  *
  * @template To - Target state type
@@ -79,7 +77,6 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent>
  * @source
  * This interface is used throughout Matchina to represent events that trigger state transitions.
  * It provides a consistent structure for event handling, allowing for type-safe interactions with state machines.
- * It is used in both FactoryMachine and TransitionMachine implementations.
  * It is a core part of the Matchina API, enabling developers to define and manage state
  */
 export interface TransitionEvent<

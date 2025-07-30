@@ -1,10 +1,7 @@
 import {
-  FactoryMachineContext,
-  FactoryMachineTransitionEvent,
-  FactoryMachineEvent,
+  FactoryMachineContext
 } from "./factory-machine-types";
-import { Simplify, FlatMemberUnionToIntersection } from "./utility-types";
-import { TransitionEvent } from "./state-machine";
+import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
 // Utility type to extract parameter types from transition events
 export type ExtractParamTypes<FC extends FactoryMachineContext, StateKey extends keyof FC["transitions"], EventKey extends keyof FC["transitions"][StateKey]> = 

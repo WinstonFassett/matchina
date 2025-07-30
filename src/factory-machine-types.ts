@@ -36,8 +36,6 @@ export interface FactoryMachineContext<SF extends KeyedStateFactory = KeyedState
  *
  * See also:
  *   - {@link createMachine} to create a FactoryMachine instance.
- *   - {@link TransitionMachine} for a less-typed, event-based state machine.
- *   - {@link createTransitionMachine} is used internally by FactoryMachine
  */
 export interface FactoryMachine<FC extends FactoryMachineContext<any> = FactoryMachineContext>
   extends Omit<StateMachine<FactoryMachineEvent<FC>>, 'send'> {
