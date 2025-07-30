@@ -2,6 +2,8 @@ import { effect, setup, when } from "matchina";
 import { produce } from "immer";
 import { createStoreMachine } from "../../../../src/store-machine";
 
+// #region lib
+
 // Simple localStorage polyfill for Node.js environment
 const localStorage = (() => {
   const store = new Map<string, string>();
@@ -14,6 +16,59 @@ const localStorage = (() => {
     get length() { return store.size; }
   };
 })();
+
+
+// Create a generic localStorage persistence setup
+const createLocalStoragePersistence = <T extends object>(options: {
+  key: string;
+  getSlice?: (state: T) => any;
+  setState?: (state: T, saved: any) => void;
+  shouldPersist?: (ev: any) => boolean;
+}) => {
+  const {
+    key,
+    getSlice = (state: any) => state,
+    setState = (state: any, saved: any) => Object.assign(state, saved),
+    shouldPersist = () => true
+  } = options;
+  
+  return (machine: { getState: () => T }) => {
+    // Load data from localStorage on setup
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setState(machine.getState(), parsed);
+        console.log(`Loaded from localStorage: ${key}`);
+      }
+    } catch (error) {
+      console.error(`Failed to load from localStorage: ${key}`, error);
+    }
+    
+    // Set up the persistence effect
+    const dispose = setup(machine as any)(
+      effect((ev: any) => {
+        // Don't persist on initialization
+        if (ev.type === "__initialize") return;
+        
+        // Check if this event should trigger persistence
+        if (!shouldPersist(ev)) return;
+        
+        const slice = getSlice(ev.to);
+        localStorage.setItem(key, JSON.stringify(slice));
+        console.log(`Saved to localStorage: ${key} after ${ev.type}`);
+      })
+    );
+    
+    // Return cleanup function
+    return () => {
+      dispose();
+      console.log(`Persistence teardown for ${key}`);
+      localStorage.removeItem(key);
+    };
+  };
+};
+
 
 /**
  * A simple, elegant todo store using Matchina's store machine with Immer integration
@@ -31,6 +86,8 @@ function mutate<T>(updater: (draft: T) => void) {
     return produce(change.from, updater);
   };
 }
+
+// #endregion
 
 // Todo type definition
 type Todo = {
@@ -103,57 +160,6 @@ const todoStore = createStoreMachine(initialState, {
 
 // Simple helper to get current todos
 const getTodos = () => todoStore.getState().todos;
-
-// Create a generic localStorage persistence setup
-const createLocalStoragePersistence = <T extends object>(options: {
-  key: string;
-  getSlice?: (state: T) => any;
-  setState?: (state: T, saved: any) => void;
-  shouldPersist?: (ev: any) => boolean;
-}) => {
-  const {
-    key,
-    getSlice = (state: any) => state,
-    setState = (state: any, saved: any) => Object.assign(state, saved),
-    shouldPersist = () => true
-  } = options;
-  
-  return (machine: { getState: () => T }) => {
-    // Load data from localStorage on setup
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setState(machine.getState(), parsed);
-        console.log(`Loaded from localStorage: ${key}`);
-      }
-    } catch (error) {
-      console.error(`Failed to load from localStorage: ${key}`, error);
-    }
-    
-    // Set up the persistence effect
-    const dispose = setup(machine as any)(
-      effect((ev: any) => {
-        // Don't persist on initialization
-        if (ev.type === "__initialize") return;
-        
-        // Check if this event should trigger persistence
-        if (!shouldPersist(ev)) return;
-        
-        const slice = getSlice(ev.to);
-        localStorage.setItem(key, JSON.stringify(slice));
-        console.log(`Saved to localStorage: ${key} after ${ev.type}`);
-      })
-    );
-    
-    // Return cleanup function
-    return () => {
-      dispose();
-      console.log(`Persistence teardown for ${key}`);
-      localStorage.removeItem(key);
-    };
-  };
-};
 
 // Apply the persistence setup for todos
 const disposeTodosPersistence = setup(todoStore)(
