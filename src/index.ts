@@ -21,7 +21,6 @@ export * from "./state-keyed";
 export * from "./matchbox-factory";
 export * from "./matchina";
 export * from "./extras/emitter";
-export * from "./promise-handle";
 export * from "./promise-machine";
 export * from "./promise-machine-hooks";
 export * from "./state-machine";
