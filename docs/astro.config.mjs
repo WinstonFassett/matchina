@@ -250,6 +250,10 @@ export default defineConfig({
                   label: "With Lifecycle",
                   link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
                 },
+                {
+                  label: "With Transition Hooks",
+                  link: "/examples/stopwatch-using-transition-hooks-instead-of-useeffect/",
+                },
               ],
             },
             {
