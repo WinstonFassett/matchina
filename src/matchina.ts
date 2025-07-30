@@ -7,6 +7,7 @@ import {
 } from "./factory-machine-types";
 import { FactoryKeyedState } from "./state-keyed";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
+import { eventApi } from "./factory-machine-event-api";
 
 /**
  * Creates a strongly-typed state machine using the provided states, transitions, and initial state.
@@ -22,7 +23,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *
  * Example:
  * ```ts
- * import { matchina, effect, guard, defineStates } from "matchina";
+ * import { matchina, effect, guard, defineStates, setup } from "matchina";
  *
  * const machine = matchina(
  *   defineStates({
@@ -36,7 +37,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   "Idle"
  * );
  *
- * machine.setup(
+ * setup(machine)(
  *   effect((ev) => {
  *     console.log("Effect triggered for event:", ev.type);
  *   }),
@@ -64,5 +65,8 @@ export function matchina<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ) {
-  return zen(createMachine(states, transitions, init));
+  return Object.assign(
+    createMachine(states, transitions, init), 
+    eventApi(createMachine(states, transitions, init))
+  );
 }
