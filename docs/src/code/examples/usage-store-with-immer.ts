@@ -2,6 +2,19 @@ import { effect, setup, when } from "matchina";
 import { produce } from "immer";
 import { createStoreMachine } from "../../../../src/store-machine";
 
+// Simple localStorage polyfill for Node.js environment
+const localStorage = (() => {
+  const store = new Map<string, string>();
+  return {
+    getItem: (key: string) => store.get(key) || null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    clear: () => store.clear(),
+    key: (index: number) => Array.from(store.keys())[index] || null,
+    get length() { return store.size; }
+  };
+})();
+
 /**
  * A simple, elegant todo store using Matchina's store machine with Immer integration
  * Demonstrates:
@@ -88,74 +101,92 @@ const todoStore = createStoreMachine(initialState, {
   }),
 });
 
-// Create helper functions for computed values instead of properties
-const getFilteredTodos = () => {
-  const state = todoStore.getState();
-  switch (state.filter) {
-    case "active":
-      return state.todos.filter(todo => !todo.completed);
-    case "completed":
-      return state.todos.filter(todo => todo.completed);
-    default:
-      return state.todos;
-  }
+// Simple helper to get current todos
+const getTodos = () => todoStore.getState().todos;
+
+// Create a generic localStorage persistence setup
+const createLocalStoragePersistence = <T extends object>(options: {
+  key: string;
+  getSlice?: (state: T) => any;
+  setState?: (state: T, saved: any) => void;
+  shouldPersist?: (ev: any) => boolean;
+}) => {
+  const {
+    key,
+    getSlice = (state: any) => state,
+    setState = (state: any, saved: any) => Object.assign(state, saved),
+    shouldPersist = () => true
+  } = options;
+  
+  return (machine: { getState: () => T }) => {
+    // Load data from localStorage on setup
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setState(machine.getState(), parsed);
+        console.log(`Loaded from localStorage: ${key}`);
+      }
+    } catch (error) {
+      console.error(`Failed to load from localStorage: ${key}`, error);
+    }
+    
+    // Set up the persistence effect
+    const dispose = setup(machine as any)(
+      effect((ev: any) => {
+        // Don't persist on initialization
+        if (ev.type === "__initialize") return;
+        
+        // Check if this event should trigger persistence
+        if (!shouldPersist(ev)) return;
+        
+        const slice = getSlice(ev.to);
+        localStorage.setItem(key, JSON.stringify(slice));
+        console.log(`Saved to localStorage: ${key} after ${ev.type}`);
+      })
+    );
+    
+    // Return cleanup function
+    return () => {
+      dispose();
+      console.log(`Persistence teardown for ${key}`);
+      localStorage.removeItem(key);
+    };
+  };
 };
 
-const getActiveCount = () => todoStore.getState().todos.filter(todo => !todo.completed).length;
-const getCompletedCount = () => todoStore.getState().todos.filter(todo => todo.completed).length;
-const getTotalCount = () => todoStore.getState().todos.length;
-
-// Set up hooks for side effects
-setup(todoStore)(
-  // Persistence effect - save to localStorage on state changes
-  effect(ev => {
-    // Skip saving when only the filter changes
-    if (ev.type !== "setFilter") {
-      localStorage.setItem("todos", JSON.stringify(ev.to));
-      console.log("Saved todos to localStorage");
-    }
-  }),
-  
-  // Logging effect for specific events
-  effect(
-    when(ev => ev.type === "addTodo", ev => {
-      const newTodo = ev.to.todos[ev.to.todos.length - 1];
-      console.log(`Added todo: ${newTodo.text}`);
-    })
-  ),
-  
-  effect(
-    when(ev => ev.type === "toggleTodo", ev => {
-      const todoId = ev.params[0];
-      const todo = ev.to.todos.find(t => t.id === todoId);
-      if (todo) {
-        console.log(`Todo '${todo.text}' marked as ${todo.completed ? "completed" : "active"}`);
+// Apply the persistence setup for todos
+const disposeTodosPersistence = setup(todoStore)(
+  createLocalStoragePersistence({
+    key: "todos",
+    getSlice: (state) => state.todos,
+    setState: (state, saved) => {
+      if (Array.isArray(saved)) {
+        state.todos = saved;
       }
-    })
-  ),
-  
-  effect(
-    when(ev => ev.type === "clearCompleted", ev => {
-      const removedCount = ev.from.todos.length - ev.to.todos.length;
-      console.log(`Cleared ${removedCount} completed todos`);
-    })
-  )
+    },
+    shouldPersist: (ev) => {
+      // Only persist on events that modify todos
+      return ['addTodo', 'toggleTodo', 'removeTodo', 'updateTodoText', 'clearCompleted'].includes(ev.type);
+    }
+  })
 );
 
-// Initialize from localStorage if available
-try {
-  const savedTodos = localStorage.getItem("todos");
-  if (savedTodos) {
-    const parsed = JSON.parse(savedTodos) as TodoStore;
-    Object.entries(parsed).forEach(([key, value]) => {
-      // Type assertion to make TypeScript happy
-      (todoStore.getState() as any)[key] = value;
-    });
-    console.log("Loaded todos from localStorage");
-  }
-} catch (error) {
-  console.error("Failed to load todos from localStorage", error);
-}
+// Apply persistence for filter setting
+const disposeFilterPersistence = setup(todoStore)(
+  createLocalStoragePersistence({
+    key: "filter",
+    getSlice: (state) => state.filter,
+    setState: (state, saved) => {
+      if (saved === "all" || saved === "active" || saved === "completed") {
+        state.filter = saved;
+      }
+    },
+    shouldPersist: (ev) => ev.type === 'setFilter'
+  })
+);
+
+// We could call these dispose functions later if needed to clean up
 
 // Example usage
 console.log("Initial state:", todoStore.getState());
@@ -171,11 +202,8 @@ todoStore.send("toggleTodo", firstTodoId);
 
 // Filter todos
 todoStore.send("setFilter", "active");
-console.log("Active todos:", getFilteredTodos());
 
-// Show stats
-console.log("Stats:", {
-  active: getActiveCount(),
-  completed: getCompletedCount(),
-  total: getTotalCount()
-});
+// Show current state
+console.log("Current state:", todoStore.getState());
+console.log("Current todos:", getTodos());
+
