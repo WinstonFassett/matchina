@@ -65,8 +65,5 @@ export function matchina<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ) {
-  return Object.assign(
-    createMachine(states, transitions, init), 
-    eventApi(createMachine(states, transitions, init))
-  );
+  return assignEventApi(createMachine(states, transitions, init));
 }
