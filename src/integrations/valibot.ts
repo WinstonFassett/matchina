@@ -41,5 +41,5 @@ export function defineValibotStates<
     stateFactories[key] = schema.type === 'object' && Object.keys((schema as any).entries || {}).length === 0 ? () => v.parse(schema, {}) : (data: any) => v.parse(schema, data);
   }
 
-  return defineStates(stateFactories);
+  return defineStates(stateFactories as SchemaMap);
 }

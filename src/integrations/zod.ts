@@ -41,5 +41,5 @@ export function defineZodStates<
     stateFactories[key] = (data: any) => schema.parse(data);
   }
 
-  return defineStates(stateFactories);
+  return defineStates(stateFactories as SchemaMap);
 }
