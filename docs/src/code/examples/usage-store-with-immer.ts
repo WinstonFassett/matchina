@@ -167,49 +167,62 @@ const disposeTodosPersistence = setup(todoStore)(
     key: "todos",
     getSlice: (state) => state.todos,
     setState: (state, saved) => {
-      if (Array.isArray(saved)) {
-        state.todos = saved;
-      }
+      state.todos = saved;
     },
-    shouldPersist: (ev) => {
-      // Only persist on events that modify todos
-      return ['addTodo', 'toggleTodo', 'removeTodo', 'updateTodoText', 'clearCompleted'].includes(ev.type);
-    }
+    shouldPersist: (ev) => [
+      "addTodo", 
+      "toggleTodo", 
+      "removeTodo", 
+      "updateTodoText", 
+      "clearCompleted"
+    ].includes(ev.type)
   })
 );
 
-// Apply persistence for filter setting
+// Apply the persistence setup for filter
 const disposeFilterPersistence = setup(todoStore)(
   createLocalStoragePersistence({
     key: "filter",
     getSlice: (state) => state.filter,
     setState: (state, saved) => {
-      if (saved === "all" || saved === "active" || saved === "completed") {
-        state.filter = saved;
-      }
+      state.filter = saved;
     },
-    shouldPersist: (ev) => ev.type === 'setFilter'
+    shouldPersist: (ev) => ev.type === "setFilter"
   })
 );
 
-// We could call these dispose functions later if needed to clean up
+// Create an API for the todo store
+import { createApi, withApi } from "../../../../src/store-machine";
+
+const todoApi = createApi(todoStore);
+
+// Method 2: Enhance the store with an API property
+const enhancedTodoStore = withApi(todoStore);
 
 // Example usage
 console.log("Initial state:", todoStore.getState());
 
-// Add some todos
-todoStore.send("addTodo", "Learn Matchina");
-todoStore.send("addTodo", "Master Immer integration");
-todoStore.send("addTodo", "Build awesome apps");
+// Add some todos using the standalone API
+todoApi.addTodo("Learn Matchina");
+todoApi.addTodo("Build a todo app");
+
+// Add a todo using the enhanced store's API
+enhancedTodoStore.api.addTodo("Integrate with Immer");
 
 // Toggle a todo
-const firstTodoId = todoStore.getState().todos[0].id;
-todoStore.send("toggleTodo", firstTodoId);
+const todos = getTodos();
+enhancedTodoStore.api.toggleTodo(todos[1].id);
 
-// Filter todos
-todoStore.send("setFilter", "active");
+// Update a todo
+todoApi.updateTodoText(todos[2].id, "Integrate with Immer and persist state");
+
+// Set filter
+todoApi.setFilter("active");
 
 // Show current state
 console.log("Current state:", todoStore.getState());
-console.log("Current todos:", getTodos());
+console.log("Active todos:", todoStore.getState().todos.filter(todo => !todo.completed));
 
+// Clean up persistence
+disposeTodosPersistence();
+disposeFilterPersistence();
