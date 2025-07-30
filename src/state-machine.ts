@@ -66,8 +66,8 @@ export interface StateMachine<E extends TransitionEvent = TransitionEvent>
  * Includes the event type, parameters, source and target states, and a reference to the machine.
  *
  * See also:
- *   - {@link TransitionMachine} (see createTransitionMachine)
- *   - {@link FactoryMachine} (see createMachine)
+ *   - {@link TransitionMachine} and {@link createTransitionMachine}
+ *   - {@link FactoryMachine} and {@link createMachine}
  *
  * @template To - Target state type
  * @template From - Source state type

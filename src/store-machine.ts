@@ -6,7 +6,7 @@ export { storeApi , addStoreApi };
 export interface StoreMachine<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
-> extends Lifecycle<StoreMachine<T, TR>> {
+> extends Lifecycle<StoreChange<T>> {
   getState(): T;
   getChange(): StoreChange<T>;
   dispatch<E extends keyof TR & string>(

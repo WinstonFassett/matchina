@@ -48,17 +48,6 @@ export interface Lifecycle<E> {
   after(ev: E): void;
 }
 
-
-export type Lifecycle1<E> = {
-  transition: (ev: E) => void;
-  before: (ev: E) => E | undefined;
-  handle: (ev: E) => E | undefined;
-  update: Effect<E>;
-  effect: Effect<E>;
-  notify: Effect<E>;
-  after: Effect<E>;
-};
-
 export function withLifecycle<T extends object = {}, E = any>(
   target: T,
   update: Effect<E>,
@@ -66,8 +55,7 @@ export function withLifecycle<T extends object = {}, E = any>(
   return createUpdateLifecycle(update, target);
 }
   
-
-export function createUpdateLifecycle<E, T extends object = {}>(
+function createUpdateLifecycle<E, T extends object = {}>(
   update: Effect<E>,
   target: T = {} as any
 ): Lifecycle<E> & T {
