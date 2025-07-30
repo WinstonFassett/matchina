@@ -10,7 +10,7 @@
  * throughout factory machines. The implementation leverages matchbox factories for dynamic and type-safe
  * state construction and transitions.
  */
-export interface State {
+export interface KeyedState {
   key: string;
 }
 
@@ -30,7 +30,7 @@ export interface State {
  * state construction and transitions.
  */
 export interface StateFactory {
-  [key: string]: (...args: any[]) => State;
+  [key: string]: (...args: any[]) => KeyedState;
 }
 
 /**

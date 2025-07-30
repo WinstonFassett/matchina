@@ -1,10 +1,10 @@
 import { FlatFilters } from "./match-filter-types";
-import { State } from "./factory-state";
+import { KeyedState } from "./factory-state";
 
 export type StateChangeEvent = {
   type: string;
-  from: State;
-  to: State;
+  from: KeyedState;
+  to: KeyedState;
 };
 
 export type ChangeEventKeyFilter<E extends StateChangeEvent> = FlatFilters<
@@ -18,7 +18,7 @@ export type ChangeEventKeys<E extends StateChangeEvent> = E extends {
 }
   ? {
       type: T;
-      from: F extends State ? F["key"] : never;
-      to: To extends State ? To["key"] : never;
+      from: F extends KeyedState ? F["key"] : never;
+      to: To extends KeyedState ? To["key"] : never;
     }
   : never;
