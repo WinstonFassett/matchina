@@ -1,4 +1,4 @@
-import { StoreMachine, StoreTransitionRecord, StoreChange } from "./store-machine";
+import { StoreMachine, StoreTransitionRecord } from "./store-machine";
 
 /**
  * StoreMachineApi provides a convenient API for sending events to a store machine.
@@ -79,57 +79,7 @@ export function addStoreApi<
 /**
  * Extract parameter types from a store transition handler
  */
-
 export type ExtractStoreParams<
-  TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
+  TR extends StoreTransitionRecord<any>,
   E extends keyof TR
-> = Parameters<TR[E]>;/**
- * StoreMachine is a minimal, event-driven state container for a single value.
- * It supports lifecycle hooks and event-based updates, similar to an atom or primitive store.
- *
- * Use {@link createStoreMachine} to create a store machine instance.
- *
- * Type benefits:
- *   - Value type is fully inferred
- *   - Event types and parameters are flexible
- *   - Lifecycle hooks for custom logic
- *   - API for sending events and inspecting state
- *
- * @see createStoreMachine
- * @see FactoryMachine
- *
- * Example usage:
- * ```ts
- * import { createStoreMachine } from "./store-machine";
- *
- * // Counter store
- * const counter = createStoreMachine<number>({
- *   increment: (value, amount = 1) => value + amount,
- *   decrement: (value, amount = 1) => value - amount,
- *   set: (value, next) => next,
- *   reset: 0,
- * }, 0);
- *
- * counter.send("increment");
- * counter.send("increment", 5);
- * counter.send("decrement", 2);
- * counter.send("set", 42);
- * counter.send("reset");
- *
- * console.log(counter.getState()); // 0
- * console.log(counter.getChange()); // { type: "reset", params: [], from: 42, to: 0 }
- * ```
- */
-/**
- * Helper type for transition handlers that return a direct value
- */
-
-export type DirectTransition<T> = (...args: any[]) => T;
-/**
- * Helper type for transition handlers that return a function
- */
-
-export type CurriedTransition<T> = (
-  ...args: any[]
-) => (change: StoreChange<T>) => T;
-
+> = Parameters<TR[E]>;
