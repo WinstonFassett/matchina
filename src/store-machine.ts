@@ -174,18 +174,14 @@ export function createStoreMachine<
       getState: () => lastChange.to,
       getChange: () => lastChange,
       dispatch(type, ...params) {
-        const from = machine.getState();
         const handler = machine.mutations[type];
         if (!handler) return;
-        const result = handler(...params);
-        let to: T;
-        if (typeof result === "function") {
-          const change: StoreChange<T> = { type, params, from, to: from };
-          to = (result as (change: StoreChange<T>) => T)(change);
-        } else {
-          to = result as T;
-        }
-        const change: StoreChange<T> = { type, params, from, to };
+        const valueOrFn = handler(...params);
+        const from = machine.getState();        
+        const change: StoreChange<T> = { type, params, from, to: from };
+        const to = resolveTransitionResult(valueOrFn, change);
+        change.to ??= to as T;
+        if (change.to === undefined) return;
         machine.transition(change);
       },      
     } as StoreMachine<T, TR>,
@@ -194,4 +190,14 @@ export function createStoreMachine<
     }
   );
   return machine;
+}
+
+function resolveTransitionResult<T>(result: any, change: StoreChange<T>): T | undefined {
+  let to: T | undefined;
+  if (typeof result === "function") {
+    to = (result as (change: StoreChange<T>) => T)(change);
+  } else {
+    to = result as T;
+  }
+  return to;  
 }
