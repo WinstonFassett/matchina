@@ -129,7 +129,6 @@ export function createMachine<
   
   // Create the factory machine with overridden send method
   const factoryMachine = Object.assign(
-    {},
     baseMachine,
     {
       states,
