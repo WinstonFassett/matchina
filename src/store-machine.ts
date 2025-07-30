@@ -1,8 +1,7 @@
-import { createApi as createFactoryApi } from "./factory-machine-event-api";
-import { createUpdateLifecycle, Lifecycle, withLifecycle } from "./lifecycle";
-import { createApi, withApi } from "./store-machine-api";
+import { withLifecycle } from "./lifecycle";
+import { storeApi, addStoreApi } from "./store-machine-api";
 
-export { createApi, withApi };
+export { storeApi , addStoreApi };
 
 /**
  * StoreMachine is a minimal, event-driven state container for a single value.

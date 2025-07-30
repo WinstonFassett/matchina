@@ -27,7 +27,7 @@ export * from "./state-machine";
 export * from "./state-machine-actions";
 export * from "./state-machine-hooks";
 export * from "./state-machine-pure";
-export * from "./transition-machine";
+export * from './store-machine'
 export * from "./function-types";
 // match-change
 export * from "./match-change";

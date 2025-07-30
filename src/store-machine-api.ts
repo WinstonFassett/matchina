@@ -63,7 +63,7 @@ export function storeApi<
  * enhancedTodoStore.api.addTodo("New task");
  * ```
  */
-export function withApi<
+export function addStoreApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>
 >(machine: StoreMachine<T, TR>): WithApi<StoreMachine<T, TR>> {
