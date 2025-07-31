@@ -1,4 +1,4 @@
-import { Lifecycle, withLifecycle } from "./lifecycle";
+import { EventLifecycle, withLifecycle } from "./lifecycle";
 import {
   ExtractStoreParams,
   CurriedTransition,
@@ -8,7 +8,7 @@ import {
 export interface StoreMachine<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
-> extends Lifecycle<StoreChange<T>> {
+> extends EventLifecycle<StoreChange<T>> {
   getState(): T;
   getChange(): StoreChange<T>;
   dispatch<E extends keyof TR & string>(

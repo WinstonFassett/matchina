@@ -21,7 +21,7 @@ const EmptyGuard = <E>(_event: E) => true;
  * 9. `notify(ev)` - Notifies subscribers of the change.
  * 10. `after(ev)` - Final hook after transition completes.
  */
-export interface Lifecycle<E> {
+export interface EventLifecycle<E> {
   /**
    * Triggers the transition lifecycle, handling all steps for processing a change event.
    */
@@ -68,15 +68,15 @@ export interface Lifecycle<E> {
 export function withLifecycle<T extends object = any, E = any>(
   target: T,
   update: EffectFunc<E>
-): Lifecycle<E> & T {
+): EventLifecycle<E> & T {
   return createUpdateLifecycle(update, target);
 }
 
 function createUpdateLifecycle<E, T extends object = any>(
   update: EffectFunc<E>,
   target: T = {} as any
-): Lifecycle<E> & T {
-  const lifecycle: Lifecycle<E> & T = Object.assign(target, {
+): EventLifecycle<E> & T {
+  const lifecycle: EventLifecycle<E> & T = Object.assign(target, {
     guard: EmptyGuard,
     handle: EmptyTransform,
     before: EmptyTransform,

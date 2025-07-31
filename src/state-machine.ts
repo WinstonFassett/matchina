@@ -1,4 +1,4 @@
-import { Lifecycle } from "./lifecycle";
+import { EventLifecycle } from "./lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 
 /**
@@ -24,7 +24,7 @@ import { ResolveEvent } from "./state-machine-types";
  * 12. `after(ev)` - Final hook after transition completes.
  */
 export interface StateMachine<E extends TransitionEvent = TransitionEvent>
-  extends Lifecycle<E> {
+  extends EventLifecycle<E> {
   /**
    * Returns the current state of the machine (the `to` property of the last change).
    */
