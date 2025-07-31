@@ -1,7 +1,16 @@
 import { Funcware } from "../../function-types";
+import { createDisposer } from "../setup";
 import { MethodOf } from "./method-utility-types";
 
 const noop = () => {};
+
+type EnhancedFn<T, K extends keyof T> = MethodOf<T, K> & {
+  add: (enhancer: Funcware<MethodOf<T, K>>) => void;
+  remove: (enhancer: Funcware<MethodOf<T, K>>) => void;
+  has: (enhancer: Funcware<MethodOf<T, K>>) => boolean;
+  enhancers: Funcware<MethodOf<T, K>>[];
+  __original: MethodOf<T, K>;
+};
 
 /**
  * Extends a method on a single target using funcware, allowing you to intercept and augment
@@ -75,32 +84,20 @@ export function enhanceMethod<T, K extends keyof T>(
   methodName: K,
   extend: Funcware<MethodOf<T, K>>
 ) {
-  type EnhancedFn = MethodOf<T, K> & {
-    add: (enhancer: Funcware<MethodOf<T, K>>) => void;
-    remove: (enhancer: Funcware<MethodOf<T, K>>) => void;
-    has: (enhancer: Funcware<MethodOf<T, K>>) => boolean;
-    enhancers: Funcware<MethodOf<T, K>>[];
-    __original: MethodOf<T, K>;
-  };
-
-  let current = target[methodName] as EnhancedFn;
-  let enhanced: EnhancedFn;
-
+  let current = target[methodName] as EnhancedFn<T, K>;
+  let teardowns = [] as (() => void)[];
+  let enhanced: EnhancedFn<T, K>;
   if (typeof current === "function" && typeof current.add === "function") {
     enhanced = current;
   } else {
     enhanced = createEnhancedFunction<T, K>(current ?? (noop as MethodOf<T, K>));
     target[methodName] = enhanced as any;
+    teardowns.push(() => {
+      target[methodName] = current;
+    });
   }
-
   enhanced.add(extend);
-
-  // Return disposer that only removes this enhancer and restores original if none left
-  return () => {
-    enhanced.remove(extend);
-    if (enhanced.enhancers.length === 0) {
-      target[methodName] = enhanced.__original;
-    }
-  };
+  teardowns.push(() => { enhanced.remove(extend); });
+  return createDisposer(teardowns)
 }
 
