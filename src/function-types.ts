@@ -24,6 +24,14 @@ export type EffectFunc<E> = (ev: E) => void;
 
 /**
  * @interface
+ * DisposableEffect is a type alias for functions that can be used as effects in a state machine.
+ * It can be either an effect with teardown or a simple effect function.
+ * This allows for flexibility in how effects are defined and used within the state machine lifecycle.
+ */
+export type DisposableEffect<E> = EffectFunc<E> | SetupFunc<E>;
+
+/**
+ * @interface
  * Middleware is a function that intercepts an event and can pass it to the next handler.
  * Useful for chaining logic or modifying event flow.
  */
