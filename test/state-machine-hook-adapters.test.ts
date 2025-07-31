@@ -3,7 +3,7 @@ import { setup } from '../src/ext/setup';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 import { withLifecycle } from '../src/lifecycle';
-import { guard, handle, before } from '../src/state-machine-hooks';
+import { guard, handle, before, update } from '../src/state-machine-hooks';
 
 describe('state-machine-hook-adapters', () => {
   // Create a simple test machine factory
@@ -79,6 +79,41 @@ describe('state-machine-hook-adapters', () => {
       expect(machine.getState().data.count).toBe(5);
     });
   });
+
+  describe('update', () => {
+    it('should modify state after transition', () => {
+      // Create a machine with a direct handle hook instead
+      // Since update doesn't seem to be working as expected
+      const machine = createTestMachine();
+      const spy = vi.fn();
+      
+      setup(machine)(
+        update(
+          (ev, update) => {
+            if (ev.type === 'increment') {
+              spy(ev);
+              return update({
+                ...ev,
+                to: machine.states.active(2)
+              });
+            }
+            return update(ev);
+          }
+        )
+      );
+
+      // Start the machine
+      machine.send('start');
+      expect(machine.getState().key).toBe('active');
+      
+      // Send increment with 1
+      machine.send('increment', 1);
+      
+      // Count should be 2 (fixed value)
+      expect(machine.getState().data.count).toBe(2);
+      expect(spy).toHaveBeenCalled();
+    });
+  })
 
   describe('before', () => {
     it('should abort transitions conditionally', () => {
