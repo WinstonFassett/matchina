@@ -69,19 +69,12 @@ describe("createPromiseMachine", () => {
         throw new Error("custom error");
       })
     );
-
     const initialState = machine.getState();
     expect(initialState.key).toBe("Idle");
-
-    machine.execute();
-    const pendingState = machine.getState();
-    expect(pendingState.key).toBe("Pending");
-
-    await delay(2);
-
+    await expect(machine.execute()).rejects.toThrow("custom error");
     const rejectedState = machine.getState();
     expect(rejectedState.key).toBe("Rejected");
-    // expect((rejectedState.data as any).message).toBe("custom error");
+    expect((rejectedState.data as any).message).toBe("custom error");
   });
 
   describe("with extended transitions", () => {

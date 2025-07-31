@@ -80,9 +80,15 @@ export function createPromiseMachine<
           }
         })
         .catch((error) => {
+          console.log("Promise rejected:", error);
           if (currentPromise === promise) {
+            console.log('sending reject')
             machine.send("reject", error);
+            console.log('relaying rejection')
+            console.log('machine state', machine.getState())
             reject(error);
+          } else {
+            console.warn("Promise was replaced before rejection");
           }
         });
     });
