@@ -41,9 +41,42 @@ export function enhanceMethod<T, K extends keyof T>(
   methodName: K,
   extend: Funcware<MethodOf<T, K>>
 ) {
-  const original = target[methodName] as MethodOf<T, K>;
-  target[methodName] = extend(((original ?? (noop as T)) as any).bind(target));
+  type Enhancer = Funcware<MethodOf<T, K>>;
+  type EnhancedFn = MethodOf<T, K> & { __enhancers?: Enhancer[]; __original?: MethodOf<T, K> };
+
+  let current = target[methodName] as EnhancedFn;
+  let enhancers: Enhancer[];
+  let original: MethodOf<T, K>;
+
+  if (typeof current === "function" && Array.isArray(current.__enhancers)) {
+    enhancers = current.__enhancers;
+    original = current.__original!;
+  } else {
+    enhancers = [];
+    original = current ?? (noop as MethodOf<T, K>);
+    const enhanced: EnhancedFn = function(this: any, ...args: any[]) {
+      let fn = (original.bind(this) as MethodOf<T, K>);
+      for (const enhancer of enhancers) {
+        fn = enhancer(fn) as MethodOf<T, K>;
+      }
+      return fn(...args);
+    } as EnhancedFn;
+    enhanced.__enhancers = enhancers;
+    enhanced.__original = original;
+    target[methodName] = enhanced as any;
+    current = enhanced;
+  }
+
+  enhancers.push(extend);
+
+  // Return disposer that only removes this enhancer
   return () => {
-    target[methodName] = original;
+    const idx = enhancers.indexOf(extend);
+    if (idx !== -1) enhancers.splice(idx, 1);
+    // If no enhancers left, restore original
+    if (enhancers.length === 0) {
+      target[methodName] = original;
+    }
   };
 }
+
