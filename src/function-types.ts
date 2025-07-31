@@ -12,7 +12,7 @@ export type DisposeFunc = () => void;
 /**
  * @interface
  * Setup is a function that initializes or enhances a target, returning a {@link DisposeFunc} to clean up.
- * See {@link createSetup}, {@link setup} in setup.ts for setup patterns.
+ * See {@link createSetup}, {@link setup} for setup patterns.
  */
 export type SetupFunc<T> = (target: T) => DisposeFunc;
 
@@ -55,7 +55,7 @@ export type Func<A = any, R = any> = (...args: A[]) => R;
  *
  * This lets you intercept, modify, or extend the behavior of a method by wrapping its logic.
  *
- * Used with {@link MethodEnhancer} and {@link createMethodEnhancer} to create method middleware.
+ * Used with {@link createMethodEnhancer} and {@link createMethodEnhancer} to create method middleware.
  *
  * Example:
  * ```typescript

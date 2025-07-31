@@ -24,7 +24,7 @@ export interface StoreMachine<
  * StoreTransitionRecord defines the structure of event-driven updates for StoreMachine.
  * Each event type maps to a function that takes any params and returns either:
  *   - a value of type T
- *   - or a function that takes a StoreChange<T> and returns T
+ *   - or a function that takes a {@link StoreChange} and returns T
  *
  * Example:
  * ```ts

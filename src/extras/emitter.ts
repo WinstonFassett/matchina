@@ -1,10 +1,8 @@
 import { EffectFunc, SetupFunc } from "../function-types";
 
-type Listen<T> = EffectFunc<T>;
-
 /**
  * @interface
- * Subscribes a listener to receive emitted values.
+ * Subscribes a listener ({@link EffectFunc}) to receive emitted values.
  *
  * Returned by {@link emitter}.
  *
@@ -12,9 +10,7 @@ type Listen<T> = EffectFunc<T>;
  * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
-export type SubscribeFunc<T> = SetupFunc<Listen<T>>;
-
-type Emit<T> = EffectFunc<T>;
+export type SubscribeFunc<T> = SetupFunc<EffectFunc<T>>;
 
 /**
  * Creates a minimal pub/sub system for values of type T.
@@ -29,9 +25,9 @@ type Emit<T> = EffectFunc<T>;
  * @returns [subscribe, emit, listeners]
  */
 export const emitter = <T>(
-  listeners = [] as Listen<T>[]
-): [SubscribeFunc<T>, Emit<T>, Listen<T>[]] => [
-  (listener: Listen<T>) => {
+  listeners = [] as EffectFunc<T>[]
+): [SubscribeFunc<T>, EffectFunc<T>, EffectFunc<T>[]] => [
+  (listener: EffectFunc<T>) => {
     listeners.push(listener);
     return () => {
       listeners = listeners.filter((l) => l !== listener);
