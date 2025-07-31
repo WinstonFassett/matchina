@@ -5,6 +5,21 @@ import { produce } from 'immer';
 import { effect } from '../src';
 
 describe('createStoreMachine', () => {
+
+  it('does not dispatch unknown types', () => {
+    const store = createStoreMachine(42, {
+      increment: (amount = 1) => (change) => change.from + amount,
+    });
+    expect(() => store.dispatch('unknown' as any)).not.toThrow();
+    expect(store.getState()).toBe(42);
+    expect(store.getChange()).toEqual({
+      type: '__initialize',
+      params: [],
+      from: 42,
+      to: 42,
+    });
+  })
+  
   it('should initialize with the provided state', () => {
     const store = createStoreMachine(42, {
       // No transitions needed for this test
