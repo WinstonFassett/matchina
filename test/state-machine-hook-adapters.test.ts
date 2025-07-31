@@ -3,7 +3,7 @@ import { setup } from '../src/ext/setup';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 import { withLifecycle } from '../src/lifecycle';
-import { guard, handle, before, update } from '../src/state-machine-hooks';
+import { guard, handle, before, update, resolveExit } from '../src/state-machine-hooks';
 
 describe('state-machine-hook-adapters', () => {
   // Create a simple test machine factory
@@ -34,6 +34,36 @@ describe('state-machine-hook-adapters', () => {
       'idle'
     );
   }
+
+  describe.only('resolveExit', () => {
+    it('should allow custom resolution of exit state', () => {
+      const machine = createTestMachine();
+      const spy = vi.fn();
+      setup(machine)(
+        resolveExit(
+          (ev, next) => {
+            const resolved = next(ev);
+            if (ev.type === 'finish') {
+              spy(resolved);
+              // Resolve to done state with incremented count
+              (resolved as any).to = machine.states.done(ev.from.data.count + 1)
+            }
+            return resolved
+            
+          }
+        )
+      )
+      // Start the machine
+      machine.send('start');
+      expect(machine.getState().key).toBe('active');
+      // Send finish
+      machine.send('finish');
+      // Should resolve to done state with incremented count
+      expect(machine.getState().key).toBe('done');
+      expect(machine.getState().data.count).toBe(1);
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ type: 'finish' }));
+    })
+  });
 
   describe('guard', () => {
     it('should prevent transition when guard returns false', () => {

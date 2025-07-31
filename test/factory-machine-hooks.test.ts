@@ -5,6 +5,7 @@ import { defineStates } from '../src/define-states';
 import { setup } from '../src/ext/setup';
 import { Disposer } from '../src/function-types';
 import { effect } from '../src/state-machine-hooks';
+import { when } from '../src/extras/when';
 
 describe('factory-machine-hooks', () => {
   describe('transitionHook', () => {
@@ -93,6 +94,85 @@ describe('factory-machine-hooks', () => {
       expect(mockEffect2).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('when', () => {
+    it('should call the entryListener when the test function returns true', () => {
+      const mockHandler = vi.fn();
+      
+      const states = defineStates({
+        idle: () => ({}),
+        active: () => ({})
+      } as const);
+
+      const machine = createMachine(
+        states,
+        {
+          idle: { start: 'active' },
+          active: {}
+        },
+        states.idle()
+      );
+
+      const dispose = setup(machine)(
+        effect(when((ev) => ev.type === 'start', mockHandler))
+      );
+      
+      // Trigger the transition
+      machine.send('start');
+      
+      expect(mockHandler).toHaveBeenCalledTimes(1);
+      
+      // Cleanup
+      dispose();
+      
+      // Shouldn't be called after dispose
+      machine.send('start');
+      expect(mockHandler).toHaveBeenCalledTimes(1);
+    });
+    it('should call the exitListener when the test function returns false', () => {
+      const mockHandler = vi.fn();
+      
+      const states = defineStates({
+        idle: () => ({}),
+        active: () => ({})
+      } as const);
+
+      const machine = createMachine(
+        states,
+        {
+          idle: { start: 'active' },
+          active: { stop: 'idle' }
+        },
+        states.idle()
+      );
+
+      const dispose = setup(machine)(
+        effect(when((ev) => ev.type === 'start', (ev) => {
+          return () => {
+            mockHandler(ev);
+          };
+        }))
+      );
+      machine.send('start');
+      expect(mockHandler).toHaveBeenCalledTimes(0);
+
+      machine.send('stop');
+      expect(mockHandler).toHaveBeenCalledTimes(1);
+
+      machine.send('start');
+      expect(mockHandler).toHaveBeenCalledTimes(1);
+
+      machine.send('stop');
+      expect(mockHandler).toHaveBeenCalledTimes(2);
+
+      dispose();
+      machine.send('start');
+      expect(mockHandler).toHaveBeenCalledTimes(2);
+      
+      machine.send('stop');
+      expect(mockHandler).toHaveBeenCalledTimes(2);
+    });
+  })
 
   describe('whenFromState', () => {
     it('should call the handler when transitioning from the specified state', () => {
