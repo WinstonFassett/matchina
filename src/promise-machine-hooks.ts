@@ -8,7 +8,7 @@ import { createMethodEnhancer } from "./ext";
  * @param guardFn - Function that checks whether execution should proceed, based on the arguments.
  * @returns A method enhancer for `execute`, which returns a disposer when applied.
  *
- * Usage:
+ * @example
  * ```ts
  * // Enhance the machine's execute method with a guard
  * const stopGuarding = guardExecute((...args) => args.length > 0)(machine);

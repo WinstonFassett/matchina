@@ -15,7 +15,7 @@ import { StateChangeEvent, ChangeEventKeyFilter } from "./match-change-types";
  * @param rest - Tuple or filter object specifying type, from, and to keys.
  * @returns True if the event matches all filter criteria.
  *
- * Usage:
+ * @example
  * ```ts
  * matchChange(event, "reject", "Pending", "Rejected");
  * matchChange(event, { type: "resolve", from: "Pending", to: "Resolved" });

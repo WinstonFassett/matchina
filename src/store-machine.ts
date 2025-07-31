@@ -89,7 +89,6 @@ export interface StoreChange<T> {
  * ```
  *
  * @see StoreMachine
- * @see
  * @see FactoryMachine
  */
 export function createStoreMachine<

@@ -14,7 +14,7 @@ import { MatchCases } from "./match-case-types";
  * @param params - Parameters to pass to the handler function.
  * @returns The result of the matched handler, or undefined if not exhaustive and no match.
  *
- * Usage:
+ * @example
  * ```ts
  * match(true, { foo: fn, bar: fn, _: fallback }, "foo", ...params);
  * ```

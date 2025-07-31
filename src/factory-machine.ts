@@ -25,7 +25,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   });
  * ```
  *
- * Usage:
+ * @example
  * ```typescript
  *   states.Idle().key // "Idle"
  *   states.Loading("search").data // { query: "search" }
@@ -62,7 +62,7 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *   );
  * ```
  *
- * Usage:
+ * @example
  * ```typescript
  *   machine.send("search", "query")
  *   machine.getState().key // "Loading"

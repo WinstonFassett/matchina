@@ -47,7 +47,7 @@ export const PROMISE_TRANSITIONS = {
  * @param makePromise - Optional factory function to create a promise. If omitted, `execute` will throw.
  * @returns A PromiseMachine instance with an `execute` method to run the promise and manage its state.
  *
- * Usage:
+ * @example
  * ```ts
  * const machine = createPromiseMachine((...args) => fetch(...args));
  * machine.execute(url).then(...).catch(...);
