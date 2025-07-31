@@ -76,6 +76,7 @@ function createUpdateLifecycle<E, T extends object = any>(
       if (!lifecycle.guard(ev)) return;      
       let output = lifecycle.handle(ev);
       if (!output) {
+        console.log("Transition aborted by handle", ev);
         return;
       }
       output = lifecycle.before(output);
