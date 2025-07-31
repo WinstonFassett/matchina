@@ -42,7 +42,7 @@ export function matchChange<
       from: { key: From };
     }
   > {
-  const [type, from, to] = getFilter(rest);
+  const [type, from, to] = getFilter(rest as any);
   return (
     matchKey(to, changeEvent?.to?.key) &&
     matchKey(type, changeEvent?.type) &&

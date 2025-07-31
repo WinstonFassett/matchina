@@ -1,6 +1,4 @@
-import { an } from "vitest/dist/reporters-5f784f42";
 import { Funcware } from "../../function-types";
-import { createDisposer } from "../setup";
 import { EnhancedFn, enhanceFunction, isEnhancedFunction } from "./enhance-function";
 import { MethodOf } from "./method-utility-types";
 

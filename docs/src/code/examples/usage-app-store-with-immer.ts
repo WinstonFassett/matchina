@@ -1,5 +1,5 @@
 import { type Draft, produce } from "immer";
-import { effect, setup, when, whenEventType } from "matchina";
+import { effect, setup, when } from "matchina";
 import { createStoreMachine } from "../../../../src/store-machine";
 
 // Helper for using a produce function with store machine transitions

@@ -1,5 +1,4 @@
-import { Funcware } from "../../function-types";
-import { MethodOf } from "./method-utility-types";
+import { Func, Funcware } from "../../function-types";
 
 function composeFuncware<T extends (...args: any[]) => any>(
   original: T,
@@ -10,19 +9,18 @@ function composeFuncware<T extends (...args: any[]) => any>(
 }
 
 export const EnhancedSymbol = Symbol("enhancedFunction");
-
-export const isEnhancedFunction = <T, K extends keyof T>(
-  fn: MethodOf<T, K>
-): fn is EnhancedFn<T, K> extends true ? EnhancedFn<T, K> : never => {
+export const isEnhancedFunction = <F extends Func>(
+  fn: F
+): fn is EnhancedFn<F> => {
   return typeof fn === "function" && EnhancedSymbol in fn;
 };
 
-export type EnhancedFn<T, K extends keyof T> = MethodOf<T, K> & {
-  add: (enhancer: Funcware<MethodOf<T, K>>) => void;
-  remove: (enhancer: Funcware<MethodOf<T, K>>) => void;
-  has: (enhancer: Funcware<MethodOf<T, K>>) => boolean;
-  enhancers: Funcware<MethodOf<T, K>>[];
-  __original: MethodOf<T, K>;
+export type EnhancedFn<F extends Func> = F & {
+  add: (...enhancer: Funcware<F>[]) => void;
+  remove: (...enhancer: Funcware<F>[]) => void;
+  has: (...enhancer: Funcware<F>[]) => boolean;
+  enhancers: Funcware<F>[];
+  __original: F;
   [EnhancedSymbol]: true;
 };
 
@@ -59,19 +57,26 @@ export type EnhancedFn<T, K extends keyof T> = MethodOf<T, K> & {
  * disposer(); // Restores original method
  * ```
  */
-export function enhanceFunction<T, K extends keyof T>(original: MethodOf<T, K>) {
-  type Enhancer = Funcware<MethodOf<T, K>>;
+export function enhanceFunction<F extends Func>(original: F) {
+  type Enhancer = Funcware<F>;
   let enhancers: Enhancer[] = [];
-  let composed: MethodOf<T, K> = original;
+  let composed: F = original;
 
   function updateComposed() {
     composed = composeFuncware(original, enhancers);
   }
 
-  // The composed function always uses the current enhancer array
   const enhanced = function (this: any, ...args: any[]) {
     return composed.apply(this, args);
-  } as MethodOf<T, K> &  EnhancedFn<T, K>;
+  } as F & {
+    add: (...toAdd: Enhancer[]) => void;
+    remove: (...toRemove: Enhancer[]) => void;
+    has: (...toCheck: Enhancer[]) => boolean;
+    enhancers: Enhancer[];
+    __original: F;
+    [EnhancedSymbol]: true;
+  };
+
   return Object.assign(enhanced, {
     add: (...toAdd: Enhancer[]) => {
       enhancers.push(...toAdd);
@@ -88,5 +93,5 @@ export function enhanceFunction<T, K extends keyof T>(original: MethodOf<T, K>) 
     enhancers,
     __original: original,
     [EnhancedSymbol]: true,
-  }) as EnhancedFn<T, K>;
+  });
 }

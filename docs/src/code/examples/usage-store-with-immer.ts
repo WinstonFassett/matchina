@@ -1,5 +1,5 @@
-import { effect, setup, when } from "matchina";
 import { produce } from "immer";
+import { effect, setup } from "matchina";
 import {
   addStoreApi,
   createStoreMachine,
