@@ -104,8 +104,8 @@ export function createStoreMachine<
   const machine = withLifecycle<StoreMachine<T, TR>>(
     {
       actions: transitions,
-      getState: () => lastChange.to,
       getChange: () => lastChange,
+      getState: () => machine.getChange().to,
       dispatch(type, ...params) {
         console.log('DISPATCH', type, params);
         const handler = machine.actions[type];
