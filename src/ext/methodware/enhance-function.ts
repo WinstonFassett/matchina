@@ -1,6 +1,31 @@
 import { Funcware } from "../../function-types";
 import { MethodOf } from "./method-utility-types";
 
+function composeFuncware<T extends (...args: any[]) => any>(
+  original: T,
+  funcwares: Array<Funcware<T>>
+): T {
+  // Use reduce for left-to-right composition
+  return funcwares.reduce((next, fw) => fw(next), original);
+}
+
+export const EnhancedSymbol = Symbol("enhancedFunction");
+
+export const isEnhancedFunction = <T, K extends keyof T>(
+  fn: MethodOf<T, K>
+): fn is EnhancedFn<T, K> extends true ? EnhancedFn<T, K> : never => {
+  return typeof fn === "function" && EnhancedSymbol in fn;
+};
+
+export type EnhancedFn<T, K extends keyof T> = MethodOf<T, K> & {
+  add: (enhancer: Funcware<MethodOf<T, K>>) => void;
+  remove: (enhancer: Funcware<MethodOf<T, K>>) => void;
+  has: (enhancer: Funcware<MethodOf<T, K>>) => boolean;
+  enhancers: Funcware<MethodOf<T, K>>[];
+  __original: MethodOf<T, K>;
+  [EnhancedSymbol]: true;
+};
+
 /**
  * Extends a method on a single target using funcware, allowing you to intercept and augment
  * the method's behavior. The funcware receives the original method and its parameters, and can
@@ -34,35 +59,34 @@ import { MethodOf } from "./method-utility-types";
  * disposer(); // Restores original method
  * ```
  */
-export function enhanceFunction<T, K extends keyof T>(
-  original: MethodOf<T, K>) {
+export function enhanceFunction<T, K extends keyof T>(original: MethodOf<T, K>) {
   type Enhancer = Funcware<MethodOf<T, K>>;
   let enhancers: Enhancer[] = [];
+  let composed: MethodOf<T, K> = original;
 
+  function updateComposed() {
+    composed = composeFuncware(original, enhancers);
+  }
+
+  // The composed function always uses the current enhancer array
   const enhanced = function (this: any, ...args: any[]) {
-    let fn = (original.bind(this) as MethodOf<T, K>);
-    for (const enhancer of enhancers) {
-      fn = enhancer(fn) as MethodOf<T, K>;
-    }
-    return fn(...args);
-  } as MethodOf<T, K> & {
-    add: (enhancer: Enhancer) => void;
-    remove: (enhancer: Enhancer) => void;
-    has: (enhancer: Enhancer) => boolean;
-    enhancers: Enhancer[];
-    __original: MethodOf<T, K>;
-  };
-
-  enhanced.add = (enhancer: Enhancer) => {
-    enhancers.push(enhancer);
-  };
-  enhanced.remove = (enhancer: Enhancer) => {
-    const idx = enhancers.indexOf(enhancer);
-    if (idx !== -1) enhancers.splice(idx, 1);
-  };
-  enhanced.has = (enhancer: Enhancer) => enhancers.includes(enhancer);
-  enhanced.enhancers = enhancers;
-  enhanced.__original = original;
-
-  return enhanced;
+    return composed.apply(this, args);
+  } as MethodOf<T, K> &  EnhancedFn<T, K>;
+  return Object.assign(enhanced, {
+    add: (...toAdd: Enhancer[]) => {
+      enhancers.push(...toAdd);
+      updateComposed();
+    },
+    remove: (...toRemove: Enhancer[]) => {
+      for (const enhancer of toRemove) {
+        const idx = enhancers.indexOf(enhancer);
+        if (idx !== -1) enhancers.splice(idx, 1);
+      }
+      updateComposed();
+    },
+    has: (...toCheck: Enhancer[]) => toCheck.every(e => enhancers.includes(e)),
+    enhancers,
+    __original: original,
+    [EnhancedSymbol]: true,
+  }) as EnhancedFn<T, K>;
 }
