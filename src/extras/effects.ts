@@ -1,6 +1,8 @@
+import { createSetup } from "../ext/setup";
 import { MatchCases } from "../match-case-types";
 import { matchboxFactory } from "../matchbox-factory";
 import { TaggedTypes, MatchboxMember } from "../matchbox-factory-types";
+import { effect } from "../state-machine-hooks";
 
 /**
  * @interface
@@ -54,4 +56,79 @@ export function handleEffects<
   for (const effect of effects) {
     effect.match(matchers as any, exhaustive);
   }
+}
+
+
+// export function effectHandler<
+// EffectsConfig extends TaggedTypes,
+//   Exhaustive extends boolean = true,
+//   >
+// (
+//   selectEffects: (ev:E) => EffectsConfig,
+//   matchers: MatchCases<EffectsConfig, any, Exhaustive>,
+//   exhaustive = false as Exhaustive
+// ): (ev: any) => void {
+//   return (ev) => {
+//     handleEffects(
+//       ev.to.data.effects,
+//       matchers,
+//       exhaustive
+//     );
+//   };
+// } 
+
+//   )
+
+export interface EffectsProps<
+  EffectsConfig extends TaggedTypes = TaggedTypes,
+  Exhaustive extends boolean = true
+> {
+  getEffects: (to: any) => undefined | EffectMatchbox[];
+  matchers: MatchCases<EffectsConfig, any, Exhaustive>;
+  exhaustive?: Exhaustive;
+}
+
+// export function handleEffectsFor<
+//   EffectsConfig extends TaggedTypes = TaggedTypes,
+//   Exhaustive extends boolean = true
+// >(
+//   machine: EffectMachine<EffectsConfig, Exhaustive>
+// ): (ev: { to: any }) => void {
+//   return (ev) => {
+//     handleEffects(
+//       machine.getEffects(ev.to),
+//       machine.matchers,
+//       machine.exhaustive
+//     );
+//   };
+// }
+
+// export function effectHandlers<
+//   EffectsConfig extends TaggedTypes = TaggedTypes,
+//   Exhaustive extends boolean = true
+// >(
+//   props: EffectsProps<EffectsConfig, Exhaustive>
+// ): (ev: { to: any }) => void {
+//   return (ev) => {
+//     handleEffects(
+//       props.getEffects(ev.to),
+//       props.matchers,
+//       props.exhaustive ?? false
+//     );
+//   };
+// }
+
+
+export function mountEffects<
+  E,
+  EffectsConfig extends TaggedTypes,
+  Exhaustive extends boolean = true,
+>(
+  getEffects: (ev: E) => undefined | EffectMatchbox[],
+  matchers: MatchCases<EffectsConfig, E, Exhaustive>,
+  exhaustive = true as Exhaustive
+) {
+  return createSetup(
+    effect((ev: E) => handleEffects(getEffects(ev), matchers, exhaustive))
+  )
 }

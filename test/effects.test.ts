@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { defineEffects } from "../src/extras/effects";
+import { defineEffects, handleEffects, mountEffects } from "../src/extras/effects";
 import { defineStates } from "../src/define-states";
-import { createMachine, addEventApi } from "../src";
+import { createMachine, addEventApi, setup, effect } from "../src";
 import { bindEffects } from "../src/extras/bind-effects";
 
 const effectsConfig = {
@@ -44,15 +44,16 @@ describe("defineEffects", () => {
   });
 });
 
-describe("runEffectsOnUpdate", () => {
+describe("bindEffects", () => {
   it("should handle effects when the state changes", () => {
     let didNotify = false;
     const machine = makeMachine();
-    bindEffects(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => state.data.effects, {
       Notify: (m) => {
         didNotify = !!m;
       },
     });
+
     machine.api.next();
     expect(didNotify).toBe(false);
     machine.api.next();
@@ -62,7 +63,7 @@ describe("runEffectsOnUpdate", () => {
   it("should not invoke effects when the state does not change", () => {
     let didNotify = false;
     const machine = makeMachine();
-    bindEffects(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => state.data.effects, {
       Notify: (m) => {
         didNotify = !!m;
       },
