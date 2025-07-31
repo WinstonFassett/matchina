@@ -21,7 +21,7 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
     return true;
   }
   return Array.isArray(keyOrKeys)
-    ? (keyOrKeys.includes(value) || keyOrKeys.length === 0)
+    ? keyOrKeys.includes(value)
     : keyOrKeys === value
 }
 

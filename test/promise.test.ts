@@ -8,6 +8,40 @@ import { delay, delayer } from "../src/extras/delay";
 import { addEventApi, createMachine, eventApi } from "../src";
 
 describe("createPromiseMachine", () => {
+  describe("execute()", () => {
+    it("should execute a promise and transition to Pending state", async () => {
+      const machine = addEventApi(
+        createPromiseMachine(async () => {
+          await delay(1);
+          return "Resolved Data";
+        })
+      );
+      const initialState = machine.getState();
+      expect(initialState.key).toBe("Idle");
+      machine.execute();
+      const pendingState = machine.getState();
+      expect(pendingState.key).toBe("Pending");
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      const resolvedState = machine.getState();
+      expect(resolvedState.key).toBe("Resolved");
+      expect(resolvedState.data).toBe("Resolved Data");
+    });
+    it("should throw if no makePromise function is provided", () => {
+      const machine =  createPromiseMachine();
+      expect(() => {
+        machine.execute();
+      }).toThrowError("No promise factory provided");
+    });
+    it("should throw if not in Idle state", () => {
+      const machine = addEventApi(
+        createPromiseMachine(delayer(1, "Resolved Data"))
+      );
+      machine.execute();
+      expect(() => {
+        machine.execute();
+      }).toThrowError("Can only execute from Idle state");
+    });
+  });
   it("should transition from Idle to Pending and Resolved states", async () => {
     const machine = addEventApi(
       createPromiseMachine(delayer(1, "Resolved Data"))

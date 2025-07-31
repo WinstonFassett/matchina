@@ -53,6 +53,16 @@ describe("matchboxFactory", () => {
           )
         ).toBe('other [{"data":"test"}]');
       });
+      it("should match with _ and exhaustive", () => {
+        expect(
+          Box.C("test").match(
+            {
+              A: () => "A",
+              _: (...args) => `other ${JSON.stringify(args)}`,
+            }
+          )
+        ).toBe('other [{"data":"test"}]');
+      });
       it("should throw with unmatched", () => {
         expect(() =>
           Box.C("test").match({
