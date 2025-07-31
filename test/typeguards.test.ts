@@ -26,9 +26,9 @@ describe("typeguards", () => {
       expect(
         matchChange(event, {
           type: "change",
-          // from: ["a"],
-          // to: ["b", "c"] as const,
-        } as const)
+          from: ["a","z"],
+          to: ["b", "c"],
+        } as any)
       ).toBe(true);
     });
     it("matches on undefined values", () => {

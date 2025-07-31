@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { defineStates } from "../src/define-states";
-import { createMachine, addEventApi, pure } from "../src";
+import { createMachine, addEventApi, pure, eventApi } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -24,7 +24,9 @@ const makeMachine = () => {
             );
           },
       },
-      Done: {},
+      Done: {
+        restart: "Initial",
+      },
     },
     "Initial"
   );
@@ -158,3 +160,44 @@ describe("pure", () => {
   });
 });
   
+
+describe("eventApi", () => {
+  it("should return an event api", () => {
+    const machine = makeMachine();
+    const api = machine.api;
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+  });
+  it("should return an event api for the specified state", () => {
+    const machine = makeMachine();
+    const doneApi = eventApi(machine, "Done");
+    expect(doneApi).toBeDefined();
+    expect(doneApi.restart).toBeDefined();
+    expect(doneApi.done).toBeUndefined();
+    expect(doneApi.doneFunc).toBeUndefined();
+    expect(doneApi.doneAdvFunc).toBeUndefined();
+  });
+})
+
+describe("addEventApi", () => {
+  it("should add an event `api` property", () => {
+    const machine = makeMachine();
+    const api = machine.api
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+  });
+  it("should preserve pre-existing api property", () => {
+    const machine = makeMachine();
+    const api = machine.api;
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+    addEventApi(machine);
+    expect(machine.api).toBe(api);
+  });
+})
