@@ -60,8 +60,6 @@ export function createPromiseMachine<
   const machine = createMachine(states, PROMISE_TRANSITIONS, "Idle");
 
   let currentPromise: Promise<any> | undefined;
-  let resolveCurrent: ((value: any) => void) | undefined;
-  let rejectCurrent: ((reason: any) => void) | undefined;
 
   function execute(...params: Parameters<F>): Promise<Awaited<ReturnType<F>>> {
     if (!makePromise) {
@@ -74,17 +72,17 @@ export function createPromiseMachine<
     currentPromise = promise;
     machine.send("executing", promise, params);
     return new Promise((resolve, reject) => {
-      resolveCurrent = resolve;
-      rejectCurrent = reject;
       promise
         .then((result) => {
           if (currentPromise === promise) {
             machine.send("resolve", result);
+            resolve(result);
           }
         })
         .catch((error) => {
           if (currentPromise === promise) {
             machine.send("reject", error);
+            reject(error);
           }
         });
     });
