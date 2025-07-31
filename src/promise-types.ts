@@ -1,4 +1,4 @@
-import { States } from "./state-types";
+import { ReturnedStates } from "./state-types";
 import { FactoryMachine, FactoryMachineEvent } from "./factory-machine-types";
 
 export type PromiseTransitions = {
@@ -21,7 +21,7 @@ export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Resolved: (data: Awaited<ReturnType<F>>) => Awaited<ReturnType<F>>;
 };
 
-export type PromiseStates<F extends PromiseCallback, E = Error> = States<
+export type PromiseStates<F extends PromiseCallback, E = Error> = ReturnedStates<
   PromiseStateCreators<F, E>
 >;
 

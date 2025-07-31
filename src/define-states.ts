@@ -1,6 +1,6 @@
 import { matchboxFactory } from "./matchbox-factory";
 import { TaggedTypes } from "./matchbox-factory-types";
-import { States } from "./state-types";
+import { ReturnedStates } from "./state-types";
 
 /**
  * `defineStates` creates a type-safe state factory for your state machine.
@@ -29,7 +29,7 @@ import { States } from "./state-types";
  *   - Exhaustive match on state keys
  */
 export function defineStates<Config extends TaggedTypes>(config: Config) {
-  return matchboxFactory(config, "key") as States<Config>;
+  return matchboxFactory(config, "key") as ReturnedStates<Config>;
 }
 
-export type { StateMatchbox, States } from "./state-types";
+export type { StateMatchbox, ReturnedStates as ReturnedStates } from "./state-types";

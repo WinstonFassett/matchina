@@ -6,7 +6,7 @@ import {
   delay,
   matchChange,
   type FactoryMachineTransitions,
-  type States,
+  type ReturnedStates,
 } from "matchina";
 
 // usage
@@ -20,7 +20,7 @@ type MyStateData = {
     bar: number;
   };
 };
-type MyStates = States<MyStateData>;
+type MyStates = ReturnedStates<MyStateData>;
 
 const states: MyStates = defineStates<MyStateData>({
   Idle: undefined,

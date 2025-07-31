@@ -1,4 +1,4 @@
-import type { FactoryMachine, States } from "matchina";
+import type { FactoryMachine, ReturnedStates } from "matchina";
 
 export const StateData = {
   Stopped: () => ({ elapsed: 0 }),
@@ -8,7 +8,7 @@ export const StateData = {
 
 export interface Stopwatch
   extends FactoryMachine<{
-    states: States<typeof StateData>;
+    states: ReturnedStates<typeof StateData>;
     transitions: {
       Stopped: { start: "Ticking" };
       Ticking: { stop: "Stopped"; suspend: "Suspended"; clear: "Ticking" };

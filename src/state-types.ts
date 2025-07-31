@@ -44,6 +44,6 @@ type StateData<Spec> = Spec extends (...args: any[]) => any
  * // }
  * ```
  */
-export type States<Specs extends TaggedTypes> = {
+export type ReturnedStates<Specs extends TaggedTypes> = {
   [T in string & keyof Specs]: CreateState<Specs, T>;
 };

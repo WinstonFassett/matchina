@@ -1,8 +1,8 @@
-import type { FactoryMachine, States } from "matchina";
+import type { FactoryMachine, ReturnedStates } from "matchina";
 import { getStateValues, resolveState } from "./state-utils";
 
 export function getXStateDefinition<
-  F extends FactoryMachine<{ states: States<any>; transitions: any }>,
+  F extends FactoryMachine<{ states: ReturnedStates<any>; transitions: any }>,
 >(machine: F) {
   const initialState = machine.getState();
   const stateValues = getStateValues(machine.states);
