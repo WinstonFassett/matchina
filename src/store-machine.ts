@@ -113,7 +113,12 @@ export function createStoreMachine<
         }
         const valueOrFn = handler(...params);
         const from = machine.getState();
-        const change: StoreChange<T> = { type, params, from, to: undefined as T };
+        const change: StoreChange<T> = {
+          type,
+          params,
+          from,
+          to: undefined as T,
+        };
         const to = resolveTransitionResult(valueOrFn, change);
         change.to ??= to as T;
         if (change.to === undefined) {

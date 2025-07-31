@@ -159,7 +159,6 @@ describe("pure", () => {
     expect(Object.keys(pureMachine)).toEqual(["getState", "send"]);
   });
 });
-  
 
 describe("eventApi", () => {
   it("should return an event api", () => {
@@ -179,12 +178,12 @@ describe("eventApi", () => {
     expect(doneApi.doneFunc).toBeUndefined();
     expect(doneApi.doneAdvFunc).toBeUndefined();
   });
-})
+});
 
 describe("addEventApi", () => {
   it("should add an event `api` property", () => {
     const machine = makeMachine();
-    const api = machine.api
+    const api = machine.api;
     expect(api).toBeDefined();
     expect(typeof api.done).toBe("function");
     expect(typeof api.doneFunc).toBe("function");
@@ -200,4 +199,4 @@ describe("addEventApi", () => {
     addEventApi(machine);
     expect(machine.api).toBe(api);
   });
-})
+});

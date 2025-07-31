@@ -32,7 +32,13 @@ export function matchChange<
   changeEvent: E,
   ...rest:
     | [type?: Type, from?: From | From[], to?: To | To[]]
-    | [filter: ChangeEventKeyFilter<E> & { type?: Type; from?: From | From[]; to?: To | To[] }]
+    | [
+        filter: ChangeEventKeyFilter<E> & {
+          type?: Type;
+          from?: From | From[];
+          to?: To | To[];
+        },
+      ]
 ): changeEvent is E &
   HasFilterValues<
     E,

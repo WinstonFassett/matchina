@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 
 describe("enhanceMethod - stack-safe impl", () => {
@@ -8,7 +8,7 @@ describe("enhanceMethod - stack-safe impl", () => {
       greet(name: string) {
         calls.push(`orig:${name}`);
         return `Hello, ${name}`;
-      }
+      },
     };
 
     // First enhancer

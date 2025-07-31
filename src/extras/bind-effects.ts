@@ -13,11 +13,7 @@ export function bindEffects<
   matchers: MatchCases<EffectsConfig, any, Exhaustive>,
   exhaustive = false as Exhaustive
 ) {
-  return setup(machine)(effect(ev => 
-    handleEffects(
-      getEffects(ev.to),
-      matchers,
-      exhaustive
-    )
-  ));
+  return setup(machine)(
+    effect((ev) => handleEffects(getEffects(ev.to), matchers, exhaustive))
+  );
 }

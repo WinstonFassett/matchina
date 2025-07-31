@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { enhanceMethod, createMethodEnhancer, enhanceFunction } from "../src/ext";
+import {
+  enhanceMethod,
+  createMethodEnhancer,
+  enhanceFunction,
+} from "../src/ext";
 import { when } from "../src/extras/when";
 
 describe("enhanceFunction", () => {
@@ -27,16 +31,18 @@ describe("enhanceFunction", () => {
       enhancedFn.add((next) => (x: number) => next(x + 1));
       expect(enhancedFn(3)).toBe(8); // (3 + 1) * 2
     });
-    it('has(enhancer) should return true if the enhancer is present and false if not', () => {
+    it("has(enhancer) should return true if the enhancer is present and false if not", () => {
       const originalFn = (x: number) => x * 2;
       const enhancedFn = enhanceFunction(originalFn);
       const enhancer = (next: any) => (x: number) => next(x + 1);
       enhancedFn.add(enhancer);
       expect(enhancedFn.has(enhancer)).toBe(true);
-      expect(enhancedFn.has((next: any) => (x: number) => next(x + 2))).toBe(false);
+      expect(enhancedFn.has((next: any) => (x: number) => next(x + 2))).toBe(
+        false
+      );
     });
   });
-})
+});
 
 describe("enhanceMethod", () => {
   it("should extend the method correctly", () => {

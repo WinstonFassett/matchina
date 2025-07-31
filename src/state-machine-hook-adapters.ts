@@ -12,7 +12,9 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
     middleware: Middleware<E>
   ) => Funcware<StateMachine<E>["transition"]>;
   update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
-  resolveExit: (middleware: Middleware<E>) => Funcware<StateMachine<E>["resolveExit"]>;
+  resolveExit: (
+    middleware: Middleware<E>
+  ) => Funcware<StateMachine<E>["resolveExit"]>;
   guard: (
     guardFn: StateMachine<E>["guard"]
   ) => Funcware<StateMachine<E>["guard"]>;

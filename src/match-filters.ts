@@ -55,9 +55,6 @@ export function asFilterMatch<
   throw new Error("not a match");
 }
 
-
-
-
 /**
  * Checks if a value matches a filter key or array of keys.
  * Returns true if the value is included in the array or equals the key.
@@ -81,7 +78,7 @@ export function matchKey<T>(keyOrKeys: T | T[] | undefined, value: T) {
   }
   return Array.isArray(keyOrKeys)
     ? keyOrKeys.includes(value)
-    : keyOrKeys === value
+    : keyOrKeys === value;
 }
 
 /**

@@ -90,7 +90,8 @@ export function onLifecycle<FC extends FactoryMachineContext>(
   const disposers = [] as Disposer[];
   for (const key in config) {
     const stateKey = key === "*" ? undefined : key;
-    const fromStateConfig = config[key as keyof typeof config]!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const fromStateConfig = config[key]!;
     const { on, enter, leave } = fromStateConfig;
     if (enter) {
       useFilteredEventConfigs(

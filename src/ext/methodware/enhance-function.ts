@@ -87,11 +87,14 @@ export function enhanceFunction<F extends Func>(original: F) {
     remove: (...toRemove: Enhancer[]) => {
       for (const enhancer of toRemove) {
         const idx = enhancers.indexOf(enhancer);
-        if (idx !== -1) { enhancers.splice(idx, 1); }
+        if (idx !== -1) {
+          enhancers.splice(idx, 1);
+        }
       }
       updateComposed();
     },
-    has: (...toCheck: Enhancer[]) => toCheck.every(e => enhancers.includes(e)),
+    has: (...toCheck: Enhancer[]) =>
+      toCheck.every((e) => enhancers.includes(e)),
     enhancers,
     __original: original,
     [EnhancedSymbol]: true,

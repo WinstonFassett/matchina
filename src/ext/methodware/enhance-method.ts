@@ -1,10 +1,12 @@
 import { Funcware } from "../../function-types";
-import { EnhancedFn, enhanceFunction, isEnhancedFunction } from "./enhance-function";
+import {
+  EnhancedFn,
+  enhanceFunction,
+  isEnhancedFunction,
+} from "./enhance-function";
 import { MethodOf } from "./method-utility-types";
 
 const noop = () => {};
-
-
 
 export function enhanceMethod<T, K extends keyof T>(
   target: T,
@@ -19,15 +21,14 @@ export function enhanceMethod<T, K extends keyof T>(
     const func = current ? current.bind(target) : noop;
     enhanced = enhanceFunction(func as any);
     target[methodName] = enhanced as MethodOf<T, K>;
-  } 
-  enhanced.add(extend);  
-  return () => {    
+  }
+  enhanced.add(extend);
+  return () => {
     if (enhanced) {
       enhanced.remove(extend);
       if (enhanced.enhancers.length === 0) {
         target[methodName] = enhanced.__original;
       }
     }
-  }
+  };
 }
-

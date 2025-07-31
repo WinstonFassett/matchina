@@ -27,7 +27,7 @@ describe("createPromiseMachine", () => {
       expect(resolvedState.data).toBe("Resolved Data");
     });
     it("should throw if no makePromise function is provided", () => {
-      const machine =  createPromiseMachine();
+      const machine = createPromiseMachine();
       expect(() => {
         machine.execute();
       }).toThrowError("No promise factory provided");

@@ -27,7 +27,7 @@ describe("typeguards", () => {
         expect(
           matchChange(event, {
             type: "change",
-            from: ["a","z"],
+            from: ["a", "z"],
             to: ["b", "c"],
           } as any)
         ).toBe(true);
@@ -46,7 +46,7 @@ describe("typeguards", () => {
           })
         ).toBe(true);
       });
-    })
+    });
     describe("(type?, from?, to?)", () => {
       it("matches on single values", () => {
         const event = {
@@ -62,7 +62,7 @@ describe("typeguards", () => {
           from: { key: "a" as "a" | "d" },
           to: { key: "b" as "a" | "b" | "c" },
         } as const;
-        expect(matchChange(event, "change", ["a","d"],["b","c"])).toBe(true);
+        expect(matchChange(event, "change", ["a", "d"], ["b", "c"])).toBe(true);
       });
       it("matches on undefined values", () => {
         const event = {
@@ -72,8 +72,7 @@ describe("typeguards", () => {
         };
         expect(matchChange(event, "change", undefined, undefined)).toBe(true);
       });
-    })
-
+    });
   });
   // describe("isChangeTypeToFrom", () => {
   //   it("matches on single values", () => {

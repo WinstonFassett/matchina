@@ -63,7 +63,7 @@ function createUpdateLifecycle<E, T extends object = any>(
     guard: EmptyGuard,
     handle: EmptyTransform,
     before: EmptyTransform,
-    update: (ev:E) => update(ev),
+    update: (ev: E) => update(ev),
     effect(ev: E) {
       lifecycle.leave(ev); // left previous
       lifecycle.enter(ev); // entered next
@@ -73,7 +73,9 @@ function createUpdateLifecycle<E, T extends object = any>(
     notify: EmptyEffect,
     after: EmptyEffect,
     transition(ev: E) {
-      if (!lifecycle.guard(ev)) { return; }      
+      if (!lifecycle.guard(ev)) {
+        return;
+      }
       let output = lifecycle.handle(ev);
       if (!output) {
         console.log("Transition aborted by handle", ev);
