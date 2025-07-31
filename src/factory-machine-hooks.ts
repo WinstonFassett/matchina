@@ -29,18 +29,33 @@ type TransitionHookConfig<
  * Registers one or more transition hooks for a {@link FactoryMachine}.
  * Each config can specify matching criteria (`from`, `to`, `type`) and any lifecycle hook(s).
  * Returns a setup function for the machine.
- *
- * @source This is the recommended flat API for lifecycle hooks in Matchina. It allows you to declaratively register hooks for specific transitions and phases.
- *
- * @example
+ * Usage:
+ * ```ts
  * setup(machine)(
- *   transitionHooks(
- *     { from: "Idle", type: "start", to: "Running", effect: fn, before, after },
- *     { from: "Idle", enter: fn, leave: fn },
- *     { type: "resolve", guard: e => true },
- *     { effect: globalFn }
- *   )
- * )
+ *   transitionHook({
+ *     from: "Idle",
+ *     type: "start",
+ *     to: "Running",
+ *     // optional hook functions
+ *     transition: transitionFn,
+ *     guard: guardFn,
+ *     resolveExit: resolveExitFn,
+ *     before: beforeFn,
+ *     handle: handleFn,
+ *     update: updateFn,
+ *     leave: leaveFn,
+ *     enter: enterFn,
+ *     effect: effectFn,
+ *     notify: notifyFn,
+ *     after: afterFn,
+ *   }),
+ *   // omit `from`, `to`, `type` to match all transitions
+ *   transitionHook({
+ *     effect: globalFn,
+ *     // more hooks...
+ *   }),
+ * ```
+ * @source This is the recommended flat API for lifecycle hooks in Matchina. It allows you to declaratively register hooks for specific transitions and phases.
  */
 export function transitionHook<FC extends FactoryMachineContext>(
   config: TransitionHookConfig<FC>
@@ -67,15 +82,33 @@ export function transitionHook<FC extends FactoryMachineContext>(
  * Registers multiple transition hooks for a {@link FactoryMachine}.
  * Returns a setup function for the machine.
  *
- * @source Use this to compose multiple transition hooks in a single setup call.
- *
- * @example
+ * Usage:
+ * ```ts
  * setup(machine)(
  *   transitionHooks(
- *     { from: "Idle", type: "start", to: "Running", effect: fn },
- *     { effect: globalFn }
+ *     { 
+ *       // optional event filters
+ *       from: "Idle", type: "start", to: "Running", 
+ *         // optional hook functions
+ *         transition: transitionFn,
+ *         guard: guardFn,
+ *         resolveExit: resolveExitFn,
+ *         before: beforeFn,
+ *         handle: handleFn,
+ *         update: updateFn,
+ *         leave: leaveFn,
+ *         enter: enterFn,
+ *         effect: effectFn,
+ *         notify: notifyFn,
+ *         after: afterFn,
+ *     },
+ *     // omit `from`, `to`, `type` to match all transitions
+ *     { effect: globalFn, ...moreHooks },
+ *     ...moreConditions
  *   )
  * )
+ * ```
+ * @source Use this to compose multiple transition hooks in a single setup call.
  */
 export function transitionHooks<FC extends FactoryMachineContext>(
   ...entries: TransitionHookConfig<FC>[]
