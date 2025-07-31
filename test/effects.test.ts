@@ -82,7 +82,6 @@ describe("runEffectsOnUpdate", () => {
   });
   it("exhaustive should throw when effect not matched", () => {
     const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
-    console.log("get ready...");
 
     bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
     expect(() => machine.api.next()).toThrowErrorMatchingInlineSnapshot(

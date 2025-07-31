@@ -23,8 +23,12 @@ describe("setup", () => {
     );
     setup(machine)(
       guard((ev) => true),
-      leave((ev) => console.log("leave", ev.type)),
-      enter((ev) => console.log("enter", ev.type)),
+      leave((ev) => {
+        // Hook for leaving state; logging removed
+      }),
+      enter((ev) => {
+        // Hook for entering state; logging removed
+      }),
       enter((value) => {})
     );
     expect(machine.getState().key).toBe("Idle");
@@ -55,7 +59,9 @@ describe("createSetup", () => {
 
     createSetup<typeof machine>(
       guard((ev) => true),
-      leave((ev) => console.log("leave", ev.type))
+      leave((ev) => {
+        // Hook for leaving state; logging removed
+      })
     )(machine);
     machine.send("start");
     expect(machine.getState().key).toBe("Running");
@@ -88,21 +94,11 @@ describe("factory-machine", () => {
     setup(machine)(
       guard((ev) => ev.type !== "execute" || ev.params[0] > 0),
       leave((ev) => {
-        if (ev.type === "execute") {
-          console.log("executing");
-        }
+        // Hook for leaving state; logging removed
       }),
-      enter((ev) =>
-        console.log(
-          ev.type,
-          ev.to.match<any>({
-            Pending: (ev) => ev.s,
-            Resolved: (ev) => ev.ok,
-            Rejected: (ev) => ev.err.message,
-            _: () => false,
-          })
-        )
-      )
+      enter((ev) => {
+        // Hook for entering state; logging removed
+      })
     );
     return machine;
   };

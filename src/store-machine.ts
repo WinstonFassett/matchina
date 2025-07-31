@@ -107,7 +107,6 @@ export function createStoreMachine<
       getChange: () => lastChange,
       getState: () => machine.getChange().to,
       dispatch(type, ...params) {
-        console.log('DISPATCH', type, params);
         const handler = machine.actions[type];
         if (!handler) {
           return;
@@ -117,7 +116,6 @@ export function createStoreMachine<
         const change: StoreChange<T> = { type, params, from, to: undefined as T };
         const to = resolveTransitionResult(valueOrFn, change);
         change.to ??= to as T;
-        console.log('CHANGE', change);
         if (change.to === undefined) {
           return;
         }
