@@ -11,6 +11,7 @@ export type TransitionHookExtensions<E extends TransitionEvent> = {
   begin: AbortableEventHandler<E>;
   resolveExit: Funcware<(ev: Partial<E>) => E>;
   transition: Middleware<E>;
+  update: Middleware<E>;
   guard: StateMachine<E>["guard"];
   handle: StateMachine<E>["handle"];
   before: AbortableEventHandler<E>;

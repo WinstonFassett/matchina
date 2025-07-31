@@ -102,17 +102,12 @@ describe('Lifecycle for machine transitionHooks(...hooks)', () => {
       'Idle'
     );
     setup(machine)(
-      // guard((ev) => { tracker.calls.push('guard'); return true; }),
       transitionHooks(
-        { guard: (ev) => { tracker.calls.push('guard'); return true; } },
+        { guard: () => { 
+          tracker.calls.push('guard');  
+          return true;
+        } },
         { handle: (ev) => { tracker.calls.push('handle'); return ev; } },
-        // {
-        //   handle: (ev, ...args) => {
-        //     console.log('Handling event:', ev, args);
-        //     tracker.calls.push('handle');
-        //     return ev; // Return the event to continue processing
-        //   }
-        // },
         { before: (ev) => { tracker.calls.push('before'); return ev; } },
         { update: (ev) => { tracker.calls.push('update'); return ev } },
         { effect: (ev) => { tracker.calls.push('effect'); } },
@@ -120,7 +115,6 @@ describe('Lifecycle for machine transitionHooks(...hooks)', () => {
         { enter: (ev) => { tracker.calls.push('enter'); } },
         { notify: (ev) => { tracker.calls.push('notify'); } },
         { after: (ev) => { tracker.calls.push('after'); } },
-        {after}
       )
     )
     machine.send('start');

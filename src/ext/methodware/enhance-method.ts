@@ -1,3 +1,4 @@
+import { an } from "vitest/dist/reporters-5f784f42";
 import { Funcware } from "../../function-types";
 import { createDisposer } from "../setup";
 import { EnhancedFn, enhanceFunction, isEnhancedFunction } from "./enhance-function";
@@ -13,12 +14,13 @@ export function enhanceMethod<T, K extends keyof T>(
   extend: Funcware<MethodOf<T, K>>
 ) {
   let current = target[methodName] as MethodOf<T, K>;
-  let enhanced: EnhancedFn<T, K> | undefined;
+  let enhanced: EnhancedFn<MethodOf<T, K>>;
   if (isEnhancedFunction(current)) {
     enhanced = current;
   } else {
-    enhanced = enhanceFunction(current ?? (noop as MethodOf<T, K>));
-    target[methodName] = enhanced;
+    const func = current ? current.bind(target) : noop;
+    enhanced = enhanceFunction(func as any);
+    target[methodName] = enhanced as MethodOf<T, K>;
   } 
   enhanced.add(extend);  
   return () => {    
