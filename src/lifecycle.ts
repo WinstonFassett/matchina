@@ -4,6 +4,23 @@ const EmptyTransform = <E>(event: E) => event;
 const EmptyEffect = <E>(_event: E) => {};
 const EmptyGuard = <E>(_event: E) => true;
 
+/**
+ * Lifecycle interface defines the methods for managing state transitions and effects.
+ * Implemented by {@link StateMachine} and {@link StoreMachine} to handle state changes.
+ * It provides a structured way to handle state changes, including guards, effects, and notifications.
+ * 
+ * Lifecycle steps:
+ * 1. `transition(ev)` - Triggers the transition lifecycle, handling all steps for processing a change event.
+ * 2. `guard(ev)` - Checks if the transition is allowed.
+ * 3. `handle(ev)` - Processes the event, may abort if returns undefined.
+ * 4. `before(ev)` - Prepares for state change, may abort if returns undefined.
+ * 5. `update(ev)` - Applies the state update.
+ * 6. `effect(ev)` - Runs side effects, calls leave/enter hooks.
+ * 7. `leave(ev)` - Called when leaving the previous state.
+ * 8. `enter(ev)` - Called when entering the new state.
+ * 9. `notify(ev)` - Notifies subscribers of the change.
+ * 10. `after(ev)` - Final hook after transition completes.
+ */
 export interface Lifecycle<E> {
   /**
    * Triggers the transition lifecycle, handling all steps for processing a change event.
