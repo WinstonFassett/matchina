@@ -1,4 +1,4 @@
-import { EffectFunc, Setup } from "../function-types";
+import { EffectFunc, SetupFunc } from "../function-types";
 
 type Listen<T> = EffectFunc<T>;
 
@@ -12,7 +12,7 @@ type Listen<T> = EffectFunc<T>;
  * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
-export type SubscribeFunc<T> = Setup<Listen<T>>;
+export type SubscribeFunc<T> = SetupFunc<Listen<T>>;
 
 type Emit<T> = EffectFunc<T>;
 
