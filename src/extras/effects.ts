@@ -3,6 +3,7 @@ import { matchboxFactory } from "../matchbox-factory";
 import { TaggedTypes, MatchboxMember } from "../matchbox-factory-types";
 
 /**
+ * @interface
  * Type representing an effect matchbox member.
  * Used to group and handle effect-related logic in matchbox factories.
  */

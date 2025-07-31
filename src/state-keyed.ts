@@ -50,6 +50,13 @@ export interface KeyedStateFactory {
  * state construction and transitions.
  */
 
+/**
+ * @interface
+ * FactoryKeyedState defines a state object with a key and data
+ * that was created by a KeyedStateFactory.
+ * * @template States - The KeyedStateFactory type
+ * * @template StateKey - The key of the state to infer (defaults to all keys
+ */
 export type FactoryKeyedState<
   States extends KeyedStateFactory,
   StateKey extends keyof States = keyof States,
