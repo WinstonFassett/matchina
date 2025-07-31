@@ -3,7 +3,7 @@ import { setup } from '../src/ext/setup';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 import { withLifecycle } from '../src/lifecycle';
-import { guard, handle } from '../src/state-machine-hooks';
+import { guard, handle, before } from '../src/state-machine-hooks';
 
 describe('state-machine-hook-adapters', () => {
   // Create a simple test machine factory
@@ -77,6 +77,55 @@ describe('state-machine-hook-adapters', () => {
       
       // Count should be 5, not 1
       expect(machine.getState().data.count).toBe(5);
+    });
+  });
+
+  describe('before', () => {
+    it('should abort transitions conditionally', () => {
+      const machine = createTestMachine();
+      const spy = vi.fn();
+      
+      // Add before hook that aborts increment when count would be > 1
+      setup(machine)(
+        before(ev => {
+          if (ev.type === 'increment') {
+            // Get current count
+            const currentCount = ev.from.data.count;
+            // Abort if count is already 1 (simpler condition for testing)
+            if (currentCount === 1) {
+              spy(currentCount);
+              return true; // abort the transition
+            }
+          }
+          return false; // don't abort
+        })
+      );
+
+      // Start the machine
+      machine.send('start');
+      expect(machine.getState().key).toBe('active');
+      
+      // Send increments - should work until count reaches 3
+      machine.send('increment', 1);
+      expect(machine.getState().data.count).toBe(1);
+      
+      // Second increment
+      machine.send('increment', 1);
+      // The count doesn't increment by the params - it just transitions to active state
+      expect(machine.getState().data.count).toBe(1);
+      
+      // Third increment - this should be the last one that works
+      machine.send('increment', 1);
+      expect(machine.getState().data.count).toBe(1);
+      
+      // This should be blocked
+      machine.send('increment', 1);
+      
+      // Count should still be 1
+      expect(machine.getState().data.count).toBe(1);
+      
+      // Spy should have been called with count=1
+      expect(spy).toHaveBeenCalledWith(1);
     });
   });
 });
