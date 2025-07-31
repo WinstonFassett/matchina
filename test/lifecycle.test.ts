@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventApi, addEventApi } from "../src/factory-machine-event-api";
 import { onLifecycle } from "../src/factory-machine-lifecycle";
 import { createPromiseMachine } from "../src/promise-machine-impl";
+import { withReset } from "../src";
 
 describe("onLifecycle usage", () => {
   it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
@@ -23,17 +24,18 @@ describe("onLifecycle usage", () => {
     // Create machine WITHOUT a promise to drive it
     const api = eventApi(pm);
     // api.resolve(1)
-    const machine = Object.assign(addEventApi(pm), {
-      reset() {
-        console.log("resetting");
-        const before = machine.getChange();
-        machine.update({
-          from: before.to,
-          type: "reset",
-          to: machine.states.Idle(),
-        } as any);
-      },
-    });
+    // const machine = Object.assign(addEventApi(pm), {
+    //   reset() {
+    //     console.log("resetting");
+    //     const before = machine.getChange();
+    //     machine.update({
+    //       from: before.to,
+    //       type: "reset",
+    //       to: machine.states.Idle(),
+    //     } as any);
+    //   },
+    // });
+    const machine = withReset(addEventApi(pm), pm.states.Idle());
 
     const expectState = (state: string) =>
       expect(machine.getState().key).toBe(state);
