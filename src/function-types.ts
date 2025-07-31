@@ -1,6 +1,6 @@
 /**
  * Disposer is a function that undoes or cleans up an effect, enhancement, or subscription.
- * Commonly returned by {@link Setup} functions (see {@link createSetup}, {@link setup}, {@link buildSetup}) to restore original state.
+ * Commonly returned by {@link Setup} functions (see {@link createSetup}, {@link setup}) to restore original state.
  *
  * Disposer is a complement to a setup of some kind—whenever you initialize or enhance something, you should return a disposer to clean up.
  *
@@ -10,7 +10,7 @@ export type Disposer = () => void;
 
 /**
  * Setup is a function that initializes or enhances a target, returning a {@link Disposer} to clean up.
- * See {@link createSetup}, {@link setup}, {@link buildSetup} in setup.ts for setup patterns.
+ * See {@link createSetup}, {@link setup} in setup.ts for setup patterns.
  */
 export type Setup<T> = (target: T) => Disposer;
 
