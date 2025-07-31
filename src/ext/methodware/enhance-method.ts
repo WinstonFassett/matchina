@@ -36,46 +36,70 @@ const noop = () => {};
  * disposer(); // Restores original method
  * ```
  */
+function createEnhancedFunction<T, K extends keyof T>(
+  original: MethodOf<T, K>
+) {
+  type Enhancer = Funcware<MethodOf<T, K>>;
+  let enhancers: Enhancer[] = [];
+
+  const enhanced = function(this: any, ...args: any[]) {
+    let fn = (original.bind(this) as MethodOf<T, K>);
+    for (const enhancer of enhancers) {
+      fn = enhancer(fn) as MethodOf<T, K>;
+    }
+    return fn(...args);
+  } as MethodOf<T, K> & {
+    add: (enhancer: Enhancer) => void;
+    remove: (enhancer: Enhancer) => void;
+    has: (enhancer: Enhancer) => boolean;
+    enhancers: Enhancer[];
+    __original: MethodOf<T, K>;
+  };
+
+  enhanced.add = (enhancer: Enhancer) => {
+    enhancers.push(enhancer);
+  };
+  enhanced.remove = (enhancer: Enhancer) => {
+    const idx = enhancers.indexOf(enhancer);
+    if (idx !== -1) enhancers.splice(idx, 1);
+  };
+  enhanced.has = (enhancer: Enhancer) => enhancers.includes(enhancer);
+  enhanced.enhancers = enhancers;
+  enhanced.__original = original;
+
+  return enhanced;
+}
+
 export function enhanceMethod<T, K extends keyof T>(
   target: T,
   methodName: K,
   extend: Funcware<MethodOf<T, K>>
 ) {
-  type Enhancer = Funcware<MethodOf<T, K>>;
-  type EnhancedFn = MethodOf<T, K> & { __enhancers?: Enhancer[]; __original?: MethodOf<T, K> };
+  type EnhancedFn = MethodOf<T, K> & {
+    add: (enhancer: Funcware<MethodOf<T, K>>) => void;
+    remove: (enhancer: Funcware<MethodOf<T, K>>) => void;
+    has: (enhancer: Funcware<MethodOf<T, K>>) => boolean;
+    enhancers: Funcware<MethodOf<T, K>>[];
+    __original: MethodOf<T, K>;
+  };
 
   let current = target[methodName] as EnhancedFn;
-  let enhancers: Enhancer[];
-  let original: MethodOf<T, K>;
+  let enhanced: EnhancedFn;
 
-  if (typeof current === "function" && Array.isArray(current.__enhancers)) {
-    enhancers = current.__enhancers;
-    original = current.__original!;
+  if (typeof current === "function" && typeof current.add === "function") {
+    enhanced = current;
   } else {
-    enhancers = [];
-    original = current ?? (noop as MethodOf<T, K>);
-    const enhanced: EnhancedFn = function(this: any, ...args: any[]) {
-      let fn = (original.bind(this) as MethodOf<T, K>);
-      for (const enhancer of enhancers) {
-        fn = enhancer(fn) as MethodOf<T, K>;
-      }
-      return fn(...args);
-    } as EnhancedFn;
-    enhanced.__enhancers = enhancers;
-    enhanced.__original = original;
+    enhanced = createEnhancedFunction<T, K>(current ?? (noop as MethodOf<T, K>));
     target[methodName] = enhanced as any;
-    current = enhanced;
   }
 
-  enhancers.push(extend);
+  enhanced.add(extend);
 
-  // Return disposer that only removes this enhancer
+  // Return disposer that only removes this enhancer and restores original if none left
   return () => {
-    const idx = enhancers.indexOf(extend);
-    if (idx !== -1) enhancers.splice(idx, 1);
-    // If no enhancers left, restore original
-    if (enhancers.length === 0) {
-      target[methodName] = original;
+    enhanced.remove(extend);
+    if (enhanced.enhancers.length === 0) {
+      target[methodName] = enhanced.__original;
     }
   };
 }
