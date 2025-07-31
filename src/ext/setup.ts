@@ -32,7 +32,7 @@ export const createDisposer = (fns: DisposeFunc[]) => () => {
  * @function
  * Composes multiple setup functions into a single setup function.
  *
- * @example
+ * Usage:
  * ```ts
  * const extensionSetup = createSetup(...extensions);
  * extensionSetup(machine1); // applies all extensions to machine1
@@ -44,13 +44,6 @@ export const createDisposer = (fns: DisposeFunc[]) => () => {
  *
  * @param setups - Setup functions to compose
  * @returns A setup function that applies all setups to a target and returns a disposer
- * @source
- * This function is useful for creating a composite setup that can be applied to a target,
- * allowing for modular and reusable setup logic. It allows multiple setups to be combined into one,
- * making it easier to manage complex initialization logic in applications.
- * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
- * such as in state machines, event handlers, or other components that require setup and teardown logic
- *
  * @example
  * ```ts
  * const setupA = (target: any) => () => console.log('A cleanup');
@@ -59,6 +52,12 @@ export const createDisposer = (fns: DisposeFunc[]) => () => {
  * const dispose = extensionSetup({});
  * dispose(); // Logs 'B cleanup' then 'A cleanup'
  * ```
+* @source
+ * This function is useful for creating a composite setup that can be applied to a target,
+ * allowing for modular and reusable setup logic. It allows multiple setups to be combined into one,
+ * making it easier to manage complex initialization logic in applications.
+ * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
+ * such as in state machines, event handlers, or other components that require setup and teardown logic
  */
 export const createSetup: <T>(...setups: SetupFunc<T>[]) => SetupFunc<T> =
   (...setups) =>

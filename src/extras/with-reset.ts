@@ -27,7 +27,11 @@ export const resetMachine = <T extends StateMachine<any>>(
 
 /**
  * Creates a reset function for a state machine, resetting it to a given state.
- *
+ * Usage:
+ * ```ts
+ * const reset = createReset(machine, "Idle");
+ * reset(); // Resets the machine to the "Idle" state
+ * ```
  * @template T - Type of StateMachine
  * @param machine - The state machine instance
  * @param state - The state to reset to

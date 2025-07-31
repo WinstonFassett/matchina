@@ -57,7 +57,7 @@ export type Func<A = any, R = any> = (...args: A[]) => R;
  *
  * Used with {@link createMethodEnhancer} and {@link createMethodEnhancer} to create method middleware.
  *
- * Example:
+ * @example
  * ```typescript
  * const logWare: Funcware<Foo['foo']> = (x, y, z) => fn => {
  *   console.log('before', x, y, z);

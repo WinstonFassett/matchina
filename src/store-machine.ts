@@ -49,7 +49,7 @@ export type StoreTransitionRecord<T> = {
  * @property from - Previous value
  * @property to - Next value
  *
- * Example:
+ * Usage:
  * ```ts
  * { type: "increment", params: [2], from: 1, to: 3 }
  * ```
@@ -62,7 +62,18 @@ export interface StoreChange<T> {
 }
 /**
  * Creates a minimal, event-driven store machine for a single value.
- *
+ * 
+ * Usage:
+ * ```ts
+ * // Create a store
+ * const store = createStoreMachine<number>({
+ *   [type]: (...params) => value => replacementValue
+ * }, initalValue);
+ * // Use the store
+ * store.dispatch(actionType, ...params);
+ * store.getState() // Current value
+ * store.getChange() // Last change event
+ * ```
  * @param transitions - StoreTransitionRecord mapping event types to updater functions or values
  * @param initialValue - Initial value for the store
  * @returns A StoreMachine instance with event-driven update logic and lifecycle hooks

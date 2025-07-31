@@ -12,40 +12,29 @@ import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 
 /**
- * defineStates creates a type-safelve  state factory for your state machine.
- * Each key in the config becomes a state constructor, inferring parameters and data shape.
- *
- * Example:
- * ```typescript
- *   const states = defineStates({
- *     Idle: undefined,
- *     Loading: (query: string) => ({ query }),
- *     Success: (query: string, results: string[]) => ({ query, results }),
- *     Error: (query: string, message: string) => ({ query, message }),
- *   });
- * ```
- *
- * @example
- * ```typescript
- *   states.Idle().key // "Idle"
- *   states.Loading("search").data // { query: "search" }
- *   states.Success("search", ["a", "b"]).data // { query, results }
- * ```
- *
- * Type benefits:
- *   - State keys and data are fully inferred
- *   - Pattern matching and type guards are available
- *   - Exhaustive match on state keys
- *
- * @source This function is useful for creating a type-safe state factory for state machines,
- * enabling pattern matching, type guards, and exhaustive handling of state keys. It simplifies
- * state construction and improves type inference for state-driven logic.
- */
-
-/**
  * Creates a type-safe state machine from a state factory and transitions.
- *
- * Example:
+ * Usage:
+ * ```ts
+ * // Define states and create a machine
+ * const states = defineStates({...})
+ * const machine = createMachine(states, transition, initialState)
+ * // Setup machine with effects, guards, etc.
+ * setup(machine)(effect(...), guard(...))
+ * // Use the machine
+ * machine.send("eventName", ...params)
+ * machine.getState().match({
+ *   StateKey: (data) => { ... },
+ *   AnotherStateKey: (data) => { ... },
+ *   // ...
+ * })
+ * ```
+ * Type benefits:
+ *   - Transition types and event parameters are inferred from state factory
+ *   - State and event keys are autocompleted
+ *   - Pattern matching and type guards for states and events
+ *   - Exhaustive match on state and event keys
+ *   - API for sending events, inspecting state, and matching on state
+ * @example
  * ```typescript
  *   const machine = createMachine(
  *     states,
@@ -60,49 +49,12 @@ import { KeysWithZeroRequiredArgs } from "./utility-types";
  *     },
  *     "Idle"
  *   );
- * ```
- *
- * @example
- * ```typescript
  *   machine.send("search", "query")
  *   machine.getState().key // "Loading"
  *   machine.getState().match({
  *     Idle: () => ..., Loading: ({ query }) => ..., Success: ({ results }) => ..., Error: ({ message }) => ...
  *   })
  * ```
- *
- * Type benefits:
- *   - Transition types and event parameters are inferred from state factory
- *   - State and event keys are autocompleted
- *   - Pattern matching and type guards for states and events
- *   - Exhaustive match on state and event keys
- *   - API for sending events, inspecting state, and matching on state
- *
- * @source This function is useful for creating type-safe state machines with inferred transitions,
- * state and event keys, and pattern matching. It enables robust state-driven logic and exhaustive
- * handling of state and event transitions.
- */
-
-/**
- * Resolves the next state for a given event using the provided transitions and states.
- * @param transitions - Transition handlers for each state
- * @param states - State factory functions
- * @param ev - The event to resolve
- * @returns The next state instance or undefined if no transition exists
- * @source This function is useful for determining the next state in a state machine based on
- * the current state, event, and transition handlers. It enables dynamic state resolution and
- * transition logic.
- */
-
-/**
- * Resolves the exit state for a given transition and event.
- * @param transition - Transition handler or state key
- * @param ev - The event to resolve
- * @param states - State factory functions
- * @returns The resolved state instance or undefined
- * @source This function is useful for executing transition logic and resolving the resulting state
- * in a state machine. It supports both direct state transitions and transition handlers for flexible
- * state management.
  */
 export function createMachine<
   SF extends KeyedStateFactory,

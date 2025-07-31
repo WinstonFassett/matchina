@@ -36,6 +36,9 @@ export default defineConfig({
           typeDoc: {
             sort: "source-order",
             entryPointStrategy: "expand",
+            tableColumnSettings: {
+              hideSources: true
+            },
             blockTags: [
               "@deprecated",
               "@see",

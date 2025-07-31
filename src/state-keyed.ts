@@ -1,11 +1,9 @@
 /**
- * Represents a state object with a unique key.
- *
+ * Represents a state object with a unique key. *
  * @source
  * @see {@link defineStates} - for creating type-safe state factories (uses matchboxFactory)
  * @see {@link createMachine} - for building state machines from state factories
  * @see {@link FactoryMachine} - for the main state machine type
- *
  * These types are the underpinnings of the library, enabling type inference and state management
  * throughout factory machines. The implementation leverages matchbox factories for dynamic and type-safe
  * state construction and transitions.

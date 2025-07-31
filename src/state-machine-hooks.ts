@@ -92,7 +92,10 @@ export const guard = hookSetup("guard");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.update}.
  *
- * Usage: `setup(machine)(update(fn))`
+ * Usage: 
+ * ```ts
+ * setup(machine)(update(fn))
+ * ```
  */
 export const update = hookSetup("update");
 /**
