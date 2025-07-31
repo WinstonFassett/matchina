@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { match } from '../src/match-case';
+import { asFilterMatch, matchFilters } from '../src/match-filters';
 
 describe('match', () => {
   it('should match and execute the correct handler', () => {
@@ -98,5 +99,33 @@ describe('match', () => {
     expect(stringResult).toBe('string');
     expect(numberResult).toBe(123);
     expect(objectResult).toEqual({ key: 'value' });
+  });
+});
+
+describe('matchFilters', () => {
+  it('should match filters', () => {
+    const result = matchFilters(
+      { type: 'test', from: 'Idle', to: 'Pending' },
+      { type: 'test', from: 'Idle', to: 'Pending' }
+    );
+    expect(result).toBe(true);
+  });
+});
+
+describe('asFilterMatch', () => {
+  it('should match filters', () => {
+    const result = asFilterMatch(
+      { type: 'test', from: 'Idle', to: 'Pending' },
+      { type: 'test', from: 'Idle', to: 'Pending' }
+    );
+    expect(result).toEqual({ type: 'test', from: 'Idle', to: 'Pending' });
+  });
+  it('should throw an error when no match', () => {
+    expect(() => {
+      asFilterMatch(
+        { type: 'no-match-test', from: 'Idle', to: 'Pending' },
+        { type: 'test', from: 'Idle', to: 'Pending' }
+      );
+    }).toThrow("not a match");
   });
 });
