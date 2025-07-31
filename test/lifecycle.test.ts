@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { withLifecycle } from '../src/lifecycle';
-import { createMachine } from '../src/factory-machine';
+import { describe, expect, it } from 'vitest';
+import { transitionHooks } from '../src';
 import { defineStates } from '../src/define-states';
-import { guard, handle, before, update, leave, enter, effect, notify, after, hookSetup, transition } from '../src/state-machine-hooks';
 import { setup } from '../src/ext/setup';
-import { enhanceMethod } from '../src/ext/methodware/enhance-method';
-import { createMethodEnhancer, tap, transitionHooks } from '../src';
+import { createMachine } from '../src/factory-machine';
+import { onLifecycle } from '../src/factory-machine-lifecycle';
+import { withLifecycle } from '../src/lifecycle';
+import { after, before, effect, enter, guard, handle, leave, notify, update } from '../src/state-machine-hooks';
 
 function trackCalls() {
   const calls: string[] = [];
@@ -120,4 +120,31 @@ describe('Lifecycle for machine transitionHooks(...hooks)', () => {
     machine.send('start');
     expect(tracker.calls).toEqual(LIFECYCLE_PHASES);
   });
-})
+});
+
+describe('Lifecycle for onLifecycle', () => {
+  it('should call hooks in correct order for transition', () => {
+    const tracker = trackCalls();
+    const states = defineStates({ Idle: undefined, Active: undefined });
+    const machine = createMachine(
+      states,
+      { Idle: { start: 'Active' }, Active: {} },
+      'Idle'
+    );
+    onLifecycle(machine, {
+      '*': { on: {'*': {
+        guard: (ev) => { tracker.calls.push('guard'); return true; },
+        handle: (ev) => { tracker.calls.push('handle'); return ev; },
+        before: (ev) => { tracker.calls.push('before'); return ev; },
+        update: (ev) => { tracker.calls.push('update'); },
+        leave: (ev) => { tracker.calls.push('leave'); },
+        enter: (ev) => { tracker.calls.push('enter'); },
+        effect: (ev) => { tracker.calls.push('effect'); },
+        notify: (ev) => { tracker.calls.push('notify'); },
+        after: (ev) => { tracker.calls.push('after'); }
+      }}}
+    });
+    machine.send('start');
+    expect(tracker.calls).toEqual(LIFECYCLE_PHASES);
+  });
+});
