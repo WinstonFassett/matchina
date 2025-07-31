@@ -33,7 +33,7 @@ type Transform<I, O = I> = (source: I) => O;
 export const HookAdapters = {
   transition: funcwareFromMiddleware,
   update: funcwareFromMiddleware,
-  resolveExit: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
+  resolveExit: funcwareFromMiddleware,
   guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
   handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
   before: (abortware) => abortable(abortware),
