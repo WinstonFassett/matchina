@@ -4,7 +4,7 @@ import {
   FactoryMachineEvent,
   FactoryMachineTransitionEvent,
 } from "./factory-machine-types";
-import { Effect, Funcware, Middleware } from "./function-types";
+import { EffectFunc, Funcware, Middleware } from "./function-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 
 export type TransitionHookExtensions<E extends TransitionEvent> = {
@@ -15,12 +15,12 @@ export type TransitionHookExtensions<E extends TransitionEvent> = {
   guard: StateMachine<E>["guard"];
   handle: StateMachine<E>["handle"];
   before: AbortableEventHandler<E>;
-  effect: Effect<E>;
-  leave: Effect<E>;
-  enter: Effect<E>;
-  notify: Effect<E>;
-  after: Effect<E>;
-  end: Effect<E>;
+  effect: EffectFunc<E>;
+  leave: EffectFunc<E>;
+  enter: EffectFunc<E>;
+  notify: EffectFunc<E>;
+  after: EffectFunc<E>;
+  end: EffectFunc<E>;
 };
 
 type StateTransitionHooks<
@@ -48,7 +48,7 @@ export type StateHookConfig<FC extends FactoryMachineContext> = {
 
 export type StateEventHookConfig<E extends TransitionEvent<any, any>> =
   | Partial<TransitionHookExtensions<E>>
-  | Effect<E>;
+  | EffectFunc<E>;
 
 type On<
   FC extends FactoryMachineContext,

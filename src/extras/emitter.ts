@@ -1,6 +1,6 @@
-import { Effect, Setup } from "../function-types";
+import { EffectFunc, Setup } from "../function-types";
 
-type Listen<T> = Effect<T>;
+type Listen<T> = EffectFunc<T>;
 
 /**
  * @interface
@@ -14,7 +14,7 @@ type Listen<T> = Effect<T>;
  */
 export type Subscribe<T> = Setup<Listen<T>>;
 
-type Emit<T> = Effect<T>;
+type Emit<T> = EffectFunc<T>;
 
 /**
  * Creates a minimal pub/sub system for values of type T.

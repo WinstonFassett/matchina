@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Effect } from "../function-types";
+import { EffectFunc } from "../function-types";
 
 /**
  * React hook to subscribe a component to a machine's state changes.
@@ -19,7 +19,7 @@ export function useMachine<Change>(machine: {
     throw new Error("useMachine requires a machine instance");
   }
   const onSubscribe = useCallback(
-    (listener: Effect<Change>) => {
+    (listener: EffectFunc<Change>) => {
       const orig = machine.notify;
       const bound = orig.bind(machine);
       machine.notify = (ev) => {

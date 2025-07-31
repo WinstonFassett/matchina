@@ -1,4 +1,4 @@
-import { Effect } from "./function-types";
+import { EffectFunc } from "./function-types";
 
 const EmptyTransform = <E>(event: E) => event;
 const EmptyEffect = <E>(_event: E) => {};
@@ -50,13 +50,13 @@ export interface Lifecycle<E> {
 
 export function withLifecycle<T extends object = any, E = any>(
   target: T,
-  update: Effect<E>
+  update: EffectFunc<E>
 ): Lifecycle<E> & T {
   return createUpdateLifecycle(update, target);
 }
 
 function createUpdateLifecycle<E, T extends object = any>(
-  update: Effect<E>,
+  update: EffectFunc<E>,
   target: T = {} as any
 ): Lifecycle<E> & T {
   const lifecycle: Lifecycle<E> & T = Object.assign(target, {

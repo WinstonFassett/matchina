@@ -5,7 +5,7 @@
  *
  * Disposer is a complement to a setup of some kind—whenever you initialize or enhance something, you should return a disposer to clean up.
  *
- * Effects can also return disposers to clean up after themselves. See {@link Effect}.
+ * Effects can also return disposers to clean up after themselves. See {@link EffectFunc}.
  */
 export type Disposer = () => void;
 
@@ -20,7 +20,7 @@ export type Setup<T> = (target: T) => Disposer;
  * @interface
  * Effect is a function that reacts to an event or value, typically for side effects.
  */
-export type Effect<E> = (ev: E) => void;
+export type EffectFunc<E> = (ev: E) => void;
 
 /**
  * @interface
