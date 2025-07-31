@@ -90,10 +90,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
   const disposers = [] as Disposer[];
   for (const key in config) {
     const stateKey = key === "*" ? undefined : key;
-    const fromStateConfig = config[key as keyof typeof config];
-    if (!fromStateConfig) {
-      continue;
-    }
+    const fromStateConfig = config[key as keyof typeof config]!;
     const { on, enter, leave } = fromStateConfig;
     if (enter) {
       useFilteredEventConfigs(
@@ -115,9 +112,6 @@ export function onLifecycle<FC extends FactoryMachineContext>(
       for (const onKey in on) {
         const eventKey = onKey === "*" ? undefined : onKey;
         const eventConfig = on[onKey as keyof typeof on];
-        if (!eventConfig) {
-          continue;
-        }
         if (typeof eventConfig === "function") {
           // Direct entry handler: runs after leave, before effect
           useFilteredEventConfigs(
