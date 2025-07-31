@@ -5,7 +5,7 @@ import { createPromiseMachine } from "../src/promise-machine-impl";
 import { withReset } from "../src";
 
 describe("onLifecycle usage", () => {
-  it.only("should call guard, handle, and event hooks in lifecycle order", async () => {
+  it("should call guard, handle, and event hooks in lifecycle order", async () => {
     let didGuardReject = 0;
     let didGuardAccept = 0;
     let didBeforeExecute = 0;
