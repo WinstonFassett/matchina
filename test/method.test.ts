@@ -9,35 +9,35 @@ import { when } from "../src/extras/when";
 describe("enhanceFunction", () => {
   it("should enhance a function with additional behavior", () => {
     const originalFn = (x: number) => x * 2;
-    const enhancedFn = enhanceFunction(originalFn);
-    enhancedFn.add((next) => (x: number) => {
+    const enhancedFunc = enhanceFunction(originalFn);
+    enhancedFunc.add((next) => (x: number) => {
       return next(x + 1);
     });
-    enhancedFn.add((next) => (x: number) => {
+    enhancedFunc.add((next) => (x: number) => {
       return next(x * 3);
     });
-    expect(enhancedFn(2)).toBe(14); // ((2*3)+1) * 2
+    expect(enhancedFunc(2)).toBe(14); // ((2*3)+1) * 2
   });
   describe("result", () => {
     it("should return the original function result when no enhancements are applied", () => {
       const originalFn = (x: number) => x * 2;
-      const enhancedFn = enhanceFunction(originalFn);
-      expect(enhancedFn(3)).toBe(6);
+      const enhancedFunc = enhanceFunction(originalFn);
+      expect(enhancedFunc(3)).toBe(6);
     });
 
     it("should return the enhanced function result when enhancements are applied", () => {
       const originalFn = (x: number) => x * 2;
-      const enhancedFn = enhanceFunction(originalFn);
-      enhancedFn.add((next) => (x: number) => next(x + 1));
-      expect(enhancedFn(3)).toBe(8); // (3 + 1) * 2
+      const enhancedFunc = enhanceFunction(originalFn);
+      enhancedFunc.add((next) => (x: number) => next(x + 1));
+      expect(enhancedFunc(3)).toBe(8); // (3 + 1) * 2
     });
     it("has(enhancer) should return true if the enhancer is present and false if not", () => {
       const originalFn = (x: number) => x * 2;
-      const enhancedFn = enhanceFunction(originalFn);
+      const enhancedFunc = enhanceFunction(originalFn);
       const enhancer = (next: any) => (x: number) => next(x + 1);
-      enhancedFn.add(enhancer);
-      expect(enhancedFn.has(enhancer)).toBe(true);
-      expect(enhancedFn.has((next: any) => (x: number) => next(x + 2))).toBe(
+      enhancedFunc.add(enhancer);
+      expect(enhancedFunc.has(enhancer)).toBe(true);
+      expect(enhancedFunc.has((next: any) => (x: number) => next(x + 2))).toBe(
         false
       );
     });

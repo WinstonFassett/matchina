@@ -13,7 +13,7 @@ function composeFuncware<F extends Func>(
 const EnhancedSymbol = Symbol("enhancedFunction");
 export const isEnhancedFunction = <F extends Func>(
   fn: F
-): fn is EnhancedFn<F> => {
+): fn is EnhancedFunc<F> => {
   return typeof fn === "function" && EnhancedSymbol in fn;
 };
 
@@ -22,7 +22,7 @@ export const isEnhancedFunction = <F extends Func>(
  * It includes methods to add, remove, and check for enhancers,
  * as well as a reference to the original function.
  */
-export type EnhancedFn<F extends Func> = F & FuncEnhancer<F>;
+export type EnhancedFunc<F extends Func> = F & FuncEnhancer<F>;
 
 export interface FuncEnhancer<F extends Func>
 {

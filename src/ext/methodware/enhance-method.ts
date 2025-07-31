@@ -1,6 +1,6 @@
 import { Funcware } from "../../function-types";
 import {
-  EnhancedFn,
+  EnhancedFunc,
   enhanceFunction,
   isEnhancedFunction,
 } from "./enhance-function";
@@ -14,7 +14,7 @@ export function enhanceMethod<T, K extends keyof T>(
   extend: Funcware<MethodOf<T, K>>
 ) {
   const current = target[methodName] as MethodOf<T, K>;
-  let enhanced: EnhancedFn<MethodOf<T, K>>;
+  let enhanced: EnhancedFunc<MethodOf<T, K>>;
   if (isEnhancedFunction(current)) {
     enhanced = current;
   } else {
