@@ -90,32 +90,5 @@ export function createPromiseMachine<
     });
   }
 
-  machine.before = (ev) => {
-    if (ev.type === "executing") {
-      // Store the promise and params on the Pending state
-      // Already handled by execute method
-    }
-    if (ev.from.key === "Pending") {
-      currentPromise = undefined;
-      resolveCurrent = undefined;
-      rejectCurrent = undefined;
-    }
-    return ev;
-  };
-
-  machine.after = (ev) => {
-    if (ev.type === "resolve" && resolveCurrent) {
-      resolveCurrent(ev.params);
-      resolveCurrent = undefined;
-      rejectCurrent = undefined;
-    }
-    if (ev.type === "reject" && rejectCurrent) {
-      rejectCurrent(ev.params);
-      resolveCurrent = undefined;
-      rejectCurrent = undefined;
-    }
-    return ev;
-  };
-
   return Object.assign(machine, { execute });
 }
