@@ -1,11 +1,13 @@
 import { Func, Funcware } from "../../function-types";
 
-function composeFuncware<T extends (...args: any[]) => any>(
-  original: T,
-  funcwares: Array<Funcware<T>>
-): T {
-  // Use reduce for left-to-right composition
-  return funcwares.reduce((next, fw) => fw(next), original);
+function composeFuncware<F extends Func>(
+  original: F,
+  funcwares: Array<Funcware<F>>
+): F {
+  for (const fw of funcwares) {
+    original = fw(original);
+  }
+  return original as F;
 }
 
 export const EnhancedSymbol = Symbol("enhancedFunction");
@@ -59,7 +61,7 @@ export type EnhancedFn<F extends Func> = F & {
  */
 export function enhanceFunction<F extends Func>(original: F) {
   type Enhancer = Funcware<F>;
-  let enhancers: Enhancer[] = [];
+  const enhancers: Enhancer[] = [];
   let composed: F = original;
 
   function updateComposed() {
@@ -85,7 +87,7 @@ export function enhanceFunction<F extends Func>(original: F) {
     remove: (...toRemove: Enhancer[]) => {
       for (const enhancer of toRemove) {
         const idx = enhancers.indexOf(enhancer);
-        if (idx !== -1) enhancers.splice(idx, 1);
+        if (idx !== -1) { enhancers.splice(idx, 1); }
       }
       updateComposed();
     },

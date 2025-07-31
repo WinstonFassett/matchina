@@ -11,7 +11,7 @@ export function enhanceMethod<T, K extends keyof T>(
   methodName: K,
   extend: Funcware<MethodOf<T, K>>
 ) {
-  let current = target[methodName] as MethodOf<T, K>;
+  const current = target[methodName] as MethodOf<T, K>;
   let enhanced: EnhancedFn<MethodOf<T, K>>;
   if (isEnhancedFunction(current)) {
     enhanced = current;

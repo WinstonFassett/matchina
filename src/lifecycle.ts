@@ -73,7 +73,7 @@ function createUpdateLifecycle<E, T extends object = any>(
     notify: EmptyEffect,
     after: EmptyEffect,
     transition(ev: E) {
-      if (!lifecycle.guard(ev)) return;      
+      if (!lifecycle.guard(ev)) { return; }      
       let output = lifecycle.handle(ev);
       if (!output) {
         console.log("Transition aborted by handle", ev);
