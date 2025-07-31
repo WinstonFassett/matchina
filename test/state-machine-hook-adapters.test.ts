@@ -35,7 +35,7 @@ describe('state-machine-hook-adapters', () => {
     );
   }
 
-  describe.only('resolveExit', () => {
+  describe('resolveExit', () => {
     it('should allow custom resolution of exit state', () => {
       const machine = createTestMachine();
       const spy = vi.fn();
@@ -152,17 +152,16 @@ describe('state-machine-hook-adapters', () => {
       
       // Add before hook that aborts increment when count would be > 1
       setup(machine)(
-        before(ev => {
+        before((ev, abort) => {
           if (ev.type === 'increment') {
             // Get current count
             const currentCount = ev.from.data.count;
             // Abort if count is already 1 (simpler condition for testing)
             if (currentCount === 1) {
               spy(currentCount);
-              return true; // abort the transition
+              abort()
             }
           }
-          return false; // don't abort
         })
       );
 
