@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { enhanceMethod, createMethodEnhancer } from "../src/ext";
 import { when } from "../src/extras/when";
 
-describe("methodExtend", () => {
+describe("enhanceMethod", () => {
   it("should extend the method correctly", () => {
     const obj = {
       method: (value: string) => value.toUpperCase(),
@@ -34,9 +34,22 @@ describe("methodExtend", () => {
 
     expect(obj.method("hello")).toBe("HELLO");
   });
+
+  it("should use method stub if no method exists", () => {
+    const obj = {} as any;
+
+    enhanceMethod(obj, "method", (inner) => {
+      return (value: string) => {
+        const result = inner(value);
+        return result + "!";
+      };
+    });
+
+    expect(obj.method("hello")).toBe("undefined!");
+  });
 });
 
-describe("methodUse", () => {
+describe("createMethodEnhancer", () => {
   it("should extend the method correctly", () => {
     const obj = {
       method: (value: string) => value.toUpperCase(),

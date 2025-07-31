@@ -63,7 +63,7 @@ function createUpdateLifecycle<E, T extends object = any>(
     guard: EmptyGuard,
     handle: EmptyTransform,
     before: EmptyTransform,
-    update,
+    update: (ev:E) => update(ev),
     effect(ev: E) {
       lifecycle.leave(ev); // left previous
       lifecycle.enter(ev); // entered next

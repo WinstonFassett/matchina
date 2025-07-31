@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { defineStates } from "../src/define-states";
-import { createMachine, addEventApi } from "../src";
+import { createMachine, addEventApi, pure } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -144,3 +144,17 @@ describe("createMachine", () => {
   //   console.log({ mustBeThing });
   // });
 });
+
+describe("pure", () => {
+  it("should return only getState and send", () => {
+    const machine = makeMachine();
+    const pureMachine = pure(machine);
+    expect(pureMachine.getState).toBe(machine.getState);
+    expect(pureMachine.send).toBe(machine.send);
+    expect((pureMachine as any).getChange).toBeUndefined();
+    expect((pureMachine as any).update).toBeUndefined();
+    expect((pureMachine as any).api).toBeUndefined();
+    expect(Object.keys(pureMachine)).toEqual(["getState", "send"]);
+  });
+});
+  
