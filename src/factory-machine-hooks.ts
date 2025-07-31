@@ -18,8 +18,7 @@ import { matchChange } from "./match-change";
 import { ChangeEventKeyFilter } from "./match-change-types";
 import { hookSetup } from "./state-machine-hooks";
 
-// Strict config type for a single transition hook
-export type TransitionHookConfig<
+type TransitionHookConfig<
   FC extends FactoryMachineContext = FactoryMachineContext,
 > = Partial<ChangeEventKeyFilter<FactoryMachineEvent<FC>>> &
   Partial<{

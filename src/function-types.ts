@@ -1,4 +1,5 @@
 /**
+ * @interface
  * Disposer is a function that undoes or cleans up an effect, enhancement, or subscription.
  * Commonly returned by {@link Setup} functions (see {@link createSetup}, {@link setup}) to restore original state.
  *
@@ -9,28 +10,33 @@
 export type Disposer = () => void;
 
 /**
+ * @interface
  * Setup is a function that initializes or enhances a target, returning a {@link Disposer} to clean up.
  * See {@link createSetup}, {@link setup} in setup.ts for setup patterns.
  */
 export type Setup<T> = (target: T) => Disposer;
 
 /**
+ * @interface
  * Effect is a function that reacts to an event or value, typically for side effects.
  */
 export type Effect<E> = (ev: E) => void;
 
 /**
+ * @interface
  * Middleware is a function that intercepts an event and can pass it to the next handler.
  * Useful for chaining logic or modifying event flow.
  */
 export type Middleware<E> = (event: E, next: (event: E) => void) => void;
 
 /**
+ * @ignore
  * Func is a generic function type: (...args) => result.
  */
 export type Func<A = any, R = any> = (...args: A[]) => R;
 
 /**
+ * @interface
  * Funcware is a higher-order function type for enhancing or wrapping methods.
  *
  * Given a function type F, Funcware<F> is:
@@ -53,4 +59,4 @@ export type Func<A = any, R = any> = (...args: A[]) => R;
  * };
  * ```
  */
-export type Funcware<F extends (...params: any[]) => any> = (inner: F) => F;
+export type Funcware<F extends Func> = (inner: F) => F;

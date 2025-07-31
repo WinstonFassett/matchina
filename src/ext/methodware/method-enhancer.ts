@@ -3,6 +3,7 @@ import { enhanceMethod } from "./enhance-method";
 import { MethodOf, HasMethod } from "./method-utility-types";
 
 /**
+ * @interface
  * MethodEnhancer is a function that applies a Funcware enhancer to a method on a target object.
  *
  * Created by {@link createMethodEnhancer} or {@link methodEnhancer}.

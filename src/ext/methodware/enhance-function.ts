@@ -17,15 +17,22 @@ export const isEnhancedFunction = <F extends Func>(
   return typeof fn === "function" && EnhancedSymbol in fn;
 };
 
-export type EnhancedFn<F extends Func> = F & {
+/**
+ * Represents an enhanced function with additional capabilities.
+ * It includes methods to add, remove, and check for enhancers,
+ * as well as a reference to the original function.
+ */
+export type EnhancedFn<F extends Func> = F & FuncEnhancer<F>;
+
+export interface FuncEnhancer<F extends Func>
+{
   add: (...enhancer: Funcware<F>[]) => void;
   remove: (...enhancer: Funcware<F>[]) => void;
   has: (...enhancer: Funcware<F>[]) => boolean;
   enhancers: Funcware<F>[];
   __original: F;
   [EnhancedSymbol]: true;
-};
-
+}
 /**
  * Extends a method on a single target using funcware, allowing you to intercept and augment
  * the method's behavior. The funcware receives the original method and its parameters, and can

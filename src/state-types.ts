@@ -1,5 +1,13 @@
 import { MatchboxMemberApi, TaggedTypes } from "./matchbox-factory-types";
 
+/**
+ * @interface
+ * MatchboxMemberApi defines the API for a member of a Matchbox, providing access to its key and data.
+ * This is used to ensure type safety and consistency across Matchbox members.
+ *
+ * @template Specs - The specifications defining the structure of the Matchbox.
+ * @template Tag - The key type for the member.
+ */
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;

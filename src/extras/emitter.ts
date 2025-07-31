@@ -3,6 +3,7 @@ import { Effect, Setup } from "../function-types";
 type Listen<T> = Effect<T>;
 
 /**
+ * @interface
  * Subscribes a listener to receive emitted values.
  *
  * Returned by {@link emitter}.
