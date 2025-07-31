@@ -9,7 +9,7 @@ import { AbortableEventHandler } from "../abortable-event-handler";
  * - Preventing further processing if an abort condition is met
  *
  * @template E - The event type
- * @param abortable - An AbortableEventHandler that can signal abort
+ * @param handler - An AbortableEventHandler that can signal abort
  * @returns Funcware that wraps an event handler, aborting if signaled
  * @source This function is useful for scenarios where you want to conditionally prevent further
  * processing of an event, such as in middleware, guards, or cancellation logic. It integrates
@@ -26,11 +26,11 @@ import { AbortableEventHandler } from "../abortable-event-handler";
  * ```
  */
 export const abortable =
-  <E>(abortable: AbortableEventHandler<E>): Funcware<Func<E, any>> =>
+  <E>(handler: AbortableEventHandler<E>): Funcware<Func<E, any>> =>
   (inner) =>
   (ev) => {
     let aborted = false;
-    abortable(ev, () => {
+    handler(ev, () => {
       aborted = true;
     });
     if (!aborted) {
