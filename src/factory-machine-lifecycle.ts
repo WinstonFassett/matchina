@@ -1,6 +1,6 @@
 import { enhanceMethod, iff } from "./ext";
 import { createDisposer } from "./ext/setup";
-import { Disposer } from "./function-types";
+import { DisposeFunc } from "./function-types";
 import {
   FactoryMachine,
   FactoryMachineContext,
@@ -87,7 +87,7 @@ export function onLifecycle<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   config: StateHookConfig<FC>
 ) {
-  const disposers = [] as Disposer[];
+  const disposers = [] as DisposeFunc[];
   for (const key in config) {
     const stateKey = key === "*" ? undefined : key;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -140,7 +140,7 @@ function useFilteredEventConfigs<FC extends FactoryMachineContext>(
   machine: FactoryMachine<FC>,
   filter: ChangeEventKeyFilter<FactoryMachineEvent<FC>>,
   config: StateEventHookConfig<FactoryMachineEvent<FC>> | StateHookConfig<FC>,
-  d: Disposer[]
+  d: DisposeFunc[]
 ) {
   for (const phase in config) {
     const hook = config[phase as keyof typeof config];

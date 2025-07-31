@@ -1,4 +1,4 @@
-import { Disposer, SetupFunc } from "../function-types";
+import { DisposeFunc, SetupFunc } from "../function-types";
 
 /**
  * Returns a disposer function that runs an array of cleanup functions in reverse order.
@@ -22,7 +22,7 @@ import { Disposer, SetupFunc } from "../function-types";
  * disposeAll(); // Logs 'Cleanup 2' then 'Cleanup 1'
  * ```
  */
-export const createDisposer = (fns: Disposer[]) => () => {
+export const createDisposer = (fns: DisposeFunc[]) => () => {
   for (let i = fns.length - 1; i >= 0; i--) {
     fns[i]();
   }
@@ -96,6 +96,6 @@ export const createSetup: <T>(...setups: SetupFunc<T>[]) => SetupFunc<T> =
  * ```
  */
 export const setup =
-  <T>(target: T): ((...setups: SetupFunc<T>[]) => Disposer) =>
+  <T>(target: T): ((...setups: SetupFunc<T>[]) => DisposeFunc) =>
   (...setups: SetupFunc<T>[]) =>
     createDisposer(setups.map((fn) => fn(target)));

@@ -7,14 +7,14 @@
  *
  * Effects can also return disposers to clean up after themselves. See {@link EffectFunc}.
  */
-export type Disposer = () => void;
+export type DisposeFunc = () => void;
 
 /**
  * @interface
- * Setup is a function that initializes or enhances a target, returning a {@link Disposer} to clean up.
+ * Setup is a function that initializes or enhances a target, returning a {@link DisposeFunc} to clean up.
  * See {@link createSetup}, {@link setup} in setup.ts for setup patterns.
  */
-export type SetupFunc<T> = (target: T) => Disposer;
+export type SetupFunc<T> = (target: T) => DisposeFunc;
 
 /**
  * @interface

@@ -1,6 +1,6 @@
 import { createMethodEnhancer } from "./ext";
 import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
-import { Disposer } from "./function-types";
+import { DisposeFunc } from "./function-types";
 import type { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
@@ -17,7 +17,7 @@ export const hookSetup =
   ) =>
     createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
       target: T
-    ) => Disposer;
+    ) => DisposeFunc;
 
 /**
  * Composes two event handler functions for a state machine lifecycle method.

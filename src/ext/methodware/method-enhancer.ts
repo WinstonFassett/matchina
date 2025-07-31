@@ -1,4 +1,4 @@
-import { Disposer, Funcware } from "../../function-types";
+import { DisposeFunc, Funcware } from "../../function-types";
 import { enhanceMethod } from "./enhance-method";
 import { MethodOf, HasMethod } from "./method-utility-types";
 
@@ -14,7 +14,7 @@ import { MethodOf, HasMethod } from "./method-utility-types";
  */
 export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (
   target: T
-) => Disposer;
+) => DisposeFunc;
 
 /**
  * {@link methodEnhancer} is an alias for {@link createMethodEnhancer}.

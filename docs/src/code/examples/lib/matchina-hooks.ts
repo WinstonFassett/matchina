@@ -1,4 +1,4 @@
-import { type StateMatchbox, type Disposer, createDisposer } from "matchina";
+import { type StateMatchbox, type DisposeFunc, createDisposer } from "matchina";
 import { useEffect } from "react";
 import type { DisposableEffect } from "./disposable-effect";
 
@@ -11,7 +11,7 @@ export function useStateEffects<S extends StateMatchbox<string, any>>(
   useEffect(() => {
     const effects = getEffects(state);
     if (!effects) return;
-    const unsubs = [] as Disposer[];
+    const unsubs = [] as DisposeFunc[];
     for (const fn of effects) {
       const unsub = fn(state);
       if (unsub) {

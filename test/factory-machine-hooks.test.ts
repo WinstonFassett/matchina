@@ -9,7 +9,7 @@ import {
 import { createMachine } from "../src/factory-machine";
 import { defineStates } from "../src/define-states";
 import { setup } from "../src/ext/setup";
-import { Disposer } from "../src/function-types";
+import { DisposeFunc } from "../src/function-types";
 import { effect } from "../src/state-machine-hooks";
 import { when } from "../src/extras/when";
 
