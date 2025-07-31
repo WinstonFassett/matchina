@@ -1,5 +1,7 @@
+import { setup } from "../ext/setup";
 import { MatchCases } from "../match-case-types";
 import { TaggedTypes } from "../matchbox-factory-types";
+import { effect } from "../state-machine-hooks";
 import { EffectMatchbox, handleEffects } from "./effects";
 
 export function bindEffects<
@@ -11,13 +13,11 @@ export function bindEffects<
   matchers: MatchCases<EffectsConfig, any, Exhaustive>,
   exhaustive = false as Exhaustive
 ) {
-  const origEffect = machine.effect;
-  const machineEffects = origEffect.bind(machine);
-  machine.effect = (ev) => {
-    machineEffects(ev);
-    handleEffects(getEffects(ev.to), matchers, exhaustive);
-  };
-  return () => {
-    machine.effect = origEffect;
-  };
+  return setup(machine)(effect(ev => 
+    handleEffects(
+      getEffects(ev.to),
+      matchers,
+      exhaustive
+    )
+  ));
 }

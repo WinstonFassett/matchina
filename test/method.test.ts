@@ -1,6 +1,42 @@
 import { describe, it, expect, vi } from "vitest";
-import { enhanceMethod, createMethodEnhancer } from "../src/ext";
+import { enhanceMethod, createMethodEnhancer, enhanceFunction } from "../src/ext";
 import { when } from "../src/extras/when";
+
+describe("enhanceFunction", () => {
+  it("should enhance a function with additional behavior", () => {
+    const originalFn = (x: number) => x * 2;
+    const enhancedFn = enhanceFunction(originalFn);
+    enhancedFn.add((next) => (x: number) => {
+      return next(x + 1);
+    });
+    enhancedFn.add((next) => (x: number) => {
+      return next(x * 3);
+    });
+    expect(enhancedFn(2)).toBe(14); // ((2*3)+1) * 2
+  });
+  describe("result", () => {
+    it("should return the original function result when no enhancements are applied", () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFn = enhanceFunction(originalFn);
+      expect(enhancedFn(3)).toBe(6);
+    });
+
+    it("should return the enhanced function result when enhancements are applied", () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFn = enhanceFunction(originalFn);
+      enhancedFn.add((next) => (x: number) => next(x + 1));
+      expect(enhancedFn(3)).toBe(8); // (3 + 1) * 2
+    });
+    it('has(enhancer) should return true if the enhancer is present and false if not', () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFn = enhanceFunction(originalFn);
+      const enhancer = (next: any) => (x: number) => next(x + 1);
+      enhancedFn.add(enhancer);
+      expect(enhancedFn.has(enhancer)).toBe(true);
+      expect(enhancedFn.has((next: any) => (x: number) => next(x + 2))).toBe(false);
+    });
+  });
+})
 
 describe("enhanceMethod", () => {
   it("should extend the method correctly", () => {
