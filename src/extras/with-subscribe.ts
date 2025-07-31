@@ -15,10 +15,6 @@ import { SubscribeFunc, emitter } from "./emitter";
  * @template E - The event type handled by notify
  * @param target - The state machine to enhance
  * @returns The enhanced state machine with a subscribe method
- * @source This function is useful for scenarios where you want to allow external code to subscribe
- * to events or changes emitted by a state machine. It wraps the notify method to emit events to subscribers,
- * enabling reactive patterns and decoupled event handling.
- *
  * @example
  * ```ts
  * const machine = { notify: (ev: string) => undefined };
@@ -26,6 +22,10 @@ import { SubscribeFunc, emitter } from "./emitter";
  * enhanced.subscribe((ev: string) => console.log('Event:', ev));
  * enhanced.notify('test'); // Logs: 'Event: test'
  * ```
+ * @source This function is useful for scenarios where you want to allow external code to subscribe
+ * to events or changes emitted by a state machine. It wraps the notify method to emit events to subscribers,
+ * enabling reactive patterns and decoupled event handling.
+ * @see {@link emitter} for the underlying pub/sub implementation
  */
 export const withSubscribe = <
   T extends Pick<StateMachine<any>, "notify">,

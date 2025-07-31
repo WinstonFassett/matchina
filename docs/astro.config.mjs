@@ -32,11 +32,19 @@ export default defineConfig({
           entryPoints: ["../src/index.ts"],
           tsconfig: "../tsconfig.typedoc.json",
           output: "reference",
-
+          watch: true,
           typeDoc: {
+            sort: "source-order",
             entryPointStrategy: "expand",
-            blockTags: ["@deprecated", "@source", "@example"],
-            blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
+            blockTags: [
+              "@deprecated",
+              "@see",
+              "@example",
+              "@parameters",
+              "@typeParameters",
+              "@source", 
+            ],
+            // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
             excludeInternal: true,
             categorizeByGroup: false,

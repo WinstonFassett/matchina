@@ -14,7 +14,8 @@ export type SubscribeFunc<T> = SetupFunc<EffectFunc<T>>;
 
 /**
  * Creates a minimal pub/sub system for values of type T.
- * @example
+ *
+ * Usage:
  * ```ts
  *   const [subscribe, emit] = emitter<number>();
  *   const unsub = subscribe((v) => console.log(v));

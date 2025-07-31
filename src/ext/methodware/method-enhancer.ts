@@ -26,7 +26,7 @@ export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (
 /**
  * Creates a MethodEnhancer for a method on a target object.
  *
- * Usage:
+ * @example
  * 1. Call with the method name to match (string key).
  * 2. Call with a {@link Funcware} to wrap/enhance the method.
  * 3. Call the resulting enhancer with your target object.

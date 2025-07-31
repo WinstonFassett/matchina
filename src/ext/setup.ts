@@ -32,7 +32,7 @@ export const createDisposer = (fns: DisposeFunc[]) => () => {
  * @function
  * Composes multiple setup functions into a single setup function.
  *
- * Usage:
+ * @example
  * ```ts
  * const extensionSetup = createSetup(...extensions);
  * extensionSetup(machine1); // applies all extensions to machine1
@@ -68,7 +68,7 @@ export const createSetup: <T>(...setups: SetupFunc<T>[]) => SetupFunc<T> =
 /**
  * Returns a function that applies multiple setups to a specific target and returns a disposer for all.
  *
- * Usage:
+ * @example
  *   const machine1Setup = setup(machine1);
  *   machine1Setup(...extensions); // applies extensions to machine1
  *   machine1Setup(anotherExtension); // can be called again for more setups

@@ -6,7 +6,7 @@ import { ReturnedStates } from "./state-types";
  * `defineStates` creates a type-safe state factory for your state machine.
  * Each key in the config becomes a state constructor, inferring parameters and data shape.
  *
- * Example:
+ * @example
  * ```typescript
  *   const states = defineStates({
  *     Idle: undefined,
@@ -14,10 +14,8 @@ import { ReturnedStates } from "./state-types";
  *     Success: (query: string, results: string[]) => ({ query, results }),
  *     Error: (query: string, message: string) => ({ query, message }),
  *   });
- * ```
  *
- * Usage:
- * ```typescript
+ *   // Usage:
  *   states.Idle().key // "Idle"
  *   states.Loading("search").data // { query: "search" }
  *   states.Success("search", ["a", "b"]).data // { query, results }

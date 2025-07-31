@@ -21,6 +21,9 @@ export const isEnhancedFunction = <F extends Func>(
  * Represents an enhanced function with additional capabilities.
  * It includes methods to add, remove, and check for enhancers,
  * as well as a reference to the original function.
+ * @see {@link enhanceFunction}, {@link enhanceMethod} and {@link createMethodEnhancer} for creating enhanced functions.
+ * @see {@link isEnhancedFunction} for checking if a function is enhanced.
+ * 
  */
 export type EnhancedFunc<F extends Func> = F & FuncEnhancer<F>;
 
@@ -37,7 +40,14 @@ export interface FuncEnhancer<F extends Func>
  * Extends a method on a single target using funcware, allowing you to intercept and augment
  * the method's behavior. The funcware receives the original method and its parameters, and can
  * return a new value or modify the call.
- *
+ * 
+ * Usage:
+ * ```ts
+ * const disposer = enhanceMethod(obj, 'greet', (next) => (name) => {
+ *   console.log('Calling greet with', name);
+ *   return next(name);
+ * });
+ * ```
  * This function does not return the enhanced method itself. Instead, it replaces the method on
  * the target object and returns a disposer function that restores whatever was there before.
  *
@@ -49,7 +59,8 @@ export interface FuncEnhancer<F extends Func>
  * @param methodName - The name of the method to enhance
  * @param extend - Funcware (enhancer) that receives the original method and params
  * @returns A disposer function that restores the previous method when called
- * @source This function is useful for dynamically extending or wrapping methods on objects,
+ * 
+ * This function is useful for dynamically extending or wrapping methods on objects,
  * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,
  * plugin, or extension systems where you want to intercept method calls and restore the original
  * implementation when no longer needed.
@@ -105,5 +116,5 @@ export function enhanceFunction<F extends Func>(original: F) {
     enhancers,
     __original: original,
     [EnhancedSymbol]: true,
-  });
+  }) as EnhancedFunc<F>;
 }
