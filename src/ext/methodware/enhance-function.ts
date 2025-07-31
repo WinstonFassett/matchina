@@ -10,7 +10,7 @@ function composeFuncware<F extends Func>(
   return original as F;
 }
 
-export const EnhancedSymbol = Symbol("enhancedFunction");
+const EnhancedSymbol = Symbol("enhancedFunction");
 export const isEnhancedFunction = <F extends Func>(
   fn: F
 ): fn is EnhancedFn<F> => {
