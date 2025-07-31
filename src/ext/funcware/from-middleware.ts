@@ -71,6 +71,6 @@ export function funcwareFromMiddleware<E>(
   middleware: Middleware<E>
 ): Funcware<(change: E) => void> {
   return (next) => (ev) => {
-    middleware(ev, next);
+    return middleware(ev, next);
   };
 }
