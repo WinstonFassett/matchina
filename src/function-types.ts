@@ -27,7 +27,7 @@ export type EffectFunc<E> = (ev: E) => void;
  * Middleware is a function that intercepts an event and can pass it to the next handler.
  * Useful for chaining logic or modifying event flow.
  */
-export type Middleware<E> = (event: E, next: (event: E) => void) => void;
+export type MiddlewareFunc<E> = (event: E, next: (event: E) => void) => void;
 
 /**
  * @ignore

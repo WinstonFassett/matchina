@@ -1,6 +1,6 @@
 import { abortable, tap } from "./ext";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
-import { EffectFunc, Func, Funcware, Middleware } from "./function-types";
+import { EffectFunc, Func, Funcware, MiddlewareFunc } from "./function-types";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { combineGuards, composeHandlers } from "./state-machine-hooks";
 import { funcwareFromMiddleware } from "./ext/funcware/from-middleware";
@@ -9,11 +9,11 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
   [key: string]: Func;
 } & {
   transition: (
-    middleware: Middleware<E>
+    middleware: MiddlewareFunc<E>
   ) => Funcware<StateMachine<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
+  update: (middleware: MiddlewareFunc<E>) => Funcware<StateMachine<E>["update"]>;
   resolveExit: (
-    middleware: Middleware<E>
+    middleware: MiddlewareFunc<E>
   ) => Funcware<StateMachine<E>["resolveExit"]>;
   guard: (
     guardFn: StateMachine<E>["guard"]

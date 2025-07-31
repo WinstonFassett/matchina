@@ -1,4 +1,4 @@
-import { Middleware, Funcware } from "../../function-types";
+import { MiddlewareFunc, Funcware } from "../../function-types";
 
 // #endregion
 // const machineHook =
@@ -68,7 +68,7 @@ import { Middleware, Funcware } from "../../function-types";
  * ```
  */
 export function funcwareFromMiddleware<E>(
-  middleware: Middleware<E>
+  middleware: MiddlewareFunc<E>
 ): Funcware<(change: E) => void> {
   return (next) => (ev) => {
     return middleware(ev, next);
