@@ -60,7 +60,12 @@ describe('createStoreMachine', () => {
         birthday: () => (change) => ({
           ...change.from,
           age: change.from.age + 1
-        })
+        }),
+
+        doNothing: (msg: string) => (change) => {
+          console.log(msg);
+          return undefined as unknown as typeof change.from
+        }
       }
     );
     
@@ -76,6 +81,10 @@ describe('createStoreMachine', () => {
     // Use a simple transition
     store.dispatch('birthday');
     expect(store.getState()).toEqual({ name: 'Bob', age: 32 });
+    
+    const stateBefore = store.getState();
+    store.dispatch('doNothing', 'hello');
+    expect(store.getState()).toEqual(stateBefore);
   });
 
   it('should provide change information in transitions', () => {
