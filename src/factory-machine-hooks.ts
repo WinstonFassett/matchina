@@ -47,14 +47,14 @@ export function transitionHook<FC extends FactoryMachineContext>(
   config: TransitionHookConfig<FC>
 ) {
   const { from, to, type, ...hooks } = config;
+  const filter = { from, to, type } as ChangeEventKeyFilter<FactoryMachineEvent<FC>>
   return (machine: any) => {
     return createDisposer(Object.entries(hooks).map(([hookKey, fn]) => {
       return hookSetup(hookKey)(
-        when((ev: FactoryMachineEvent<FC>) => {
-          return matchChange(ev, { from, to, type } as ChangeEventKeyFilter<
-            FactoryMachineEvent<FC>
-          >);
-        }, fn)
+        (ev: FactoryMachineEvent<FC>) => {
+          if (matchChange(ev, filter)) { return fn(ev); }
+          return ev;
+        },
       )(machine);
     }));
   };
