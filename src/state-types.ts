@@ -23,8 +23,9 @@ type StateData<Spec> = Spec extends (...args: any[]) => any
   : Spec;
 
 /**
- * Utility type for extracting state creator functions from a set of tagged types.
- *
+ * Utility type for 
+ * 1) extracting the returned state types from a keyed state factory.
+ * 2) extracting the returned payloads from DataSpecs
  * This is a type-level helper for state machine construction: given a tagged type spec (mapping state keys to factory functions or values),
  * `States<Specs>` produces an object type where each key maps to its corresponding state creator function.
  *
@@ -37,7 +38,7 @@ type StateData<Spec> = Spec extends (...args: any[]) => any
  *   Active: (user: string) => { user: string };
  * };
  *
- * type MyStates = States<MySpecs>;
+ * type MyStates = ReturnedStates<MySpecs>;
  * // MyStates = {
  * //   Idle: () => StateMatchbox<'Idle', MySpecs>;
  * //   Active: (user: string) => StateMatchbox<'Active', MySpecs>;
