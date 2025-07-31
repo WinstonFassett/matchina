@@ -1,5 +1,5 @@
 import type { StateMachine } from "../state-machine";
-import { Subscribe, emitter } from "./emitter";
+import { SubscribeFunc, emitter } from "./emitter";
 
 /**
  * Enhances a StateMachine with a subscribe method for event notifications.
@@ -31,7 +31,7 @@ export const withSubscribe = <
   T extends Pick<StateMachine<any>, "notify">,
   E extends Parameters<T["notify"]>[0],
 >(
-  target: T & Partial<{ subscribe: Subscribe<E> }>
+  target: T & Partial<{ subscribe: SubscribeFunc<E> }>
 ) => {
   if (!target.subscribe) {
     const notify = target.notify.bind(target);

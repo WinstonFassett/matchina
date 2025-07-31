@@ -12,7 +12,7 @@ type Listen<T> = EffectFunc<T>;
  * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
-export type Subscribe<T> = Setup<Listen<T>>;
+export type SubscribeFunc<T> = Setup<Listen<T>>;
 
 type Emit<T> = EffectFunc<T>;
 
@@ -30,7 +30,7 @@ type Emit<T> = EffectFunc<T>;
  */
 export const emitter = <T>(
   listeners = [] as Listen<T>[]
-): [Subscribe<T>, Emit<T>, Listen<T>[]] => [
+): [SubscribeFunc<T>, Emit<T>, Listen<T>[]] => [
   (listener: Listen<T>) => {
     listeners.push(listener);
     return () => {
