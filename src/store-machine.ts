@@ -1,4 +1,4 @@
-import { EventLifecycle, withLifecycle } from "./lifecycle";
+import { EventLifecycle, withLifecycle } from "./event-lifecycle";
 import {
   ExtractStoreParams,
   CurriedTransition,

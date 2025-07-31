@@ -4,7 +4,7 @@ import { defineStates } from "../src/define-states";
 import { setup } from "../src/ext/setup";
 import { createMachine } from "../src/factory-machine";
 import { onLifecycle } from "../src/factory-machine-lifecycle";
-import { withLifecycle } from "../src/lifecycle";
+import { withLifecycle } from "../src/event-lifecycle";
 import {
   after,
   before,

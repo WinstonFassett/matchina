@@ -6,7 +6,7 @@ import {
   FactoryMachineTransition,
   FactoryMachineTransitions,
 } from "./factory-machine-types";
-import { withLifecycle } from "./lifecycle";
+import { withLifecycle } from "./event-lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";

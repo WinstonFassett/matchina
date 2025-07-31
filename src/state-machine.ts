@@ -1,4 +1,4 @@
-import { EventLifecycle } from "./lifecycle";
+import { EventLifecycle } from "./event-lifecycle";
 import { ResolveEvent } from "./state-machine-types";
 
 /**

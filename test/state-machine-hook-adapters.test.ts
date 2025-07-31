@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { setup } from "../src/ext/setup";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
-import { withLifecycle } from "../src/lifecycle";
+import { withLifecycle } from "../src/event-lifecycle";
 import {
   guard,
   handle,
