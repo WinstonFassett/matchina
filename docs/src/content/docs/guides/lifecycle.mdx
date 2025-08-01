@@ -1,56 +1,92 @@
 ---
 title: Lifecycle
+description: Machine transition lifecycle
 ---
-import {LifecycleDemo} from '@components/LifecycleDemo';
 
-<LifecycleDemo client:visible />
+import Mermaid from "../../../components/Mermaid";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-Code:
+# Transition Flow: Lifecycle Hooks
 
-```tsx
-onLifecycle(machine, {
-  Idle: {
-    on: {
-      execute: {
-        after: ({ type, from, to }) => {
-          console.log(
-            "Specific state and event:\n",
-            type, // MUST equal and autocomplete to 'execute'
-            "from", from.key, // MUST equal and autocomplete to 'Idle'
-            "to", to.key, // MUST equal and autocomplete to 'Pending'
-          )
-        },
-      },
-    },
-  },
-  "*": {
-    on: {
-      "*": {
-        after: ({ type, from, to }) => {
-          console.log(
-            "any state with any event:\n",
-            type, // any valid event b/c wildcard event
-            "from", from.key, // any valid state b/c wildcard state
-            "to", to.key, // any valid exit state (which excludes Idle)
-            "with data", to.data, // any valid state data b/c wildcard state
-          )
-        },
-      },
-      reject: {
-        after: ({ type, from, to }) => {
-          const { name, stack, message } = to.data // can only be Error type
-          console.log(
-            "Any reject event:\n",
-            type, // MUST be 'reject'
-            "from", from.key, // any valid state b/c wildcard state
-            "with data", from.data, // any valid state data b/c wildcard state
-            "to", to.key, // MUST equal and autocomplete to 'Rejected'
-            "Error", name, message, stack, // Error properties
-          )
-        },
-      },
-    },
-  },
-})
-```
+All machine types implement the same generic [EventLifecycle](/reference/interfaces/eventlifecycle) and hook methods for consistency. This allows you to use the same patterns across different machine types, whether you're using a [FactoryMachine](/guides/machines), a [StateMachine](/guides/state-machine-interface), or a [StoreMachine](/reference/interfaces/storemachine/).
 
+When you call `machine.send(type, ...params)`, the following flow occurs:
+
+<div className="flex flex-col sm:flex-row gap-8 items-start">
+ <div className="flex-1 min-w-[260px] p-4">
+    {/*
+      Markdown content starts here
+    */}
+    ## Step-by-step
+
+    ### 1. **`send`**
+
+    Called with an event type and parameters.
+
+    ### 2. **`resolveExit`**
+
+    Determines the target state for the event.
+
+    ### 3. **`guard`**
+
+    Checks if the transition is allowed.
+
+       - If `false`, exit early.
+    ### 4. **`handle`**
+
+    First opportunity to process the event.
+
+       - If returns `undefined`, exit early.
+    ### 5. **`before`**
+
+    Called before the state change.
+
+       - If returns `undefined`, exit early.
+    ### 6. **`update`**
+
+    Updates the internal state.
+
+    ### 7. **`effect`**
+
+    Runs side effects.
+
+    ### 8. **`leave`**
+
+    Called when leaving the previous state.
+
+    ### 9. **`enter`**
+
+    Called when entering the new state.
+
+    ### 10. **`notify`**
+
+    Notifies subscribers.
+
+    ### 11. **`after`**
+
+    Final hook after transition completes.
+
+    ## Early exits
+
+    - If `guard` returns `false`, or `handle`/`before` return `undefined`, the transition stops and no further steps run.
+
+  </div>
+  <div className="flex-1 min-w-[260px] rounded-lg p-4 bg-gray-100 dark:bg-gray-800">
+      <Mermaid client:only="react" content={`flowchart TD
+        S[send] --> R[resolveExit]
+        R --> G{guard}
+        G -- false --> X[exit]
+        G -- true --> H{handle}
+        H -- undefined --> X
+        H -- value --> B{before}
+        B -- undefined --> X
+        B -- value --> U[update]
+        U --> E[effect]
+        E --> L[leave]
+        L --> N[enter]
+        N --> O[notify]
+        O --> A[after]
+      `} />
+  </div>
+ 
+</div>

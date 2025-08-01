@@ -1,0 +1,73 @@
+---
+title: Checkout Flow
+description: Multi-step checkout process with cart, shipping, and payment
+---
+
+import CheckoutExample from "@code/examples/checkout/example";
+import typesCode from "@code/examples/checkout/types.ts?raw";
+import statesCode from "@code/examples/checkout/states.ts?raw";
+import machineCode from "@code/examples/checkout/machine.ts?raw";
+import formsCode from "@code/examples/checkout/forms.tsx?raw";
+import viewCode from "@code/examples/checkout/CheckoutView.tsx?raw";
+import indexCode from "@code/examples/checkout/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A complete e-commerce checkout flow demonstrating multi-step form management with state machines. This example shows how to handle cart management, shipping information, payment processing, and order completion.
+
+<div className="not-content">
+  <CheckoutExample client:only="react" />
+</div>
+
+## Implementation Details
+
+This checkout flow demonstrates several key state machine patterns:
+
+- **Multi-step workflow** - Cart → Shipping → Payment → Processing → Success/Failure
+- **Form state management** - Input validation and data persistence across steps
+- **Async processing** - Simulated payment processing with success/failure scenarios
+- **Error handling** - Graceful error states with retry capabilities
+- **Navigation controls** - Back/forward navigation between checkout steps
+
+The demo includes sample cart items and simulates payment processing with a 70% success rate.
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "types.ts", code: typesCode },
+    { name: "states.ts", code: statesCode },
+    { name: "machine.ts", code: machineCode },
+    { name: "forms.tsx", code: formsCode },
+    { name: "CheckoutView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## How It Works
+
+The checkout flow uses a single state machine to manage the entire process:
+
+1. **Cart State** - Display items and total, allow proceeding to shipping
+2. **Shipping State** - Collect shipping address with validation
+3. **Payment State** - Collect payment information and display order summary
+4. **Processing State** - Handle async payment processing with loading state
+5. **Success/Failed States** - Show completion status with appropriate actions
+
+Each state maintains the necessary data and provides clear navigation options, ensuring users can only perform valid actions at each step.
+
+## Benefits of State Machine Checkout
+
+Using a state machine for checkout flows provides several advantages:
+
+1. **Clear Progress** - Users always know where they are in the process
+2. **Data Persistence** - Form data is preserved when navigating between steps
+3. **Error Recovery** - Failed payments can be retried without losing information
+4. **Validation** - Each step can validate data before allowing progression
+5. **Predictable Flow** - Impossible states are prevented by design
+
+## Next Steps
+
+This checkout example demonstrates practical state machine usage for e-commerce. You might want to explore:
+
+- [Authentication Flow](/examples/auth-flow) - User login and registration patterns
+- [State Effects Guide](/guides/effects) - Managing side effects and async operations

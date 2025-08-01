@@ -1,0 +1,42 @@
+---
+title: State Machine Interface
+description: Core interface definitions for Matchina state machines
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+import CodeBlock from "@components/CodeBlock.astro";
+import stateMachineCode from "@lib/src/state-machine-types.ts?raw";
+
+## What is a state machine?
+
+{/* At the heart of Matchina is a well-defined state machine interface that governs how state transitions occur and how events flow through the system. */}
+
+A minimal (pure) state machine in Matchina looks like this:
+
+```ts
+const { getState, send } = createMachine(states, transitions, initialState);
+```
+
+## How to Create a State Machine
+
+After first defining your states (i.e. by using `defineStates` or `matchboxFactory`), you can create a state machine using the `createMachine` for a minimal factory machine, or `matchina` for a machine wrapped with `assignEventApi`, giving it a convenience API for firing events.
+
+<CardGrid>
+  <LinkCard
+    title="📦 Create Machines"
+    href="./machines/"
+    description="Create state machines with `createMachine` or `matchina`"
+  />
+  <LinkCard
+    title="🔧 Machine Enhancers"
+    href="./machine-enhancers/"
+    description="Enhance your state machines with additional functionality" />
+
+</CardGrid>
+
+## Related Topics
+
+- [State Factory Machines](/guides/machines) - Create and configure complete state machines
+- [Lifecycle & Hooks](/guides/lifecycle) - Detailed guide to the lifecycle system
+- [Effects](/guides/effects) - Managing side effects in state machines

@@ -1,75 +1,48 @@
-import { HasMethod, MethodOf, abortable, tap, methodEnhancer, setup, enhanceMethod, Setup } from "./ext";
-import { AbortableEventHandler } from "./ext/abortable";
-import { Funcware } from "./ext/funcware/funcware";
-import { ChangeEventKeyFilter, matchChange } from "./match-change";
-import { HasFilterValues } from "./match-filters";
-import { StateMachineEvent, StateMachine } from "./state-machine";
-import { Effect, Middleware } from "./types";
-import { Func } from "./utility-types";
+import { createMethodEnhancer } from "./ext";
+import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
+import { DisposeFunc } from "./function-types";
+import type { StateMachine, TransitionEvent } from "./state-machine";
+import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
-// #region Adapters
-export type Adapters<E extends StateMachineEvent = StateMachineEvent> = {
-  [key: string]: Func;
-} & {
-  transition: (middleware: Middleware<E>) => Funcware<StateMachine<E>["transition"]>;
-  update: (middleware: Middleware<E>) => Funcware<StateMachine<E>["update"]>;
-  resolve: <F extends StateMachine<E>["resolve"]>(resolveFn: F) => Funcware<F>;
-  guard: (
-    guardFn: StateMachine<E>["guard"],
-  ) => Funcware<StateMachine<E>["guard"]>;
-  handle: (
-    handleFn: StateMachine<E>["handle"],
-  ) => Funcware<StateMachine<E>["handle"]>;
-  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
-  leave: Transform<Effect<E>, Funcware<Effect<E>>>;
-  after: Transform<Effect<E>, Funcware<Effect<E>>>;
-  enter: Transform<Effect<E>, Funcware<Effect<E>>>;
-  effect: Transform<Effect<E>, Funcware<Effect<E>>>;
-  notify: Transform<Effect<E>, Funcware<Effect<E>>>;
-};
-type Transform<I, O = I> = (source: I) => O;
-
-export const HookAdapters = {
-  transition: middlewareToFuncware,
-  update: middlewareToFuncware,
-  resolve: (resolveFn) => (next) => (ev) => resolveFn(ev) ?? next(ev),
-  guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
-  handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
-  before: (abortware) => abortable(abortware),
-  leave: tap,
-  after: tap,
-  enter: tap,
-  effect: tap,
-  notify: tap,
-} as Adapters;
-// #endregion
-
-const machineHook =
-  <K extends string & keyof Adapters>(key: K) =>
-  <T extends HasMethod<K>>(machine: T, fn: MethodOf<T, K>) =>
-    methodEnhancer<K>(key)(HookAdapters[key](fn))(machine);
-
-const hookSetup =
+/**
+ * Creates a lifecycle hook enhancer for a given StateMachine method key.
+ * Returns a function that applies the hook and provides a disposer to remove it.
+ *
+ * Usage: `hookSetup("before")(config)(machine)`
+ */
+export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
   <T extends HasMethod<K>>(
     ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
   ) =>
-    methodEnhancer<K>(key)(HookAdapters[key](...config)) as (
-      target: T,
-    ) => () => void;
+    createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
+      target: T
+    ) => DisposeFunc;
 
-const composeHandlers =
-  <E extends StateMachineEvent>(
+/**
+ * Composes two event handler functions for a state machine lifecycle method.
+ * The inner handler runs first, then the outer handler receives its result.
+ *
+ * Usage: `composeHandlers(outer, inner)(event)`
+ */
+export const composeHandlers =
+  <E extends TransitionEvent>(
     outer: (value: E) => E | undefined,
-    inner: (value: E) => E | undefined,
+    inner: (value: E) => E | undefined
   ): ((value: E) => E | undefined) =>
   (ev) =>
     outer(inner(ev) as any);
 
-const combineGuards =
-  <E extends StateMachineEvent>(
+/**
+ * Combines two guard functions for a state machine transition.
+ * Both guards must return true for the transition to proceed.
+ *
+ * Usage: `combineGuards(first, next)(event)`
+ */
+export const combineGuards =
+  <E extends TransitionEvent>(
     first: (value: E) => boolean,
-    next: (value: E) => boolean,
+    next: (value: E) => boolean
   ): ((value: E) => boolean) =>
   (ev) => {
     const res = first(ev) && next(ev);
@@ -77,70 +50,108 @@ const combineGuards =
   };
 
 // #region Interceptors
-// export const send = methodHook("send");
+/**
+ * @function before
+ * Enhances the `before` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.before}.
+ *
+ * Usage: `setup(machine)(before(ev => {}))`
+ */
 export const before = hookSetup("before");
+/**
+ * @function transition
+ * Enhances the `transition` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.transition}.
+ *
+ * Usage: `setup(machine)(transition(middleware))`
+ */
 export const transition = hookSetup("transition");
-export const resolve = hookSetup("resolve");
+/**
+ * @function resolveExit
+ * Enhances the `resolveExit` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.resolveExit}.
+ *
+ * Usage: `setup(machine)(resolveExit(fn))`
+ */
+export const resolveExit = hookSetup("resolveExit");
+/**
+ * @function guard
+ * Enhances the `guard` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.guard}.
+ *
+ * Usage: `setup(machine)(guard(fn))`
+ */
 export const guard = hookSetup("guard");
+/**
+ * @function update
+ * Enhances the `update` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.update}.
+ *
+ * Usage: 
+ * ```ts
+ * setup(machine)(update(fn))
+ * ```
+ */
 export const update = hookSetup("update");
+/**
+ * @function handle
+ * Enhances the `handle` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.handle}.
+ *
+ * Usage: `setup(machine)(handle(fn))`
+ */
 export const handle = hookSetup("handle");
 // #endregion
 
 // #region Effects
+/**
+ * @function effect
+ * Enhances the `effect` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.effect}.
+ *
+ * Usage: `setup(machine)(effect(fn))`
+ */
 export const effect = hookSetup("effect");
+/**
+ * @function leave
+ * Enhances the `leave` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.leave}.
+ *
+ * Usage: `setup(machine)(leave(fn))`
+ */
 export const leave = hookSetup("leave");
+/**
+ * @function enter
+ * Enhances the `enter` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.enter}.
+ *
+ * Usage: `setup(machine)(enter(fn))`
+ */
 export const enter = hookSetup("enter");
+/**
+ * @function after
+ * Enhances the `after` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.after}.
+ *
+ * Usage: `setup(machine)(after(fn))`
+ */
 export const after = hookSetup("after");
+/**
+ * @function notify
+ * Enhances the `notify` lifecycle method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.notify}.
+ *
+ * Usage: `setup(machine)(notify(fn))`
+ */
 export const notify = hookSetup("notify");
-// #endregion
-
-export const onBefore = machineHook("before");
-export const onTransition = machineHook("transition");
-export const onResolve = machineHook("resolve");
-export const onGuard = machineHook("guard");
-export const onUpdate = machineHook("update");
-export const onHandle = machineHook("handle");
-export const onEffect = machineHook("effect");
-export const onLeave = machineHook("leave");
-export const onEnter = machineHook("enter");
-export const onAfter = machineHook("after");
-export const onNotify = machineHook("notify");
-
-export const change = <
-  E extends StateMachineEvent,
-  F extends ChangeEventKeyFilter<E>,
-  FE extends E & HasFilterValues<E,F>
->(
-  filter: F,
-  ...setups: Setup<StateMachine<
-    HasFilterValues<E,F>
-  >>[]
-) => {
-  return (machine: StateMachine<E>) => {
-    return enhanceMethod(machine, "transition", (next) => (ev) => {
-      const unsetup = matchChange(ev, filter)
-        ? setup(machine as unknown as StateMachine<FE>)(...setups)
-        : undefined;
-      const result = next(ev);
-      unsetup?.();
-      return result;
-    });
-  };
-};
-
-export const setupTransition = <
-  E extends StateMachineEvent,
-  F extends ChangeEventKeyFilter<E>
->(
-  machine: StateMachine<E>,
-  filter: F,
-  ...setups: Setup<StateMachine<
-    HasFilterValues<E,F>
-  >>[]
-) => change(filter, ...setups)(machine); 
-
-function middlewareToFuncware<E>(middleware: Middleware<E>): Funcware<(change: E) => void> {
-  return (next) => (ev) => {
-    middleware(ev, next);
-  };
-}

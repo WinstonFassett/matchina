@@ -1,15 +1,14 @@
 ---
-import StateMachineMermaidDiagram from "@lib/examples/MachineViz";
-import { getXStateDefinition } from "@lib/examples/StopwatchCommon";
-import { trafficLight } from "@lib/examples/TrafficLight";
-import { createFactoryMachine, defineStates } from "@lib/src";
+import StateMachineMermaidDiagram from "@components/MachineViz";
+import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xstate-definition";
+import { createMachine, defineStates, type FactoryMachine } from "matchina";
 
 const states = defineStates( {
   Idle: undefined,
   Foo: (foo: string) => ({ foo }),
   Bar: (bar: number) => ({ bar })
 })
-const machine = createFactoryMachine(
+const machine = createMachine(
   states, 
   {
     Idle: {
@@ -27,8 +26,8 @@ const machine = createFactoryMachine(
   }, 
   'Idle'
 )
-const config = getXStateDefinition(machine)
+const config = getXStateDefinition(machine as FactoryMachine<any>)
 
 ---
 
-<StateMachineMermaidDiagram config={config} stateKey="Idle" client:visible  />
+<StateMachineMermaidDiagram config={config} stateKey="Idle" client:only="react"  />

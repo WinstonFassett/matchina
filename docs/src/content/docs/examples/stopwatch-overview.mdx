@@ -1,0 +1,124 @@
+---
+title: Stopwatch Examples Overview
+description: Different approaches to implementing a stopwatch using Matchina state machines
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+# Stopwatch Examples
+
+The stopwatch examples demonstrate various approaches to implementing a common UI pattern - a stopwatch with start, stop, pause, and reset functionality. Each example showcases different Matchina features and React integration patterns.
+
+These examples provide a progression from simple to advanced implementations, each highlighting distinct aspects of Matchina's capabilities and React integration patterns.
+
+## Overview of Examples
+
+<CardGrid>
+  <LinkCard
+    title="Basic Stopwatch"
+    href="/examples/stopwatch/"
+    description="The foundational stopwatch implementation with clear state transitions"
+  />
+  <LinkCard
+    title="Stopwatch with Data and Hooks"
+    href="/examples/stopwatch-using-data-and-hooks/"
+    description="Uses state data and lifecycle hooks for time tracking"
+  />
+  <LinkCard
+    title="Stopwatch with Transition Functions"
+    href="/examples/stopwatch-using-data-and-transition-functions/"
+    description="Demonstrates function-based transitions for rich type inference"
+  />
+  <LinkCard
+    title="Stopwatch with React State and Effects"
+    href="/examples/stopwatch-using-react-state-and-effects/"
+    description="React-first implementation with native state management"
+  />
+  <LinkCard
+    title="Stopwatch with State Effects"
+    href="/examples/stopwatch-using-react-state-and-state-effects/"
+    description="Uses specialized utility hooks for effect management"
+  />
+  <LinkCard
+    title="Stopwatch with External React State"
+    href="/examples/stopwatch-using-external-react-state-and-state-effects/"
+    description="Demonstrates using React state outside the machine"
+  />
+  <LinkCard
+    title="Stopwatch with Lifecycle"
+    href="/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect/"
+    description="Uses onLifecycle hooks instead of useEffect"
+  />
+  <LinkCard
+    title="Stopwatch with Transition Hooks"
+    href="/examples/stopwatch-using-transition-hooks-instead-of-useeffect/"
+    description="Uses transition hooks instead of useEffect"
+  />
+
+</CardGrid>
+
+## Comparison of Approaches
+
+### State Management Approaches
+
+The stopwatch examples demonstrate three main approaches to managing state:
+
+1. **Internal Machine State**: Using the state machine's internal data to track elapsed time
+
+   - [Basic Stopwatch](/examples/stopwatch/) - Foundational approach with lifecycle hooks
+   - [Stopwatch with Data and Hooks](/examples/stopwatch-using-data-and-hooks/) - Clean implementation with when helper
+   - [Stopwatch with Transition Functions](/examples/stopwatch-using-data-and-transition-functions/) - Enhanced type safety with transition functions
+
+2. **React State**: Using React's useState to track elapsed time, with the machine managing only the mode
+
+   - [Stopwatch with React State and Effects](/examples/stopwatch-using-react-state-and-effects/) - React-first approach with useEffect
+   - [Stopwatch with State Effects](/examples/stopwatch-using-react-state-and-state-effects/) - Specialized effect hooks for cleaner code
+
+3. **External State**: Managing elapsed time in external React state that's synchronized with the machine
+   - [Stopwatch with External React State](/examples/stopwatch-using-external-react-state-and-state-effects/) - Demonstrates state management outside the machine
+   - [Stopwatch with Lifecycle](/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect/) - Declarative lifecycle API instead of useEffect
+
+### Effect Management Approaches
+
+The examples also showcase different approaches to handling side effects (especially the timer):
+
+1. **Lifecycle Hooks**: Using `enter`/`exit` hooks to manage the timer (`stopwatch`)
+2. **When Helper**: Using the `when` helper for conditional effects (`stopwatch-using-data-and-hooks`)
+3. **React useEffect**: Using React's useEffect with state dependencies (`stopwatch-using-react-state-and-effects`)
+4. **Specialized Effect Hooks**: Using `useStateEffects` and `useEventTypeEffect` (`stopwatch-using-react-state-and-state-effects`, `stopwatch-using-external-react-state-and-state-effects`)
+5. **onLifecycle API**: Using the declarative `onLifecycle` API (`stopwatch-using-react-state-using-lifecycle-instead-of-useeffect`)
+
+## Implementation Differences
+
+| Example                 | State Management  | Effect Management | Type Safety | Code Complexity |
+| ----------------------- | ----------------- | ----------------- | ----------- | --------------- |
+| Basic Stopwatch         | Machine Data      | Lifecycle Hooks   | Good        | Medium          |
+| Data and Hooks          | Machine Data      | When Helper       | Good        | Low             |
+| Transition Functions    | Machine Data      | When Helper       | Excellent   | Medium          |
+| React State and Effects | React useState    | React useEffect   | Good        | Low             |
+| State Effects           | React useState    | Effect Hooks      | Good        | Low             |
+| External React State    | External useState | Effect Hooks      | Good        | Medium          |
+| Lifecycle               | React useState    | onLifecycle API   | Excellent   | Medium          |
+
+## Recommended Example
+
+If you're new to Matchina, we recommend starting with the [Stopwatch with Data and Hooks](/examples/stopwatch-using-data-and-hooks/) example. It provides a clean implementation with good type safety and minimal complexity.
+
+For more advanced type safety, explore the [Stopwatch with Transition Functions](/examples/stopwatch-using-data-and-transition-functions/) example.
+
+For a React-focused approach, try the [Stopwatch with State Effects](/examples/stopwatch-using-react-state-and-state-effects/) example, which provides the cleanest integration with React's state management.
+
+## Redundant Examples?
+
+While we've provided multiple implementations to showcase different patterns, you might wonder which ones provide truly unique value:
+
+- The **Basic Stopwatch** and **Stopwatch with Data and Hooks** are similar, but the latter provides a cleaner implementation with the "when" helper.
+- The **React State and Effects** and **State Effects** examples are similar, but the latter uses specialized hooks for cleaner code.
+- The **External React State** and **Lifecycle** examples are similar, but the latter demonstrates the declarative lifecycle API.
+
+Each example has been carefully crafted to demonstrate a specific integration pattern or Matchina feature, but if you're looking for the most distinct implementations, focus on:
+
+1. [Stopwatch with Data and Hooks](/examples/stopwatch-using-data-and-hooks/) - Clean internal state approach
+2. [Stopwatch with Transition Functions](/examples/stopwatch-using-data-and-transition-functions/) - Best type safety
+3. [Stopwatch with State Effects](/examples/stopwatch-using-react-state-and-state-effects/) - React integration
+4. [Stopwatch with Lifecycle](/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect/) - Declarative lifecycle API

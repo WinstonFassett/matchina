@@ -1,20 +1,34 @@
-import { Funcware } from "../funcware/funcware";
+import { Funcware } from "../../function-types";
+import {
+  EnhancedFunc,
+  enhanceFunction,
+  isEnhancedFunction,
+} from "./enhance-function";
+import { MethodOf } from "./method-utility-types";
 
 const noop = () => {};
 
 export function enhanceMethod<T, K extends keyof T>(
   target: T,
   methodName: K,
-  extend: Funcware<MethodOf<T, K>>,
+  extend: Funcware<MethodOf<T, K>>
 ) {
-  const original = target[methodName] as MethodOf<T, K>;
-  target[methodName] = extend(((original ?? (noop as T)) as any).bind(target));
+  const current = target[methodName] as MethodOf<T, K>;
+  let enhanced: EnhancedFunc<MethodOf<T, K>>;
+  if (isEnhancedFunction(current)) {
+    enhanced = current;
+  } else {
+    const func = current ? current.bind(target) : noop;
+    enhanced = enhanceFunction(func as any);
+    target[methodName] = enhanced as MethodOf<T, K>;
+  }
+  enhanced.add(extend);
   return () => {
-    target[methodName] = original;
+    if (enhanced) {
+      enhanced.remove(extend);
+      if (enhanced.enhancers.length === 0) {
+        target[methodName] = enhanced.__original;
+      }
+    }
   };
 }
-export type MethodOf<T, K extends keyof T> = T[K] extends (
-  ...args: any[]
-) => any
-  ? T[K]
-  : never;

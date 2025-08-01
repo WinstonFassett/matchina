@@ -1,22 +1,24 @@
-import {
-  FactoryMachine,
-  FactoryMachineContext,
-  FactoryMachineTransitionEvent,
-} from "./factory-machine";
-import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
+import { FactoryMachine } from "./factory-machine-types";
+import { FactoryMachineApi, addEventApi } from "./factory-machine-api-types";
 
-export function createApi<
+/**
+ * Creates an API object for a FactoryMachine instance, providing event sender functions for each transition.
+ *
+ * @template M - Type of FactoryMachine
+ * @template K - Keys of machine transitions
+ * @param {M} machine - The machine instance to generate the API for
+ * @param {K} [filterStateKey] - Optional state key to filter transitions
+ * @returns {FactoryMachineApi<M>} An object mapping event keys to sender functions
+ */
+export function eventApi<
   M extends FactoryMachine<any>,
-  K extends keyof M["transitions"] = keyof M["transitions"]
->(
-  machine: M,
-  filterStateKey?: K
-): FactoryMachineApi<M> {
+  K extends keyof M["transitions"] = keyof M["transitions"],
+>(machine: M, filterStateKey?: K): FactoryMachineApi<M> {
   const { states, transitions } = machine;
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {
-      return machine.send(eventKey, ...(params as any));
+      return (machine as any).send(eventKey, ...params);
     };
 
   const transitioners: any = {};
@@ -39,33 +41,21 @@ export function createApi<
   return events;
 }
 
-export type FactoryMachineApi<FC extends FactoryMachineContext> = Simplify<
-  object & FlatEventSenders<FC>
->;
-
-export type WithApi<FC extends FactoryMachineContext> = FC & {
-  api: FactoryMachineApi<FC>;
-};
-
-export function withApi<M extends FactoryMachine<any>>(target: M) {
-  const enhanced = target as WithApi<M>;
+/**
+ * Enhances a FactoryMachine instance with an API property containing event sender functions.
+ *
+ * @template M - Type of FactoryMachine
+ * @param {M} target - The machine instance to enhance
+ * @returns {addEventApi<M>} The enhanced machine with an api property
+ */
+export function addEventApi<M extends FactoryMachine<any>>(
+  target: M
+): addEventApi<M> {
+  const enhanced = target as addEventApi<M>;
   if (enhanced.api) {
     return enhanced;
   }
   return Object.assign(target, {
-    api: createApi<M>(enhanced),
-  }) as WithApi<M>;
+    api: eventApi<M>(enhanced),
+  }) as addEventApi<M>;
 }
-
-export type FlatEventSenders<FC extends FactoryMachineContext> =
-  FlatMemberUnionToIntersection<StateEventTransitionSenders<FC>>;
-
-export type StateEventTransitionSenders<FC extends FactoryMachineContext,
-K extends keyof FC["transitions"] = keyof FC["transitions"]
-> = {
-  [StateKey in K]: {
-    [EventKey in keyof FC["transitions"][StateKey]]: (
-      ...args: FactoryMachineTransitionEvent<FC, StateKey, EventKey>["params"]
-    ) => void;
-  };
-};

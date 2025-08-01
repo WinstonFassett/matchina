@@ -1,0 +1,22 @@
+---
+title: Subscriptions
+description: Observe state changes in your state machines
+---
+
+## Advanced Pattern: State Change Subscriptions
+
+For observing state changes without affecting them, you can use `subscribe`:
+
+```ts
+// Subscribe to all state changes
+const unsubscribe = counter.subscribe((state) => {
+  console.log(`State changed to: ${state.key}`);
+
+  if (state.is("Counting")) {
+    console.log(`Current count: ${state.data.count}`);
+  }
+});
+
+// Later, when no longer needed:
+unsubscribe();
+```

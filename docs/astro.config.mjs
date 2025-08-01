@@ -1,150 +1,363 @@
-import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
-import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
-// import mdx from '@astrojs/mdx';
-import remarkShikiTwoslash from 'remark-shiki-twoslash';
-import rehypeShikiji from 'rehype-shikiji'
+import tailwindcss from "@tailwindcss/vite";
+import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 
-console.log({ remarkShikiTwoslash})
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://winstonfassett.github.io',
-  base: process.env.NODE_ENV === 'production' ? 'matchina' : undefined,
+  site: "https://winstonfassett.github.io",
+  base: process.env.NODE_ENV === "production" ? "matchina" : undefined,
   build: {
-    assets: 'assets'
+    assets: "assets",
   },
   markdown: {
-    syntaxHighlight: false,
-    rehypePlugins:[
-      [rehypeShikiji, { theme: "material-theme-ocean" }]
-    ],
-
-    // remarkPlugins: [
-    //   [remarkShikiTwoslash, { theme: "material-theme-ocean" }]
-    //   // '@astrojs/markdown-remark',
-    //   // {
-    //   //   syntaxHighlight: false,
-    //   //   remarkPlugins: [
-    //   //   ]
-    //   // },
-    // ]
+    // is this getting used?
+    shikiConfig: {
+      langs: [],
+      wrap: true,
+    },
   },
   integrations: [
-    // mdx({
-    //   syntaxHighlight: 'shiki',
-    //   shikiConfig: { theme: 'dracula' },
-    //   remarkPlugins: [remarkShikiTwoslash.default, 
-    //     // remarkToc
-    //   ],
-    //   // rehypePlugins: [rehypeMinifyHtml],
-    //   // remarkRehype: { footnoteLabel: 'Footnotes' },
-    //   // gfm: false,
-    // }),
     starlight({
+      plugins: [
+        starlightTypeDoc({
+          watch: true,
+          sidebar: {
+            label: "Reference",
+          },
+          entryPoints: ["../src/index.ts"],
+          tsconfig: "../tsconfig.typedoc.json",
+          output: "reference",
+          watch: true,
+          typeDoc: {
+            sort: "source-order",
+            entryPointStrategy: "expand",
+            tableColumnSettings: {
+              hideSources: true
+            },
+            blockTags: [
+              "@deprecated",
+              "@see",
+              "@example",
+              "@parameters",
+              "@typeParameters",
+              "@source", 
+            ],
+            // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
+            excludePrivate: true,
+            excludeInternal: true,
+            categorizeByGroup: false,
+            groupOrder: [
+              "Interfaces",
+              "Functions",
+              "Type Alias",
+              "Variables",
+              "*",
+            ],
+            navigation: {
+              includeGroups: true,
+              includeCategories: true,
+            },
+            parametersFormat: "table",
+            typeAliasPropertiesFormat: "table",
+            propertyMembersFormat: "table",
+            expandObjects: true,
+            expandParameters: true,
+            indexFormat: "table",
+            interfacePropertiesFormat: "table",
+            // interfaceMethodsFormat: "table",
+            // interfaceIndexFormat: "table",
+            typeDeclarationFormat: "table",
+
+            plugin: [
+              // "./src/lib/starlight-typedoc/register-theme.ts",
+              "./dist/typedoc-plugin/register-theme.cjs",
+              "typedoc-plugin-inline-sources",
+            ],
+            theme: "starlight-typedoc-custom",
+            // "excludeNotDocumented": true
+          },
+        }),
+      ],
+      expressiveCode: {
+        themes: ["material-theme-ocean"],
+      },
       title: "Matchina",
       editLink: {
-				baseUrl: 'https://github.com/winstonfassett/matchina/edit/main/docs/',
-			},
-      social: {
-        github: "https://github.com/WinstonFassett/matchina",
+        baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
       },
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/withastro/starlight",
+          // github: "https://github.com/WinstonFassett/matchina",
+        },
+      ],
       sidebar: [
         {
-          label: "Guides",
+          label: "Introduction",
           items: [
             {
               label: "Quickstart",
               link: "/guides/quickstart",
             },
             {
-              label: "Features",
+              label: "About Matchina",
               link: "/guides/inside",
+            },
+          ],
+        },
+        {
+          label: "Core Concepts",
+          items: [
+            {
+              label: "Tagged Unions",
+              link: "/guides/unions",
             },
             {
               label: "State Machines",
+              link: "/guides/state-machine-interface",
+            },
+          ],
+        },
+        {
+          label: "Tagged Unions",
+          items: [
+            {
+              label: "Matchbox Factories",
+              link: "/guides/matchbox-factories",
+            },
+            // pattern matching and exhaustiveness checking, type inference (guards, casting, etc.)
+            {
+              label: "Pattern Matching",
+              link: "/guides/pattern-matching",
+            },
+            {
+              label: "Type Safety",
+              link: "/guides/matchbox-typescript-inference",
+            },
+          ],
+        },
+        {
+          label: "Creating Machines",
+          items: [
+            {
+              label: "Interfaces",
+              link: "/guides/state-machines",
+            },
+            {
+              label: "States",
+              link: "/guides/states",
+            },
+            // {
+            //   label: "Transition Machines",
+            //   link: "/guides/transition-machines",
+            // },
+            {
+              label: "Factory Machines",
               link: "/guides/machines",
             },
             {
-              label: "Hooks and Lifecycle",
-              link: "/guides/hooks",
+              label: "Promise Machines",
+              link: "/guides/promises",
             },
             {
-              label: "Type Guards",
-              link: "/guides/typeguards",
+              label: "Machine Enhancers",
+              link: "/guides/machine-enhancers",
             },
             {
-              label: "Extras",
-              link: "/guides/extras",
+              label: "Type Inference",
+              link: "/guides/machine-inference",
+            },
+          ],
+        },
+        {
+          label: "Using Machines",
+          items: [
+            {
+              label: "Lifecycle",
+              link: "/guides/lifecycle",
             },
             {
-              label: "Integrations",
+              label: "Hooks",
+              link: "/guides/lifecycle-hooks",
+            },
+            {
+              label: "onLifecycle",
+              link: "/guides/on-lifecycle",
+            },
+            {
+              label: "transitionHooks",
+              link: "/guides/transition-hooks",
+            },
+            {
+              label: "React Integration",
               link: "/guides/integrations",
             },
           ],
         },
+        // {
+        //   label: "How To",
+        //   collapsed: true,
+        //   items: [
+        //     {
+        //       label: "Context",
+        //       link: "/guides/context",
+        //     },
+        //   ],
+        // },
         {
           label: "Examples",
+          // collapsed: true,
           items: [
             {
-              label: "Promise - simple", 
-              link: "/examples/fetch-simple"
-            },
-            { 
-              label: 'Stopwatch (useEffect)',
-              link: '/examples/stopwatch-with-react-state-and-effects'
-            },
-            { label: 'Stopwatch (onLifecycle setup)',
-              link: '/examples/stopwatch-with-react-state-using-lifecyle-instead-of-useeffect'
-            },
-            { 
-              label: 'Stopwatch (data and setup)',
-              link: '/examples/stopwatch-using-data-and-hooks'
-            },            
-            { 
-              label: 'Stopwatch (functional with data)',
-              link: '/examples/stopwatch-using-data-and-transition-functions'
-            },
-            { 
-              label: 'Stopwatch (machine effect hooks)',
-              link: '/examples/stopwatch-with-react-state-and-state-effects'
+              label: "Basic",
+              items: [
+                {
+                  label: "Toggle",
+                  link: "/examples/toggle",
+                },
+                {
+                  label: "Counter",
+                  link: "/examples/counter",
+                },
+                {
+                  label: "Traffic Light",
+                  link: "/examples/traffic-light",
+                },
+                {
+                  label: "Rock-Paper-Scissors",
+                  link: "/examples/rock-paper-scissors",
+                },
+              ],
             },
             {
-              label: "Fetch - advanced", 
-              link: "/examples/fetch-plus"
-            }
-          ]
-        },
-        {
-          label: "Recipes",
-          items: [
-            {
-              label: "Effects",
-              link: "/guides/effects",
+              label: "Stopwatches",
+              items: [
+                {
+                  label: "Overview",
+                  link: "/examples/stopwatch-overview",
+                },
+                {
+                  label: "Basic Stopwatch",
+                  link: "/examples/stopwatch",
+                },
+                {
+                  label: "With Hooks",
+                  link: "/examples/stopwatch-using-data-and-hooks",
+                },
+                {
+                  label: "With Transition Functions",
+                  link: "/examples/stopwatch-using-data-and-transition-functions",
+                },
+                {
+                  label: "With Effect Hooks",
+                  link: "/examples/stopwatch-using-react-state-and-state-effects",
+                },
+                {
+                  label: "With External React State",
+                  link: "/examples/stopwatch-using-external-react-state-and-state-effects",
+                },
+                {
+                  label: "With Lifecycle",
+                  link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
+                },
+                {
+                  label: "With Transition Hooks",
+                  link: "/examples/stopwatch-using-transition-hooks-instead-of-useeffect/",
+                },
+              ],
             },
             {
-              label: "Context", 
-              link: "/guides/context"
+              label: "Async",
+              items: [
+                {
+                  label: "Async Calculator",
+                  link: "/examples/async-calculator",
+                },
+              ],
             },
             {
-              label: "Union Machines",
-              link: "/guides/union-machines",
+              label: "Fetchers",
+              items: [
+                {
+                  label: "Promise Machine Fetcher",
+                  link: "/examples/promise-machine-fetcher",
+                },
+                {
+                  label: "Advanced Fetcher",
+                  link: "/examples/fetcher-advanced",
+                },
+              ],
             },
             {
-              label: "Timsy Compatibility",
-              link: "/guides/timsy",
+              label: "Advanced",
+              items: [
+                {
+                  label: "Traffic Light Simulator",
+                  link: "/examples/traffic-light-extended",
+                },
+                {
+                  label: "Authentication Flow",
+                  link: "/examples/auth-flow",
+                },
+                {
+                  label: "Checkout Flow",
+                  link: "/examples/checkout",
+                },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
+              ],
             },
           ],
-          
         },
+        {
+          label: "Extras",
+          items: [
+            { label: "Effects", link: "/guides/effects" },
+            // { label: "Subscriptions", link: "/guides/subscriptions" },
+          ],
+        },
+        // {
+        //   label: "Appendix",
+        //   collapsed: true,
+        //   items: [
+        //     {
+        //       label: "Timsy Inspiration",
+        //       link: "/guides/timsy",
+        //     },
+        //     {
+        //       label: "Unions as Machines",
+        //       link: "/guides/unions-as-machine",
+        //     },
+        //   ],
+        // },
+        // {
+        //   label: "Guides",
+        //   items: [
+        //     // Each item here is one entry in the navigation menu.
+        //     { label: "Example Guide", slug: "guides/example" },
+        //   ],
+        // },
         // {
         //   label: "Reference",
         //   autogenerate: { directory: "reference" },
         // },
+        typeDocSidebarGroup,
       ],
-      customCss: ["./src/styles/tailwind.css", "./src/styles/starlight.css", "./src/components/style-rich.css"],
+      customCss: ["./src/styles/global.css"],
     }),
-    tailwind({ applyBaseStyles: false }),
     react(),
   ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

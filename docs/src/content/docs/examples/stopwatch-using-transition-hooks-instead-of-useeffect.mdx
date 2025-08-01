@@ -1,0 +1,35 @@
+---
+title: Stopwatch with React State and Lifecycle Hooks
+---
+
+import StopwatchExample from "@code/examples/stopwatch-using-react-state-using-transitionhooks/example";
+import machineCode from "@code/examples/stopwatch-using-react-state-using-transitionhooks/machine.ts?raw";
+import hookCode from "@code/examples/stopwatch-using-react-state-using-transitionhooks/useStopwatch.ts?raw";
+import indexCode from "@code/examples/stopwatch-using-react-state-using-transitionhooks/index.tsx?raw";
+import viewCode from "@code/examples/stopwatch-using-react-state-using-transitionhooks/StopwatchView.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+
+## Interactive Stopwatch Example
+
+<div className="not-content">
+  <StopwatchExample client:only="react" />
+</div>
+
+## About This Example
+
+This version demonstrates using `transitionHooks` instead of `useEffect`:
+- Uses transition hooks to manage side effects
+- Provides better TypeScript autocompletion support
+- Constrains event types to their specific states
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "useStopwatch.ts", code: hookCode },
+    { name: "StopwatchView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
