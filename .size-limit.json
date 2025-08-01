@@ -1,22 +1,23 @@
 [
   {
     "name": "index",
-    "path": "dist/index.mjs"
+    "path": "src/index.ts",
+    "import": "*"
   },
   {
     "name": "matchbox",
-    "path": "dist/index.mjs",
+    "path": "src/index.ts",
     "import": "{ matchboxFactory }"
   }, 
   {
     "name": "states",
-    "path": "dist/index.mjs",
+    "path": "src/index.ts",
     "import": "{ defineStates }"
   },
   {
-    "name": "machine",
-    "path": "src/state-machine.ts",
-    "import": "{ createStateMachine }"
+    "name": "store-machine",
+    "path": "src/store-machine.ts",
+    "import": "{ createStoreMachine }"
   },
   {
     "name": "pure",
@@ -25,16 +26,12 @@
   {
     "name": "factory-machine",
     "path": "src/factory-machine.ts",
-    "import": "{ createFactoryMachine }"
+    "import": "{ createMachine }"
   },
   {
     "name": "matchChange",
     "path": "src/match-change.ts",
     "import": "{ matchChange }"
-  },
-  {
-    "name": "promise-handle",
-    "path": "src/promise-handle.ts"    
   },
   {
     "name": "promise-machine",
@@ -54,7 +51,7 @@
   {
     "name": "method enhancer",
     "path": "src/ext/index.ts",
-    "import": "{ methodEnhancer }"
+    "import": "{ createMethodEnhancer }"
   },
   {
     "name": "machine hooks",
@@ -64,16 +61,12 @@
   {
     "name": "factory machine hooks",
     "path": "src/factory-machine-hooks.ts",
-    "import": "{ whenEvent, onLeftState }"
+    "import": "{ whenState }"
   },
   {
     "name": "factory-machine-lifecycle",
     "path": "src/factory-machine-lifecycle.ts",
     "import": "{ onLifecycle}"
-  },
-  {
-    "name": "state-machine-transition-helpers",
-    "path": "src/state-machine-transition-helpers.ts"
   },
   {
     "name": "react-dist",
@@ -82,13 +75,25 @@
     "ignore": ["react"]
   },
   {
-    "name": "nanosubscribe",
-    "path": "src/extras/nanosubscriber.ts",
-    "import": "{ nanosubscriber }"
+    "name": "zod-dist",
+    "path": "src/integrations/zod.ts",
+    "import": "{ defineZodStates }",
+    "ignore": ["zod"]
   },
   {
-    "name": "with-nanosubscribe",
-    "path": "src/extras/with-nanosubscribe.ts",
-    "import": "{ withNanoSubscribe }"
+    "name": "valibot-dist",
+    "path": "src/integrations/valibot.ts",
+    "import": "{ defineValibotStates }",
+    "ignore": ["valibot"]
+  },
+  {
+    "name": "emitter",
+    "path": "src/extras/emitter.ts",
+    "import": "{ emitter }"
+  },
+  {
+    "name": "with-subscribe",
+    "path": "src/extras/with-subscribe.ts",
+    "import": "{ withSubscribe }"
   }
 ]

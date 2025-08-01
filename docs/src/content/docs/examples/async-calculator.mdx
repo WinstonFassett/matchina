@@ -1,0 +1,49 @@
+---
+title: Async Calculator
+---
+
+import AsyncCalculatorExample from "@code/examples/async-calculator/example";
+import machineCode from "@code/examples/async-calculator/machine.ts?raw";
+import hooksCode from "@code/examples/async-calculator/hooks.ts?raw";
+import viewCode from "@code/examples/async-calculator/AsyncCalculatorView.tsx?raw";
+import indexCode from "@code/examples/async-calculator/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+## Interactive Async Calculator
+
+<div className="not-content">
+  <AsyncCalculatorExample client:only="react" />
+</div>
+
+## About This Example
+
+This example demonstrates a basic promise machine for handling asynchronous calculations:
+
+- Defines a promise machine with Idle, Pending, Resolved, and Rejected states
+- Manages async operation lifecycle automatically
+- Provides type-safe event parameters and state payloads
+- Shows how promise machines handle success and error cases
+
+The promise machine pattern is perfect for any asynchronous operation - from simple calculations to complex API workflows.
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "hooks.ts", code: hooksCode },
+    { name: "AsyncCalculatorView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Machine Implementation
+
+<CardGrid>
+  <LinkCard
+    title="Learn More About Promise Machines"
+    href="/guides/promises/"
+  />
+  <LinkCard title="Basic Fetcher Example" href="/examples/fetcher-basic/" />
+</CardGrid>

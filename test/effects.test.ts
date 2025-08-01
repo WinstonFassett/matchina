@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { defineEffects } from "../src/extras/effects";
-import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "../src";
+import { addEventApi, createMachine } from "../src";
+import { defineStates } from "../src/define-states";
 import { bindEffects } from "../src/extras/bind-effects";
+import { defineEffects } from "../src/extras/effects";
 
 const effectsConfig = {
   Notify: (msg: string) => ({ msg }),
@@ -20,18 +20,18 @@ const makeStates = (effects = makeEffects()) => {
 
 const makeMachine = (
   states = makeStates(),
-  initialize = (s: typeof states) => s.Idle(),
+  initialize = (s: typeof states) => s.Idle()
 ) =>
-  withApi(
-    createFactoryMachine(
+  addEventApi(
+    createMachine(
       states,
       {
         Idle: { next: "Pending" },
         Pending: { next: "Done" },
         Done: {},
       },
-      initialize(states),
-    ),
+      initialize(states)
+    )
   );
 
 describe("defineEffects", () => {
@@ -44,15 +44,16 @@ describe("defineEffects", () => {
   });
 });
 
-describe("runEffectsOnUpdate", () => {
+describe("bindEffects", () => {
   it("should handle effects when the state changes", () => {
     let didNotify = false;
     const machine = makeMachine();
-    bindEffects(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => state.data.effects, {
       Notify: (m) => {
         didNotify = !!m;
       },
     });
+
     machine.api.next();
     expect(didNotify).toBe(false);
     machine.api.next();
@@ -62,7 +63,7 @@ describe("runEffectsOnUpdate", () => {
   it("should not invoke effects when the state does not change", () => {
     let didNotify = false;
     const machine = makeMachine();
-    bindEffects(machine, (state) => (state.data as any)?.effects, {
+    bindEffects(machine, (state) => state.data.effects, {
       Notify: (m) => {
         didNotify = !!m;
       },
@@ -82,11 +83,10 @@ describe("runEffectsOnUpdate", () => {
   });
   it("exhaustive should throw when effect not matched", () => {
     const machine = makeMachine(makeStates(), (s) => s.Pending() as any);
-    console.log("get ready...");
 
     bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
     expect(() => machine.api.next()).toThrowErrorMatchingInlineSnapshot(
-      `"Match did not handle key: 'Notify'"`,
+      `"Match did not handle key: 'Notify'"`
     );
   });
   it("_ should match all unmatched effects regardless of whether match is exhaustive", () => {

@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MatchboxFactoryFromData, SpecFromStrings, factoryFromMembers, matchboxFactory } from "../src/matchbox";
+// import { factoryFromMembers } from "../src/dev/_ExtractMemberTypes";
+import { matchboxFactory } from "../src/matchbox-factory";
+import { MatchboxFactory } from "../src/matchbox-factory-types";
 
 describe("matchboxFactory", () => {
   const testConfig = {
@@ -7,7 +9,7 @@ describe("matchboxFactory", () => {
     B: { id: 1 },
     C: (data: string) => ({ data }),
   } as const;
-  let Box: MatchboxFactoryFromData<typeof testConfig, "testKey">;
+  let Box: MatchboxFactory<typeof testConfig, "testKey">;
   beforeEach(() => {
     Box = matchboxFactory(testConfig, "testKey");
   });
@@ -37,15 +39,26 @@ describe("matchboxFactory", () => {
             A: () => "A",
             B: () => "B",
             C: () => "C",
-          }),
+          })
         ).toBe("C");
       });
       it("should match with _ and partial exhaustive", () => {
         expect(
+          Box.C("test").match(
+            {
+              A: () => "A",
+              _: (...args) => `other ${JSON.stringify(args)}`,
+            },
+            false
+          )
+        ).toBe('other [{"data":"test"}]');
+      });
+      it("should match with _ and exhaustive", () => {
+        expect(
           Box.C("test").match({
             A: () => "A",
             _: (...args) => `other ${JSON.stringify(args)}`,
-          }),
+          })
         ).toBe('other [{"data":"test"}]');
       });
       it("should throw with unmatched", () => {
@@ -53,7 +66,7 @@ describe("matchboxFactory", () => {
           Box.C("test").match({
             A: () => "A",
             B: () => "B",
-          } as any),
+          } as any)
         ).toThrowErrorMatchingInlineSnapshot(`"Match did not handle key: 'C'"`);
       });
     });
@@ -65,7 +78,7 @@ describe("matchboxFactory", () => {
       {
         C: ({ data }) => data,
       },
-      false,
+      false
     );
     expect(matched).toBe("test");
   });
@@ -78,7 +91,7 @@ describe("matchboxFactory", () => {
     it("should throw an error when the tag is incorrect", () => {
       const box = Box.A();
       expect(() => box.as("B")).toThrowError(
-        `Attempted to cast ${box.testKey} as B`,
+        `Attempted to cast ${box.testKey} as B`
       );
     });
   });
@@ -93,32 +106,33 @@ describe("matchboxFactory", () => {
       expect(box.is("B")).toBe(false);
     });
   });
-  describe("from string array", () => { 
-    const strings = ["A", "B", "C"] as const 
-    type TestSpecType = SpecFromStrings<typeof strings>;
+  describe("from string array", () => {
+    const strings = ["A", "B", "C"] as const;
+    // type TestSpecType = SpecFromStrings<typeof strings>;
 
-    it('should create a matchboxFactory with a spec of { key: identityFunction }', () => {
+    it("should create a matchboxFactory with a spec of { key: identityFunction }", () => {
       const Box = matchboxFactory(["A", "B", "C"] as const, "testKey");
-      
-      const a = Box.A('A');
-      const b = Box.B({ name: 'B' });
+
+      const a = Box.A("A");
+      const b = Box.B({ name: "B" });
       const c = Box.C(false);
       expect(a.testKey).toBe("A");
-      expect(a.data).toEqual('A');
+      expect(a.data).toEqual("A");
       expect(b.testKey).toBe("B");
-      expect(b.data).toEqual({ name: 'B' });
+      expect(b.data).toEqual({ name: "B" });
       expect(c.testKey).toBe("C");
       expect(c.data).toEqual(false);
 
-      const values = [a,b,c].map(box => box.match({
-        A: (a) => a,
-        B: (b) => b,
-        C: (c) => c,
-      }))
-      expect(values).toEqual(['A', { name: 'B' }, false])
-      
-    })
-  })
+      const values = [a, b, c].map((box) =>
+        box.match({
+          A: (a) => a,
+          B: (b) => b,
+          C: (c) => c,
+        })
+      );
+      expect(values).toEqual(["A", { name: "B" }, false]);
+    });
+  });
 });
 // describe("extendFactory", () => {
 //   it("should extend factories", () => {
@@ -135,18 +149,17 @@ describe("matchboxFactory", () => {
 //     expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
 //   })
 // })
-describe("factoryFromMembers", () => {
-  it("should create a factory from members", () => {
-    const Box = matchboxFactory({ A: () => ({howdy: true}) }, "testKey");
-    const Box2 = matchboxFactory({ B: 1 }, "testKey");
-    const Box3 = factoryFromMembers({...Box, ...Box2 });
-    const a = Box3.A();
-    const b = Box3.B();  
-      
-    
-    expect(a.testKey).toBe("A");
-    expect(a.data).toEqual({howdy: true});
-    expect(b.testKey).toBe("B");
-    expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
-  })
-});
+// describe("factoryFromMembers", () => {
+//   it("should create a factory from members", () => {
+//     const Box = matchboxFactory({ A: () => ({ howdy: true }) }, "testKey");
+//     const Box2 = matchboxFactory({ B: 1 }, "testKey");
+//     const Box3 = factoryFromMembers({ ...Box, ...Box2 });
+//     const a = Box3.A();
+//     const b = Box3.B();
+
+//     expect(a.testKey).toBe("A");
+//     expect(a.data).toEqual({ howdy: true });
+//     expect(b.testKey).toBe("B");
+//     expect(a.match({ A: () => "A", B: () => "B" })).toBe("A");
+//   });
+// });

@@ -1,36 +1,100 @@
-export type Setup<T> = (target: T) => Disposer;
-export type Disposer = () => void;
+import { DisposeFunc, SetupFunc } from "../function-types";
 
 /**
- * Run cleanup functions in reverse order
- * @param fns
- * @returns
+ * Returns a disposer function that runs an array of cleanup functions in reverse order.
+ * Useful for teardown logic where order matters.
+ *
+ * Use cases:
+ * - Aggregating multiple cleanup/disposer functions
+ * - Ensuring teardown order for resources (event listeners, subscriptions, etc.)
+ *
+ * @param fns - Array of disposer functions
+ * @returns A function that disposes all provided functions in reverse order
+ * @source This function is useful for creating a cleanup routine that ensures all resources are released in the correct order.
+ * It is commonly used in setup/teardown patterns where multiple resources need to be cleaned up
+ * after use, such as event listeners, subscriptions, or other side effects.
+ *
+ * @example
+ * ```ts
+ * const disposer1 = () => console.log('Cleanup 1');
+ * const disposer2 = () => console.log('Cleanup 2');
+ * const disposeAll = createDisposer([disposer1, disposer2]);
+ * disposeAll(); // Logs 'Cleanup 2' then 'Cleanup 1'
+ * ```
  */
-export const disposers = (fns: Disposer[]) => () => {
+export const createDisposer = (fns: DisposeFunc[]) => () => {
   for (let i = fns.length - 1; i >= 0; i--) {
     fns[i]();
   }
 };
 
-export const createSetup: <T>(...setups: Setup<T>[]) => Setup<T> =
+/**
+ * @function
+ * Composes multiple setup functions into a single setup function.
+ *
+ * Usage:
+ * ```ts
+ * const extensionSetup = createSetup(...extensions);
+ * extensionSetup(machine1); // applies all extensions to machine1
+ * ```
+ *
+ * Use cases:
+ * - Creating a reusable setup routine for multiple targets
+ * - Applying a set of extensions/setups to different machines/components
+ *
+ * @param setups - Setup functions to compose
+ * @returns A setup function that applies all setups to a target and returns a disposer
+ * @example
+ * ```ts
+ * const setupA = (target: any) => () => console.log('A cleanup');
+ * const setupB = (target: any) => () => console.log('B cleanup');
+ * const extensionSetup = createSetup(setupA, setupB);
+ * const dispose = extensionSetup({});
+ * dispose(); // Logs 'B cleanup' then 'A cleanup'
+ * ```
+* @source
+ * This function is useful for creating a composite setup that can be applied to a target,
+ * allowing for modular and reusable setup logic. It allows multiple setups to be combined into one,
+ * making it easier to manage complex initialization logic in applications.
+ * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
+ * such as in state machines, event handlers, or other components that require setup and teardown logic
+ */
+export const createSetup: <T>(...setups: SetupFunc<T>[]) => SetupFunc<T> =
   (...setups) =>
   (target) =>
-    disposers(setups.map((fn) => fn(target)));
+    createDisposer(setups.map((fn) => fn(target)));
 
+/**
+ * Returns a function that applies multiple setups to a specific target and returns a disposer for all.
+ *
+ * @example
+ *   const machine1Setup = setup(machine1);
+ *   machine1Setup(...extensions); // applies extensions to machine1
+ *   machine1Setup(anotherExtension); // can be called again for more setups
+ *
+ * Use cases:
+ * - Managing setup/teardown for a single target with multiple extensions
+ * - Incrementally applying setups to a target
+ *
+ * @param target - The setup target
+ * @returns Function accepting setups, returning a disposer
+ * @source This function is useful for creating a setup routine that can be applied to a target,
+ * allowing for modular and reusable setup logic. It allows multiple setups to be combined into one,
+ * making it easier to manage complex initialization logic in applications.
+ * It is particularly useful in scenarios where multiple setups need to be applied to a single target,
+ * such as in state machines, event handlers, or other components that require setup and teardown logic
+ *
+ * @example
+ * ```ts
+ * const machine = {};
+ * const setupA = (target: any) => () => console.log('A cleanup');
+ * const setupB = (target: any) => () => console.log('B cleanup');
+ * const machineSetup = setup(machine);
+ * const dispose = machineSetup(setupA, setupB);
+ * dispose(); // Logs 'B cleanup' then 'A cleanup'
+ * ```
+ */
 export const setup =
-  <T>(target: T): ((...setups: Setup<T>[]) => Disposer) =>
-  (...setups: Setup<T>[]) =>
-    disposers(setups.map((fn) => fn(target)));
-
-export const buildSetup = <T>(target: T) => {
-  const d: Disposer[] = [];
-  const add = (...setups: Setup<T>[]) => {
-    d.push(...setups.map((fn) => fn(target)));
-    return () => {
-      for (let i = d.length - 1; i >= 0; i--) {
-        d[i]();
-      }
-    };
-  };
-  return [add, () => disposers(d)()]
-}
+  <T>(target: T): ((...setups: SetupFunc<T>[]) => DisposeFunc) =>
+  (...setups: SetupFunc<T>[]) =>
+    createDisposer(setups.map((fn) => fn(target)));

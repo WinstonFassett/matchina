@@ -1,8 +1,50 @@
 import { describe, it, expect, vi } from "vitest";
-import { enhanceMethod, methodEnhancer } from "../src/ext";
+import {
+  enhanceMethod,
+  createMethodEnhancer,
+  enhanceFunction,
+} from "../src/ext";
 import { when } from "../src/extras/when";
 
-describe("methodExtend", () => {
+describe("enhanceFunction", () => {
+  it("should enhance a function with additional behavior", () => {
+    const originalFn = (x: number) => x * 2;
+    const enhancedFunc = enhanceFunction(originalFn);
+    enhancedFunc.add((next) => (x: number) => {
+      return next(x + 1);
+    });
+    enhancedFunc.add((next) => (x: number) => {
+      return next(x * 3);
+    });
+    expect(enhancedFunc(2)).toBe(14); // ((2*3)+1) * 2
+  });
+  describe("result", () => {
+    it("should return the original function result when no enhancements are applied", () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFunc = enhanceFunction(originalFn);
+      expect(enhancedFunc(3)).toBe(6);
+    });
+
+    it("should return the enhanced function result when enhancements are applied", () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFunc = enhanceFunction(originalFn);
+      enhancedFunc.add((next) => (x: number) => next(x + 1));
+      expect(enhancedFunc(3)).toBe(8); // (3 + 1) * 2
+    });
+    it("has(enhancer) should return true if the enhancer is present and false if not", () => {
+      const originalFn = (x: number) => x * 2;
+      const enhancedFunc = enhanceFunction(originalFn);
+      const enhancer = (next: any) => (x: number) => next(x + 1);
+      enhancedFunc.add(enhancer);
+      expect(enhancedFunc.has(enhancer)).toBe(true);
+      expect(enhancedFunc.has((next: any) => (x: number) => next(x + 2))).toBe(
+        false
+      );
+    });
+  });
+});
+
+describe("enhanceMethod", () => {
   it("should extend the method correctly", () => {
     const obj = {
       method: (value: string) => value.toUpperCase(),
@@ -34,15 +76,28 @@ describe("methodExtend", () => {
 
     expect(obj.method("hello")).toBe("HELLO");
   });
+
+  it("should use method stub if no method exists", () => {
+    const obj = {} as any;
+
+    enhanceMethod(obj, "method", (inner) => {
+      return (value: string) => {
+        const result = inner(value);
+        return result + "!";
+      };
+    });
+
+    expect(obj.method("hello")).toBe("undefined!");
+  });
 });
 
-describe("methodUse", () => {
+describe("createMethodEnhancer", () => {
   it("should extend the method correctly", () => {
     const obj = {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const use = methodEnhancer("method");
+    const use = createMethodEnhancer("method");
 
     use((inner) => {
       return (value: string) => {
@@ -59,7 +114,7 @@ describe("methodUse", () => {
       method: (value: string) => value.toUpperCase(),
     };
 
-    const use = methodEnhancer("method");
+    const use = createMethodEnhancer("method");
 
     const restore = use((inner) => {
       return (value: string) => {

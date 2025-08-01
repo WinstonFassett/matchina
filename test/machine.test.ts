@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { defineStates } from "../src/states";
-import { createFactoryMachine, withApi } from "../src";
+import { defineStates } from "../src/define-states";
+import { createMachine, addEventApi, pure, eventApi } from "../src";
 
 const makeStates = () =>
   defineStates({
@@ -9,7 +9,7 @@ const makeStates = () =>
   });
 const makeMachine = () => {
   const states = makeStates();
-  const m = createFactoryMachine(
+  const m = createMachine(
     states,
     {
       Initial: {
@@ -20,39 +20,47 @@ const makeMachine = () => {
           (done: string) =>
           ({ type }) => {
             return states[done === "DONE" ? "Done" : "Initial"](
-              type === "doneAdvFunc",
+              type === "doneAdvFunc"
             );
           },
       },
-      Done: {},
+      Done: {
+        restart: "Initial",
+      },
     },
-    "Initial",
+    "Initial"
   );
-  const m2 = withApi(m);
+  const m2 = addEventApi(m);
   return m2;
 };
 
-describe("createFactoryMachine", () => {
+describe("createMachine", () => {
   describe("states", () => {
     const machine = makeMachine();
     it("match with parameterized handlers", () => {
       expect(
-        machine.states.Initial().match({
-          Initial: () => 100,
-          _: () => 0,
-        }),
+        machine.states.Initial().match(
+          {
+            Initial: () => 100,
+            _: () => 0,
+          },
+          false
+        )
       ).toBe(100);
 
       expect(
-        machine.states.Initial().match({
-          _: () => 1,
-        }),
+        machine.states.Initial().match(
+          {
+            _: () => 1,
+          },
+          false
+        )
       ).toBe(1);
 
       expect(() =>
         machine.states.Initial().match({
           InvalidKey: () => 1,
-        } as any),
+        } as any)
       ).toThrow();
 
       expect(
@@ -60,8 +68,8 @@ describe("createFactoryMachine", () => {
           {
             Done: (ok) => ok,
           },
-          false,
-        ),
+          false
+        )
       ).toStrictEqual({ ok: true, msg: "test message" });
     });
   });
@@ -137,4 +145,58 @@ describe("createFactoryMachine", () => {
   //   });
   //   console.log({ mustBeThing });
   // });
+});
+
+describe("pure", () => {
+  it("should return only getState and send", () => {
+    const machine = makeMachine();
+    const pureMachine = pure(machine);
+    expect(pureMachine.getState).toBe(machine.getState);
+    expect(pureMachine.send).toBe(machine.send);
+    expect((pureMachine as any).getChange).toBeUndefined();
+    expect((pureMachine as any).update).toBeUndefined();
+    expect((pureMachine as any).api).toBeUndefined();
+    expect(Object.keys(pureMachine)).toEqual(["getState", "send"]);
+  });
+});
+
+describe("eventApi", () => {
+  it("should return an event api", () => {
+    const machine = makeMachine();
+    const api = machine.api;
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+  });
+  it("should return an event api for the specified state", () => {
+    const machine = makeMachine();
+    const doneApi = eventApi(machine, "Done");
+    expect(doneApi).toBeDefined();
+    expect(doneApi.restart).toBeDefined();
+    expect(doneApi.done).toBeUndefined();
+    expect(doneApi.doneFunc).toBeUndefined();
+    expect(doneApi.doneAdvFunc).toBeUndefined();
+  });
+});
+
+describe("addEventApi", () => {
+  it("should add an event `api` property", () => {
+    const machine = makeMachine();
+    const api = machine.api;
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+  });
+  it("should preserve pre-existing api property", () => {
+    const machine = makeMachine();
+    const api = machine.api;
+    expect(api).toBeDefined();
+    expect(typeof api.done).toBe("function");
+    expect(typeof api.doneFunc).toBe("function");
+    expect(typeof api.doneAdvFunc).toBe("function");
+    addEventApi(machine);
+    expect(machine.api).toBe(api);
+  });
 });

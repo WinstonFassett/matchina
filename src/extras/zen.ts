@@ -1,26 +1,14 @@
-import { setup } from "../ext";
-import {
-  FactoryMachine, FactoryMachineContext
-} from "../factory-machine";
-import { createApi } from "../factory-machine-event-api";
+import { eventApi } from "../factory-machine-event-api";
+import { FactoryMachine } from "../factory-machine-types";
 
-export function zen<
-  M extends FactoryMachine<any>,
->(
-  machine: M
-) {
-  const api = createApi(machine);
-  return {
-    ...api,
-    get state(): ReturnType<M['getState']> {
-      return machine.getState();
-    },
-    get change(): ReturnType<M['getChange']> {
-      return machine.getChange() as any
-    },
-    get machine() {
-      return machine;
-    },
-    setup: setup(machine)
-  };
+/**
+ * Enhances a FactoryMachine instance with event API and setup functionality.
+ *
+ * @template M - Type of FactoryMachine
+ * @param {M} machine - The machine instance to enhance
+ * @returns The enhanced machine with event API mixed in
+ * @source
+ */
+export function assignEventApi<M extends FactoryMachine<any>>(machine: M) {
+  return Object.assign(machine, eventApi(machine));
 }

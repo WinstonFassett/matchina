@@ -1,36 +1,36 @@
-import { AbortableEventHandler } from "./ext/abortable";
-import { Funcware } from "./ext/funcware/funcware";
+import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import {
   FactoryMachineContext,
   FactoryMachineEvent,
   FactoryMachineTransitionEvent,
-} from "./factory-machine";
-import { StateMachine, StateMachineEvent } from "./state-machine";
-import { Effect, Middleware } from "./types";
+} from "./factory-machine-types";
+import { EffectFunc, Funcware, MiddlewareFunc } from "./function-types";
+import { StateMachine, TransitionEvent } from "./state-machine";
 
-type TransitionHookExtensions<E extends StateMachineEvent> = {
+export type TransitionHookExtensions<E extends TransitionEvent> = {
   begin: AbortableEventHandler<E>;
-  resolve: Funcware<(ev: Partial<E>) => E>;
-  transition: Middleware<E>;
+  resolveExit: Funcware<(ev: Partial<E>) => E>;
+  transition: MiddlewareFunc<E>;
+  update: MiddlewareFunc<E>;
   guard: StateMachine<E>["guard"];
   handle: StateMachine<E>["handle"];
   before: AbortableEventHandler<E>;
-  effect: Effect<E>;
-  leave: Effect<E>;
-  enter: Effect<E>;
-  notify: Effect<E>;
-  after: Effect<E>;
-  end: Effect<E>;
+  effect: EffectFunc<E>;
+  leave: EffectFunc<E>;
+  enter: EffectFunc<E>;
+  notify: EffectFunc<E>;
+  after: EffectFunc<E>;
+  end: EffectFunc<E>;
 };
 
 type StateTransitionHooks<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"] | "*",
 > = Partial<{
-  leave: Middleware<
+  leave: MiddlewareFunc<
     FactoryMachineTransitionEvent<FC, StateKey extends "*" ? any : StateKey>
   >;
-  enter: Middleware<
+  enter: MiddlewareFunc<
     FactoryMachineTransitionEvent<
       FC,
       any,
@@ -46,8 +46,9 @@ export type StateHookConfig<FC extends FactoryMachineContext> = {
   } & StateTransitionHooks<FC, StateKey>;
 };
 
-export type StateEventHookConfig<E extends StateMachineEvent<any, any>> =
-  Partial<TransitionHookExtensions<E>>;
+export type StateEventHookConfig<E extends TransitionEvent<any, any>> =
+  | Partial<TransitionHookExtensions<E>>
+  | EffectFunc<E>;
 
 type On<
   FC extends FactoryMachineContext,
@@ -65,3 +66,5 @@ type On<
     >
   >;
 };
+
+export type HookKey = keyof TransitionHookExtensions<any>;

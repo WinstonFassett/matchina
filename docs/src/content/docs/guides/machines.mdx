@@ -1,150 +1,136 @@
 ---
-title: State Machines
+title: Factory Machines
+description: Create complete state machines with TypeScript inference and type-safe transitions
 ---
-import MachineDemo from '@components/MachineDemo.astro';
-import FooBarDemo from '@components/FooBarDemo.astro';
 
-The Finite State Machine (FSM) pattern is:
-<div>
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import MachineDemo from "@components/MachineDemo.astro";
+
+## What are Factory Machines?
+
+Factory Machines combine state factories with transitions to create complete state machines with type-safe operations. They extend the Matchbox pattern to provide:
+
+1. **Type-safe state creation** with proper parameter inference
+2. **Type-safe transitions** with smart parameter types
+3. **State data preservation** when transitioning between states
+4. **Lifecycle hooks** for intercepting and reacting to state changes
+
 ```ts
-const { getState, send } = fsm(states, transitions, initialState)
+  const {(getState, send)} = fsm(states, transitions, initialState)
 ```
-</div>
 
+## Creating Factory Machines and Using matchina
 
-### States
-
-States can be any type, usually extending `string` or `object`.
-
-Factory Machines use state factory functions to create keyed state objects.
-
-###### `defineStates`
-
-Use `defineStates` to create a fully-typed state factory.
+To create a state machine, always start by defining your states using `defineStates`:
 
 ```ts
 const states = defineStates({
-  Idle: null, 
-  Fetching: (userId: string) => ({ userId }),
-  Succeeded: (result: User) => ({ result }),
-  Failed: (error: Error) => ({ error })  
-})
+  S1: () => ({}),
+  S2: () => ({}),
+});
 ```
 
-###### `key` and `data`
-```ts
-const state = states.Fetching('user-id')
-state.key === 'Fetching' 
-state.data.userId === 'user-id' 
-```
-
-###### `match`
-```ts
-console.log(state.match({
-  Idle: () => 'idle',
-  Fetching: ({ userId }) => `fetching ${userId}`,
-  Succeeded: ({ result }) => `succeeded ${result}`,
-  Failed: ({ error }) => `failed ${error}`
-}))
-```
-
-### Transitions
-
-Transitions are keyed by state `key` and transition `type`. 
-
-From the `state-machine` resolve function:
-```ts
-const to = machine.transitions[ev.from.key][ev.type];
-```
-
-Transition configuration varies by machine type.
-- Basic state machine `transitions` will be used as the next state
-- Factory machines `transitions` can be string state keys or functions that return the next state
-- Promise machines `transitions` are already provided
-
-## Factory Machines
-
-Create a factory machine with 
-```ts
-createFactoryMachine(states, transitions, initialState)
-```
-
-### Factory Machine States
-Define states first with `defineStates` or create inline by passing in creator map.
-
-With inline states factory:
-```ts
-const machine = createFactoryMachine(
-  {
-    Idle: undefined,
-    Foo: (foo: string) => ({ foo }),
-    Bar: (bar: number) => ({ bar })
-  }, 
-  transitions, 
-  'Idle'
-)
-```
-
-With standalone states factory:
-```ts
-const states = defineStates( {
-  Idle: undefined,
-  Foo: (foo: string) => ({ foo }),
-  Bar: (bar: number) => ({ bar })
-})
-const machine = createFactoryMachine(
-  states, 
-  transitions, 
-  states.Foo(...)
-)
-```
-
-
-### Factory Machine Transitions
-
-Factory Machine Transition values can be:
-  - a Factory State `key`
-  - a function returning a Factory State 
-  - a function returning a Resolver 
-  
-A simple transition function:
-```ts
-(...myParameters: any[]) => MyExitState
-```
-
-A transition resolver function:
-```ts
-(...myParameters: any[]) => ({ type, from }) => MyExitState
-```
-
-For example, in the snippet below:
-- `toggle` uses a simple state `key`
-- `foo` takes a parameter and returns a Factory State
-- `increment` takes a `bar` parameter and returns a Resolver that increments `ev.from.data.bar` by that amount
+You can then create and use a machine in several ways:
 
 ```ts
-const machine = createFactoryMachine(
-  states, 
-  {
-    Idle: {
-      toggle: 'Foo'
-    },
-    Foo: {
-      toggle: 'Bar',
-      foo: (foo = 'foo') => states.Foo(`my-${foo}`),      
-    },
-    Bar: {
-      toggle: 'Foo',
-      increment: (bar: number) => (ev) => 
-        states.Bar(ev.from.data.bar + bar)
-    }
-  }, 
-  'Idle'
-)
+// Basic factory machine
+const { getState, send } = createMachine(
+  states,
+  { S1: { e1: "S2" }, S2: { e2: "S1" } },
+  states.S1()
+);
+
+// With matchina (zen wrapper for ergonomic API)
+const { getState, send, e1, e2 } = matchina(
+  states,
+  { S1: { e1: "S2" }, S2: { e2: "S1" } },
+  states.S1()
+);
+
+// Or, equivalently, assignEventApi-wrapped factory machine
+const { getState, send, e1, e2 } = assignEventApi(
+  createMachine(states, { S1: { e1: "S2" }, S2: { e2: "S1" } }, states.S1())
+);
 ```
 
+- `createMachine` gives you `.getState()` and `.send(type, ...params)`.
+- `matchina` (or `assignEventApi(createMachine(...))`) gives you `.getState()`, `.send(type, ...params)`, and direct methods for each event (e.g. `.e1()`, `.e2()`).
+- The APIs are otherwise equivalent; `matchina` is just a convenience wrapper.
 
-Matchina types resolve this to: 
+---
 
+## Transition Types & Data Propagation
 
-<FooBarDemo />
+Transition logic determines:
+
+- Which exit states are possible for each entry state and event
+- What parameters are required to send those events
+- How state data is propagated or explicitly created during transitions
+
+A transition handler can take one of these forms:
+
+1. **String state key**: If your transition does not accept parameters, simply return the destination state key as a string. Data is preserved automatically if compatible.
+   ```ts
+   search: "Loading";
+   ```
+2. **Function with parameters**: If your transition accepts parameters, return a state instance or a function that creates a state instance based on the event.
+   - Return a state instance directly:
+     ```ts
+     search: (query: string) => TaskStates.Loading(query);
+     ```
+   - Or, for advanced cases, return a function that receives the event object (`{ type, from, to }`) and returns a state instance:
+     ```ts
+     success: (results: string[]) => (event) =>
+       TaskStates.Success(event.from.data.query, results);
+     ```
+
+**Summary Table:**
+
+| Form               | Example                                | Use Case                               |
+| ------------------ | -------------------------------------- | -------------------------------------- |
+| String (state key) | `pause: "Paused"`                      | No params, simple state change         |
+| Function           | `search: (q) => TaskStates.Loading(q)` | Accepts params, returns state instance |
+| Event function     | `success: (r) => (ev) => ...`          | Needs event context for state creation |
+
+---
+
+## Using Factory Machines and matchina
+
+- With `createMachine`, trigger transitions by calling:
+  ```ts
+  machine.send(type, ...params);
+  ```
+- With `matchina` or `assignEventApi`, you can also call event methods directly:
+
+  ```ts
+  machine.e1(...params);
+  ```
+
+- `type` is the event name (string)
+- `...params` are the parameters for the transition (if any)
+
+### Getting Current State
+
+Get the current state for inspection:
+
+```ts
+const state = machine.getState();
+console.log(state.key); // Current state key
+```
+
+---
+
+## Pattern Matching
+
+Pattern matching on state is only available if your state factory supports it (e.g. if you used a matchbox factory). For more, see the [matchbox documentation](./matchbox/).
+
+---
+
+## Next Steps
+
+Now that you understand Factory Machines and matchina, explore these related guides:
+
+- [Lifecycle & Hooks](./lifecycle/) - Add hooks for intercepting state changes
+- [Effects](./effects/) - Manage side effects with the effects system
+- [Promise Machines](./promises/) - Handle async operations with state machines
+- [React Integration](./integrations/) - Use state machines with React

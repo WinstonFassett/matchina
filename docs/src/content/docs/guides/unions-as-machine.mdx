@@ -1,0 +1,241 @@
+---
+title: Unions as Machines
+description: Learn how to implement a state machine using matchboxes for states and events
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeBlock from "@components/CodeBlock.astro";
+
+# Unions as Machines
+
+This guide demonstrates how to build a state machine from scratch using tagged unions for both states and events. This approach highlights the core concept behind Matchina: state machines are essentially transformations from one tagged union (state) to another based on events (another tagged union).
+
+## The Building Blocks
+
+A state machine consists of three core components:
+
+1. **States** - A tagged union representing the possible states
+2. **Events** - A tagged union representing the possible events
+3. **Transition Function** - A function that transforms states based on events
+
+Let's implement each of these components using Matchina's `matchboxFactory`:
+
+## States as Tagged Unions
+
+First, we'll define our states as a tagged union:
+
+```ts
+import { matchboxFactory } from "matchina";
+
+const states = matchboxFactory(
+  {
+    Idle: () => ({}),
+    Done: (x: number) => ({ result: x }),
+  },
+  "key"
+);
+
+type State = ReturnType<(typeof states)[keyof typeof states]>;
+```
+
+This creates a tagged union with two possible states: `Idle` and `Done`. The `Done` state includes data (a result value).
+
+## Events as Tagged Unions
+
+Next, we'll define our events as another tagged union:
+
+```ts
+const events = matchboxFactory(
+  {
+    execute: (x: number) => x,
+  },
+  "type"
+);
+
+type Event = ReturnType<(typeof events)[keyof typeof events]>;
+```
+
+Our event union only has one event type: `execute` with a numeric parameter.
+
+## Transition Function
+
+The transition function defines how states change in response to events:
+
+```ts
+const transition = (state: State, event: Event) =>
+  state.match({
+    Idle: () =>
+      event.match({
+        execute: (x) => states.Done(x),
+      }),
+    Done: () => state, // Already done, no transitions
+  });
+```
+
+This function uses pattern matching to:
+
+1. Check the current state
+2. Within each state case, check the event type
+3. Return the new state based on the state-event combination
+
+## Building the Machine
+
+Now we can construct a simple state machine from these components:
+
+```ts
+function createMachine(initialState: State) {
+  let currentState = initialState;
+  return {
+    getState: () => currentState,
+    send(event: Event) {
+      currentState = transition(currentState, event);
+    },
+  };
+}
+
+// Usage
+const machine = createMachine(states.Idle());
+machine.send(events.execute(123));
+console.log(machine.getState().key); // "Done"
+
+const state = machine.getState();
+if (state.is("Done")) {
+  console.log(state.data.result); // 123
+}
+```
+
+## Complete Example
+
+Here's the complete example in one block:
+
+```ts
+import { matchboxFactory } from "matchina";
+
+// States
+const states = matchboxFactory(
+  {
+    Idle: () => ({}),
+    Done: (x: number) => ({ result: x }),
+  },
+  "key"
+);
+type State = ReturnType<(typeof states)[keyof typeof states]>;
+
+// Events
+const events = matchboxFactory(
+  {
+    execute: (x: number) => x,
+  },
+  "type"
+);
+type Event = ReturnType<(typeof events)[keyof typeof events]>;
+
+// Transition function
+const transition = (state: State, event: Event) =>
+  state.match({
+    Idle: () =>
+      event.match({
+        execute: (x) => states.Done(x),
+      }),
+    Done: () => state,
+  });
+
+// Machine factory
+function createMachine(initialState: State) {
+  let currentState = initialState;
+  return {
+    getState: () => currentState,
+    send(event: Event) {
+      currentState = transition(currentState, event);
+    },
+  };
+}
+
+// Usage
+const machine = createMachine(states.Idle());
+machine.send(events.execute(123));
+console.log(machine.getState().key); // "Done"
+
+const state = machine.getState();
+if (state.is("Done")) {
+  console.log(state.data.result); // 123
+}
+```
+
+## Why This Matters
+
+This example illustrates the fundamental concept behind state machines in Matchina:
+
+1. **States and Events as Tagged Unions** - Both states and events are modeled as tagged unions with optional payload data
+2. **Pattern Matching for Transitions** - Transitions use pattern matching for type-safe logic
+3. **Immutable State Transformation** - Each transition creates a new state object
+
+While Matchina provides higher-level abstractions like `createMachine` that handle these details for you, understanding this core implementation helps you grasp how state machines work under the hood.
+
+## Extending This Pattern
+
+You can extend this pattern to create more complex state machines:
+
+<Tabs>
+  <TabItem label="Multi-State Workflow">
+```ts
+const states = matchboxFactory({
+  Initial: () => ({}),
+  Processing: (id: string) => ({ id }),
+  Success: (id: string, result: any) => ({ id, result }),
+  Error: (id: string, error: string) => ({ id, error })
+}, "key");
+
+const events = matchboxFactory({
+start: (id: string) => ({ id }),
+complete: (result: any) => ({ result }),
+fail: (error: string) => ({ error }),
+retry: () => ({})
+}, "type");
+
+// Transition function would handle all combinations
+
+````
+  </TabItem>
+  <TabItem label="With Side Effects">
+```ts
+function createMachineWithEffects(initialState: State) {
+  let currentState = initialState;
+
+  // Effects map
+  const effects = {
+    onEnterDone: (result: number) => {
+      console.log(`Task completed with result: ${result}`);
+    }
+  };
+
+  return {
+    getState: () => currentState,
+    send(event: Event) {
+      const prevState = currentState;
+      currentState = transition(currentState, event);
+
+      // Run effects when state changes
+      if (prevState.key !== currentState.key) {
+        if (currentState.is("Done")) {
+          effects.onEnterDone(currentState.data.result);
+        }
+      }
+    }
+  };
+}
+````
+
+  </TabItem>
+</Tabs>
+
+## How Matchina Builds on This
+
+Matchina's `createMachine` function is a higher-level abstraction built on these principles:
+
+1. It automatically creates the transition function from a transitions configuration
+2. It provides a richer API with features like event history and state tracking
+3. It adds support for hooks, middleware, and other advanced features
+4. It ensures type safety throughout the entire state machine
+
+Understanding how to build a state machine from tagged unions gives you a deeper appreciation for Matchina's design and flexibility.

@@ -1,8 +1,5 @@
-
-
 .content pre {
-  border-radius: .5em;
-
+  border-radius: 0.5em;
 }
 
 .content pre .code-container {

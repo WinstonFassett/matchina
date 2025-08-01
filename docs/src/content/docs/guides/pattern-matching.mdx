@@ -1,0 +1,45 @@
+---
+title: Pattern Matching
+description: "Using matchboxFactory for type-safe tagged unions and pattern matching in TypeScript"
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeBlock from "@components/CodeBlock.astro";
+
+import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
+import lightPatternMatchingRaw from "../../../code/examples/matchbox-usage/light-pattern-matching.ts?raw";
+import lightTypeGuardsRaw from "../../../code/examples/matchbox-usage/light-type-guards.ts?raw";
+import lightDefaultCaseRaw from "../../../code/examples/matchbox-usage/light-default-case.ts?raw";
+import lightCastingRaw from "../../../code/examples/matchbox-usage/light-casting.ts?raw";
+import lightCustomTagRaw from "../../../code/examples/matchbox-usage/light-custom-tag.ts?raw";
+import lightAdvancedMatchingRaw from "../../../code/examples/matchbox-usage/light-advanced-matching.ts?raw";
+import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?raw";
+import matchRaw from "../../../code/examples/matchbox-usage/match.ts?raw";
+import matchWithDefaultRaw from "../../../code/examples/matchbox-usage/match-with-default.ts?raw";
+import matchNonExhaustiveRaw from "../../../code/examples/matchbox-usage/match-non-exhaustive.ts?raw";
+import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-union.ts?raw";
+import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
+import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
+import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
+
+Given the following matchbox factory:
+
+<CodeBlock code={matchSetupRaw} lang="ts" twoslash={false} />
+
+## `match()` Method
+
+The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
+
+<CodeBlock code={matchRaw} lang="ts" twoslash={true} />
+
+### Using Default Cases
+
+Sometimes you want to handle multiple states with a single case, or provide a fallback:
+
+<CodeBlock code={matchWithDefaultRaw} lang="ts" twoslash={true} />
+
+### Non-Exhaustive Matching
+
+You can opt-out of exhaustiveness checking by passing `false` as the second argument:
+
+<CodeBlock code={matchNonExhaustiveRaw} lang="ts" twoslash={true} />

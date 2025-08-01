@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { createFactoryMachine, defineStates, withApi } from "../src";
-import { withNanoSubscribe } from "../src/extras/with-nanosubscribe";
+import { createMachine, defineStates, addEventApi } from "../src";
+import { withSubscribe } from "../src/extras/with-subscribe";
 // import { whenEvent } from "../src/factory-machine-hooks";
 
 describe("withSubscribe", () => {
@@ -10,7 +10,7 @@ describe("withSubscribe", () => {
       Running: {},
     });
 
-    const inner = createFactoryMachine(
+    const inner = createMachine(
       states,
       {
         Idle: {
@@ -20,11 +20,11 @@ describe("withSubscribe", () => {
           stop: states.Idle,
         },
       },
-      "Idle",
+      "Idle"
     );
-    const e = withApi(inner);
+    const e = addEventApi(inner);
 
-    const machine = withNanoSubscribe(inner);
+    const machine = withSubscribe(inner);
     expect(machine.subscribe).toBeDefined();
     // expect(machine.when).toBeDefined();
     // expect(machine.dispose).toBeDefined();
@@ -35,8 +35,8 @@ describe("withSubscribe", () => {
       Idle: {},
       Running: {},
     });
-    const machine = withNanoSubscribe(
-      createFactoryMachine(
+    const machine = withSubscribe(
+      createMachine(
         states,
         {
           Idle: {
@@ -46,8 +46,8 @@ describe("withSubscribe", () => {
             stop: states.Idle,
           },
         },
-        "Idle",
-      ),
+        "Idle"
+      )
     );
     const subscriber = vi.fn();
     const subscription = machine.subscribe(subscriber);
@@ -60,8 +60,8 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //   const machine = withSubscribe(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
@@ -90,8 +90,8 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //   const machine = withSubscribe(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
@@ -121,8 +121,8 @@ describe("withSubscribe", () => {
   //     Idle: {},
   //     Running: {},
   //   });
-  //   const machine = withNanoSubscribe(
-  //     createFactoryMachine(
+  //   const machine = withSubscribe(
+  //     createMachine(
   //       states,
   //       {
   //         Idle: {
@@ -157,8 +157,8 @@ describe("withSubscribe", () => {
       Idle: {},
       Running: {},
     });
-    const machine = withNanoSubscribe(
-      createFactoryMachine(
+    const machine = withSubscribe(
+      createMachine(
         states,
         {
           Idle: {
@@ -168,8 +168,8 @@ describe("withSubscribe", () => {
             stop: states.Idle,
           },
         },
-        "Idle",
-      ),
+        "Idle"
+      )
     );
 
     const subscriber = vi.fn();

@@ -1,0 +1,52 @@
+---
+title: Toggle State Machine
+description: A basic on/off toggle state machine example
+---
+
+import ToggleExample from "@code/examples/toggle/example";
+import machineCode from "@code/examples/toggle/machine.ts?raw";
+import viewCode from "@code/examples/toggle/ToggleView.tsx?raw";
+import indexCode from "@code/examples/toggle/index.tsx?raw";
+import exampleCode from "@code/examples/toggle/example.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A simple toggle state machine that switches between `On` and `Off` states, demonstrating the most basic state machine pattern with two states and direct transitions between them.
+
+<div className="not-content">
+  <ToggleExample client:only="react" />
+</div>
+
+## Implementation Details
+
+This example demonstrates the core concepts of state machines in Matchina:
+
+- Two simple states (`On` and `Off`) with no additional data
+- Direct transitions between states using string references
+- Using the `addEventApi` helper to create a clean API for transitions
+
+Unlike the counter example which used a single state with data, this toggle example uses two distinct states to represent the On and Off conditions.
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "ToggleView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Additional Notes
+
+- The toggle uses direct state transitions (changing from one state to another)
+- The UI updates based on the current state
+- This pattern is useful for modeling components with distinct behavioral modes
+
+## Next Steps
+
+Now that you've seen a basic toggle machine, you might want to explore:
+
+- [Counter Example](/examples/counter) - Add numeric data to your states
+- [Traffic Light Example](/examples/traffic-light) - Create a machine with more states
+- [Lifecycle Hooks](/guides/lifecycle) - Add behavior when states change

@@ -1,6 +1,6 @@
 {
   "name": "matchina",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Winston Fassett",
   "repository": "WinstonFassett/matchina",
   "homepage": "https://github.com/WinstonFassett/matchina#readme",
@@ -21,6 +21,16 @@
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
       "require": "./dist/integrations/react.js"
+    },
+    "./zod": {
+      "types": "./dist/integrations/zod.d.ts",
+      "import": "./dist/integrations/zod.mjs",
+      "require": "./dist/integrations/zod.js"
+    },
+    "./valibot": {
+      "types": "./dist/integrations/valibot.d.ts",
+      "import": "./dist/integrations/valibot.mjs",
+      "require": "./dist/integrations/valibot.js"
     }
   },
   "main": "./dist/index.js",
@@ -29,15 +39,25 @@
   "files": [
     "dist"
   ],
+  "workspaces": [
+    ".",
+    "docs"
+  ],
   "scripts": {
-    "build": "unbuild && size-limit",
+    "build": "npm run build:lib && npm run build:docs",
+    "build:lib": "unbuild && size-limit",
+    "test-build": "npm run test:types && npm --workspace docs run check",
+    "build:docs": "npm --workspace docs run build",
     "dev": "vitest dev",
-    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test",
-    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test -w",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
+    "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "bun test && changelogen --release && npm publish && git push --follow-tags",
     "test": "bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
-    "build:docs": "cd docs && npm install && npm run build"
+    "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
+    "publish:lib": "npm publish --access public",
+    "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",
@@ -47,10 +67,19 @@
     "changelogen": "^0.5.0",
     "eslint": "^8.51.0",
     "eslint-config-unjs": "^0.2.1",
-    "mermaid": "10.6.0",
-    "prettier": "^3.0.3",
+    "prettier": "^3.6.2",
     "size-limit": "^10.0.1",
     "unbuild": "^2.0.0",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "zod": "^3.22.4",
+    "valibot": "^1.1.0"
+  },
+  "dependencies": {
+    "@astrojs/ts-plugin": "^1.10.4"
+  },
+  "peerDependencies": {
+    "immer": "^10.1.1",
+    "valibot": "^1.0.0",
+    "zod": "^3.0.0"
   }
 }

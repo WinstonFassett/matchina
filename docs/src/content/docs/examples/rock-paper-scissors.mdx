@@ -1,0 +1,37 @@
+---
+title: Rock-Paper-Scissors Game
+description: A game state machine demonstrating state transitions with conditional logic
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import RockPaperScissorsExample from "@code/examples/rock-paper-scissors/example";
+import statesCode from "@code/examples/rock-paper-scissors/states.ts?raw";
+import machineCode from "@code/examples/rock-paper-scissors/machine.ts?raw";
+import gameUtilsCode from "@code/examples/rock-paper-scissors/game-utils.ts?raw";
+import indexCode from "@code/examples/rock-paper-scissors/index.tsx?raw";
+import viewCode from "@code/examples/rock-paper-scissors/RPSAppView.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+import Mermaid from "@components/Mermaid";
+
+## Interactive Rock-Paper-Scissors Game
+
+<div className="not-content">
+  <RockPaperScissorsExample client:only="react" />
+</div>
+
+## Introduction
+
+This example demonstrates a Rock-Paper-Scissors game state machine that manages the game flow, tracks scores, and determines winners. It shows how state machines can handle complex conditional logic and state transitions in an interactive application.
+
+## Source Code
+
+<CodeTabs files={[
+  { name: "states.ts", code: statesCode, lang: "ts" },
+  { name: "machine.ts", code: machineCode, lang: "ts" },
+  { name: "game-utils.ts", code: gameUtilsCode, lang: "ts" },
+  { name: "RPSAppView.tsx", code: viewCode, lang: "tsx" },  
+  { name: "index.tsx", code: indexCode, lang: "tsx" },
+]}>
+
+</CodeTabs>

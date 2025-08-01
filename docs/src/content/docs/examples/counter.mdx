@@ -1,0 +1,43 @@
+---
+title: Counter State Machine
+description: A counter example with state data
+---
+
+import CounterExample from "@code/examples/counter/example";
+import machineCode from "@code/examples/counter/machine.ts?raw";
+import viewCode from "@code/examples/counter/CounterView.tsx?raw";
+import indexCode from "@code/examples/counter/index.tsx?raw";
+import CodeBlock from "@components/CodeBlock.astro";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A counter state machine that maintains a numeric value that can be incremented, decremented, and reset, demonstrating how to store and update data within a state.
+
+<div className="not-content">
+  <CounterExample client:only="react" />
+</div>
+
+## Implementation Details
+
+This example demonstrates:
+
+- Storing data within state using the `data` property
+- Self-transitions that preserve the state key but change the data
+- Using the `addEventApi` helper to create a clean API for transitions
+
+Unlike the toggle example which had two distinct states, this counter example uses a single state (`Active`) with different data values, showing how state machines can maintain internal data.
+
+## Machine Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "CounterView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Additional Notes
+
+- The counter uses transition functions that return a new state object with updated data
+- All transitions are self-transitions (staying in the `Active` state)
+- This pattern is common for state machines that need to track values but don't have distinct behavioral states

@@ -1,43 +1,67 @@
-import { createApi } from "./factory-machine-event-api";
+import { assignEventApi } from "./extras/zen";
+import { createMachine } from "./factory-machine";
 import {
+  FactoryMachineContext,
   FactoryMachineTransitions,
-  FactoryState,
-  createFactoryMachine,
-} from "./factory-machine";
-import { SpecRecord } from "./matchbox";
-import { States, defineStates } from "./states";
-import { KeysWithZeroArgs } from "./utility-types";
+} from "./factory-machine-types";
+import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
+import { KeysWithZeroRequiredArgs } from "./utility-types";
 
+/**
+ * Creates a strongly-typed state machine using the provided states, transitions, and initial state.
+ * Wraps the machine with additional utilities via `assignEventApi` for ergonomic usage.
+ *
+ * @template SF - State factory type
+ * @template TC - Transition table type
+ * @template FC - Machine context type (defaults to `{ states: SF; transitions: TC }`)
+ * @param states - State factory object defining all possible states.
+ * @param transitions - Transition table mapping state keys to allowed transitions.
+ * @param init - Initial state key or state object to start the machine.
+ * @returns A state machine instance with enhanced ergonomics.
+ *
+ * Example:
+ * ```ts
+ * import { matchina, effect, guard, defineStates, setup } from "matchina";
+ *
+ * const machine = matchina(
+ *   defineStates({
+ *     Idle: () => ({}),
+ *     Active: (user: string, someCondition: boolean) => ({ user, someCondition }),
+ *   }),
+ *   {
+ *     Idle: { activate: "Active" },
+ *     Active: { deactivate: "Idle" },
+ *   },
+ *   "Idle"
+ * );
+ *
+ * setup(machine)(
+ *   effect((ev) => {
+ *     console.log("Effect triggered for event:", ev.type);
+ *   }),
+ *   guard((ev) => ev.to.data.someCondition)
+ * );
+ *
+ * machine.activate("Alice", true); // Effect runs, guard checks someCondition
+ * machine.deactivate();
+ * ```
+ *
+ * @see {@link assignEventApi} - for ergonomic machine enhancement and setup support
+ * @see {@link addEventApi} - for adding event API methods to machines
+ *
+ * @source
+ * This function is a wrapper around `createMachine` that enhances the machine with additional utilities.
+ * It provides a more ergonomic API for working with state machines in TypeScript, including event trigger methods
+ * and a setup function for adding hooks and enhancers.
+ */
 export function matchina<
-  S extends SpecRecord,
-  T extends FactoryMachineTransitions<States<S>>,
+  SF extends KeyedStateFactory,
+  TC extends FactoryMachineTransitions<SF>,
+  FC extends FactoryMachineContext<SF> = { states: SF; transitions: TC },
 >(
-  stateConfig: S,
-  transitionConfig: T | ((states: States<S>) => T),
-  init:
-    | KeysWithZeroArgs<States<S>>
-    | FactoryState<States<S>>
-    | ((states: States<S>, transitions: T) => FactoryState<States<S>>),
+  states: SF,
+  transitions: TC,
+  init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ) {
-  const states = defineStates(stateConfig) as States<S>;
-  const transitions =
-    typeof transitionConfig === "function"
-      ? transitionConfig(states)
-      : transitionConfig;
-  const initialState =
-    typeof init === "function" ? init(states, transitions) : init;
-  const machine = createFactoryMachine(states, transitions, initialState);
-  const api = createApi(machine);
-  return {
-    ...api,
-    get state() {
-      return machine.getState();
-    },
-    get change() {
-      return machine.getChange();
-    },
-    get machine() {
-      return machine;
-    },
-  };
+  return assignEventApi(createMachine(states, transitions, init));
 }

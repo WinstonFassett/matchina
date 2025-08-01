@@ -1,1 +1,35 @@
-{}
+{
+  "jsxBracketSameLine": true,
+  "printWidth": 80,
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": false,
+  "semi": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "proseWrap": "preserve",
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "ignore",
+  "embeddedLanguageFormatting": "auto",
+  "plugins": [
+  ],
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "printWidth": 80,
+        "trailingComma": "none",
+        "bracketSpacing": true,
+        "singleQuote": false,
+        "proseWrap": "preserve",
+        "endOfLine": "lf",
+        "htmlWhitespaceSensitivity": "ignore",
+        "embeddedLanguageFormatting": "auto"  
+
+      }
+    }
+  ]
+}

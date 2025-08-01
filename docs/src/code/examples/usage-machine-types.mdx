@@ -1,0 +1,85 @@
+
+
+# Stores
+OK, stores can have state
+Well, they have data. It's not exactly state in the state machine.
+Stores have actions or mutations that can be declared by name or as mutator function functions
+
+Stores can have a full transition lifecycle around their data transitions
+Stores can have APIs for mutations
+
+# State Machines
+
+Machines have states and events 
+events are defined by transitions
+
+ a machine could use a store internally for tracking it stuff. The store would have a chain object with its from and to value or data and the machine.
+
+
+ Transition Machine?
+ primitive. no state lookup. no keys. just values
+
+ I feel like I should consolidate to like one thing
+
+ There's also the whole matter of having context in machines which could be useful, but I haven't thought through how that would work like would the context be part of the state or or not?
+
+ ValueTransitionMachine
+ what are transitions worth?
+
+OK, I think I've decided to get rid of transition machine which will lead me with factory machine and store machine and the ability to have API's on both
+
+
+# Store machines vs state machines and factory machines and how they can work together
+
+
+Store = data + mutations
+Machine = state + events
+MachineContext = store
+Factory Machine = Machine + keyed state factories
+
+Factory Machine extends Machine which uses/forks a store for its implementation
+But Machine should not mutate the orig store, just use it
+
+const store = createStoreMachine()
+const machine = Object.assign(
+  { store },
+  store,
+  {
+    // overrides and additions
+  }
+)
+maybe. if that works. 
+
+hooks on machine would amount to hooks on machine only unless explicitly overridden/delegated
+hmm. kinda weird
+
+want inner store thing to delegate its impl to the outer state machine thing
+
+
+
+
+# API's
+
+API's are just functions that take events and return events
+
+want apis for anything that has declarative transitions / mutations
+
+want assignEventApi for machines and stores
+
+mutationApi(store)
+eventApi(machine)
+
+createStore = params => Object.assign(
+  createStoreMachine(params),
+  storeApi(params)
+)
+
+matchina = params => Object.assign(
+  createMachine(params),
+  machineApi(params)
+)
+
+# Async TBD
+
+want async transitions basically
+and ability to await a send
