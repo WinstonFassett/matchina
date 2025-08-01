@@ -1,0 +1,1 @@
+function r(t,o){return t===void 0?!0:Array.isArray(t)?t.includes(o):t===o}function i(t){if(t.length===1&&typeof t[0]=="object"){const o=t[0];return[o.type,o.from,o.to]}return t}function u(t,...o){const[n,e,f]=i(o);return r(f,t?.to?.key)&&r(n,t?.type)&&r(e,t?.from?.key)}export{u as m};

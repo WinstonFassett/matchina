@@ -1,0 +1,1 @@
+import{r as o}from"./index.CRVbtxaI.js";import{c as u}from"./setup.DMifqvqR.js";function i(f,s=t=>t.data.effects){o.useEffect(()=>{const t=s(f);if(!t)return;const c=[];for(const n of t){const e=n(f);e&&c.push(e)}return u(c)},[f])}function r(f,s,t=[]){o.useEffect(()=>s[f]?.apply(s,t),t.concat(f))}function E(f,s){r(f.type,s,[f])}export{E as a,i as u};
