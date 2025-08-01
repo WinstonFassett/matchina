@@ -256,6 +256,10 @@ export default defineConfig({
                   link: "/examples/stopwatch-using-data-and-transition-functions",
                 },
                 {
+                  label: "With React State and State Effects",
+                  link: "/examples/stopwatch-using-react-state-and-state-effects",
+                },
+                {
                   label: "With React State and Effects",
                   link: "/examples/stopwatch-using-react-state-and-effects",
                 },
