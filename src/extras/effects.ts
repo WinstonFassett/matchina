@@ -58,7 +58,6 @@ export function handleEffects<
   }
 }
 
-
 // export function effectHandler<
 // EffectsConfig extends TaggedTypes,
 //   Exhaustive extends boolean = true,
@@ -75,13 +74,13 @@ export function handleEffects<
 //       exhaustive
 //     );
 //   };
-// } 
+// }
 
 //   )
 
 export interface EffectsProps<
   EffectsConfig extends TaggedTypes = TaggedTypes,
-  Exhaustive extends boolean = true
+  Exhaustive extends boolean = true,
 > {
   getEffects: (to: any) => undefined | EffectMatchbox[];
   matchers: MatchCases<EffectsConfig, any, Exhaustive>;
@@ -117,7 +116,6 @@ export interface EffectsProps<
 //     );
 //   };
 // }
-
 
 // export function mountEffects<
 //   E,

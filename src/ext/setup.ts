@@ -52,7 +52,7 @@ export const createDisposer = (fns: DisposeFunc[]) => () => {
  * const dispose = extensionSetup({});
  * dispose(); // Logs 'B cleanup' then 'A cleanup'
  * ```
-* @source
+ * @source
  * This function is useful for creating a composite setup that can be applied to a target,
  * allowing for modular and reusable setup logic. It allows multiple setups to be combined into one,
  * making it easier to manage complex initialization logic in applications.

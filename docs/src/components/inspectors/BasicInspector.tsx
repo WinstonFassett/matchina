@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 
-export const MachineVizBasic = memo(
+export const BasicInspector = memo(
   ({
     config,
     stateKey,
@@ -64,7 +64,7 @@ export const MachineVizBasic = memo(
   }
 );
 
-export default MachineVizBasic;
+export default BasicInspector;
 
 export function useDebouncedValue<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value);

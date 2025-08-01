@@ -12,6 +12,8 @@ export default function PromiseFetcherExample() {
         <PromiseFetcherView {...props} onReset={reset} />
       )}
       showRawState={true}
+      inspectorType="mermaid"
+      interactive={false}
     />
   );
 }

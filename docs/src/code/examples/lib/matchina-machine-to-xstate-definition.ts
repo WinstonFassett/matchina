@@ -2,7 +2,10 @@ import type { FactoryMachine, StateMatchboxFactory } from "matchina";
 import { getStateValues, resolveState } from "./state-utils";
 
 export function getXStateDefinition<
-  F extends FactoryMachine<{ states: StateMatchboxFactory<any>; transitions: any }>,
+  F extends FactoryMachine<{
+    states: StateMatchboxFactory<any>;
+    transitions: any;
+  }>,
 >(machine: F) {
   const initialState = machine.getState();
   const stateValues = getStateValues(machine.states);

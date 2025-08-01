@@ -13,13 +13,13 @@ The fetcher examples demonstrate how to use Matchina's promise machines to handl
 
 <CardGrid>
   <LinkCard
-    title="Basic Fetcher"
-    href="/examples/fetcher-basic/"
+    title="Promise Fetcher"
+    href="./promise-machine-basic/"
     description="Type-safe promise machine for handling async operations"
   />
   <LinkCard
     title="Advanced Fetcher"
-    href="/examples/fetcher-advanced/"
+    href="./fetcher-advanced/"
     description="Robust fetcher with retry, timeout, and comprehensive error handling"
   />
 </CardGrid>
@@ -30,25 +30,25 @@ The fetcher examples demonstrate how to use Matchina's promise machines to handl
 
 The fetcher examples demonstrate two approaches to implementing async data fetching:
 
-1. **Basic Fetcher** (`fetcher-basic`): Type-safe implementation with clear state transitions
+1. **Promise Fetcher** (`promise-machine-fetcher`): Type-safe implementation with clear state transitions
 2. **Advanced Fetcher** (`fetcher-advanced`): Full-featured implementation with robust error handling and recovery mechanisms
 
 ### Key Differences
 
-- **Basic Fetcher vs Advanced Fetcher**: Advanced Fetcher adds robust error handling, retry logic, timeout support, and a more comprehensive UI
+- **Promise Fetcher vs Advanced Fetcher**: Advanced Fetcher adds robust error handling, retry logic, timeout support, and a more comprehensive UI
 
 ### Key Features by Example
 
 | Example          | Type Safety | Error Handling | Retry Logic | Timeout | Abort Capability | UI Integration |
 | ---------------- | ----------- | -------------- | ----------- | ------- | ---------------- | -------------- |
-| Basic Fetcher    | Good        | Standard       | No          | No      | No               | Interactive    |
+| Promise Fetcher    | Good        | Standard       | No          | No      | No               | Interactive    |
 | Advanced Fetcher | Excellent   | Comprehensive  | Yes         | Yes     | Yes              | Comprehensive  |
 
 ## Implementation Details
 
-### Basic Fetcher
+### Promise Fetcher
 
-The Basic Fetcher example demonstrates:
+The Promise Fetcher example demonstrates:
 
 - Core promise state machine with Idle, Pending, Resolved, and Rejected states
 - Type-safe transitions between states
@@ -80,20 +80,20 @@ All fetcher examples demonstrate these core patterns:
 
 ## Recommended Example
 
-If you're new to Matchina's promise handling, start with the [Basic Fetcher](/examples/fetcher-basic/) example. It provides a clear implementation of the core concepts without additional complexity.
+If you're new to Matchina's promise handling, start with the [Promise Fetcher](/matchina/examples/promise-machine-fetcher/) example. It provides a clear implementation of the core concepts without additional complexity.
 
-For production use cases, the [Advanced Fetcher](/examples/fetcher-advanced/) example demonstrates patterns you'll likely need in real-world applications, such as retry logic and error handling.
+For production use cases, the [Advanced Fetcher](/matchina/examples/fetcher-advanced/) example demonstrates patterns you'll likely need in real-world applications, such as retry logic and error handling.
 
 ## Redundant Examples?
 
 While we've provided multiple implementations to showcase different patterns, you might wonder which provide truly unique value:
 
-- **Simple Fetch vs Basic Fetcher**: The Basic Fetcher is a more polished implementation of what Simple Fetch demonstrates, with better type safety.
+- **Simple Fetch vs Promise Fetcher**: The Promise Fetcher is a more polished implementation of what Simple Fetch demonstrates, with better type safety.
 - **Advanced Fetch vs Advanced Fetcher**: The Advanced Fetcher adds significant capabilities (retry, timeout, abort) that Advanced Fetch doesn't have.
 
 If you're looking for the most distinct implementations, focus on:
 
-1. [Basic Fetcher](/examples/fetcher-basic/) - Clean, type-safe promise machine implementation
-2. [Advanced Fetcher](/examples/fetcher-advanced/) - Production-ready implementation with comprehensive error handling
+1. [Promise Fetcher](/matchina/examples/promise-machine-fetcher/) - Clean, type-safe promise machine implementation
+2. [Advanced Fetcher](/matchina/examples/fetcher-advanced/) - Production-ready implementation with comprehensive error handling
 
-The Simple Fetch and Advanced Fetch examples provide simpler implementations that may be helpful for learning purposes, but the Basic Fetcher and Advanced Fetcher examples demonstrate the full power of Matchina's promise handling capabilities.
+The Simple Fetch and Advanced Fetch examples provide simpler implementations that may be helpful for learning purposes, but the Promise Fetcher and Advanced Fetcher examples demonstrate the full power of Matchina's promise handling capabilities.

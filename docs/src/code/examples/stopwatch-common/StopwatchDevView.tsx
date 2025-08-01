@@ -1,4 +1,4 @@
-import StateMachineMermaidDiagram from "@components/MachineViz";
+import MermaidInspector from "@components/inspectors/MermaidInspector";
 import { eventApi } from "matchina";
 import { useMemo } from "react";
 import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
@@ -19,7 +19,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
     <div style={{ width: "100%", display: "flex", gap: "1em" }}>
       <div style={{ flex: 2 }}>
         <StopwatchView stopwatch={stopwatch} />
-        <StateMachineMermaidDiagram
+        <MermaidInspector
           config={config}
           stateKey={stopwatch.getState().key}
           actions={actions}

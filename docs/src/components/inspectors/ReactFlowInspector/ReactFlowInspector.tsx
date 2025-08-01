@@ -40,7 +40,7 @@ interface ReactFlowInspectorProps {
   prevState?: string;
   dispatch: (event: { type: string }) => void;
   mode?: any;
-  edgesClickable?: boolean; // Controls whether edges can be clicked to trigger transitions
+  interactive?: boolean; // Controls whether edges can be clicked to trigger transitions
 }
 
 const nodeTypes: NodeTypes = {
@@ -57,7 +57,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   // lastEvent,
   prevState: previousState,
   dispatch,
-  edgesClickable = true, // Default to true for backward compatibility
+  interactive = true, // Default to true for backward compatibility
 }) => {
   // const [previousState, setPreviousState] = useState<string | null>(null);
   // const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
@@ -128,7 +128,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     nodes,
     value,
     previousState,
-    edgesClickable
+    interactive
   );
 
   // Update edges when nodes change (positions or states)

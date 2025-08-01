@@ -10,6 +10,8 @@ export default function RockPaperScissorsExample() {
       machine={machine as any}
       AppView={RPSAppView}
       showRawState={true}
+      inspectorType="react-flow"
+      interactive={false}
     />
   );
 }

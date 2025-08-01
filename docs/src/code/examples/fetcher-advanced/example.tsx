@@ -25,6 +25,7 @@ export default function FetcherExample() {
         machine={fetcher as any}
         AppView={FetcherAppView}
         showRawState={true}
+        inspectorType="mermaid"
       />
     </div>
   );

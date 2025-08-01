@@ -8,7 +8,7 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 # Transition Flow: Lifecycle Hooks
 
-All machine types implement the same generic [EventLifecycle](/reference/interfaces/eventlifecycle) and hook methods for consistency. This allows you to use the same patterns across different machine types, whether you're using a [FactoryMachine](/guides/machines), a [StateMachine](/guides/state-machine-interface), or a [StoreMachine](/reference/interfaces/storemachine/).
+All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods for consistency. This allows you to use the same patterns across different machine types, whether you're using a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/).
 
 When you call `machine.send(type, ...params)`, the following flow occurs:
 

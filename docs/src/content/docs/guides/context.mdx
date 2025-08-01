@@ -119,7 +119,7 @@ Context becomes even more powerful when combined with lifecycle hooks:
 ```ts
 import { matchina, setup } from "matchina";
 
-const machine = matchina(/* ... */);
+const machine = matchina(/matchina/* ... */);
 
 // Access context in lifecycle hooks
 setup(machine, {
@@ -150,6 +150,6 @@ setup(machine, {
 
 Now that you understand how to use context in state machines, learn about:
 
-- [Lifecycle Hooks](/guides/lifecycle) - Add behavior during state transitions
-- [Pattern Matching](/guides/typeguards) - Work with state data in a type-safe way
-- [React Integration](/guides/integrations) - Use state context with React components
+- [Lifecycle Hooks](/matchina/guides/lifecycle) - Add behavior during state transitions
+- [Pattern Matching](/matchina/guides/pattern-matching) - Work with state data in a type-safe way
+- [React Integration](/matchina/guides/react) - Use state context with React components

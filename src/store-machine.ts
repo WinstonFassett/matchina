@@ -62,7 +62,7 @@ export interface StoreChange<T> {
 }
 /**
  * Creates a minimal, event-driven store machine for a single value.
- * 
+ *
  * Usage:
  * ```ts
  * // Create a store

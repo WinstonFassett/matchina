@@ -3,16 +3,19 @@
   "type": "module",
   "version": "0.1.0",
   "scripts": {
+    "postinstall": "npm run build:typedoc-plugin",
     "dev": "astro dev",
     "dev:pdf": "npx starlight-to-pdf http://localhost:4321",
     "start": "astro dev",
     "check": "astro check",
     "build:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs",
     "watch:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs --watch",
+    "prebuild": "npm run build:typedoc-plugin",
     "build": "rm -rf dist && npm run build:typedoc-plugin && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "npx astro deploy --site https://winstonfassett.github.io/matchina || echo 'Set up astro deploy for gh-pages'"
+    "predeploy": "npm run build",
+    "deploy": "npx gh-pages -d dist --branch gh-pages --dotfiles"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

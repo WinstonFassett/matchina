@@ -25,6 +25,7 @@ type ForceGraphInspectorProps = {
   lastEvent?: string;
   prevState?: string;
   dispatch: (event: { type: string }) => void;
+  interactive?: boolean;
 };
 
 function findNode(nodes: { id: string }[], id: string) {
@@ -75,6 +76,7 @@ export default function ForceGraphInspector({
   lastEvent,
   prevState,
   dispatch,
+  interactive = true,
 }: ForceGraphInspectorProps) {
   const baseFontSize = 4;
   console.log("ForceGraphInspector", valueFromProp, lastEvent, prevState);
@@ -288,7 +290,9 @@ export default function ForceGraphInspector({
         .linkDirectionalParticleWidth(8)
         .linkHoverPrecision(10)
         .onLinkClick(({ name }: { name: string }) => {
-          dispatch({ type: name });
+          if (interactive) {
+            dispatch({ type: name });
+          }
         });
       // Increase node spacing and collision radius
       if (Graph.d3Force) {

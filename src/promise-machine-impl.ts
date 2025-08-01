@@ -42,7 +42,7 @@ export const PROMISE_TRANSITIONS = {
 /**
  * Creates a state machine for managing promise lifecycles.
  * Handles Idle, Pending, Resolved, and Rejected states, and transitions for executing, resolving, and rejecting promises.
- * 
+ *
  * Usage:
  * ```ts
  * const machine = createPromiseMachine((...args) => fetch(...args));
@@ -88,10 +88,10 @@ export function createPromiseMachine<
         .catch((error) => {
           console.log("Promise rejected:", error);
           if (currentPromise === promise) {
-            console.log('sending reject')
+            console.log("sending reject");
             machine.send("reject", error);
-            console.log('relaying rejection')
-            console.log('machine state', machine.getState())
+            console.log("relaying rejection");
+            console.log("machine state", machine.getState());
             reject(error);
           }
         });

@@ -10,7 +10,7 @@ import { defineConfig } from "astro/config";
 // https://astro.build/config
 export default defineConfig({
   site: "https://winstonfassett.github.io",
-  base: process.env.NODE_ENV === "production" ? "matchina" : undefined,
+  base: "matchina",
   build: {
     assets: "assets",
   },
@@ -37,7 +37,7 @@ export default defineConfig({
             sort: "source-order",
             entryPointStrategy: "expand",
             tableColumnSettings: {
-              hideSources: true
+              hideSources: true,
             },
             blockTags: [
               "@deprecated",
@@ -45,7 +45,7 @@ export default defineConfig({
               "@example",
               "@parameters",
               "@typeParameters",
-              "@source", 
+              "@source",
             ],
             // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
@@ -256,8 +256,8 @@ export default defineConfig({
                   link: "/examples/stopwatch-using-data-and-transition-functions",
                 },
                 {
-                  label: "With Effect Hooks",
-                  link: "/examples/stopwatch-using-react-state-and-state-effects",
+                  label: "With React State and Effects",
+                  link: "/examples/stopwatch-using-react-state-and-effects",
                 },
                 {
                   label: "With External React State",

@@ -21,9 +21,10 @@ export type PromiseStateCreators<F extends PromiseCallback, E> = {
   Resolved: (data: Awaited<ReturnType<F>>) => Awaited<ReturnType<F>>;
 };
 
-export type PromiseStates<F extends PromiseCallback, E = Error> = StateMatchboxFactory<
-  PromiseStateCreators<F, E>
->;
+export type PromiseStates<
+  F extends PromiseCallback,
+  E = Error,
+> = StateMatchboxFactory<PromiseStateCreators<F, E>>;
 
 export type PromiseCallback = (...args: any[]) => Promise<any>;
 

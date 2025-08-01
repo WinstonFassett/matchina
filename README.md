@@ -556,7 +556,7 @@ For detailed documentation, examples, and API reference, visit:
 - [Factory Machines](https://winstonfassett.github.io/matchina/guides/machines)
 - [Promise Handling](https://winstonfassett.github.io/matchina/guides/promises)
 - [Lifecycle Hooks](https://winstonfassett.github.io/matchina/guides/lifecycle)
-- [React Integration](https://winstonfassett.github.io/matchina/guides/integrations)
+- [React Integration](https://winstonfassett.github.io/matchina/guides/react)
 - [Full Examples](https://winstonfassett.github.io/matchina/examples)
 
 ## Integrations

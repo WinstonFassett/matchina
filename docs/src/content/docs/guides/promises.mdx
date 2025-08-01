@@ -153,7 +153,7 @@ type User = {
 // Create a typed fetcher
 const userFetcher = createPromiseMachine(
   async (userId: string): Promise<User> => {
-    const response = await fetch(`/api/users/${userId}`);
+    const response = await fetch(`/reference/users/${userId}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch user: ${response.statusText}`);
     }
@@ -209,5 +209,5 @@ Now that you understand Promise Machines, explore these related guides:
 
 - [Lifecycle & Hooks](./lifecycle/) - Add more advanced hooks for state changes
 - [Factory Machines](./machines/) - Create regular state machines
-- [React Integration](./integrations/) - Use promise machines in React
+- [React Integration](./react/) - Use promise machines in React
 ````

@@ -10,6 +10,8 @@ export default function AuthFlowExample() {
       machine={machine as any}
       AppView={AuthFlowView}
       showRawState={true}
+      inspectorType="react-flow"
+      interactive={false}
     />
   );
 }

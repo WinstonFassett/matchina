@@ -7,11 +7,101 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 import CodeBlock from "@components/CodeBlock.astro";
 import code from "@code/examples/usage-typeguards.ts?raw";
+import stopwatchRaw from "@code/examples/stopwatch/machine.ts?raw";
+import trafficLightRaw from "@code/examples/traffic-light-extended/states.ts?raw";
+
 
 ## What are States?
 
-States in Matchina represent the various conditions or configurations that a state machine can be in. Each state can have its own data structure and behavior, allowing for complex interactions and transitions.
+In Matchina, keyed object states are elegant strongly-typed building blocks that enable powerful type inference and pattern matching.
+
+
+### Keyed State Values
+
+[KeyedState](/matchina/reference/interfaces/keyedstate/) is the foundational state type in Matchina. It only has a `key` property, which is used to identify the state. From here, you can build more complex state types by adding more properties.
+
+```ts
+export interface KeyedState {
+  key: string;
+}
+```
+
+### Factory States
+
+Matchina provides [`defineStates`](/matchina/reference/functions/definestates/) to create a [StateMatchboxFactory](/matchina/reference/type-aliases/statematchboxfactory/). These state factories create [StateMatchbox](matchina/reference/interfaces/statematchbox/) instances as type-safe tagged unions.
+
+This means each state:
+- Has a unique key (tag)
+- Can carry its own data payload
+- Supports pattern matching
+- Has built-in type guards
 
 ## Using States
 
-TODO
+### Defining States
+
+The primary way to define states is using the `defineStates` function. This creates a type-safe state factory:
+
+```ts
+const states = defineStates({
+  Stopped: (elapsed = 0) => ({ elapsed }),
+  Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
+  Suspended: (elapsed = 0) => ({ elapsed }),
+});
+```
+
+Each key in the configuration becomes a state constructor that:
+- Infers parameter types automatically
+- Creates properly typed state instances
+- Provides type-safe access to state data
+
+### State Factory Types
+
+The `defineStates` function is a thin wrapper around `matchboxFactory` that sets the tag property to "key". You can think of it as:
+
+```ts
+const states = matchboxFactory(config, "key");
+```
+
+This means states inherit all the powerful features of Matchboxes:
+
+1. **Factory Methods**: Create state instances with proper typing
+   ```ts
+   const stoppedState = states.Stopped(0);
+   const tickingState = states.Ticking(42);
+   ```
+
+2. **Type Guards**: Check state types safely
+   ```ts
+   if (state.is("Ticking")) {
+     // TypeScript knows state.data has elapsed and at
+     console.log(state.data.at);
+   }
+   ```
+
+3. **Pattern Matching**: Match against state variants exhaustively
+   ```ts
+   const getDisplay = (state) => state.match({
+     Stopped: ({ elapsed }) => `${elapsed}s`,
+     Ticking: ({ elapsed }) => `${elapsed}s...`,
+     Suspended: ({ elapsed }) => `${elapsed}s (paused)`,
+   });
+   ```
+
+
+## Related Concepts
+
+To fully understand and use states in Matchina, explore these related topics:
+
+- [Matchbox Factories](./matchbox-factories/) - The foundation of Matchina's type-safe state system
+- [Factory Machines](./machines/) - How states are used in complete state machines
+- [Type Safety](./matchbox-typescript-inference/) - Understanding type inference and guards
+
+## Next Steps
+
+Now that you understand states, you might want to:
+
+1. Learn about [Factory Machines](./machines/) to use states in a complete system
+2. Explore [Lifecycle Hooks](./lifecycle/) to react to state changes
+3. Study [Effects](./effects/) to manage side effects in your state machines
+4. Try [Promise Machines](./promises/) for handling async operations

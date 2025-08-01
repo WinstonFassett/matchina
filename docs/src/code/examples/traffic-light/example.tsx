@@ -11,7 +11,7 @@ export default function TrafficLightExample() {
       machine={machine as any}
       AppView={TrafficLightView}
       showRawState={true}
-      inspectorType="force-graph"
+      inspectorType="react-flow"
     />
   );
 }

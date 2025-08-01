@@ -86,9 +86,9 @@ export function transitionHook<FC extends FactoryMachineContext>(
  * ```ts
  * setup(machine)(
  *   transitionHooks(
- *     { 
+ *     {
  *       // optional event filters
- *       from: "Idle", type: "start", to: "Running", 
+ *       from: "Idle", type: "start", to: "Running",
  *         // optional hook functions
  *         transition: transitionFn,
  *         guard: guardFn,

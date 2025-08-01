@@ -1,6 +1,6 @@
 import mermaid from "mermaid";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import Mermaid from "./Mermaid";
+import Mermaid from "../Mermaid";
 
 mermaid.initialize({
   // startOnLoad: true
@@ -138,15 +138,17 @@ ${rows.join("\n")}
 
 let lastId = 0;
 
-export const StateMachineMermaidDiagram = memo(
+const MermaidInspector = memo(
   ({
     config,
     stateKey,
     actions,
+    interactive = true,
   }: {
     config: any;
     stateKey: string;
     actions?: Record<string, any>;
+    interactive?: boolean;
   }) => {
     const [id] = useState((lastId++).toString());
     const { states } = config;
@@ -173,19 +175,21 @@ export const StateMachineMermaidDiagram = memo(
             const [state, type] = lines;
             const action = actions?.[type];
             p.innerHTML = type; // Show only the event type
-            p.style.cursor = action ? "pointer" : "default";
-            p.onclick = action ? () => action() : null;
+            const clickable = action && interactive;
+            p.onclick = clickable ? () => action() : null;
             if (action && state === debouncedStateKey) {
               p.style.backgroundColor = "var(--sl-color-gray-5)";
               p.style.color = "var(--sl-color-accent-high)";
-              p.style.textDecoration = "underline";
+              if (clickable) {
+                p.style.textDecoration = "underline";
+                p.style.cursor = action ? "pointer" : "default";
+              }
             } else {
               p.style.backgroundColor = "var(--sl-color-bg)";
               // p.style.backgroundColor = "transparent";
               p.style.color = "var(--sl-color-gray-3)";
               // p.style.textDecoration = "none";
             }
-            console.log("ok", span, state, debouncedStateKey);
           });
         }, 1);
       },
@@ -209,7 +213,7 @@ export const StateMachineMermaidDiagram = memo(
   }
 );
 
-export default StateMachineMermaidDiagram;
+export default MermaidInspector;
 
 export function useDebouncedValue<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);

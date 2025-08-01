@@ -50,7 +50,7 @@ export const useStateMachineEdges = (
   nodes: Node[],
   currentState: string,
   previousState?: string,
-  edgesClickable: boolean = true
+  interactive: boolean = true
 ) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
@@ -185,7 +185,7 @@ export const useStateMachineEdges = (
           zIndex,
           data: {
             event: transition.event,
-            isClickable: edgesClickable && transition.from === currentState,
+            isClickable: interactive && transition.from === currentState,
           },
         });
       });
@@ -245,7 +245,7 @@ export const useStateMachineEdges = (
           zIndex,
           data: {
             event: transition.event,
-            isClickable: edgesClickable && transition.from === currentState,
+            isClickable: interactive && transition.from === currentState,
             isSelfTransition: true,
             selfLoopOffset: 30, // Smaller offset to keep loops closer to nodes
             // Distribute around the 4 sides of the node based on index
@@ -267,7 +267,7 @@ export const useStateMachineEdges = (
     previousState,
     setEdges,
     machine,
-    edgesClickable,
+    interactive,
   ]);
 
   return {

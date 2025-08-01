@@ -3,8 +3,8 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, type ComponentType } from "react";
 import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import MachineViz from "./MachineViz";
-import MachineVizBasic from "./MachineVizBasic";
+import MermaidInspector from "./inspectors/MermaidInspector";
+import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
 import ReactFlowInspector from "./inspectors/ReactFlowInspector";
 
@@ -18,6 +18,7 @@ interface MachineExampleWithChartProps {
   showRawState?: boolean;
   title?: string;
   inspectorType?: "mermaid" | "force-graph" | "react-flow" | "basic";
+  interactive?: boolean;
 }
 
 /**
@@ -30,7 +31,8 @@ export function MachineExampleWithChart({
   AppView,
   showRawState = false,
   title,
-  inspectorType = "react-flow",
+  inspectorType = "force-graph",
+  interactive = true,
 }: MachineExampleWithChartProps) {
   useMachine(machine);
   const currentState = machine.getState();
@@ -48,17 +50,18 @@ export function MachineExampleWithChart({
         {/* Mermaid diagram */}
         <div className="flex-1">
           {inspectorType === "basic" && (
-            <MachineVizBasic
+            <BasicInspector
               config={config}
               stateKey={currentState.key}
               actions={actions as any}
             />
           )}
           {inspectorType === "mermaid" && (
-            <MachineViz
+            <MermaidInspector
               config={config}
               stateKey={currentState.key}
               actions={actions as any}
+              interactive={interactive}
             />
           )}
           {inspectorType === "force-graph" && (
@@ -68,6 +71,7 @@ export function MachineExampleWithChart({
               prevState={lastChange.from?.key}
               definition={config}
               dispatch={({ type }) => machine.send(type)}
+              interactive={interactive}
             />
           )}
           {inspectorType === "react-flow" && (
@@ -78,6 +82,7 @@ export function MachineExampleWithChart({
               mode={currentState.data}
               definition={config}
               dispatch={({ type }) => machine.send(type)}
+              interactive={interactive}
             />
           )}
         </div>

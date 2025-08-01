@@ -10,6 +10,8 @@ export default function AsyncCalculatorExample() {
       machine={calculator}
       AppView={AsyncCalculatorView}
       showRawState={true}
+      inspectorType="mermaid"
+      interactive={false}
     />
   );
 }

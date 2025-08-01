@@ -27,7 +27,7 @@ export function bindEffects<
 //  * @param matchers - Object mapping effect types to handler functions
 //  * @param exhaustive - Whether to enforce exhaustive matching (default: false)
 //  * @returns A function to unmount the effects when no longer needed
-//  * 
+//  *
 //  * This function sets up the machine to handle effects based on the provided matchers.
 //  * It executes the effects once immediately after mounting.
 //  * It returns a teardown function to clean up the effects when no longer needed.
@@ -58,7 +58,7 @@ export function bindEffects<
 //   getEffects: (state: any) => EffectMatchbox[] | undefined,
 //   matchers: MatchCases<EffectsConfig, any, Exhaustive>,
 //   exhaustive = false as Exhaustive
-// ) {  
+// ) {
 //   // setup future effects
 //   const teardown = bindEffects(machine, getEffects, matchers, exhaustive)
 //   // handle immediate effects

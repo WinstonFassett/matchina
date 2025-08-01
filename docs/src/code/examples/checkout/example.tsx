@@ -11,6 +11,7 @@ export default function CheckoutExample() {
       AppView={CheckoutView}
       showRawState={true}
       inspectorType="react-flow"
+      interactive={false}
     />
   );
 }

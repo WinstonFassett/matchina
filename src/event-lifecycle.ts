@@ -8,7 +8,7 @@ const EmptyGuard = <E>(_event: E) => true;
  * Lifecycle interface defines the methods for managing state transitions and effects.
  * Implemented by {@link StateMachine} and {@link StoreMachine} to handle state changes.
  * It provides a structured way to handle state changes, including guards, effects, and notifications.
- * 
+ *
  * Lifecycle steps:
  * 1. `transition(ev)` - Triggers the transition lifecycle, handling all steps for processing a change event.
  * 2. `guard(ev)` - Checks if the transition is allowed.

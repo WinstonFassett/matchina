@@ -23,12 +23,11 @@ export const isEnhancedFunction = <F extends Func>(
  * as well as a reference to the original function.
  * @see {@link enhanceFunction}, {@link enhanceMethod} and {@link createMethodEnhancer} for creating enhanced functions.
  * @see {@link isEnhancedFunction} for checking if a function is enhanced.
- * 
+ *
  */
 export type EnhancedFunc<F extends Func> = F & FuncEnhancer<F>;
 
-export interface FuncEnhancer<F extends Func>
-{
+export interface FuncEnhancer<F extends Func> {
   add: (...enhancer: Funcware<F>[]) => void;
   remove: (...enhancer: Funcware<F>[]) => void;
   has: (...enhancer: Funcware<F>[]) => boolean;
@@ -40,7 +39,7 @@ export interface FuncEnhancer<F extends Func>
  * Extends a method on a single target using funcware, allowing you to intercept and augment
  * the method's behavior. The funcware receives the original method and its parameters, and can
  * return a new value or modify the call.
- * 
+ *
  * Usage:
  * ```ts
  * const disposer = enhanceMethod(obj, 'greet', (next) => (name) => {
@@ -59,7 +58,7 @@ export interface FuncEnhancer<F extends Func>
  * @param methodName - The name of the method to enhance
  * @param extend - Funcware (enhancer) that receives the original method and params
  * @returns A disposer function that restores the previous method when called
- * 
+ *
  * This function is useful for dynamically extending or wrapping methods on objects,
  * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,
  * plugin, or extension systems where you want to intercept method calls and restore the original

@@ -5,12 +5,12 @@ import { EntryListener } from "./entry-exit-types";
  *
  * When the test function returns true for an event, the entryListener is called and may return an exitListener.
  * The exitListener (if returned) will be called on the next event before re-evaluating the test.
- * 
+ *
  * Usage:
  * ```ts
  * when(
  *   function testCondition(event) { return true },
- *   function entryListener(event) { 
+ *   function entryListener(event) {
  *     // Handle condition entry logic
  *     return functionExitListener(exitEvent) {
  *       // Handle condition exit logic
