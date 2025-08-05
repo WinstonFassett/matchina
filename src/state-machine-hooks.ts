@@ -8,7 +8,10 @@ import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
  * Creates a lifecycle hook enhancer for a given StateMachine method key.
  * Returns a function that applies the hook and provides a disposer to remove it.
  *
- * Usage: `hookSetup("before")(config)(machine)`
+ * Usage:
+ * ```ts
+ * hookSetup("before")(config)(machine)
+ * ```
  */
 export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
@@ -23,7 +26,10 @@ export const hookSetup =
  * Composes two event handler functions for a state machine lifecycle method.
  * The inner handler runs first, then the outer handler receives its result.
  *
- * Usage: `composeHandlers(outer, inner)(event)`
+ * Usage:
+ * ```ts
+ * composeHandlers(outer, inner)(event)
+ * ```
  */
 export const composeHandlers =
   <E extends TransitionEvent>(
@@ -37,7 +43,10 @@ export const composeHandlers =
  * Combines two guard functions for a state machine transition.
  * Both guards must return true for the transition to proceed.
  *
- * Usage: `combineGuards(first, next)(event)`
+ * Usage:
+ * ```ts
+ * combineGuards(first, next)(event)
+ * ```
  */
 export const combineGuards =
   <E extends TransitionEvent>(
@@ -56,7 +65,10 @@ export const combineGuards =
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.before}.
  *
- * Usage: `setup(machine)(before(ev => {}))`
+ * Usage:
+ * ```ts
+ * setup(machine)(before(ev => {}))
+ * ```
  */
 export const before = hookSetup("before");
 /**
@@ -65,7 +77,10 @@ export const before = hookSetup("before");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.transition}.
  *
- * Usage: `setup(machine)(transition(middleware))`
+ * Usage:
+ * ```ts
+ * setup(machine)(transition(middleware))
+ * ```
  */
 export const transition = hookSetup("transition");
 /**
@@ -74,7 +89,10 @@ export const transition = hookSetup("transition");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.resolveExit}.
  *
- * Usage: `setup(machine)(resolveExit(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(resolveExit(fn))
+ * ```
  */
 export const resolveExit = hookSetup("resolveExit");
 /**
@@ -83,7 +101,10 @@ export const resolveExit = hookSetup("resolveExit");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.guard}.
  *
- * Usage: `setup(machine)(guard(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(guard(fn))
+ * ```
  */
 export const guard = hookSetup("guard");
 /**
@@ -104,7 +125,10 @@ export const update = hookSetup("update");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.handle}.
  *
- * Usage: `setup(machine)(handle(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(handle(fn))
+ * ```
  */
 export const handle = hookSetup("handle");
 // #endregion
@@ -116,7 +140,10 @@ export const handle = hookSetup("handle");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.effect}.
  *
- * Usage: `setup(machine)(effect(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(effect(fn))
+ * ```
  */
 export const effect = hookSetup("effect");
 /**
@@ -125,7 +152,10 @@ export const effect = hookSetup("effect");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.leave}.
  *
- * Usage: `setup(machine)(leave(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(leave(fn))
+ * ```
  */
 export const leave = hookSetup("leave");
 /**
@@ -134,7 +164,10 @@ export const leave = hookSetup("leave");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.enter}.
  *
- * Usage: `setup(machine)(enter(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(enter(fn))
+ * ```
  */
 export const enter = hookSetup("enter");
 /**
@@ -143,7 +176,10 @@ export const enter = hookSetup("enter");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.after}.
  *
- * Usage: `setup(machine)(after(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(after(fn))
+ * ```
  */
 export const after = hookSetup("after");
 /**
@@ -152,6 +188,9 @@ export const after = hookSetup("after");
  * Returns a disposer to undo the enhancement.
  * See {@link StateMachine.notify}.
  *
- * Usage: `setup(machine)(notify(fn))`
+ * Usage:
+ * ```ts
+ * setup(machine)(notify(fn))
+ * ```
  */
 export const notify = hookSetup("notify");

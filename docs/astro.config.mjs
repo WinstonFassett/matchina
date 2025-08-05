@@ -197,7 +197,7 @@ export default defineConfig({
             },
             {
               label: "React Integration",
-              link: "/guides/integrations",
+              link: "/guides/react",
             },
           ],
         },
