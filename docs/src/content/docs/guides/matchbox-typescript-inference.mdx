@@ -25,7 +25,7 @@ import code from "@code/examples/usage-typeguards.ts?raw";
 
 One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
 
-````ts
+```ts
 // Calculate area with pattern matching
 const getArea = (shape) => shape.match({
   Circle: ({ radius }) => Math.PI * radius * radius,
@@ -40,26 +40,6 @@ const getPerimeter = (shape) => shape.match({
   // Error: Property 'Triangle' is missing in type '...'
 });
 ```
-
-{/* ## Type Guards with Type Narrowing
-
-Matchbox provides type guards with the `is` method for type-safe narrowing:
-
-```ts
-// Type guard with automatic type narrowing
-if (circle.is("Circle")) {
-  // TypeScript knows circle.data has radius
-  console.log(`Radius: ${circle.data.radius}`);
-
-  // These would be TypeScript errors:
-  // console.log(circle.data.width);  // Error: Property 'width' does not exist...
-  // console.log(circle.data.base);   // Error: Property 'base' does not exist...
-}
-
-// Use in a filter
-const circles = [circle, rectangle, triangle].filter(s => s.is("Circle"));
-// TypeScript knows circles contains only Circle shapes
-``` */}
 
 ## Type Guards
 
@@ -115,14 +95,6 @@ const largeCircles = shapes.filter(
 );
 console.log(`Found ${largeCircles.length} large circles`);
 ````
-
-{/*
-
-## Complete Example
-
-Here's a complete example demonstrating various type guard features:
-
-<CodeBlock twoslash lang="ts" code={code} /> */}
 
 ## Benefits of Type Guards
 
