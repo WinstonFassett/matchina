@@ -458,17 +458,28 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   // RouteLayouts: render layouts from parent→child; minimal stub uses single leaf
   type LayoutMap = { [K in RouteName]?: React.ComponentType<ParamsOf<K>> };
   const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }> = ({ layouts, children }) => {
-    const matches = useMatches();
-    if (matches.length === 0) return <>{children ?? null}</>;
-    // Build nested elements from root→leaf; with stub we have only one
+    const { current, defs } = useRouterContext();
+    if (!current) return <>{children ?? null}</>;
+    // Determine which provided layouts are ancestors of the current route by pattern prefix
+    const patterns = (defs as any).patterns as Record<string, string>;
+    const curName = current.name as string;
+    const curPattern = patterns[curName] || "";
+    const entries = Object.entries(layouts) as Array<[string, React.ComponentType<any>]>;
+    const isAncestor = (parent: string, child: string) => {
+      if (parent === child) return true; // layout also applies to its own route
+      return child.startsWith(parent.endsWith("/") ? parent : `${parent}/`);
+    };
+    // Pick layouts whose pattern is a prefix of current's pattern
+    const applicable = entries
+      .map(([name, Comp]) => ({ name, Comp, pattern: patterns[name] || "" }))
+      .filter(e => !!e.pattern && isAncestor(e.pattern, curPattern))
+      .sort((a, b) => a.pattern.length - b.pattern.length); // outer → inner by specificity
+
     let element: React.ReactNode = children ?? null;
-    for (let i = matches.length - 1; i >= 0; i--) {
-      const m = matches[i] as any;
-      const L = layouts[m.name as RouteName] as React.ComponentType<any> | undefined;
-      if (L) {
-        const child = element;
-        element = <L {...(m.params as any)}>{child}</L>;
-      }
+    for (const e of applicable) {
+      const Child = element;
+      const L = e.Comp;
+      element = <L {...(current.params as any)}>{Child}</L>;
     }
     return <>{element}</>;
   };
