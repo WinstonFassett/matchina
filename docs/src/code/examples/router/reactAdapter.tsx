@@ -147,5 +147,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return matchEl ? <>{matchEl.props.element}</> : null;
   };
 
-  return { RouterProvider, useNavigation, useRoute, Link, Routes, Route, Outlet, routes, defs };
+  // Typed mapping-based renderer with exhaustiveness and prop typing
+  type ViewMap = { [K in RouteName]: React.ComponentType<ParamsOf<K>> };
+  const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
+    const current = useRoute();
+    if (!current) return null;
+    const View = views[current.type as RouteName] as React.ComponentType<any>;
+    // current.params is string record; cast to the mapped props type for current route
+    return <View {...(current.params as any)} />;
+  };
+
+  return { RouterProvider, useNavigation, useRoute, Link, Routes, Route, Outlet, RouteViews, routes, defs };
 }
