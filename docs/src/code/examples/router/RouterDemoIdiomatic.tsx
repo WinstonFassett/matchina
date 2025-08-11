@@ -11,8 +11,8 @@ import {
   store,
 } from "./appRouter";
 
-const Home: React.FC = () => <div><h3>Home</h3><p>Welcome!</p></div>;
-const About: React.FC = () => <div><h3>About</h3><p>About this app.</p></div>;
+const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
+const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
 
 const Products: React.FC = () => {
   const nav = useNavigation();
@@ -104,7 +104,7 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);
   return (
-    <div className="mt-3 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
+    <div className="mt-3 mx-3 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
       <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/10 px-3 py-2">
         <button
           className="mr-2 inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-2.5 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
@@ -132,7 +132,7 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
   );
 };
 
-const User: React.FC<{ params: { userId: string } }> = (props) => <div><h3>User</h3>
+const User: React.FC<{ params: { userId: string } }> = (props) => <div className="p-4"><h3>User</h3>
 { JSON.stringify(props.params ?? ("MISSING in props" + JSON.stringify(props))) }
 </div>;
 
@@ -148,7 +148,7 @@ const DebugPanel: React.FC = () => {
     toMatch: to,
   };
   return (
-    <pre style={{ fontSize: 11, background: '#f8f8f8', padding: 8, border: '1px solid #eee', borderRadius: 6, marginTop: 12 }}>
+    <pre className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
       {JSON.stringify(snapshot, null, 2)}
     </pre>
   );
@@ -166,19 +166,24 @@ export const RouterDemoIdiomatic: React.FC = () => {
           <Link name="ProductOverview" params={{ id: "42" }}>Product 42</Link>
           <Link name="User" params={{ userId: "winston" }}>User winston</Link>
         </nav>
+        <div>
+          <h2>Current View</h2>
+          <div className="p-4">
+            <RouteLayouts layouts={{ Product: ProductLayout }}>
+              <Routes>
+                <Route name="Home" view={Home} />
+                <Route name="About" view={About} />
+                <Route name="Products" view={Products} />
+                <Route name="Product" view={Product} />
+                <Route name="ProductOverview" view={ProductOverview} />
+                <Route name="ProductSpecs" view={ProductSpecs} />
+                <Route name="ProductReviews" view={ProductReviews} />
+                <Route name="User" view={User} />
+              </Routes>
+            </RouteLayouts>
+          </div>
+        </div>
 
-        <RouteLayouts layouts={{ Product: ProductLayout }}>
-          <Routes>
-            <Route name="Home" view={Home} />
-            <Route name="About" view={About} />
-            <Route name="Products" view={Products} />
-            <Route name="Product" view={Product} />
-            <Route name="ProductOverview" view={ProductOverview} />
-            <Route name="ProductSpecs" view={ProductSpecs} />
-            <Route name="ProductReviews" view={ProductReviews} />
-            <Route name="User" view={User} />
-          </Routes>
-        </RouteLayouts>
         <DebugPanel />
       </div>
     </RouterProvider>
