@@ -286,7 +286,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-20 is-next-container bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
             <div className="transition-slide">
