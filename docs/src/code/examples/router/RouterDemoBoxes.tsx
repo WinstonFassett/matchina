@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { createBrowserRouter } from "../../../../src/router-history";
+import { createBrowserRouter } from "@lib/src/router-history";
 import { defineRouteBoxes, goto, replaceWith } from "./defineRouteBoxes";
 
 // Define your named route patterns (typed)
