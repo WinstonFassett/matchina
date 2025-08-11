@@ -26,7 +26,7 @@ test.describe('Router basic navigation', () => {
     // Navigate to Product 42 via top nav Link (hash routing)
     await page.getByRole('link', { name: 'Product 42' }).click();
     await expect(page).toHaveURL(/#\/products\/42$/);
-    await expect(page.getByRole('heading', { level: 3 })).toHaveText('Product');
+    await expect(page.getByRole('heading', { level: 3 })).toHaveText('Product 42');
 
     // Back to list (programmatic navigation)
     await page.getByRole('button', { name: 'Back to list' }).click();

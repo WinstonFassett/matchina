@@ -33,10 +33,10 @@ function compile(template: string): { re: RegExp; keys: string[] } {
   const keys: string[] = [];
   const re = new RegExp(
     '^' +
-      template.replace(/\/:(?:[^/]+)/g, (m) => {
-        const k = m.slice(1); // remove leading ':'
-        keys.push(k);
-        return '([^/]+)';
+      // Replace dynamic segments like ":id" but preserve the preceding slash
+      template.replace(/\/:([^/]+)/g, (_m, k) => {
+        keys.push(k); // push the param name without ':'
+        return '/([^/]+)';
       }) +
       '$'
   );

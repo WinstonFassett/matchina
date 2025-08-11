@@ -419,11 +419,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 
   // --- Minimal view primitives (flat matching) ---
-  type RouteProps = {
+  type ViewOf<N extends RouteName> = React.ComponentType<{ params: ParamsOf<N> }>;
+  type RoutePropsElement = {
     name: RouteName;
     element: React.ReactNode;
     children?: React.ReactNode; // reserved for future nested support
   };
+  type RoutePropsView<N extends RouteName = RouteName> = {
+    name: N;
+    // Loosen typing to avoid union incompatibility across different routes in a single children array.
+    // Runtime still passes the correct params shape from the current route.
+    view: React.ComponentType<any>;
+    children?: React.ReactNode;
+  };
+  type RouteProps = RoutePropsElement | RoutePropsView;
 
   const Route: React.FC<RouteProps> = () => null; // marker component, not rendered directly
 
@@ -451,7 +460,14 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const current = useRoute();
     const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
     const matchEl = list.find((child) => React.isValidElement(child) && child.props.name === current?.type);
-    return matchEl ? <>{matchEl.props.element}</> : null;
+    if (!matchEl) return null;
+    const props = matchEl.props as RouteProps;
+    // If view is provided, instantiate it with params; else render element as-is
+    if ('view' in props && props.view) {
+      const View = props.view as React.ComponentType<any>;
+      return <View params={(current?.params as any) ?? ({ } as any)} />;
+    }
+    return <>{(props as RoutePropsElement).element}</>;
   };
 
   // Typed mapping-based renderer with exhaustiveness and prop typing

@@ -34,18 +34,21 @@ const Products: React.FC = () => {
   );
 };
 
-const Product: React.FC = () => {
+const Product: React.FC<{ params: { id: string } }> = ({ params }) => {
   const nav = useNavigation();
+  if (!params) return <div>No params!!</div>
   return (
     <div>
-      <h3>Product</h3>
+      <h3>Product {params.id}</h3>
       <p>Use the browser back or buttons to navigate.</p>
       <button onClick={nav.goto("Products")}>Back to list</button>
     </div>
   );
 };
 
-const User: React.FC = () => <div><h3>User</h3></div>;
+const User: React.FC<{ params: { userId: string } }> = (props) => <div><h3>User</h3>
+{ JSON.stringify(props.params ?? ("MISSING in props" + JSON.stringify(props))) }
+</div>;
 
 export const RouterDemoIdiomatic: React.FC = () => {
   return (
@@ -64,8 +67,8 @@ export const RouterDemoIdiomatic: React.FC = () => {
           <Route name="Home" element={<Home />} />
           <Route name="About" element={<About />} />
           <Route name="Products" element={<Products />} />
-          <Route name="Product" element={<Product />} />
-          <Route name="User" element={<User />} />
+          <Route name="Product" view={Product} />
+          <Route name="User" view={User} />
         </Routes>
       </div>
     </RouterProvider>
