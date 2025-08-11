@@ -64,13 +64,6 @@ export function compilePattern(pattern: string): CompiledPattern {
   return { pattern, keys, regex };
 }
 
-export type RouteBox<Name extends string, Pattern extends string> = {
-  name: Name;
-  pattern: Pattern;
-  compiled: CompiledPattern;
-  to: (params?: ParamsOf<Pattern>) => string;
-  match: (path: string) => RouteMatch<Name, Pattern> | null;
-};
 
 function buildPathFromPattern(pattern: string, params: Record<string, string> | undefined): string {
   if (!params) return pattern;
@@ -103,65 +96,5 @@ function specificityScore(pattern: string): number {
 }
 
 export function defineRoutes<const Patterns extends Record<string, string>>(patterns: Patterns) {
-  type Names = keyof Patterns & string;
-
-  const compiledMap = new Map<Names, CompiledPattern>();
-  const boxes = {} as { [K in Names]: RouteBox<K, Patterns[K] & string> } & {
-    to: <N extends Names>(name: N, params?: ParamsOf<Patterns[N] & string>) => string;
-    match: (path: string) => RouteMatch<Names, Patterns[Names] & string> | null;
-    matchAll: (path: string) => RouteMatch<Names, Patterns[Names] & string>[];
-    patterns: Patterns;
-  };
-
-  // Build boxes
-  (Object.keys(patterns) as Names[]).forEach((name) => {
-    const pattern = patterns[name] as string;
-    const compiled = compilePattern(pattern);
-    compiledMap.set(name, compiled);
-
-    const box: RouteBox<any, any> = {
-      name,
-      pattern: pattern as any,
-      compiled,
-      to: (params?: Record<string, string>) => buildPathFromPattern(pattern, params),
-      match: (path: string) => {
-        const m = compiled.regex.exec(path);
-        if (!m) return null;
-        const params: Record<string, string> = {};
-        compiled.keys.forEach((k, i) => (params[k] = decodeURIComponent(m[i + 1])));
-        return { name, path, params } as any;
-      },
-    };
-
-    (boxes as any)[name] = box;
-  });
-
-  // Attach helpers
-  (boxes as any).to = (name: Names, params?: any) => buildPath(name, patterns, params as any);
-
-  (boxes as any).matchAll = (path: string) => {
-    const entries = (Object.keys(patterns) as Names[])
-      .map((name) => ({ name, compiled: compiledMap.get(name)! }))
-      .sort((a, b) => specificityScore(a.compiled.pattern) - specificityScore(b.compiled.pattern))
-      .reverse();
-
-    const matches: RouteMatch<Names, any>[] = [];
-    for (const e of entries) {
-      const m = e.compiled.regex.exec(path);
-      if (!m) continue;
-      const params: Record<string, string> = {};
-      e.compiled.keys.forEach((k, i) => (params[k] = decodeURIComponent(m[i + 1])));
-      matches.push({ name: e.name, path, params } as any);
-    }
-    return matches;
-  };
-
-  (boxes as any).match = (path: string) => {
-    const all = (boxes as any).matchAll(path) as RouteMatch<Names, any>[];
-    return all[0] ?? null;
-  };
-
-  (boxes as any).patterns = patterns;
-
-  return boxes;
+  // use SOME stuff from our lib ok!
 }
