@@ -81,9 +81,11 @@ const ProductReviews: React.FC<{ params: { id: string } }> = ({ params }) => (
 // Layout that persists across product and its tabs
 // Note: RouteLayouts passes route params as top-level props, not wrapped in { params }
 const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ id, children }) => {
+  const nav = useNavigation();
   return (
     <div style={{ border: '1px solid #ddd', padding: 12, borderRadius: 8, marginTop: 12 }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+        <button onClick={nav.goto("Products")} style={{ marginRight: 8 }}>← Back to Products</button>
         <Link name="Product" params={{ id }}>Summary</Link>
         <Link name="ProductOverview" params={{ id }}>Overview</Link>
         <Link name="ProductSpecs" params={{ id }}>Specs</Link>
