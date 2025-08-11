@@ -52,6 +52,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     guardV2: options?.guard as any,
     loaderV2: options?.loader as any,
     matchRouteByPath: (path: string) => match(path),
+    // Minimal nesting stub: return single-element chain for now
+    matchAllRoutes: (path: string) => {
+      const inst = match(path);
+      return inst ? [inst] : null;
+    },
   });
 
   type RouteName = keyof typeof defs & string;
@@ -299,6 +304,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return current;
   }
 
+  // Expose the matched chain (parent→child). Minimal stub returns [leaf] for now.
+  function useMatches() {
+    const current = useRoute();
+    return current ? [current] : [];
+  }
+
   type LinkProps<N extends RouteName> = {
     name: N;
     params?: MaybeParams<N>;
@@ -358,14 +369,26 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 
   // Active-state helper
-  function useIsActive<N extends RouteName>(name: N, params?: MaybeParams<N>) {
+  function useIsActive<N extends RouteName>(name: N, params?: MaybeParams<N>, opts?: { exact?: boolean; includeSearch?: boolean; includeHash?: boolean }) {
     const current = useRoute();
     if (!current) return false;
-    if (current.type !== name) return false;
+    const exact = opts?.exact ?? true;
+    if (exact) {
+      if (current.type !== name) return false;
+    } else {
+      // non-exact: treat parent as active if types match or future chain contains; with stub, fall back to leaf equality
+      if (current.type !== name) return false;
+    }
     const want = (params ?? {}) as any;
     const got = (current.params ?? {}) as any;
     for (const k of Object.keys(want)) {
       if (String(got[k]) !== String((want as any)[k])) return false;
+    }
+    // Optionally include search/hash – since we don't parse them into params here, we only support equality via window.location for now
+    if (opts?.includeSearch) {
+      if (typeof window !== 'undefined') {
+        const wantSearch = typeof opts.includeSearch === 'boolean' ? undefined : undefined; // placeholder for future typed search compare
+      }
     }
     return true;
   }
@@ -380,6 +403,24 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const Route: React.FC<RouteProps> = () => null; // marker component, not rendered directly
 
   const Outlet: React.FC = () => null; // placeholder for future nested layouts
+
+  // RouteLayouts: render layouts from parent→child; minimal stub uses single leaf
+  type LayoutMap = { [K in RouteName]?: React.ComponentType<ParamsOf<K>> };
+  const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }> = ({ layouts, children }) => {
+    const matches = useMatches();
+    if (matches.length === 0) return <>{children ?? null}</>;
+    // Build nested elements from root→leaf; with stub we have only one
+    let element: React.ReactNode = children ?? null;
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const m = matches[i] as any;
+      const L = layouts[m.type as RouteName] as React.ComponentType<any> | undefined;
+      if (L) {
+        const child = element;
+        element = <L {...(m.params as any)}>{child}</L>;
+      }
+    }
+    return <>{element}</>;
+  };
 
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     const current = useRoute();
@@ -398,5 +439,5 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return <View {...(current.params as any)} />;
   };
 
-  return { RouterProvider, useNavigation, useRoute, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteViews, routes, defs };
+  return { RouterProvider, useNavigation, useRoute, useMatches, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteLayouts, RouteViews, routes, defs };
 }
