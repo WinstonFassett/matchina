@@ -521,11 +521,43 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   // Typed mapping-based renderer with exhaustiveness and prop typing
   type ViewMap = { [K in RouteName]: React.ComponentType<ParamsOf<K>> };
   const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
+    const { store } = useRouterContext();
     const current = useRoute();
+    const status = store.getState().status as string;
+    const [prev, setPrev] = React.useState<null | { name: RouteName; params: any }>(null);
+
+    // When leaving idle, snapshot the previous view once
+    React.useEffect(() => {
+      if (!current) return;
+      if (status !== 'idle' && !prev) {
+        setPrev({ name: current.name as RouteName, params: current.params as any });
+      }
+    }, [status]);
+
+    // When returning to idle, clear previous after one frame (let CSS finish)
+    React.useEffect(() => {
+      if (status === 'idle' && prev) {
+        const id = requestAnimationFrame(() => setPrev(null));
+        return () => cancelAnimationFrame(id);
+      }
+    }, [status, prev]);
+
     if (!current) return null;
-    const View = views[current.name as RouteName] as React.ComponentType<any>;
-    // current.params is string record; cast to the mapped props type for current route
-    return <View {...(current.params as any)} />;
+    const ViewNow = views[current.name as RouteName] as React.ComponentType<any>;
+    const Now = <ViewNow {...(current.params as any)} />;
+
+    return (
+      <div data-router-parallel className={status !== 'idle' ? 'router-transitioning' : undefined}>
+        {prev && status !== 'idle' ? (
+          <div className="view view--old" aria-hidden>
+            {React.createElement(views[prev.name] as React.ComponentType<any>, { ...(prev.params as any) })}
+          </div>
+        ) : null}
+        <div className={status !== 'idle' ? 'view view--new' : 'view view--current'}>
+          {Now}
+        </div>
+      </div>
+    );
   };
 
   return { RouterProvider, useNavigation, useRoute, useMatches, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteLayouts, RouteViews, routes: defs, defs };
