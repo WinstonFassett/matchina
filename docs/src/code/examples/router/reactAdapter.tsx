@@ -20,13 +20,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   options?: {
     base?: string;
     useHash?: boolean;
-    guard?: (fullPath: string) => true | string | Promise<true | string>;
-    guardV2?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => true | string | Promise<true | string>;
-    loader?: (
-      path: string,
-      params: Record<string, unknown> | null
-    ) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
-    loaderV2?: (ctx: { path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
+    // Unified API: guard/loader receive rich context
+    guard?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => true | string | Promise<true | string>;
+    loader?: (ctx: { path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
     scroll?: {
       // Primary/fallback container
       getContainer?: () => Element | null;
@@ -52,10 +48,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const inst = match(path);
       return inst ? (inst.params as Record<string, unknown>) : null;
     },
-    guard: options?.guard,
-    guardV2: options?.guardV2 as any,
-    loader: options?.loader,
-    loaderV2: options?.loaderV2 as any,
+    // Route/path/params aware guard/loader
+    guardV2: options?.guard as any,
+    loaderV2: options?.loader as any,
     matchRouteByPath: (path: string) => match(path),
   });
 
