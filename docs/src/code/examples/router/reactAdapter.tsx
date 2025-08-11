@@ -216,13 +216,36 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         return React.createElement(L, { route: { name, params } }, acc);
       }, node);
     };
-    const renderWithLayouts = (name: RouteName, params: any): React.ReactNode => {
-      const node = renderFor(name, params);
-      if (!node) return null;
-      return wrapWithLayouts(layouts, name, params, node);
+    // Decide whether to animate only the tab body (inner) or the whole card (outer)
+    const isProductTab = (n: string) => n !== 'Products' && n.startsWith('Product');
+    const sameProductId = (a: any, b: any) => JSON.stringify(a?.id ?? null) === JSON.stringify(b?.id ?? null);
+    const shouldInnerOnly = (
+      fromName: string | null,
+      toName: string,
+      fromParams: any | null,
+      toParams: any,
+    ) => {
+      if (!fromName) return false;
+      // Inner-only when navigating between Product* tabs for the same id
+      return isProductTab(fromName) && isProductTab(toName) && sameProductId(fromParams, toParams);
+    };
+
+    const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
+      const body = renderFor(name, params);
+      if (!body) return null;
+      const innerSliding = <div className="transition-slide">{body}</div>;
+      return wrapWithLayouts(layouts, name, params, innerSliding);
+    };
+
+    const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
+      const body = renderFor(name, params);
+      if (!body) return null;
+      const wrapped = wrapWithLayouts(layouts, name, params, body);
+      return <div className="transition-slide">{wrapped}</div>;
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
+    const innerOnly = shouldInnerOnly(from?.name ?? null, String(to.name), from?.params ?? null, to.params);
 
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
@@ -301,28 +324,28 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
             
           >
-            {renderWithLayouts((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            {renderWithLayouts(to.name as RouteName, to.params)}
+            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)(to.name as RouteName, to.params)}
           </div>
         </div>
       );
     }
 
     // No active transition; render single view
-    const single = renderWithLayouts(to.name as RouteName, to.params);
+    const single = renderWithLayouts_outer(to.name as RouteName, to.params);
     return single ? (
-      <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
+      <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
         {single}
       </div>
     ) : null;
