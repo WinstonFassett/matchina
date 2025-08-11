@@ -1,618 +1,206 @@
-    import React, { createContext, useContext, useMemo } from "react";
-import { createBrowserRouter } from "@lib/src/router-history";
-import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "@lib/src/extras/routing/define-routes";
+import React, { createContext, useContext } from "react";
+import { defineRoutes, type RouteMatch } from "@lib/src/extras/routing/define-routes";
+import { createStoreMachine } from "@lib/src/store-machine";
 import { useMachine } from "@lib/src/integrations/react";
-
-// Create an idiomatic React adapter around route boxes + browser history
-// Usage:
-// const { RouterProvider, useNavigation, useRoute, Link } = createReactRouter({
-//   Home: "/", Product: "/products/:id"
-// } as const)
-//
-// <RouterProvider>
-//   const nav = useNavigation();
-//   <button onClick={nav.goto("Product", { id: "42" })} />
-//   <Link name="Product" params={{ id: "42"}}>Open</Link>
-// </RouterProvider>
 
 export function createReactRouter<const Patterns extends Record<string, string>>(
   patterns: Patterns,
   options?: {
     base?: string;
     useHash?: boolean;
-    // Unified API: guard/loader receive rich context
-    guard?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => true | string | Promise<true | string>;
-    loader?: (ctx: { path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
-    scroll?: {
-      // Primary/fallback container
-      getContainer?: () => Element | null;
-      selector?: string;
-      behavior?: ScrollBehavior; // default 'auto'
-      default?: 'top' | 'preserve';
-      // Additional managed containers with memory restore per location
-      containers?: Array<{
-        id: string; // stable id per container kind
-        getContainer?: () => Element | null;
-        selector?: string;
-        behavior?: ScrollBehavior;
-        restore?: 'memory' | 'top' | 'preserve'; // memory tries saved position first
-      }>;
-    };
+    // guards/loaders intentionally omitted in demo single-commit mode
   }
 ) {
+  type RouteName = keyof Patterns & string;
+  type ParamsOf<N extends RouteName> = Parameters<ReturnType<typeof defineRoutes>[N]["to"]>[0] extends undefined
+    ? {}
+    : NonNullable<Parameters<ReturnType<typeof defineRoutes>[N]["to"]>[0]>;
+
   const defs = defineRoutes(patterns);
-  const match = (path: string) => defs.matchPath(path) as RouteMatch<RouteName, any> | null;
-  const matchAll = (path: string) => defs.matchAllPaths(path) as Array<RouteMatch<RouteName, any>>;
-  const { store, history } = createBrowserRouter({
-    base: options?.base,
-    useHash: options?.useHash,
-    // Provide params directly
-    matchPath: async (path) => {
-      const inst = match(path);
-      return inst ? (inst.params as Record<string, unknown>) : null;
-    },
-    // Route/path/params aware guard/loader (ctx-based)
-    guard: options?.guard as any,
-    loader: options?.loader as any,
-    matchRouteByPath: (path: string) => match(path),
-    // Provide real chain via matchAllPaths
-    matchAllPaths: (path: string) => matchAll(path),
+
+  // Auto base for hash mode if not provided
+  const autoBase = () => (typeof window !== "undefined" ? (window.location.pathname || "").replace(/\/$/, "") : "");
+  const useHash = options?.useHash ?? true;
+  const base = options?.base ?? (useHash ? autoBase() : "");
+
+  // Helper to read/write URL
+  const toUrl = (path: string) => (useHash ? `${base}#${path}` : `${base}${path}`);
+  const getPath = () => {
+    if (useHash) {
+      const raw = (typeof window !== 'undefined' ? window.location.hash : '') || '#/';
+      return raw.slice(1) || '/';
+    }
+    if (typeof window !== 'undefined') {
+      const raw = window.location.pathname + window.location.search + window.location.hash;
+      // base already included in pathname; normalize by stripping base
+      return raw.startsWith(base) ? raw.slice(base.length) || '/' : raw || '/';
+    }
+    return '/';
+  };
+
+  // Always use store-machine single-commit router for the demo
+  const store = createStoreMachine({ path: getPath() }, {
+    push: (path: string) => () => ({ path }),
+    replace: (path: string) => () => ({ path }),
+    redirect: (path: string) => () => ({ path }),
   });
 
-  // Build a browser URL for a given internal path, honoring base/useHash
-  const toUrl = (path: string) => {
-    const base = options?.base || "";
-    return options?.useHash ? `${base}#${path}` : `${base}${path}`;
-  };
-
-  // Derive internal path from window.location
-  const getPathFromLocation = () => {
-    if (typeof window === 'undefined') return '/';
-    if (options?.useHash) {
-      const hash = window.location.hash || '#';
-      const raw = hash.slice(1) || '/';
-      return raw.split(/[?#]/)[0] || '/';
-    }
-    const base = options?.base || '';
-    const raw = window.location.pathname + window.location.search + window.location.hash;
-    const withoutBase = base && raw.startsWith(base) ? raw.slice(base.length) || '/' : raw;
-    return (withoutBase.split(/[?#]/)[0] || '/') as string;
-  };
-
-  type RouteName = keyof Patterns & string;
-  type ParamsOfRoute<N extends RouteName> = CoreParamsOf<Patterns[N] & string>;
-  type ParamsOf<N extends RouteName> = ParamsOfRoute<N>;
-  // If the params type is an empty object (no required keys), allow omitting it
-  type HasNoParams<N extends RouteName> = keyof ParamsOfRoute<N> extends never ? true : false;
-  type MaybeParams<N extends RouteName> = HasNoParams<N> extends true ? Partial<ParamsOfRoute<N>> | undefined : ParamsOfRoute<N>;
+  const history = {
+    start() {
+      // Sync from current location once (replace to align)
+      const p = getPath();
+      store.dispatch('replace', p);
+      if (typeof window !== 'undefined') {
+        const onPop = () => {
+          const p = getPath();
+          store.dispatch('replace', p);
+        };
+        window.addEventListener('popstate', onPop);
+        if (useHash) window.addEventListener('hashchange', onPop);
+      }
+    },
+    push(path: string) {
+      if (typeof window !== 'undefined') window.history.pushState({}, '', toUrl(path));
+      store.dispatch('push', path);
+    },
+    replace(path: string) {
+      if (typeof window !== 'undefined') window.history.replaceState({}, '', toUrl(path));
+      store.dispatch('replace', path);
+    },
+    redirect(path: string) {
+      if (typeof window !== 'undefined') window.history.replaceState({}, '', toUrl(path));
+      store.dispatch('redirect', path);
+    },
+    back() { if (typeof window !== 'undefined') window.history.back(); },
+    current() { return { path: store.getState().path } as any; },
+  } as const;
 
   type Ctx = {
-    routes: typeof defs;
     defs: typeof defs;
     history: typeof history;
     store: typeof store;
-    match: typeof match;
-    matchAll: typeof matchAll;
-    current: RouteMatch<RouteName, any> | null;
-    // internal: allow navigation to request a scroll behavior to apply after resolve
-    _setScrollDesired: (s: NavScroll | null) => void;
-    _snapshotScroll: () => void;
-    // internal: snapshot previous view for parallel transitions
-    _prevView: { name: RouteName; params: any } | null;
-    _setPrevView: (v: { name: RouteName; params: any } | null) => void;
+    from: RouteMatch<RouteName, any> | null;
+    to: RouteMatch<RouteName, any> | null;
+    base: string;
+    useHash: boolean;
+    change: any | null;
   };
 
   const RouterContext = createContext<Ctx | null>(null);
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    // Subscribe to machine changes; triggers re-render on notify
     useMachine(store);
-    // Start history once on mount (align store with URL)
-    React.useEffect(() => {
-      history.start();
-    }, []);
+    React.useEffect(() => { history.start(); }, []);
 
-    const snap = store.getState();
-    const scrollRef = React.useRef<NavScroll | null>(null);
-    // prev view handling
-    const [prevView, setPrevView] = React.useState<Ctx["_prevView"]>(null);
-    const lastCurrentRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
-    const getPrimaryContainer = () =>
-      options?.scroll?.getContainer?.() ??
-      (options?.scroll?.selector ? document.querySelector(options.scroll.selector) : null);
-    // Memory of scroll positions per-location for containers
-    const scrollMemory = React.useRef<Map<string, { top: number; left: number }>>(new Map());
-    const locationKey = () => `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const containerKey = (id: string) => `${id}::${locationKey()}`;
-    const readPos = (el: Element | Window) => ({
-      top: el instanceof Window ? el.scrollY : (el as HTMLElement).scrollTop,
-      left: el instanceof Window ? el.scrollX : (el as HTMLElement).scrollLeft,
-    });
-    const applyScroll = (el: Element | Window, pos: { top?: number; left?: number }, behavior: ScrollBehavior) => {
-      const top = pos.top ?? 0;
-      const left = pos.left ?? 0;
-      if (el instanceof Window) {
-        window.scrollTo({ top, left, behavior });
-      } else if ('scrollTo' in el) {
-        (el as any).scrollTo({ top, left, behavior });
-      }
-    };
-    const getExtraContainers = (): Array<{ id: string; el: Element | null; behavior?: ScrollBehavior; restore?: 'memory' | 'top' | 'preserve' }> => {
-      return (options?.scroll?.containers ?? []).map(c => ({
-        id: c.id,
-        el: c.getContainer?.() ?? (c.selector ? document.querySelector(c.selector) : null),
-        behavior: c.behavior,
-        restore: c.restore,
-      }));
-    };
-    // Capture current scroll positions for all managed containers keyed by current location
-    const snapshotCurrentScroll = () => {
-      const key = locationKey();
-      const primary = getPrimaryContainer();
-      const primaryEl = primary ?? window;
-      const primaryId = 'window';
-      scrollMemory.current.set(`${primaryId}::${key}`, readPos(primaryEl));
-      for (const c of getExtraContainers()) {
-        if (c.el) scrollMemory.current.set(`${c.id}::${key}`, readPos(c.el));
-      }
-    };
-    const prevLocRef = React.useRef<string | null>(null);
-    // Scroll + focus restoration when navigation settles
-    React.useEffect(() => {
-      if (snap.status === "idle") {
-        // Save previous location scroll positions for memory
-        const prevKey = prevLocRef.current;
-        if (prevKey) {
-          const primary = getPrimaryContainer();
-          const primaryId = 'window';
-          const primaryEl = primary ?? window;
-          scrollMemory.current.set(`${primaryId}::${prevKey}`, readPos(primaryEl));
-          for (const c of getExtraContainers()) {
-            if (c.el) scrollMemory.current.set(`${c.id}::${prevKey}`, readPos(c.el));
-          }
-        }
+    // Derive from/to from last change (atomic). Fallback to current state for initial paint.
+    const change = store.getChange?.() ?? null;
+    const state = store.getState();
+    // Derive strictly from the store's atomic change snapshots (single-state: { path })
+    const from = change?.from?.path ? (defs.matchPath(change.from.path) as RouteMatch<RouteName, any> | null) : null;
+    const to = (change?.to?.path ? defs.matchPath(change.to.path) : defs.matchPath(state.path)) as RouteMatch<RouteName, any> | null;
 
-        const desired = scrollRef.current ?? (options?.scroll?.default === 'preserve' ? null : { kind: 'top' as const });
-        scrollRef.current = null;
-        const thisKey = locationKey();
-        const behaviorDefault = options?.scroll?.behavior ?? 'auto';
-        // Primary container
-        const primary = getPrimaryContainer();
-        const primaryEl = (primary ?? window);
-        const primaryId = 'window';
-        const primaryRestore = desired
-          ? desired.kind === 'top'
-            ? { top: 0, left: 0 }
-            : { top: desired.top, left: desired.left }
-          : undefined;
-        if (primaryRestore) {
-          const behaviorForPrimary: ScrollBehavior = desired && desired.kind === 'coords' && desired.behavior
-            ? desired.behavior
-            : behaviorDefault;
-          applyScroll(primaryEl, primaryRestore, behaviorForPrimary);
-        } else {
-          // Try memory if any
-          const mem = scrollMemory.current.get(`${primaryId}::${thisKey}`);
-          if (mem) applyScroll(primaryEl, mem, behaviorDefault);
-        }
-        // Extra containers
-        for (const c of getExtraContainers()) {
-          if (!c.el) continue;
-          const beh = c.behavior ?? behaviorDefault;
-          const restore = c.restore ?? 'memory';
-          if (desired && desired.kind === 'coords') {
-            applyScroll(c.el, { top: desired.top, left: desired.left }, desired.behavior ?? beh);
-          } else if (desired && desired.kind === 'top') {
-            applyScroll(c.el, { top: 0, left: 0 }, beh);
-          } else if (restore === 'top') {
-            applyScroll(c.el, { top: 0, left: 0 }, beh);
-          } else if (restore === 'memory') {
-            const mem = scrollMemory.current.get(`${c.id}::${thisKey}`);
-            if (mem) applyScroll(c.el, mem, beh);
-          }
-        }
-        prevLocRef.current = thisKey;
-        // focus main region
-        window.requestAnimationFrame(() => {
-          const focusEl = (document.querySelector('[data-router-focus], main, [role="main"]') as HTMLElement | null);
-          focusEl?.focus?.();
-        });
-      }
-    }, [snap.status, snap.index]);
+    if (change) {
+      // eslint-disable-next-line no-console
+      console.debug("[router.change]", { type: change.type, from: change.from, to: change.to });
+    }
+    // eslint-disable-next-line no-console
+    console.debug("[router.state]", state);
 
-    // Disable class toggling for debugging dual-rendering; focus solely on DOM rendering
-    React.useEffect(() => {
-      console.debug('[transitions] debug mode: class toggling disabled; focusing on dual render');
-    }, [snap.status]);
-    // Scroll + focus restoration when navigation settles
-    React.useEffect(() => {
-      if (snap.status === "idle") {
-        // scroll to top for new navigations
-        window.requestAnimationFrame(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-          const el = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
-          el?.focus?.();
-        });
-      }
-    }, [snap.status, snap.index]);
-    const current = useMemo(() => {
-      const path = getPathFromLocation();
-      const current = match(path);
-      console.debug('[router]', { path, current });
-
-      return current as Ctx["current"];
-    }, [snap]);
-    // keep lastCurrent in ref for popstate-driven transitions
-    React.useEffect(() => { lastCurrentRef.current = current; }, [current]);
-
-    // when leaving idle (including popstate), if no prevView, snapshot last current
-    React.useEffect(() => {
-      if (snap.status !== 'idle' && !prevView && lastCurrentRef.current) {
-        console.debug('[transitions] snapshot prev (popstate/effect)', lastCurrentRef.current.name, lastCurrentRef.current.params);
-        setPrevView({ name: lastCurrentRef.current.name as RouteName, params: lastCurrentRef.current.params as any });
-      }
-    }, [snap.status, prevView]);
-
-    const value = useMemo<Ctx>(() => ({
-      routes: defs,
-      defs,
-      history,
-      store,
-      match,
-      matchAll,
-      current,
-      _setScrollDesired: (s) => { scrollRef.current = s; },
-      _snapshotScroll: snapshotCurrentScroll,
-      _prevView: prevView,
-      _setPrevView: setPrevView,
-    }), [current, prevView]);
-
+    const value: Ctx = { defs, history, store, from, to, base, useHash, change };
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
-  function useRouterContext(): Ctx {
+  function useRouterContext() {
     const ctx = useContext(RouterContext);
-    if (!ctx) throw new Error("useRouter must be used within RouterProvider");
+    if (!ctx) throw new Error("Router components must be used inside <RouterProvider>");
     return ctx;
   }
 
-  type NavScroll = { kind: 'top' } | { kind: 'coords'; top?: number; left?: number; behavior?: ScrollBehavior };
   function useNavigation() {
-    const { defs, history, _setScrollDesired, _snapshotScroll, _setPrevView, current } = useRouterContext();
+    const { history, defs } = useRouterContext();
+    const toPath = <N extends RouteName>(name: N, params?: ParamsOf<N>) => (defs as any).toPath(name, params);
+    const goto = <N extends RouteName>(name: N, params?: ParamsOf<N>) => () => history.push(toPath(name, params));
+    const replace = <N extends RouteName>(name: N, params?: ParamsOf<N>) => () => history.replace(toPath(name, params));
+    return { goto, replace, back: history.back };
+  }
 
-    type NavOpts = {
-      search?: string | Record<string, string | number | boolean | null | undefined>;
-      hash?: string; // with or without leading '#'
-      replace?: boolean;
-      scroll?: 'top' | 'preserve' | { top?: number; left?: number; behavior?: ScrollBehavior };
-    };
-
-    const toSearch = (s?: NavOpts["search"]) => {
-      if (!s) return "";
-      if (typeof s === "string") return s.startsWith("?") ? s : `?${s}`;
-      const usp = new URLSearchParams();
-      for (const [k, v] of Object.entries(s)) {
-        if (v === undefined || v === null) continue;
-        usp.set(k, String(v));
-      }
-      const q = usp.toString();
-      return q ? `?${q}` : "";
-    };
-
-    const withUrl = <N extends RouteName>(name: N, params?: MaybeParams<N>, opts?: NavOpts) => {
-      const basePath = defs[name].to(((params ?? {}) as unknown) as any);
-      const search = toSearch(opts?.search);
-      const hash = opts?.hash ? (opts.hash.startsWith("#") ? opts.hash : `#${opts.hash}`) : "";
-      return `${basePath}${search}${hash}`;
-    };
-
-    function navigate<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: NavOpts): void;
-    function navigate<N extends RouteName>(name: N, opts?: NavOpts): HasNoParams<N> extends true ? void : never;
-    function navigate<N extends RouteName>(name: N, a?: MaybeParams<N> | NavOpts, b?: NavOpts) {
-      const hasParams = a && typeof a === "object" && !("search" in (a as any)) && !("hash" in (a as any));
-      const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
-      const opts = (hasParams ? b : (a as NavOpts | undefined)) as NavOpts | undefined;
-      const url = withUrl(name, params, opts);
-      // snapshot previous view eagerly for parallel transitions
-      if (current) {
-        console.debug('[transitions] snapshot prev (navigate)', current.name, current.params);
-        _setPrevView({ name: current.name as RouteName, params: current.params as any });
-      }
-      // snapshot current scroll before we mutate history to preserve memory
-      _snapshotScroll();
-      (opts?.replace ? history.replace : history.push)(url);
-      const desired: NavScroll | null = opts?.scroll === 'preserve'
-        ? null
-        : opts?.scroll === 'top' || opts?.scroll === undefined
-        ? { kind: 'top' }
-        : { kind: 'coords', top: opts.scroll.top, left: opts.scroll.left, behavior: opts.scroll.behavior };
-      _setScrollDesired(desired);
-    }
-
-    function replace<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: Omit<NavOpts, "replace">): void;
-    function replace<N extends RouteName>(name: N, opts?: Omit<NavOpts, "replace">): HasNoParams<N> extends true ? void : never;
-    function replace<N extends RouteName>(name: N, a?: MaybeParams<N> | Omit<NavOpts, "replace">, b?: Omit<NavOpts, "replace">) {
-      const hasParams = a && typeof a === "object" && !("search" in (a as any)) && !("hash" in (a as any));
-      const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
-      const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
-      const url = withUrl(name, params, opts as NavOpts);
-      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
-      _snapshotScroll();
-      history.replace(url);
-      const desired: NavScroll | null = { kind: 'top' };
-      _setScrollDesired(desired);
-    }
-
-    function redirect<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: Omit<NavOpts, "replace">): void;
-    function redirect<N extends RouteName>(name: N, opts?: Omit<NavOpts, "replace">): HasNoParams<N> extends true ? void : never;
-    function redirect<N extends RouteName>(name: N, a?: MaybeParams<N> | Omit<NavOpts, "replace">, b?: Omit<NavOpts, "replace">) {
-      const hasParams = a && typeof a === "object" && !("search" in (a as any)) && !("hash" in (a as any));
-      const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
-      const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
-      const url = withUrl(name, params, opts as NavOpts);
-      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
-      _snapshotScroll();
-      history.redirect(url);
-      const desired: NavScroll | null = { kind: 'top' };
-      _setScrollDesired(desired);
-    }
-
-    function goto<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: NavOpts): () => void;
-    function goto<N extends RouteName>(name: N, opts?: NavOpts): HasNoParams<N> extends true ? () => void : never;
-    function goto<N extends RouteName>(name: N, a?: MaybeParams<N> | NavOpts, b?: NavOpts) {
-      return () => navigate(name as any, a as any, b as any);
-    }
-
-    return { navigate, replace, redirect, goto, back: history.back };
+  // Expose full router context for power users (includes raw change and from/to)
+  function useRouter() {
+    return useRouterContext();
   }
 
   function useRoute() {
-    const { current } = useRouterContext();
-    return current;
+    const { to } = useRouterContext();
+    return to;
   }
 
-  // Expose the matched chain (parent→child)
-  function useMatches() {
-    const { matchAll, store } = useRouterContext();
-    // Use store path so it works with hash routing and any base
-    const path = getPathFromLocation();
-    return matchAll(path) ?? [];
-  }
-
-  type LinkProps<N extends RouteName> = {
-    name: N;
-    params?: MaybeParams<N>;
-    replace?: boolean;
-    children?: React.ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-    // extras
-    search?: string | Record<string, string | number | boolean | null | undefined>;
-    hash?: string;
-    activeClassName?: string;
-    activeStyle?: React.CSSProperties;
-  } & React.AnchorHTMLAttributes<HTMLAnchorElement>;
-
-  function Link<N extends RouteName>({ name, params, replace, children, onClick, className, style, search, hash, activeClassName, activeStyle, ...rest }: LinkProps<N>) {
-    const { defs, history } = useRouterContext();
-    const base = defs[name].to(((params ?? {}) as unknown) as any);
-    const toSearch = (s?: LinkProps<N>["search"]) => {
-      if (!s) return "";
-      if (typeof s === "string") return s.startsWith("?") ? s : `?${s}`;
-      const usp = new URLSearchParams();
-      for (const [k, v] of Object.entries(s)) {
-        if (v === undefined || v === null) continue;
-        usp.set(k, String(v));
-      }
-      const q = usp.toString();
-      return q ? `?${q}` : "";
-    };
-    const searchStr = toSearch(search);
-    const hashStr = hash ? (hash.startsWith('#') ? hash : `#${hash}`) : '';
-    const path = `${base}${searchStr}${hashStr}`;
-    const href = toUrl(path);
-    const isActive = useIsActive(name, params as any);
-    const finalClass = [className, isActive ? activeClassName : undefined].filter(Boolean).join(" ");
-    const finalStyle = isActive && activeStyle ? { ...(style || {}), ...activeStyle } : style;
-    return (
-      <a
-        href={href}
-        className={finalClass || undefined}
-        style={finalStyle}
-        onClick={(e) => {
-          e.preventDefault();
-          // Push/replace the internal path; history will apply base/useHash
-          replace ? history.replace(path) : history.push(path);
-          onClick?.(e);
-        }}
-        {...rest}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  // Location helper (reads current window location; RouterProvider re-renders on nav)
-  function useLocation() {
-    return {
-      pathname: typeof window !== "undefined" ? window.location.pathname : "/",
-      search: typeof window !== "undefined" ? window.location.search : "",
-      hash: typeof window !== "undefined" ? window.location.hash : "",
-    };
-  }
-
-  // Active-state helper
-  function useIsActive<N extends RouteName>(name: N, params?: MaybeParams<N>, opts?: { exact?: boolean; includeSearch?: boolean; includeHash?: boolean }) {
-    const current = useRoute();
-    if (!current) return false;
-    const exact = opts?.exact ?? true;
-    if (exact) {
-      if (current.name !== name) return false;
-    } else {
-      // non-exact: treat parent as active if types match or future chain contains; with stub, fall back to leaf equality
-      if (current.name !== name) return false;
-    }
-    const want = (params ?? {}) as any;
-    const got = (current.params ?? {}) as any;
-    for (const k of Object.keys(want)) {
-      if (String(got[k]) !== String((want as any)[k])) return false;
-    }
-    // Optionally include search/hash – since we don't parse them into params here, we only support equality via window.location for now
-    if (opts?.includeSearch) {
-      if (typeof window !== 'undefined') {
-        const wantSearch = typeof opts.includeSearch === 'boolean' ? undefined : undefined; // placeholder for future typed search compare
-      }
-    }
-    return true;
-  }
-
-  // --- Minimal view primitives (flat matching) ---
-  type ViewOf<N extends RouteName> = React.ComponentType<{ params: ParamsOf<N> }>;
-  type RoutePropsElement = {
-    name: RouteName;
-    element: React.ReactNode;
-    children?: React.ReactNode; // reserved for future nested support
-  };
-  type RoutePropsView<N extends RouteName = RouteName> = {
-    name: N;
-    // Loosen typing to avoid union incompatibility across different routes in a single children array.
-    // Runtime still passes the correct params shape from the current route.
-    view: React.ComponentType<any>;
-    children?: React.ReactNode;
-  };
+  type RoutePropsElement = { name: RouteName; element: React.ReactNode };
+  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
   type RouteProps = RoutePropsElement | RoutePropsView;
 
-  const Route: React.FC<RouteProps> = () => null; // marker component, not rendered directly
+  const Route: React.FC<RouteProps> = () => null;
+  const Outlet: React.FC = () => null;
 
-  const Outlet: React.FC = () => null; // placeholder for future nested layouts
+  const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+    const { from, to } = useRouterContext();
+    if (!to) return null;
+    const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
 
-  // RouteLayouts: render layouts from parent→child; minimal stub uses single leaf
-  type LayoutMap = { [K in RouteName]?: React.ComponentType<ParamsOf<K>> };
-  const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }> = ({ layouts, children }) => {
-    const { current, defs } = useRouterContext();
-    console.log('fucking route layouts', { current, defs })
-    if (!current) return <>{children ?? null}</>;
-    // Determine which provided layouts are ancestors of the current route by pattern prefix
-    const patterns = (defs as any).patterns as Record<string, string>;
-    const curName = current.name as string;
-    const curPattern = patterns[curName] || "";
-    const entries = Object.entries(layouts) as Array<[string, React.ComponentType<any>]>;
-    const isAncestor = (parent: string, child: string) => {
-      if (parent === child) return true; // layout also applies to its own route
-      return child.startsWith(parent.endsWith("/") ? parent : `${parent}/`);
+    const renderFor = (name: RouteName, params: any): React.ReactNode => {
+      const found = list.find((c) => React.isValidElement(c) && c.props.name === name);
+      if (!found) return null;
+      const p = found.props as any;
+      if (p.element) return p.element;
+      if (p.view) { const V = p.view as React.ComponentType<any>; return <V params={params} />; }
+      return null;
     };
-    console.log('fucking entries', { entries: [...entries], patterns: {...patterns}, })
-    // Pick layouts whose pattern is a prefix of current's pattern
-    const applicable = entries
-      .map(([name, Comp]) => ({ name, Comp, pattern: patterns[name] || "" }))
-      .filter(e => !!e.pattern && isAncestor(e.pattern, curPattern))
-      .sort((a, b) => a.pattern.length - b.pattern.length); // outer → inner by specificity
 
-    let element: React.ReactNode = children ?? null;
-    for (const e of applicable) {
-      const Child = element;
-      const L = e.Comp;
-      element = <L {...(current.params as any)}>{Child}</L>;
-  };
-}
-
-// Active-state helper
-function useIsActive<N extends RouteName>(name: N, params?: MaybeParams<N>, opts?: { exact?: boolean; includeSearch?: boolean; includeHash?: boolean }) {
-  const current = useRoute();
-  if (!current) return false;
-  const exact = opts?.exact ?? true;
-  if (exact) {
-    if (current.name !== name) return false;
-  } else {
-    // non-exact: treat parent as active if types match or future chain contains; with stub, fall back to leaf equality
-    if (current.name !== name) return false;
-  }
-  const want = (params ?? {}) as any;
-  const got = (current.params ?? {}) as any;
-  for (const k of Object.keys(want)) {
-    if (String(got[k]) !== String((want as any)[k])) return false;
-  }
-  // Optionally include search/hash – since we don't parse them into params here, we only support equality via window.location for now
-  if (opts?.includeSearch) {
-    if (typeof window !== 'undefined') {
-      const wantSearch = typeof opts.includeSearch === 'boolean' ? undefined : undefined; // placeholder for future typed search compare
+    const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
+    if (differ) {
+      const oldKey = `${String(from!.name)}:${JSON.stringify(from!.params || {})}`;
+      const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
+      return (
+        <div data-router-parallel>
+          <div key={`old:${oldKey}`} className="view" aria-hidden>
+            {renderFor(from!.name as RouteName, from!.params)}
+          </div>
+          <div key={`new:${newKey}`} className="view">
+            {renderFor(to.name as RouteName, to.params)}
+          </div>
+        </div>
+      );
     }
-  }
-  return true;
-}
 
-// --- Minimal view primitives (flat matching) ---
-type ViewOf<N extends RouteName> = React.ComponentType<{ params: ParamsOf<N> }>;
-type RoutePropsElement = {
-  name: RouteName;
-  element: React.ReactNode;
-  children?: React.ReactNode; // reserved for future nested support
-};
-type RoutePropsView<N extends RouteName = RouteName> = {
-  name: N;
-  // Loosen typing to avoid union incompatibility across different routes in a single children array.
-  // Runtime still passes the correct params shape from the current route.
-  view: React.ComponentType<any>;
-  children?: React.ReactNode;
-};
-type RouteProps = RoutePropsElement | RoutePropsView;
-  const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
-    const { store, _prevView } = useRouterContext();
-    const current = useRoute();
-    const status = store.getState().status as string;
-
-    if (!current) return null;
-    const ViewNow = views[current.name as RouteName] as React.ComponentType<any>;
-    const Now = <ViewNow {...(current.params as any)} />;
-    const oldRef = React.useRef<HTMLDivElement | null>(null);
-    const newRef = React.useRef<HTMLDivElement | null>(null);
-
-    // Local prev snapshot as a fallback to guarantee dual rendering even if context missed
-    const lastRef = React.useRef<{ name: RouteName; params: any } | null>(null);
-    const [prevLocal, setPrevLocal] = React.useState<{ name: RouteName; params: any } | null>(null);
-    React.useEffect(() => {
-      const last = lastRef.current;
-      if (last && (last.name !== (current.name as RouteName) || JSON.stringify(last.params) !== JSON.stringify(current.params))) {
-        console.debug('[transitions] RouteViews local snapshot from→to', last.name, '→', current.name);
-        setPrevLocal(last);
-      }
-      lastRef.current = { name: current.name as RouteName, params: current.params as any };
-    }, [current.name, JSON.stringify(current.params)]);
-
-    const prev = _prevView ?? prevLocal;
-    const both = !!prev;
-    if (both) {
-      console.debug('[transitions] RouteViews: rendering old+new', { old: prev?.name, new: current.name });
-    }
-    // When both old+new are rendered, kick off slide by toggling classes next frame
-    React.useEffect(() => {
-      const both = _prevView && status !== 'idle';
-      if (!both) return;
-      const id = requestAnimationFrame(() => {
-        if (newRef.current) {
-          console.debug('[transitions] toggle: new remove is-next-container');
-          newRef.current.classList.remove('is-next-container');
-        }
-        if (oldRef.current) {
-          console.debug('[transitions] toggle: old add is-removing-container');
-          oldRef.current.classList.add('is-removing-container');
-        }
-      });
-      return () => cancelAnimationFrame(id);
-    }, [_prevView, status]);
-
-    const oldKey = prev ? `${String(prev.name)}:${JSON.stringify(prev.params || {})}` : 'none';
-    const newKey = `${String(current.name)}:${JSON.stringify(current.params || {})}`;
-    const wrapperRef = React.useRef<HTMLDivElement | null>(null);
-    React.useEffect(() => {
-      if (wrapperRef.current) {
-        console.debug('[transitions] children count', wrapperRef.current.children.length);
-      }
-    });
-    return (
-      <>wtf</>
-    );
+    const single = renderFor(to.name as RouteName, to.params);
+    return single ? <>{single}</> : null;
   };
 
-  return { RouterProvider, useNavigation, useRoute, useMatches, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteLayouts, RouteViews, routes: defs, defs };
+  const Link: React.FC<{ name: RouteName; params?: any; children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({ name, params, children, ...a }) => {
+    const { defs, base, useHash } = useRouterContext();
+    const path = (defs as any).toPath(name, params);
+    const href = useHash ? `${base}#${path}` : `${base}${path}`;
+    const nav = useNavigation();
+    const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      nav.goto(name as any, params as any)();
+    };
+    return <a href={href} onClick={onClick} {...a}>{children}</a>;
+  };
+
+  // Debug helper: exposes raw store change/state and derived matches
+  function useRoutingDebug() {
+    const { store, defs } = useRouterContext();
+    const change = (store as any).getChange?.();
+    const state = store.getState();
+    const fromEntry = change ? change.from.stack[change.from.index] ?? null : null;
+    const toEntry = change ? change.to.stack[change.to.index] ?? null : null;
+    const from = fromEntry ? defs.matchPath(fromEntry.path) : null;
+    const to = toEntry ? defs.matchPath(toEntry.path) : null;
+    return { change, state, fromEntry, toEntry, from, to };
+  }
+
+  // Layouts: no-op passthrough for now (kept for API parity)
+  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<any> }; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
+
+  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, RouteLayouts, useRoutingDebug, routes: defs, defs, store, history };
 }

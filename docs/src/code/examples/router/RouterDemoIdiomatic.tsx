@@ -1,28 +1,14 @@
 import React from "react";
-import { createReactRouter } from "./reactAdapter";
-
-// Declare routes once (typed)
-const {
+import {
   RouterProvider,
   Routes,
   Route,
   Link,
   useNavigation,
   RouteLayouts,
-} = createReactRouter({
-  Home: "/",
-  About: "/about",
-  Products: "/products",
-  Product: "/products/:id",
-  ProductOverview: "/products/:id/overview",
-  ProductSpecs: "/products/:id/specs",
-  ProductReviews: "/products/:id/reviews",
-  User: "/users/:userId",
-} as const, {
-  // Hash routing keeps us on the same Astro page under /matchina/router-demo
-  useHash: true,
-  base: "/matchina/router-demo",
-});
+  useRouter,
+  store,
+} from "./appRouter";
 
 const Home: React.FC = () => <div><h3>Home</h3><p>Welcome!</p></div>;
 const About: React.FC = () => <div><h3>About</h3><p>About this app.</p></div>;
@@ -102,6 +88,24 @@ const User: React.FC<{ params: { userId: string } }> = (props) => <div><h3>User<
 { JSON.stringify(props.params ?? ("MISSING in props" + JSON.stringify(props))) }
 </div>;
 
+// Small debug panel to visualize store change/state and derived from/to
+const DebugPanel: React.FC = () => {
+  const { change, from, to } = useRouter();
+  // Fall back to current state if no change yet
+  const state = store.getState();
+  const snapshot = {
+    change: change ? { type: change.type, from: change.from, to: change.to } : null,
+    state,
+    fromMatch: from,
+    toMatch: to,
+  };
+  return (
+    <pre style={{ fontSize: 11, background: '#f8f8f8', padding: 8, border: '1px solid #eee', borderRadius: 6, marginTop: 12 }}>
+      {JSON.stringify(snapshot, null, 2)}
+    </pre>
+  );
+};
+
 export const RouterDemoIdiomatic: React.FC = () => {
   return (
     <RouterProvider>
@@ -117,9 +121,9 @@ export const RouterDemoIdiomatic: React.FC = () => {
 
         <RouteLayouts layouts={{ Product: ProductLayout }}>
           <Routes>
-            <Route name="Home" element={<Home />} />
-            <Route name="About" element={<About />} />
-            <Route name="Products" element={<Products />} />
+            <Route name="Home" view={Home} />
+            <Route name="About" view={About} />
+            <Route name="Products" view={Products} />
             <Route name="Product" view={Product} />
             <Route name="ProductOverview" view={ProductOverview} />
             <Route name="ProductSpecs" view={ProductSpecs} />
@@ -127,6 +131,7 @@ export const RouterDemoIdiomatic: React.FC = () => {
             <Route name="User" view={User} />
           </Routes>
         </RouteLayouts>
+        <DebugPanel />
       </div>
     </RouterProvider>
   );

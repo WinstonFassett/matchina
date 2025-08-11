@@ -1,5 +1,6 @@
 import { matchina } from "./matchina";
 import { defineStates } from "./define-states";
+import { createStoreMachine } from "./store-machine";
 
 // Define generic router states that can be used by any routing implementation
 export const ROUTER_STATES = defineStates({
@@ -36,7 +37,7 @@ export const ROUTER_TRANSITIONS = {
 } as const;
 
 // Create a generic router machine
-export const createRouterMachine = () => {
+export const createRouterMachineOld = () => {
   return matchina(
     ROUTER_STATES,
     ROUTER_TRANSITIONS as any,
@@ -44,4 +45,15 @@ export const createRouterMachine = () => {
   );
 };
 
+export const createRouterMachine = () => {
+  return createStoreMachine({
+    path: ""
+  }, {
+    push: (path: string) => (_prev) => ({ path }),
+    replace: (path: string) => (_prev) => ({ path }),
+    redirect: (path: string) => (_prev) => ({ path }),
+    // back: () => "Idle",
+    // forward: () => "Idle",
+  })
+}
 export type RouterMachine = ReturnType<typeof createRouterMachine>;
