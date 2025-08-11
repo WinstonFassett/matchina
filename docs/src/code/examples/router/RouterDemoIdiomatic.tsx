@@ -1,4 +1,5 @@
 import React from "react";
+import "./transitions.css";
 import {
   RouterProvider,
   Routes,

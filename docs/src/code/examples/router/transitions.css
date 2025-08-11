@@ -1,0 +1,35 @@
+/* Router transition demo CSS (Swup-like) */
+
+/* Layout to overlap from/to during transition */
+.router-transition[data-router-parallel] {
+  position: relative;
+  min-height: 200px; /* ensure space for overlapping views; tweak as needed */
+}
+.router-transition .view {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+/* Parallel animation timing */
+.is-changing .transition-slide {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Style of previous container after leaving */
+.transition-slide.is-previous-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Style of next container before entering */
+.transition-slide.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Base state for views to be fully visible when no transition is active */
+.transition-slide {
+  transform: translateX(0);
+  opacity: 1;
+}

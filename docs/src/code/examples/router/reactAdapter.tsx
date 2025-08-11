@@ -142,7 +142,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const Outlet: React.FC = () => null;
 
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const { from, to } = useRouterContext();
+    const { from, to, change } = useRouterContext();
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
+    const fromRef = React.useRef<HTMLDivElement | null>(null);
+    const toRef = React.useRef<HTMLDivElement | null>(null);
+    const [exiting, setExiting] = React.useState<typeof from | null>(null);
+    const [activeKey, setActiveKey] = React.useState<string | null>(null);
     if (!to) return null;
     const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
 
@@ -156,21 +161,75 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
-    if (differ) {
-      const oldKey = `${String(from!.name)}:${JSON.stringify(from!.params || {})}`;
+
+    // Start a CSS transition when a new atomic change arrives that differs
+    React.useEffect(() => {
+      if (!differ || !from) return;
+      const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
       const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
+      setExiting(from);
+      setActiveKey(`${oldKey}=>${newKey}`);
+
+      // After paint, toggle classes Swup-style
+      const frame = requestAnimationFrame(() => {
+        const container = containerRef.current;
+        const fromEl = fromRef.current;
+        const toEl = toRef.current;
+        if (!container || !fromEl || !toEl) return;
+        container.setAttribute('data-router-parallel', '');
+        container.setAttribute('data-from-name', String(from.name));
+        container.setAttribute('data-to-name', String(to.name));
+        change && container.setAttribute('data-type', String(change.type));
+
+        // Swup-like semantics
+        // Container enters changing state
+        container.classList.add('is-changing');
+        // Previous container immediately in its final (leaving) state
+        fromEl.classList.add('is-previous-container');
+        // Next container starts in pre-enter state and then we remove to start transition
+        toEl.classList.add('is-next-container');
+        requestAnimationFrame(() => {
+          toEl.classList.remove('is-next-container');
+        });
+
+        // When both elements finish transitions/animations, clear exiting
+        let doneCount = 0;
+        const done = () => {
+          doneCount += 1;
+          if (doneCount >= 2) {
+            container.classList.remove('is-changing');
+            fromEl.classList.remove('is-previous-container');
+            toEl.classList.remove('is-next-container');
+            setExiting(null);
+          }
+        };
+        const endEvents: (keyof HTMLElementEventMap)[] = ['transitionend', 'animationend'];
+        endEvents.forEach((evt) => {
+          fromEl.addEventListener(evt, done, { once: true });
+          toEl.addEventListener(evt, done, { once: true });
+        });
+      });
+      return () => cancelAnimationFrame(frame);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [change?.to, differ]);
+
+    const oldKey = exiting ? `${String(exiting.name)}:${JSON.stringify(exiting.params || {})}` : null;
+    const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
+
+    if (exiting) {
       return (
-        <div data-router-parallel>
-          <div key={`old:${oldKey}`} className="view" aria-hidden>
-            {renderFor(from!.name as RouteName, from!.params)}
+        <div ref={containerRef} className="router-transition" data-router-parallel data-transition-key={activeKey || ''} data-from-name={String(exiting.name)} data-to-name={String(to.name)}>
+          <div ref={fromRef} key={`old:${oldKey}`} className="view transition-slide" data-role="from" aria-hidden>
+            {renderFor(exiting.name as RouteName, exiting.params)}
           </div>
-          <div key={`new:${newKey}`} className="view">
+          <div ref={toRef} key={`new:${newKey}`} className="view transition-slide is-next-container" data-role="to">
             {renderFor(to.name as RouteName, to.params)}
           </div>
         </div>
       );
     }
 
+    // No active transition; render single view
     const single = renderFor(to.name as RouteName, to.params);
     return single ? <>{single}</> : null;
   };
