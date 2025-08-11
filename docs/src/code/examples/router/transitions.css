@@ -26,36 +26,36 @@
 }
 
 /* Pre-position next container BEFORE enabling transitions, direction-aware */
-.router-transition[data-dir="forward"] .transition-slide.is-next-container {
+.router-transition[data-dir="forward"] .view.is-next-container .transition-slide {
   transform: translateX(100%);
   opacity: 0;
 }
-.router-transition[data-dir="back"] .transition-slide.is-next-container {
+.router-transition[data-dir="back"] .view.is-next-container .transition-slide {
   transform: translateX(-100%);
   opacity: 0;
 }
 
 /* Hide next container until we actually start the transition to prevent initial blink */
-.transition-slide.is-next-container {
+.view.is-next-container .transition-slide {
   visibility: hidden;
 }
 
 /* Forward (default) */
-.is-changing[data-dir="forward"] .transition-slide.is-previous-container {
+.is-changing[data-dir="forward"] .view.is-previous-container .transition-slide {
   transform: translateX(-100%);
   opacity: 0;
 }
-.is-changing[data-dir="forward"] .transition-slide.is-next-container {
+.is-changing[data-dir="forward"] .view.is-next-container .transition-slide {
   transform: translateX(100%);
   opacity: 0;
 }
 
 /* Back */
-.is-changing[data-dir="back"] .transition-slide.is-previous-container {
+.is-changing[data-dir="back"] .view.is-previous-container .transition-slide {
   transform: translateX(100%);
   opacity: 0;
 }
-.is-changing[data-dir="back"] .transition-slide.is-next-container {
+.is-changing[data-dir="back"] .view.is-next-container .transition-slide {
   transform: translateX(-100%);
   opacity: 0;
 }
