@@ -306,9 +306,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         void toEl.getBoundingClientRect();
         // 3) Enable transitions on container
         container.classList.add('is-changing');
-        // 4) Next frame, remove pre-enter class from next to start the transition (also reveals via CSS)
+        // 4) Next frame, kick off both enter and exit transitions
         requestAnimationFrame(() => {
           toEl.classList.remove('is-next-container');
+          fromEl.classList.add('is-exit');
         });
 
         // When both elements finish transitions/animations, clear exiting
@@ -318,6 +319,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           if (doneCount >= 2) {
             container.classList.remove('is-changing');
             fromEl.classList.remove('is-previous-container');
+            fromEl.classList.remove('is-exit');
             toEl.classList.remove('is-next-container');
             setExiting(null);
           }
@@ -351,7 +353,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view is-previous-container z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
             aria-hidden
           >
