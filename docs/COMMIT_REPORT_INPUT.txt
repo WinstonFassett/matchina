@@ -1,0 +1,275 @@
+diff --git a/docs/src/code/examples/router/RouterDemoIdiomatic.tsx b/docs/src/code/examples/router/RouterDemoIdiomatic.tsx
+index 7182a476..bf4e7b8a 100644
+--- a/docs/src/code/examples/router/RouterDemoIdiomatic.tsx
++++ b/docs/src/code/examples/router/RouterDemoIdiomatic.tsx
+@@ -1,3 +1,3 @@
+ import React from "react";
+-import "./transitions.css";
++// import "./transitions.css";
+ import {
+@@ -19,4 +19,3 @@ const Products: React.FC = () => {
+   return (
+-    <div className="rounded-xl border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
+-      <h3 className="text-xl font-semibold mb-2">Products</h3>
++    <div className="p-2">
+       <div className="flex gap-2">
+@@ -77,27 +76,39 @@ const Product: React.FC<{ params: { id: string } }> = ({ params }) => {
+ 
+-// Nested Product tabs (wrapped with ProductLayout to show tab navigation)
++// Nested Product tabs: return only body content; layout is applied by RouteLayouts
+ const ProductOverview: React.FC<{ params: { id: string } }> = ({ params }) => (
+-  <ProductLayout id={params.id}>
++  <>
+     <h4>Overview</h4>
+     <p>Overview for product {params.id}</p>
+-  </ProductLayout>
++  </>
+ );
+ const ProductSpecs: React.FC<{ params: { id: string } }> = ({ params }) => (
+-  <ProductLayout id={params.id}>
++  <>
+     <h4>Specs</h4>
+     <p>Specs for product {params.id}</p>
+-  </ProductLayout>
++  </>
+ );
+ const ProductReviews: React.FC<{ params: { id: string } }> = ({ params }) => (
+-  <ProductLayout id={params.id}>
++  <>
+     <h4>Reviews</h4>
+     <p>Reviews for product {params.id}</p>
+-  </ProductLayout>
++  </>
+ );
+ 
+-// Layout that persists across product and its tabs
+-// Note: RouteLayouts passes route params as top-level props, not wrapped in { params }
+-const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ id, children }) => {
++// Top-level Products layout (static): shows master heading; used for Products and Product*
++const ProductsLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
++  return (
++    <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
++      <div className="px-4 py-3 border-b border-black/5 dark:border-white/10">
++        <h3 className="text-xl font-semibold">Products</h3>
++      </div>
++      <div className="p-4">{children}</div>
++    </div>
++  );
++};
++
++// Product detail layout: shows back, product title, and tabs; only inner body animates
++const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name: string; params: any } }> = ({ children, route }) => {
+   const nav = useNavigation();
+   const { from } = useRouter();
++  const id = String((route?.params as any)?.id ?? '');
+   const backToList = React.useCallback(() => {
+@@ -106,4 +117,4 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
+   return (
+-    <div className="mt-3 mx-3 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
+-      <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/10 px-3 py-2">
++    <div>
++      <div className="flex items-center gap-2 mb-3">
+         <button
+@@ -114,5 +125,3 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
+         </button>
+-        <Link name="Product" params={{ id }}>
+-          <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Summary</span>
+-        </Link>
++        <div className="text-sm text-slate-600 dark:text-slate-300 mr-2">Product <span className="font-medium">{id}</span></div>
+         <Link name="ProductOverview" params={{ id }}>
+@@ -127,3 +136,3 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
+       </div>
+-      <div className="p-4">
++      <div className="transition-slide">
+         {children}
+@@ -169,15 +178,17 @@ export const RouterDemoIdiomatic: React.FC = () => {
+         <div>
+-          <h2>Current View</h2>
+           <div className="p-4">
+-            <RouteLayouts layouts={{ Product: ProductLayout }}>
+-              <Routes>
+-                <Route name="Home" view={Home} />
+-                <Route name="About" view={About} />
+-                <Route name="Products" view={Products} />
+-                <Route name="Product" view={Product} />
+-                <Route name="ProductOverview" view={ProductOverview} />
+-                <Route name="ProductSpecs" view={ProductSpecs} />
+-                <Route name="ProductReviews" view={ProductReviews} />
+-                <Route name="User" view={User} />
+-              </Routes>
++            {/* Apply nested layouts via RouteLayouts (adapter applies them per-view) */}
++            <RouteLayouts layouts={{ Products: ProductsLayout, Product: ProductsLayout }}>
++              <RouteLayouts layouts={{ Product: ProductDetailLayout }}>
++                <Routes>
++                  <Route name="Home" view={Home} />
++                  <Route name="About" view={About} />
++                  <Route name="Products" view={Products} />
++                  <Route name="Product" view={Product} />
++                  <Route name="ProductOverview" view={ProductOverview} />
++                  <Route name="ProductSpecs" view={ProductSpecs} />
++                  <Route name="ProductReviews" view={ProductReviews} />
++                  <Route name="User" view={User} />
++                </Routes>
++              </RouteLayouts>
+             </RouteLayouts>
+diff --git a/docs/src/code/examples/router/RouterDemoViews.tsx b/docs/src/code/examples/router/RouterDemoViews.tsx
+index 1e5646a8..5da03e7a 100644
+--- a/docs/src/code/examples/router/RouterDemoViews.tsx
++++ b/docs/src/code/examples/router/RouterDemoViews.tsx
+@@ -1,3 +1,3 @@
+ import React from "react";
+-import "./router-transitions.css";
++// import "./router-transitions.css";
+ import { createReactRouter } from "./reactAdapter";
+diff --git a/docs/src/code/examples/router/reactAdapter.tsx b/docs/src/code/examples/router/reactAdapter.tsx
+index e905c8c0..2ffee5f8 100644
+--- a/docs/src/code/examples/router/reactAdapter.tsx
++++ b/docs/src/code/examples/router/reactAdapter.tsx
+@@ -124,2 +124,5 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+   const RouterContext = createContext<Ctx | null>(null);
++  type LayoutComponentProps = { children?: React.ReactNode; route: { name: RouteName; params: any } };
++  type LayoutMap = { [K in RouteName]?: React.ComponentType<LayoutComponentProps> };
++  const LayoutsContext = createContext<LayoutMap>({});
+ 
+@@ -180,2 +183,3 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+     const { from, to, change } = useRouterContext();
++    const layouts = useContext(LayoutsContext);
+     const containerRef = React.useRef<HTMLDivElement | null>(null);
+@@ -197,4 +201,49 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+     };
++    // Wrap a node with matching layouts for a route name (outer->inner by specificity)
++    const wrapWithLayouts = (lx: LayoutMap, name: RouteName, params: any, node: React.ReactNode): React.ReactNode => {
++      const keys = Object.keys(lx) as RouteName[];
++      const matches = keys
++        .filter((k) => {
++          if (name === k) return true;
++          if (!name.startsWith(k)) return false;
++          const next = name.charAt(k.length);
++          return /[A-Z]/.test(next);
++        })
++        .sort((a, b) => a.length - b.length);
++      if (matches.length === 0) return node;
++      return matches.reduce((acc, k) => {
++        const L = lx[k]! as React.ComponentType<LayoutComponentProps>;
++        return React.createElement(L, { route: { name, params } }, acc);
++      }, node);
++    };
++    // Decide whether to animate only the tab body (inner) or the whole card (outer)
++    const isProductTab = (n: string) => n !== 'Products' && n.startsWith('Product');
++    const sameProductId = (a: any, b: any) => JSON.stringify(a?.id ?? null) === JSON.stringify(b?.id ?? null);
++    const shouldInnerOnly = (
++      fromName: string | null,
++      toName: string,
++      fromParams: any | null,
++      toParams: any,
++    ) => {
++      if (!fromName) return false;
++      // Inner-only when navigating between Product* tabs for the same id
++      return isProductTab(fromName) && isProductTab(toName) && sameProductId(fromParams, toParams);
++    };
++
++    // Inner mode: rely on the layout (e.g., ProductDetailLayout) to wrap its tab body with .transition-slide
++    const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
++      const body = renderFor(name, params);
++      if (!body) return null;
++      return wrapWithLayouts(layouts, name, params, body);
++    };
++
++    const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
++      const body = renderFor(name, params);
++      if (!body) return null;
++      const wrapped = wrapWithLayouts(layouts, name, params, body);
++      return <div className="transition-slide">{wrapped}</div>;
++    };
+ 
+     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
++    const innerOnly = shouldInnerOnly(from?.name ?? null, String(to.name), from?.params ?? null, to.params);
+ 
+@@ -277,7 +326,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+             key={`old:${oldKey}`}
+-            className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
++            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+             data-role="from"
+-            aria-hidden
++            
+           >
+-            {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
++            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+           </div>
+@@ -286,6 +335,6 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+             key={`new:${newKey}`}
+-            className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
++            className="view z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+             data-role="to"
+           >
+-            {renderFor(to.name as RouteName, to.params)}
++            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)(to.name as RouteName, to.params)}
+           </div>
+@@ -296,5 +345,5 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+     // No active transition; render single view
+-    const single = renderFor(to.name as RouteName, to.params);
++    const single = renderWithLayouts_outer(to.name as RouteName, to.params);
+     return single ? (
+-      <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
++      <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
+         {single}
+@@ -336,4 +385,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
+ 
+-  // Layouts: no-op passthrough for now (kept for API parity)
+-  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<any> }; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
++  // Layouts: provider-only. Merge into context so Routes can apply per-view.
++  const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }>
++    = ({ layouts, children }) => {
++      const parent = useContext(LayoutsContext);
++      const merged = { ...parent, ...layouts } as LayoutMap;
++      return <LayoutsContext.Provider value={merged}>{children}</LayoutsContext.Provider>;
++    };
+ 
+diff --git a/docs/src/code/examples/router/transitions.css b/docs/src/code/examples/router/transitions.css
+index b8cf0665..9f4bc510 100644
+--- a/docs/src/code/examples/router/transitions.css
++++ b/docs/src/code/examples/router/transitions.css
+@@ -6,3 +6,2 @@
+   grid-template: 1fr / 1fr;
+-  min-height: 200px; /* ensure space for overlapping views; tweak as needed */
+ }
+@@ -11,2 +10,4 @@
+   will-change: transform, opacity;
++  /* Ensure sliding content is clipped within rounded corners/borders */
++  overflow: hidden;
+ }
+@@ -28,3 +29,3 @@
+ /* Pre-position next container BEFORE enabling transitions, direction-aware */
+-.router-transition[data-dir="forward"] .transition-slide.is-next-container {
++.router-transition[data-dir="forward"] .view.is-next-container .transition-slide {
+   transform: translateX(100%);
+@@ -32,3 +33,3 @@
+ }
+-.router-transition[data-dir="back"] .transition-slide.is-next-container {
++.router-transition[data-dir="back"] .view.is-next-container .transition-slide {
+   transform: translateX(-100%);
+@@ -38,3 +39,3 @@
+ /* Hide next container until we actually start the transition to prevent initial blink */
+-.transition-slide.is-next-container {
++.view.is-next-container .transition-slide {
+   visibility: hidden;
+@@ -43,3 +44,3 @@
+ /* Forward (default) */
+-.is-changing[data-dir="forward"] .transition-slide.is-previous-container {
++.is-changing[data-dir="forward"] .view.is-previous-container .transition-slide {
+   transform: translateX(-100%);
+@@ -47,3 +48,3 @@
+ }
+-.is-changing[data-dir="forward"] .transition-slide.is-next-container {
++.is-changing[data-dir="forward"] .view.is-next-container .transition-slide {
+   transform: translateX(100%);
+@@ -53,3 +54,3 @@
+ /* Back */
+-.is-changing[data-dir="back"] .transition-slide.is-previous-container {
++.is-changing[data-dir="back"] .view.is-previous-container .transition-slide {
+   transform: translateX(100%);
+@@ -57,3 +58,3 @@
+ }
+-.is-changing[data-dir="back"] .transition-slide.is-next-container {
++.is-changing[data-dir="back"] .view.is-next-container .transition-slide {
+   transform: translateX(-100%);
