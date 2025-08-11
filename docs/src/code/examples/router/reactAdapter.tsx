@@ -220,21 +220,53 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       }
     }, [snap.status, snap.index]);
 
-    // Demo-layer parallel transitions: toggle classes based on store status
+    // Demo-layer parallel transitions: toggle classes based on store status, with logs and animationend sync
     React.useEffect(() => {
-      const el = (document.querySelector('[data-router-container]') || document.documentElement) as HTMLElement;
+      const container = (document.querySelector('[data-router-container]') || document.documentElement) as HTMLElement;
       if (snap.status !== 'idle') {
-        el.classList.add('router-transitioning');
-        el.classList.add('router-exiting');
-        el.classList.add('router-entering');
+        console.debug('[transitions] start: adding classes router-transitioning/exiting/entering');
+        container.classList.add('router-transitioning');
+        container.classList.add('router-exiting');
+        container.classList.add('router-entering');
+        container.classList.add('is-changing');
       } else {
-        // success path => toggle then clean up next frame
-        el.classList.add('router-success');
-        requestAnimationFrame(() => {
-          el.classList.remove('router-transitioning');
-          el.classList.remove('router-exiting');
-          el.classList.remove('router-entering');
-          el.classList.remove('router-success');
+        console.debug('[transitions] end: waiting for animations to finish');
+        container.classList.add('router-success');
+        // Wait for .view--old and .view--new animations to finish across all parallel containers
+        const parallels = Array.from(document.querySelectorAll('[data-router-parallel]')) as HTMLElement[];
+        const listeners: Array<() => void> = [];
+        const awaited: Promise<void>[] = [];
+        for (const p of parallels) {
+          const animEls = [
+            p.querySelector('.view.view--old') as HTMLElement | null,
+            p.querySelector('.view.view--new') as HTMLElement | null,
+          ].filter(Boolean) as HTMLElement[];
+          if (animEls.length === 0) continue;
+          awaited.push(new Promise<void>((resolve) => {
+            let remaining = animEls.length;
+            const onDone = () => {
+              remaining -= 1;
+              if (remaining <= 0) resolve();
+            };
+            for (const el of animEls) {
+              const handler = () => {
+                el.removeEventListener('animationend', handler);
+                onDone();
+              };
+              el.addEventListener('animationend', handler);
+              listeners.push(() => el.removeEventListener('animationend', handler));
+            }
+          }));
+        }
+        const timeout = new Promise<void>((resolve) => setTimeout(resolve, 1500));
+        Promise.race([Promise.all(awaited), timeout]).finally(() => {
+          console.debug('[transitions] cleanup: removing classes router-transitioning/exiting/entering/success');
+          listeners.forEach((fn) => fn());
+          container.classList.remove('router-transitioning');
+          container.classList.remove('router-exiting');
+          container.classList.remove('router-entering');
+          container.classList.remove('router-success');
+          container.classList.remove('is-changing');
         });
       }
     }, [snap.status]);
@@ -262,6 +294,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // when leaving idle (including popstate), if no prevView, snapshot last current
     React.useEffect(() => {
       if (snap.status !== 'idle' && !prevView && lastCurrentRef.current) {
+        console.debug('[transitions] snapshot prev (popstate/effect)', lastCurrentRef.current.name, lastCurrentRef.current.params);
         setPrevView({ name: lastCurrentRef.current.name as RouteName, params: lastCurrentRef.current.params as any });
       }
       if (snap.status === 'idle' && prevView) {
@@ -331,7 +364,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const opts = (hasParams ? b : (a as NavOpts | undefined)) as NavOpts | undefined;
       const url = withUrl(name, params, opts);
       // snapshot previous view eagerly for parallel transitions
-      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
+      if (current) {
+        console.debug('[transitions] snapshot prev (navigate)', current.name, current.params);
+        _setPrevView({ name: current.name as RouteName, params: current.params as any });
+      }
       // snapshot current scroll before we mutate history to preserve memory
       _snapshotScroll();
       (opts?.replace ? history.replace : history.push)(url);
@@ -553,15 +589,41 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     if (!current) return null;
     const ViewNow = views[current.name as RouteName] as React.ComponentType<any>;
     const Now = <ViewNow {...(current.params as any)} />;
+    const oldRef = React.useRef<HTMLDivElement | null>(null);
+    const newRef = React.useRef<HTMLDivElement | null>(null);
+
+    const both = _prevView && status !== 'idle';
+    if (both) {
+      console.debug('[transitions] RouteViews: rendering old+new', { old: _prevView?.name, new: current.name });
+    }
+    // When both old+new are rendered, kick off slide by toggling classes next frame
+    React.useEffect(() => {
+      const both = _prevView && status !== 'idle';
+      if (!both) return;
+      const id = requestAnimationFrame(() => {
+        if (newRef.current) {
+          console.debug('[transitions] toggle: new remove is-next-container');
+          newRef.current.classList.remove('is-next-container');
+        }
+        if (oldRef.current) {
+          console.debug('[transitions] toggle: old add is-removing-container');
+          oldRef.current.classList.add('is-removing-container');
+        }
+      });
+      return () => cancelAnimationFrame(id);
+    }, [_prevView, status]);
 
     return (
-      <div data-router-parallel className={status !== 'idle' ? 'router-transitioning' : undefined}>
-        {_prevView && status !== 'idle' ? (
-          <div className="view view--old" aria-hidden>
+      <div
+        data-router-parallel
+        className={status !== 'idle' ? 'router-transitioning is-changing' : undefined}
+      >
+        {both ? (
+          <div ref={oldRef} className="view view--old transition-slide is-kept-container" aria-hidden>
             {React.createElement(views[_prevView.name] as React.ComponentType<any>, { ...(_prevView.params as any) })}
           </div>
         ) : null}
-        <div className={status !== 'idle' ? 'view view--new' : 'view view--current'}>
+        <div ref={newRef} className={status !== 'idle' ? 'view view--new transition-slide is-next-container' : 'view view--current transition-slide'}>
           {Now}
         </div>
       </div>
