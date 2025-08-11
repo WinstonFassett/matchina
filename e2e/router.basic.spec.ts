@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Router basic navigation', () => {
   test('navigates between top-level routes and param route', async ({ page }) => {
-    await page.goto('/router-demo');
+    await page.goto('/matchina/router-demo');
 
     await expect(page.locator('h1')).toHaveText('Router Demo');
     // The demo component title
