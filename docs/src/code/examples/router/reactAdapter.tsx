@@ -230,11 +230,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return isProductTab(fromName) && isProductTab(toName) && sameProductId(fromParams, toParams);
     };
 
+    // Inner mode: rely on the layout (e.g., ProductDetailLayout) to wrap its tab body with .transition-slide
     const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      const innerSliding = <div className="transition-slide">{body}</div>;
-      return wrapWithLayouts(layouts, name, params, innerSliding);
+      return wrapWithLayouts(layouts, name, params, body);
     };
 
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {

@@ -134,7 +134,9 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Reviews</span>
         </Link>
       </div>
-      {children}
+      <div className="transition-slide">
+        {children}
+      </div>
     </div>
   );
 };
