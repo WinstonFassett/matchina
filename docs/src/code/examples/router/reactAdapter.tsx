@@ -219,11 +219,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
 
     // Determine a common outer layout key to hoist outside transitions (e.g., Products)
-    const commonOuterKey = (fromName: string | null, toName: string): RouteName | null => {
-      // Example heuristic: hoist `Products` for Products and all Product* routes
-      const wantsProducts = (n: string | null) => !!n && (n === 'Products' || n.startsWith('Product'));
-      if (wantsProducts(fromName) && wantsProducts(toName)) return 'Products' as RouteName;
-      if (!fromName && wantsProducts(toName)) return 'Products' as RouteName;
+    const commonOuterKey = (_fromName: string | null, toName: string): RouteName | null => {
+      // Hoist `Products` whenever destination is in the Products domain (Products or Product*)
+      const inProducts = (n: string | null | undefined) => !!n && (n === 'Products' || n.startsWith('Product'));
+      if (inProducts(toName)) return 'Products' as RouteName;
       return null;
     };
     // Decide whether to animate only the tab body (inner) or the whole card (outer)
@@ -251,8 +250,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      const wrapped = wrapWithLayouts(layouts, name, params, body, outerKey);
-      return <div className="transition-slide">{wrapped}</div>;
+      // Outer mode: do NOT add a .transition-slide wrapper; the view shell itself animates
+      return wrapWithLayouts(layouts, name, params, body, outerKey);
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
@@ -304,6 +303,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         // 2) Force a reflow to commit pre-positioning before enabling transitions
         void toEl.getBoundingClientRect();
         // 3) Enable transitions on container
+        container.setAttribute('data-inner', innerOnly ? 'inner' : 'outer');
         container.classList.add('is-changing');
         // 4) Next frame, kick off both enter and exit transitions
         requestAnimationFrame(() => {
@@ -319,6 +319,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           doneCount += 1;
           if (doneCount >= 2) {
             container.classList.remove('is-changing');
+            container.removeAttribute('data-inner');
             fromEl.classList.remove('is-previous-container');
             toEl.classList.remove('is-next-container');
             setExiting(null);

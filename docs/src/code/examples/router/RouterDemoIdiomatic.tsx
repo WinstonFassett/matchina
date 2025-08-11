@@ -106,7 +106,7 @@ const ProductsLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) 
   );
 };
 
-// Product detail layout: shows back, product title, and tabs; only inner body animates
+// Product detail layout: big title, subtle back, tabs below; inner body animates (adapter provides wrapper)
 const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name: string; params: any } }> = ({ children, route }) => {
   const nav = useNavigation();
   const { from } = useRouter();
@@ -116,14 +116,16 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
   }, [from, nav]);
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <h3 className="text-xl font-semibold mb-1">Product <span className="font-bold">{id}</span></h3>
+      <div className="mb-3">
         <button
-          className="mr-2 inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-2.5 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
+          className="inline-flex items-center rounded-md bg-slate-100 dark:bg-neutral-800 text-slate-800 dark:text-slate-200 px-2 py-1 text-xs hover:bg-slate-200 dark:hover:bg-neutral-700 active:bg-slate-300 dark:active:bg-neutral-600"
           onClick={backToList}
         >
           ← Back to Products
         </button>
-        <div className="text-sm text-slate-600 dark:text-slate-300 mr-2">Product <span className="font-medium">{id}</span></div>
+      </div>
+      <nav className="flex items-center gap-2 mb-3">
         <Link name="ProductOverview" params={{ id }}>
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Overview</span>
         </Link>
@@ -133,8 +135,9 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
         <Link name="ProductReviews" params={{ id }}>
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Reviews</span>
         </Link>
-      </div>
-      <div className="transition-slide">
+      </nav>
+      {/* Content area: overflow hidden so inner slides don't bleed */}
+      <div className="overflow-hidden">
         {children}
       </div>
     </div>
@@ -184,6 +187,7 @@ export const RouterDemoIdiomatic: React.FC = () => {
                   <Route name="Home" view={Home} />
                   <Route name="About" view={About} />
                   <Route name="Products" view={Products} />
+                  {/* these work but are showing TS errors in IDE. Prob need to fix typing */}
                   <Route name="Product" view={Product} />
                   <Route name="ProductOverview" view={ProductOverview} />
                   <Route name="ProductSpecs" view={ProductSpecs} />
