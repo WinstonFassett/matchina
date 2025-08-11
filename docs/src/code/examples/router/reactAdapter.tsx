@@ -210,8 +210,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       }
     }, [snap.status, snap.index]);
     const current = useMemo(() => {
+      const pendingPath = snap.pending?.path;
       const cur = snap.stack[snap.index];
-      const path = cur?.path ?? "/";
+      const path = (pendingPath ?? cur?.path) ?? "/";
       return match(path) as Ctx["current"];
     }, [snap]);
 

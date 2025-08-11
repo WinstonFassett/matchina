@@ -42,10 +42,13 @@ function escapeRegex(lit: string): string {
 // Compile a route pattern to a regex and capture keys
 export function compilePattern(pattern: string): CompiledPattern {
   const keys: string[] = [];
-  const parts = pattern.split("/");
+  // Special-case root
+  if (pattern === "/") {
+    return { pattern, keys, regex: /^\/$/ };
+  }
+  const parts = pattern.split("/").filter(Boolean);
   const compiled = parts
     .map((segment) => {
-      if (!segment) return ""; // leading slash
       if (segment.startsWith(":")) {
         const key = segment.slice(1);
         keys.push(key);
@@ -56,7 +59,7 @@ export function compilePattern(pattern: string): CompiledPattern {
     .join("/");
 
   // Ensure full match from start to end
-  const source = `^/${compiled}$`;
+  const source = compiled ? `^/${compiled}$` : `^\/$`;
   const regex = new RegExp(source);
   return { pattern, keys, regex };
 }
