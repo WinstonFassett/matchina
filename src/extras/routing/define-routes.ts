@@ -108,6 +108,10 @@ export function defineRoutes<const Patterns extends Record<string, string>>(patt
 
   const compiledMap = new Map<Names, CompiledPattern>();
   const boxes = {} as { [K in Names]: RouteBox<K, Patterns[K] & string> } & {
+    toPath: <N extends Names>(name: N, params?: ParamsOf<Patterns[N] & string>) => string;
+    matchPath: (path: string) => RouteMatch<Names, Patterns[Names] & string> | null;
+    matchAllPaths: (path: string) => RouteMatch<Names, Patterns[Names] & string>[];
+    // Legacy aliases (kept defined to avoid breaking existing imports)
     to: <N extends Names>(name: N, params?: ParamsOf<Patterns[N] & string>) => string;
     match: (path: string) => RouteMatch<Names, Patterns[Names] & string> | null;
     matchAll: (path: string) => RouteMatch<Names, Patterns[Names] & string>[];
@@ -138,10 +142,12 @@ export function defineRoutes<const Patterns extends Record<string, string>>(patt
   });
 
   // Helper: build path by route name
-  (boxes as any).to = (name: Names, params?: any) => buildPath(name, patterns, params as any);
+  (boxes as any).toPath = (name: Names, params?: any) => buildPath(name, patterns, params as any);
+  // Legacy alias
+  (boxes as any).to = (name: Names, params?: any) => (boxes as any).toPath(name, params);
 
   // Helper: match all by decreasing specificity
-  (boxes as any).matchAll = (path: string) => {
+  (boxes as any).matchAllPaths = (path: string) => {
     const entries = (Object.keys(patterns) as Names[])
       .map((name) => ({ name, compiled: compiledMap.get(name)! }))
       .sort((a, b) => specificityScore(a.compiled.pattern) - specificityScore(b.compiled.pattern))
@@ -159,10 +165,13 @@ export function defineRoutes<const Patterns extends Record<string, string>>(patt
   };
 
   // Helper: best single match (most specific first)
-  (boxes as any).match = (path: string) => {
-    const all = (boxes as any).matchAll(path) as RouteMatch<Names, any>[];
+  (boxes as any).matchPath = (path: string) => {
+    const all = (boxes as any).matchAllPaths(path) as RouteMatch<Names, any>[];
     return all[0] ?? null;
   };
+  // Legacy aliases
+  (boxes as any).matchAll = (path: string) => (boxes as any).matchAllPaths(path);
+  (boxes as any).match = (path: string) => (boxes as any).matchPath(path);
 
   (boxes as any).patterns = patterns;
 
