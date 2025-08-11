@@ -1,15 +1,17 @@
 /* Router transition demo CSS (Swup-like) */
 
-/* Layout to overlap from/to during transition */
+/* Layout to overlap from/to during transition using CSS Grid (no absolute) */
 .router-transition[data-router-parallel] {
-  position: relative;
+  display: grid;
+  grid-template: 1fr / 1fr;
   min-height: 200px; /* ensure space for overlapping views; tweak as needed */
 }
 .router-transition .view {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   will-change: transform, opacity;
 }
+.router-transition .view[data-role="from"] { z-index: 10; }
+.router-transition .view[data-role="to"] { z-index: 20; }
 
 /* Parallel animation timing */
 .is-changing .transition-slide {
@@ -32,4 +34,24 @@
 .transition-slide {
   transform: translateX(0);
   opacity: 1;
+}
+
+/* Forward (default) */
+.is-changing[data-dir="forward"] .transition-slide.is-previous-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.is-changing[data-dir="forward"] .transition-slide.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Back */
+.is-changing[data-dir="back"] .transition-slide.is-previous-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.is-changing[data-dir="back"] .transition-slide.is-next-container {
+  transform: translateX(-100%);
+  opacity: 0;
 }

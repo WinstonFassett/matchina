@@ -43,32 +43,67 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     push: (path: string) => () => ({ path }),
     replace: (path: string) => () => ({ path }),
     redirect: (path: string) => () => ({ path }),
+    pop: (path: string) => () => ({ path }),
   });
 
+  let suppressHash = 0;
+  let navDir: 'forward' | 'back' = 'forward';
+  let seq = 0; // navigation sequence index stored in history.state.__rseq
   const history = {
     start() {
       // Sync from current location once (replace to align)
       const p = getPath();
       store.dispatch('replace', p);
       if (typeof window !== 'undefined') {
+        // Initialize or read sequence from history.state
+        const st: any = window.history.state || {};
+        if (typeof st.__rseq === 'number') {
+          seq = st.__rseq;
+        } else {
+          try { window.history.replaceState({ ...st, __rseq: seq }, '', window.location.href); } catch {}
+        }
         const onPop = () => {
           const p = getPath();
-          store.dispatch('replace', p);
+          // Determine direction by comparing sequence
+          const stNow: any = window.history.state || {};
+          const nextSeq = typeof stNow.__rseq === 'number' ? stNow.__rseq : seq;
+          navDir = nextSeq < seq ? 'back' : 'forward';
+          seq = nextSeq;
+          store.dispatch('pop', p);
         };
         window.addEventListener('popstate', onPop);
-        if (useHash) window.addEventListener('hashchange', onPop);
+        if (useHash) window.addEventListener('hashchange', (e) => {
+          if (suppressHash > 0) { suppressHash--; return; }
+          onPop();
+        });
       }
     },
     push(path: string) {
-      if (typeof window !== 'undefined') window.history.pushState({}, '', toUrl(path));
+      if (typeof window !== 'undefined') {
+        suppressHash++;
+        const st: any = window.history.state || {};
+        seq += 1;
+        try { window.history.pushState({ ...st, __rseq: seq }, '', toUrl(path)); } catch { window.history.pushState(st, '', toUrl(path)); }
+      }
+      navDir = 'forward';
       store.dispatch('push', path);
     },
     replace(path: string) {
-      if (typeof window !== 'undefined') window.history.replaceState({}, '', toUrl(path));
+      if (typeof window !== 'undefined') {
+        suppressHash++;
+        const st: any = window.history.state || {};
+        try { window.history.replaceState({ ...st, __rseq: seq }, '', toUrl(path)); } catch { window.history.replaceState(st, '', toUrl(path)); }
+      }
+      navDir = 'forward';
       store.dispatch('replace', path);
     },
     redirect(path: string) {
-      if (typeof window !== 'undefined') window.history.replaceState({}, '', toUrl(path));
+      if (typeof window !== 'undefined') {
+        suppressHash++;
+        const st: any = window.history.state || {};
+        try { window.history.replaceState({ ...st, __rseq: seq }, '', toUrl(path)); } catch { window.history.replaceState(st, '', toUrl(path)); }
+      }
+      navDir = 'forward';
       store.dispatch('redirect', path);
     },
     back() { if (typeof window !== 'undefined') window.history.back(); },
@@ -148,6 +183,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const toRef = React.useRef<HTMLDivElement | null>(null);
     const [exiting, setExiting] = React.useState<typeof from | null>(null);
     const [activeKey, setActiveKey] = React.useState<string | null>(null);
+    const processedKey = React.useRef<string | null>(null);
     if (!to) return null;
     const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
 
@@ -167,6 +203,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (!differ || !from) return;
       const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
       const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
+      const transKey = `${oldKey}=>${newKey}:${change?.type ?? ''}`;
+      if (processedKey.current === transKey) return; // avoid double-run (e.g., React StrictMode)
+      processedKey.current = transKey;
       setExiting(from);
       setActiveKey(`${oldKey}=>${newKey}`);
 
@@ -179,7 +218,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         container.setAttribute('data-router-parallel', '');
         container.setAttribute('data-from-name', String(from.name));
         container.setAttribute('data-to-name', String(to.name));
-        change && container.setAttribute('data-type', String(change.type));
+        const ctype = String(change?.type || 'push');
+        container.setAttribute('data-type', ctype);
+        container.setAttribute('data-dir', navDir);
 
         // Swup-like semantics
         // Container enters changing state
@@ -213,16 +254,28 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [change?.to, differ]);
 
-    const oldKey = exiting ? `${String(exiting.name)}:${JSON.stringify(exiting.params || {})}` : null;
+    const oldKey = (exiting || from) ? `${String((exiting || from)!.name)}:${JSON.stringify((exiting || from)!.params || {})}` : null;
     const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
 
-    if (exiting) {
+    // Render both views immediately when they differ; keep 'exiting' cached until CSS ends
+    if (exiting || differ) {
       return (
-        <div ref={containerRef} className="router-transition" data-router-parallel data-transition-key={activeKey || ''} data-from-name={String(exiting.name)} data-to-name={String(to.name)}>
-          <div ref={fromRef} key={`old:${oldKey}`} className="view transition-slide" data-role="from" aria-hidden>
-            {renderFor(exiting.name as RouteName, exiting.params)}
+        <div ref={containerRef} className="router-transition" data-router-parallel data-transition-key={activeKey || ''} data-from-name={String(exiting?.name || from!.name)} data-to-name={String(to.name)}>
+          <div
+            ref={fromRef}
+            key={`old:${oldKey}`}
+            className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            data-role="from"
+            aria-hidden
+          >
+            {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
-          <div ref={toRef} key={`new:${newKey}`} className="view transition-slide is-next-container" data-role="to">
+          <div
+            ref={toRef}
+            key={`new:${newKey}`}
+            className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            data-role="to"
+          >
             {renderFor(to.name as RouteName, to.params)}
           </div>
         </div>
@@ -231,19 +284,31 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     // No active transition; render single view
     const single = renderFor(to.name as RouteName, to.params);
-    return single ? <>{single}</> : null;
+    return single ? (
+      <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
+        {single}
+      </div>
+    ) : null;
   };
 
   const Link: React.FC<{ name: RouteName; params?: any; children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({ name, params, children, ...a }) => {
-    const { defs, base, useHash } = useRouterContext();
-    const path = (defs as any).toPath(name, params);
+    const { defs, history } = useRouterContext();
+    const path = (defs as any).toPath ? (defs as any).toPath(name, params) : (defs as any).buildPath(name, params);
     const href = useHash ? `${base}#${path}` : `${base}${path}`;
-    const nav = useNavigation();
-    const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-      e.preventDefault();
-      nav.goto(name as any, params as any)();
-    };
-    return <a href={href} onClick={onClick} {...a}>{children}</a>;
+    return (
+      <a
+        {...a}
+        href={href}
+        onClick={(e) => {
+          // Prevent native hash navigation and rely on our store/history
+          e.preventDefault();
+          e.stopPropagation();
+          history.push(path);
+        }}
+      >
+        {children ?? href}
+      </a>
+    );
   };
 
   // Debug helper: exposes raw store change/state and derived matches
