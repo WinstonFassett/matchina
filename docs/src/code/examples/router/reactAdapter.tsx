@@ -197,17 +197,25 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
 
+    // Render condition: use from/to diff so we show both views during a change
+    const { defs } = useRouterContext();
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
 
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
-      if (!differ || !from) return;
-      const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
-      const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
-      const transKey = `${oldKey}=>${newKey}:${change?.type ?? ''}`;
+      if (!change) return;
+      // Derive stable matches from the change snapshot to avoid races with derived from/to
+      const fromEntry = change.from.stack[change.from.index] ?? null;
+      const toEntry = change.to.stack[change.to.index] ?? null;
+      if (!fromEntry || !toEntry) return;
+      const prevMatch = defs.matchPath(fromEntry.path);
+      const nextMatch = defs.matchPath(toEntry.path);
+      const oldKey = `${String(prevMatch.name)}:${JSON.stringify(prevMatch.params || {})}`;
+      const newKey = `${String(nextMatch.name)}:${JSON.stringify(nextMatch.params || {})}`;
+      const transKey = `${oldKey}=>${newKey}:${change.type ?? ''}`;
       if (processedKey.current === transKey) return; // avoid double-run (e.g., React StrictMode)
       processedKey.current = transKey;
-      setExiting(from);
+      setExiting(prevMatch as any);
       setActiveKey(`${oldKey}=>${newKey}`);
 
       // After paint, toggle classes Swup-style
@@ -217,9 +225,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         const toEl = toRef.current;
         if (!container || !fromEl || !toEl) return;
         container.setAttribute('data-router-parallel', '');
-        container.setAttribute('data-from-name', String(from.name));
-        container.setAttribute('data-to-name', String(to.name));
-        const ctype = String(change?.type || 'push');
+        container.setAttribute('data-from-name', String(prevMatch.name));
+        container.setAttribute('data-to-name', String(nextMatch.name));
+        const ctype = String(change.type || 'push');
         container.setAttribute('data-type', ctype);
         container.setAttribute('data-dir', navDir);
 
@@ -255,7 +263,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       });
       return () => cancelAnimationFrame(frame);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [change?.to, differ]);
+    }, [change]);
 
     const oldKey = (exiting || from) ? `${String((exiting || from)!.name)}:${JSON.stringify((exiting || from)!.params || {})}` : null;
     const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
