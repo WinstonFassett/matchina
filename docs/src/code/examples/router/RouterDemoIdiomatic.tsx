@@ -75,31 +75,32 @@ const Product: React.FC<{ params: { id: string } }> = ({ params }) => {
   );
 };
 
-// Nested Product tabs (wrapped with ProductLayout to show tab navigation)
+// Nested Product tabs: return only body content; layout is applied by RouteLayouts
 const ProductOverview: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <ProductLayout id={params.id}>
+  <>
     <h4>Overview</h4>
     <p>Overview for product {params.id}</p>
-  </ProductLayout>
+  </>
 );
 const ProductSpecs: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <ProductLayout id={params.id}>
+  <>
     <h4>Specs</h4>
     <p>Specs for product {params.id}</p>
-  </ProductLayout>
+  </>
 );
 const ProductReviews: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <ProductLayout id={params.id}>
+  <>
     <h4>Reviews</h4>
     <p>Reviews for product {params.id}</p>
-  </ProductLayout>
+  </>
 );
 
 // Layout that persists across product and its tabs
-// Note: RouteLayouts passes route params as top-level props, not wrapped in { params }
-const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ id, children }) => {
+// Applied by RouteLayouts for routes starting with "Product"; derives id from current route
+const ProductLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const nav = useNavigation();
-  const { from } = useRouter();
+  const { from, to } = useRouter();
+  const id = String((to?.params as any)?.id ?? '');
   const backToList = React.useCallback(() => {
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);

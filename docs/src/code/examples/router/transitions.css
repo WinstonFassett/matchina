@@ -4,7 +4,6 @@
 .router-transition[data-router-parallel] {
   display: grid;
   grid-template: 1fr / 1fr;
-  min-height: 200px; /* ensure space for overlapping views; tweak as needed */
 }
 .router-transition .view {
   grid-area: 1 / 1;

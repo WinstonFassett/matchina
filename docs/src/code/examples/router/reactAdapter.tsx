@@ -278,7 +278,6 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             key={`old:${oldKey}`}
             className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
-            aria-hidden
           >
             <div className="transition-slide">
               {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
@@ -339,8 +338,18 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return { change, state, fromEntry, toEntry, from, to };
   }
 
-  // Layouts: no-op passthrough for now (kept for API parity)
-  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<any> }; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
+  // Layouts: wrap rendered routes with a layout that matches the active route name.
+  // Matching is by exact key or prefix (e.g., 'Product' applies to 'ProductOverview').
+  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<{ children?: React.ReactNode }> }; children?: React.ReactNode }>
+    = ({ layouts, children }) => {
+      const { to } = useRouterContext();
+      if (!to) return <>{children}</>;
+      const name = String(to.name) as RouteName;
+      const keys = Object.keys(layouts) as RouteName[];
+      const match = keys.find((k) => name === k || name.startsWith(k));
+      const L = match ? layouts[match] : undefined;
+      return L ? React.createElement(L as React.ComponentType<any>, undefined, children) : <>{children}</>;
+    };
 
   return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, RouteLayouts, useRoutingDebug, routes: defs, defs, store, history };
 }
