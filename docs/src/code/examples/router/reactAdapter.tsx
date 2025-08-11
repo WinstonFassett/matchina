@@ -212,7 +212,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const current = useMemo(() => {
       const pendingPath = snap.pending?.path;
       const cur = snap.stack[snap.index];
-      const path = (pendingPath ?? cur?.path) ?? "/";
+      const raw = (pendingPath ?? cur?.path) ?? "/";
+      const path = raw.split(/[?#]/)[0] || "/";
       return match(path) as Ctx["current"];
     }, [snap]);
 
@@ -331,7 +332,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // Use store path so it works with hash routing and any base
     const snap = store.getState();
     const cur = snap.stack[snap.index];
-    const path = cur?.path ?? "/";
+    const raw = cur?.path ?? "/";
+    const path = raw.split(/[?#]/)[0] || "/";
     return matchAll(path) ?? [];
   }
 
