@@ -1,15 +1,21 @@
 import { compilePattern, type CompiledPattern, type ParamsOf, type RouteMatch } from './define-routes';
-import { MatchboxImpl } from '../../matchbox-factory';
+import { matchbox } from '../../matchbox-factory';
 
 /**
  * RouteMatchbox: a matchbox-style instance tagged by route name that exposes
  * pattern metadata plus helpers to build and match paths.
  */
-export type RouteMatchbox<Name extends string, Pattern extends string> = MatchboxImpl<
-  Record<Name, { pattern: Pattern; compiled: CompiledPattern }>,
-  Name
+type BaseMatchbox<Name extends string, Data> = {
+  getTag(): Name;
+  is(tag: Name): boolean;
+  match<A>(cases: any, exhaustive?: boolean): A;
+  data: Data;
+};
+
+export type RouteMatchbox<Name extends string, Pattern extends string> = BaseMatchbox<
+  Name,
+  { pattern: Pattern; compiled: CompiledPattern }
 > & {
-  to(params?: ParamsOf<Pattern>): string;
   /** true if path fully matches this pattern */
   testPath(path: string): boolean;
   /** match and extract params, or null */
@@ -48,11 +54,13 @@ export function createRouteFactory<const Patterns extends Record<string, string>
     const cp = compilePattern(pattern);
     compiled.set(name, cp);
     // Create a matchbox-tagged instance for this route
-    const inst = new MatchboxImpl(name, { pattern, compiled: cp }) as RouteMatchbox<any, any>;
+    const inst = matchbox<Record<Names, { pattern: string; compiled: CompiledPattern }>, Names>(
+      name,
+      { pattern, compiled: cp }
+    ) as unknown as RouteMatchbox<any, any>;
     // Attach helpers
     Object.assign(inst, {
-      to: (params?: Record<string, string>) => buildPathFromPattern(pattern, params),
-      test: (path: string) => !!cp.regex.exec(path),
+      testPath: (path: string) => !!cp.regex.exec(path),
       matchPath: (path: string) => {
         const m = cp.regex.exec(path);
         if (!m) return null;
@@ -60,7 +68,7 @@ export function createRouteFactory<const Patterns extends Record<string, string>
         cp.keys.forEach((k, i) => (params[k] = decodeURIComponent(m[i + 1])));
         return { name, path, params } as any;
       },
-    } satisfies RouteMatchbox<any, any>);
+    } as Partial<RouteMatchbox<any, any>>);
 
     (boxes as any)[name] = inst;
   });
@@ -75,7 +83,7 @@ export function createRouteFactory<const Patterns extends Record<string, string>
     return staticCount * 1000 - paramCount * 10 + pattern.length;
   }
 
-  (boxes as any).to = (name: Names, params?: any) => (boxes as any)[name].to(params);
+  (boxes as any).to = (name: Names, params?: any) => buildPathFromPattern(patterns[name] as string, params);
 
   (boxes as any).matchAll = (path: string) => {
     const entries = (Object.keys(patterns) as Names[])
@@ -100,7 +108,24 @@ export function createRouteFactory<const Patterns extends Record<string, string>
 
   (boxes as any).patterns = patterns;
 
-  return boxes;
+  // Build a concrete, immutable instance from a name and payload
+  function create<N extends Names>(name: N, data: { path: string; params: Record<string, string> }) {
+    const cp = compiled.get(name)!;
+    // Immutable data payload contains full route state
+    return matchbox<Record<N, { pattern: string; compiled: CompiledPattern; path: string; params: Record<string, string> }>, N>(
+      name,
+      { pattern: cp.pattern, compiled: cp, path: data.path, params: { ...data.params } }
+    );
+  }
+
+  // Parse a path and return a concrete, tagged route instance (or null)
+  function parsePath(path: string) {
+    const m = (boxes as any).match(path) as RouteMatch<Names, any> | null;
+    if (!m) return null;
+    return create(m.name as Names, { path: m.path, params: m.params as Record<string, string> });
+  }
+
+  return Object.assign(boxes, { create, parsePath });
 }
 
 // Alias for ergonomics: the "routeFactory" name mirrors user's mental model

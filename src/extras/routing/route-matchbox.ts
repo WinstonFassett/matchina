@@ -1,5 +1,5 @@
 import { defineRoutes, type RouteMatch } from './define-routes';
-import { MatchboxImpl } from '../../matchbox-factory';
+import { matchbox } from '../../matchbox-factory';
 
 export type GuardV1 = (fullPath: string) => true | string | Promise<true | string>;
 export type GuardV2<N extends string = string, P extends string = string> = (ctx: {
@@ -61,7 +61,7 @@ export function createRouteMatchbox<const Patterns extends Record<string, string
       const allow = opts?.guardV2
         ? await opts.guardV2({ fullPath: fullPath, path, params: inst?.params ?? null, route: inst, chain })
         : await opts!.guard!(fullPath);
-      if (typeof allow === 'string') return new MatchboxImpl('redirect', { to: allow });
+      if (typeof allow === 'string') return matchbox<Record<'redirect', { to: string }>,'redirect'>('redirect', { to: allow });
     }
 
     let params: Record<string, unknown> | null = inst?.params ?? null;
@@ -72,8 +72,11 @@ export function createRouteMatchbox<const Patterns extends Record<string, string
       if (extra && typeof extra === 'object') params = { ...(params ?? {}), ...extra };
     }
 
-    if (!inst) return new MatchboxImpl('unmatched', { reason: 'no-match' });
-    return new MatchboxImpl('matched', { match: { ...inst, params }, chain });
+    if (!inst) return matchbox<Record<'unmatched', { reason: string }>, 'unmatched'>('unmatched', { reason: 'no-match' });
+    return matchbox<Record<'matched', { match: RouteMatch<Names, any> & { params: Record<string, unknown> | null }; chain: RouteMatch<Names, any>[] }>, 'matched'>(
+      'matched',
+      { match: { ...inst, params }, chain }
+    );
   }
 
   return {
