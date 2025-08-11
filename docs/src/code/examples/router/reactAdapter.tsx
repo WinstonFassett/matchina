@@ -1,6 +1,6 @@
     import React, { createContext, useContext, useMemo } from "react";
 import { createBrowserRouter } from "@lib/src/router-history";
-import { defineRouteBoxes, type RouteBox } from "./defineRouteBoxes";
+import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "@lib/src/extras/routing/define-routes";
 import { useMachine } from "@lib/src/integrations/react";
 
 // Create an idiomatic React adapter around route boxes + browser history
@@ -40,7 +40,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
   }
 ) {
-  const { routes, match, matchAll, defs } = defineRouteBoxes(patterns);
+  const defs = defineRoutes(patterns);
+  const match = (path: string) => defs.match(path) as RouteMatch<RouteName, any> | null;
+  const matchAll = (path: string) => defs.matchAll(path) as Array<RouteMatch<RouteName, any>>;
   const { store, history } = createBrowserRouter({
     base: options?.base,
     useHash: options?.useHash,
@@ -63,19 +65,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   };
 
   type RouteName = keyof typeof defs & string;
-  type ParamsOf<N extends RouteName> = Parameters<(typeof routes)[N]>[0];
+  type ParamsOfRoute<N extends RouteName> = CoreParamsOf<Patterns[N] & string>;
+  type ParamsOf<N extends RouteName> = ParamsOfRoute<N>;
   // If the params type is an empty object (no required keys), allow omitting it
-  type HasNoParams<N extends RouteName> = keyof ParamsOf<N> extends never ? true : false;
-  type MaybeParams<N extends RouteName> = HasNoParams<N> extends true ? Partial<ParamsOf<N>> | undefined : ParamsOf<N>;
+  type HasNoParams<N extends RouteName> = keyof ParamsOfRoute<N> extends never ? true : false;
+  type MaybeParams<N extends RouteName> = HasNoParams<N> extends true ? Partial<ParamsOfRoute<N>> | undefined : ParamsOfRoute<N>;
 
   type Ctx = {
-    routes: typeof routes;
+    routes: typeof defs;
     defs: typeof defs;
     history: typeof history;
     store: typeof store;
     match: typeof match;
     matchAll: typeof matchAll;
-    current: RouteBox<RouteName, string> | null;
+    current: RouteMatch<RouteName, any> | null;
     // internal: allow navigation to request a scroll behavior to apply after resolve
     _setScrollDesired: (s: NavScroll | null) => void;
     _snapshotScroll: () => void;
@@ -213,7 +216,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     }, [snap]);
 
     const value = useMemo<Ctx>(() => ({
-      routes,
+      routes: defs,
       defs,
       history,
       store,
@@ -399,10 +402,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     if (!current) return false;
     const exact = opts?.exact ?? true;
     if (exact) {
-      if (current.type !== name) return false;
+      if (current.name !== name) return false;
     } else {
       // non-exact: treat parent as active if types match or future chain contains; with stub, fall back to leaf equality
-      if (current.type !== name) return false;
+      if (current.name !== name) return false;
     }
     const want = (params ?? {}) as any;
     const got = (current.params ?? {}) as any;
@@ -447,7 +450,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     let element: React.ReactNode = children ?? null;
     for (let i = matches.length - 1; i >= 0; i--) {
       const m = matches[i] as any;
-      const L = layouts[m.type as RouteName] as React.ComponentType<any> | undefined;
+      const L = layouts[m.name as RouteName] as React.ComponentType<any> | undefined;
       if (L) {
         const child = element;
         element = <L {...(m.params as any)}>{child}</L>;
@@ -459,7 +462,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     const current = useRoute();
     const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
-    const matchEl = list.find((child) => React.isValidElement(child) && child.props.name === current?.type);
+    const matchEl = list.find((child) => React.isValidElement(child) && child.props.name === current?.name);
     if (!matchEl) return null;
     const props = matchEl.props as RouteProps;
     // If view is provided, instantiate it with params; else render element as-is
@@ -475,10 +478,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
     const current = useRoute();
     if (!current) return null;
-    const View = views[current.type as RouteName] as React.ComponentType<any>;
+    const View = views[current.name as RouteName] as React.ComponentType<any>;
     // current.params is string record; cast to the mapped props type for current route
     return <View {...(current.params as any)} />;
   };
 
-  return { RouterProvider, useNavigation, useRoute, useMatches, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteLayouts, RouteViews, routes, defs };
+  return { RouterProvider, useNavigation, useRoute, useMatches, useIsActive, useLocation, Link, Routes, Route, Outlet, RouteLayouts, RouteViews, routes: defs, defs };
 }
