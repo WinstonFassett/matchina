@@ -40,6 +40,14 @@ const Products: React.FC = () => {
 
 const Product: React.FC<{ params: { id: string } }> = ({ params }) => {
   const nav = useNavigation();
+  // Default to Overview tab if landing on /products/:id
+  React.useEffect(() => {
+    if (params?.id) {
+      nav.replace("ProductOverview", { id: params.id });
+    }
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (!params) return <div>No params!!</div>
   return (
     <div>
