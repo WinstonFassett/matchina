@@ -113,9 +113,6 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
           ← Back to Products
         </button>
         <Link name="ProductOverview" params={{ id }}>
-          <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Summary</span>
-        </Link>
-        <Link name="ProductOverview" params={{ id }}>
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Overview</span>
         </Link>
         <Link name="ProductSpecs" params={{ id }}>

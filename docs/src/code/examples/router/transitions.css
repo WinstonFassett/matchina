@@ -9,6 +9,8 @@
 .router-transition .view {
   grid-area: 1 / 1;
   will-change: transform, opacity;
+  /* Ensure sliding content is clipped within rounded corners/borders */
+  overflow: hidden;
 }
 .router-transition .view[data-role="from"] { z-index: 10; }
 .router-transition .view[data-role="to"] { z-index: 20; }

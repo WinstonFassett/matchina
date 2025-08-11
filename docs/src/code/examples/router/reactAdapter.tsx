@@ -170,7 +170,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 
   type RoutePropsElement = { name: RouteName; element: React.ReactNode };
-  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
+  // Allow views to either accept `{ params }` or ignore it (regular props). React ignores extra props on function components.
+  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<any> };
   type RouteProps = RoutePropsElement | RoutePropsView;
 
   const Route: React.FC<RouteProps> = () => null;
