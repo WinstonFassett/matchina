@@ -45,24 +45,24 @@ const Product: React.FC<{ params: { id: string } }> = ({ params }) => {
   );
 };
 
-// Nested Product tabs
+// Nested Product tabs (wrapped with ProductLayout to show tab navigation)
 const ProductOverview: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <div>
+  <ProductLayout id={params.id}>
     <h4>Overview</h4>
     <p>Overview for product {params.id}</p>
-  </div>
+  </ProductLayout>
 );
 const ProductSpecs: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <div>
+  <ProductLayout id={params.id}>
     <h4>Specs</h4>
     <p>Specs for product {params.id}</p>
-  </div>
+  </ProductLayout>
 );
 const ProductReviews: React.FC<{ params: { id: string } }> = ({ params }) => (
-  <div>
+  <ProductLayout id={params.id}>
     <h4>Reviews</h4>
     <p>Reviews for product {params.id}</p>
-  </div>
+  </ProductLayout>
 );
 
 // Layout that persists across product and its tabs
@@ -116,7 +116,7 @@ export const RouterDemoIdiomatic: React.FC = () => {
           <Link name="Home">Home</Link>
           <Link name="About">About</Link>
           <Link name="Products">Products</Link>
-          <Link name="Product" params={{ id: "42" }}>Product 42</Link>
+          <Link name="ProductOverview" params={{ id: "42" }}>Product 42</Link>
           <Link name="User" params={{ userId: "winston" }}>User winston</Link>
         </nav>
 
