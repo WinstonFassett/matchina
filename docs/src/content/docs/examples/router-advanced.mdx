@@ -1,0 +1,66 @@
+---
+title: Advanced Router (React)
+description: Typed React router adapter with hash routing, param passing, nested layouts, and tabbed routes leveraging matchina store and history integration.
+---
+
+import RouterAdvancedExample from "@code/examples/router/example";
+import reactAdapterCode from "@code/examples/router/reactAdapter.tsx?raw";
+import defineRouteBoxesCode from "@code/examples/router/defineRouteBoxes.ts?raw";
+import idiomaticDemoCode from "@code/examples/router/RouterDemoIdiomatic.tsx?raw";
+import exampleCode from "@code/examples/router/example.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A typed, ergonomic React router adapter that demonstrates:
+
+- Hash routing with a base path for SPA docs environments
+- Strongly-typed routes and param passing to views via `view={Component}`
+- `Link` that respects base/hash and supports active state
+- Programmatic navigation helpers with scroll restoration
+- Nested route layouts with tabs (Product Overview/Specs/Reviews)
+
+<div className="not-content">
+  <RouterAdvancedExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files=[
+    { name: "reactAdapter.tsx", code: reactAdapterCode },
+    { name: "defineRouteBoxes.ts", code: defineRouteBoxesCode },
+    { name: "RouterDemoIdiomatic.tsx", code: idiomaticDemoCode },
+    { name: "example.tsx", code: exampleCode },
+  ]
+/>
+
+## How this uses matchina
+
+This router integrates with matchina primarily via the history/store synchronization layer:
+
+- **Store-backed navigation**: A matchina store tracks the navigation stack (paths, index). The React adapter reads from this store with `useMatches()` to derive current route(s), which makes the UI reactive to navigation changes and enables time-travel friendly patterns.
+- **History adapter**: The browser history adapter (outside this page) normalizes URLs with `base` and `useHash`, resolves routes, and dispatches updates into the store on `push`, `replace`, `redirect`, and `popstate`.
+- **Guards/Loaders**: The history adapter supports guard/loader chaining with access to the route instance and chain context. This composes well with matchina’s transition/side-effect philosophy.
+- **Scroll restoration**: Scroll snapshot/restore is handled in the provider using store snapshots to coordinate multi-container scroll positions across navigations.
+
+### Why matchina helps
+
+- **Deterministic state**: Navigation state is explicit and serializable. This makes it easy to test, visualize, and potentially time-travel.
+- **Composable effects**: Guards/loaders align with matchina’s approach to effects and transitions.
+- **Ergonomics**: Strong typing for routes/params and view props comes from a declarative route schema that matchina can help validate/manage.
+
+### What could be further integrated
+
+- **Guards/Loaders as machines**: Implement guards/loaders as matchina machines for richer async/side-effect orchestration with retries, cancellation, etc.
+- **Route-level state**: Persist route-local state in the store (per location key), enabling full snapshot/restore on back/forward.
+- **Prefetching**: Use matchina effects to prefetch data on hover/intent, storing results by location key and invalidation policy.
+- **Focus/Accessibility flows**: Centralize focus management as part of navigation transitions in a machine for accessibility guarantees.
+
+### Could this be a standalone router?
+
+Yes—the adapter is structured so that non-matchina environments could adopt the typed route definitions, regex matching, and React components. However, the integration with matchina’s store/history gives you:
+
+- A consistent state model for navigation
+- Easier testing and introspection
+- A natural place to layer guards/loaders/scroll effects declaratively
+
+If your goal is to showcase matchina’s strengths, this example is a good fit because navigation becomes just another state machine concern.
