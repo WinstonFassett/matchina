@@ -1,6 +1,6 @@
     import React, { createContext, useContext, useMemo } from "react";
 import { createBrowserRouter } from "@lib/src/router-history";
-import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "@lib/src/extras/routing/define-routes";
+import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "matchina";
 import { useMachine } from "@lib/src/integrations/react";
 
 // Create an idiomatic React adapter around route boxes + browser history
