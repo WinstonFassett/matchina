@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { createBrowserRouter } from "@lib/src/router-history";
 import { defineRouteBoxes, type RouteBox } from "./defineRouteBoxes";
+import { useMachine } from "@lib/src/integrations/react";
 
 // Create an idiomatic React adapter around route boxes + browser history
 // Usage:
@@ -41,13 +42,14 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const RouterContext = createContext<Ctx | null>(null);
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const [snap, setSnap] = useState(() => store.getState());
-    useEffect(() => {
-      const id = setInterval(() => setSnap(store.getState()), 100);
+    // Subscribe to machine changes; triggers re-render on notify
+    useMachine(store);
+    // Start history once on mount (align store with URL)
+    React.useEffect(() => {
       history.start();
-      return () => clearInterval(id);
     }, []);
 
+    const snap = store.getState();
     const current = useMemo(() => {
       const cur = snap.stack[snap.index];
       const path = cur?.path ?? "/";
