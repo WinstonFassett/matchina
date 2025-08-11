@@ -14,7 +14,11 @@ const {
   Products: "/products",
   Product: "/products/:id",
   User: "/users/:userId",
-} as const);
+} as const, {
+  // Hash routing keeps us on the same Astro page under /matchina/router-demo
+  useHash: true,
+  base: "/matchina/router-demo",
+});
 
 const Home: React.FC = () => <div><h3>Home</h3><p>Welcome!</p></div>;
 const About: React.FC = () => <div><h3>About</h3><p>About this app.</p></div>;

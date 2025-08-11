@@ -56,6 +56,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     matchAllRoutes: (path: string) => matchAll(path),
   });
 
+  // Build a browser URL for a given internal path, honoring base/useHash
+  const toUrl = (path: string) => {
+    const base = options?.base || "";
+    return options?.useHash ? `${base}#${path}` : `${base}${path}`;
+  };
+
   type RouteName = keyof typeof defs & string;
   type ParamsOf<N extends RouteName> = Parameters<(typeof routes)[N]>[0];
   // If the params type is an empty object (no required keys), allow omitting it
@@ -317,9 +323,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   // Expose the matched chain (parent→child)
   function useMatches() {
-    const { matchAll } = useRouterContext();
-    const { pathname } = useLocation();
-    return matchAll(pathname) ?? [];
+    const { matchAll, store } = useRouterContext();
+    // Use store path so it works with hash routing and any base
+    const snap = store.getState();
+    const cur = snap.stack[snap.index];
+    const path = cur?.path ?? "/";
+    return matchAll(path) ?? [];
   }
 
   type LinkProps<N extends RouteName> = {
@@ -350,7 +359,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const q = usp.toString();
       return q ? `?${q}` : "";
     };
-    const href = `${base}${toSearch(search)}${hash ? (hash.startsWith("#") ? hash : `#${hash}`) : ""}`;
+    const searchStr = toSearch(search);
+    const hashStr = hash ? (hash.startsWith('#') ? hash : `#${hash}`) : '';
+    const path = `${base}${searchStr}${hashStr}`;
+    const href = toUrl(path);
     const isActive = useIsActive(name, params as any);
     const finalClass = [className, isActive ? activeClassName : undefined].filter(Boolean).join(" ");
     const finalStyle = isActive && activeStyle ? { ...(style || {}), ...activeStyle } : style;
@@ -361,7 +373,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         style={finalStyle}
         onClick={(e) => {
           e.preventDefault();
-          replace ? history.replace(href) : history.push(href);
+          // Push/replace the internal path; history will apply base/useHash
+          replace ? history.replace(path) : history.push(path);
           onClick?.(e);
         }}
         {...rest}

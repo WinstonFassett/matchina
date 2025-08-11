@@ -15,27 +15,27 @@ test.describe('Router basic navigation', () => {
 
     // Click About
     await page.getByRole('link', { name: 'About' }).click();
-    await expect(page).toHaveURL(/\/about$/);
+    await expect(page).toHaveURL(/#\/about$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('About');
 
     // Click Products
     await page.getByRole('link', { name: 'Products' }).click();
-    await expect(page).toHaveURL(/\/products$/);
+    await expect(page).toHaveURL(/#\/products$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('Products');
 
-    // Programmatic nav to Product 42
-    await page.getByRole('button', { name: 'View Product 42' }).click();
-    await expect(page).toHaveURL(/\/products\/42$/);
+    // Navigate to Product 42 via top nav Link (hash routing)
+    await page.getByRole('link', { name: 'Product 42' }).click();
+    await expect(page).toHaveURL(/#\/products\/42$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('Product');
 
     // Back to list (programmatic navigation)
     await page.getByRole('button', { name: 'Back to list' }).click();
-    await expect(page).toHaveURL(/\/products$/);
+    await expect(page).toHaveURL(/#\/products$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('Products');
 
     // User link with param
     await page.getByRole('link', { name: /User winston/ }).click();
-    await expect(page).toHaveURL(/\/users\/winston$/);
+    await expect(page).toHaveURL(/#\/users\/winston$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('User');
   });
 });
