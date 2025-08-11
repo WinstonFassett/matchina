@@ -170,8 +170,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 
   type RoutePropsElement = { name: RouteName; element: React.ReactNode };
-  // Allow views to either accept `{ params }` or ignore it (regular props). React ignores extra props on function components.
-  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<any> };
+  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
   type RouteProps = RoutePropsElement | RoutePropsView;
 
   const Route: React.FC<RouteProps> = () => null;
@@ -197,11 +196,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
 
-    // Render condition: use from/to diff so we show both views during a change
-    const { defs } = useRouterContext();
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
 
-    // Start a CSS transition when from/to differ
+    // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
       if (!differ || !from) return;
       const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
@@ -257,13 +254,13 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       });
       return () => cancelAnimationFrame(frame);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [differ, from, to, change?.type, navDir]);
+    }, [change?.to, differ]);
 
     const oldKey = (exiting || from) ? `${String((exiting || from)!.name)}:${JSON.stringify((exiting || from)!.params || {})}` : null;
     const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
 
-    // Render both views during any active change or known difference; keep 'exiting' cached until CSS ends
-    if (exiting || differ || !!change) {
+    // Render both views immediately when they differ; keep 'exiting' cached until CSS ends
+    if (exiting || differ) {
       return (
         <div
           ref={containerRef}
@@ -278,22 +275,19 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
+            aria-hidden
           >
-            <div className="transition-slide">
-              {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
-            </div>
+            {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view z-20 is-next-container bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            <div className="transition-slide">
-              {renderFor(to.name as RouteName, to.params)}
-            </div>
+            {renderFor(to.name as RouteName, to.params)}
           </div>
         </div>
       );
@@ -302,8 +296,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // No active transition; render single view
     const single = renderFor(to.name as RouteName, to.params);
     return single ? (
-      <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
-        <div className="transition-slide">{single}</div>
+      <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
+        {single}
       </div>
     ) : null;
   };
@@ -340,26 +334,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return { change, state, fromEntry, toEntry, from, to };
   }
 
-  // Layouts: wrap rendered routes with a layout that matches the active route name.
-  // Matching is by exact key or prefix (e.g., 'Product' applies to 'ProductOverview').
-  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<{ children?: React.ReactNode }> }; children?: React.ReactNode }>
-    = ({ layouts, children }) => {
-      const { to } = useRouterContext();
-      if (!to) return <>{children}</>;
-      const name = String(to.name) as RouteName;
-      const keys = Object.keys(layouts) as RouteName[];
-      // Choose the most specific (longest) matching key by exact or prefix
-      const match = keys
-        .filter((k) => {
-          if (name === k) return true;
-          if (!name.startsWith(k)) return false;
-          const next = name.charAt(k.length);
-          return /[A-Z]/.test(next);
-        })
-        .sort((a, b) => b.length - a.length)[0];
-      const L = match ? layouts[match] : undefined;
-      return L ? React.createElement(L as React.ComponentType<any>, undefined, children) : <>{children}</>;
-    };
+  // Layouts: no-op passthrough for now (kept for API parity)
+  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<any> }; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
 
   return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, RouteLayouts, useRoutingDebug, routes: defs, defs, store, history };
 }
