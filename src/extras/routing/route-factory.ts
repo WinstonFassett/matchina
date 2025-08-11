@@ -11,7 +11,7 @@ export type RouteMatchbox<Name extends string, Pattern extends string> = Matchbo
 > & {
   to(params?: ParamsOf<Pattern>): string;
   /** true if path fully matches this pattern */
-  test(path: string): boolean;
+  testPath(path: string): boolean;
   /** match and extract params, or null */
   matchPath(path: string): RouteMatch<Name, Pattern> | null;
 };
