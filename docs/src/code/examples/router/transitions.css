@@ -14,6 +14,12 @@
 .router-transition .view[data-role="from"] { z-index: 10; }
 .router-transition .view[data-role="to"] { z-index: 20; }
 
+/* Default state for view shells */
+.router-transition .view {
+  transform: translateX(0);
+  opacity: 1;
+}
+
 /* Safety baseline: disable transitions by default to avoid any interference */
 .transition-slide {
   transition: none;
@@ -25,6 +31,10 @@
 .is-changing .transition-slide {
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+/* Also animate the view shells so the whole card moves in outer transitions */
+.is-changing .view {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
 
 /* Pre-position next container BEFORE enabling transitions, direction-aware */
 .router-transition[data-dir="forward"] .view.is-next-container .transition-slide {
@@ -32,6 +42,15 @@
   opacity: 0;
 }
 .router-transition[data-dir="back"] .view.is-next-container .transition-slide {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+/* Pre-position next view shell too */
+.router-transition[data-dir="forward"] .view.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.router-transition[data-dir="back"] .view.is-next-container {
   transform: translateX(-100%);
   opacity: 0;
 }
@@ -55,6 +74,15 @@
   transform: translateX(100%);
   opacity: 0;
 }
+/* Apply same to view shells */
+.is-changing[data-dir="forward"] .view.is-previous-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.is-changing[data-dir="forward"] .view.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
 
 /* Back */
 .is-changing[data-dir="back"] .view.is-previous-container .transition-slide {
@@ -62,6 +90,15 @@
   opacity: 0;
 }
 .is-changing[data-dir="back"] .view.is-next-container .transition-slide {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+/* Apply same to view shells */
+.is-changing[data-dir="back"] .view.is-previous-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.is-changing[data-dir="back"] .view.is-next-container {
   transform: translateX(-100%);
   opacity: 0;
 }

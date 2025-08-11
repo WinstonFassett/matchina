@@ -299,8 +299,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         container.setAttribute('data-dir', navDir);
 
         // Swup-like semantics
-        // 1) Apply pre-states FIRST (no transitions yet) so initial paint is off-screen/hidden
-        fromEl.classList.add('is-previous-container');
+        // 1) Apply pre-state to NEXT only (keep FROM unmarked so it animates after transitions are enabled)
         toEl.classList.add('is-next-container');
         // 2) Force a reflow to commit pre-positioning before enabling transitions
         void toEl.getBoundingClientRect();
@@ -308,8 +307,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         container.classList.add('is-changing');
         // 4) Next frame, kick off both enter and exit transitions
         requestAnimationFrame(() => {
+          // Enter: remove pre-enter class so it slides in
           toEl.classList.remove('is-next-container');
-          fromEl.classList.add('is-exit');
+          // Exit: now mark FROM as previous so it slides out
+          fromEl.classList.add('is-previous-container');
         });
 
         // When both elements finish transitions/animations, clear exiting
@@ -319,7 +320,6 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           if (doneCount >= 2) {
             container.classList.remove('is-changing');
             fromEl.classList.remove('is-previous-container');
-            fromEl.classList.remove('is-exit');
             toEl.classList.remove('is-next-container');
             setExiting(null);
           }
