@@ -55,6 +55,8 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
   const { base = "", useHash = false, match, guard, loader, matchRoute, matchRouteByPath, matchAllRoutes, guardV2, loaderV2 } = opts;
 
   async function resolve(pathFull: string) {
+    console.debug('[history.resolve]', { pathFull, stripped: stripQueryHash(pathFull) });
+
     try {
       // guard first (use full URL path including search/hash)
       if (guardV2 || guard) {

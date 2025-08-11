@@ -1,6 +1,6 @@
     import React, { createContext, useContext, useMemo } from "react";
 import { createBrowserRouter } from "@lib/src/router-history";
-import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "matchina";
+import { defineRoutes, type RouteBox, type ParamsOf as CoreParamsOf, type RouteMatch } from "@lib/src/extras/routing/define-routes";
 import { useMachine } from "@lib/src/integrations/react";
 
 // Create an idiomatic React adapter around route boxes + browser history
@@ -62,6 +62,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   const toUrl = (path: string) => {
     const base = options?.base || "";
     return options?.useHash ? `${base}#${path}` : `${base}${path}`;
+  };
+
+  // Derive internal path from window.location
+  const getPathFromLocation = () => {
+    if (typeof window === 'undefined') return '/';
+    if (options?.useHash) {
+      const hash = window.location.hash || '#';
+      const raw = hash.slice(1) || '/';
+      return raw.split(/[?#]/)[0] || '/';
+    }
+    const base = options?.base || '';
+    const raw = window.location.pathname + window.location.search + window.location.hash;
+    const withoutBase = base && raw.startsWith(base) ? raw.slice(base.length) || '/' : raw;
+    return (withoutBase.split(/[?#]/)[0] || '/') as string;
   };
 
   type RouteName = keyof typeof defs & string;
@@ -210,11 +224,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       }
     }, [snap.status, snap.index]);
     const current = useMemo(() => {
-      const pendingPath = snap.pending?.path;
-      const cur = snap.stack[snap.index];
-      const raw = (pendingPath ?? cur?.path) ?? "/";
-      const path = raw.split(/[?#]/)[0] || "/";
-      return match(path) as Ctx["current"];
+      const path = getPathFromLocation();
+      const current = match(path);
+      console.debug('[router]', { path, current });
+
+      return current as Ctx["current"];
     }, [snap]);
 
     const value = useMemo<Ctx>(() => ({
@@ -330,10 +344,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   function useMatches() {
     const { matchAll, store } = useRouterContext();
     // Use store path so it works with hash routing and any base
-    const snap = store.getState();
-    const cur = snap.stack[snap.index];
-    const raw = cur?.path ?? "/";
-    const path = raw.split(/[?#]/)[0] || "/";
+    const path = getPathFromLocation();
     return matchAll(path) ?? [];
   }
 
