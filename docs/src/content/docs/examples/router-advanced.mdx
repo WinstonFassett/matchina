@@ -9,6 +9,7 @@ import defineRouteBoxesCode from "@code/examples/router/defineRouteBoxes.ts?raw"
 import idiomaticDemoCode from "@code/examples/router/RouterDemoIdiomatic.tsx?raw";
 import exampleCode from "@code/examples/router/example.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
+import Mermaid from "@components/Mermaid";
 
 A typed, ergonomic React router adapter that demonstrates:
 
@@ -67,8 +68,10 @@ If your goal is to showcase matchina’s strengths, this example is a good fit b
 
 ## Architecture / Dependencies
 
-```mermaid
-flowchart TD
+ <Mermaid client:only="react"
+          content={`flowchart TD
+
+  %% Application boundary
   subgraph App[React App]
     Link[Link] -->|push/replace| History
     UseNav[useNavigation] -->|navigate/replace/redirect| History
@@ -76,13 +79,27 @@ flowchart TD
     RouteLayouts --> Views
   end
 
-  CRR[createReactRouter] --> Defs[defineRouteBoxes]
-  CRR --> Prims[React primitives]
-  CRR --> History[createBrowserRouter - history adapter]
+  %% Router Library boundary (this example)
+  subgraph RouterLib[Router Library]
+    CRR[createReactRouter]
+    Defs[defineRouteBoxes]
+    Matcher[matcher standalone]
+    Prims[React primitives]
+    History[history adapter]
 
-  Defs --> Matcher[match/matchAll]
+    CRR --> Defs
+    CRR --> Prims
+    CRR --> History
+    Defs --> Matcher
+  end
 
-  History <--> Store[router store - router machine]
+  %% Matchina boundary
+  subgraph Matchina[Matchina]
+    Store[router store]
+  end
+
+  %% Cross-boundary interactions
+  History <--> Store
   History -->|resolve path| Matcher
   Matcher -->|match result| History
   History -->|dispatch| Store
@@ -92,7 +109,7 @@ flowchart TD
   Hooks --> Routes
   Hooks --> RouteLayouts
 
-```
+`} />
 
 Notes:
 
