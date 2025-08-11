@@ -60,3 +60,40 @@
   transform: translateX(-100%);
   opacity: 0;
 }
+
+/* --- Temporary compatibility for older structure ------------------------- */
+/* Support old markup where role classes were applied directly to
+   `.transition-slide` instead of the `.view` shell. Remove after migration. */
+
+/* Pre-position next container before enabling transitions */
+.router-transition[data-dir="forward"] .transition-slide.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.router-transition[data-dir="back"] .transition-slide.is-next-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Prevent initial blink for old structure */
+.transition-slide.is-next-container { visibility: hidden; }
+
+/* Forward */
+.is-changing[data-dir="forward"] .transition-slide.is-previous-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.is-changing[data-dir="forward"] .transition-slide.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Back */
+.is-changing[data-dir="back"] .transition-slide.is-previous-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.is-changing[data-dir="back"] .transition-slide.is-next-container {
+  transform: translateX(-100%);
+  opacity: 0;
+}

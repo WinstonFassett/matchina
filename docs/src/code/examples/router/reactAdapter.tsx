@@ -230,11 +230,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return isProductTab(fromName) && isProductTab(toName) && sameProductId(fromParams, toParams);
     };
 
-    // Inner mode: rely on the layout (e.g., ProductDetailLayout) to wrap its tab body with .transition-slide
+    // Inner mode: ensure a `.transition-slide` wrapper exists (layouts may also wrap; nested is tolerated)
     const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      return wrapWithLayouts(layouts, name, params, body);
+      const innerSliding = <div className="transition-slide">{body}</div>;
+      return wrapWithLayouts(layouts, name, params, innerSliding);
     };
 
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
@@ -246,6 +247,19 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
     const innerOnly = shouldInnerOnly(from?.name ?? null, String(to.name), from?.params ?? null, to.params);
+
+    // Dev-time guard: warn if inner mode active but required .transition-slide wrapper is missing
+    React.useEffect(() => {
+      if (!innerOnly) return;
+      const f = fromRef.current;
+      const t = toRef.current;
+      const hasFrom = !!f && !!f.querySelector('.transition-slide');
+      const hasTo = !!t && !!t.querySelector('.transition-slide');
+      if (!hasFrom || !hasTo) {
+        // eslint-disable-next-line no-console
+        console.warn('[router] inner-only transition expected ".transition-slide" inside both from/to views; missing:', { fromHas: hasFrom, toHas: hasTo });
+      }
+    }, [innerOnly]);
 
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
@@ -326,7 +340,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             key={`old:${oldKey}`}
             className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
-            
+            aria-hidden
           >
             {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
