@@ -223,12 +223,14 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         container.setAttribute('data-dir', navDir);
 
         // Swup-like semantics
-        // Container enters changing state
-        container.classList.add('is-changing');
-        // Previous container immediately in its final (leaving) state
+        // 1) Apply pre-states FIRST (no transitions yet) so initial paint is off-screen/hidden
         fromEl.classList.add('is-previous-container');
-        // Next container starts in pre-enter state and then we remove to start transition
         toEl.classList.add('is-next-container');
+        // 2) Force a reflow to commit pre-positioning before enabling transitions
+        void toEl.getBoundingClientRect();
+        // 3) Enable transitions on container
+        container.classList.add('is-changing');
+        // 4) Next frame, remove pre-enter class from next to start the transition (also reveals via CSS)
         requestAnimationFrame(() => {
           toEl.classList.remove('is-next-container');
         });
@@ -260,7 +262,16 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // Render both views immediately when they differ; keep 'exiting' cached until CSS ends
     if (exiting || differ) {
       return (
-        <div ref={containerRef} className="router-transition" data-router-parallel data-transition-key={activeKey || ''} data-from-name={String(exiting?.name || from!.name)} data-to-name={String(to.name)}>
+        <div
+          ref={containerRef}
+          className="router-transition"
+          data-router-parallel
+          data-transition-key={activeKey || ''}
+          data-from-name={String(exiting?.name || from!.name)}
+          data-to-name={String(to.name)}
+          data-dir={navDir}
+          data-type={String(change?.type || 'push')}
+        >
           <div
             ref={fromRef}
             key={`old:${oldKey}`}

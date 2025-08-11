@@ -13,27 +13,31 @@
 .router-transition .view[data-role="from"] { z-index: 10; }
 .router-transition .view[data-role="to"] { z-index: 20; }
 
-/* Parallel animation timing */
+/* Safety baseline: disable transitions by default to avoid any interference */
+.transition-slide {
+  transition: none;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Enable transitions only while changing */
 .is-changing .transition-slide {
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-/* Style of previous container after leaving */
-.transition-slide.is-previous-container {
+/* Pre-position next container BEFORE enabling transitions, direction-aware */
+.router-transition[data-dir="forward"] .transition-slide.is-next-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.router-transition[data-dir="back"] .transition-slide.is-next-container {
   transform: translateX(-100%);
   opacity: 0;
 }
 
-/* Style of next container before entering */
+/* Hide next container until we actually start the transition to prevent initial blink */
 .transition-slide.is-next-container {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-/* Base state for views to be fully visible when no transition is active */
-.transition-slide {
-  transform: translateX(0);
-  opacity: 1;
+  visibility: hidden;
 }
 
 /* Forward (default) */
