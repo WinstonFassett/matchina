@@ -314,6 +314,10 @@ export default defineConfig({
                   label: "Checkout Flow",
                   link: "/examples/checkout",
                 },
+                {
+                  label: "Advanced Router (React)",
+                  link: "/examples/router-advanced",
+                },
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",

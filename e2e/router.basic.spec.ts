@@ -25,11 +25,12 @@ test.describe('Router basic navigation', () => {
 
     // Navigate to Product 42 via top nav Link (hash routing)
     await page.getByRole('link', { name: 'Product 42' }).click();
-    await expect(page).toHaveURL(/#\/products\/42$/);
-    await expect(page.getByRole('heading', { level: 3 })).toHaveText('Product 42');
+    // Default redirect goes to overview tab
+    await expect(page).toHaveURL(/#\/products\/42\/overview$/);
+    await expect(page.getByRole('heading', { level: 4 })).toHaveText('Overview');
 
-    // Back to list (programmatic navigation)
-    await page.getByRole('button', { name: 'Back to list' }).click();
+    // Back to list via top nav
+    await page.getByRole('link', { name: 'Products' }).click();
     await expect(page).toHaveURL(/#\/products$/);
     await expect(page.getByRole('heading', { level: 3 })).toHaveText('Products');
 
