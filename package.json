@@ -60,6 +60,7 @@
     "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@size-limit/preset-small-lib": "^10.0.1",
     "@types/node": "^20.8.2",
     "@types/react": "^18.2.31",
@@ -70,9 +71,9 @@
     "prettier": "^3.6.2",
     "size-limit": "^10.0.1",
     "unbuild": "^2.0.0",
+    "valibot": "^1.1.0",
     "vitest": "^0.34.6",
-    "zod": "^3.22.4",
-    "valibot": "^1.1.0"
+    "zod": "^3.22.4"
   },
   "dependencies": {
     "@astrojs/ts-plugin": "^1.10.4"
