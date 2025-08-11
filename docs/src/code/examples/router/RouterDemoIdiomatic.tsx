@@ -107,10 +107,10 @@ const ProductsLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) 
 };
 
 // Product detail layout: shows back, product title, and tabs; only inner body animates
-const ProductDetailLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name: string; params: any } }> = ({ children, route }) => {
   const nav = useNavigation();
-  const { from, to } = useRouter();
-  const id = String((to?.params as any)?.id ?? '');
+  const { from } = useRouter();
+  const id = String((route?.params as any)?.id ?? '');
   const backToList = React.useCallback(() => {
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);

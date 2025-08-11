@@ -122,7 +122,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   };
 
   const RouterContext = createContext<Ctx | null>(null);
-  type LayoutMap = { [K in RouteName]?: React.ComponentType<{ children?: React.ReactNode }> };
+  type LayoutComponentProps = { children?: React.ReactNode; route: { name: RouteName; params: any } };
+  type LayoutMap = { [K in RouteName]?: React.ComponentType<LayoutComponentProps> };
   const LayoutsContext = createContext<LayoutMap>({});
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -180,6 +181,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     const { from, to, change } = useRouterContext();
+    const layouts = useContext(LayoutsContext);
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const fromRef = React.useRef<HTMLDivElement | null>(null);
     const toRef = React.useRef<HTMLDivElement | null>(null);
@@ -198,9 +200,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
     // Wrap a node with matching layouts for a route name (outer->inner by specificity)
-    const wrapWithLayouts = (name: RouteName, node: React.ReactNode): React.ReactNode => {
-      const layouts = useContext(LayoutsContext);
-      const keys = Object.keys(layouts) as RouteName[];
+    const wrapWithLayouts = (lx: LayoutMap, name: RouteName, params: any, node: React.ReactNode): React.ReactNode => {
+      const keys = Object.keys(lx) as RouteName[];
       const matches = keys
         .filter((k) => {
           if (name === k) return true;
@@ -211,14 +212,14 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         .sort((a, b) => a.length - b.length);
       if (matches.length === 0) return node;
       return matches.reduce((acc, k) => {
-        const L = layouts[k]! as React.ComponentType<any>;
-        return React.createElement(L, undefined, acc);
+        const L = lx[k]! as React.ComponentType<LayoutComponentProps>;
+        return React.createElement(L, { route: { name, params } }, acc);
       }, node);
     };
     const renderWithLayouts = (name: RouteName, params: any): React.ReactNode => {
       const node = renderFor(name, params);
       if (!node) return null;
-      return wrapWithLayouts(name, node);
+      return wrapWithLayouts(layouts, name, params, node);
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
