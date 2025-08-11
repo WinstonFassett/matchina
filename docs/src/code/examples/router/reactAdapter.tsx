@@ -122,6 +122,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   };
 
   const RouterContext = createContext<Ctx | null>(null);
+  type LayoutMap = { [K in RouteName]?: React.ComponentType<{ children?: React.ReactNode }> };
+  const LayoutsContext = createContext<LayoutMap>({});
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     useMachine(store);
@@ -194,6 +196,29 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (p.element) return p.element;
       if (p.view) { const V = p.view as React.ComponentType<any>; return <V params={params} />; }
       return null;
+    };
+    // Wrap a node with matching layouts for a route name (outer->inner by specificity)
+    const wrapWithLayouts = (name: RouteName, node: React.ReactNode): React.ReactNode => {
+      const layouts = useContext(LayoutsContext);
+      const keys = Object.keys(layouts) as RouteName[];
+      const matches = keys
+        .filter((k) => {
+          if (name === k) return true;
+          if (!name.startsWith(k)) return false;
+          const next = name.charAt(k.length);
+          return /[A-Z]/.test(next);
+        })
+        .sort((a, b) => a.length - b.length);
+      if (matches.length === 0) return node;
+      return matches.reduce((acc, k) => {
+        const L = layouts[k]! as React.ComponentType<any>;
+        return React.createElement(L, undefined, acc);
+      }, node);
+    };
+    const renderWithLayouts = (name: RouteName, params: any): React.ReactNode => {
+      const node = renderFor(name, params);
+      if (!node) return null;
+      return wrapWithLayouts(name, node);
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
@@ -279,7 +304,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             data-role="from"
             aria-hidden
           >
-            {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            {renderWithLayouts((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
           <div
             ref={toRef}
@@ -287,14 +312,14 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            {renderFor(to.name as RouteName, to.params)}
+            {renderWithLayouts(to.name as RouteName, to.params)}
           </div>
         </div>
       );
     }
 
     // No active transition; render single view
-    const single = renderFor(to.name as RouteName, to.params);
+    const single = renderWithLayouts(to.name as RouteName, to.params);
     return single ? (
       <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
         {single}
@@ -334,8 +359,13 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return { change, state, fromEntry, toEntry, from, to };
   }
 
-  // Layouts: no-op passthrough for now (kept for API parity)
-  const RouteLayouts: React.FC<{ layouts: { [K in RouteName]?: React.ComponentType<any> }; children?: React.ReactNode }> = ({ children }) => <>{children}</>;
+  // Layouts: provider-only. Merge into context so Routes can apply per-view.
+  const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }>
+    = ({ layouts, children }) => {
+      const parent = useContext(LayoutsContext);
+      const merged = { ...parent, ...layouts } as LayoutMap;
+      return <LayoutsContext.Provider value={merged}>{children}</LayoutsContext.Provider>;
+    };
 
   return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, RouteLayouts, useRoutingDebug, routes: defs, defs, store, history };
 }
