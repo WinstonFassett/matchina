@@ -7,21 +7,14 @@ export type HistoryAdapterOptions = {
   matchPath?: (path: string) => Promise<Record<string, unknown> | null> | (Record<string, unknown> | null);
   matchAllPaths?: (path: string) => any[] | null;
   match?: (path: string) => Promise<Record<string, unknown> | null> | (Record<string, unknown> | null);
-  // Optional guard: return true to allow, or a string path to redirect
-  guard?: (path: string) => Promise<true | string> | (true | string);
-  // Optional loader: may return extra params to merge into route params
-  loader?: (
-    path: string,
-    params: Record<string, unknown> | null
-  ) => Promise<Record<string, unknown> | void> | (Record<string, unknown> | void);
-  // Optional route-instance matcher (if available from higher layer)
+  // Guard: return true to allow, or a string path to redirect (receives rich ctx)
+  guard?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: any | null; chain?: any[] }) => Promise<true | string> | (true | string);
+  // Loader: may return extra params to merge into route params (receives rich ctx)
+  loader?: (ctx: { path: string; params: Record<string, unknown> | null; route: any | null; chain?: any[] }) => Promise<Record<string, unknown> | void> | (Record<string, unknown> | void);
   matchRoute?: (path: string) => any | null;
   matchRouteByPath?: (path: string) => any | null;
   // Optional: return parent→child chain of route instances for nesting
   matchAllRoutes?: (path: string) => any[] | null;
-  // Preferred richer contexts (if provided, take precedence over guard/loader)
-  guardV2?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: any | null; chain?: any[] }) => Promise<true | string> | (true | string);
-  loaderV2?: (ctx: { path: string; params: Record<string, unknown> | null; route: any | null; chain?: any[] }) => Promise<Record<string, unknown> | void> | (Record<string, unknown> | void);
 };
 
 function normalize(path: string, base = "") {
@@ -55,7 +48,7 @@ function stripQueryHash(path: string) {
 }
 
 export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAdapterOptions) {
-  const { base = "", useHash = false, guard, loader, matchRoute, matchRouteByPath, matchAllRoutes, guardV2, loaderV2 } = opts;
+  const { base = "", useHash = false, guard, loader, matchRoute, matchRouteByPath, matchAllRoutes } = opts;
   const matchParams = (path: string) => (opts.matchPath ? opts.matchPath(path) : opts.match!(path));
   const matchChain = (path: string) => (opts.matchAllPaths ? opts.matchAllPaths(path) : (matchAllRoutes ? matchAllRoutes(path) : null));
 
@@ -64,16 +57,14 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
 
     try {
       // guard first (use full URL path including search/hash)
-      if (guardV2 || guard) {
+      if (guard) {
         const rawPath = pathFull;
         const path = stripQueryHash(pathFull);
         const params = await matchParams(path);
         const routeMatcher = matchRouteByPath ?? matchRoute;
         const route = routeMatcher ? routeMatcher(path) : null;
         const chain = (matchChain(path) || (route ? [route] : []));
-        const allowOrRedirect = guardV2
-          ? await guardV2({ fullPath: rawPath, path, params, route, chain })
-          : await guard!(rawPath);
+        const allowOrRedirect = await guard({ fullPath: rawPath, path, params, route, chain });
         if (typeof allowOrRedirect === "string") {
           // redirect and stop
           apply("redirect", normalize(allowOrRedirect, ""));
@@ -83,13 +74,11 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
 
       const path = stripQueryHash(pathFull);
       let params = await matchParams(path);
-      if (loaderV2 || loader) {
+      if (loader) {
         const routeMatcher = matchRouteByPath ?? matchRoute;
         const route = routeMatcher ? routeMatcher(path) : null;
         const chain = (matchChain(path) || (route ? [route] : []));
-        const extra = loaderV2
-          ? await loaderV2({ path, params, route, chain })
-          : await loader!(path, params);
+        const extra = await loader({ path, params, route, chain });
         if (extra && typeof extra === "object") {
           params = { ...(params ?? {}), ...extra } as Record<string, unknown>;
         }

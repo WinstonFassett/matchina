@@ -41,21 +41,22 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 ) {
   const defs = defineRoutes(patterns);
-  const match = (path: string) => defs.match(path) as RouteMatch<RouteName, any> | null;
-  const matchAll = (path: string) => defs.matchAll(path) as Array<RouteMatch<RouteName, any>>;
+  const match = (path: string) => defs.matchPath(path) as RouteMatch<RouteName, any> | null;
+  const matchAll = (path: string) => defs.matchAllPaths(path) as Array<RouteMatch<RouteName, any>>;
   const { store, history } = createBrowserRouter({
     base: options?.base,
     useHash: options?.useHash,
-    match: async (path) => {
+    // Provide params directly
+    matchPath: async (path) => {
       const inst = match(path);
       return inst ? (inst.params as Record<string, unknown>) : null;
     },
-    // Route/path/params aware guard/loader
-    guardV2: options?.guard as any,
-    loaderV2: options?.loader as any,
+    // Route/path/params aware guard/loader (ctx-based)
+    guard: options?.guard as any,
+    loader: options?.loader as any,
     matchRouteByPath: (path: string) => match(path),
-    // Provide real chain via matchAll
-    matchAllRoutes: (path: string) => matchAll(path),
+    // Provide real chain via matchAllPaths
+    matchAllPaths: (path: string) => matchAll(path),
   });
 
   // Build a browser URL for a given internal path, honoring base/useHash
@@ -78,7 +79,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return (withoutBase.split(/[?#]/)[0] || '/') as string;
   };
 
-  type RouteName = keyof typeof defs & string;
+  type RouteName = keyof Patterns & string;
   type ParamsOfRoute<N extends RouteName> = CoreParamsOf<Patterns[N] & string>;
   type ParamsOf<N extends RouteName> = ParamsOfRoute<N>;
   // If the params type is an empty object (no required keys), allow omitting it
@@ -212,6 +213,25 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         });
       }
     }, [snap.status, snap.index]);
+
+    // Demo-layer parallel transitions: toggle classes based on store status
+    React.useEffect(() => {
+      const el = (document.querySelector('[data-router-container]') || document.documentElement) as HTMLElement;
+      if (snap.status !== 'idle') {
+        el.classList.add('router-transitioning');
+        el.classList.add('router-exiting');
+        el.classList.add('router-entering');
+      } else {
+        // success path => toggle then clean up next frame
+        el.classList.add('router-success');
+        requestAnimationFrame(() => {
+          el.classList.remove('router-transitioning');
+          el.classList.remove('router-exiting');
+          el.classList.remove('router-entering');
+          el.classList.remove('router-success');
+        });
+      }
+    }, [snap.status]);
     // Scroll + focus restoration when navigation settles
     React.useEffect(() => {
       if (snap.status === "idle") {
