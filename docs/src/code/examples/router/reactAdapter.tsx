@@ -302,7 +302,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             key={`old:${oldKey}`}
             className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
-            aria-hidden
+            
           >
             {renderWithLayouts((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
