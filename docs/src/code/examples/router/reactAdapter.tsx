@@ -25,6 +25,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   type RouteName = keyof typeof defs & string;
   type ParamsOf<N extends RouteName> = Parameters<(typeof routes)[N]>[0];
+  // If the params type is an empty object (no required keys), allow omitting it
+  type HasNoParams<N extends RouteName> = keyof ParamsOf<N> extends never ? true : false;
+  type MaybeParams<N extends RouteName> = HasNoParams<N> extends true ? Partial<ParamsOf<N>> | undefined : ParamsOf<N>;
 
   type Ctx = {
     routes: typeof routes;
@@ -63,21 +66,34 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   function useNavigation() {
     const { defs, history } = useRouterContext();
-    function navigate<N extends RouteName>(name: N, params: ParamsOf<N>) {
-      const url = defs[name].to(params as any);
+
+    function navigate<N extends RouteName>(name: N, params: MaybeParams<N>): void;
+    function navigate<N extends RouteName>(name: N): HasNoParams<N> extends true ? void : never;
+    function navigate<N extends RouteName>(name: N, params?: MaybeParams<N>) {
+      const url = defs[name].to(((params ?? {}) as unknown) as any);
       history.push(url);
     }
-    function replace<N extends RouteName>(name: N, params: ParamsOf<N>) {
-      const url = defs[name].to(params as any);
+
+    function replace<N extends RouteName>(name: N, params: MaybeParams<N>): void;
+    function replace<N extends RouteName>(name: N): HasNoParams<N> extends true ? void : never;
+    function replace<N extends RouteName>(name: N, params?: MaybeParams<N>) {
+      const url = defs[name].to(((params ?? {}) as unknown) as any);
       history.replace(url);
     }
-    function redirect<N extends RouteName>(name: N, params: ParamsOf<N>) {
-      const url = defs[name].to(params as any);
+
+    function redirect<N extends RouteName>(name: N, params: MaybeParams<N>): void;
+    function redirect<N extends RouteName>(name: N): HasNoParams<N> extends true ? void : never;
+    function redirect<N extends RouteName>(name: N, params?: MaybeParams<N>) {
+      const url = defs[name].to(((params ?? {}) as unknown) as any);
       history.redirect(url);
     }
-    function goto<N extends RouteName>(name: N, params: ParamsOf<N>) {
-      return () => navigate(name, params);
+
+    function goto<N extends RouteName>(name: N, params: MaybeParams<N>): () => void;
+    function goto<N extends RouteName>(name: N): HasNoParams<N> extends true ? () => void : never;
+    function goto<N extends RouteName>(name: N, params?: MaybeParams<N>) {
+      return () => navigate(name, params as any);
     }
+
     return { navigate, replace, redirect, goto, back: history.back };
   }
 
@@ -88,7 +104,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   type LinkProps<N extends RouteName> = {
     name: N;
-    params: ParamsOf<N>;
+    params?: MaybeParams<N>;
     replace?: boolean;
     children?: React.ReactNode;
     className?: string;
@@ -97,7 +113,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   function Link<N extends RouteName>({ name, params, replace, children, onClick, ...rest }: LinkProps<N>) {
     const { defs, history } = useRouterContext();
-    const href = defs[name].to(params as any);
+    const href = defs[name].to(((params ?? {}) as unknown) as any);
     return (
       <a
         href={href}
@@ -113,5 +129,23 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     );
   }
 
-  return { RouterProvider, useNavigation, useRoute, Link, routes, defs };
+  // --- Minimal view primitives (flat matching) ---
+  type RouteProps = {
+    name: RouteName;
+    element: React.ReactNode;
+    children?: React.ReactNode; // reserved for future nested support
+  };
+
+  const Route: React.FC<RouteProps> = () => null; // marker component, not rendered directly
+
+  const Outlet: React.FC = () => null; // placeholder for future nested layouts
+
+  const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+    const current = useRoute();
+    const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
+    const matchEl = list.find((child) => React.isValidElement(child) && child.props.name === current?.type);
+    return matchEl ? <>{matchEl.props.element}</> : null;
+  };
+
+  return { RouterProvider, useNavigation, useRoute, Link, Routes, Route, Outlet, routes, defs };
 }
