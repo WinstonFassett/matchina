@@ -109,11 +109,28 @@ const ProductsLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) 
 // Product detail layout: big title, subtle back, tabs below; inner body animates (adapter provides wrapper)
 const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name: string; params: any } }> = ({ children, route }) => {
   const nav = useNavigation();
-  const { from } = useRouter();
+  const { from, to } = useRouter();
   const id = String((route?.params as any)?.id ?? '');
   const backToList = React.useCallback(() => {
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);
+  const isActive = (name: string) => to?.name === name && String((to?.params as any)?.id ?? '') === id;
+  const Tab: React.FC<{ name: string; label: string }> = ({ name, label }) => {
+    const active = isActive(name);
+    const clsBase = "px-2 py-1 rounded";
+    const clsActive = "bg-blue-600 text-white cursor-default pointer-events-none";
+    const clsDefault = "hover:bg-slate-100 dark:hover:bg-neutral-800";
+    if (active) {
+      return (
+        <span aria-current="page" data-active className={`${clsBase} ${clsActive}`}>{label}</span>
+      );
+    }
+    return (
+      <Link name={name as any} params={{ id }}>
+        <span className={`${clsBase} ${clsDefault}`}>{label}</span>
+      </Link>
+    );
+  };
   return (
     <div>
       <h3 className="text-xl font-semibold mb-1">Product <span className="font-bold">{id}</span></h3>
@@ -126,15 +143,9 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
         </button>
       </div>
       <nav className="flex items-center gap-2 mb-3">
-        <Link name="ProductOverview" params={{ id }}>
-          <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Overview</span>
-        </Link>
-        <Link name="ProductSpecs" params={{ id }}>
-          <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Specs</span>
-        </Link>
-        <Link name="ProductReviews" params={{ id }}>
-          <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Reviews</span>
-        </Link>
+        <Tab name="ProductOverview" label="Overview" />
+        <Tab name="ProductSpecs" label="Specs" />
+        <Tab name="ProductReviews" label="Reviews" />
       </nav>
       {/* Content area: overflow hidden so inner slides don't bleed */}
       <div className="overflow-hidden">
