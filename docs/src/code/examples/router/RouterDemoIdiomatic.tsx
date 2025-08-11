@@ -95,32 +95,36 @@ const ProductReviews: React.FC<{ params: { id: string } }> = ({ params }) => (
   </>
 );
 
-// Top-level Products layout (static): shows master heading; used for Products and Product*
-const ProductsLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+// Shell outside transitions: shows master Products heading when on Products or any Product*
+const MasterProductsShell: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+  const { to } = useRouter();
+  const name = String(to?.name || '');
+  const inProducts = name === 'Products' || name.startsWith('Product');
+  if (!inProducts) return <>{children}</>;
   return (
     <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
       <div className="px-4 py-3 border-b border-black/5 dark:border-white/10">
         <h3 className="text-xl font-semibold">Products</h3>
       </div>
-      <div className="p-4">
-        {children}
-      </div>
+      <div className="p-4">{children}</div>
     </div>
   );
 };
 
-// Product detail layout (static within Products): shows back, product title, and tabs; body below animates
-// Applied by RouteLayouts for routes starting with "Product"; derives id from current route
-const ProductDetailLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+// Shell outside transitions for Product*: shows back, product title, and tabs; body below animates
+const ProductDetailShell: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const nav = useNavigation();
   const { from, to } = useRouter();
   const id = String((to?.params as any)?.id ?? '');
+  const name = String(to?.name || '');
+  const inProductDetail = name.startsWith('Product');
   const backToList = React.useCallback(() => {
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);
+  if (!inProductDetail) return <>{children}</>;
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm">
-      <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/10 px-3 py-2">
+    <div>
+      <div className="flex items-center gap-2 mb-3">
         <button
           className="mr-2 inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-2.5 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
           onClick={backToList}
@@ -138,9 +142,7 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode }> = ({ childre
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Reviews</span>
         </Link>
       </div>
-      <div className="p-4">
-        {children}
-      </div>
+      {children}
     </div>
   );
 };
@@ -181,10 +183,8 @@ export const RouterDemoIdiomatic: React.FC = () => {
         </nav>
         <div>
           <div className="p-4">
-            {/* Outer layout keeps the Products header static for Products and all Product* routes */}
-            <RouteLayouts layouts={{ Products: ProductsLayout, Product: ProductsLayout }}>
-              {/* Inner layout activates only for Product* routes to show back/title/tabs; body below animates */}
-              <RouteLayouts layouts={{ Product: ProductDetailLayout }}>
+            <MasterProductsShell>
+              <ProductDetailShell>
                 <Routes>
                   <Route name="Home" view={Home} />
                   <Route name="About" view={About} />
@@ -195,8 +195,8 @@ export const RouterDemoIdiomatic: React.FC = () => {
                   <Route name="ProductReviews" view={ProductReviews} />
                   <Route name="User" view={User} />
                 </Routes>
-              </RouteLayouts>
-            </RouteLayouts>
+              </ProductDetailShell>
+            </MasterProductsShell>
           </div>
         </div>
 
