@@ -1,4 +1,5 @@
 import React from "react";
+import "./router-transitions.css";
 import { createReactRouter } from "./reactAdapter";
 
 const { RouterProvider, RouteViews, Link, useNavigation } = createReactRouter({
@@ -35,7 +36,7 @@ const User: React.FC<{ userId: string }> = ({ userId }) => (
 
 export const RouterDemoViews: React.FC = () => (
   <RouterProvider>
-    <div>
+    <div data-router-container>
       <h2>RouteViews Demo</h2>
       <nav style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <Link name="Home">Home</Link>

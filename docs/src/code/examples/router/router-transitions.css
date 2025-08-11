@@ -1,0 +1,32 @@
+/* Parallel transition demo CSS */
+[data-router-parallel] {
+  display: grid;
+  /* ensure stacked children overlap */
+}
+[data-router-parallel] .view {
+  grid-area: 1 / 1;
+  min-height: 160px; /* demo-friendly */
+  position: relative;
+}
+[data-router-parallel] .view--current {
+  /* no animation when idle */
+}
+[data-router-parallel].router-transitioning .view--current {
+  display: none; /* hidden during active transition */
+}
+[data-router-parallel] .view--old {
+  z-index: 0;
+  animation: router-view-exit 260ms ease both;
+}
+[data-router-parallel] .view--new {
+  z-index: 1;
+  animation: router-view-enter 260ms ease both;
+}
+@keyframes router-view-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes router-view-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
