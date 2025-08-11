@@ -17,7 +17,7 @@ const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this a
 const Products: React.FC = () => {
   const nav = useNavigation();
   return (
-    <div className="rounded-xl border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
+    <div className="bg-white dark:bg-neutral-900 shadow-sm p-4">
       <h3 className="text-xl font-semibold mb-2">Products</h3>
       <div className="flex gap-2">
         <button
