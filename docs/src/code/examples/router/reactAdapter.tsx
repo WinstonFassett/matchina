@@ -220,55 +220,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       }
     }, [snap.status, snap.index]);
 
-    // Demo-layer parallel transitions: toggle classes based on store status, with logs and animationend sync
+    // Disable class toggling for debugging dual-rendering; focus solely on DOM rendering
     React.useEffect(() => {
-      const container = (document.querySelector('[data-router-container]') || document.documentElement) as HTMLElement;
-      if (snap.status !== 'idle') {
-        console.debug('[transitions] start: adding classes router-transitioning/exiting/entering');
-        container.classList.add('router-transitioning');
-        container.classList.add('router-exiting');
-        container.classList.add('router-entering');
-        container.classList.add('is-changing');
-      } else {
-        console.debug('[transitions] end: waiting for animations to finish');
-        container.classList.add('router-success');
-        // Wait for .view--old and .view--new animations to finish across all parallel containers
-        const parallels = Array.from(document.querySelectorAll('[data-router-parallel]')) as HTMLElement[];
-        const listeners: Array<() => void> = [];
-        const awaited: Promise<void>[] = [];
-        for (const p of parallels) {
-          const animEls = [
-            p.querySelector('.view.view--old') as HTMLElement | null,
-            p.querySelector('.view.view--new') as HTMLElement | null,
-          ].filter(Boolean) as HTMLElement[];
-          if (animEls.length === 0) continue;
-          awaited.push(new Promise<void>((resolve) => {
-            let remaining = animEls.length;
-            const onDone = () => {
-              remaining -= 1;
-              if (remaining <= 0) resolve();
-            };
-            for (const el of animEls) {
-              const handler = () => {
-                el.removeEventListener('animationend', handler);
-                onDone();
-              };
-              el.addEventListener('animationend', handler);
-              listeners.push(() => el.removeEventListener('animationend', handler));
-            }
-          }));
-        }
-        const timeout = new Promise<void>((resolve) => setTimeout(resolve, 1500));
-        Promise.race([Promise.all(awaited), timeout]).finally(() => {
-          console.debug('[transitions] cleanup: removing classes router-transitioning/exiting/entering/success');
-          listeners.forEach((fn) => fn());
-          container.classList.remove('router-transitioning');
-          container.classList.remove('router-exiting');
-          container.classList.remove('router-entering');
-          container.classList.remove('router-success');
-          container.classList.remove('is-changing');
-        });
-      }
+      console.debug('[transitions] debug mode: class toggling disabled; focusing on dual render');
     }, [snap.status]);
     // Scroll + focus restoration when navigation settles
     React.useEffect(() => {
@@ -536,6 +490,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   type LayoutMap = { [K in RouteName]?: React.ComponentType<ParamsOf<K>> };
   const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }> = ({ layouts, children }) => {
     const { current, defs } = useRouterContext();
+    console.log('fucking route layouts', { current, defs })
     if (!current) return <>{children ?? null}</>;
     // Determine which provided layouts are ancestors of the current route by pattern prefix
     const patterns = (defs as any).patterns as Record<string, string>;
@@ -546,6 +501,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (parent === child) return true; // layout also applies to its own route
       return child.startsWith(parent.endsWith("/") ? parent : `${parent}/`);
     };
+    console.log('fucking entries', { entries: [...entries], patterns: {...patterns}, })
     // Pick layouts whose pattern is a prefix of current's pattern
     const applicable = entries
       .map(([name, Comp]) => ({ name, Comp, pattern: patterns[name] || "" }))
@@ -557,26 +513,49 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const Child = element;
       const L = e.Comp;
       element = <L {...(current.params as any)}>{Child}</L>;
-    }
-    return <>{element}</>;
   };
+}
 
-  const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const current = useRoute();
-    const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
-    const matchEl = list.find((child) => React.isValidElement(child) && child.props.name === current?.name);
-    if (!matchEl) return null;
-    const props = matchEl.props as RouteProps;
-    // If view is provided, instantiate it with params; else render element as-is
-    if ('view' in props && props.view) {
-      const View = props.view as React.ComponentType<any>;
-      return <View params={(current?.params as any) ?? ({ } as any)} />;
+// Active-state helper
+function useIsActive<N extends RouteName>(name: N, params?: MaybeParams<N>, opts?: { exact?: boolean; includeSearch?: boolean; includeHash?: boolean }) {
+  const current = useRoute();
+  if (!current) return false;
+  const exact = opts?.exact ?? true;
+  if (exact) {
+    if (current.name !== name) return false;
+  } else {
+    // non-exact: treat parent as active if types match or future chain contains; with stub, fall back to leaf equality
+    if (current.name !== name) return false;
+  }
+  const want = (params ?? {}) as any;
+  const got = (current.params ?? {}) as any;
+  for (const k of Object.keys(want)) {
+    if (String(got[k]) !== String((want as any)[k])) return false;
+  }
+  // Optionally include search/hash – since we don't parse them into params here, we only support equality via window.location for now
+  if (opts?.includeSearch) {
+    if (typeof window !== 'undefined') {
+      const wantSearch = typeof opts.includeSearch === 'boolean' ? undefined : undefined; // placeholder for future typed search compare
     }
-    return <>{(props as RoutePropsElement).element}</>;
-  };
+  }
+  return true;
+}
 
-  // Typed mapping-based renderer with exhaustiveness and prop typing
-  type ViewMap = { [K in RouteName]: React.ComponentType<ParamsOf<K>> };
+// --- Minimal view primitives (flat matching) ---
+type ViewOf<N extends RouteName> = React.ComponentType<{ params: ParamsOf<N> }>;
+type RoutePropsElement = {
+  name: RouteName;
+  element: React.ReactNode;
+  children?: React.ReactNode; // reserved for future nested support
+};
+type RoutePropsView<N extends RouteName = RouteName> = {
+  name: N;
+  // Loosen typing to avoid union incompatibility across different routes in a single children array.
+  // Runtime still passes the correct params shape from the current route.
+  view: React.ComponentType<any>;
+  children?: React.ReactNode;
+};
+type RouteProps = RoutePropsElement | RoutePropsView;
   const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
     const { store, _prevView } = useRouterContext();
     const current = useRoute();
@@ -588,9 +567,22 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const oldRef = React.useRef<HTMLDivElement | null>(null);
     const newRef = React.useRef<HTMLDivElement | null>(null);
 
-    const both = !!_prevView;
+    // Local prev snapshot as a fallback to guarantee dual rendering even if context missed
+    const lastRef = React.useRef<{ name: RouteName; params: any } | null>(null);
+    const [prevLocal, setPrevLocal] = React.useState<{ name: RouteName; params: any } | null>(null);
+    React.useEffect(() => {
+      const last = lastRef.current;
+      if (last && (last.name !== (current.name as RouteName) || JSON.stringify(last.params) !== JSON.stringify(current.params))) {
+        console.debug('[transitions] RouteViews local snapshot from→to', last.name, '→', current.name);
+        setPrevLocal(last);
+      }
+      lastRef.current = { name: current.name as RouteName, params: current.params as any };
+    }, [current.name, JSON.stringify(current.params)]);
+
+    const prev = _prevView ?? prevLocal;
+    const both = !!prev;
     if (both) {
-      console.debug('[transitions] RouteViews: rendering old+new', { old: _prevView?.name, new: current.name });
+      console.debug('[transitions] RouteViews: rendering old+new', { old: prev?.name, new: current.name });
     }
     // When both old+new are rendered, kick off slide by toggling classes next frame
     React.useEffect(() => {
@@ -609,20 +601,16 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return () => cancelAnimationFrame(id);
     }, [_prevView, status]);
 
+    const oldKey = prev ? `${String(prev.name)}:${JSON.stringify(prev.params || {})}` : 'none';
+    const newKey = `${String(current.name)}:${JSON.stringify(current.params || {})}`;
+    const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+    React.useEffect(() => {
+      if (wrapperRef.current) {
+        console.debug('[transitions] children count', wrapperRef.current.children.length);
+      }
+    });
     return (
-      <div
-        data-router-parallel
-        className={status !== 'idle' ? 'router-transitioning is-changing' : undefined}
-      >
-        {both ? (
-          <div ref={oldRef} className="view view--old transition-slide is-kept-container" aria-hidden>
-            {React.createElement(views[_prevView.name] as React.ComponentType<any>, { ...(_prevView.params as any) })}
-          </div>
-        ) : null}
-        <div ref={newRef} className={both ? 'view view--new transition-slide is-next-container' : 'view view--current transition-slide'}>
-          {Now}
-        </div>
-      </div>
+      <>wtf</>
     );
   };
 
