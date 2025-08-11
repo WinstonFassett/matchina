@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from "react";
+    import React, { createContext, useContext, useMemo } from "react";
 import { createBrowserRouter } from "@lib/src/router-history";
 import { defineRouteBoxes, type RouteBox } from "./defineRouteBoxes";
 import { useMachine } from "@lib/src/integrations/react";
@@ -21,10 +21,27 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     base?: string;
     useHash?: boolean;
     guard?: (fullPath: string) => true | string | Promise<true | string>;
+    guardV2?: (ctx: { fullPath: string; path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => true | string | Promise<true | string>;
     loader?: (
       path: string,
       params: Record<string, unknown> | null
     ) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
+    loaderV2?: (ctx: { path: string; params: Record<string, unknown> | null; route: RouteBox<any, string> | null }) => void | Record<string, unknown> | Promise<void | Record<string, unknown>>;
+    scroll?: {
+      // Primary/fallback container
+      getContainer?: () => Element | null;
+      selector?: string;
+      behavior?: ScrollBehavior; // default 'auto'
+      default?: 'top' | 'preserve';
+      // Additional managed containers with memory restore per location
+      containers?: Array<{
+        id: string; // stable id per container kind
+        getContainer?: () => Element | null;
+        selector?: string;
+        behavior?: ScrollBehavior;
+        restore?: 'memory' | 'top' | 'preserve'; // memory tries saved position first
+      }>;
+    };
   }
 ) {
   const { routes, match, defs } = defineRouteBoxes(patterns);
@@ -36,7 +53,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return inst ? (inst.params as Record<string, unknown>) : null;
     },
     guard: options?.guard,
+    guardV2: options?.guardV2 as any,
     loader: options?.loader,
+    loaderV2: options?.loaderV2 as any,
+    matchRouteByPath: (path: string) => match(path),
   });
 
   type RouteName = keyof typeof defs & string;
@@ -52,6 +72,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     store: typeof store;
     match: typeof match;
     current: RouteBox<RouteName, string> | null;
+    // internal: allow navigation to request a scroll behavior to apply after resolve
+    _setScrollDesired: (s: NavScroll | null) => void;
+    _snapshotScroll: () => void;
   };
 
   const RouterContext = createContext<Ctx | null>(null);
@@ -65,6 +88,98 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     }, []);
 
     const snap = store.getState();
+    const scrollRef = React.useRef<NavScroll | null>(null);
+    const getPrimaryContainer = () =>
+      options?.scroll?.getContainer?.() ??
+      (options?.scroll?.selector ? document.querySelector(options.scroll.selector) : null);
+    // Memory of scroll positions per-location for containers
+    const scrollMemory = React.useRef<Map<string, { top: number; left: number }>>(new Map());
+    const locationKey = () => `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const containerKey = (id: string) => `${id}::${locationKey()}`;
+    const readPos = (el: Element | Window) => ({
+      top: el instanceof Window ? el.scrollY : (el as HTMLElement).scrollTop,
+      left: el instanceof Window ? el.scrollX : (el as HTMLElement).scrollLeft,
+    });
+    const applyScroll = (el: Element | Window, pos: { top?: number; left?: number }, behavior: ScrollBehavior) => {
+      const top = pos.top ?? 0;
+      const left = pos.left ?? 0;
+      if (el instanceof Window) {
+        window.scrollTo({ top, left, behavior });
+      } else if ('scrollTo' in el) {
+        (el as any).scrollTo({ top, left, behavior });
+      }
+    };
+    const getExtraContainers = (): Array<{ id: string; el: Element | null; behavior?: ScrollBehavior; restore?: 'memory' | 'top' | 'preserve' }> => {
+      return (options?.scroll?.containers ?? []).map(c => ({
+        id: c.id,
+        el: c.getContainer?.() ?? (c.selector ? document.querySelector(c.selector) : null),
+        behavior: c.behavior,
+        restore: c.restore,
+      }));
+    };
+    const prevLocRef = React.useRef<string | null>(null);
+    // Scroll + focus restoration when navigation settles
+    React.useEffect(() => {
+      if (snap.status === "idle") {
+        // Save previous location scroll positions for memory
+        const prevKey = prevLocRef.current;
+        if (prevKey) {
+          const primary = getPrimaryContainer();
+          const primaryId = 'window';
+          const primaryEl = primary ?? window;
+          scrollMemory.current.set(`${primaryId}::${prevKey}`, readPos(primaryEl));
+          for (const c of getExtraContainers()) {
+            if (c.el) scrollMemory.current.set(`${c.id}::${prevKey}`, readPos(c.el));
+          }
+        }
+
+        const desired = scrollRef.current ?? (options?.scroll?.default === 'preserve' ? null : { kind: 'top' as const });
+        scrollRef.current = null;
+        const thisKey = locationKey();
+        const behaviorDefault = options?.scroll?.behavior ?? 'auto';
+        // Primary container
+        const primary = getPrimaryContainer();
+        const primaryEl = (primary ?? window);
+        const primaryId = 'window';
+        const primaryRestore = desired
+          ? desired.kind === 'top'
+            ? { top: 0, left: 0 }
+            : { top: desired.top, left: desired.left }
+          : undefined;
+        if (primaryRestore) {
+          const behaviorForPrimary: ScrollBehavior = desired && desired.kind === 'coords' && desired.behavior
+            ? desired.behavior
+            : behaviorDefault;
+          applyScroll(primaryEl, primaryRestore, behaviorForPrimary);
+        } else {
+          // Try memory if any
+          const mem = scrollMemory.current.get(`${primaryId}::${thisKey}`);
+          if (mem) applyScroll(primaryEl, mem, behaviorDefault);
+        }
+        // Extra containers
+        for (const c of getExtraContainers()) {
+          if (!c.el) continue;
+          const beh = c.behavior ?? behaviorDefault;
+          const restore = c.restore ?? 'memory';
+          if (desired && desired.kind === 'coords') {
+            applyScroll(c.el, { top: desired.top, left: desired.left }, desired.behavior ?? beh);
+          } else if (desired && desired.kind === 'top') {
+            applyScroll(c.el, { top: 0, left: 0 }, beh);
+          } else if (restore === 'top') {
+            applyScroll(c.el, { top: 0, left: 0 }, beh);
+          } else if (restore === 'memory') {
+            const mem = scrollMemory.current.get(`${c.id}::${thisKey}`);
+            if (mem) applyScroll(c.el, mem, beh);
+          }
+        }
+        prevLocRef.current = thisKey;
+        // focus main region
+        window.requestAnimationFrame(() => {
+          const focusEl = (document.querySelector('[data-router-focus], main, [role="main"]') as HTMLElement | null);
+          focusEl?.focus?.();
+        });
+      }
+    }, [snap.status, snap.index]);
     // Scroll + focus restoration when navigation settles
     React.useEffect(() => {
       if (snap.status === "idle") {
@@ -82,7 +197,16 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return match(path) as Ctx["current"];
     }, [snap]);
 
-    const value = useMemo<Ctx>(() => ({ routes, defs, history, store, match, current }), [current]);
+    const value = useMemo<Ctx>(() => ({
+      routes,
+      defs,
+      history,
+      store,
+      match,
+      current,
+      _setScrollDesired: (s) => { scrollRef.current = s; },
+      _snapshotScroll: snapshotCurrentScroll,
+    }), [current]);
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
@@ -92,13 +216,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return ctx;
   }
 
+  type NavScroll = { kind: 'top' } | { kind: 'coords'; top?: number; left?: number; behavior?: ScrollBehavior };
   function useNavigation() {
-    const { defs, history } = useRouterContext();
+    const { defs, history, _setScrollDesired, _snapshotScroll } = useRouterContext();
 
     type NavOpts = {
       search?: string | Record<string, string | number | boolean | null | undefined>;
       hash?: string; // with or without leading '#'
       replace?: boolean;
+      scroll?: 'top' | 'preserve' | { top?: number; left?: number; behavior?: ScrollBehavior };
     };
 
     const toSearch = (s?: NavOpts["search"]) => {
@@ -127,7 +253,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as NavOpts | undefined)) as NavOpts | undefined;
       const url = withUrl(name, params, opts);
+      // snapshot current scroll before we mutate history to preserve memory
+      _snapshotScroll();
       (opts?.replace ? history.replace : history.push)(url);
+      const desired: NavScroll | null = opts?.scroll === 'preserve'
+        ? null
+        : opts?.scroll === 'top' || opts?.scroll === undefined
+        ? { kind: 'top' }
+        : { kind: 'coords', top: opts.scroll.top, left: opts.scroll.left, behavior: opts.scroll.behavior };
+      _setScrollDesired(desired);
     }
 
     function replace<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: Omit<NavOpts, "replace">): void;
@@ -137,7 +271,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
       const url = withUrl(name, params, opts as NavOpts);
+      _snapshotScroll();
       history.replace(url);
+      const desired: NavScroll | null = { kind: 'top' };
+      _setScrollDesired(desired);
     }
 
     function redirect<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: Omit<NavOpts, "replace">): void;
@@ -147,7 +284,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
       const url = withUrl(name, params, opts as NavOpts);
+      _snapshotScroll();
       history.redirect(url);
+      const desired: NavScroll | null = { kind: 'top' };
+      _setScrollDesired(desired);
     }
 
     function goto<N extends RouteName>(name: N, params: MaybeParams<N>, opts?: NavOpts): () => void;
