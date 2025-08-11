@@ -1,5 +1,5 @@
 import React from "react";
-import "./router-transitions.css";
+// import "./router-transitions.css";
 import { createReactRouter } from "./reactAdapter";
 
 const { RouterProvider, RouteViews, Link, useNavigation } = createReactRouter({
