@@ -262,8 +262,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const oldKey = (exiting || from) ? `${String((exiting || from)!.name)}:${JSON.stringify((exiting || from)!.params || {})}` : null;
     const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
 
-    // Render both views immediately when they differ; keep 'exiting' cached until CSS ends
-    if (exiting || differ) {
+    // Render both views during any active change or known difference; keep 'exiting' cached until CSS ends
+    if (exiting || differ || !!change) {
       return (
         <div
           ref={containerRef}
