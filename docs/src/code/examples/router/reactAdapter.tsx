@@ -300,6 +300,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         // Swup-like semantics
         // 1) Apply pre-state to NEXT only (keep FROM unmarked so it animates after transitions are enabled)
         toEl.classList.add('is-next-container');
+        // In inner-only mode, prevent the view shells themselves from animating
+        if (innerOnly) {
+          fromEl.classList.add('no-shell-animate');
+          toEl.classList.add('no-shell-animate');
+        }
         // 2) Force a reflow to commit pre-positioning before enabling transitions
         void toEl.getBoundingClientRect();
         // 3) Enable transitions on container
@@ -322,6 +327,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             container.removeAttribute('data-inner');
             fromEl.classList.remove('is-previous-container');
             toEl.classList.remove('is-next-container');
+            if (innerOnly) {
+              fromEl.classList.remove('no-shell-animate');
+              toEl.classList.remove('no-shell-animate');
+            }
             setExiting(null);
           }
         };
@@ -354,7 +363,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view is-previous-container z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
             aria-hidden
           >
@@ -363,7 +372,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-20 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
             {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)(to.name as RouteName, to.params)}
