@@ -200,10 +200,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
     // Wrap a node with matching layouts for a route name (outer->inner by specificity)
-    const wrapWithLayouts = (lx: LayoutMap, name: RouteName, params: any, node: React.ReactNode): React.ReactNode => {
+    const wrapWithLayouts = (lx: LayoutMap, name: RouteName, params: any, node: React.ReactNode, excludeKey?: RouteName | null): React.ReactNode => {
       const keys = Object.keys(lx) as RouteName[];
       const matches = keys
         .filter((k) => {
+          if (excludeKey && k === excludeKey) return false;
           if (name === k) return true;
           if (!name.startsWith(k)) return false;
           const next = name.charAt(k.length);
@@ -215,6 +216,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         const L = lx[k]! as React.ComponentType<LayoutComponentProps>;
         return React.createElement(L, { route: { name, params } }, acc);
       }, node);
+    };
+
+    // Determine a common outer layout key to hoist outside transitions (e.g., Products)
+    const commonOuterKey = (fromName: string | null, toName: string): RouteName | null => {
+      // Example heuristic: hoist `Products` for Products and all Product* routes
+      const wantsProducts = (n: string | null) => !!n && (n === 'Products' || n.startsWith('Product'));
+      if (wantsProducts(fromName) && wantsProducts(toName)) return 'Products' as RouteName;
+      if (!fromName && wantsProducts(toName)) return 'Products' as RouteName;
+      return null;
     };
     // Decide whether to animate only the tab body (inner) or the whole card (outer)
     const isProductTab = (n: string) => n !== 'Products' && n.startsWith('Product');
@@ -235,13 +245,13 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const body = renderFor(name, params);
       if (!body) return null;
       const innerSliding = <div className="transition-slide">{body}</div>;
-      return wrapWithLayouts(layouts, name, params, innerSliding);
+      return wrapWithLayouts(layouts, name, params, innerSliding, outerKey);
     };
 
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      const wrapped = wrapWithLayouts(layouts, name, params, body);
+      const wrapped = wrapWithLayouts(layouts, name, params, body, outerKey);
       return <div className="transition-slide">{wrapped}</div>;
     };
 
@@ -260,6 +270,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         console.warn('[router] inner-only transition expected ".transition-slide" inside both from/to views; missing:', { fromHas: hasFrom, toHas: hasTo });
       }
     }, [innerOnly]);
+
+    // Compute hoisted outer layout key for current transition scope
+    const outerKey = commonOuterKey(from?.name ?? null, String(to.name));
 
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
@@ -324,7 +337,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     // Render both views immediately when they differ; keep 'exiting' cached until CSS ends
     if (exiting || differ) {
-      return (
+      const content = (
         <div
           ref={containerRef}
           className="router-transition"
@@ -354,15 +367,27 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           </div>
         </div>
       );
+      // Hoist common outer layout around the whole transition shell if provided
+      if (outerKey && (layouts as any)[outerKey]) {
+        const L = (layouts as any)[outerKey] as React.ComponentType<LayoutComponentProps>;
+        return <L route={{ name: to.name as RouteName, params: to.params }}>{content}</L>;
+      }
+      return content;
     }
 
     // No active transition; render single view
     const single = renderWithLayouts_outer(to.name as RouteName, to.params);
-    return single ? (
+    const singleView = single ? (
       <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
         {single}
       </div>
     ) : null;
+    if (!singleView) return null;
+    if (outerKey && (layouts as any)[outerKey]) {
+      const L = (layouts as any)[outerKey] as React.ComponentType<LayoutComponentProps>;
+      return <L route={{ name: to.name as RouteName, params: to.params }}>{singleView}</L>;
+    }
+    return singleView;
   };
 
   const Link: React.FC<{ name: RouteName; params?: any; children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({ name, params, children, ...a }) => {
