@@ -89,6 +89,46 @@ export function defineRouteBoxes<const Patterns extends Record<string, string>>(
     return null;
   }
 
+  // Determine if a template is a prefix of the given path (by segments),
+  // and if so, extract param values from those matched segments.
+  function matchTemplatePrefix(template: string, path: string): { ok: true; params: Record<string, string>; segCount: number } | { ok: false } {
+    const tSegs = template.split('/').filter(Boolean);
+    const pSegs = path.split('/').filter(Boolean);
+    if (tSegs.length > pSegs.length) return { ok: false };
+    const params: Record<string, string> = {};
+    for (let i = 0; i < tSegs.length; i++) {
+      const t = tSegs[i];
+      const p = pSegs[i];
+      if (t.startsWith(':')) {
+        const key = t.slice(1);
+        if (!p) return { ok: false };
+        params[key] = decodeURIComponent(p);
+      } else {
+        if (t !== p) return { ok: false };
+      }
+    }
+    return { ok: true, params, segCount: tSegs.length };
+  }
+
+  // Return parent→child chain for a path, if the leaf exists.
+  function matchAll(path: string) {
+    // Ensure we have a leaf match; otherwise return null for consistency with guard/loader usage.
+    const leaf = match(path);
+    if (!leaf) return null;
+    // Collect all defs whose template is a prefix of the path.
+    const items = Object.values(defs)
+      .map((def) => {
+        const m = matchTemplatePrefix(def.template, path);
+        return m.ok ? { def, segCount: m.segCount, params: m.params } : null;
+      })
+      .filter((x): x is { def: RouteDef<any, any>; segCount: number; params: Record<string, string> } => !!x)
+      // Order by segment count ascending to get parent→child
+      .sort((a, b) => a.segCount - b.segCount);
+    // Build boxes in order; only include those that are true prefixes culminating in the leaf type
+    const chain = items.map(({ def, params }) => def.make(params));
+    return chain as RouteBox<string, string>[];
+  }
+
   const routes = Object.fromEntries(
     Object.entries(defs).map(([name, def]) => [
       name,
@@ -100,7 +140,7 @@ export function defineRouteBoxes<const Patterns extends Record<string, string>>(
     ) => RouteBox<K, Patterns[K]>;
   };
 
-  return { routes, match, defs };
+  return { routes, match, matchAll, defs };
 }
 
 // Convenience helpers for navigation composition

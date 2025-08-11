@@ -40,7 +40,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
   }
 ) {
-  const { routes, match, defs } = defineRouteBoxes(patterns);
+  const { routes, match, matchAll, defs } = defineRouteBoxes(patterns);
   const { store, history } = createBrowserRouter({
     base: options?.base,
     useHash: options?.useHash,
@@ -52,11 +52,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     guardV2: options?.guard as any,
     loaderV2: options?.loader as any,
     matchRouteByPath: (path: string) => match(path),
-    // Minimal nesting stub: return single-element chain for now
-    matchAllRoutes: (path: string) => {
-      const inst = match(path);
-      return inst ? [inst] : null;
-    },
+    // Provide real chain via matchAll
+    matchAllRoutes: (path: string) => matchAll(path),
   });
 
   type RouteName = keyof typeof defs & string;
@@ -71,6 +68,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     history: typeof history;
     store: typeof store;
     match: typeof match;
+    matchAll: typeof matchAll;
     current: RouteBox<RouteName, string> | null;
     // internal: allow navigation to request a scroll behavior to apply after resolve
     _setScrollDesired: (s: NavScroll | null) => void;
@@ -116,6 +114,17 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         behavior: c.behavior,
         restore: c.restore,
       }));
+    };
+    // Capture current scroll positions for all managed containers keyed by current location
+    const snapshotCurrentScroll = () => {
+      const key = locationKey();
+      const primary = getPrimaryContainer();
+      const primaryEl = primary ?? window;
+      const primaryId = 'window';
+      scrollMemory.current.set(`${primaryId}::${key}`, readPos(primaryEl));
+      for (const c of getExtraContainers()) {
+        if (c.el) scrollMemory.current.set(`${c.id}::${key}`, readPos(c.el));
+      }
     };
     const prevLocRef = React.useRef<string | null>(null);
     // Scroll + focus restoration when navigation settles
@@ -203,10 +212,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       history,
       store,
       match,
+      matchAll,
       current,
       _setScrollDesired: (s) => { scrollRef.current = s; },
       _snapshotScroll: snapshotCurrentScroll,
     }), [current]);
+
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
@@ -304,10 +315,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return current;
   }
 
-  // Expose the matched chain (parent→child). Minimal stub returns [leaf] for now.
+  // Expose the matched chain (parent→child)
   function useMatches() {
-    const current = useRoute();
-    return current ? [current] : [];
+    const { matchAll } = useRouterContext();
+    const { pathname } = useLocation();
+    return matchAll(pathname) ?? [];
   }
 
   type LinkProps<N extends RouteName> = {
