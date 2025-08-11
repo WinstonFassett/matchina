@@ -1,4 +1,5 @@
-import { matchina, defineStates } from "./matchina";
+import { matchina } from "./matchina";
+import { defineStates } from "./define-states";
 
 // Define generic router states that can be used by any routing implementation
 export const ROUTER_STATES = defineStates({
@@ -38,7 +39,7 @@ export const ROUTER_TRANSITIONS = {
 export const createRouterMachine = () => {
   return matchina(
     ROUTER_STATES,
-    ROUTER_TRANSITIONS,
+    ROUTER_TRANSITIONS as any,
     ROUTER_STATES.Idle()
   );
 };
