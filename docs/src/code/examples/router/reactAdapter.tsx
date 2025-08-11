@@ -346,7 +346,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (!to) return <>{children}</>;
       const name = String(to.name) as RouteName;
       const keys = Object.keys(layouts) as RouteName[];
-      const match = keys.find((k) => name === k || name.startsWith(k));
+      // Choose the most specific (longest) matching key by exact or prefix
+      const match = keys
+        .filter((k) => {
+          if (name === k) return true;
+          if (!name.startsWith(k)) return false;
+          const next = name.charAt(k.length);
+          return /[A-Z]/.test(next);
+        })
+        .sort((a, b) => b.length - a.length)[0];
       const L = match ? layouts[match] : undefined;
       return L ? React.createElement(L as React.ComponentType<any>, undefined, children) : <>{children}</>;
     };
