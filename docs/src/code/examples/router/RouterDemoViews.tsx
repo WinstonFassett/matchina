@@ -52,6 +52,7 @@ export const RouterDemoViews: React.FC = () => (
           Products,
           Product,
           User,
+          // User: ({userId}) => <div>hi there {userId}</div>
         }}
       />
     </div>
