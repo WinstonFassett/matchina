@@ -122,6 +122,13 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
       store.dispatch("replace", path);
       void resolve(path);
     });
+    if (useHash) {
+      window.addEventListener("hashchange", () => {
+        const path = getPathFromLocation({ base, useHash });
+        store.dispatch("replace", path);
+        void resolve(path);
+      });
+    }
   }
 
   return {
