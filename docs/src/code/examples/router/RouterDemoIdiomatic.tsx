@@ -112,7 +112,7 @@ const ProductLayout: React.FC<{ id: string; children?: React.ReactNode }> = ({ i
         >
           ← Back to Products
         </button>
-        <Link name="Product" params={{ id }}>
+        <Link name="ProductOverview" params={{ id }}>
           <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">Summary</span>
         </Link>
         <Link name="ProductOverview" params={{ id }}>
@@ -167,7 +167,6 @@ export const RouterDemoIdiomatic: React.FC = () => {
           <Link name="User" params={{ userId: "winston" }}>User winston</Link>
         </nav>
         <div>
-          <h2>Current View</h2>
           <div className="p-4">
             <RouteLayouts layouts={{ Product: ProductLayout }}>
               <Routes>

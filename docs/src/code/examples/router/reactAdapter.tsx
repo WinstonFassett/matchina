@@ -275,19 +275,23 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view transition-slide z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="from"
             aria-hidden
           >
-            {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            <div className="transition-slide">
+              {renderFor((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            </div>
           </div>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view transition-slide z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className="view z-20 is-next-container bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            {renderFor(to.name as RouteName, to.params)}
+            <div className="transition-slide">
+              {renderFor(to.name as RouteName, to.params)}
+            </div>
           </div>
         </div>
       );
@@ -296,8 +300,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // No active transition; render single view
     const single = renderFor(to.name as RouteName, to.params);
     return single ? (
-      <div className="view transition-slide z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
-        {single}
+      <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
+        <div className="transition-slide">{single}</div>
       </div>
     ) : null;
   };
