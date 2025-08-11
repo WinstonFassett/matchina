@@ -41,24 +41,60 @@ const initialState: RouterState = {
 
 export function createRouterStore(): RouterStore {
   return createStoreMachine<RouterState, RouterTransitions>(initialState, {
-    push: (path: string) => ({ from }) => ({
-      ...from,
-      status: "navigating",
-      pending: { path, mode: "push" },
-      error: undefined,
-    }),
-    replace: (path: string) => ({ from }) => ({
-      ...from,
-      status: "navigating",
-      pending: { path, mode: "replace" },
-      error: undefined,
-    }),
-    redirect: (path: string) => ({ from }) => ({
-      ...from,
-      status: "navigating",
-      pending: { path, mode: "redirect" },
-      error: undefined,
-    }),
+    push: (path: string) => ({ from }) => {
+      const entry: RouteEntry = { path };
+      const base = from.stack.slice(0, from.index + 1);
+      const stack = base.concat(entry);
+      return {
+        status: "navigating",
+        stack,
+        index: stack.length - 1,
+        pending: { path, mode: "push" },
+        error: undefined,
+      };
+    },
+    replace: (path: string) => ({ from }) => {
+      const entry: RouteEntry = { path };
+      if (from.index < 0) {
+        return {
+          status: "navigating",
+          stack: [entry],
+          index: 0,
+          pending: { path, mode: "replace" },
+          error: undefined,
+        };
+      }
+      const stack = from.stack.slice();
+      stack[from.index] = entry;
+      return {
+        status: "navigating",
+        stack,
+        index: from.index,
+        pending: { path, mode: "replace" },
+        error: undefined,
+      };
+    },
+    redirect: (path: string) => ({ from }) => {
+      const entry: RouteEntry = { path };
+      if (from.index < 0) {
+        return {
+          status: "navigating",
+          stack: [entry],
+          index: 0,
+          pending: { path, mode: "redirect" },
+          error: undefined,
+        };
+      }
+      const stack = from.stack.slice();
+      stack[from.index] = entry;
+      return {
+        status: "navigating",
+        stack,
+        index: from.index,
+        pending: { path, mode: "redirect" },
+        error: undefined,
+      };
+    },
     pop: () => ({ from }) => {
       if (from.index <= 0) {
         // nothing to pop
@@ -77,35 +113,15 @@ export function createRouterStore(): RouterStore {
       if (!pending) {
         return { ...from, status: "idle", error: undefined };
       }
-      const entry: RouteEntry = { path: pending.path, params };
-      if (pending.mode === "push") {
-        const base = from.stack.slice(0, from.index + 1);
-        const stack = base.concat(entry);
-        return {
-          status: "idle",
-          stack,
-          index: stack.length - 1,
-          pending: undefined,
-          error: undefined,
-        };
-      }
-      // replace or redirect
-      if (from.index < 0) {
-        // empty history -> behave like push
-        return {
-          status: "idle",
-          stack: [entry],
-          index: 0,
-          pending: undefined,
-          error: undefined,
-        };
-      }
+      // Overwrite current entry with resolved params
       const stack = from.stack.slice();
-      stack[from.index] = entry;
+      const entry: RouteEntry = { path: pending.path, params };
+      const idx = from.index < 0 ? 0 : from.index;
+      stack[idx] = entry;
       return {
         status: "idle",
         stack,
-        index: from.index,
+        index: idx,
         pending: undefined,
         error: undefined,
       };
