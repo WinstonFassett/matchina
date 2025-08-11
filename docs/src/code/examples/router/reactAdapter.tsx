@@ -97,6 +97,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // internal: allow navigation to request a scroll behavior to apply after resolve
     _setScrollDesired: (s: NavScroll | null) => void;
     _snapshotScroll: () => void;
+    // internal: snapshot previous view for parallel transitions
+    _prevView: { name: RouteName; params: any } | null;
+    _setPrevView: (v: { name: RouteName; params: any } | null) => void;
   };
 
   const RouterContext = createContext<Ctx | null>(null);
@@ -111,6 +114,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     const snap = store.getState();
     const scrollRef = React.useRef<NavScroll | null>(null);
+    // prev view handling
+    const [prevView, setPrevView] = React.useState<Ctx["_prevView"]>(null);
+    const lastCurrentRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
     const getPrimaryContainer = () =>
       options?.scroll?.getContainer?.() ??
       (options?.scroll?.selector ? document.querySelector(options.scroll.selector) : null);
@@ -250,6 +256,19 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
       return current as Ctx["current"];
     }, [snap]);
+    // keep lastCurrent in ref for popstate-driven transitions
+    React.useEffect(() => { lastCurrentRef.current = current; }, [current]);
+
+    // when leaving idle (including popstate), if no prevView, snapshot last current
+    React.useEffect(() => {
+      if (snap.status !== 'idle' && !prevView && lastCurrentRef.current) {
+        setPrevView({ name: lastCurrentRef.current.name as RouteName, params: lastCurrentRef.current.params as any });
+      }
+      if (snap.status === 'idle' && prevView) {
+        const id = requestAnimationFrame(() => setPrevView(null));
+        return () => cancelAnimationFrame(id);
+      }
+    }, [snap.status]);
 
     const value = useMemo<Ctx>(() => ({
       routes: defs,
@@ -261,7 +280,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       current,
       _setScrollDesired: (s) => { scrollRef.current = s; },
       _snapshotScroll: snapshotCurrentScroll,
-    }), [current]);
+      _prevView: prevView,
+      _setPrevView: setPrevView,
+    }), [current, prevView]);
 
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
@@ -274,7 +295,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   type NavScroll = { kind: 'top' } | { kind: 'coords'; top?: number; left?: number; behavior?: ScrollBehavior };
   function useNavigation() {
-    const { defs, history, _setScrollDesired, _snapshotScroll } = useRouterContext();
+    const { defs, history, _setScrollDesired, _snapshotScroll, _setPrevView, current } = useRouterContext();
 
     type NavOpts = {
       search?: string | Record<string, string | number | boolean | null | undefined>;
@@ -309,6 +330,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as NavOpts | undefined)) as NavOpts | undefined;
       const url = withUrl(name, params, opts);
+      // snapshot previous view eagerly for parallel transitions
+      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
       // snapshot current scroll before we mutate history to preserve memory
       _snapshotScroll();
       (opts?.replace ? history.replace : history.push)(url);
@@ -327,6 +350,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
       const url = withUrl(name, params, opts as NavOpts);
+      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
       _snapshotScroll();
       history.replace(url);
       const desired: NavScroll | null = { kind: 'top' };
@@ -340,6 +364,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       const params = (hasParams ? (a as MaybeParams<N>) : undefined) as MaybeParams<N> | undefined;
       const opts = (hasParams ? b : (a as Omit<NavOpts, "replace"> | undefined)) as Omit<NavOpts, "replace"> | undefined;
       const url = withUrl(name, params, opts as NavOpts);
+      if (current) _setPrevView({ name: current.name as RouteName, params: current.params as any });
       _snapshotScroll();
       history.redirect(url);
       const desired: NavScroll | null = { kind: 'top' };
@@ -521,26 +546,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   // Typed mapping-based renderer with exhaustiveness and prop typing
   type ViewMap = { [K in RouteName]: React.ComponentType<ParamsOf<K>> };
   const RouteViews: React.FC<{ views: ViewMap }> = ({ views }) => {
-    const { store } = useRouterContext();
+    const { store, _prevView } = useRouterContext();
     const current = useRoute();
     const status = store.getState().status as string;
-    const [prev, setPrev] = React.useState<null | { name: RouteName; params: any }>(null);
-
-    // When leaving idle, snapshot the previous view once
-    React.useEffect(() => {
-      if (!current) return;
-      if (status !== 'idle' && !prev) {
-        setPrev({ name: current.name as RouteName, params: current.params as any });
-      }
-    }, [status]);
-
-    // When returning to idle, clear previous after one frame (let CSS finish)
-    React.useEffect(() => {
-      if (status === 'idle' && prev) {
-        const id = requestAnimationFrame(() => setPrev(null));
-        return () => cancelAnimationFrame(id);
-      }
-    }, [status, prev]);
 
     if (!current) return null;
     const ViewNow = views[current.name as RouteName] as React.ComponentType<any>;
@@ -548,9 +556,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     return (
       <div data-router-parallel className={status !== 'idle' ? 'router-transitioning' : undefined}>
-        {prev && status !== 'idle' ? (
+        {_prevView && status !== 'idle' ? (
           <div className="view view--old" aria-hidden>
-            {React.createElement(views[prev.name] as React.ComponentType<any>, { ...(prev.params as any) })}
+            {React.createElement(views[_prevView.name] as React.ComponentType<any>, { ...(_prevView.params as any) })}
           </div>
         ) : null}
         <div className={status !== 'idle' ? 'view view--new' : 'view view--current'}>
