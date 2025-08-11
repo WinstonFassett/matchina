@@ -297,11 +297,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         console.debug('[transitions] snapshot prev (popstate/effect)', lastCurrentRef.current.name, lastCurrentRef.current.params);
         setPrevView({ name: lastCurrentRef.current.name as RouteName, params: lastCurrentRef.current.params as any });
       }
-      if (snap.status === 'idle' && prevView) {
-        const id = requestAnimationFrame(() => setPrevView(null));
-        return () => cancelAnimationFrame(id);
-      }
-    }, [snap.status]);
+    }, [snap.status, prevView]);
 
     const value = useMemo<Ctx>(() => ({
       routes: defs,
@@ -592,7 +588,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     const oldRef = React.useRef<HTMLDivElement | null>(null);
     const newRef = React.useRef<HTMLDivElement | null>(null);
 
-    const both = _prevView && status !== 'idle';
+    const both = !!_prevView;
     if (both) {
       console.debug('[transitions] RouteViews: rendering old+new', { old: _prevView?.name, new: current.name });
     }
@@ -623,7 +619,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             {React.createElement(views[_prevView.name] as React.ComponentType<any>, { ...(_prevView.params as any) })}
           </div>
         ) : null}
-        <div ref={newRef} className={status !== 'idle' ? 'view view--new transition-slide is-next-container' : 'view view--current transition-slide'}>
+        <div ref={newRef} className={both ? 'view view--new transition-slide is-next-container' : 'view view--current transition-slide'}>
           {Now}
         </div>
       </div>
