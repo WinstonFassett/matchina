@@ -4,6 +4,13 @@ export type HistoryAdapterOptions = {
   base?: string; // e.g. "/app"
   useHash?: boolean; // if true, use location.hash for routing
   match: (path: string) => Promise<Record<string, unknown> | null> | (Record<string, unknown> | null);
+  // Optional guard: return true to allow, or a string path to redirect
+  guard?: (path: string) => Promise<true | string> | (true | string);
+  // Optional loader: may return extra params to merge into route params
+  loader?: (
+    path: string,
+    params: Record<string, unknown> | null
+  ) => Promise<Record<string, unknown> | void> | (Record<string, unknown> | void);
 };
 
 function normalize(path: string, base = "") {
@@ -27,12 +34,38 @@ function getPathFromLocation({ base = "", useHash = false }: { base?: string; us
   return normalize(raw, base);
 }
 
-export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAdapterOptions) {
-  const { base = "", useHash = false, match } = opts;
+function stripQueryHash(path: string) {
+  const idxQ = path.indexOf("?");
+  const idxH = path.indexOf("#");
+  let end = path.length;
+  if (idxQ !== -1) end = Math.min(end, idxQ);
+  if (idxH !== -1) end = Math.min(end, idxH);
+  return path.slice(0, end) || "/";
+}
 
-  async function resolve(path: string) {
+export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAdapterOptions) {
+  const { base = "", useHash = false, match, guard, loader } = opts;
+
+  async function resolve(pathFull: string) {
     try {
-      const params = await match(path);
+      // guard first (use full URL path including search/hash)
+      if (guard) {
+        const allowOrRedirect = await guard(pathFull);
+        if (typeof allowOrRedirect === "string") {
+          // redirect and stop
+          apply("redirect", normalize(allowOrRedirect, ""));
+          return;
+        }
+      }
+
+      const path = stripQueryHash(pathFull);
+      let params = await match(path);
+      if (loader) {
+        const extra = await loader(path, params);
+        if (extra && typeof extra === "object") {
+          params = { ...(params ?? {}), ...extra } as Record<string, unknown>;
+        }
+      }
       if (params) {
         store.dispatch("complete", params as Record<string, unknown>);
       } else {
