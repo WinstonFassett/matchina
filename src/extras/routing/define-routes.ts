@@ -177,6 +177,3 @@ export function defineRoutes<const Patterns extends Record<string, string>>(patt
 
   return boxes;
 }
-
-// Alias to avoid multiple concepts in the public API; prefer defineRoutes
-export const createRouteBoxes = defineRoutes;
