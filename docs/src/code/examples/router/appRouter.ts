@@ -1,4 +1,4 @@
-import { createReactRouter } from "./reactAdapter";
+import { createReactRouter } from "./reactRouter";
 
 // Central, pre-bound router instance for the docs demo
 export const {

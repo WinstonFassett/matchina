@@ -153,7 +153,7 @@ export const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: 
         <Tab name="ProductReviews" label="Reviews" />
       </nav>
       {/* Content area: overflow hidden so inner slides don't bleed */}
-      {/* Diagnostics tip: exit view timing is controlled by reactAdapter.tsx; see console for [Routes] logs */}
+      {/* Diagnostics tip: exit view timing is controlled by reactRouter.tsx; see console for [Routes] logs */}
       <div className="overflow-hidden">
         {children}
       </div>
