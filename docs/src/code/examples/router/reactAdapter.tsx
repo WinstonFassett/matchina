@@ -250,7 +250,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
     // Detect Product tab-to-tab change for same product id
     const isProductTab = (n: string | null | undefined) => !!n && n !== 'Products' && n.startsWith('Product');
-    const sameProductId = (a: any, b: any) => JSON.stringify(a?.id ?? null) === JSON.stringify(b?.id ?? null);
+    const getProdId = (p: any) => (p?.id ?? p?.productId ?? null);
+    const sameProductId = (a: any, b: any) => JSON.stringify(getProdId(a)) === JSON.stringify(getProdId(b));
     const isTabChange = !!from && isProductTab(from.name) && isProductTab(String(to.name)) && sameProductId(from.params, to.params);
 
     // Differ if the transition key changes OR if we're switching tabs within the same product
@@ -276,8 +277,60 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
       if (!differ || !from) return;
-      // Debug: for Product tab changes, do NOT animate; let both views render static
-      if (isTabChange) return;
+      // For Product tab changes: animate only the exiting content's inner slide out, leave entering static
+      if (isTabChange) {
+        // Ensure the exiting view stays mounted even if differ drops to false
+        if (!exiting && from) setExiting(from);
+        const fromEl = fromRef.current;
+        if (!fromEl) return;
+        // Prefer animating the inner slide; if absent, animate the shell
+        const target = (fromEl.querySelector('.transition-slide') as HTMLElement | null) || fromEl;
+        if (target === fromEl) {
+          // eslint-disable-next-line no-console
+          console.log('[Routes][tab-exit] animating shell (no .transition-slide)');
+        }
+        // Prepare and run a simple fade/slide out
+        fromEl.style.display = '';
+        fromEl.style.opacity = '1';
+        target.style.willChange = 'transform, opacity';
+        target.style.transition = 'transform 180ms ease, opacity 180ms ease';
+        target.style.transform = 'translateX(0px)';
+        target.style.opacity = '1';
+        // Kick off on next frame
+        const id = requestAnimationFrame(() => {
+          target.style.transform = 'translateX(-12px)';
+          target.style.opacity = '0';
+        });
+        let ended = false;
+        const onEnd = () => {
+          ended = true;
+          target.style.willChange = '';
+          target.style.transition = '';
+          target.style.transform = '';
+          target.style.opacity = '';
+          setExiting(null);
+        };
+        const onEndLog = (e: Event) => {
+          // eslint-disable-next-line no-console
+          console.log('[Routes][tab-exit] transitionend', {
+            target: (e.target as HTMLElement)?.className,
+          });
+          onEnd();
+        };
+        target.addEventListener('transitionend', onEndLog, { once: true });
+        // Fallback: if transitionend doesn’t fire, clear after 250ms
+        const fallback = window.setTimeout(() => {
+          if (!ended) {
+            // eslint-disable-next-line no-console
+            console.log('[Routes][tab-exit] fallback timeout clearing exit');
+            onEnd();
+          }
+        }, 250);
+        return () => {
+          cancelAnimationFrame(id);
+          window.clearTimeout(fallback);
+        };
+      }
       const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
       const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
       const transKey = `${oldKey}=>${newKey}:${change?.type ?? ''}`;
@@ -390,22 +443,17 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className={
-              "view z-10 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " +
-              (isTabChange ? "bg-pink-100 dark:bg-pink-900/40" : "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm")
-            }
+            className={"view z-10 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " + (isTabChange ? "" : "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm")}
+            style={isTabChange ? { background: '#ffd1dc' } : undefined}
             data-role="from"
-            aria-hidden
+            aria-hidden={isTabChange ? (undefined as any) : true}
           >
             {renderWithLayouts((exiting || from)!.name as RouteName, (exiting || from)!.params, isTabChange)}
           </div>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className={
-              "view z-20 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " +
-              (isTabChange ? "bg-green-100 dark:bg-green-900/40" : "bg-white dark:bg-neutral-900")
-            }
+            className={"view z-20 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " + (isTabChange ? "bg-white dark:bg-neutral-900" : "bg-white dark:bg-neutral-900")}
             data-role="to"
           >
             {renderWithLayouts(to.name as RouteName, to.params, isTabChange)}
