@@ -4,10 +4,10 @@ description: Typed React router adapter with hash routing, param passing, nested
 ---
 
 import RouterAdvancedExample from "@code/examples/router";
-import reactRouterCode from "@code/examples/router/reactRouter.tsx?raw";
+import reactRouterCode from "@code/examples/router/createRouter.tsx?raw";
 // Using core matchina extras routing
 import idiomaticDemoCode from "@code/examples/router/RouterDemoIdiomatic.tsx?raw";
-import indexCode from "@code/examples/router/index.tsx?raw";
+import appRouterCode from "@code/examples/router/appRouter.ts?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 import Mermaid from "@components/Mermaid";
 
@@ -81,9 +81,9 @@ Notes:
 
 <CodeTabs
   files={[
-    { name: "reactRouter.tsx", code: reactRouterCode },
+    { name: "createRouter.tsx", code: reactRouterCode },
     { name: "RouterDemoIdiomatic.tsx", code: idiomaticDemoCode },
-    { name: "index.tsx", code: indexCode },
+    { name: "appRouter.ts", code: appRouterCode },
   ]}
 /> */}
 

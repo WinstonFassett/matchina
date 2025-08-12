@@ -4,7 +4,7 @@ import { createBrowserHistoryAdapter } from "@lib/src/router-history";
 import { useMachine } from "matchina/react";
 import React, { createContext, useContext } from "react";
 
-export function createReactRouter<const Patterns extends Record<string, string>>(
+export function createRouter<const Patterns extends Record<string, string>>(
   patterns: Patterns,
   options?: {
     base?: string;

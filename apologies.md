@@ -39,7 +39,8 @@ I screwed up. Here’s exactly how, why it violated your instructions, and how I
   - If `change?.from` exists and differs from `change?.to`, render both inside `data-router-parallel` with stable keys.
   - Otherwise render only `to`.
 - **No useEffect snapshotting**: Zero local caching for “prev.” The store’s `change` object is the snapshot.
-- **Auto base for hash**: If `useHash === true` and `base` is undefined, set `base = window.location.pathname.replace(/\/$/, "")` when creating the history/router.
+- **Auto base for hash**: If `useHash === true` and `base` is undefined, set `base = window.location.pathname.replace(/\/$/, "")` when creating the histo
+ry/router.
 
 ## Concrete fix plan (minimal, aligned with your design)
 

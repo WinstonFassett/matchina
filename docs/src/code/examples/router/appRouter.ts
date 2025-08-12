@@ -1,4 +1,4 @@
-import { createReactRouter } from "./reactRouter";
+import { createRouter } from "./createRouter";
 
 // Central, pre-bound router instance for the docs demo
 export const {
@@ -14,7 +14,7 @@ export const {
   store,
   history,
   routes: routeDefs,
-} = createReactRouter({
+} = createRouter({
   Home: "/",
   About: "/about",
   Products: "/products",
