@@ -115,6 +115,26 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
     if (from?.name === 'Products') nav.back(); else nav.goto('Products')();
   }, [from, nav]);
   const isActive = (name: string) => to?.name === name && String((to?.params as any)?.id ?? '') === id;
+
+  // Diagnostics: log children count/shape whenever children or route changes
+  React.useEffect(() => {
+    const arr = React.Children.toArray(children) as any[];
+    const describe = (n: any) => {
+      if (n == null) return n;
+      if (typeof n === 'string' || typeof n === 'number') return n;
+      const type = typeof n.type === 'string' ? n.type : (n.type?.displayName || n.type?.name || 'Anonymous');
+      return { type, key: n.key ?? null, className: n.props?.className ?? null, props: Object.keys(n.props || {}) };
+    };
+    // eslint-disable-next-line no-console
+    console.log('[PDL] children', {
+      route,
+      from,
+      to,
+      count: React.Children.count(children),
+      arrayLen: arr.length,
+      items: arr.map(describe),
+    });
+  }, [children, route, from, to]);
   const Tab: React.FC<{ name: string; label: string }> = ({ name, label }) => {
     const active = isActive(name);
     const clsBase = "px-2 py-1 rounded";
@@ -148,6 +168,7 @@ const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: { name:
         <Tab name="ProductReviews" label="Reviews" />
       </nav>
       {/* Content area: overflow hidden so inner slides don't bleed */}
+      {/* Diagnostics tip: exit view timing is controlled by reactAdapter.tsx; see console for [Routes] logs */}
       <div className="overflow-hidden">
         {children}
       </div>

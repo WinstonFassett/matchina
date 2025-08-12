@@ -273,6 +273,19 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // Compute hoisted outer layout key for current transition scope
     const outerKey = commonOuterKey(from?.name ?? null, String(to.name));
 
+    // Diagnostics: log route state and layout application decisions
+    React.useEffect(() => {
+      // eslint-disable-next-line no-console
+      console.log('[Routes] change', {
+        differ,
+        innerOnly,
+        outerKey,
+        from,
+        to,
+        layouts: Object.keys(layouts || {}),
+      });
+    }, [differ, innerOnly, outerKey, from, to, layouts]);
+
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
       if (!differ || !from) return;
@@ -338,6 +351,31 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         endEvents.forEach((evt) => {
           fromEl.addEventListener(evt, done, { once: true });
           toEl.addEventListener(evt, done, { once: true });
+        });
+
+        // Diagnostics: log DOM state and children counts post-activation
+        const countChildren = (el: HTMLElement | null) => (el ? el.childElementCount : 0);
+        const countSlides = (el: HTMLElement | null) => (el ? el.querySelectorAll('.transition-slide').length : 0);
+        // eslint-disable-next-line no-console
+        console.log('[Routes] DOM', {
+          innerOnly,
+          outerKey,
+          container: {
+            changing: container.classList.contains('is-changing'),
+            children: countChildren(container),
+          },
+          fromEl: {
+            role: fromEl.getAttribute('data-role'),
+            classes: fromEl.className,
+            children: countChildren(fromEl),
+            slides: countSlides(fromEl),
+          },
+          toEl: {
+            role: toEl.getAttribute('data-role'),
+            classes: toEl.className,
+            children: countChildren(toEl),
+            slides: countSlides(toEl),
+          },
         });
       });
       return () => cancelAnimationFrame(frame);
