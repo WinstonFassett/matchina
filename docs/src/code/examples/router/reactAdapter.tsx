@@ -241,14 +241,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
     // Simplified single-mode transitions
 
-    const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
+    const renderWithLayouts = (name: RouteName, params: any, wrapSlide: boolean): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      // Outer mode: do NOT add a .transition-slide wrapper; the view shell itself animates
-      return wrapWithLayouts(layouts, name, params, body, outerKey);
+      const node = wrapSlide ? <div className="transition-slide">{body}</div> : body;
+      return wrapWithLayouts(layouts, name, params, node, outerKey);
     };
 
-    const differ = !!from && (keyFor(from.name, from.params) !== keyFor(to.name, to.params));
+    // Detect Product tab-to-tab change for same product id
+    const isProductTab = (n: string | null | undefined) => !!n && n !== 'Products' && n.startsWith('Product');
+    const sameProductId = (a: any, b: any) => JSON.stringify(a?.id ?? null) === JSON.stringify(b?.id ?? null);
+    const isTabChange = !!from && isProductTab(from.name) && isProductTab(String(to.name)) && sameProductId(from.params, to.params);
+
+    // Differ if the transition key changes OR if we're switching tabs within the same product
+    const differ = !!from && ((keyFor(from.name, from.params) !== keyFor(to.name, to.params)) || isTabChange);
 
     // Single-mode: no special guards needed
 
@@ -294,6 +300,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         // Swup-like semantics
         // 1) Apply pre-state to NEXT only (keep FROM unmarked so it animates after transitions are enabled)
         toEl.classList.add('is-next-container');
+        // For tab changes, animate only the inner content and freeze shells
+        if (isTabChange) {
+          fromEl.classList.add('no-shell-animate');
+          toEl.classList.add('no-shell-animate');
+        }
         // 2) Force a reflow to commit pre-positioning before enabling transitions
         void toEl.getBoundingClientRect();
         // 3) Enable transitions on container
@@ -314,13 +325,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             container.classList.remove('is-changing');
             fromEl.classList.remove('is-previous-container');
             toEl.classList.remove('is-next-container');
+            if (isTabChange) {
+              fromEl.classList.remove('no-shell-animate');
+              toEl.classList.remove('no-shell-animate');
+            }
             setExiting(null);
           }
         };
         const endEvents: (keyof HTMLElementEventMap)[] = ['transitionend', 'animationend'];
+        // Pick actual animated targets
+        const fromTarget: HTMLElement = (isTabChange ? (fromEl.querySelector('.transition-slide') as HTMLElement | null) : null) || fromEl;
+        const toTarget: HTMLElement = (isTabChange ? (toEl.querySelector('.transition-slide') as HTMLElement | null) : null) || toEl;
         endEvents.forEach((evt) => {
-          fromEl.addEventListener(evt, done, { once: true });
-          toEl.addEventListener(evt, done, { once: true });
+          fromTarget.addEventListener(evt, done, { once: true });
+          toTarget.addEventListener(evt, done, { once: true });
         });
 
         // Diagnostics: log DOM state and children counts post-activation
@@ -374,7 +392,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             data-role="from"
             aria-hidden
           >
-            {renderWithLayouts_outer((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            {renderWithLayouts((exiting || from)!.name as RouteName, (exiting || from)!.params, isTabChange)}
           </div>
           <div
             ref={toRef}
@@ -382,7 +400,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             className="view z-20 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            {renderWithLayouts_outer(to.name as RouteName, to.params)}
+            {renderWithLayouts(to.name as RouteName, to.params, isTabChange)}
           </div>
         </div>
       );
@@ -395,7 +413,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     }
 
     // No active transition; render single view
-    const single = renderWithLayouts_outer(to.name as RouteName, to.params);
+    const single = renderWithLayouts(to.name as RouteName, to.params, false);
     const singleView = single ? (
       <div className="view z-10 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10">
         {single}
