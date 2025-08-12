@@ -95,7 +95,16 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
 
   function apply(mode: "push" | "replace" | "redirect", path: string) {
     const url = toUrl(path, { base, useHash });
-    const state = { key: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2) };
+  function generateKey() {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    return Math.random().toString(36).slice(2);
+  }
+
+  function apply(mode: "push" | "replace" | "redirect", path: string) {
+    const url = toUrl(path, { base, useHash });
+    const state = { key: generateKey() };
     if (mode === "push") {
       window.history.pushState(state, "", url);
     } else {
