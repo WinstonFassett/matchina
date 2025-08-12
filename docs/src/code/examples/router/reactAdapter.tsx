@@ -226,25 +226,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
     // Decide whether to animate only the tab body (inner) or the whole card (outer)
-    const isProductTab = (n: string) => n !== 'Products' && n.startsWith('Product');
-    const sameProductId = (a: any, b: any) => JSON.stringify(a?.id ?? null) === JSON.stringify(b?.id ?? null);
+    // Simplify: disable inner-only mode to ensure consistent behavior across nesting levels
     const shouldInnerOnly = (
-      fromName: string | null,
-      toName: string,
-      fromParams: any | null,
-      toParams: any,
-    ) => {
-      if (!fromName) return false;
-      // Inner-only when navigating between Product* tabs for the same id
-      return isProductTab(fromName) && isProductTab(toName) && sameProductId(fromParams, toParams);
-    };
+      _fromName: string | null,
+      _toName: string,
+      _fromParams: any | null,
+      _toParams: any,
+    ) => false;
 
     // Inner mode: ensure a `.transition-slide` wrapper exists (layouts may also wrap; nested is tolerated)
+    // Inner path disabled; keep function for potential future use (returns outer behavior)
     const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
       if (!body) return null;
-      const innerSliding = <div className="transition-slide">{body}</div>;
-      return wrapWithLayouts(layouts, name, params, innerSliding, outerKey);
+      return wrapWithLayouts(layouts, name, params, body, outerKey);
     };
 
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
@@ -255,20 +250,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     };
 
     const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
-    const innerOnly = shouldInnerOnly(from?.name ?? null, String(to.name), from?.params ?? null, to.params);
 
     // Dev-time guard: warn if inner mode active but required .transition-slide wrapper is missing
-    React.useEffect(() => {
-      if (!innerOnly) return;
-      const f = fromRef.current;
-      const t = toRef.current;
-      const hasFrom = !!f && !!f.querySelector('.transition-slide');
-      const hasTo = !!t && !!t.querySelector('.transition-slide');
-      if (!hasFrom || !hasTo) {
-        // eslint-disable-next-line no-console
-        console.warn('[router] inner-only transition expected ".transition-slide" inside both from/to views; missing:', { fromHas: hasFrom, toHas: hasTo });
-      }
-    }, [innerOnly]);
+    // Inner-only disabled; no guard needed
 
     // Compute hoisted outer layout key for current transition scope
     const outerKey = commonOuterKey(from?.name ?? null, String(to.name));
@@ -278,13 +262,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       // eslint-disable-next-line no-console
       console.log('[Routes] change', {
         differ,
-        innerOnly,
         outerKey,
         from,
         to,
         layouts: Object.keys(layouts || {}),
       });
-    }, [differ, innerOnly, outerKey, from, to, layouts]);
+    }, [differ, outerKey, from, to, layouts]);
 
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
@@ -313,15 +296,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         // Swup-like semantics
         // 1) Apply pre-state to NEXT only (keep FROM unmarked so it animates after transitions are enabled)
         toEl.classList.add('is-next-container');
-        // In inner-only mode, prevent the view shells themselves from animating
-        if (innerOnly) {
-          fromEl.classList.add('no-shell-animate');
-          toEl.classList.add('no-shell-animate');
-        }
         // 2) Force a reflow to commit pre-positioning before enabling transitions
         void toEl.getBoundingClientRect();
         // 3) Enable transitions on container
-        container.setAttribute('data-inner', innerOnly ? 'inner' : 'outer');
         container.classList.add('is-changing');
         // 4) Next frame, kick off both enter and exit transitions
         requestAnimationFrame(() => {
@@ -337,13 +314,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           doneCount += 1;
           if (doneCount >= 2) {
             container.classList.remove('is-changing');
-            container.removeAttribute('data-inner');
             fromEl.classList.remove('is-previous-container');
             toEl.classList.remove('is-next-container');
-            if (innerOnly) {
-              fromEl.classList.remove('no-shell-animate');
-              toEl.classList.remove('no-shell-animate');
-            }
             setExiting(null);
           }
         };
@@ -358,7 +330,6 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         const countSlides = (el: HTMLElement | null) => (el ? el.querySelectorAll('.transition-slide').length : 0);
         // eslint-disable-next-line no-console
         console.log('[Routes] DOM', {
-          innerOnly,
           outerKey,
           container: {
             changing: container.classList.contains('is-changing'),
@@ -405,7 +376,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             data-role="from"
             aria-hidden
           >
-            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)((exiting || from)!.name as RouteName, (exiting || from)!.params)}
+            {renderWithLayouts_outer((exiting || from)!.name as RouteName, (exiting || from)!.params)}
           </div>
           <div
             ref={toRef}
@@ -413,7 +384,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
             className="view z-20 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
             data-role="to"
           >
-            {(innerOnly ? renderWithLayouts_inner : renderWithLayouts_outer)(to.name as RouteName, to.params)}
+            {renderWithLayouts_outer(to.name as RouteName, to.params)}
           </div>
         </div>
       );
