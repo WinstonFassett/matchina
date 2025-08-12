@@ -50,7 +50,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
 
   const RouterContext = createContext<Ctx | null>(null);
   type RoutePropsElement = { name: RouteName; element: React.ReactNode };
-  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
+  // View components receive top-level route params, e.g., view: (props: ParamsOf<N>) => JSX.Element
+  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<ParamsOf<N>> };
   type RouteProps = RoutePropsElement | RoutePropsView;
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -108,7 +109,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (p.element) return p.element;
       if (p.view) {
         const V = p.view as React.ComponentType<any>;
-        return <V params={params} />;
+        return <V {...(params || {})} />;
       }
       return null;
     };

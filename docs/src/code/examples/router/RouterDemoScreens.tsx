@@ -24,7 +24,7 @@ export const Products: React.FC = () => {
     </div>
   );
 };
-export const Product: React.FC<{ params: { id: string; }; }> = ({ params }) => {
+export const Product: React.FC<{ id: string; }> = (params) => {
   const nav = useNavigation();
   const { from } = useRouter();
   // Default to Overview tab if landing on /products/:id
@@ -62,19 +62,19 @@ export const Product: React.FC<{ params: { id: string; }; }> = ({ params }) => {
   );
 };
 // Nested Product tabs: return only body content; layout is applied by RouteLayouts
-export const ProductOverview: React.FC<{ params: { id: string; }; }> = ({ params }) => (
+export const ProductOverview: React.FC<{ id: string; }> = (params) => (
   <>
     <h4>Overview</h4>
     <p>Overview for product {params.id}</p>
   </>
 );
-export const ProductSpecs: React.FC<{ params: { id: string; }; }> = ({ params }) => (
+export const ProductSpecs: React.FC<{ id: string; }> = (params) => (
   <>
     <h4>Specs</h4>
     <p>Specs for product {params.id}</p>
   </>
 );
-export const ProductReviews: React.FC<{ params: { id: string; }; }> = ({ params }) => (
+export const ProductReviews: React.FC<{ id: string; }> = (params) => (
   <>
     <h4>Reviews</h4>
     <p>Reviews for product {params.id}</p>
@@ -160,8 +160,8 @@ export const ProductDetailLayout: React.FC<{ children?: React.ReactNode; route: 
     </div>
   );
 };
-export const User: React.FC<{ params: { userId: string; }; }> = (props) => <div className="p-4"><h3>User</h3>
-  {JSON.stringify(props.params ?? ("MISSING in props" + JSON.stringify(props)))}
+export const User: React.FC<{ userId: string; }> = (props) => <div className="p-4"><h3>User</h3>
+  {JSON.stringify(props.userId ?? ("MISSING in props" + JSON.stringify(props)))}
 </div>;
 // Small debug panel to visualize store change/state and derived from/to
 export const DebugPanel: React.FC = () => {
