@@ -239,7 +239,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         window.requestAnimationFrame(() => {
           window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
           const el = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
-          el?.focus?.();
+        // scroll + focus restoration when navigation settles
+        window.requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+          const focusEl = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
+          focusEl?.focus?.();
         });
       }
     }, [snap.status, snap.index]);
