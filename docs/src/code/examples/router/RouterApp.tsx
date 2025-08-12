@@ -1,8 +1,8 @@
 import React from "react";
 import { RouterProvider, Routes, Route, Link } from "./appRouter";
-import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductReviews, User, DebugPanel } from "./RouterDemoScreens";
+import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductReviews, User, DebugPanel } from "./RouterAppScreens";
 
-export const RouterDemoIdiomatic: React.FC = () => {
+export const RouterApp: React.FC = () => {
   return (
     <RouterProvider>
       <div>

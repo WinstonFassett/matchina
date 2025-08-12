@@ -1,6 +1,6 @@
 import React from "react";
-import { RouterDemoIdiomatic } from "./RouterDemoIdiomatic";
+import { RouterApp } from "./RouterApp";
 
 export default function RouterAdvancedExample() {
-  return <RouterDemoIdiomatic />;
+  return <RouterApp />;
 }
