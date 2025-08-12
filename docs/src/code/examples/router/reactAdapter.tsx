@@ -1,7 +1,7 @@
-import React, { createContext, useContext } from "react";
 import { defineRoutes, type RouteMatch } from "@lib/src/extras/routing/define-routes";
 import { createStoreMachine } from "@lib/src/store-machine";
-import { useMachine } from "@lib/src/integrations/react";
+import { useMachine } from "matchina/react";
+import React, { createContext, useContext } from "react";
 
 export function createReactRouter<const Patterns extends Record<string, string>>(
   patterns: Patterns,
