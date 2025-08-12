@@ -138,19 +138,6 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       </a>
     );
   };
-
-  // Debug helper: exposes raw store change/state and derived matches
-  function useRoutingDebug() {
-    const { store, defs } = useRouterContext();
-    const change = (store as any).getChange?.();
-    const state = store.getState();
-    const entry = state.stack[state.index] ?? null;
-    const to = entry ? defs.matchPath(entry.path) : null;
-    const from = null;
-    return { change, state, fromEntry: null, toEntry: null, from, to } as any;
-  }
-
-  // Layout support removed for simplicity; can be reintroduced externally if needed
-
-  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, useRoutingDebug, routes: defs, defs, store, history };
+  
+  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, routes: defs, defs, store, history };
 }
