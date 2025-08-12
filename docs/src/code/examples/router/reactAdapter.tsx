@@ -199,7 +199,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (p.view) { const V = p.view as React.ComponentType<any>; return <V params={params} />; }
       return null;
     };
-    // Wrap a node with matching layouts for a route name (outer->inner by specificity)
+    // Wrap a node with matching layouts for a route name (by specificity)
     const wrapWithLayouts = (lx: LayoutMap, name: RouteName, params: any, node: React.ReactNode, excludeKey?: RouteName | null): React.ReactNode => {
       const keys = Object.keys(lx) as RouteName[];
       const matches = keys
@@ -218,6 +218,20 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       }, node);
     };
 
+    // Decide when a transition should occur by deriving a stable key for the route we care about.
+    // Policy:
+    // - Products: single key (list-internal changes don't animate)
+    // - Product*: animate only when product id changes (tabs with same id don't animate)
+    // - Default: animate on any route+params change
+    const keyFor = (name: string, params: any) => {
+      if (name === 'Products') return 'Products';
+      if (name && name.startsWith('Product')) {
+        const id = params?.id ?? null;
+        return `Product:${JSON.stringify(id)}`;
+      }
+      return `${name}:${JSON.stringify(params || {})}`;
+    };
+
     // Determine a common outer layout key to hoist outside transitions (e.g., Products)
     const commonOuterKey = (_fromName: string | null, toName: string): RouteName | null => {
       // Hoist `Products` whenever destination is in the Products domain (Products or Product*)
@@ -225,22 +239,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       if (inProducts(toName)) return 'Products' as RouteName;
       return null;
     };
-    // Decide whether to animate only the tab body (inner) or the whole card (outer)
-    // Simplify: disable inner-only mode to ensure consistent behavior across nesting levels
-    const shouldInnerOnly = (
-      _fromName: string | null,
-      _toName: string,
-      _fromParams: any | null,
-      _toParams: any,
-    ) => false;
-
-    // Inner mode: ensure a `.transition-slide` wrapper exists (layouts may also wrap; nested is tolerated)
-    // Inner path disabled; keep function for potential future use (returns outer behavior)
-    const renderWithLayouts_inner = (name: RouteName, params: any): React.ReactNode => {
-      const body = renderFor(name, params);
-      if (!body) return null;
-      return wrapWithLayouts(layouts, name, params, body, outerKey);
-    };
+    // Simplified single-mode transitions
 
     const renderWithLayouts_outer = (name: RouteName, params: any): React.ReactNode => {
       const body = renderFor(name, params);
@@ -249,10 +248,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return wrapWithLayouts(layouts, name, params, body, outerKey);
     };
 
-    const differ = !!from && (from.name !== to.name || JSON.stringify(from.params) !== JSON.stringify(to.params));
+    const differ = !!from && (keyFor(from.name, from.params) !== keyFor(to.name, to.params));
 
-    // Dev-time guard: warn if inner mode active but required .transition-slide wrapper is missing
-    // Inner-only disabled; no guard needed
+    // Single-mode: no special guards needed
 
     // Compute hoisted outer layout key for current transition scope
     const outerKey = commonOuterKey(from?.name ?? null, String(to.name));
