@@ -236,10 +236,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     React.useEffect(() => {
       if (snap.status === "idle") {
         // scroll to top for new navigations
+        // scroll + focus restoration when navigation settles
         window.requestAnimationFrame(() => {
           window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-          const el = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
-          el?.focus?.();
+          const focusEl = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
+          focusEl?.focus?.();
         });
       }
     }, [snap.status, snap.index]);
