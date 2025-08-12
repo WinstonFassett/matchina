@@ -143,6 +143,170 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     }
     // eslint-disable-next-line no-console
     console.debug("[router.state]", state);
+//#region from transition branch. externalize this
+    // Start history once on mount (align store with URL)
+    React.useEffect(() => {
+      history.start();
+    }, []);
+
+    // const snap = store.getState();
+    // const scrollRef = React.useRef<NavScroll | null>(null);
+    // const getPrimaryContainer = () =>
+    //   options?.scroll?.getContainer?.() ??
+    //   (options?.scroll?.selector ? document.querySelector(options.scroll.selector) : null);
+    // // Memory of scroll positions per-location for containers
+    // const scrollMemory = React.useRef<Map<string, { top: number; left: number }>>(new Map());
+    // const locationKey = () => `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    // const containerKey = (id: string) => `${id}::${locationKey()}`;
+    // const readPos = (el: Element | Window) => ({
+    //   top: el instanceof Window ? el.scrollY : (el as HTMLElement).scrollTop,
+    //   left: el instanceof Window ? el.scrollX : (el as HTMLElement).scrollLeft,
+    // });
+    // const applyScroll = (el: Element | Window, pos: { top?: number; left?: number }, behavior: ScrollBehavior) => {
+    //   const top = pos.top ?? 0;
+    //   const left = pos.left ?? 0;
+    //   if (el instanceof Window) {
+    //     window.scrollTo({ top, left, behavior });
+    //   } else if ('scrollTo' in el) {
+    //     (el as any).scrollTo({ top, left, behavior });
+    //   }
+    // };
+    // const getExtraContainers = (): Array<{ id: string; el: Element | null; behavior?: ScrollBehavior; restore?: 'memory' | 'top' | 'preserve' }> => {
+    //   return (options?.scroll?.containers ?? []).map(c => ({
+    //     id: c.id,
+    //     el: c.getContainer?.() ?? (c.selector ? document.querySelector(c.selector) : null),
+    //     behavior: c.behavior,
+    //     restore: c.restore,
+    //   }));
+    // };
+    // // Capture current scroll positions for all managed containers keyed by current location
+    // const snapshotCurrentScroll = () => {
+    //   const key = locationKey();
+    //   const primary = getPrimaryContainer();
+    //   const primaryEl = primary ?? window;
+    //   const primaryId = 'window';
+    //   scrollMemory.current.set(`${primaryId}::${key}`, readPos(primaryEl));
+    //   for (const c of getExtraContainers()) {
+    //     if (c.el) scrollMemory.current.set(`${c.id}::${key}`, readPos(c.el));
+    //   }
+    // };
+    // const prevLocRef = React.useRef<string | null>(null);
+    // // Scroll + focus restoration when navigation settles
+    // React.useEffect(() => {
+    //   if (snap.status === "idle") {
+    //     // Save previous location scroll positions for memory
+    //     const prevKey = prevLocRef.current;
+    //     if (prevKey) {
+    //       const primary = getPrimaryContainer();
+    //       const primaryId = 'window';
+    //       const primaryEl = primary ?? window;
+    //       scrollMemory.current.set(`${primaryId}::${prevKey}`, readPos(primaryEl));
+    //       for (const c of getExtraContainers()) {
+    //         if (c.el) scrollMemory.current.set(`${c.id}::${prevKey}`, readPos(c.el));
+    //       }
+    //     }
+
+    //     const desired = scrollRef.current ?? (options?.scroll?.default === 'preserve' ? null : { kind: 'top' as const });
+    //     scrollRef.current = null;
+    //     const thisKey = locationKey();
+    //     const behaviorDefault = options?.scroll?.behavior ?? 'auto';
+    //     // Primary container
+    //     const primary = getPrimaryContainer();
+    //     const primaryEl = (primary ?? window);
+    //     const primaryId = 'window';
+    //     const primaryRestore = desired
+    //       ? desired.kind === 'top'
+    //         ? { top: 0, left: 0 }
+    //         : { top: desired.top, left: desired.left }
+    //       : undefined;
+    //     if (primaryRestore) {
+    //       const behaviorForPrimary: ScrollBehavior = desired && desired.kind === 'coords' && desired.behavior
+    //         ? desired.behavior
+    //         : behaviorDefault;
+    //       applyScroll(primaryEl, primaryRestore, behaviorForPrimary);
+    //     } else {
+    //       // Try memory if any
+    //       const mem = scrollMemory.current.get(`${primaryId}::${thisKey}`);
+    //       if (mem) applyScroll(primaryEl, mem, behaviorDefault);
+    //     }
+    //     // Extra containers
+    //     for (const c of getExtraContainers()) {
+    //       if (!c.el) continue;
+    //       const beh = c.behavior ?? behaviorDefault;
+    //       const restore = c.restore ?? 'memory';
+    //       if (desired && desired.kind === 'coords') {
+    //         applyScroll(c.el, { top: desired.top, left: desired.left }, desired.behavior ?? beh);
+    //       } else if (desired && desired.kind === 'top') {
+    //         applyScroll(c.el, { top: 0, left: 0 }, beh);
+    //       } else if (restore === 'top') {
+    //         applyScroll(c.el, { top: 0, left: 0 }, beh);
+    //       } else if (restore === 'memory') {
+    //         const mem = scrollMemory.current.get(`${c.id}::${thisKey}`);
+    //         if (mem) applyScroll(c.el, mem, beh);
+    //       }
+    //     }
+    //     prevLocRef.current = thisKey;
+    //     // focus main region
+    //     window.requestAnimationFrame(() => {
+    //       const focusEl = (document.querySelector('[data-router-focus], main, [role="main"]') as HTMLElement | null);
+    //       focusEl?.focus?.();
+    //     });
+    //   }
+    // }, [snap.status, snap.index]);
+
+    // // Demo-layer parallel transitions: toggle classes based on store status
+    // React.useEffect(() => {
+    //   const el = (document.querySelector('[data-router-container]') || document.documentElement) as HTMLElement;
+    //   if (snap.status !== 'idle') {
+    //     el.classList.add('router-transitioning');
+    //     el.classList.add('router-exiting');
+    //     el.classList.add('router-entering');
+    //   } else {
+    //     // success path => toggle then clean up next frame
+    //     el.classList.add('router-success');
+    //     requestAnimationFrame(() => {
+    //       el.classList.remove('router-transitioning');
+    //       el.classList.remove('router-exiting');
+    //       el.classList.remove('router-entering');
+    //       el.classList.remove('router-success');
+    //     });
+    //   }
+    // }, [snap.status]);
+    // // Scroll + focus restoration when navigation settles
+    // React.useEffect(() => {
+    //   if (snap.status === "idle") {
+    //     // scroll to top for new navigations
+    //     window.requestAnimationFrame(() => {
+    //       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    //       const el = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
+    //     // scroll + focus restoration when navigation settles
+    //     window.requestAnimationFrame(() => {
+    //       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    //       const focusEl = document.querySelector("[data-router-focus], main, [role='main']") as HTMLElement | null;
+    //       focusEl?.focus?.();
+    //     });
+    //   }
+    // }, [snap.status, snap.index]);
+    // const current = useMemo(() => {
+    //   const path = getPathFromLocation();
+    //   const current = match(path);
+    //   console.debug('[router]', { path, current });
+
+    //   return current as Ctx["current"];
+    // }, [snap]);
+
+    // const value = useMemo<Ctx>(() => ({
+    //   routes: defs,
+    //   defs,
+    //   history,
+    //   store,
+    //   match,
+    //   matchAll,
+    //   current,
+    //   _setScrollDesired: (s) => { scrollRef.current = s; },
+    //   _snapshotScroll: snapshotCurrentScroll,
+    // }), [current]);
+//#endregion
 
     const value: Ctx = { defs, history, store, from, to, base, useHash, change };
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
