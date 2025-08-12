@@ -13,11 +13,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   }
 ) {
   type RouteName = keyof Patterns & string;
-  type ParamsOf<N extends RouteName> = Parameters<ReturnType<typeof defineRoutes>[N]["to"]>[0] extends undefined
-    ? {}
-    : NonNullable<Parameters<ReturnType<typeof defineRoutes>[N]["to"]>[0]>;
-
   const defs = defineRoutes(patterns);
+  type Defs = typeof defs;
+  // ParamsOf is derived from the concrete defs, so it preserves each route's exact param shape
+  type ParamsOf<N extends RouteName> = Parameters<Defs[N]["to"]>[0] extends undefined
+    ? {}
+    : NonNullable<Parameters<Defs[N]["to"]>[0]>;
 
   // Auto base for hash mode if not provided
   const autoBase = () => (typeof window !== "undefined" ? (window.location.pathname || "").replace(/\/$/, "") : "");
@@ -49,10 +50,12 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   };
 
   const RouterContext = createContext<Ctx | null>(null);
-  type RoutePropsElement = { name: RouteName; element: React.ReactNode };
-  // View components receive top-level route params, e.g., view: (props: ParamsOf<N>) => JSX.Element
-  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<ParamsOf<N>> };
-  type RouteProps = RoutePropsElement | RoutePropsView;
+  // Discriminated union per route name so TS narrows `view` props based on `name`
+  type RouteProps = {
+    [K in RouteName]:
+      | ({ name: K } & { element: React.ReactNode })
+      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>> })
+  }[RouteName];
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     useMachine(store);
@@ -119,7 +122,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return body;
   };
 
-  const Link: React.FC<{ name: RouteName; params?: any; children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({ name, params, children, ...a }) => {
+  type LinkProps = ({ [K in RouteName]: { name: K; params?: ParamsOf<K> } }[RouteName]) &
+    { children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>;
+  const Link: React.FC<LinkProps> = ({ name, params, children, ...a }) => {
     const { defs, history } = useRouterContext();
     const path = (defs as any).toPath ? (defs as any).toPath(name, params) : (defs as any).buildPath(name, params);
     const href = useHash ? `${base}#${path}` : `${base}${path}`;
@@ -128,7 +133,15 @@ export function createReactRouter<const Patterns extends Record<string, string>>
         {...a}
         href={href}
         onClick={(e) => {
-          // Prevent native hash navigation and rely on our store/history
+          // Allow default for modified/middle/right clicks or non-self targets
+          if (
+            e.defaultPrevented ||
+            e.button !== 0 ||
+            (a.target && a.target !== "_self") ||
+            e.metaKey || e.altKey || e.ctrlKey || e.shiftKey
+          ) {
+            return;
+          }
           e.preventDefault();
           e.stopPropagation();
           history.push(path);
