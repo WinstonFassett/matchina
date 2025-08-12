@@ -276,6 +276,8 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     // Start a CSS transition when a new atomic change arrives that differs
     React.useEffect(() => {
       if (!differ || !from) return;
+      // Debug: for Product tab changes, do NOT animate; let both views render static
+      if (isTabChange) return;
       const oldKey = `${String(from.name)}:${JSON.stringify(from.params || {})}`;
       const newKey = `${String(to.name)}:${JSON.stringify(to.params || {})}`;
       const transKey = `${oldKey}=>${newKey}:${change?.type ?? ''}`;
@@ -388,7 +390,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={fromRef}
             key={`old:${oldKey}`}
-            className="view z-10 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className={
+              "view z-10 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " +
+              (isTabChange ? "bg-pink-100 dark:bg-pink-900/40" : "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm")
+            }
             data-role="from"
             aria-hidden
           >
@@ -397,7 +402,10 @@ export function createReactRouter<const Patterns extends Record<string, string>>
           <div
             ref={toRef}
             key={`new:${newKey}`}
-            className="view z-20 bg-white dark:bg-neutral-900 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+            className={
+              "view z-20 rounded-xl shadow-lg ring-1 ring-black/10 dark:ring-white/10 " +
+              (isTabChange ? "bg-green-100 dark:bg-green-900/40" : "bg-white dark:bg-neutral-900")
+            }
             data-role="to"
           >
             {renderWithLayouts(to.name as RouteName, to.params, isTabChange)}
