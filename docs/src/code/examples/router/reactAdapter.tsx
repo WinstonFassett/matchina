@@ -49,9 +49,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
   };
 
   const RouterContext = createContext<Ctx | null>(null);
-  type LayoutComponentProps = { children?: React.ReactNode; route: { name: RouteName; params: any } };
-  type LayoutMap = { [K in RouteName]?: React.ComponentType<LayoutComponentProps> };
-  const LayoutsContext = createContext<LayoutMap>({});
+  type RoutePropsElement = { name: RouteName; element: React.ReactNode };
+  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
+  type RouteProps = RoutePropsElement | RoutePropsView;
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     useMachine(store);
@@ -92,16 +92,11 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return to;
   }
 
-  type RoutePropsElement = { name: RouteName; element: React.ReactNode };
-  type RoutePropsView<N extends RouteName = RouteName> = { name: N; view: React.ComponentType<{ params: ParamsOf<N> }> };
-  type RouteProps = RoutePropsElement | RoutePropsView;
-
   const Route: React.FC<RouteProps> = () => null;
   const Outlet: React.FC = () => null;
 
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     const { to } = useRouterContext();
-    const layouts = useContext(LayoutsContext);
     if (!to) return null;
 
     const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
@@ -118,31 +113,9 @@ export function createReactRouter<const Patterns extends Record<string, string>>
       return null;
     };
 
-    const wrapWithLayouts = (
-      lx: LayoutMap,
-      name: RouteName,
-      params: any,
-      node: React.ReactNode
-    ): React.ReactNode => {
-      const keys = Object.keys(lx) as RouteName[];
-      const matches = keys
-        .filter((k) => {
-          if (name === k) return true;
-          if (!name.startsWith(k)) return false;
-          const next = name.charAt(k.length);
-          return /[A-Z]/.test(next);
-        })
-        .sort((a, b) => a.length - b.length);
-      if (matches.length === 0) return node;
-      return matches.reduce((acc, k) => {
-        const L = lx[k]! as React.ComponentType<LayoutComponentProps>;
-        return React.createElement(L, { route: { name, params } }, acc);
-      }, node);
-    };
-
     const body = renderFor(to.name as RouteName, to.params);
     if (!body) return null;
-    return wrapWithLayouts(layouts, to.name as RouteName, to.params, body);
+    return body;
   };
 
   const Link: React.FC<{ name: RouteName; params?: any; children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({ name, params, children, ...a }) => {
@@ -176,13 +149,7 @@ export function createReactRouter<const Patterns extends Record<string, string>>
     return { change, state, fromEntry: null, toEntry: null, from, to } as any;
   }
 
-  // Layouts: provider-only. Merge into context so Routes can apply per-view.
-  const RouteLayouts: React.FC<{ layouts: LayoutMap; children?: React.ReactNode }>
-    = ({ layouts, children }) => {
-      const parent = useContext(LayoutsContext);
-      const merged = { ...parent, ...layouts } as LayoutMap;
-      return <LayoutsContext.Provider value={merged}>{children}</LayoutsContext.Provider>;
-    };
+  // Layout support removed for simplicity; can be reintroduced externally if needed
 
-  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, RouteLayouts, useRoutingDebug, routes: defs, defs, store, history };
+  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, useRoutingDebug, routes: defs, defs, store, history };
 }
