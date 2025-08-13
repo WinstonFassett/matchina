@@ -189,6 +189,38 @@ Model as stacked chain scopes:
   * Add `StoreMachine.resolveExit()` (non-mutating probe).
   * Add traffic-light example and a router-chain demo.
 
+## Chosen Semantics: Embedded Hierarchy (state HAS a machine)
+
+* __Parent-state convention__
+  * A state is hierarchical iff `state.data?.machine` exists and is a machine.
+  * The child’s substate is accessed at `state.data.machine.getState()`.
+
+* __Event routing (child-first)__
+  * On any event to the parent machine, first attempt to send it to `state.data.machine`.
+  * If the child changes state (handled), the parent does nothing (abort parent handling).
+  * If the child does not change, the parent handles the event normally.
+
+* __Deep hierarchy__
+  * Apply the same lifecycle wiring to every machine instance you want hierarchical behavior on.
+  * If a child’s current state also has a `data.machine`, its own hook will route further down—no explicit recursion required.
+
+* __Branding and type guards (functional, no instanceof)__
+  * Introduce a non-enumerable brand symbol at machine construction time, e.g. `MATCHINA_MACHINE = Symbol('matchina.machine')`.
+  * Attach via `Object.defineProperty(machine, MATCHINA_MACHINE, { value: true })` inside machine factories.
+  * Public predicates:
+    * `isMachine(x): x is AnyMachine`
+    * Optionally `isFactoryMachine(x)`, `isStoreMachine(x)` for subtype checks.
+  * Hierarchical detection helper: `isHierarchicalState(state) => isMachine(state?.data?.machine)`.
+
+* __Implementation vehicle (no core changes required)__
+  * Use lifecycle `handle` hook to implement child-first routing.
+  * Minimal helper (applied with `setup(machine)(handle(...))`) can snapshot child state before/after to infer handling.
+  * Later, switch helper to branded `isMachine` checks once branding lands.
+
+* __Creation/teardown policy__
+  * Child machine creation can occur either in the parent state factory or in the parent `enter` hook; teardown in `leave`.
+  * Examples will show state-factory creation to mirror prior patterns; both approaches are compatible with routing.
+
 ## Summary
 
 Minimal HSM runtime that composes existing machines, adds deterministic bubbling and retention, and maps 1:1 to router/viewer architecture. Small surface, type-friendly, and practical.
