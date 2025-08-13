@@ -213,19 +213,23 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const t = toMap.get(name) || null;
       const enteringOrExiting = (!!f) !== (!!t);
       const paramsChanged = !!f && !!t && !shallowEqual(f.params, t.params);
-      const isPivot = !!p.viewer && (enteringOrExiting || paramsChanged);
-      if (isPivot) {
+      if (p.viewer) {
         const Viewer = p.viewer as React.FC<_ViewerProps>;
-        const toInfo = t ? toInfoOf(t as any) : null;
-        const fromInfo = f ? toInfoOf(f as any) : null;
+        const V = p.view as React.ComponentType<any> | undefined;
+        const buildPath = (nm: RouteName, params: any) => ((defs as any).toPath ? (defs as any).toPath(nm, params) : (defs as any).buildPath(nm, params));
+        const toInfo = t ? ({ key: `${String(t.name)}:${JSON.stringify(t.params ?? {})}`, name: String(t.name), params: t.params, path: buildPath(t.name, t.params) }) : null;
+        const fromInfo = f ? ({ key: `${String(f.name)}:${JSON.stringify(f.params ?? {})}`, name: String(f.name), params: f.params, path: buildPath(f.name, f.params) }) : null;
         const direction: _Direction = mapDirection(change?.type);
+        const fromNode = V && f ? <V {...(f.params || {})} /> : null;
+        const toNode = renderSubtree(name, false);
+        const scopedChange = { type: change?.type ?? 'replace', from: fromInfo, to: toInfo } as _RouterChange;
         return (
           <Viewer
-            change={{ type: change?.type ?? 'replace', from: fromInfo, to: toInfo } as _RouterChange}
+            change={scopedChange}
             from={fromInfo}
             to={toInfo}
-            fromNode={renderSubtree(name, true)}
-            toNode={renderSubtree(name, false)}
+            fromNode={fromNode}
+            toNode={toNode}
             direction={direction}
             keep={p.keep ?? keep}
             classNameBase={p.classNameBase ?? classNameBase}
@@ -292,13 +296,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       </a>
     );
   };
-  
-  // Helper: convert RouteMatch to RouteMatchInfo used by viewers
-  function toInfoOf(m: RouteMatch<RouteName, any>): _RouteMatchInfo {
-    const paramKey = JSON.stringify(m.params ?? {});
-    const path = (defs as any).toPath ? (defs as any).toPath(m.name, m.params) : (defs as any).buildPath(m.name, m.params);
-    return { key: `${String(m.name)}:${paramKey}`, name: String(m.name), params: m.params, path } as _RouteMatchInfo;
-  }
+
 
   // Helper: map store change type to direction hint
   function mapDirection(t?: string): _Direction {
