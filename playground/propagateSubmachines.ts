@@ -62,7 +62,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
             const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
             if (handled) {
-              const looksExit = !after?.data?.machine && !after?.machine;
+              const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
                 const beforeParent = machine.getState();
@@ -87,7 +87,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
             const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
             if (handled) {
-              const looksExit = !after?.data?.machine && !after?.machine;
+              const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
                 const beforeParent = machine.getState();
@@ -133,7 +133,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
         const handledByState = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
         const handled = handledByState || lastDuckInvoked;
         if (handled) {
-          const looksExit = !after?.data?.machine && !after?.machine;
+          const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
             const beforeParent = machine.getState();
