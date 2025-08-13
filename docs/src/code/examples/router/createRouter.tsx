@@ -49,14 +49,15 @@ export function createRouter<const Patterns extends Record<string, string>>(
     useHash: boolean;
     change: any | null;
     path: string; // current path from store entry
+
   };
 
   const RouterContext = createContext<Ctx | null>(null);
   // Discriminated union per route name so TS narrows `view` props based on `name`
   type RouteProps = {
     [K in RouteName]:
-      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode })
-      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode })
+      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode; index?: boolean })
+      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode; index?: boolean })
   }[RouteName];
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -141,7 +142,16 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const p: any = node.props;
       if (p.view) {
         const V = p.view as React.ComponentType<any>;
-        return <V {...(params || {})}>{children}</V>;
+        // If no children provided, auto-render index child if present
+        let content = children;
+        if (content == null) {
+          const maybeChildren = childSets.get(p.name as RouteName) ?? [];
+          const indexChild = maybeChildren.find((c) => (c.props as any)?.index === true);
+          if (indexChild) {
+            content = renderView(indexChild as Node, params, undefined);
+          }
+        }
+        return <V {...(params || {})}>{content}</V>;
       }
       if (p.element) {
         // element nesting can't inject children safely; return as-is
@@ -210,7 +220,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     // helper: compose a "from" node using change.from path and JSX-declared chain
     function renderFromViaChange(): React.ReactNode | null {
-      const prev = prevToRef.current;
+      const prev = getMatchFromState(change?.from ?? null) ?? prevToRef.current;
       if (!prev) return null;
       let nm = prev.name as RouteName;
       let node = index.get(nm);
@@ -229,7 +239,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     function renderWithViewer(fromNode: React.ReactNode | null, toNode: React.ReactNode | null): React.ReactNode {
       const toInfo = to ? toInfoOf(to) : null;
-      const fromMatch = prevToRef.current;
+      const fromMatch = getMatchFromState(change?.from ?? null) ?? prevToRef.current;
       const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
       const direction: _Direction = mapDirection(change?.type);
       const Viewer = viewer!;
