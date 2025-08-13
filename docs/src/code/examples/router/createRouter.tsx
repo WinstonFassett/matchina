@@ -111,6 +111,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
   }> = ({ children, viewer, keep, classNameBase }) => {
     const { to, defs, path, change } = useRouterContext();
     const prevToRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
+    let wrappedByDescendantViewer = false;
     if (!to) return null;
 
     // Build a name->node map preserving nesting structure
@@ -154,6 +155,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const toRendered = <V {...(params || {})}>{content}</V>;
         // If this route declares its own viewer, wrap only this subtree
         if (!opts?.disableViewerWrap && p.viewer) {
+          wrappedByDescendantViewer = true;
           return renderWithViewerScoped(p.viewer as React.FC<_ViewerProps>, p.name as RouteName, params, toRendered, p.keep, p.classNameBase);
         }
         return toRendered;
@@ -191,8 +193,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
         }
       }
       if (rendered != null) {
-        // Top-level viewer support: also compute from-node and wrap when viewer provided
-        if (viewer) {
+        // Top-level viewer support: wrap only if no descendant viewer has already wrapped
+        if (viewer && !wrappedByDescendantViewer) {
           const toNode = rendered;
           const fromNode = renderFromViaChange();
           return renderWithViewer(fromNode, toNode);
@@ -216,7 +218,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       rendered = renderView(parentNode, to.params, rendered);
       currentName = parentName;
     }
-    if (viewer) {
+    if (viewer && !wrappedByDescendantViewer) {
       const toNode = rendered as React.ReactNode;
       const fromNode = renderFromViaChange();
       return renderWithViewer(fromNode, toNode) as React.ReactElement;
