@@ -47,9 +47,9 @@ This document proposes a reusable, adapter-agnostic approach to parallel view tr
 2. Expose `from` in a compatible way for transition snapshots:
    - For now, store the last rendered match as `prevTo` whenever a new `to` appears (post-render effect). This gives us a snapshot for the outgoing view.
    - In future, the store could expose `change.from/to` consistently (guards/loaders may vary timing). We already plumb `change` in context; we’ll prefer `change` if present; fallback to `prevTo` if not.
-3. In `Routes`, instead of returning a single rendered node, pass it through a Viewer boundary:
-   - `viewer.render({ from: prevMatch, to: currentMatch, renderNode })` where `renderNode(match)` produces the ReactNode for a specific route name+params using the existing logic.
-   - If no viewer, `renderNode(to)` directly.
+3. In `Routes`, instead of returning a single rendered node, we compose nodes for both sides and pass them through a Viewer boundary:
+   - The adapter composes a ReactNode for a given match (using current logic) and provides `fromNode` and `toNode` to the viewer along with the full `change` object.
+   - If no viewer is present at this scope, we return `toNode` directly (immediate render).
 4. For nesting:
    - Each nested `<Route>` can supply its own `viewer`. The `Routes` composer will insert a Viewer at each level that requests one.
    - Composition order: leaf is rendered first; then parents wrap it. When a parent has a `viewer`, it wraps its child subtree with that viewer.
@@ -57,18 +57,35 @@ This document proposes a reusable, adapter-agnostic approach to parallel view tr
 
 ## Viewer responsibilities and contract
 
-- Props:
+- Props (no render callbacks; nodes are provided):
 ```ts
+interface RouteMatchInfo {
+  key: string;              // `${name}:${stableParams}`
+  name: string;
+  params: any;
+  path: string;
+}
+
+type Direction = 'forward' | 'back' | 'replace';
+
+interface RouterChange {
+  type: 'push' | 'replace' | 'pop' | 'redirect' | 'reset' | 'complete' | 'fail';
+  from: RouteMatchInfo | null;
+  to: RouteMatchInfo | null;
+  timestamp?: number;
+  reason?: string;
+}
+
 interface ViewerProps {
-  // Identification for keys: use something stable for React reconciliation
-  key?: React.Key;
-  // Matched route info (name, params, path) for outgoing/incoming
-  from: { key: string; name: string; params: any } | null;
-  to: { key: string; name: string; params: any } | null;
-  // Children factory for each side; Viewer decides when to render and keep which
-  render: (which: 'from' | 'to') => React.ReactNode;
-  // Optional: direction hint ('forward' | 'back') from history/store
-  direction?: 'forward' | 'back' | 'replace';
+  change: RouterChange;                 // full change event
+  from: RouteMatchInfo | null;
+  to: RouteMatchInfo | null;
+  fromNode: React.ReactNode | null;     // pre-rendered outgoing node
+  toNode: React.ReactNode | null;       // pre-rendered incoming node
+  direction: Direction;                 // derived from store/history
+  keep?: number;                        // SWUP-like keep N previous (default 0)
+  onSettled?: () => void;               // after both sides finish
+  classNameBase?: string;               // theme base, e.g., 'transition-slide'
 }
 ```
 
@@ -78,12 +95,16 @@ interface ViewerProps {
   - Listen for transitionend/animationend for both items; once both are finished (or a timeout), unmount `from`.
   - On interrupted navigation (another change before complete), cancel the previous animation (best-effort) and start a new cycle.
 
-- Suggested DOM shape:
+- Suggested DOM shape (SWUP-style classes):
 ```html
-<div class="vt-scope vt-<mode>" data-vt-scope>
-  <div class="vt-layer vt-from" data-vt="from">{from}</div>
-  <div class="vt-layer vt-to" data-vt="to">{to}</div>
-</div>
+<section class="is-changing" data-vt-dir="forward">
+  <div class="transition-slide is-next-container">{to}</div>
+  <div class="transition-slide is-previous-container" aria-hidden="true">{from}</div>
+  <!-- kept examples -->
+  <div class="transition-slide is-previous-container is-kept-container" aria-hidden="true"></div>
+  <div class="transition-slide is-previous-container is-kept-container is-removing-container" aria-hidden="true"></div>
+  <!-- viewer may add inert to previous containers when supported -->
+</section>
 ```
 
 - Accessibility:
@@ -94,36 +115,43 @@ interface ViewerProps {
 
 ## CSS contract (SWUP-style conventions)
 
-- Classes on scope during phases:
-  - `vt-entering`, `vt-exiting` on scope.
-  - `vt-parallel` while both exist.
-- Classes on layers:
-  - `.vt-from` and `.vt-to` are always present.
-- Example slide implementation:
+- Scope: `.is-changing` during a transition; `data-vt-dir="forward|back|replace"` for direction variants.
+- Layers use a common base class (e.g., `.transition-slide`) and roles:
+  - Incoming: `.is-next-container`
+  - Outgoing: `.is-previous-container`
+  - Kept: `.is-kept-container` (older previous kept around)
+  - Being removed: `.is-removing-container`
+
+Example slide implementation:
 
 ```css
-[data-vt-scope] { position: relative; overflow: hidden; }
-[data-vt-scope] .vt-layer { position: absolute; inset: 0; will-change: transform, opacity; }
+/* Scope container */
+[data-vt-dir] { position: relative; overflow: hidden; }
+.transition-slide { position: absolute; inset: 0; will-change: transform, opacity; }
 
-/* Parallel phase */
-[data-vt-scope].vt-parallel .vt-from { z-index: 0; }
-[data-vt-scope].vt-parallel .vt-to   { z-index: 1; }
+/* Z-order */
+.is-changing .transition-slide.is-next-container { z-index: 2; }
+.is-changing .transition-slide.is-previous-container { z-index: 1; }
 
-/* Slide-left (forward) */
-[data-vt-scope].vt-entering[data-vt-dir="forward"] .vt-to   { animation: vt-slide-in-left 250ms ease both; }
-[data-vt-scope].vt-exiting[data-vt-dir="forward"]  .vt-from { animation: vt-slide-out-left 250ms ease both; }
+/* Forward */
+.is-changing[data-vt-dir="forward"] .transition-slide.is-next-container { animation: slide-in-left 250ms ease both; }
+.is-changing[data-vt-dir="forward"] .transition-slide.is-previous-container { animation: slide-out-left 250ms ease both; }
 
-/* Slide-right (back) */
-[data-vt-scope].vt-entering[data-vt-dir="back"] .vt-to   { animation: vt-slide-in-right 250ms ease both; }
-[data-vt-scope].vt-exiting[data-vt-dir="back"]  .vt-from { animation: vt-slide-out-right 250ms ease both; }
+/* Back */
+.is-changing[data-vt-dir="back"] .transition-slide.is-next-container { animation: slide-in-right 250ms ease both; }
+.is-changing[data-vt-dir="back"] .transition-slide.is-previous-container { animation: slide-out-right 250ms ease both; }
 
-@keyframes vt-slide-in-left   { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes vt-slide-out-left  { from { transform: translateX(0); }   to { transform: translateX(-12%); opacity: .9; } }
-@keyframes vt-slide-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
-@keyframes vt-slide-out-right { from { transform: translateX(0); }   to { transform: translateX(12%); opacity: .9; } }
+/* Kept removal */
+.transition-slide.is-removing-container { animation: slide-far-left 250ms ease both; }
+
+@keyframes slide-in-left   { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes slide-out-left  { from { transform: translateX(0); }   to { transform: translateX(-12%); opacity: .9; } }
+@keyframes slide-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
+@keyframes slide-out-right { from { transform: translateX(0); }   to { transform: translateX(12%); opacity: .9; } }
+@keyframes slide-far-left  { from { transform: translateX(-100%);} to { transform: translateX(-200%); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-vt-scope] .vt-layer { animation: none !important; transition: none !important; }
+  .transition-slide { animation: none !important; transition: none !important; }
 }
 ```
 
