@@ -52,11 +52,9 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
   const matchParams = (path: string) => (opts.matchPath ? opts.matchPath(path) : opts.match!(path));
   const matchChain = (path: string) => (opts.matchAllPaths ? opts.matchAllPaths(path) : (matchAllRoutes ? matchAllRoutes(path) : null));
 
-  async function resolve(pathFull: string) {
-    console.debug('[history.resolve]', { pathFull, stripped: stripQueryHash(pathFull) });
-
+  async function maybeGuardAndLoad(pathFull: string) {
+    // Optional: run guard/loader for side-effects or prefetching; store state is just path
     try {
-      // guard first (use full URL path including search/hash)
       if (guard) {
         const rawPath = pathFull;
         const path = stripQueryHash(pathFull);
@@ -66,31 +64,21 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
         const chain = (matchChain(path) || (route ? [route] : []));
         const allowOrRedirect = await guard({ fullPath: rawPath, path, params, route, chain });
         if (typeof allowOrRedirect === "string") {
-          // redirect and stop
           apply("redirect", normalize(allowOrRedirect, ""));
-          return;
+          return false;
         }
       }
-
-      const path = stripQueryHash(pathFull);
-      let params = await matchParams(path);
       if (loader) {
+        const path = stripQueryHash(pathFull);
         const routeMatcher = matchRouteByPath ?? matchRoute;
         const route = routeMatcher ? routeMatcher(path) : null;
         const chain = (matchChain(path) || (route ? [route] : []));
-        const extra = await loader({ path, params, route, chain });
-        if (extra && typeof extra === "object") {
-          params = { ...(params ?? {}), ...extra } as Record<string, unknown>;
-        }
+        await loader({ path, params: await matchParams(path), route, chain });
       }
-      if (params) {
-        store.dispatch("complete", params as Record<string, unknown>);
-      } else {
-        store.dispatch("fail", "No match");
-      }
-    } catch (e: any) {
-      store.dispatch("fail", e?.message || "Navigation failed");
+    } catch {
+      // ignore loader/guard errors for minimal store
     }
+    return true;
   }
 
   function generateKey() {
@@ -109,27 +97,25 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
       window.history.replaceState(state, "", url);
     }
     store.dispatch(mode, path);
-    void resolve(path);
+    void maybeGuardAndLoad(path);
   }
 
   function start() {
     // Initialize from current location
     const initialPath = getPathFromLocation({ base, useHash });
-    // Replace current entry to align store with URL
     store.dispatch("replace", initialPath);
-    void resolve(initialPath);
+    void maybeGuardAndLoad(initialPath);
 
     window.addEventListener("popstate", () => {
       const path = getPathFromLocation({ base, useHash });
-      // Treat as replace of current entry
       store.dispatch("replace", path);
-      void resolve(path);
+      void maybeGuardAndLoad(path);
     });
     if (useHash) {
       window.addEventListener("hashchange", () => {
         const path = getPathFromLocation({ base, useHash });
         store.dispatch("replace", path);
-        void resolve(path);
+        void maybeGuardAndLoad(path);
       });
     }
   }
@@ -140,7 +126,7 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
     replace: (path: string) => apply("replace", path),
     redirect: (path: string) => apply("redirect", path),
     back: () => window.history.back(),
-    current: () => store.getState().stack[store.getState().index] ?? null,
+    current: () => ({ path: store.getState().path }),
   };
 }
 
