@@ -71,51 +71,57 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       setKept((prev) => prev.slice(0, keep));
     }
 
-    // Mark changing + direction
-    scope.classList.add("is-changing");
+    // Set direction attribute immediately
     scope.setAttribute("data-vt-dir", direction);
 
-    const cleanup = () => {
+    // Start animations on the next frame to ensure DOM is painted
+    const rafId = requestAnimationFrame(() => {
       if (cycleId !== cycleIdRef.current) return; // interrupted
-      scope.classList.remove("is-changing");
-      onSettled?.();
-    };
+      scope.classList.add("is-changing");
 
-    // Wait for animations on both the immediate previous and next layers
-    const collectAnimated = () => {
-      const layers = scope.querySelectorAll(`.${classNameBase}`);
-      return Array.from(layers) as HTMLElement[];
-    };
+      const cleanup = () => {
+        if (cycleId !== cycleIdRef.current) return; // interrupted
+        scope.classList.remove("is-changing");
+        onSettled?.();
+      };
 
-    const animated = collectAnimated();
-    let remaining = animated.length;
-    if (remaining === 0) {
-      cleanup();
-      return;
-    }
+      // Only wait on the immediate next and previous containers (exclude kept history)
+      const animated = Array.from(
+        scope.querySelectorAll(`.${classNameBase}.is-next-container, .${classNameBase}.is-previous-container:not(.is-kept-container)`) as NodeListOf<HTMLElement>
+      );
+      let remaining = animated.length;
+      if (remaining === 0) {
+        cleanup();
+        return;
+      }
 
-    const done = () => {
-      remaining -= 1;
-      if (remaining <= 0) cleanup();
-    };
+      const endEvents = ["animationend", "transitionend"] as const;
+      const seen = new WeakSet<EventTarget>();
+      const onEnd = (target: EventTarget | null) => {
+        if (!target || seen.has(target)) return;
+        seen.add(target);
+        remaining -= 1;
+        if (remaining <= 0) cleanup();
+      };
 
-    const timeout = window.setTimeout(() => {
-      cleanup();
-    }, 1200);
-
-    const endEvents = ["animationend", "transitionend"] as const;
-    animated.forEach((el) => {
-      const handler = () => done();
-      endEvents.forEach((ev) => el.addEventListener(ev, handler, { once: true } as any));
+      animated.forEach((el) => {
+        endEvents.forEach((ev) =>
+          el.addEventListener(
+            ev,
+            (e) => onEnd(e.currentTarget),
+            { once: true } as any
+          )
+        );
+      });
     });
 
     return () => {
-      window.clearTimeout(timeout);
+      cancelAnimationFrame(rafId);
       if (cycleId === cycleIdRef.current) {
         scope.classList.remove("is-changing");
       }
     };
-  }, [to?.key]);
+  }, [to?.key, direction, keep]);
 
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
