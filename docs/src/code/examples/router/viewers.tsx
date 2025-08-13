@@ -34,86 +34,59 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const scopeRef = React.useRef<HTMLDivElement | null>(null);
   const [kept, setKept] = React.useState<Array<{ id: string; node: React.ReactNode }>>([]);
 
-  // Track current cycle id to cancel previous listeners on interrupt
-  const cycleIdRef = React.useRef(0);
+  // Track previous render node and key so we can display it when keep>0
+  const prevKeyRef = React.useRef<string | null>(null);
+  const prevNodeRef = React.useRef<React.ReactNode>(null);
+  const currKey = React.useMemo(() => {
+    const m: any = match ?? (change as any)?.to ?? null;
+    if (!m) return null;
+    const name = m.name ?? m.key ?? 'unknown';
+    const params = m.params ?? {};
+    try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
+  }, [match, (change as any)?.to]);
 
-  // Whenever 'to' changes, start a new parallel phase
+  // On key change, if keep>0 capture previous node
+  React.useEffect(() => {
+    if (!currKey) return;
+    const prevKey = prevKeyRef.current;
+    if (prevKey && keep > 0 && prevNodeRef.current) {
+      setKept([{ id: String(prevKey), node: prevNodeRef.current }]);
+    } else {
+      // if no keep, clear kept
+      if (keep <= 0) setKept([]);
+    }
+    prevKeyRef.current = currKey;
+    prevNodeRef.current = children;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currKey, keep]);
+
+  // Ensure dir attribute is applied; no animation waiting in this debug mode
   React.useEffect(() => {
     const scope = scopeRef.current;
     if (!scope) return;
-    const cycleId = ++cycleIdRef.current;
-
-    // Update kept stack
-    setKept((prev) => prev.slice(0, keep));
-
-    // Set direction attribute immediately
     scope.setAttribute("data-vt-dir", direction);
-
-    // Start animations on the next frame to ensure DOM is painted
-    const rafId = requestAnimationFrame(() => {
-      if (cycleId !== cycleIdRef.current) return; // interrupted
-      scope.classList.add("is-changing");
-
-      const cleanup = () => {
-        if (cycleId !== cycleIdRef.current) return; // interrupted
-        scope.classList.remove("is-changing");
-        onSettled?.();
-      };
-
-      // Only wait on the immediate next and previous containers (exclude kept history)
-      const animated = Array.from(
-        scope.querySelectorAll(`.${classNameBase}.is-next-container, .${classNameBase}.is-previous-container:not(.is-kept-container)`) as NodeListOf<HTMLElement>
-      );
-      let remaining = animated.length;
-      if (remaining === 0) {
-        cleanup();
-        return;
-      }
-
-      const endEvents = ["animationend", "transitionend"] as const;
-      const seen = new WeakSet<EventTarget>();
-      const onEnd = (target: EventTarget | null) => {
-        if (!target || seen.has(target)) return;
-        seen.add(target);
-        remaining -= 1;
-        if (remaining <= 0) cleanup();
-      };
-
-      animated.forEach((el) => {
-        endEvents.forEach((ev) =>
-          el.addEventListener(
-            ev,
-            (e) => onEnd(e.currentTarget),
-            { once: true } as any
-          )
-        );
-      });
-    });
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      if (cycleId === cycleIdRef.current) {
-        scope.classList.remove("is-changing");
-      }
-    };
-  }, [change?.to?.key, direction, keep]);
-
-  const route = ((match as any) ?? (change as any)?.to ?? null) as { name?: string; params?: any } | null;
+  }, [direction]);
 
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
-      {/* Viewer owns DOM; this is just a transition scope container. */}
-      <div className={`${classNameBase} is-next-container`}>{children ?? null}</div>
-      {/* kept history */}
+      {/* Previous (pink) */}
       {kept.map((k, i) => (
         <div
           key={k.id + ":" + i}
-          className={`${classNameBase} is-previous-container is-kept-container`}
+          className={`${classNameBase} is-previous-container`}
           aria-hidden="true"
+          style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         >
           {k.node}
         </div>
       ))}
+      {/* Current (green) */}
+      <div
+        className={`${classNameBase} is-next-container`}
+        style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
+      >
+        {children ?? null}
+      </div>
     </div>
   );
 }

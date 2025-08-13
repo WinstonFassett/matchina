@@ -116,9 +116,36 @@ export function createRouter<const Patterns extends Record<string, string>>(
     if (!viewer) return null;
     const direction: _Direction = mapDirection(change?.type);
     const TopV = viewer as React.FC<_ViewerProps>;
-    const autoChild = to && views && views[to.name as any]
+
+    // Determine if current match is within this level's scope
+    const inScope = Boolean(to && views && (views as any)[to.name as any]);
+    // Build the auto child only when in-scope
+    const autoChild = inScope && to && views
       ? React.createElement(views[to.name as any] as React.ComponentType<any>, { ...(to as any).params })
       : null;
+
+    // Track previous stable scope key to detect local changes.
+    // Key = effective view component identity only (ignore params).
+    // Outer levels (e.g., site shell) won't render exits when only params change beneath them.
+    const prevScopeKeyRef = React.useRef<string | null>(null);
+    const currScopeKey = React.useMemo(() => {
+      if (!inScope || !to || !views) return null;
+      const view = views[to.name as any] as React.ComponentType<any> | undefined;
+      if (!view) return null;
+      const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
+      return viewId as string;
+    }, [inScope, to, views]);
+    const scopeChanged = React.useMemo(() => {
+      const prev = prevScopeKeyRef.current;
+      return Boolean(currScopeKey && prev && currScopeKey !== prev);
+    }, [currScopeKey]);
+    React.useEffect(() => {
+      if (currScopeKey) prevScopeKeyRef.current = currScopeKey;
+    }, [currScopeKey]);
+
+    // If keep is not provided by caller, auto-derive it from scope change
+    const effectiveKeep = keep ?? (scopeChanged ? 1 : 0);
+
     const content = (
       <>
         {autoChild}
@@ -126,7 +153,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       </>
     );
     return (
-      <TopV change={change} direction={direction} keep={keep} classNameBase={classNameBase} match={to as any}>
+      <TopV change={change} direction={direction} keep={effectiveKeep} classNameBase={classNameBase} match={to as any}>
         {content}
       </TopV>
     );
