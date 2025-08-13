@@ -109,6 +109,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     classNameBase?: string;
   }> = ({ children, viewer, keep, classNameBase }) => {
     const { to, defs, path, change } = useRouterContext();
+    const prevToRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
     if (!to) return null;
 
     // Build a name->node map preserving nesting structure
@@ -209,7 +210,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     // helper: compose a "from" node using change.from path and JSX-declared chain
     function renderFromViaChange(): React.ReactNode | null {
-      const prev = getMatchFromState(change?.from ?? null);
+      const prev = prevToRef.current;
       if (!prev) return null;
       let nm = prev.name as RouteName;
       let node = index.get(nm);
@@ -228,7 +229,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     function renderWithViewer(fromNode: React.ReactNode | null, toNode: React.ReactNode | null): React.ReactNode {
       const toInfo = to ? toInfoOf(to) : null;
-      const fromMatch = getMatchFromState(change?.from ?? null);
+      const fromMatch = prevToRef.current;
       const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
       const direction: _Direction = mapDirection(change?.type);
       const Viewer = viewer!;

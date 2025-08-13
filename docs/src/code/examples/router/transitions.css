@@ -2,7 +2,10 @@
 
 /* Scope container */
 [data-vt-dir] { position: relative; overflow: hidden; }
-.transition-slide { position: absolute; inset: 0; will-change: transform, opacity; }
+/* Default: stack participates in layout so content is visible when idle */
+.transition-slide { position: relative; will-change: transform, opacity; }
+/* During change: overlap layers */
+.is-changing .transition-slide { position: absolute; inset: 0; }
 
 /* Z-order */
 .is-changing .transition-slide.is-next-container { z-index: 2; }
