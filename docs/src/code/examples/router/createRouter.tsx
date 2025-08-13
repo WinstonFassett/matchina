@@ -154,7 +154,41 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const getChain = (pathStr: string | undefined | null): ChainEntry[] => {
       if (!pathStr) return [];
       const mAll = (defs as any).matchAllPaths?.(pathStr) as Array<{ name: string; params: any }> | undefined;
-      if (Array.isArray(mAll) && mAll.length) return mAll as ChainEntry[];
+      if (Array.isArray(mAll) && mAll.length) {
+        // Map present names → params
+        const present = new Map<RouteName, any>();
+        for (const e of mAll as any as ChainEntry[]) present.set(e.name, e.params);
+        // Pick deepest present name (no present descendants)
+        const hasPresentDesc = (nm: RouteName): boolean => {
+          const kids = childSets.get(nm) ?? [];
+          for (const k of kids) {
+            const kn = k.props.name as RouteName;
+            if (present.has(kn)) return true;
+            if (hasPresentDesc(kn)) return true;
+          }
+          return false;
+        };
+        let leaf: RouteName | null = null;
+        for (const nm of present.keys()) {
+          if (!hasPresentDesc(nm as RouteName)) { leaf = nm as RouteName; break; }
+        }
+        if (!leaf) {
+          // Fallback: choose any present name deterministically
+          for (const nm of present.keys()) { leaf = nm as RouteName; break; }
+        }
+        if (!leaf) return [];
+        // Use leaf params for ancestors unless they have their own
+        const chain: ChainEntry[] = [];
+        let cur: RouteName | undefined = leaf;
+        while (cur) {
+          const params = present.get(cur) ?? present.get(leaf);
+          chain.unshift({ name: cur, params });
+          const p = parentOf.get(cur);
+          if (!p) break;
+          cur = p as RouteName;
+        }
+        return chain;
+      }
       const m = defs.matchPath(pathStr) as RouteMatch<RouteName, any> | null;
       if (!m) return [];
       // Fallback: synthesize a chain by walking JSX-declared parents from the leaf
@@ -208,6 +242,16 @@ export function createRouter<const Patterns extends Record<string, string>>(
       if (!n) return null;
       const p: any = n.props;
       const childrenOf = childSets.get(name) ?? [];
+      // Helper: does any descendant of 'name' exist in the toMap?
+      const hasToDescendant = (root: RouteName): boolean => {
+        const kids = childSets.get(root) ?? [];
+        for (const k of kids) {
+          const kName = k.props.name as RouteName;
+          if (toMap.has(kName)) return true;
+          if (hasToDescendant(kName)) return true;
+        }
+        return false;
+      };
       // Determine pivot at this level
       const f = fromMap.get(name) || null;
       const t = toMap.get(name) || null;
@@ -242,7 +286,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       let childOut: React.ReactNode | undefined;
       for (const cn of childrenOf) {
         const cnName = cn.props.name as RouteName;
-        if (toMap.has(cnName) || (cn.props as any)?.index === true) {
+        if (toMap.has(cnName) || hasToDescendant(cnName) || (cn.props as any)?.index === true) {
           childOut = renderRoute(cnName);
           break;
         }
