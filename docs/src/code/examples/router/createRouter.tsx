@@ -312,13 +312,28 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const childTo = underTo ? childUnder(rootName, toMatch!.name as RouteName) : null;
       const childChanged = !!(childFrom && childTo && childFrom !== childTo);
 
-      // Pivot logic:
-      // - If entering/exiting this scope: animate here.
-      // - Else if child segment changed: do NOT animate here (let child scope handle it).
-      // - Else if params changed but child segment did not: animate here (this scope changed),
-      //   EXCEPT when this scope is a leaf (no children) — in that case, treat it as ancestor-only change and do not animate here.
-      // - Else: no animation here.
-      if (!enteringOrExiting && childChanged) {
+      // Compute parent change to suppress descendant animations on ancestor param changes
+      const parentName = parentOf.get(rootName);
+      const parentUnderFrom = parentName ? isUnder(parentName as RouteName, prev) : false;
+      const parentUnderTo = parentName ? isUnder(parentName as RouteName, to) : false;
+      const parentParamsChanged = parentName && parentUnderFrom && parentUnderTo
+        ? !shallowEqual((prev as any).params, (to as any)?.params)
+        : false;
+
+      // Pivot logic (priority):
+      // 1) If entering/exiting OR paramsChanged at this scope -> animate here.
+      //    However, if entering/exiting is true due purely to ancestor param change, suppress here.
+      // 2) Else if child segment changed -> skip here (child animates).
+      // 3) Else if nothing changed -> skip.
+      if (enteringOrExiting || paramsChanged) {
+        // Suppress child when ancestor (parent) params changed and we're just entering/exiting child due to that change
+        if (enteringOrExiting && parentParamsChanged) {
+          return toRendered;
+        }
+        // fall through to animate at this scope
+      } else if (childChanged) {
+        return toRendered;
+      } else {
         return toRendered;
       }
       const hasChildren = (childSets.get(rootName) ?? []).length > 0;
