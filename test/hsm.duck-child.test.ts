@@ -40,7 +40,8 @@ describe("HSM routing: duck-typed child and bogus payload", () => {
   }
 
   it("routes to dispatch when child exposes dispatch only", () => {
-    const { m, dispatched } = createParentWithDispatchChild();
+    const parent = createParentWithDispatchChild();
+    const m = parent.m;
     m.send("go");
     expect(m.getState().key).toBe("Working");
 
@@ -51,7 +52,7 @@ describe("HSM routing: duck-typed child and bogus payload", () => {
     const after = m.getState();
 
     expect(before).toBe(after); // parent unchanged
-    expect(dispatched).toEqual({ type: "poke", args: [1, 2, 3] });
+    expect(parent.dispatched).toEqual({ type: "poke", args: [1, 2, 3] });
   });
 
   function createParentWithBogusChild() {

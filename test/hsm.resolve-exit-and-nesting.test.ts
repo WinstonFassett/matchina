@@ -91,13 +91,13 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
     setup(p)(propagateSubmachines(p));
 
     const r = routedFacade(p);
-    expect(p.getState().key).toBe("Run");
+    expect((p as any).getState().key).toBe("Run");
     const before = p.getState();
-    r.send("g");
+    (r as any).send("g");
     const after = p.getState();
     expect(after).toBe(before); // parent unchanged
 
-    const child = p.getState().as("Run").data.machine;
+    const child = (p as any).getState().as("Run").data.machine;
     const grand = child.getState().as("On").data.machine;
     expect(grand.getState().key).toBe("B");
   });

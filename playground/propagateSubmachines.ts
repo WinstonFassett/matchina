@@ -7,7 +7,7 @@ import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 type AnyMachine = { getState(): any; send?: Function; dispatch?: Function };
 
 function getChildFromParentState(state: any): AnyMachine | undefined {
-  const m = state?.data?.machine as any;
+  const m = (state?.machine ?? state?.data?.machine ?? state?.data?.data?.machine) as any;
   if (!m) return undefined;
   if (isMachine(m)) return m as AnyMachine;
   const duck = typeof m?.getState === "function" && (typeof m?.send === "function" || typeof m?.dispatch === "function");
@@ -31,45 +31,118 @@ function statesEqual(a: any, b: any) {
 // Setup function to enable child-first hierarchical routing on a machine.
 // Usage: setup(machine)(propagateSubmachines(machine))
 export function propagateSubmachines<M extends AnyMachine>(machine: M) {
-  // 1) Enhance resolveExit to pre-handle via child when possible
+  // 1) Enhance resolveExit to supply sane defaults for probes
   const enhanceResolve = hookResolveExit((ev: any, next: (ev: any) => any) => {
-    const parentState = machine.getState();
-    const child = getChildFromParentState(parentState);
-    if (!child) return next(ev);
-
-    if (typeof (child as any).resolveExit === "function") {
-      const probe = (child as any).resolveExit({ type: ev.type, params: ev.params, from: child.getState() });
-      if (probe) {
-        trySend(child, ev.type, ...(ev.params ?? []));
-        return undefined;
-      }
-      return next(ev);
-    }
-
-    const before = snapshot(child);
-    trySend(child, ev.type, ...(ev.params ?? []));
-    const after = snapshot(child);
-    return !statesEqual(before, after) ? undefined : next(ev);
+    const from = ev?.from ?? machine.getState();
+    const params = Array.isArray(ev?.params) ? ev.params : [];
+    return next({ ...ev, from, params });
   });
 
   // 2) Additionally, enhance send/dispatch using the library enhancer utilities
   return (target: M) => {
     const disposeResolve = enhanceResolve(target as any);
+    const wrapped = new WeakSet<object>();
+    let lastDuckInvoked = false;
+
+    const wrapChild = () => {
+      const parentState = machine.getState();
+      const child = getChildFromParentState(parentState);
+      if (!child || wrapped.has(child as any)) return () => {};
+      wrapped.add(child as any);
+      const duck = !isMachine(child as any);
+      const unSendChild = typeof (child as any).send === "function"
+        ? enhanceMethod(child as any, "send", (next) => (type: string, ...params: any[]) => {
+            if (duck) lastDuckInvoked = true;
+            const before = snapshot(child);
+            const grandBefore = getChildFromParentState(before);
+            const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
+            const res = (next as any)(type, ...params);
+            const after = snapshot(child);
+            const grandAfter = getChildFromParentState(after);
+            const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
+            const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+            if (handled) {
+              const looksExit = !after?.data?.machine && !after?.machine;
+              if (looksExit) {
+                const id = parentState?.data?.id ?? parentState?.id;
+                const beforeParent = machine.getState();
+                const ev = (machine as any).resolveExit?.({ type: "child.exit", params: [{ id, state: after?.key, data: after?.data }], from: beforeParent });
+                if (ev) {
+                  (machine as any).transition?.(ev);
+                }
+              }
+            }
+            return res;
+          })
+        : () => {};
+      const unDispatchChild = typeof (child as any).dispatch === "function"
+        ? enhanceMethod(child as any, "dispatch", (next) => (type: string, ...params: any[]) => {
+            if (duck) lastDuckInvoked = true;
+            const before = snapshot(child);
+            const grandBefore = getChildFromParentState(before);
+            const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
+            const res = (next as any)(type, ...params);
+            const after = snapshot(child);
+            const grandAfter = getChildFromParentState(after);
+            const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
+            const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+            if (handled) {
+              const looksExit = !after?.data?.machine && !after?.machine;
+              if (looksExit) {
+                const id = parentState?.data?.id ?? parentState?.id;
+                const beforeParent = machine.getState();
+                const ev = (machine as any).resolveExit?.({ type: "child.exit", params: [{ id, state: after?.key, data: after?.data }], from: beforeParent });
+                if (ev) {
+                  (machine as any).transition?.(ev);
+                }
+              }
+            }
+            return res;
+          })
+        : () => {};
+      return () => {
+        unSendChild();
+        unDispatchChild();
+      };
+    };
+    let unwrapChild = wrapChild();
 
     const childFirst = (type: string, ...params: any[]): boolean => {
       const parentState = machine.getState();
       const child = getChildFromParentState(parentState);
       if (child) {
-        if (typeof (child as any).resolveExit === "function") {
-          const probe = (child as any).resolveExit({ type, params, from: child.getState() });
-          if (probe) {
-            trySend(child, type, ...params);
-            return true; // handled by child
+        // Fast-path for duck-typed children that don't expose a nested machine/state change
+        if (!isMachine(child as any)) {
+          if (typeof (child as any).dispatch === "function") {
+            (child as any).dispatch(type, ...params);
+            return true;
           }
-        } else {
-          const before = snapshot(child);
-          trySend(child, type, ...params);
-          if (!statesEqual(before, snapshot(child))) return true; // handled
+          if (typeof (child as any).send === "function") {
+            (child as any).send(type, ...params);
+            return true;
+          }
+        }
+        lastDuckInvoked = false;
+        const before = snapshot(child);
+        const grandBefore = getChildFromParentState(before);
+        const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
+        trySend(child, type, ...params);
+        const after = snapshot(child);
+        const grandAfter = getChildFromParentState(after);
+        const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
+        const handledByState = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+        const handled = handledByState || lastDuckInvoked;
+        if (handled) {
+          const looksExit = !after?.data?.machine && !after?.machine;
+          if (looksExit) {
+            const id = parentState?.data?.id ?? parentState?.id;
+            const beforeParent = machine.getState();
+            const ev = (machine as any).resolveExit?.({ type: "child.exit", params: [{ id, state: after?.key, data: after?.data }], from: beforeParent });
+            if (ev) {
+              (machine as any).transition?.(ev);
+            }
+          }
+          return true;
         }
       }
       // Not handled by child
@@ -80,7 +153,17 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
       ? enhanceMethod(target as any, "send", (next) => (type: string, ...params: any[]) => {
           const handled = childFirst(type, ...params);
           if (handled) return; // child handled
-          return (next as any)(type, ...params);
+          // Pre-resolve to honor immutable self-transition semantics
+          const before = machine.getState();
+          const resolved = (machine as any).resolveExit?.({ type, params, from: before });
+          if (resolved && resolved.to?.key === before.key) {
+            return; // no-op on self-transition to preserve identity
+          }
+          const res = (next as any)(type, ...params);
+          // child may have changed identity; re-wrap
+          unwrapChild();
+          unwrapChild = wrapChild();
+          return res;
         })
       : () => {};
 
@@ -88,12 +171,21 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
       ? enhanceMethod(target as any, "dispatch", (next) => (type: string, ...params: any[]) => {
           const handled = childFirst(type, ...params);
           if (handled) return; // child handled
-          return (next as any)(type, ...params);
+          const before = machine.getState();
+          const resolved = (machine as any).resolveExit?.({ type, params, from: before });
+          if (resolved && resolved.to?.key === before.key) {
+            return;
+          }
+          const res = (next as any)(type, ...params);
+          unwrapChild();
+          unwrapChild = wrapChild();
+          return res;
         })
       : () => {};
 
     return () => {
       disposeResolve();
+      unwrapChild();
       unSend();
       unDispatch();
     };
