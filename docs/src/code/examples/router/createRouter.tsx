@@ -111,7 +111,13 @@ export function createRouter<const Patterns extends Record<string, string>>(
   }> = ({ children, viewer, keep, classNameBase }) => {
     const { to, defs, path, change } = useRouterContext();
     const prevToRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
-    let wrappedByDescendantViewer = false;
+    let wrappedByDescendantViewer = false; // no longer used for gating; will be removed below
+
+    // Track previous successful match for composing fromNode reliably.
+    React.useLayoutEffect(() => {
+      prevToRef.current = to;
+    }, [path, to]);
+
     if (!to) return null;
 
     // Build a name->node map preserving nesting structure
@@ -155,7 +161,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const toRendered = <V {...(params || {})}>{content}</V>;
         // If this route declares its own viewer, wrap only this subtree
         if (!opts?.disableViewerWrap && p.viewer) {
-          wrappedByDescendantViewer = true;
           return renderWithViewerScoped(p.viewer as React.FC<_ViewerProps>, p.name as RouteName, params, toRendered, p.keep, p.classNameBase);
         }
         return toRendered;
@@ -194,10 +199,10 @@ export function createRouter<const Patterns extends Record<string, string>>(
       }
       if (rendered != null) {
         // Top-level viewer support: wrap only if no descendant viewer has already wrapped
-        if (viewer && !wrappedByDescendantViewer) {
+        if (viewer) {
           const toNode = rendered;
           const fromNode = renderFromViaChange();
-          return renderWithViewer(fromNode, toNode);
+          return renderWithViewer(fromNode, toNode) as React.ReactElement;
         }
         return rendered;
       }
@@ -218,7 +223,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       rendered = renderView(parentNode, to.params, rendered);
       currentName = parentName;
     }
-    if (viewer && !wrappedByDescendantViewer) {
+    if (viewer) {
       const toNode = rendered as React.ReactNode;
       const fromNode = renderFromViaChange();
       return renderWithViewer(fromNode, toNode) as React.ReactElement;
@@ -276,7 +281,37 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const prev = getMatchFromState(change?.from ?? null) ?? prevToRef.current;
       const fromMatch = prev && isUnder(rootName, prev) ? prev : null;
       const toMatch = isUnder(rootName, to) ? to : null;
-      const fromNode = fromMatch ? composeSubtree(rootName, fromMatch) : null;
+      const underFrom = !!fromMatch;
+      const underTo = !!toMatch;
+      const shallowEqual = (a: any, b: any) => {
+        if (a === b) return true;
+        if (!a || !b) return false;
+        const ak = Object.keys(a);
+        const bk = Object.keys(b);
+        if (ak.length !== bk.length) return false;
+        for (const k of ak) { if (String(a[k]) !== String((b as any)[k])) return false; }
+        return true;
+      };
+      const paramsChanged = underFrom && underTo ? !shallowEqual(fromMatch!.params, toMatch!.params) : false;
+      const enteringOrExiting = underFrom !== underTo;
+      // If nothing at this scope changed (same params and still under this scope), don't animate here
+      if (!enteringOrExiting && !paramsChanged) {
+        return toRendered;
+      }
+      let fromNode: React.ReactNode | null = underFrom ? composeSubtree(rootName, fromMatch!) : null;
+      // If we are entering this leaf scope from a sibling (tab switch under same parent),
+      // synthesize an outgoing leaf so the viewer can animate both layers.
+      if (!underFrom && underTo && prev) {
+        const parent = parentOf.get(rootName);
+        const prevLeafName = prev.name as RouteName;
+        const prevLeafParent = parentOf.get(prevLeafName);
+        if (parent && prevLeafParent === parent) {
+          const prevLeafNode = index.get(prevLeafName);
+          if (prevLeafNode) {
+            fromNode = renderView(prevLeafNode, prev.params, undefined, { disableViewerWrap: true });
+          }
+        }
+      }
       // toRendered is already the subtree for current route under rootName
       const toInfo = toMatch ? toInfoOf(toMatch as RouteMatch<RouteName, any>) : null;
       const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
