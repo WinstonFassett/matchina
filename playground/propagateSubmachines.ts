@@ -7,8 +7,11 @@ import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 type AnyMachine = { getState(): any; send?: Function; dispatch?: Function };
 
 function getChildFromParentState(state: any): AnyMachine | undefined {
-  const m = state?.data?.machine;
-  return isMachine(m) ? (m as AnyMachine) : undefined;
+  const m = state?.data?.machine as any;
+  if (!m) return undefined;
+  if (isMachine(m)) return m as AnyMachine;
+  const duck = typeof m?.getState === "function" && (typeof m?.send === "function" || typeof m?.dispatch === "function");
+  return duck ? (m as AnyMachine) : undefined;
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
