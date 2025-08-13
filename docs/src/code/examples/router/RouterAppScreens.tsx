@@ -38,13 +38,6 @@ export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ ch
   const nav = useNavigation();
   const { to } = useRouter();
   // Default to Overview tab if landing on /products/:id
-  React.useEffect(() => {
-    if (params?.id) {
-      nav.replace("ProductOverview", { id: params.id })();
-    }
-    // run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (!params) return <div>No params!!</div>;
   const id = params.id;
