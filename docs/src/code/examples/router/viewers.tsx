@@ -3,37 +3,19 @@ import React from "react";
 // Shared types used by the adapter and viewers
 export type Direction = "forward" | "back" | "replace";
 
-export interface RouteMatchInfo {
-  key: string; // `${name}:${stableParams}`
-  name: string;
-  params: any;
-  path: string;
-}
-
-export interface RouterChange {
-  type: "push" | "replace" | "pop" | "redirect" | "reset" | "complete" | "fail";
-  from: RouteMatchInfo | null;
-  to: RouteMatchInfo | null;
-  timestamp?: number;
-  reason?: string;
-}
-
+// Viewers are data-driven; they own DOM. The router passes only the raw change.
 export interface ViewerProps {
   change: any;
-  from: RouteMatchInfo | null;
-  to: RouteMatchInfo | null;
-  fromNode: React.ReactNode | null;
-  toNode: React.ReactNode | null;
-  fromChildNode?: React.ReactNode | null;
-  toChildNode?: React.ReactNode | null;
   direction: Direction;
   keep?: number;
   onSettled?: () => void;
   classNameBase?: string; // e.g., 'transition-slide'
+  match?: { key: string; params: any; path: string } | null;
+  children?: React.ReactNode;
 }
 
-export const ImmediateViewer: React.FC<ViewerProps> = ({ toNode }) => {
-  return <>{toNode}</>;
+export const ImmediateViewer: React.FC<ViewerProps> = () => {
+  return <></>;
 };
 
 // A SWUP-like parallel transitions viewer.
@@ -42,16 +24,12 @@ export const ImmediateViewer: React.FC<ViewerProps> = ({ toNode }) => {
 // - Waits for animationend/transitionend before unmounting previous
 export const SlideViewer: React.FC<ViewerProps> = ({
   change,
-  from,
-  to,
-  fromNode,
-  toNode,
-  fromChildNode,
-  toChildNode,
   direction,
   keep = 0,
   classNameBase = "transition-slide",
   onSettled,
+  match,
+  children,
 }) => {
   const scopeRef = React.useRef<HTMLDivElement | null>(null);
   const [kept, setKept] = React.useState<Array<{ id: string; node: React.ReactNode }>>([]);
@@ -66,16 +44,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     const cycleId = ++cycleIdRef.current;
 
     // Update kept stack
-    const usingChildLevel = !fromNode && !!fromChildNode && !!toChildNode;
-    if ((fromNode && from) || (usingChildLevel && from)) {
-      setKept((prev) => {
-        const prevNode = fromNode ?? fromChildNode!;
-        const next = [{ id: from.key, node: prevNode }, ...prev];
-        return next.slice(0, keep);
-      });
-    } else {
-      setKept((prev) => prev.slice(0, keep));
-    }
+    setKept((prev) => prev.slice(0, keep));
 
     // Set direction attribute immediately
     scope.setAttribute("data-vt-dir", direction);
@@ -127,27 +96,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
         scope.classList.remove("is-changing");
       }
     };
-  }, [to?.key, toChildNode ? (to as any)?.key + "|child" : (to as any)?.key, direction, keep]);
+  }, [change?.to?.key, direction, keep]);
 
-  const usingChildLevel = !fromNode && !!fromChildNode && !!toChildNode;
+  const route = ((match as any) ?? (change as any)?.to ?? null) as { name?: string; params?: any } | null;
+
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
-      {/* incoming */}
-      <div className={`${classNameBase} is-next-container`}>
-        {usingChildLevel ? toChildNode : toNode}
-      </div>
-      {/* outgoing (current) */}
-      {(fromNode || fromChildNode) && (
-        <div className={`${classNameBase} is-previous-container`} aria-hidden="true">
-          {usingChildLevel ? fromChildNode : fromNode}
-        </div>
-      )}
-      {/* base shell when doing child-level dual: keep shell rendered behind */}
-      {usingChildLevel && (
-        <div className={`${classNameBase} is-base-shell`} aria-hidden="true">
-          {toNode}
-        </div>
-      )}
+      {/* Viewer owns DOM; this is just a transition scope container. */}
+      <div className={`${classNameBase} is-next-container`}>{children ?? null}</div>
       {/* kept history */}
       {kept.map((k, i) => (
         <div
@@ -160,4 +116,5 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       ))}
     </div>
   );
-};
+}
+;

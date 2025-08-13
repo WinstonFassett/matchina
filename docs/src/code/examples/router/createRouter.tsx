@@ -3,7 +3,7 @@ import { createRouterStore } from "@lib/src/router-store";
 import { createBrowserHistoryAdapter } from "@lib/src/router-history";
 import { useMachine } from "matchina/react";
 import React, { createContext, useContext } from "react";
-import type { ViewerProps as _ViewerProps, Direction as _Direction, RouteMatchInfo as _RouteMatchInfo, RouterChange as _RouterChange } from "./viewers";
+import type { ViewerProps as _ViewerProps, Direction as _Direction } from "./viewers";
 
 export function createRouter<const Patterns extends Record<string, string>>(
   patterns: Patterns,
@@ -103,249 +103,33 @@ export function createRouter<const Patterns extends Record<string, string>>(
   const Route: React.FC<RouteProps> = () => null;
   const Outlet: React.FC = () => null;
 
+  // Minimal data-only Routes: a tiny adapter you can nest anywhere.
+  // - No child traversal. No chain resolution. Viewers own DOM.
   const Routes: React.FC<{
     children?: React.ReactNode;
-    viewer?: React.FC<_ViewerProps>;
+    viewer?: React.FC<_ViewerProps>; // optional top-level viewer
     keep?: number;
     classNameBase?: string;
-  }> = ({ children, viewer, keep, classNameBase }) => {
-    const { to, defs, path, change } = useRouterContext();
-    const prevToRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
-
-    // Track previous successful match for composing fromNode reliably.
-    React.useLayoutEffect(() => {
-      prevToRef.current = to;
-    }, [path, to]);
-
-    if (!to) return null;
-    // Build name->node index and simple parent map from declared JSX
-    type Node = React.ReactElement<RouteProps> & { props: RouteProps };
-    const childArray = React.Children.toArray(children).filter(React.isValidElement) as Node[];
-    const index = new Map<RouteName, Node>();
-    const childSets = new Map<RouteName, Node[]>();
-    const parentOf = new Map<RouteName, RouteName | undefined>();
-    const walk = (nodes: Node[], parentName?: RouteName) => {
-      for (const n of nodes) {
-        const name = n.props.name as RouteName;
-        index.set(name, n);
-        parentOf.set(name, parentName);
-        if (parentName) {
-          const arr = childSets.get(parentName) ?? [];
-          arr.push(n); childSets.set(parentName, arr);
-        }
-        const kids = React.Children.toArray(n.props.children || []).filter(React.isValidElement) as Node[];
-        if (kids.length) walk(kids, name);
-      }
-    };
-    walk(childArray);
-
-    // Helper: shallow equal params
-    const shallowEqual = (a: any, b: any) => {
-      if (a === b) return true;
-      if (!a || !b) return false;
-      const ak = Object.keys(a), bk = Object.keys(b);
-      if (ak.length !== bk.length) return false;
-      for (const k of ak) if (String(a[k]) !== String((b as any)[k])) return false;
-      return true;
-    };
-
-    // Chain helpers (prefer defs.matchAllPaths if provided)
-    type ChainEntry = { name: RouteName; params: any };
-    const getChain = (pathStr: string | undefined | null): ChainEntry[] => {
-      if (!pathStr) return [];
-      const mAll = (defs as any).matchAllPaths?.(pathStr) as Array<{ name: string; params: any }> | undefined;
-      if (Array.isArray(mAll) && mAll.length) {
-        // Map present names → params
-        const present = new Map<RouteName, any>();
-        for (const e of mAll as any as ChainEntry[]) present.set(e.name, e.params);
-        // Pick deepest present name (no present descendants)
-        const hasPresentDesc = (nm: RouteName): boolean => {
-          const kids = childSets.get(nm) ?? [];
-          for (const k of kids) {
-            const kn = k.props.name as RouteName;
-            if (present.has(kn)) return true;
-            if (hasPresentDesc(kn)) return true;
-          }
-          return false;
-        };
-        let leaf: RouteName | null = null;
-        for (const nm of present.keys()) {
-          if (!hasPresentDesc(nm as RouteName)) { leaf = nm as RouteName; break; }
-        }
-        if (!leaf) {
-          // Fallback: choose any present name deterministically
-          for (const nm of present.keys()) { leaf = nm as RouteName; break; }
-        }
-        if (!leaf) return [];
-        // Use leaf params for ancestors unless they have their own
-        const chain: ChainEntry[] = [];
-        let cur: RouteName | undefined = leaf;
-        while (cur) {
-          const params = present.get(cur) ?? present.get(leaf);
-          chain.unshift({ name: cur, params });
-          const p = parentOf.get(cur);
-          if (!p) break;
-          cur = p as RouteName;
-        }
-        return chain;
-      }
-      const m = defs.matchPath(pathStr) as RouteMatch<RouteName, any> | null;
-      if (!m) return [];
-      // Fallback: synthesize a chain by walking JSX-declared parents from the leaf
-      const chain: ChainEntry[] = [];
-      let nm = m.name as RouteName;
-      while (true) {
-        if (index.has(nm)) chain.unshift({ name: nm, params: m.params });
-        const p = parentOf.get(nm);
-        if (!p) break;
-        nm = p as RouteName;
-      }
-      return chain;
-    };
-    const fromPath: string | undefined = (change?.from?.path ?? undefined) as any;
-    const toPath: string = path;
-    const fromChain = getChain(fromPath);
-    const toChain = getChain(toPath);
-    const toMap = new Map<RouteName, ChainEntry>(toChain.map(e => [e.name, e]));
-    const fromMap = new Map<RouteName, ChainEntry>(fromChain.map(e => [e.name, e]));
-
-    // Render a subtree for a given root using the specified chain/map (from or to)
-    const renderSubtree = (rootName: RouteName, useFrom: boolean): React.ReactNode => {
-      const m = (useFrom ? fromMap : toMap).get(rootName);
-      // If this branch is not present in the chosen context, do not render it
-      if (!m) return null;
-      const n = index.get(rootName);
-      if (!n) return null;
-      const p: any = n.props;
-      const V = p.view as React.ComponentType<any> | undefined;
-      const childrenOf = childSets.get(rootName) ?? [];
-      const map = useFrom ? fromMap : toMap;
-      // Prefer an explicitly matched child or a descendant match; only then fall back to index
-      let nextChildName: RouteName | null = null;
-      const hasDesc = (nm: RouteName): boolean => {
-        const kids = childSets.get(nm) ?? [];
-        for (const k of kids) {
-          const kn = k.props.name as RouteName;
-          if (map.has(kn)) return true;
-          if (hasDesc(kn)) return true;
-        }
-        return false;
-      };
-      for (const cn of childrenOf) {
-        const cnName = cn.props.name as RouteName;
-        if (map.has(cnName) || hasDesc(cnName)) { nextChildName = cnName; break; }
-      }
-      if (!nextChildName) {
-        const idx = childrenOf.find((c) => (c.props as any)?.index === true);
-        if (idx) nextChildName = idx.props.name as RouteName;
-      }
-      const childOut = nextChildName ? renderSubtree(nextChildName, useFrom) : undefined;
-      if (V) return <V {...((m?.params) || {})}>{childOut}</V>;
-      if (p.element) return p.element;
-      return childOut ?? null;
-    };
-
-    // Route render with optional viewer at pivot
-    const renderRoute = (name: RouteName): React.ReactNode => {
-      const n = index.get(name);
-      if (!n) return null;
-      const p: any = n.props;
-      const childrenOf = childSets.get(name) ?? [];
-      // Helper: does any descendant of 'name' exist in the toMap?
-      const hasToDescendant = (root: RouteName): boolean => {
-        const kids = childSets.get(root) ?? [];
-        for (const k of kids) {
-          const kName = k.props.name as RouteName;
-          if (toMap.has(kName)) return true;
-          if (hasToDescendant(kName)) return true;
-        }
-        return false;
-      };
-      // Determine pivot at this level
-      const f = fromMap.get(name) || null;
-      const t = toMap.get(name) || null;
-      const enteringOrExiting = (!!f) !== (!!t);
-      const paramsChanged = !!f && !!t && !shallowEqual(f.params, t.params);
-      const fromHasDescendant = (nm: RouteName): boolean => {
-        const kids = childSets.get(nm) ?? [];
-        for (const k of kids) {
-          const kName = k.props.name as RouteName;
-          if (fromMap.has(kName)) return true;
-          if (fromHasDescendant(kName)) return true;
-        }
-        return false;
-      };
-      const selectActiveChild = (parentName: RouteName, useFrom: boolean): RouteName | null => {
-        const kids = childSets.get(parentName) ?? [];
-        const map = useFrom ? fromMap : toMap;
-        // First pass: explicit match or descendant
-        for (const cn of kids) {
-          const cnName = cn.props.name as RouteName;
-          if (map.has(cnName)) return cnName;
-          if (useFrom ? fromHasDescendant(cnName) : hasToDescendant(cnName)) return cnName;
-        }
-        // Second pass: index fallback
-        const idx = kids.find((c) => (c.props as any)?.index === true);
-        return idx ? (idx.props.name as RouteName) : null;
-      };
-      const childFrom = selectActiveChild(name, true);
-      const childTo = selectActiveChild(name, false);
-      if (p.viewer) {
-        const Viewer = p.viewer as React.FC<_ViewerProps>;
-        const V = p.view as React.ComponentType<any> | undefined;
-        const buildPath = (nm: RouteName, params: any) => ((defs as any).toPath ? (defs as any).toPath(nm, params) : (defs as any).buildPath(nm, params));
-        const toInfo = t ? ({ key: `${String(t.name)}:${JSON.stringify(t.params ?? {})}`, name: String(t.name), params: t.params, path: buildPath(t.name, t.params) }) : null;
-        const fromInfo = f ? ({ key: `${String(f.name)}:${JSON.stringify(f.params ?? {})}`, name: String(f.name), params: f.params, path: buildPath(f.name, f.params) }) : null;
-        const direction: _Direction = mapDirection(change?.type);
-        const routeChanged = enteringOrExiting || paramsChanged;
-        const childChanged = (childFrom !== childTo);
-        const fromNode = routeChanged ? renderSubtree(name, true) : null;
-        const toNode = renderSubtree(name, false);
-        const fromChildNode = childChanged && childFrom ? renderSubtree(childFrom, true) : null;
-        const toChildNode = childChanged && childTo ? renderSubtree(childTo, false) : null;
-        return (
-          <Viewer
-            change={change}
-            from={fromInfo}
-            to={toInfo}
-            fromNode={fromNode}
-            toNode={toNode}
-            fromChildNode={fromChildNode}
-            toChildNode={toChildNode}
-            direction={direction}
-            keep={p.keep ?? keep}
-            classNameBase={p.classNameBase ?? classNameBase}
-          />
-        );
-      }
-      // Not pivot: render single subtree using "to"
-      const V = p.view as React.ComponentType<any> | undefined;
-      // choose a child that exists in toMap or index
-      let childOut: React.ReactNode | undefined;
-      for (const cn of childrenOf) {
-        const cnName = cn.props.name as RouteName;
-        if (toMap.has(cnName) || hasToDescendant(cnName) || (cn.props as any)?.index === true) {
-          childOut = renderRoute(cnName);
-          break;
-        }
-      }
-      if (V) return <V {...((toMap.get(name)?.params) || {})}>{childOut}</V>;
-      if (p.element) return p.element;
-      return childOut ?? null;
-    };
-
-    // Find the root-most declared Route present in the toChain and render from there
-    let rootName: RouteName | null = null;
-    for (const e of toChain) { if (index.has(e.name)) { rootName = e.name; break; } }
-    if (!rootName) return null;
-    // Walk up parents to the top declared ancestor
-    while (true) {
-      const parent = parentOf.get(rootName as RouteName);
-      if (!parent) break;
-      rootName = parent as RouteName;
-    }
-    return renderRoute(rootName as RouteName) as React.ReactElement;
-    
+    views?: Record<string, React.ComponentType<any>>; // optional app-level view map
+  }> = ({ children, viewer, keep, classNameBase, views }) => {
+    const { change, to } = useRouterContext();
+    if (!viewer) return null;
+    const direction: _Direction = mapDirection(change?.type);
+    const TopV = viewer as React.FC<_ViewerProps>;
+    const autoChild = to && views && views[to.name as any]
+      ? React.createElement(views[to.name as any] as React.ComponentType<any>, { ...(to as any).params })
+      : null;
+    const content = (
+      <>
+        {autoChild}
+        {children}
+      </>
+    );
+    return (
+      <TopV change={change} direction={direction} keep={keep} classNameBase={classNameBase} match={to as any}>
+        {content}
+      </TopV>
+    );
   };
 
 

@@ -18,17 +18,35 @@ export const RouterApp: React.FC = () => {
         </nav>
         <div>
           <div className="p-4">
-            <Routes viewer={SlideViewer}>
-              <Route name="Home" view={Home} />
-              <Route name="About" view={About} />
-              <Route name="Products" view={Products}>
-                <Route name="Product" view={Product} viewer={SlideViewer}>
-                  <Route index name="ProductOverview" view={ProductOverview} />
-                  <Route name="ProductSpecs" view={ProductSpecs} />
-                  <Route name="ProductReviews" view={ProductReviews} />
-                </Route>
-              </Route>
-              <Route name="User" view={User} />
+            <Routes
+              viewer={SlideViewer}
+              views={{
+                Home,
+                About,
+                Products,
+                User,
+                // ensure site-level shell shows when inside product routes
+                Product: Products,
+                ProductOverview: Products,
+                ProductSpecs: Products,
+                ProductReviews: Products,
+              }}
+            >
+              <Routes
+                viewer={SlideViewer}
+                views={{
+                  Product,
+                  // ensure product shell shows when on tab routes
+                  ProductOverview: Product,
+                  ProductSpecs: Product,
+                  ProductReviews: Product,
+                }}
+              >
+                <Routes
+                  viewer={SlideViewer}
+                  views={{ ProductOverview, ProductSpecs, ProductReviews }}
+                />
+              </Routes>
             </Routes>
           </div>
         </div>
