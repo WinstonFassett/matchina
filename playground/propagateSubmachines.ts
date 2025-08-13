@@ -1,19 +1,14 @@
 import { setup } from "../src/ext/setup";
 import { resolveExit as hookResolveExit } from "../src/state-machine-hooks";
+import { isMachine } from "../src/is-machine";
+import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: Function; dispatch?: Function };
 
-function looksLikeMachine(x: any): x is AnyMachine {
-  return (
-    !!x && typeof x.getState === "function" &&
-    (typeof (x as any).send === "function" || typeof (x as any).dispatch === "function")
-  );
-}
-
 function getChildFromParentState(state: any): AnyMachine | undefined {
   const m = state?.data?.machine;
-  return looksLikeMachine(m) ? m : undefined;
+  return isMachine(m) ? (m as AnyMachine) : undefined;
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
@@ -54,13 +49,11 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
     return !statesEqual(before, after) ? undefined : next(ev);
   });
 
-  // 2) Additionally, patch send/dispatch to guarantee child-first routing even when parent has no transitions
+  // 2) Additionally, enhance send/dispatch using the library enhancer utilities
   return (target: M) => {
-    const disposeEnhance = enhanceResolve(target as any);
-    const origSend = typeof (target as any).send === "function" ? (target as any).send.bind(target) : undefined;
-    const origDispatch = typeof (target as any).dispatch === "function" ? (target as any).dispatch.bind(target) : undefined;
+    const disposeResolve = enhanceResolve(target as any);
 
-    function childFirst(type: string, ...params: any[]) {
+    const childFirst = (type: string, ...params: any[]): boolean => {
       const parentState = machine.getState();
       const child = getChildFromParentState(parentState);
       if (child) {
@@ -68,26 +61,38 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
           const probe = (child as any).resolveExit({ type, params, from: child.getState() });
           if (probe) {
             trySend(child, type, ...params);
-            return; // handled by child
+            return true; // handled by child
           }
         } else {
           const before = snapshot(child);
           trySend(child, type, ...params);
-          if (!statesEqual(before, snapshot(child))) return;
+          if (!statesEqual(before, snapshot(child))) return true; // handled
         }
       }
-      // Not handled by child → call original
-      if (origSend) return origSend(type, ...params);
-      if (origDispatch) return origDispatch(type, ...params);
-    }
+      // Not handled by child
+      return false;
+    };
 
-    if (origSend) (target as any).send = childFirst;
-    if (origDispatch) (target as any).dispatch = childFirst;
+    const unSend = typeof (target as any).send === "function"
+      ? enhanceMethod(target as any, "send", (next) => (type: string, ...params: any[]) => {
+          const handled = childFirst(type, ...params);
+          if (handled) return; // child handled
+          return (next as any)(type, ...params);
+        })
+      : () => {};
+
+    const unDispatch = typeof (target as any).dispatch === "function"
+      ? enhanceMethod(target as any, "dispatch", (next) => (type: string, ...params: any[]) => {
+          const handled = childFirst(type, ...params);
+          if (handled) return; // child handled
+          return (next as any)(type, ...params);
+        })
+      : () => {};
 
     return () => {
-      disposeEnhance();
-      if (origSend) (target as any).send = origSend;
-      if (origDispatch) (target as any).dispatch = origDispatch;
+      disposeResolve();
+      unSend();
+      unDispatch();
     };
   };
 }
