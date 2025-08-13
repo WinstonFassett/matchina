@@ -125,14 +125,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
 
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
-      {/* incoming */}
+      {/* incoming */}<>Incoming
       <div className={`${classNameBase} is-next-container`}>{toNode}</div>
-
+      </>
       {/* outgoing (current) */}
-      {fromNode && (
+      {fromNode && (<>Outgoing
         <div className={`${classNameBase} is-previous-container`} aria-hidden="true">
           {fromNode}
-        </div>
+        </div></>
       )}
 
       {/* kept history */}
