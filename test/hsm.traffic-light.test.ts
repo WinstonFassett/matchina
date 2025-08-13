@@ -45,7 +45,7 @@ describe("Traffic Light HSM (Working/Broken)", () => {
     const ctrl = createSignalController();
 
     const working = ctrl.getState().as("Working");
-    const light = working.data.machine as TrafficLight;
+    const light = working.data.machine;
     expect(light.getState().key).toBe("Red");
 
     light.send("tick");
@@ -62,11 +62,11 @@ describe("Traffic Light HSM (Working/Broken)", () => {
     expect(ctrl.getState().key).toBe("Working");
     // parent-only routing
     r.send("tick"); // Red -> Green
-    const light1 = ctrl.getState().as("Working").data.machine as TrafficLight;
+    const light1 = ctrl.getState().as("Working").data.machine;
     expect(light1.getState().key).toBe("Green");
 
     r.send("tick"); // Green -> Yellow
-    const light2 = ctrl.getState().as("Working").data.machine as TrafficLight;
+    const light2 = ctrl.getState().as("Working").data.machine;
     expect(light2.getState().key).toBe("Yellow");
   });
 
@@ -76,7 +76,7 @@ describe("Traffic Light HSM (Working/Broken)", () => {
 
     // advance child
     r.send("tick"); // Red->Green
-    expect((ctrl.getState().as("Working").data.machine as TrafficLight).getState().key).toBe("Green");
+    expect(ctrl.getState().as("Working").data.machine.getState().key).toBe("Green");
 
     // break parent
     r.send("break");
@@ -85,7 +85,7 @@ describe("Traffic Light HSM (Working/Broken)", () => {
     // repair mounts a fresh child at initial Red
     r.send("repair");
     expect(ctrl.getState().key).toBe("Working");
-    const light = ctrl.getState().as("Working").data.machine as TrafficLight;
+    const light = ctrl.getState().as("Working").data.machine;
     expect(light.getState().key).toBe("Red");
   });
 });
