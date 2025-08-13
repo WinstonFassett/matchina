@@ -294,7 +294,41 @@ export function createRouter<const Patterns extends Record<string, string>>(
       };
       const paramsChanged = underFrom && underTo ? !shallowEqual(fromMatch!.params, toMatch!.params) : false;
       const enteringOrExiting = underFrom !== underTo;
-      // If nothing at this scope changed (same params and still under this scope), don't animate here
+
+      // helper: immediate child name under rootName for a given leaf
+      const childUnder = (root: RouteName, leafName: RouteName | null): RouteName | null => {
+        if (!leafName) return null;
+        let nm: RouteName = leafName;
+        let prevNm: RouteName | null = null;
+        while (true) {
+          if (nm === root) return prevNm; // the node just below root
+          const p = parentOf.get(nm);
+          if (!p) return null;
+          prevNm = nm;
+          nm = p as RouteName;
+        }
+      };
+      const childFrom = underFrom ? childUnder(rootName, fromMatch!.name as RouteName) : null;
+      const childTo = underTo ? childUnder(rootName, toMatch!.name as RouteName) : null;
+      const childChanged = !!(childFrom && childTo && childFrom !== childTo);
+
+      // Pivot logic:
+      // - If entering/exiting this scope: animate here.
+      // - Else if child segment changed: do NOT animate here (let child scope handle it).
+      // - Else if params changed but child segment did not: animate here (this scope changed),
+      //   EXCEPT when this scope is a leaf (no children) — in that case, treat it as ancestor-only change and do not animate here.
+      // - Else: no animation here.
+      if (!enteringOrExiting && childChanged) {
+        return toRendered;
+      }
+      const hasChildren = (childSets.get(rootName) ?? []).length > 0;
+      // If the leaf route name is identical but params changed, skip at this scope (let ancestor animate)
+      if (!enteringOrExiting && underFrom && underTo && (fromMatch!.name === toMatch!.name) && paramsChanged) {
+        return toRendered;
+      }
+      if (!enteringOrExiting && paramsChanged && !hasChildren) {
+        return toRendered;
+      }
       if (!enteringOrExiting && !paramsChanged) {
         return toRendered;
       }
@@ -345,7 +379,10 @@ export function createRouter<const Patterns extends Record<string, string>>(
         out = renderView(pn, leaf.params, out, { disableViewerWrap: true });
         nm = p;
       }
-      return out;
+      // Include the root wrapper itself so the subtree is complete at this scope
+      const rootNode = index.get(rootName);
+      if (!rootNode) return out;
+      return renderView(rootNode, leaf.params, out, { disableViewerWrap: true });
     }
 
     function isUnder(rootName: RouteName, m: RouteMatch<RouteName, any> | null): boolean {

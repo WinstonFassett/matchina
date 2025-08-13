@@ -18,7 +18,7 @@ export const RouterApp: React.FC = () => {
         </nav>
         <div>
           <div className="p-4">
-            <Routes viewer={SlideViewer}>
+            <Routes>
               <Route name="Home" view={Home} />
               <Route name="About" view={About} />
               <Route name="Products" view={Products}>
