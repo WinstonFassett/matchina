@@ -56,8 +56,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
   // Discriminated union per route name so TS narrows `view` props based on `name`
   type RouteProps = {
     [K in RouteName]:
-      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode; index?: boolean })
-      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode; index?: boolean })
+      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode; index?: boolean; viewer?: React.FC<_ViewerProps>; keep?: number; classNameBase?: string })
+      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode; index?: boolean; viewer?: React.FC<_ViewerProps>; keep?: number; classNameBase?: string })
   }[RouteName];
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -138,7 +138,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     };
     walk(childArray);
 
-    const renderView = (node: Node, params: any, children?: React.ReactNode): React.ReactNode => {
+    const renderView = (node: Node, params: any, children?: React.ReactNode, opts?: { disableViewerWrap?: boolean }): React.ReactNode => {
       const p: any = node.props;
       if (p.view) {
         const V = p.view as React.ComponentType<any>;
@@ -148,10 +148,15 @@ export function createRouter<const Patterns extends Record<string, string>>(
           const maybeChildren = childSets.get(p.name as RouteName) ?? [];
           const indexChild = maybeChildren.find((c) => (c.props as any)?.index === true);
           if (indexChild) {
-            content = renderView(indexChild as Node, params, undefined);
+            content = renderView(indexChild as Node, params, undefined, opts);
           }
         }
-        return <V {...(params || {})}>{content}</V>;
+        const toRendered = <V {...(params || {})}>{content}</V>;
+        // If this route declares its own viewer, wrap only this subtree
+        if (!opts?.disableViewerWrap && p.viewer) {
+          return renderWithViewerScoped(p.viewer as React.FC<_ViewerProps>, p.name as RouteName, params, toRendered, p.keep, p.classNameBase);
+        }
+        return toRendered;
       }
       if (p.element) {
         // element nesting can't inject children safely; return as-is
@@ -225,13 +230,13 @@ export function createRouter<const Patterns extends Record<string, string>>(
       let nm = prev.name as RouteName;
       let node = index.get(nm);
       if (!node) return null;
-      let out: React.ReactNode = renderView(node, prev.params);
+      let out: React.ReactNode = renderView(node, prev.params, undefined, { disableViewerWrap: true });
       while (true) {
         const p = parentOf.get(nm);
         if (!p) break;
         const pn = index.get(p);
         if (!pn) break;
-        out = renderView(pn, prev.params, out);
+        out = renderView(pn, prev.params, out, { disableViewerWrap: true });
         nm = p;
       }
       return out;
@@ -255,6 +260,66 @@ export function createRouter<const Patterns extends Record<string, string>>(
           classNameBase={classNameBase}
         />
       );
+    }
+
+    // Route-level viewer wrapper: scope from/to to a specific subtree
+    function renderWithViewerScoped(
+      ViewerComp: React.FC<_ViewerProps>,
+      rootName: RouteName,
+      params: any,
+      toRendered: React.ReactNode,
+      localKeep?: number,
+      localClassNameBase?: string
+    ): React.ReactNode {
+      const prev = getMatchFromState(change?.from ?? null) ?? prevToRef.current;
+      const fromMatch = prev && isUnder(rootName, prev) ? prev : null;
+      const toMatch = isUnder(rootName, to) ? to : null;
+      const fromNode = fromMatch ? composeSubtree(rootName, fromMatch) : null;
+      // toRendered is already the subtree for current route under rootName
+      const toInfo = toMatch ? toInfoOf(toMatch as RouteMatch<RouteName, any>) : null;
+      const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
+      const direction: _Direction = mapDirection(change?.type);
+      return (
+        <ViewerComp
+          change={{ type: change?.type ?? "replace", from: fromInfo, to: toInfo } as _RouterChange}
+          from={fromInfo}
+          to={toInfo}
+          fromNode={fromNode}
+          toNode={toRendered}
+          direction={direction}
+          keep={typeof localKeep === 'number' ? localKeep : keep}
+          classNameBase={localClassNameBase ?? classNameBase}
+        />
+      );
+    }
+
+    function composeSubtree(rootName: RouteName, leaf: RouteMatch<RouteName, any>): React.ReactNode | null {
+      // Ensure leaf is within root's subtree
+      if (!isUnder(rootName, leaf)) return null;
+      let nm = leaf.name as RouteName;
+      let node = index.get(nm);
+      if (!node) return null;
+      let out: React.ReactNode = renderView(node, leaf.params, undefined, { disableViewerWrap: true });
+      while (nm !== rootName) {
+        const p = parentOf.get(nm);
+        if (!p) return null;
+        const pn = index.get(p);
+        if (!pn) return null;
+        out = renderView(pn, leaf.params, out, { disableViewerWrap: true });
+        nm = p;
+      }
+      return out;
+    }
+
+    function isUnder(rootName: RouteName, m: RouteMatch<RouteName, any> | null): boolean {
+      if (!m) return false;
+      let nm = m.name as RouteName;
+      while (true) {
+        if (nm === rootName) return true;
+        const p = parentOf.get(nm);
+        if (!p) return false;
+        nm = p;
+      }
     }
 
     // derive match from a RouterState-like snapshot
