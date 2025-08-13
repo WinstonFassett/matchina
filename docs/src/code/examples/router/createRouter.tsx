@@ -65,9 +65,11 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     // Derive current route from router-store stack/index
     const change = store.getChange?.() ?? null;
+    // change.to.error
     const state = store.getState();
     const entry = state.stack[state.index] ?? null;
     const path = entry?.path ?? "";
+    
     const to = entry ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
     const from = null; // no transition logic in the simplified adapter
 
@@ -78,6 +80,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
       prevRef.current = lastToRef.current;
       lastToRef.current = to;
     }, [path]);
+    // const from = change.from;
+    // const to = change.to;
 
     const value: Ctx = { defs, history, store, from, to, base, useHash, change, path };
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
@@ -116,7 +120,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     keep?: number;
     classNameBase?: string;
   }> = ({ children, viewer, keep, classNameBase }) => {
-    const { to, defs, path } = useRouterContext();
+    const { to, defs, path, change } = useRouterContext();
     if (!to) return null;
 
     // Build a name->node map preserving nesting structure
@@ -235,7 +239,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
     }
 
     function renderWithViewer(fromNode: React.ReactNode | null, toNode: React.ReactNode | null): React.ReactNode {
-      const { change } = useRouterContext();
       const toInfo = to ? toInfoOf(to) : null;
       const fromMatch = getPrevMatch();
       const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
