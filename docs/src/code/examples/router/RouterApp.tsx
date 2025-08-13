@@ -25,29 +25,13 @@ export const RouterApp: React.FC = () => {
                 About,
                 Products,
                 User,
-                // ensure site-level shell shows when inside product routes
+                // Ensure site-level shell shows when inside product routes
                 Product: Products,
                 ProductOverview: Products,
                 ProductSpecs: Products,
                 ProductReviews: Products,
               }}
-            >
-              <Routes
-                viewer={SlideViewer}
-                views={{
-                  Product,
-                  // ensure product shell shows when on tab routes
-                  ProductOverview: Product,
-                  ProductSpecs: Product,
-                  ProductReviews: Product,
-                }}
-              >
-                <Routes
-                  viewer={SlideViewer}
-                  views={{ ProductOverview, ProductSpecs, ProductReviews }}
-                />
-              </Routes>
-            </Routes>
+            />
           </div>
         </div>
 

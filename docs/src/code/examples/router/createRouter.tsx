@@ -177,5 +177,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
     return "forward";
   }
 
-  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, Route, Outlet, routes: defs, defs, store, history };
+  // Expose a readability alias for Routes when used as a view-owned level
+  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, RouteLevel: Routes, Route, Outlet, routes: defs, defs, store, history };
 }

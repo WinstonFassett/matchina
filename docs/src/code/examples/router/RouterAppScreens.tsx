@@ -1,21 +1,28 @@
 import React from "react";
-import { useNavigation, useRouter, Link, store } from "./appRouter";
+import { useNavigation, useRouter, Link, store, Routes } from "./appRouter";
+import { SlideViewer } from "./viewers";
 
 export const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
 export const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
-export const Products: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const Products: React.FC<React.PropsWithChildren> = () => {
   const nav = useNavigation();
+  const { to } = useRouter();
+  // Scope: any Product* route renders the Product shell at this level
+  const ProductShellViews = {
+    Product,
+    ProductOverview: Product,
+    ProductSpecs: Product,
+    ProductReviews: Product,
+  } as const;
+  const inProductScope = !!(to && (ProductShellViews as any)[to.name]);
+
   return (
     <div className="">
       <div className="p-4">
         <h3>Products</h3>
-      </div>      
-      {children ? <>
-        <div className="flex gap-2">
-          <Link name="Products">Back to list</Link>
-        </div>
-        {children}
-      </> : 
+      </div>
+
+      {!inProductScope && (
         <div className="flex gap-2">
           <button
             className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
@@ -30,7 +37,10 @@ export const Products: React.FC<React.PropsWithChildren> = ({ children }) => {
             View Product abc
           </button>
         </div>
-      }
+      )}
+
+      {/* Descendant route level for product shell */}
+      <Routes viewer={SlideViewer} views={ProductShellViews as any} />
     </div>
   );
 };
@@ -41,6 +51,14 @@ export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ ch
 
   if (!params) return <div>No params!!</div>;
   const id = params.id;
+  // If we are on the bare Product route, redirect to the default tab (Overview)
+  React.useEffect(() => {
+    if (to?.name === 'Product' && String((to?.params as any)?.id ?? '') === String(id)) {
+      // replace so back button returns to previous page, not the intermediate shell URL
+      nav.replace('ProductOverview', { id })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to?.name, (to?.params as any)?.id, id]);
   const isActive = (name: string) => to?.name === name && String((to?.params as any)?.id ?? '') === String(id);
   
   const ProductTab: React.FC<{ name: 'ProductOverview' | 'ProductSpecs' | 'ProductReviews'; label: string }> = ({ name, label }) => {
@@ -63,7 +81,21 @@ export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ ch
         <ProductTab name="ProductSpecs" label="Specs" />
         <ProductTab name="ProductReviews" label="Reviews" />
       </nav>
-      {children}
+      {/* Descendant route level for tab content */}
+      <Routes
+        viewer={SlideViewer}
+        views={{
+          ProductOverview,
+          ProductSpecs,
+          ProductReviews,
+        }}
+      />
+      {/* Fallback: directly render current tab if needed */}
+      {(() => {
+        const name = to?.name;
+        const Tab = (name === 'ProductOverview') ? ProductOverview : (name === 'ProductSpecs') ? ProductSpecs : (name === 'ProductReviews') ? ProductReviews : null;
+        return Tab ? <Tab id={id} /> : null;
+      })()}
     </div>
   );
 };
