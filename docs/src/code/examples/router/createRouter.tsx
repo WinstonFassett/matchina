@@ -219,20 +219,27 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const p: any = n.props;
       const V = p.view as React.ComponentType<any> | undefined;
       const childrenOf = childSets.get(rootName) ?? [];
-      let childOut: React.ReactNode | undefined;
-      // follow next child that exists in the chosen map
+      const map = useFrom ? fromMap : toMap;
+      // Prefer an explicitly matched child or a descendant match; only then fall back to index
+      let nextChildName: RouteName | null = null;
+      const hasDesc = (nm: RouteName): boolean => {
+        const kids = childSets.get(nm) ?? [];
+        for (const k of kids) {
+          const kn = k.props.name as RouteName;
+          if (map.has(kn)) return true;
+          if (hasDesc(kn)) return true;
+        }
+        return false;
+      };
       for (const cn of childrenOf) {
         const cnName = cn.props.name as RouteName;
-        if ((useFrom ? fromMap : toMap).has(cnName)) {
-          childOut = renderSubtree(cnName, useFrom);
-          break;
-        }
-        // support index route
-        if ((cn.props as any)?.index === true && !childOut) {
-          childOut = renderSubtree(cnName, useFrom);
-          break;
-        }
+        if (map.has(cnName) || hasDesc(cnName)) { nextChildName = cnName; break; }
       }
+      if (!nextChildName) {
+        const idx = childrenOf.find((c) => (c.props as any)?.index === true);
+        if (idx) nextChildName = idx.props.name as RouteName;
+      }
+      const childOut = nextChildName ? renderSubtree(nextChildName, useFrom) : undefined;
       if (V) return <V {...((m?.params) || {})}>{childOut}</V>;
       if (p.element) return p.element;
       return childOut ?? null;
@@ -259,6 +266,30 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const t = toMap.get(name) || null;
       const enteringOrExiting = (!!f) !== (!!t);
       const paramsChanged = !!f && !!t && !shallowEqual(f.params, t.params);
+      const fromHasDescendant = (nm: RouteName): boolean => {
+        const kids = childSets.get(nm) ?? [];
+        for (const k of kids) {
+          const kName = k.props.name as RouteName;
+          if (fromMap.has(kName)) return true;
+          if (fromHasDescendant(kName)) return true;
+        }
+        return false;
+      };
+      const selectActiveChild = (parentName: RouteName, useFrom: boolean): RouteName | null => {
+        const kids = childSets.get(parentName) ?? [];
+        const map = useFrom ? fromMap : toMap;
+        // First pass: explicit match or descendant
+        for (const cn of kids) {
+          const cnName = cn.props.name as RouteName;
+          if (map.has(cnName)) return cnName;
+          if (useFrom ? fromHasDescendant(cnName) : hasToDescendant(cnName)) return cnName;
+        }
+        // Second pass: index fallback
+        const idx = kids.find((c) => (c.props as any)?.index === true);
+        return idx ? (idx.props.name as RouteName) : null;
+      };
+      const childFrom = selectActiveChild(name, true);
+      const childTo = selectActiveChild(name, false);
       if (p.viewer) {
         const Viewer = p.viewer as React.FC<_ViewerProps>;
         const V = p.view as React.ComponentType<any> | undefined;
@@ -266,8 +297,12 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const toInfo = t ? ({ key: `${String(t.name)}:${JSON.stringify(t.params ?? {})}`, name: String(t.name), params: t.params, path: buildPath(t.name, t.params) }) : null;
         const fromInfo = f ? ({ key: `${String(f.name)}:${JSON.stringify(f.params ?? {})}`, name: String(f.name), params: f.params, path: buildPath(f.name, f.params) }) : null;
         const direction: _Direction = mapDirection(change?.type);
-        const fromNode = renderSubtree(name, true);
+        const routeChanged = enteringOrExiting || paramsChanged;
+        const childChanged = (childFrom !== childTo);
+        const fromNode = routeChanged ? renderSubtree(name, true) : null;
         const toNode = renderSubtree(name, false);
+        const fromChildNode = childChanged && childFrom ? renderSubtree(childFrom, true) : null;
+        const toChildNode = childChanged && childTo ? renderSubtree(childTo, false) : null;
         return (
           <Viewer
             change={change}
@@ -275,6 +310,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
             to={toInfo}
             fromNode={fromNode}
             toNode={toNode}
+            fromChildNode={fromChildNode}
+            toChildNode={toChildNode}
             direction={direction}
             keep={p.keep ?? keep}
             classNameBase={p.classNameBase ?? classNameBase}

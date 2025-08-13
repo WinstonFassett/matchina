@@ -24,6 +24,8 @@ export interface ViewerProps {
   to: RouteMatchInfo | null;
   fromNode: React.ReactNode | null;
   toNode: React.ReactNode | null;
+  fromChildNode?: React.ReactNode | null;
+  toChildNode?: React.ReactNode | null;
   direction: Direction;
   keep?: number;
   onSettled?: () => void;
@@ -44,6 +46,8 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   to,
   fromNode,
   toNode,
+  fromChildNode,
+  toChildNode,
   direction,
   keep = 0,
   classNameBase = "transition-slide",
@@ -62,9 +66,11 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     const cycleId = ++cycleIdRef.current;
 
     // Update kept stack
-    if (fromNode && from) {
+    const usingChildLevel = !fromNode && !!fromChildNode && !!toChildNode;
+    if ((fromNode && from) || (usingChildLevel && from)) {
       setKept((prev) => {
-        const next = [{ id: from.key, node: fromNode }, ...prev];
+        const prevNode = fromNode ?? fromChildNode!;
+        const next = [{ id: from.key, node: prevNode }, ...prev];
         return next.slice(0, keep);
       });
     } else {
@@ -121,20 +127,27 @@ export const SlideViewer: React.FC<ViewerProps> = ({
         scope.classList.remove("is-changing");
       }
     };
-  }, [to?.key, direction, keep]);
+  }, [to?.key, toChildNode ? (to as any)?.key + "|child" : (to as any)?.key, direction, keep]);
 
+  const usingChildLevel = !fromNode && !!fromChildNode && !!toChildNode;
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
-      {/* incoming */}<>Incoming
-      <div className={`${classNameBase} is-next-container`}>{toNode}</div>
-      </>
+      {/* incoming */}
+      <div className={`${classNameBase} is-next-container`}>
+        {usingChildLevel ? toChildNode : toNode}
+      </div>
       {/* outgoing (current) */}
-      {fromNode && (<>Outgoing
+      {(fromNode || fromChildNode) && (
         <div className={`${classNameBase} is-previous-container`} aria-hidden="true">
-          {fromNode}
-        </div></>
+          {usingChildLevel ? fromChildNode : fromNode}
+        </div>
       )}
-
+      {/* base shell when doing child-level dual: keep shell rendered behind */}
+      {usingChildLevel && (
+        <div className={`${classNameBase} is-base-shell`} aria-hidden="true">
+          {toNode}
+        </div>
+      )}
       {/* kept history */}
       {kept.map((k, i) => (
         <div
