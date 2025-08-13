@@ -18,14 +18,14 @@ export const RouterApp: React.FC = () => {
         </nav>
         <div>
           <div className="p-4">
-            <Routes>
+            <Routes viewer={SlideViewer}>
               <Route name="Home" view={Home} />
               <Route name="About" view={About} />
               <Route name="Products" view={Products}>
                 <Route name="Product" view={Product} viewer={SlideViewer}>
-                  <Route index name="ProductOverview" view={ProductOverview} viewer={SlideViewer} />
-                  <Route name="ProductSpecs" view={ProductSpecs} viewer={SlideViewer} />
-                  <Route name="ProductReviews" view={ProductReviews} viewer={SlideViewer} />
+                  <Route index name="ProductOverview" view={ProductOverview} />
+                  <Route name="ProductSpecs" view={ProductSpecs} />
+                  <Route name="ProductReviews" view={ProductReviews} />
                 </Route>
               </Route>
               <Route name="User" view={User} />
