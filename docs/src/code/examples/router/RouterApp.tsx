@@ -19,11 +19,13 @@ export const RouterApp: React.FC = () => {
             <Routes>
               <Route name="Home" view={Home} />
               <Route name="About" view={About} />
-              <Route name="Products" view={Products} />
-              <Route name="Product" view={Product} />
-              <Route name="ProductOverview" view={ProductOverview} />
-              <Route name="ProductSpecs" view={ProductSpecs} />
-              <Route name="ProductReviews" view={ProductReviews} />
+              <Route name="Products" view={Products}>
+                <Route name="Product" view={Product}>
+                  <Route name="ProductOverview" view={ProductOverview} />
+                  <Route name="ProductSpecs" view={ProductSpecs} />
+                  <Route name="ProductReviews" view={ProductReviews} />
+                </Route>
+              </Route>
               <Route name="User" view={User} />
             </Routes>
           </div>

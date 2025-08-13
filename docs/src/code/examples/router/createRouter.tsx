@@ -47,14 +47,15 @@ export function createRouter<const Patterns extends Record<string, string>>(
     base: string;
     useHash: boolean;
     change: any | null;
+    path: string; // current path from store entry
   };
 
   const RouterContext = createContext<Ctx | null>(null);
   // Discriminated union per route name so TS narrows `view` props based on `name`
   type RouteProps = {
     [K in RouteName]:
-      | ({ name: K } & { element: React.ReactNode })
-      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>> })
+      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode })
+      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode })
   }[RouteName];
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -65,10 +66,11 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const change = store.getChange?.() ?? null;
     const state = store.getState();
     const entry = state.stack[state.index] ?? null;
-    const to = entry ? (defs.matchPath(entry.path) as RouteMatch<RouteName, any> | null) : null;
+    const path = entry?.path ?? "";
+    const to = entry ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
     const from = null; // no transition logic in the simplified adapter
 
-    const value: Ctx = { defs, history, store, from, to, base, useHash, change };
+    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path };
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
@@ -100,26 +102,91 @@ export function createRouter<const Patterns extends Record<string, string>>(
   const Outlet: React.FC = () => null;
 
   const Routes: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const { to } = useRouterContext();
+    const { to, defs, path } = useRouterContext();
     if (!to) return null;
 
-    const list = React.Children.toArray(children) as React.ReactElement<RouteProps>[];
+    // Build a name->node map preserving nesting structure
+    type Node = React.ReactElement<RouteProps> & { props: RouteProps };
+    const childArray = React.Children.toArray(children).filter(React.isValidElement) as Node[];
 
-    const renderFor = (name: RouteName, params: any): React.ReactNode => {
-      const found = list.find((c) => React.isValidElement(c) && c.props.name === name);
-      if (!found) return null;
-      const p = found.props as any;
-      if (p.element) return p.element;
+    const index = new Map<RouteName, Node>();
+    const childSets = new Map<RouteName, Node[]>();
+    const parentOf = new Map<RouteName, RouteName | undefined>();
+
+    const walk = (nodes: Node[], parentName?: RouteName) => {
+      for (const n of nodes) {
+        const name = n.props.name as RouteName;
+        index.set(name, n);
+        if (parentName) {
+          const arr = childSets.get(parentName) ?? [];
+          arr.push(n);
+          childSets.set(parentName, arr);
+        }
+        // record parent chain for fallback composition
+        parentOf.set(name, parentName);
+        const kids = React.Children.toArray(n.props.children || []).filter(React.isValidElement) as Node[];
+        if (kids.length) walk(kids, name);
+      }
+    };
+    walk(childArray);
+
+    const renderView = (node: Node, params: any, children?: React.ReactNode): React.ReactNode => {
+      const p: any = node.props;
       if (p.view) {
         const V = p.view as React.ComponentType<any>;
-        return <V {...(params || {})} />;
+        return <V {...(params || {})}>{children}</V>;
+      }
+      if (p.element) {
+        // element nesting can't inject children safely; return as-is
+        return p.element;
       }
       return null;
     };
 
-    const body = renderFor(to.name as RouteName, to.params);
-    if (!body) return null;
-    return body;
+    // If defs can provide a chain, compose nested views from leaf -> root
+    const matches = (defs as any).matchAllPaths ? (defs as any).matchAllPaths(path) as RouteMatch<RouteName, any>[] : null;
+    if (matches && matches.length) {
+      // Compose from leaf upwards, only including levels declared in JSX
+      let rendered: React.ReactNode = null;
+      let topComposedName: RouteName | undefined = undefined;
+      for (let i = matches.length - 1; i >= 0; i--) {
+        const m = matches[i];
+        const node = index.get(m.name as RouteName);
+        if (!node) continue; // skip levels not declared in JSX
+        rendered = renderView(node, m.params, rendered ?? undefined);
+        if (topComposedName === undefined) topComposedName = m.name as RouteName;
+      }
+      // If chain didn't include parents (or JSX has extra layout parents), wrap those via parentOf
+      if (topComposedName) {
+        let currentName = topComposedName;
+        while (true) {
+          const parentName = parentOf.get(currentName);
+          if (!parentName) break;
+          const parentNode = index.get(parentName);
+          if (!parentNode) break;
+          rendered = renderView(parentNode, to.params, rendered);
+          currentName = parentName;
+        }
+      }
+      if (rendered != null) return rendered;
+      // fallback continues below
+    }
+
+    // Fallback: compose via JSX-declared parent chain
+    let currentName = to.name as RouteName;
+    let currentNode = index.get(currentName);
+    if (!currentNode) return null;
+    let rendered: React.ReactNode = renderView(currentNode, to.params);
+    // climb parents declared in JSX and wrap
+    while (true) {
+      const parentName = parentOf.get(currentName);
+      if (!parentName) break;
+      const parentNode = index.get(parentName);
+      if (!parentNode) break;
+      rendered = renderView(parentNode, to.params, rendered);
+      currentName = parentName;
+    }
+    return rendered as React.ReactElement;
   };
 
   type LinkProps = ({ [K in RouteName]: { name: K; params?: ParamsOf<K> } }[RouteName]) &

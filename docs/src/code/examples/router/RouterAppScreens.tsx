@@ -3,61 +3,74 @@ import { useNavigation, useRouter, Link, store } from "./appRouter";
 
 export const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
 export const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
-export const Products: React.FC = () => {
+export const Products: React.FC<React.PropsWithChildren> = ({ children }) => {
   const nav = useNavigation();
   return (
-    <div className="p-2">
-      <div className="flex gap-2">
-        <button
-          className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
-          onClick={nav.goto("ProductOverview", { id: "42" })}
-        >
-          View Product 42
-        </button>
-        <button
-          className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
-          onClick={nav.goto("ProductOverview", { id: "abc" })}
-        >
-          View Product abc
-        </button>
-      </div>
+    <div className="">
+      <div className="p-4">
+        <h3>Products</h3>
+      </div>      
+      {children ? <>
+        <div className="flex gap-2">
+          <Link name="Products">Back to list</Link>
+        </div>
+        {children}
+      </> : 
+        <div className="flex gap-2">
+          <button
+            className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
+            onClick={nav.goto("ProductOverview", { id: "42" })}
+          >
+            View Product 42
+          </button>
+          <button
+            className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
+            onClick={nav.goto("ProductOverview", { id: "abc" })}
+          >
+            View Product abc
+          </button>
+        </div>
+      }
     </div>
   );
 };
-export const Product: React.FC<{ id: string; }> = (params) => {
+export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ children, ...params}) => {
   const nav = useNavigation();
-  const { from } = useRouter();
+  const { to } = useRouter();
   // Default to Overview tab if landing on /products/:id
   React.useEffect(() => {
     if (params?.id) {
-      // replace() returns a handler; invoke it immediately
       nav.replace("ProductOverview", { id: params.id })();
     }
     // run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const backToList = React.useCallback(() => {
-    if (from?.name === 'Products') {
-      // If we navigated here from the list, pop back
-      nav.back();
-    } else {
-      // Otherwise goto the list route
-      nav.goto('Products')();
-    }
-  }, [from, nav]);
+
   if (!params) return <div>No params!!</div>;
+  const id = params.id;
+  const isActive = (name: string) => to?.name === name && String((to?.params as any)?.id ?? '') === String(id);
+  
+  const ProductTab: React.FC<{ name: 'ProductOverview' | 'ProductSpecs' | 'ProductReviews'; label: string }> = ({ name, label }) => {
+    const active = isActive(name);
+    const clsBase = "px-2 py-1 rounded";
+    const clsActive = "bg-blue-600 text-white cursor-default pointer-events-none";
+    const clsDefault = "hover:bg-slate-100 dark:hover:bg-neutral-800";
+    if (active) return <span aria-current="page" data-active className={`${clsBase} ${clsActive}`}>{label}</span>;
+    return (
+      <Link name={name as any} params={{ id }}>
+        <span className={`${clsBase} ${clsDefault}`}>{label}</span>
+      </Link>
+    );
+  };
   return (
     <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
       <h3 className="text-xl font-semibold mb-1">Product {params.id}</h3>
-      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">Use the browser back or buttons to navigate.</p>
-      <div className="flex gap-2">
-        <button
-          className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
-          onClick={backToList}
-        >
-          ← Back to list
-        </button>
-      </div>
+      <nav className="flex items-center gap-2 mb-3">
+        <ProductTab name="ProductOverview" label="Overview" />
+        <ProductTab name="ProductSpecs" label="Specs" />
+        <ProductTab name="ProductReviews" label="Reviews" />
+      </nav>
+      {children}
     </div>
   );
 };
