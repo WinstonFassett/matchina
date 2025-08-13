@@ -212,6 +212,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
     // Render a subtree for a given root using the specified chain/map (from or to)
     const renderSubtree = (rootName: RouteName, useFrom: boolean): React.ReactNode => {
       const m = (useFrom ? fromMap : toMap).get(rootName);
+      // If this branch is not present in the chosen context, do not render it
+      if (!m) return null;
       const n = index.get(rootName);
       if (!n) return null;
       const p: any = n.props;
@@ -266,10 +268,9 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const direction: _Direction = mapDirection(change?.type);
         const fromNode = renderSubtree(name, true);
         const toNode = renderSubtree(name, false);
-        const scopedChange = { type: change?.type ?? 'replace', from: fromInfo, to: toInfo } as _RouterChange;
         return (
           <Viewer
-            change={scopedChange}
+            change={change}
             from={fromInfo}
             to={toInfo}
             fromNode={fromNode}
@@ -315,12 +316,18 @@ export function createRouter<const Patterns extends Record<string, string>>(
     { children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>;
   const Link: React.FC<LinkProps> = ({ name, params, children, ...a }) => {
     const { defs, history } = useRouterContext();
-    const path = (defs as any).toPath ? (defs as any).toPath(name, params) : (defs as any).buildPath(name, params);
-    const href = useHash ? `${base}#${path}` : `${base}${path}`;
+    let path: string | null = null;
+    try {
+      path = (defs as any).toPath ? (defs as any).toPath(name, params) : (defs as any).buildPath(name, params);
+    } catch (e) {
+      path = null;
+    }
+    const href = path ? (useHash ? `${base}#${path}` : `${base}${path}`) : '#';
     return (
       <a
         {...a}
         href={href}
+        data-invalid-link={path ? undefined : 'missing-params'}
         onClick={(e) => {
           // Allow default for modified/middle/right clicks or non-self targets
           if (
@@ -333,7 +340,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
           }
           e.preventDefault();
           e.stopPropagation();
-          history.push(path);
+          if (path) history.push(path);
         }}
       >
         {children ?? href}

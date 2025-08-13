@@ -19,7 +19,7 @@ export interface RouterChange {
 }
 
 export interface ViewerProps {
-  change: RouterChange;
+  change: any;
   from: RouteMatchInfo | null;
   to: RouteMatchInfo | null;
   fromNode: React.ReactNode | null;
