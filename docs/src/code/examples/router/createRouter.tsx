@@ -67,21 +67,9 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const change = store.getChange?.() ?? null;
     // change.to.error
     const state = store.getState();
-    const entry = state.stack[state.index] ?? null;
-    const path = entry?.path ?? "";
-    
-    const to = entry ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
-    const from = null; // no transition logic in the simplified adapter
-
-    // Track previous match for viewers
-    const lastToRef = React.useRef<RouteMatch<RouteName, any> | null>(null);
-    React.useEffect(() => {
-      // On path change, advance prevRef to the last rendered "to", then update lastTo
-      prevRef.current = lastToRef.current;
-      lastToRef.current = to;
-    }, [path]);
-    // const from = change.from;
-    // const to = change.to;
+    const path = (state as any).path ?? "";
+    const to = path ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
+    const from = null; // from is provided to viewers via change.from below
 
     const value: Ctx = { defs, history, store, from, to, base, useHash, change, path };
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
@@ -190,7 +178,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
         // Top-level viewer support: also compute from-node and wrap when viewer provided
         if (viewer) {
           const toNode = rendered;
-          const fromNode = renderFromFallback();
+          const fromNode = renderFromViaChange();
           return renderWithViewer(fromNode, toNode);
         }
         return rendered;
@@ -214,14 +202,14 @@ export function createRouter<const Patterns extends Record<string, string>>(
     }
     if (viewer) {
       const toNode = rendered as React.ReactNode;
-      const fromNode = renderFromFallback();
+      const fromNode = renderFromViaChange();
       return renderWithViewer(fromNode, toNode) as React.ReactElement;
     }
     return rendered as React.ReactElement;
 
-    // helper: compose a "from" node via JSX-declared chain if possible
-    function renderFromFallback(): React.ReactNode | null {
-      const prev = getPrevMatch();
+    // helper: compose a "from" node using change.from path and JSX-declared chain
+    function renderFromViaChange(): React.ReactNode | null {
+      const prev = getMatchFromState(change?.from ?? null);
       if (!prev) return null;
       let nm = prev.name as RouteName;
       let node = index.get(nm);
@@ -240,7 +228,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     function renderWithViewer(fromNode: React.ReactNode | null, toNode: React.ReactNode | null): React.ReactNode {
       const toInfo = to ? toInfoOf(to) : null;
-      const fromMatch = getPrevMatch();
+      const fromMatch = getMatchFromState(change?.from ?? null);
       const fromInfo = fromMatch ? toInfoOf(fromMatch) : null;
       const direction: _Direction = mapDirection(change?.type);
       const Viewer = viewer!;
@@ -258,18 +246,21 @@ export function createRouter<const Patterns extends Record<string, string>>(
       );
     }
 
-    // track previous match across renders
-    function getPrevMatch(): RouteMatch<RouteName, any> | null {
-      prevRef.current = prevRef.current ?? null;
-      return prevRef.current;
+    // derive match from a RouterState-like snapshot
+    function getMatchFromState(state: any): RouteMatch<RouteName, any> | null {
+      if (!state) return null;
+      // Simple shape: { path }
+      let path: string | undefined = state.path as string | undefined;
+      // Complex shape: { index, stack[] }
+      if (!path && typeof state.index === "number" && Array.isArray(state.stack)) {
+        const idx = state.index as number;
+        path = idx >= 0 ? state.stack?.[idx]?.path : undefined;
+      }
+      if (!path) return null;
+      return defs.matchPath(path) as RouteMatch<RouteName, any> | null;
     }
   };
 
-  // prev match tracking ref shared across Routes renders
-  const prevRef: { current: RouteMatch<RouteName, any> | null } = { current: null } as any;
-
-  // update prev match at provider boundary when path changes
-  // Note: this effect runs inside RouterProvider to capture last to
 
   type LinkProps = ({ [K in RouteName]: { name: K; params?: ParamsOf<K> } }[RouteName]) &
     { children?: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>;
