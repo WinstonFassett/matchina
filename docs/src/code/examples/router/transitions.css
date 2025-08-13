@@ -1,0 +1,30 @@
+/* SWUP-style parallel transitions base */
+
+/* Scope container */
+[data-vt-dir] { position: relative; overflow: hidden; }
+.transition-slide { position: absolute; inset: 0; will-change: transform, opacity; }
+
+/* Z-order */
+.is-changing .transition-slide.is-next-container { z-index: 2; }
+.is-changing .transition-slide.is-previous-container { z-index: 1; }
+
+/* Forward */
+.is-changing[data-vt-dir="forward"] .transition-slide.is-next-container { animation: slide-in-left 250ms ease both; }
+.is-changing[data-vt-dir="forward"] .transition-slide.is-previous-container { animation: slide-out-left 250ms ease both; }
+
+/* Back */
+.is-changing[data-vt-dir="back"] .transition-slide.is-next-container { animation: slide-in-right 250ms ease both; }
+.is-changing[data-vt-dir="back"] .transition-slide.is-previous-container { animation: slide-out-right 250ms ease both; }
+
+/* Kept removal */
+.transition-slide.is-removing-container { animation: slide-far-left 250ms ease both; }
+
+@keyframes slide-in-left   { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes slide-out-left  { from { transform: translateX(0); }   to { transform: translateX(-12%); opacity: .9; } }
+@keyframes slide-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
+@keyframes slide-out-right { from { transform: translateX(0); }   to { transform: translateX(12%); opacity: .9; } }
+@keyframes slide-far-left  { from { transform: translateX(-100%);} to { transform: translateX(-200%); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-slide { animation: none !important; transition: none !important; }
+}

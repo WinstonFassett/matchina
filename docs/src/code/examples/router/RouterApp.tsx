@@ -1,5 +1,7 @@
 import React from "react";
 import { RouterProvider, Routes, Route, Link } from "./appRouter";
+import { SlideViewer } from "./viewers";
+import "./transitions.css";
 import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductReviews, User, DebugPanel } from "./RouterAppScreens";
 
 export const RouterApp: React.FC = () => {
@@ -16,7 +18,7 @@ export const RouterApp: React.FC = () => {
         </nav>
         <div>
           <div className="p-4">
-            <Routes>
+            <Routes viewer={SlideViewer}>
               <Route name="Home" view={Home} />
               <Route name="About" view={About} />
               <Route name="Products" view={Products}>
