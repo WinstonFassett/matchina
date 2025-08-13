@@ -21,7 +21,9 @@ export type ChildOf<M, K extends StatesOf<M>> =
       ? S[K] extends (...a: any[]) => infer D
         ? D extends { machine: infer C }
           ? C
-          : never
+          : D extends { data: { machine: infer C2 } }
+            ? C2
+            : never
         : never
       : never
     : never;
@@ -33,11 +35,11 @@ export type ActiveEvents<M, K extends StatesOf<M>> =
     : AllEventsOf<ChildOf<M, K>> | EventsOf<M, K>;
 
 // sendWhen: narrows event names to ActiveEvents<M, K> given a known parent key K.
-export function sendWhen<M extends { send: (t: string, ...p: any[]) => void }, K extends StatesOf<M>, E extends ActiveEvents<M, K>>(
+export function sendWhen<M extends { send: (...a: any[]) => any }, K extends StatesOf<M>, E extends ActiveEvents<M, K>>(
   machine: M,
   _key: K,
   type: E,
   ...params: any[]
 ) {
-  machine.send(type as string, ...params);
+  (machine.send as any)(type as any, ...params);
 }

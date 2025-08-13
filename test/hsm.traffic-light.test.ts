@@ -4,6 +4,7 @@ import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../playground/propagateSubmachines";
 import { withSubstates } from "../playground/withSubstates";
+import { routedFacade } from "../playground/routedFacade";
 
 function createTrafficLight() {
   const states = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
@@ -56,31 +57,33 @@ describe("Traffic Light HSM (Working/Broken)", () => {
 
   it("parent-only sends: tick routes to child when Working", () => {
     const ctrl = createSignalController();
+    const r = routedFacade(ctrl);
 
     expect(ctrl.getState().key).toBe("Working");
     // parent-only routing
-    ctrl.send("tick"); // Red -> Green
+    r.send("tick"); // Red -> Green
     const light1 = ctrl.getState().as("Working").data.machine as TrafficLight;
     expect(light1.getState().key).toBe("Green");
 
-    ctrl.send("tick"); // Green -> Yellow
+    r.send("tick"); // Green -> Yellow
     const light2 = ctrl.getState().as("Working").data.machine as TrafficLight;
     expect(light2.getState().key).toBe("Yellow");
   });
 
   it("break/repair swaps child lifecycle; repaired starts at Red", () => {
     const ctrl = createSignalController();
+    const r = routedFacade(ctrl);
 
     // advance child
-    ctrl.send("tick"); // Red->Green
+    r.send("tick"); // Red->Green
     expect((ctrl.getState().as("Working").data.machine as TrafficLight).getState().key).toBe("Green");
 
     // break parent
-    ctrl.send("break");
+    r.send("break");
     expect(ctrl.getState().key).toBe("Broken");
 
     // repair mounts a fresh child at initial Red
-    ctrl.send("repair");
+    r.send("repair");
     expect(ctrl.getState().key).toBe("Working");
     const light = ctrl.getState().as("Working").data.machine as TrafficLight;
     expect(light.getState().key).toBe("Red");

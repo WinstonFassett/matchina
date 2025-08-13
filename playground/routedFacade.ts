@@ -12,11 +12,11 @@ export type RoutedEventsOf<M> =
   );
 
 // A zero-runtime typed facade that widens `send` to RoutedEventsOf<M>.
-export function routedFacade<M extends { send: (t: string, ...p: any[]) => void }>(machine: M) {
+export function routedFacade<M extends { send: (...a: any[]) => any }>(machine: M) {
   return {
     ...machine,
     send: ((type: RoutedEventsOf<M>, ...params: any[]) => {
-      machine.send(type as string, ...params);
+      (machine.send as any)(type as any, ...params);
     }) as (type: RoutedEventsOf<M>, ...params: any[]) => void,
   } as const;
 }
