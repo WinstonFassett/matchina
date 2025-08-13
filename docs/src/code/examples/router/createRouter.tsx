@@ -264,7 +264,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const toInfo = t ? ({ key: `${String(t.name)}:${JSON.stringify(t.params ?? {})}`, name: String(t.name), params: t.params, path: buildPath(t.name, t.params) }) : null;
         const fromInfo = f ? ({ key: `${String(f.name)}:${JSON.stringify(f.params ?? {})}`, name: String(f.name), params: f.params, path: buildPath(f.name, f.params) }) : null;
         const direction: _Direction = mapDirection(change?.type);
-        const fromNode = V && f ? <V {...(f.params || {})} /> : null;
+        const fromNode = renderSubtree(name, true);
         const toNode = renderSubtree(name, false);
         const scopedChange = { type: change?.type ?? 'replace', from: fromInfo, to: toInfo } as _RouterChange;
         return (
