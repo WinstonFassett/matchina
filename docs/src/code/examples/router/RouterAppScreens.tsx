@@ -2,17 +2,29 @@ import React from "react";
 import { Link, store, Routes, useNavigation, useRouter } from "./appRouter";
 import { SlideViewer } from "./viewers";
 
-export const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
-export const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
+export const Home: React.FC = () => (
+  <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
+    <h3 className="text-xl font-semibold mb-1">Home</h3>
+    <p>Welcome!</p>
+  </div>
+);
+export const About: React.FC = () => (
+  <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
+    <h3 className="text-xl font-semibold mb-1">About</h3>
+    <p>About this app.</p>
+  </div>
+);
 // Inline Products list as a view so the Products-level SlideViewer can capture exits/entries (props-only)
 const ProductsIndex: React.FC = () => (
-  <div className="flex gap-2">
-    <Link name="ProductOverview" params={{ id: "42" }}>
-      <span className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700">View Product 42</span>
-    </Link>
-    <Link name="ProductOverview" params={{ id: "abc" }}>
-      <span className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600">View Product abc</span>
-    </Link>
+  <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
+    <div className="flex flex-wrap gap-2">
+      <Link name="ProductOverview" params={{ id: "42" }}>
+        <span className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700">View Product 42</span>
+      </Link>
+      <Link name="ProductOverview" params={{ id: "abc" }}>
+        <span className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600">View Product abc</span>
+      </Link>
+    </div>
   </div>
 );
 

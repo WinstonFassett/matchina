@@ -20,34 +20,39 @@ export const RouterApp: React.FC = () => {
               {debugVis ? 'Disable Debug' : 'Enable Debug'}
             </button>
           </div>
-          <nav style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <Link name="Home">Home</Link>
-            <Link name="About">About</Link>
-            <Link name="Products">Products</Link>
-            <Link name="ProductOverview" params={{ id: "42" }}>Product 42</Link>
-            <Link name="User" params={{ userId: "winston" }}>User winston</Link>
-          </nav>
-          <div>
-            <div className="p-4">
-              <Routes
-                viewer={SlideViewer}
-                keep={1}
-                views={{
-                  Home,
-                  About,
-                  Products,
-                  User,
-                  // Ensure site-level shell shows when inside product routes
-                  Product: Products,
-                  ProductOverview: Products,
-                  ProductSpecs: Products,
-                  ProductReviews: Products,
-                }}
-              />
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-neutral-900/80 shadow-sm backdrop-blur">
+            <div className="px-4 pt-4">
+              <nav className="flex flex-wrap gap-2 mb-3">
+                <Link name="Home">Home</Link>
+                <Link name="About">About</Link>
+                <Link name="Products">Products</Link>
+                <Link name="ProductOverview" params={{ id: "42" }}>Product 42</Link>
+                <Link name="User" params={{ userId: "winston" }}>User winston</Link>
+              </nav>
+            </div>
+            <div>
+              <div className="p-4">
+                <Routes
+                  viewer={SlideViewer}
+                  keep={1}
+                  views={{
+                    Home,
+                    About,
+                    Products,
+                    User,
+                    // Ensure site-level shell shows when inside product routes
+                    Product: Products,
+                    ProductOverview: Products,
+                    ProductSpecs: Products,
+                    ProductReviews: Products,
+                  }}
+                />
+              </div>
+            </div>
+            <div className="px-4 pb-4">
+              <DebugPanel />
             </div>
           </div>
-
-          <DebugPanel />
         </div>
       </DebugVisProvider>
     </RouterProvider>
