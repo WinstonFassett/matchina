@@ -76,6 +76,11 @@ export function createRouter<const Patterns extends Record<string, string>>(
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
+  // Snapshot provider: lets callers render a subtree with a frozen router context value
+  const RouterSnapshotProvider: React.FC<{ value: Ctx; children?: React.ReactNode }> = ({ value, children }) => {
+    return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
+  };
+
   function useRouterContext() {
     const ctx = useContext(RouterContext);
     if (!ctx) throw new Error("Router components must be used inside <RouterProvider>");
@@ -197,9 +202,15 @@ export function createRouter<const Patterns extends Record<string, string>>(
           ) {
             return;
           }
+          if (!path) return;
+          if (useHash) {
+            // In hash mode, let the native navigation update the browser history
+            // so Back/Forward work reliably. Do not prevent default.
+            return;
+          }
           e.preventDefault();
           e.stopPropagation();
-          if (path) history.push(path);
+          history.push(path);
         }}
       >
         {children ?? href}
@@ -216,5 +227,5 @@ export function createRouter<const Patterns extends Record<string, string>>(
   }
 
   // Expose a readability alias for Routes when used as a view-owned level
-  return { RouterProvider, useNavigation, useRoute, useRouter, Link, Routes, RouteLevel: Routes, Route, Outlet, routes: defs, defs, store, history };
+  return { RouterProvider, RouterSnapshotProvider, useNavigation, useRoute, useRouter, Link, Routes, RouteLevel: Routes, Route, Outlet, routes: defs, defs, store, history };
 }

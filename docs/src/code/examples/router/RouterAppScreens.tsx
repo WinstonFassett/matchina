@@ -1,29 +1,20 @@
 import React from "react";
-import { useNavigation, useRouter, Link, store, Routes } from "./appRouter";
+import { Link, store, Routes, useNavigation, useRouter } from "./appRouter";
 import { SlideViewer } from "./viewers";
 
 export const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
 export const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
-// Inline Products list as a view so the Products-level SlideViewer can capture exits/entries
-const ProductsIndex: React.FC = () => {
-  const nav = useNavigation();
-  return (
-    <div className="flex gap-2">
-      <button
-        className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
-        onClick={nav.goto("ProductOverview", { id: "42" })}
-      >
-        View Product 42
-      </button>
-      <button
-        className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
-        onClick={nav.goto("ProductOverview", { id: "abc" })}
-      >
-        View Product abc
-      </button>
-    </div>
-  );
-};
+// Inline Products list as a view so the Products-level SlideViewer can capture exits/entries (props-only)
+const ProductsIndex: React.FC = () => (
+  <div className="flex gap-2">
+    <Link name="ProductOverview" params={{ id: "42" }}>
+      <span className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700">View Product 42</span>
+    </Link>
+    <Link name="ProductOverview" params={{ id: "abc" }}>
+      <span className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600">View Product abc</span>
+    </Link>
+  </div>
+);
 
 export const Products: React.FC<React.PropsWithChildren> = () => {
   // Map both Products index and Product* to this level so viewer owns both states
@@ -45,47 +36,27 @@ export const Products: React.FC<React.PropsWithChildren> = () => {
     </div>
   );
 };
-export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ children, ...params}) => {
-  const nav = useNavigation();
-  const { to } = useRouter();
-  // Default to Overview tab if landing on /products/:id
 
-  if (!params) return <div>No params!!</div>;
-  const id = params.id;
-  // If we are on the bare Product route, redirect to the default tab (Overview)
-  React.useEffect(() => {
-    if (to?.name === 'Product' && String((to?.params as any)?.id ?? '') === String(id)) {
-      // replace so back button returns to previous page, not the intermediate shell URL
-      nav.replace('ProductOverview', { id })();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [to?.name, (to?.params as any)?.id, id]);
-  const isActive = (name: string) => to?.name === name && String((to?.params as any)?.id ?? '') === String(id);
-  
-  const ProductTab: React.FC<{ name: 'ProductOverview' | 'ProductSpecs' | 'ProductReviews'; label: string }> = ({ name, label }) => {
-    const active = isActive(name);
-    const clsBase = "px-2 py-1 rounded";
-    const clsActive = "bg-blue-600 text-white cursor-default pointer-events-none";
-    const clsDefault = "hover:bg-slate-100 dark:hover:bg-neutral-800";
-    if (active) return <span aria-current="page" data-active className={`${clsBase} ${clsActive}`}>{label}</span>;
-    return (
-      <Link name={name as any} params={{ id }}>
-        <span className={`${clsBase} ${clsDefault}`}>{label}</span>
-      </Link>
-    );
-  };
+export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ children, id }) => {
+  // Props-only tab link; no active highlighting to keep previous view inert
+  const ProductTabLink: React.FC<{ name: 'ProductOverview' | 'ProductSpecs' | 'ProductReviews'; label: string }> = ({ name, label }) => (
+    <Link name={name as any} params={{ id }}>
+      <span className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800">{label}</span>
+    </Link>
+  );
   return (
     <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
-      <h3 className="text-xl font-semibold mb-1">Product {params.id}</h3>
+      <h3 className="text-xl font-semibold mb-1">Product {id}</h3>
       <nav className="flex items-center gap-2 mb-3">
-        <ProductTab name="ProductOverview" label="Overview" />
-        <ProductTab name="ProductSpecs" label="Specs" />
-        <ProductTab name="ProductReviews" label="Reviews" />
+        <ProductTabLink name="ProductOverview" label="Overview" />
+        <ProductTabLink name="ProductSpecs" label="Specs" />
+        <ProductTabLink name="ProductReviews" label="Reviews" />
       </nav>
-      {/* Descendant route level for tab content */}
+      {/* Descendant route level for tab content. If bare Product, show Overview default */}
       <Routes
         viewer={SlideViewer}
         views={{
+          Product: ProductOverview,
           ProductOverview,
           ProductSpecs,
           ProductReviews,
