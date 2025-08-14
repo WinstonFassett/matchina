@@ -42,22 +42,18 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   prevViewKey,
   children,
 }) => {
-  // Map change.type to direction and persist last non-null value for stability
-  const mapDir = React.useCallback((t?: string): Direction => {
+  // Direction: prefer prop from Routes; fallback to change.type when absent
+  const lastDirRef = React.useRef<Direction>(direction);
+  const effectiveDir: Direction = React.useMemo(() => {
+    if (direction) {
+      lastDirRef.current = direction;
+      return direction;
+    }
+    const t = change?.type as string | undefined;
     if (t === 'pop') return 'back';
     if (t === 'replace') return 'replace';
     return 'forward';
-  }, []);
-  const lastDirRef = React.useRef<Direction>(direction);
-  const effectiveDir: Direction = React.useMemo(() => {
-    const next = mapDir(change?.type as string | undefined);
-    // If change is undefined/null, reuse last direction for this paint
-    if (change && change.type) {
-      lastDirRef.current = next;
-      return next;
-    }
-    return lastDirRef.current;
-  }, [change, mapDir]);
+  }, [direction, change?.type]);
   // Use route identity at this scope (name + params) to decide if this level changed
   const makeRouteKey = React.useCallback((m: any): string | null => {
     if (!m) return null;
@@ -71,14 +67,12 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const scopeChanged = React.useMemo(() => {
     // Prefer explicit per-level view keys when provided by Routes
     if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
-      // If we have a previous layer and keep>0, treat first render after change as changed
-      if (!prevViewKey && typeof viewKey !== 'undefined' && prevChildren && keep > 0) return true;
       return Boolean(prevViewKey && viewKey && prevViewKey !== viewKey);
     }
     // Fallback: Only animate when BOTH this level's prev and curr matches exist AND differ
     if (prevRouteKey && currRouteKey) return prevRouteKey !== currRouteKey;
     return false;
-  }, [viewKey, prevViewKey, prevChildren, keep, prevRouteKey, currRouteKey]);
+  }, [viewKey, prevViewKey, prevRouteKey, currRouteKey]);
 
   // Debug: log per-level decisions (remove once stable)
   React.useEffect(() => {

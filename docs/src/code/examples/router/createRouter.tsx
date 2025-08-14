@@ -65,22 +65,23 @@ export function createRouter<const Patterns extends Record<string, string>>(
     useMachine(store);
     React.useEffect(() => { history.start(); }, []);
 
-    // Derive current route from store, and maintain prev path locally so previous is stable for animation
+    // Derive current and previous routes synchronously in the same render
     const change = store.getChange?.() ?? null;
     const state = store.getState();
     const path = (state as any).path ?? "";
     const prevPathRef = React.useRef<string>("");
-    const [fromPath, setFromPath] = React.useState<string>("");
-    React.useEffect(() => {
-      if (!path) return;
-      // When path changes, expose previous path via state for one full render cycle
-      setFromPath(prevPathRef.current);
+    const prevPath = prevPathRef.current;
+    if (path && prevPathRef.current !== path) {
+      // Update ref immediately so next render reflects this path as previous
       prevPathRef.current = path;
-    }, [path]);
+    }
     const to = path ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
-    const from = fromPath ? (defs.matchPath(fromPath) as RouteMatch<RouteName, any> | null) : null;
+    // Prefer previous path from the store change (handles rapid multi-push correctly)
+    const changePrevPath = (change as any)?.fromPath || (change as any)?.from?.path || (change as any)?.prevPath || (change as any)?.previousPath || "";
+    const effectivePrevPath = changePrevPath || prevPath;
+    const from = effectivePrevPath ? (defs.matchPath(effectivePrevPath) as RouteMatch<RouteName, any> | null) : null;
 
-    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath };
+    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath: effectivePrevPath };
     // Debug: trace path and route resolution
     React.useEffect(() => {
       // eslint-disable-next-line no-console
@@ -131,9 +132,9 @@ export function createRouter<const Patterns extends Record<string, string>>(
     views?: Record<string, React.ComponentType<any>>; // optional app-level view map
   }> = ({ children, viewer, keep, classNameBase, views }) => {
     const ctxAll = useRouterContext();
-    const { change, to, from, fromPath } = ctxAll;
+    const { change, to, from, fromPath, path } = ctxAll as any;
     if (!viewer) return null;
-    const direction: _Direction = mapDirection(change?.type);
+    const direction: _Direction = mapDirection(change?.type, fromPath, path);
     const TopV = viewer as React.FC<_ViewerProps>;
 
     // Determine if current match is within this level's scope
@@ -157,12 +158,12 @@ export function createRouter<const Patterns extends Record<string, string>>(
     }, [inScope, to, views]);
     // Compute previous view identity at this level synchronously from `from` route
     const prevScopeKeyFromRoute = React.useMemo(() => {
-      if (!inScope || !from || !views) return null;
+      if (!from || !views) return null;
       const view = views[from.name as any] as React.ComponentType<any> | undefined;
       if (!view) return null;
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
       return viewId as string;
-    }, [inScope, from, views]);
+    }, [from, views]);
     const scopeChanged = React.useMemo(() => {
       return Boolean(currScopeKey && prevScopeKeyFromRoute && currScopeKey !== prevScopeKeyFromRoute);
     }, [currScopeKey, prevScopeKeyFromRoute]);
@@ -254,10 +255,21 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
 
   // Helper: map store change type to direction hint
-  function mapDirection(t?: string): _Direction {
+  function mapDirection(t?: string, fromPath?: string, toPath?: string): _Direction {
     if (t === "pop") return "back";
-    if (t === "replace") return "replace";
-    return "forward";
+    if (t === "push") return "forward";
+    // Infer for replace/unknown using path depth/length
+    const a = fromPath || "";
+    const b = toPath || "";
+    if (a && b && a !== b) {
+      const depth = (p: string) => (p.split(/[#/]/).filter(Boolean).length);
+      const da = depth(a), db = depth(b);
+      if (db < da) return "back";
+      if (db > da) return "forward";
+      // Same depth but changed path → assume back for browser back
+      return "back";
+    }
+    return "replace";
   }
 
   // Expose a readability alias for Routes when used as a view-owned level
