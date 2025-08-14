@@ -82,14 +82,14 @@
 [data-vt-changing][data-vt-mode="gradient"][data-vt-dir="forward"] .vt-scope.is-previous-container {
   -webkit-clip-path: inset(0 0 0 0);
   clip-path: inset(0 0 0 0);
-  animation: vt-clip-prev-ltr var(--vt-duration, 320ms) cubic-bezier(0.5, 0, 0.15, 1) both;
+  animation: vt-clip-prev-ltr var(--vt-duration, 1000ms) cubic-bezier(0.5, 0, 0.15, 1) both;
 }
 
 /* Back: RIGHT -> LEFT reveal */
 [data-vt-changing][data-vt-mode="gradient"][data-vt-dir="back"] .vt-scope.is-previous-container {
   -webkit-clip-path: inset(0 0 0 0);
   clip-path: inset(0 0 0 0);
-  animation: vt-clip-prev-rtl var(--vt-duration, 320ms) cubic-bezier(0.5, 0, 0.15, 1) both;
+  animation: vt-clip-prev-rtl var(--vt-duration, 1000ms) cubic-bezier(0.5, 0, 0.15, 1) both;
 }
 
 @keyframes vt-clip-prev-ltr {
@@ -101,17 +101,7 @@
   to   { -webkit-clip-path: inset(0 100% 0 0); clip-path: inset(0 100% 0 0); }
 }
 
-/* Ensure all route surfaces are opaque by default to prevent show-through */
-.vt-scope.is-next-container,
-.vt-scope.is-previous-container {
-  background: #ffffff;
-}
-@media (prefers-color-scheme: dark) {
-  .vt-scope.is-next-container,
-  .vt-scope.is-previous-container {
-    background: #171717; /* neutral-900 */
-  }
-}
+/* Remove hardcoded backgrounds; surfaces should be themed via Tailwind in components */
 
 
 @media (prefers-reduced-motion: reduce) {

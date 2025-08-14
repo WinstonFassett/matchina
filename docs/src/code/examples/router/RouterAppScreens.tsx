@@ -39,15 +39,14 @@ export const Products: React.FC<React.PropsWithChildren> = () => {
   } as const;
 
   return (
-    <div className="">
-      <div className="p-4">
-        <h3>Products</h3>
+    <div className="rounded-xl border border-black/10 dark:border-white/10 bg-emerald-50 text-slate-900 dark:bg-emerald-900/20 dark:text-slate-100 shadow-sm">
+      <div className="px-4 py-3 border-b border-black/5 dark:border-white/10">
+        <h3 className="text-xl font-semibold">Products</h3>
       </div>
       {/* Descendant route level for products list vs product shell */}
       <div className="p-4">
-        <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-4">
-          <Routes viewer={SlideViewer} views={ProductShellViews as any} />
-        </div>
+        {/* Leave inner views to render their own cards; wrapper provides themed, opaque bg */}
+        <Routes viewer={SlideViewer} views={ProductShellViews as any} />
       </div>
     </div>
   );
