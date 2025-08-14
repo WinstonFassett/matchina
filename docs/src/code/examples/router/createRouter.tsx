@@ -65,12 +65,18 @@ export function createRouter<const Patterns extends Record<string, string>>(
     useMachine(store);
     React.useEffect(() => { history.start(); }, []);
 
-    // Derive current and previous routes from router-store
+    // Derive current route from store, and maintain prev path locally so previous is stable for animation
     const change = store.getChange?.() ?? null;
-    // change.to.error
     const state = store.getState();
     const path = (state as any).path ?? "";
-    const fromPath = (change?.from as any)?.path ?? "";
+    const prevPathRef = React.useRef<string>("");
+    const [fromPath, setFromPath] = React.useState<string>("");
+    React.useEffect(() => {
+      if (!path) return;
+      // When path changes, expose previous path via state for one full render cycle
+      setFromPath(prevPathRef.current);
+      prevPathRef.current = path;
+    }, [path]);
     const to = path ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
     const from = fromPath ? (defs.matchPath(fromPath) as RouteMatch<RouteName, any> | null) : null;
 

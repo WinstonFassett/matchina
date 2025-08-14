@@ -46,6 +46,13 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     const params = (m as any).params ?? {};
     try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
   }, [match, (change as any)?.to]);
+  const prevKey = React.useMemo(() => {
+    const m: any = prevMatch ?? (change as any)?.from ?? null;
+    if (!m) return null;
+    const name = (m as any).name ?? 'unknown';
+    const params = (m as any).params ?? {};
+    try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
+  }, [prevMatch, (change as any)?.from]);
 
   // Ensure dir attribute is applied; no animation waiting in this debug mode
   React.useEffect(() => {
@@ -54,11 +61,20 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     scope.setAttribute("data-vt-dir", direction);
   }, [direction]);
 
+  const changing = keep > 0 && Boolean(prevChildren);
+  React.useEffect(() => {
+    const scope = scopeRef.current;
+    if (!scope) return;
+    if (changing) scope.setAttribute('data-vt-changing', '1');
+    else scope.removeAttribute('data-vt-changing');
+  }, [changing]);
+
   return (
-    <div ref={scopeRef} data-vt-dir={direction}>
+    <div ref={scopeRef} data-vt-dir={direction} data-vt-changing={changing ? '1' : undefined}>
       {/* Previous (pink) */}
       {keep > 0 && prevChildren ? (
         <div
+          key={prevKey ?? 'prev'}
           className={`${classNameBase} is-previous-container`}
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         >
@@ -71,6 +87,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       ) : null}
       {/* Current (green) */}
       <div
+        key={currKey ?? 'curr'}
         className={`${classNameBase} is-next-container`}
         style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
       >

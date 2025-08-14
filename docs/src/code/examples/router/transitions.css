@@ -18,13 +18,13 @@
 .vt-scope.is-next-container { z-index: 2; }
 .vt-scope.is-previous-container { z-index: 1; }
 
-/* Forward (push) */
-[data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
-[data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
+/* Forward (push) — only when a change is active */
+[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
+[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
 
-/* Back (pop) */
-[data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
-[data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
+/* Back (pop) — only when a change is active */
+[data-vt-changing][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
+[data-vt-changing][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
 
 /* Optional: removing previous after keep>0 */
 .vt-scope.is-removing-container { animation: vt-slide-far-left 240ms ease both; }
