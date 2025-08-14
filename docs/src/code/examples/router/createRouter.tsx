@@ -70,6 +70,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const state = store.getState();
     const path = (state as any).path ?? "";
     const prevPathRef = React.useRef<string>("");
+    const prevIdxRef = React.useRef<number>(-1);
     const prevPath = prevPathRef.current;
     if (path && prevPathRef.current !== path) {
       // Update ref immediately so next render reflects this path as previous
@@ -81,8 +82,24 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const effectivePrevPath = changePrevPath || prevPath;
     const from = effectivePrevPath ? (defs.matchPath(effectivePrevPath) as RouteMatch<RouteName, any> | null) : null;
 
-    // Compute navigation direction directly from change.type
-    const navDir: _Direction = change?.type === 'pop' ? 'back' : (change?.type === 'replace' ? 'replace' : 'forward');
+    // Compute navigation direction using history.state.__vtIdx for POP
+    const currIdx = (() => {
+      const st: any = (typeof window !== 'undefined' ? window.history.state : null) || {};
+      return typeof st.__vtIdx === 'number' ? (st.__vtIdx as number) : prevIdxRef.current;
+    })();
+    if (prevIdxRef.current === -1) {
+      prevIdxRef.current = currIdx;
+    }
+    let navDir: _Direction;
+    if (change?.type === 'pop') {
+      navDir = currIdx < prevIdxRef.current ? 'back' : (currIdx > prevIdxRef.current ? 'forward' : 'replace');
+    } else if (change?.type === 'replace') {
+      navDir = 'replace';
+    } else {
+      navDir = 'forward';
+    }
+    // Update index ref after computing direction
+    prevIdxRef.current = currIdx;
 
     const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath: effectivePrevPath, navDir };
     // Debug: trace path and route resolution
