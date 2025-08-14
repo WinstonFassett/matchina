@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOMClient from "react-dom/client";
 
 // Shared types used by the adapter and viewers
 export type Direction = "forward" | "back" | "replace";
@@ -72,14 +73,12 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     <div ref={scopeRef} data-vt-dir={direction}>
       {/* Previous (pink) */}
       {(keep > 0 ? kept : []).map((k, i) => (
-        <div
+        <Detach
           key={k.id + ":" + i}
+          element={k.node}
           className={`${classNameBase} is-previous-container`}
-          aria-hidden="true"
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
-        >
-          {k.node}
-        </div>
+        />
       ))}
       {/* Current (green) */}
       <div
@@ -92,3 +91,29 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   );
 }
 ;
+
+// Detach renders the given element into its own React root, freezing its context & state at capture time.
+const Detach: React.FC<{
+  element: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}> = ({ element, className, style }) => {
+  const hostRef = React.useRef<HTMLDivElement | null>(null);
+  const rootRef = React.useRef<any>(null);
+  // Freeze the element snapshot on first render
+  const snapshotRef = React.useRef<React.ReactNode>(element);
+
+  React.useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const root = ReactDOMClient.createRoot(host);
+    rootRef.current = root;
+    root.render(<>{snapshotRef.current}</>);
+    return () => {
+      root.unmount();
+      rootRef.current = null;
+    };
+  }, []);
+
+  return <div className={className} style={style} ref={hostRef} />;
+};
