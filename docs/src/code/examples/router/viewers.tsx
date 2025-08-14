@@ -9,6 +9,7 @@ export type ViewerProps = {
   change: any | null;
   direction?: Direction;
   keep?: number;
+  exitMaxMs?: number; // safety max duration to keep exiting layer mounted
   classNameBase?: string;
   match?: any;
   prevMatch?: any;
@@ -39,6 +40,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   change,
   direction = "forward",
   keep = 0,
+  exitMaxMs = 700,
   classNameBase = "vt-scope",
   match,
   prevMatch,
@@ -89,28 +91,75 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     return false;
   }, [viewKey, prevViewKey, prevRouteKey, currRouteKey]);
 
+  // Exit lifecycle: keep previous children mounted until transition end (or timeout)
+  const [exitLayer, setExitLayer] = React.useState<null | { node: React.ReactNode; key: string }>(null);
+  const prevContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const timeoutRef = React.useRef<number | null>(null);
+  // When a new transition occurs at this level, capture the previous children as an exit layer
+  React.useEffect(() => {
+    if (keep > 0 && prevChildren && scopeChanged) {
+      const k = (prevRouteKey ? `${prevRouteKey}::prev` : 'prev');
+      setExitLayer({ node: prevChildren, key: k });
+    }
+    // If no scope change or no prevChildren, clear any lingering exit layer
+    if (!(keep > 0 && prevChildren && scopeChanged)) {
+      setExitLayer(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keep, prevChildren, scopeChanged, prevRouteKey]);
+  // Attach transition/animation end listeners to remove exit layer
+  React.useEffect(() => {
+    if (!exitLayer) return;
+    const el = prevContainerRef.current;
+    if (!el) return;
+    let done = false;
+    const clear = () => {
+      if (done) return;
+      done = true;
+      setExitLayer(null);
+      if (timeoutRef.current != null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+    const onEnd = () => clear();
+    el.addEventListener('transitionend', onEnd, { once: true } as any);
+    el.addEventListener('animationend', onEnd, { once: true } as any);
+    timeoutRef.current = window.setTimeout(clear, exitMaxMs);
+    return () => {
+      el.removeEventListener('transitionend', onEnd as any);
+      el.removeEventListener('animationend', onEnd as any);
+      if (timeoutRef.current != null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [exitLayer, exitMaxMs]);
+
   // Debug: log per-level decisions when debug is enabled
   React.useEffect(() => {
     if (!debug) return;
     // eslint-disable-next-line no-console
-    console.debug('[SlideViewer]', { level: classNameBase, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir });
-  }, [debug, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
+    console.debug('[SlideViewer]', { level: classNameBase, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir, hasExit: !!exitLayer });
+  }, [debug, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase, exitLayer]);
 
   return (
     <div
       className={`${classNameBase}-scope`}
       data-vt-dir={effectiveDir}
-      data-vt-changing={keep > 0 && !!prevChildren && scopeChanged ? 1 : undefined}
+      data-vt-changing={exitLayer ? 1 : undefined}
       style={{ display: 'grid' }}
     >
       {/* Previous (pink) */}
-      {keep > 0 && prevChildren && scopeChanged ? (
+      {exitLayer ? (
         <div
-          key={(prevRouteKey ? `${prevRouteKey}::prev` : 'prev')}
+          key={exitLayer.key}
+          ref={prevContainerRef}
           className={`${classNameBase} is-previous-container`}
-          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 } : undefined}
+          data-vt-exiting="1"
+          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8, opacity: 0.92 } : undefined}
         >
-          {prevChildren}
+          {exitLayer.node}
         </div>
       ) : null}
       {/* Current (green) */}
