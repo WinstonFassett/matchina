@@ -175,7 +175,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const view = views[to.name as any] as React.ComponentType<any> | undefined;
       if (!view) return null;
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
-      return viewId as string;
+      const paramsStr = (() => { try { return JSON.stringify((to as any).params ?? {}); } catch { return 'params'; } })();
+      return `${viewId}:${(to as any).name}:${paramsStr}` as string;
     }, [inScope, to, views]);
     // Compute previous view identity at this level synchronously from `from` route
     const prevScopeKeyFromRoute = React.useMemo(() => {
@@ -183,7 +184,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const view = views[from.name as any] as React.ComponentType<any> | undefined;
       if (!view) return null;
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
-      return viewId as string;
+      const paramsStr = (() => { try { return JSON.stringify((from as any).params ?? {}); } catch { return 'params'; } })();
+      return `${viewId}:${(from as any).name}:${paramsStr}` as string;
     }, [from, views]);
     const scopeChanged = React.useMemo(() => {
       return Boolean(currScopeKey && prevScopeKeyFromRoute && currScopeKey !== prevScopeKeyFromRoute);
