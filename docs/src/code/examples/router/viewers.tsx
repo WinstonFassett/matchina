@@ -71,12 +71,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const scopeChanged = React.useMemo(() => {
     // Prefer explicit per-level view keys when provided by Routes
     if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
+      // If we have a previous layer and keep>0, treat first render after change as changed
+      if (!prevViewKey && typeof viewKey !== 'undefined' && prevChildren && keep > 0) return true;
       return Boolean(prevViewKey && viewKey && prevViewKey !== viewKey);
     }
     // Fallback: Only animate when BOTH this level's prev and curr matches exist AND differ
     if (prevRouteKey && currRouteKey) return prevRouteKey !== currRouteKey;
     return false;
-  }, [viewKey, prevViewKey, prevRouteKey, currRouteKey]);
+  }, [viewKey, prevViewKey, prevChildren, keep, prevRouteKey, currRouteKey]);
 
   // Debug: log per-level decisions (remove once stable)
   React.useEffect(() => {

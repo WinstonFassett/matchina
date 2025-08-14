@@ -147,9 +147,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
       ? React.createElement(views[from.name as any] as React.ComponentType<any>, { ...(from as any).params })
       : null;
 
-    // Track previous stable scope key to detect local changes.
-    // Key = effective view component identity only (ignore params).
-    const prevScopeKeyRef = React.useRef<string | null>(null);
+    // Compute current view identity at this level (component id)
     const currScopeKey = React.useMemo(() => {
       if (!inScope || !to || !views) return null;
       const view = views[to.name as any] as React.ComponentType<any> | undefined;
@@ -157,13 +155,17 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
       return viewId as string;
     }, [inScope, to, views]);
+    // Compute previous view identity at this level synchronously from `from` route
+    const prevScopeKeyFromRoute = React.useMemo(() => {
+      if (!inScope || !from || !views) return null;
+      const view = views[from.name as any] as React.ComponentType<any> | undefined;
+      if (!view) return null;
+      const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
+      return viewId as string;
+    }, [inScope, from, views]);
     const scopeChanged = React.useMemo(() => {
-      const prev = prevScopeKeyRef.current;
-      return Boolean(currScopeKey && prev && currScopeKey !== prev);
-    }, [currScopeKey]);
-    React.useEffect(() => {
-      if (currScopeKey) prevScopeKeyRef.current = currScopeKey;
-    }, [currScopeKey]);
+      return Boolean(currScopeKey && prevScopeKeyFromRoute && currScopeKey !== prevScopeKeyFromRoute);
+    }, [currScopeKey, prevScopeKeyFromRoute]);
 
     // If keep is not provided by caller, auto-derive it from scope change
     const effectiveKeep = keep ?? (scopeChanged ? 1 : 0);
@@ -204,7 +206,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
         prevChildren={prevChildren as any}
         prevCtx={prevCtx as any}
         viewKey={currScopeKey ?? undefined}
-        prevViewKey={prevScopeKeyRef.current ?? undefined}
+        prevViewKey={prevScopeKeyFromRoute ?? undefined}
       >
         {content}
         {/* Provide prevChildren through children prop extension via React.cloneElement? Instead, rely on viewer to render prev from prevMatch. */}
