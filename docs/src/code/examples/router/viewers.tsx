@@ -33,7 +33,8 @@ export const DebugVisProvider: React.FC<{ value: boolean; children?: React.React
 export const useDebugVis = () => React.useContext(DebugVisContext);
 
 // Animation mode context (presentation-level). Defaults to slideshow for both directions.
-type AnimMode = 'slideshow' | 'slide';
+// Extended with 'circle' and 'gradient' modes; pointer-origin will default to center for now.
+type AnimMode = 'slideshow' | 'slide' | 'circle' | 'gradient';
 type AnimModeConfig = { forward: AnimMode; back: AnimMode };
 const AnimModeContext = React.createContext<AnimModeConfig>({ forward: 'slideshow', back: 'slideshow' });
 export const AnimModeProvider: React.FC<{ value: Partial<AnimModeConfig>; children?: React.ReactNode; }> = ({ value, children }) => {
@@ -96,6 +97,8 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   // IMPORTANT: only use props from this Routes level; do NOT fall back to global change.to/from
   const currRouteKey = React.useMemo(() => makeRouteKey(match ?? null), [makeRouteKey, match]);
   const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? null), [makeRouteKey, prevMatch]);
+  const currRouteName = React.useMemo(() => (match ? String((match as any).name ?? '') : ''), [match]);
+  const prevRouteName = React.useMemo(() => (prevMatch ? String((prevMatch as any).name ?? '') : ''), [prevMatch]);
   const scopeChanged = React.useMemo(() => {
     // Prefer explicit per-level view keys when provided by Routes
     if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
@@ -110,14 +113,13 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const [exitLayer, setExitLayer] = React.useState<null | { node: React.ReactNode; key: string }>(null);
   const prevContainerRef = React.useRef<HTMLDivElement | null>(null);
   const timeoutRef = React.useRef<number | null>(null);
-  // When a new transition occurs at this level, capture the previous children as an exit layer
-  React.useEffect(() => {
+  // When a new transition occurs at this level, capture the previous children as an exit layer.
+  // Use layout effect to avoid a paint before the container has [data-vt-changing].
+  React.useLayoutEffect(() => {
     if (keep > 0 && prevChildren && scopeChanged) {
       const k = (prevRouteKey ? `${prevRouteKey}::prev` : 'prev');
       setExitLayer({ node: prevChildren, key: k });
-    }
-    // If no scope change or no prevChildren, clear any lingering exit layer
-    if (!(keep > 0 && prevChildren && scopeChanged)) {
+    } else {
       setExitLayer(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,6 +167,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       data-vt-mode-forward={animMode.forward}
       data-vt-mode-back={animMode.back}
       data-vt-mode={effectiveDir === 'back' ? animMode.back : (effectiveDir === 'forward' ? animMode.forward : 'slide')}
+      // Only animate when an exit layer is actually mounted at this level
       data-vt-changing={exitLayer ? 1 : undefined}
       style={{ display: 'grid' }}
     >
@@ -175,6 +178,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
           ref={prevContainerRef}
           className={`${classNameBase} is-previous-container`}
           data-vt-exiting="1"
+          data-vt-view={prevRouteName || undefined}
           style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8, opacity: 0.92 } : undefined}
         >
           {exitLayer.node}
@@ -184,6 +188,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       <div
         key={(currRouteKey ? `${currRouteKey}::curr` : 'curr')}
         className={`${classNameBase} is-next-container`}
+        data-vt-view={currRouteName || undefined}
         style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
       >
         {children ?? null}

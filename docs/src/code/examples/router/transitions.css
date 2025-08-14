@@ -1,4 +1,7 @@
 /* SWUP-style parallel transitions aligned with SlideViewer */
+/* Theme-aware defaults for surface background and duration */
+:root { --vt-surface-bg: #ffffff; --vt-duration: 320ms; }
+@media (prefers-color-scheme: dark) { :root { --vt-surface-bg: #0a0a0a; } }
 
 /* Scope container uses grid to prevent collapse while overlapping */
 [data-vt-dir] {
@@ -11,7 +14,14 @@
 .vt-scope {
   grid-area: stack;
   position: relative;
-  will-change: transform, opacity;
+  /* Hint the compositor for smoother shape/mask animations */
+  will-change: transform, opacity, clip-path, -webkit-mask-position, mask-position;
+  /* Constrain reveals to each layer's box */
+  overflow: hidden;
+  contain: paint;
+  /* Surface background to avoid muddying text through partial masks */
+  background: var(--vt-surface-bg, transparent);
+  color: var(--vt-surface-fg, inherit);
 }
 
 /* Layering */
@@ -19,16 +29,16 @@
 .vt-scope.is-previous-container { z-index: 1; }
 
 /* Mode: slide (short shift with fade) */
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right var(--vt-duration, 320ms) ease both; }
 
 /* Mode: slideshow (full slide, no fade) */
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-ss-in-left 320ms ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-ss-out-left 320ms ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-ss-in-right 320ms ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-ss-out-right 320ms ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-ss-in-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-ss-out-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-ss-in-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-ss-out-right var(--vt-duration, 320ms) ease both; }
 
 /* Optional: removing previous after keep>0 */
 .vt-scope.is-removing-container { animation: vt-slide-far-left 240ms ease both; }
@@ -44,6 +54,80 @@
 @keyframes vt-ss-out-left  { from { transform: translateX(0); }   to { transform: translateX(-100%); } }
 @keyframes vt-ss-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
 @keyframes vt-ss-out-right { from { transform: translateX(0); }   to { transform: translateX(100%); } }
+
+/* --------------------------------------- */
+/* Circle reveal (center origin for now)   */
+/* Entering layer reveals; exiting stays   */
+/* --------------------------------------- */
+[data-vt-changing][data-vt-mode="circle"] .vt-scope.is-next-container {
+  /* Ensure fully clipped at first frame to prevent blink */
+  clip-path: circle(0% at 50% 50%);
+  /* Start fully clipped; animation reveals to full */
+  animation: vt-circle-in-center var(--vt-duration, 320ms) cubic-bezier(0.5, 0, 0.15, 1) both;
+}
+
+@keyframes vt-circle-in-center {
+  from { clip-path: circle(0% at 50% 50%); }
+  to   { clip-path: circle(150% at 50% 50%); }
+}
+
+/* --------------------------------------- */
+/* Gradient wipe (mask on entering only)   */
+/* RTL for forward, LTR for back           */
+/* --------------------------------------- */
+[data-vt-changing][data-vt-mode="gradient"][data-vt-dir="forward"] .vt-scope.is-next-container {
+  /* Apply mask only to entering */
+  -webkit-mask-image: linear-gradient(to left, transparent 33.33%, white 66.66%);
+  -webkit-mask-size: 300% 100%;
+  -webkit-mask-position: 100% 0%;
+  mask-image: linear-gradient(to left, transparent 33.33%, white 66.66%);
+  mask-size: 300% 100%;
+  mask-position: 100% 0%;
+  animation: vt-grad-in-rtl var(--vt-duration, 320ms) cubic-bezier(0.5, 0, 0.15, 1) both;
+}
+
+[data-vt-changing][data-vt-mode="gradient"][data-vt-dir="back"] .vt-scope.is-next-container {
+  -webkit-mask-image: linear-gradient(to right, transparent 33.33%, white 66.66%);
+  -webkit-mask-size: 300% 100%;
+  -webkit-mask-position: 100% 0%;
+  mask-image: linear-gradient(to right, transparent 33.33%, white 66.66%);
+  mask-size: 300% 100%;
+  mask-position: 100% 0%;
+  animation: vt-grad-in-ltr var(--vt-duration, 320ms) cubic-bezier(0.5, 0, 0.15, 1) both;
+}
+
+@keyframes vt-grad-in-rtl {
+  from { -webkit-mask-position: 100% 0%; mask-position: 100% 0%; }
+  to   { -webkit-mask-position: 0% 0%;   mask-position: 0% 0%; }
+}
+@keyframes vt-grad-in-ltr {
+  from { -webkit-mask-position: 100% 0%; mask-position: 100% 0%; }
+  to   { -webkit-mask-position: 0% 0%;   mask-position: 0% 0%; }
+}
+
+/* --------------------------------------- */
+/* Demo palette: per-view surface colors   */
+/* Sets CSS vars so both bg and text adapt */
+/* --------------------------------------- */
+.vt-scope[data-vt-view="Home"]              { --vt-surface-bg: #fff1f2; --vt-surface-fg: #881337; }
+.vt-scope[data-vt-view="About"]             { --vt-surface-bg: #f0f9ff; --vt-surface-fg: #0c4a6e; }
+.vt-scope[data-vt-view="Products"]          { --vt-surface-bg: #ecfdf5; --vt-surface-fg: #065f46; }
+.vt-scope[data-vt-view="Product"]           { --vt-surface-bg: #fef3c7; --vt-surface-fg: #7c2d12; }
+.vt-scope[data-vt-view="ProductOverview"]   { --vt-surface-bg: #ede9fe; --vt-surface-fg: #4c1d95; }
+.vt-scope[data-vt-view="ProductSpecs"]      { --vt-surface-bg: #e0f2fe; --vt-surface-fg: #075985; }
+.vt-scope[data-vt-view="ProductReviews"]    { --vt-surface-bg: #f5f3ff; --vt-surface-fg: #3730a3; }
+.vt-scope[data-vt-view="User"]              { --vt-surface-bg: #fef2f2; --vt-surface-fg: #7f1d1d; }
+
+@media (prefers-color-scheme: dark) {
+  .vt-scope[data-vt-view="Home"]            { --vt-surface-bg: #3f1b27; --vt-surface-fg: #fde7ef; }
+  .vt-scope[data-vt-view="About"]           { --vt-surface-bg: #0b2533; --vt-surface-fg: #d9f2ff; }
+  .vt-scope[data-vt-view="Products"]        { --vt-surface-bg: #0d2b24; --vt-surface-fg: #d5fff3; }
+  .vt-scope[data-vt-view="Product"]         { --vt-surface-bg: #2b1f0a; --vt-surface-fg: #ffefcc; }
+  .vt-scope[data-vt-view="ProductOverview"] { --vt-surface-bg: #20103f; --vt-surface-fg: #efe7ff; }
+  .vt-scope[data-vt-view="ProductSpecs"]    { --vt-surface-bg: #0a2736; --vt-surface-fg: #d8f1ff; }
+  .vt-scope[data-vt-view="ProductReviews"]  { --vt-surface-bg: #1b173d; --vt-surface-fg: #ece9ff; }
+  .vt-scope[data-vt-view="User"]            { --vt-surface-bg: #311212; --vt-surface-fg: #ffe9e9; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .vt-scope { animation: none !important; transition: none !important; }
