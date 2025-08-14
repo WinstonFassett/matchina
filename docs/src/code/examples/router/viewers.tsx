@@ -38,56 +38,53 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   prevCtx,
   children,
 }) => {
-  const scopeRef = React.useRef<HTMLDivElement | null>(null);
-  const currKey = React.useMemo(() => {
-    const m: any = match ?? (change as any)?.to ?? null;
-    if (!m) return null;
-    const name = (m as any).name ?? 'unknown';
-    const params = (m as any).params ?? {};
-    try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
-  }, [match, (change as any)?.to]);
-  const prevKey = React.useMemo(() => {
-    const m: any = prevMatch ?? (change as any)?.from ?? null;
-    if (!m) return null;
-    const name = (m as any).name ?? 'unknown';
-    const params = (m as any).params ?? {};
-    try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
-  }, [prevMatch, (change as any)?.from]);
-
-  // Ensure dir attribute is applied; no animation waiting in this debug mode
-  React.useEffect(() => {
-    const scope = scopeRef.current;
-    if (!scope) return;
-    scope.setAttribute("data-vt-dir", direction);
-  }, [direction]);
-
-  const changing = keep > 0 && Boolean(prevChildren);
-  React.useEffect(() => {
-    const scope = scopeRef.current;
-    if (!scope) return;
-    if (changing) scope.setAttribute('data-vt-changing', '1');
-    else scope.removeAttribute('data-vt-changing');
-  }, [changing]);
+  // Map change.type to direction and persist last non-null value for stability
+  const mapDir = React.useCallback((t?: string): Direction => {
+    if (t === 'pop') return 'back';
+    if (t === 'replace') return 'replace';
+    return 'forward';
+  }, []);
+  const lastDirRef = React.useRef<Direction>(direction);
+  const effectiveDir: Direction = React.useMemo(() => {
+    const next = mapDir(change?.type as string | undefined);
+    // If change is undefined/null, reuse last direction for this paint
+    if (change && change.type) {
+      lastDirRef.current = next;
+      return next;
+    }
+    return lastDirRef.current;
+  }, [change, mapDir]);
+  // Decide scope change purely by child component identity (view element type)
+  const getViewId = React.useCallback((node: React.ReactNode): string | null => {
+    const el: any = React.isValidElement(node) ? node : null;
+    if (!el) return null;
+    const t: any = el.type;
+    return (t?.displayName || t?.name || null) ?? null;
+  }, []);
+  const currViewId = React.useMemo(() => getViewId(children), [children, getViewId]);
+  const prevViewId = React.useMemo(() => getViewId(prevChildren), [prevChildren, getViewId]);
+  const scopeChanged = Boolean(prevViewId && currViewId && prevViewId !== currViewId);
 
   return (
-    <div ref={scopeRef} data-vt-dir={direction} data-vt-changing={changing ? '1' : undefined}>
+    <div
+      className={`${classNameBase}-scope`}
+      data-vt-dir={effectiveDir}
+      data-vt-changing={keep > 0 && !!prevChildren && scopeChanged ? 1 : undefined}
+      style={{ display: 'grid' }}
+    >
       {/* Previous (pink) */}
-      {keep > 0 && prevChildren ? (
+      {keep > 0 && prevChildren && scopeChanged ? (
         <div
-          key={(prevKey ? `${prevKey}::prev` : 'prev')}
+          key={(prevViewId ? `${prevViewId}::prev` : 'prev')}
           className={`${classNameBase} is-previous-container`}
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         >
-          {prevCtx ? (
-            <RouterSnapshotProvider value={prevCtx}>{prevChildren}</RouterSnapshotProvider>
-          ) : (
-            prevChildren
-          )}
+          {prevChildren}
         </div>
       ) : null}
       {/* Current (green) */}
       <div
-        key={(currKey ? `${currKey}::curr` : 'curr')}
+        key={(currViewId ? `${currViewId}::curr` : 'curr')}
         className={`${classNameBase} is-next-container`}
         style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
       >
