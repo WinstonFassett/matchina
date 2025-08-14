@@ -74,7 +74,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       {/* Previous (pink) */}
       {keep > 0 && prevChildren ? (
         <div
-          key={prevKey ?? 'prev'}
+          key={(prevKey ? `${prevKey}::prev` : 'prev')}
           className={`${classNameBase} is-previous-container`}
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         >
@@ -87,7 +87,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       ) : null}
       {/* Current (green) */}
       <div
-        key={currKey ?? 'curr'}
+        key={(currKey ? `${currKey}::curr` : 'curr')}
         className={`${classNameBase} is-next-container`}
         style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
       >

@@ -32,7 +32,7 @@ export const Products: React.FC<React.PropsWithChildren> = () => {
         <h3>Products</h3>
       </div>
       {/* Descendant route level for products list vs product shell */}
-      <Routes viewer={SlideViewer} keep={1} views={ProductShellViews as any} />
+      <Routes viewer={SlideViewer} views={ProductShellViews as any} />
     </div>
   );
 };
