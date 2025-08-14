@@ -24,6 +24,13 @@ export const ImmediateViewer: React.FC<ViewerProps> = () => {
   return <></>;
 };
 
+// Debug visuals context: allows demo UI to toggle red/green frames and logs
+const DebugVisContext = React.createContext<boolean>(false);
+export const DebugVisProvider: React.FC<{ value: boolean; children?: React.ReactNode; }> = ({ value, children }) => (
+  <DebugVisContext.Provider value={value}>{children}</DebugVisContext.Provider>
+);
+export const useDebugVis = () => React.useContext(DebugVisContext);
+
 // A SWUP-like parallel transitions viewer.
 // - Renders previous and next layers together
 // - Adds scope classes and direction attribute
@@ -42,6 +49,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   prevViewKey,
   children,
 }) => {
+  // Debug flag from context or ?vtDebug=1 query param
+  const debugCtx = useDebugVis();
+  const debugParam = React.useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get('vtDebug') === '1' || sp.get('vtdebug') === '1';
+  }, []);
+  const debug = debugCtx || debugParam;
   // Direction: prefer prop from Routes; fallback to change.type when absent
   const lastDirRef = React.useRef<Direction>(direction);
   const effectiveDir: Direction = React.useMemo(() => {
@@ -74,11 +89,12 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     return false;
   }, [viewKey, prevViewKey, prevRouteKey, currRouteKey]);
 
-  // Debug: log per-level decisions (remove once stable)
+  // Debug: log per-level decisions when debug is enabled
   React.useEffect(() => {
+    if (!debug) return;
     // eslint-disable-next-line no-console
     console.debug('[SlideViewer]', { level: classNameBase, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir });
-  }, [prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
+  }, [debug, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
 
   return (
     <div
@@ -92,7 +108,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
         <div
           key={(prevRouteKey ? `${prevRouteKey}::prev` : 'prev')}
           className={`${classNameBase} is-previous-container`}
-          style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
+          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 } : undefined}
         >
           {prevChildren}
         </div>
@@ -101,7 +117,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       <div
         key={(currRouteKey ? `${currRouteKey}::curr` : 'curr')}
         className={`${classNameBase} is-next-container`}
-        style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
+        style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
       >
         {children ?? null}
       </div>
