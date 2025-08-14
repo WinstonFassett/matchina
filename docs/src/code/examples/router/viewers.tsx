@@ -54,16 +54,26 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     }
     return lastDirRef.current;
   }, [change, mapDir]);
-  // Decide scope change purely by child component identity (view element type)
-  const getViewId = React.useCallback((node: React.ReactNode): string | null => {
-    const el: any = React.isValidElement(node) ? node : null;
-    if (!el) return null;
-    const t: any = el.type;
-    return (t?.displayName || t?.name || null) ?? null;
+  // Use route identity at this scope (name + params) to decide if this level changed
+  const makeRouteKey = React.useCallback((m: any): string | null => {
+    if (!m) return null;
+    const name = (m as any).name ?? 'unknown';
+    const params = (m as any).params ?? {};
+    try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
   }, []);
-  const currViewId = React.useMemo(() => getViewId(children), [children, getViewId]);
-  const prevViewId = React.useMemo(() => getViewId(prevChildren), [prevChildren, getViewId]);
-  const scopeChanged = Boolean(prevViewId && currViewId && prevViewId !== currViewId);
+  const currRouteKey = React.useMemo(() => makeRouteKey(match ?? (change as any)?.to ?? null), [makeRouteKey, match, (change as any)?.to]);
+  const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? (change as any)?.from ?? null), [makeRouteKey, prevMatch, (change as any)?.from]);
+  const scopeChanged = React.useMemo(() => {
+    if (prevRouteKey && currRouteKey) return prevRouteKey !== currRouteKey;
+    // Fallback: if we have a prevChildren layer and keep>0, assume change to allow animation at levels that didn't provide keys
+    return Boolean(keep > 0 && prevChildren);
+  }, [prevRouteKey, currRouteKey, keep, prevChildren]);
+
+  // Debug: log per-level decisions (remove once stable)
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.debug('[SlideViewer]', { level: classNameBase, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir });
+  }, [prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
 
   return (
     <div
@@ -75,7 +85,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       {/* Previous (pink) */}
       {keep > 0 && prevChildren && scopeChanged ? (
         <div
-          key={(prevViewId ? `${prevViewId}::prev` : 'prev')}
+          key={(prevRouteKey ? `${prevRouteKey}::prev` : 'prev')}
           className={`${classNameBase} is-previous-container`}
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         >
@@ -84,7 +94,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       ) : null}
       {/* Current (green) */}
       <div
-        key={(currViewId ? `${currViewId}::curr` : 'curr')}
+        key={(currRouteKey ? `${currRouteKey}::curr` : 'curr')}
         className={`${classNameBase} is-next-container`}
         style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
       >
