@@ -49,6 +49,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     useHash: boolean;
     change: any | null;
     path: string; // current path from store entry
+    fromPath: string; // previous path from last change
 
   };
 
@@ -64,15 +65,16 @@ export function createRouter<const Patterns extends Record<string, string>>(
     useMachine(store);
     React.useEffect(() => { history.start(); }, []);
 
-    // Derive current route from router-store stack/index
+    // Derive current and previous routes from router-store
     const change = store.getChange?.() ?? null;
     // change.to.error
     const state = store.getState();
     const path = (state as any).path ?? "";
+    const fromPath = (change?.from as any)?.path ?? "";
     const to = path ? (defs.matchPath(path) as RouteMatch<RouteName, any> | null) : null;
-    const from = null; // from is provided to viewers via change.from below
+    const from = fromPath ? (defs.matchPath(fromPath) as RouteMatch<RouteName, any> | null) : null;
 
-    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path };
+    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath };
     // Debug: trace path and route resolution
     React.useEffect(() => {
       // eslint-disable-next-line no-console
@@ -122,16 +124,21 @@ export function createRouter<const Patterns extends Record<string, string>>(
     classNameBase?: string;
     views?: Record<string, React.ComponentType<any>>; // optional app-level view map
   }> = ({ children, viewer, keep, classNameBase, views }) => {
-    const { change, to } = useRouterContext();
+    const ctxAll = useRouterContext();
+    const { change, to, from, fromPath } = ctxAll;
     if (!viewer) return null;
     const direction: _Direction = mapDirection(change?.type);
     const TopV = viewer as React.FC<_ViewerProps>;
 
     // Determine if current match is within this level's scope
     const inScope = Boolean(to && views && (views as any)[to.name as any]);
+    const prevInScope = Boolean(from && views && (views as any)[from.name as any]);
     // Build the auto child only when in-scope
     const autoChild = inScope && to && views
       ? React.createElement(views[to.name as any] as React.ComponentType<any>, { ...(to as any).params })
+      : null;
+    const prevAutoChild = prevInScope && from && views
+      ? React.createElement(views[from.name as any] as React.ComponentType<any>, { ...(from as any).params })
       : null;
 
     // Track previous stable scope key to detect local changes.
@@ -173,9 +180,26 @@ export function createRouter<const Patterns extends Record<string, string>>(
         {children}
       </>
     );
+    // Build previous children and context snapshot
+    const prevChildren = prevAutoChild ?? null;
+    const prevCtx = prevChildren
+      ? { ...ctxAll, to: from, path: fromPath }
+      : undefined;
+
     return (
-      <TopV change={change} direction={direction} keep={effectiveKeep} classNameBase={classNameBase} match={to as any}>
+      <TopV
+        change={change}
+        direction={direction}
+        keep={effectiveKeep}
+        classNameBase={classNameBase}
+        match={to as any}
+        prevMatch={from as any}
+        prevPath={fromPath}
+        prevChildren={prevChildren as any}
+        prevCtx={prevCtx as any}
+      >
         {content}
+        {/* Provide prevChildren through children prop extension via React.cloneElement? Instead, rely on viewer to render prev from prevMatch. */}
       </TopV>
     );
   };
