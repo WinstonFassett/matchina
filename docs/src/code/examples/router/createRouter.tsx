@@ -171,10 +171,18 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     // Compute current view identity at this level (component id)
     const currScopeKey = React.useMemo(() => {
+      // Only derive when this level is in scope and a route exists
       if (!inScope || !to || !views) return null;
       const view = views[to.name as any] as React.ComponentType<any> | undefined;
       if (!view) return null;
+      // IMPORTANT: Scope key is the resolved view identity only, so mapping multiple route names
+      // to the same view does NOT trigger parent-level transitions on tab/param changes.
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
+      // Include params.id in view key only when the resolved view is Product
+      try {
+        const id = (to as any)?.params?.id;
+        if (viewId === 'Product' && (id ?? '') !== '') return `${viewId}:id=${String(id)}` as string;
+      } catch { /* ignore */ }
       return viewId as string;
     }, [inScope, to, views]);
     // Compute previous view identity at this level synchronously from `from` route
@@ -183,6 +191,10 @@ export function createRouter<const Patterns extends Record<string, string>>(
       const view = views[from.name as any] as React.ComponentType<any> | undefined;
       if (!view) return null;
       const viewId = (view as any).displayName || (view as any).name || 'AnonymousView';
+      try {
+        const id = (from as any)?.params?.id;
+        if (viewId === 'Product' && (id ?? '') !== '') return `${viewId}:id=${String(id)}` as string;
+      } catch { /* ignore */ }
       return viewId as string;
     }, [from, views]);
     const scopeChanged = React.useMemo(() => {
