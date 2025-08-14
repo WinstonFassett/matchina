@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOMClient from "react-dom/client";
 
 // Shared types used by the adapter and viewers
 export type Direction = "forward" | "back" | "replace";
@@ -33,11 +32,12 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   children,
 }) => {
   const scopeRef = React.useRef<HTMLDivElement | null>(null);
-  const [kept, setKept] = React.useState<Array<{ id: string; node: React.ReactNode }>>([]);
+  const [kept, setKept] = React.useState<Array<{ id: string; el: HTMLElement }>>([]);
 
   // Track previous render node and key so we can display it when keep>0
   const prevKeyRef = React.useRef<string | null>(null);
-  const prevNodeRef = React.useRef<React.ReactNode>(null);
+  const currentContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const snapshotRef = React.useRef<HTMLElement | null>(null);
   const currKey = React.useMemo(() => {
     const m: any = match ?? (change as any)?.to ?? null;
     if (!m) return null;
@@ -47,20 +47,36 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   }, [match, (change as any)?.to]);
 
   // On key change, if keep>0 capture previous node
+  // On key change, use the snapshot from the previous commit
   React.useLayoutEffect(() => {
     if (!currKey) return;
     const prevKey = prevKeyRef.current;
-    const prevNode = prevNodeRef.current;
-    if (prevKey && keep > 0 && prevNode) {
-      setKept([{ id: String(prevKey), node: prevNode }]);
+    const prevSnapshot = snapshotRef.current;
+    if (prevKey && keep > 0 && prevSnapshot) {
+      const clone = prevSnapshot.cloneNode(true) as HTMLElement;
+      clone.removeAttribute('id');
+      // Strip previous inline styles that marked it as current (green)
+      clone.classList.remove('is-next-container');
+      try { clone.style.border = 'none'; clone.style.background = 'transparent'; } catch {}
+      setKept([{ id: String(prevKey), el: clone }]);
     } else if (keep <= 0) {
       setKept([]);
     }
     // Update refs AFTER using previous
     prevKeyRef.current = currKey;
-    prevNodeRef.current = children;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currKey, keep, children]);
+
+  // After each commit, capture a fresh snapshot of the current container for the next transition
+  React.useLayoutEffect(() => {
+    const container = currentContainerRef.current;
+    if (!container) return;
+    const clone = container.cloneNode(true) as HTMLElement;
+    clone.removeAttribute('id');
+    clone.classList.remove('is-next-container');
+    try { clone.style.border = 'none'; clone.style.background = 'transparent'; } catch {}
+    snapshotRef.current = clone;
+  });
 
   // Ensure dir attribute is applied; no animation waiting in this debug mode
   React.useEffect(() => {
@@ -73,9 +89,9 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     <div ref={scopeRef} data-vt-dir={direction}>
       {/* Previous (pink) */}
       {(keep > 0 ? kept : []).map((k, i) => (
-        <Detach
+        <DOMSnapshot
           key={k.id + ":" + i}
-          element={k.node}
+          element={k.el}
           className={`${classNameBase} is-previous-container`}
           style={{ border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8 }}
         />
@@ -84,6 +100,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       <div
         className={`${classNameBase} is-next-container`}
         style={{ border: '2px solid #16a34a', background: '#dcfce7', padding: 8 }}
+        ref={currentContainerRef}
       >
         {children ?? null}
       </div>
@@ -92,28 +109,21 @@ export const SlideViewer: React.FC<ViewerProps> = ({
 }
 ;
 
-// Detach renders the given element into its own React root, freezing its context & state at capture time.
-const Detach: React.FC<{
-  element: React.ReactNode;
+// DOMSnapshot mounts a pre-cloned HTMLElement as inert content
+const DOMSnapshot: React.FC<{
+  element: HTMLElement;
   className?: string;
   style?: React.CSSProperties;
 }> = ({ element, className, style }) => {
   const hostRef = React.useRef<HTMLDivElement | null>(null);
-  const rootRef = React.useRef<any>(null);
-  // Freeze the element snapshot on first render
-  const snapshotRef = React.useRef<React.ReactNode>(element);
-
   React.useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    const root = ReactDOMClient.createRoot(host);
-    rootRef.current = root;
-    root.render(<>{snapshotRef.current}</>);
-    return () => {
-      root.unmount();
-      rootRef.current = null;
-    };
-  }, []);
-
+    // Clear host then append the clone (which we were given)
+    host.innerHTML = '';
+    try {
+      host.appendChild(element);
+    } catch {}
+  }, [element]);
   return <div className={className} style={style} ref={hostRef} />;
 };
