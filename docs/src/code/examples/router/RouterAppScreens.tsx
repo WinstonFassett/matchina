@@ -4,42 +4,43 @@ import { SlideViewer } from "./viewers";
 
 export const Home: React.FC = () => <div className="p-4"><h3>Home</h3><p>Welcome!</p></div>;
 export const About: React.FC = () => <div className="p-4"><h3>About</h3><p>About this app.</p></div>;
-export const Products: React.FC<React.PropsWithChildren> = () => {
+// Inline Products list as a view so the Products-level SlideViewer can capture exits/entries
+const ProductsIndex: React.FC = () => {
   const nav = useNavigation();
-  const { to } = useRouter();
-  // Scope: any Product* route renders the Product shell at this level
+  return (
+    <div className="flex gap-2">
+      <button
+        className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
+        onClick={nav.goto("ProductOverview", { id: "42" })}
+      >
+        View Product 42
+      </button>
+      <button
+        className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
+        onClick={nav.goto("ProductOverview", { id: "abc" })}
+      >
+        View Product abc
+      </button>
+    </div>
+  );
+};
+
+export const Products: React.FC<React.PropsWithChildren> = () => {
+  // Map both Products index and Product* to this level so viewer owns both states
   const ProductShellViews = {
+    Products: ProductsIndex,
     Product,
     ProductOverview: Product,
     ProductSpecs: Product,
     ProductReviews: Product,
   } as const;
-  const inProductScope = !!(to && (ProductShellViews as any)[to.name]);
 
   return (
     <div className="">
       <div className="p-4">
         <h3>Products</h3>
       </div>
-
-      {!inProductScope && (
-        <div className="flex gap-2">
-          <button
-            className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-500 active:bg-blue-700"
-            onClick={nav.goto("ProductOverview", { id: "42" })}
-          >
-            View Product 42
-          </button>
-          <button
-            className="inline-flex items-center rounded-md bg-slate-200 dark:bg-neutral-800 text-slate-900 dark:text-slate-100 px-3 py-1.5 text-sm hover:bg-slate-300 dark:hover:bg-neutral-700 active:bg-slate-400 dark:active:bg-neutral-600"
-            onClick={nav.goto("ProductOverview", { id: "abc" })}
-          >
-            View Product abc
-          </button>
-        </div>
-      )}
-
-      {/* Descendant route level for product shell */}
+      {/* Descendant route level for products list vs product shell */}
       <Routes viewer={SlideViewer} views={ProductShellViews as any} />
     </div>
   );
@@ -90,12 +91,6 @@ export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ ch
           ProductReviews,
         }}
       />
-      {/* Fallback: directly render current tab if needed */}
-      {(() => {
-        const name = to?.name;
-        const Tab = (name === 'ProductOverview') ? ProductOverview : (name === 'ProductSpecs') ? ProductSpecs : (name === 'ProductReviews') ? ProductReviews : null;
-        return Tab ? <Tab id={id} /> : null;
-      })()}
     </div>
   );
 };

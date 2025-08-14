@@ -46,19 +46,20 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   }, [match, (change as any)?.to]);
 
   // On key change, if keep>0 capture previous node
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!currKey) return;
     const prevKey = prevKeyRef.current;
-    if (prevKey && keep > 0 && prevNodeRef.current) {
-      setKept([{ id: String(prevKey), node: prevNodeRef.current }]);
-    } else {
-      // if no keep, clear kept
-      if (keep <= 0) setKept([]);
+    const prevNode = prevNodeRef.current;
+    if (prevKey && keep > 0 && prevNode) {
+      setKept([{ id: String(prevKey), node: prevNode }]);
+    } else if (keep <= 0) {
+      setKept([]);
     }
+    // Update refs AFTER using previous
     prevKeyRef.current = currKey;
     prevNodeRef.current = children;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currKey, keep]);
+  }, [currKey, keep, children]);
 
   // Ensure dir attribute is applied; no animation waiting in this debug mode
   React.useEffect(() => {

@@ -126,7 +126,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     // Track previous stable scope key to detect local changes.
     // Key = effective view component identity only (ignore params).
-    // Outer levels (e.g., site shell) won't render exits when only params change beneath them.
     const prevScopeKeyRef = React.useRef<string | null>(null);
     const currScopeKey = React.useMemo(() => {
       if (!inScope || !to || !views) return null;
