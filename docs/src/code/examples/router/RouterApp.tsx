@@ -1,7 +1,7 @@
 import React from "react";
 import { RouterProvider, Routes, Route, Link } from "./appRouter";
 import { SlideViewer } from "./viewers";
-// import "./transitions.css";
+import "./transitions.css";
 import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductReviews, User, DebugPanel } from "./RouterAppScreens";
 
 export const RouterApp: React.FC = () => {
@@ -20,6 +20,7 @@ export const RouterApp: React.FC = () => {
           <div className="p-4">
             <Routes
               viewer={SlideViewer}
+              keep={1}
               views={{
                 Home,
                 About,

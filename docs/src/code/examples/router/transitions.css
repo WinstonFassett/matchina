@@ -1,33 +1,40 @@
-/* SWUP-style parallel transitions base */
+/* SWUP-style parallel transitions aligned with SlideViewer */
 
-/* Scope container */
-[data-vt-dir] { position: relative; overflow: hidden; }
-/* Default: stack participates in layout so content is visible when idle */
-.transition-slide { position: relative; will-change: transform, opacity; }
-/* During change: overlap layers */
-.is-changing .transition-slide { position: absolute; inset: 0; }
+/* Scope container uses grid to prevent collapse while overlapping */
+[data-vt-dir] {
+  display: grid;
+  grid-template-areas: 'stack';
+  overflow: hidden;
+}
 
-/* Z-order */
-.is-changing .transition-slide.is-next-container { z-index: 2; }
-.is-changing .transition-slide.is-previous-container { z-index: 1; }
+/* Each layer occupies the same grid area and can overlap */
+.vt-scope {
+  grid-area: stack;
+  position: relative;
+  will-change: transform, opacity;
+}
 
-/* Forward */
-.is-changing[data-vt-dir="forward"] .transition-slide.is-next-container { animation: slide-in-left 250ms ease both; }
-.is-changing[data-vt-dir="forward"] .transition-slide.is-previous-container { animation: slide-out-left 250ms ease both; }
+/* Layering */
+.vt-scope.is-next-container { z-index: 2; }
+.vt-scope.is-previous-container { z-index: 1; }
 
-/* Back */
-.is-changing[data-vt-dir="back"] .transition-slide.is-next-container { animation: slide-in-right 250ms ease both; }
-.is-changing[data-vt-dir="back"] .transition-slide.is-previous-container { animation: slide-out-right 250ms ease both; }
+/* Forward (push) */
+[data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
+[data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
 
-/* Kept removal */
-.transition-slide.is-removing-container { animation: slide-far-left 250ms ease both; }
+/* Back (pop) */
+[data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
+[data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
 
-@keyframes slide-in-left   { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes slide-out-left  { from { transform: translateX(0); }   to { transform: translateX(-12%); opacity: .9; } }
-@keyframes slide-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
-@keyframes slide-out-right { from { transform: translateX(0); }   to { transform: translateX(12%); opacity: .9; } }
-@keyframes slide-far-left  { from { transform: translateX(-100%);} to { transform: translateX(-200%); opacity: 0; } }
+/* Optional: removing previous after keep>0 */
+.vt-scope.is-removing-container { animation: vt-slide-far-left 240ms ease both; }
+
+@keyframes vt-slide-in-left   { from { transform: translateX(100%); opacity: 0.98; } to { transform: translateX(0); opacity: 1; } }
+@keyframes vt-slide-out-left  { from { transform: translateX(0); opacity: 1; }   to { transform: translateX(-10%); opacity: 0.9; } }
+@keyframes vt-slide-in-right  { from { transform: translateX(-100%); opacity: 0.98;} to { transform: translateX(0); opacity: 1; } }
+@keyframes vt-slide-out-right { from { transform: translateX(0); opacity: 1; }   to { transform: translateX(10%); opacity: 0.9; } }
+@keyframes vt-slide-far-left  { from { transform: translateX(-100%); opacity: 1;} to { transform: translateX(-200%); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .transition-slide { animation: none !important; transition: none !important; }
+  .vt-scope { animation: none !important; transition: none !important; }
 }
