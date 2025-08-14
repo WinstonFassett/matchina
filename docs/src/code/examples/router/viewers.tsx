@@ -6,7 +6,7 @@ export type Direction = "forward" | "back" | "replace";
 
 // Viewers are data-driven; they own DOM. The router passes only the raw change.
 export type ViewerProps = {
-  change?: any;
+  change: any | null;
   direction?: Direction;
   keep?: number;
   classNameBase?: string;
@@ -15,8 +15,10 @@ export type ViewerProps = {
   prevPath?: string;
   prevChildren?: React.ReactNode;
   prevCtx?: any;
-  children?: React.ReactNode;
-};
+  // Optional: per-level scoped view identity passed by Routes
+  viewKey?: string;
+  prevViewKey?: string;
+} & { children?: React.ReactNode };
 
 export const ImmediateViewer: React.FC<ViewerProps> = () => {
   return <></>;
@@ -36,6 +38,8 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   prevPath,
   prevChildren,
   prevCtx,
+  viewKey,
+  prevViewKey,
   children,
 }) => {
   // Map change.type to direction and persist last non-null value for stability
@@ -65,16 +69,20 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const currRouteKey = React.useMemo(() => makeRouteKey(match ?? null), [makeRouteKey, match]);
   const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? null), [makeRouteKey, prevMatch]);
   const scopeChanged = React.useMemo(() => {
-    // Only animate when BOTH this level's prev and curr matches exist AND differ
+    // Prefer explicit per-level view keys when provided by Routes
+    if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
+      return Boolean(prevViewKey && viewKey && prevViewKey !== viewKey);
+    }
+    // Fallback: Only animate when BOTH this level's prev and curr matches exist AND differ
     if (prevRouteKey && currRouteKey) return prevRouteKey !== currRouteKey;
     return false;
-  }, [prevRouteKey, currRouteKey]);
+  }, [viewKey, prevViewKey, prevRouteKey, currRouteKey]);
 
   // Debug: log per-level decisions (remove once stable)
   React.useEffect(() => {
     // eslint-disable-next-line no-console
-    console.debug('[SlideViewer]', { level: classNameBase, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir });
-  }, [prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
+    console.debug('[SlideViewer]', { level: classNameBase, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir });
+  }, [prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase]);
 
   return (
     <div

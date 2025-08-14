@@ -203,6 +203,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
         prevPath={fromPath}
         prevChildren={prevChildren as any}
         prevCtx={prevCtx as any}
+        viewKey={currScopeKey ?? undefined}
+        prevViewKey={prevScopeKeyRef.current ?? undefined}
       >
         {content}
         {/* Provide prevChildren through children prop extension via React.cloneElement? Instead, rely on viewer to render prev from prevMatch. */}
