@@ -203,11 +203,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
             return;
           }
           if (!path) return;
-          if (useHash) {
-            // In hash mode, let the native navigation update the browser history
-            // so Back/Forward work reliably. Do not prevent default.
-            return;
-          }
           e.preventDefault();
           e.stopPropagation();
           history.push(path);
