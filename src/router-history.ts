@@ -108,12 +108,15 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
 
     window.addEventListener("popstate", () => {
       const path = getPathFromLocation({ base, useHash });
+      // Update state to the new path, then emit a 'pop' event for direction/back semantics
+      store.dispatch("replace", path);
       store.dispatch("pop");
       void maybeGuardAndLoad(path);
     });
     if (useHash) {
       window.addEventListener("hashchange", () => {
         const path = getPathFromLocation({ base, useHash });
+        store.dispatch("replace", path);
         store.dispatch("pop");
         void maybeGuardAndLoad(path);
       });

@@ -73,6 +73,11 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const from = null; // from is provided to viewers via change.from below
 
     const value: Ctx = { defs, history, store, from, to, base, useHash, change, path };
+    // Debug: trace path and route resolution
+    React.useEffect(() => {
+      // eslint-disable-next-line no-console
+      console.log('[RouterProvider]', { path, changeType: change?.type, to: to ? { name: (to as any).name, params: (to as any).params } : null });
+    }, [path, change?.type, to?.name]);
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 

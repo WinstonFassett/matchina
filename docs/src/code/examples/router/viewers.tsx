@@ -37,8 +37,9 @@ export const SlideViewer: React.FC<ViewerProps> = ({
 
   // Track previous render node and key so we can display it when keep>0
   const prevKeyRef = React.useRef<string | null>(null);
-  const prevNodeRef = React.useRef<React.ReactNode>(null);
-  const prevCtxRef = React.useRef<any>(null);
+  // Last committed render snapshot (used as "previous" on next change)
+  const lastNodeRef = React.useRef<React.ReactNode>(null);
+  const lastCtxRef = React.useRef<any>(null);
   const ctx = useRouter();
   const currKey = React.useMemo(() => {
     const m: any = match ?? (change as any)?.to ?? null;
@@ -52,17 +53,21 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   React.useLayoutEffect(() => {
     if (!currKey) return;
     const prevKey = prevKeyRef.current;
-    if (prevKey && keep > 0 && prevNodeRef.current) {
-      setKept([{ id: String(prevKey), node: prevNodeRef.current, ctx: prevCtxRef.current }]);
+    if (prevKey && keep > 0 && lastNodeRef.current) {
+      setKept([{ id: String(prevKey), node: lastNodeRef.current, ctx: lastCtxRef.current }]);
     } else if (keep <= 0) {
       setKept([]);
     }
     // Update refs AFTER using previous
     prevKeyRef.current = currKey;
-    prevNodeRef.current = children;
-    prevCtxRef.current = ctx;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currKey, keep, children]);
+
+  // After each commit, refresh the last snapshot for the next transition
+  React.useLayoutEffect(() => {
+    lastNodeRef.current = children;
+    lastCtxRef.current = ctx;
+  });
 
   // Ensure dir attribute is applied; no animation waiting in this debug mode
   React.useEffect(() => {
