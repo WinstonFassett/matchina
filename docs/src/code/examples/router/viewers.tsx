@@ -61,13 +61,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     const params = (m as any).params ?? {};
     try { return `${name}:${JSON.stringify(params)}`; } catch { return String(name); }
   }, []);
-  const currRouteKey = React.useMemo(() => makeRouteKey(match ?? (change as any)?.to ?? null), [makeRouteKey, match, (change as any)?.to]);
-  const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? (change as any)?.from ?? null), [makeRouteKey, prevMatch, (change as any)?.from]);
+  // IMPORTANT: only use props from this Routes level; do NOT fall back to global change.to/from
+  const currRouteKey = React.useMemo(() => makeRouteKey(match ?? null), [makeRouteKey, match]);
+  const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? null), [makeRouteKey, prevMatch]);
   const scopeChanged = React.useMemo(() => {
+    // Only animate when BOTH this level's prev and curr matches exist AND differ
     if (prevRouteKey && currRouteKey) return prevRouteKey !== currRouteKey;
-    // Fallback: if we have a prevChildren layer and keep>0, assume change to allow animation at levels that didn't provide keys
-    return Boolean(keep > 0 && prevChildren);
-  }, [prevRouteKey, currRouteKey, keep, prevChildren]);
+    return false;
+  }, [prevRouteKey, currRouteKey]);
 
   // Debug: log per-level decisions (remove once stable)
   React.useEffect(() => {
