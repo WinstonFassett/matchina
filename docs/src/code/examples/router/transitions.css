@@ -18,13 +18,17 @@
 .vt-scope.is-next-container { z-index: 2; }
 .vt-scope.is-previous-container { z-index: 1; }
 
-/* Forward (push) — only when a change is active */
-[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
-[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
+/* Mode: slide (short shift with fade) */
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
 
-/* Back (pop) — only when a change is active */
-[data-vt-changing][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
-[data-vt-changing][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right 240ms ease both; }
+/* Mode: slideshow (full slide, no fade) */
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-ss-in-left 320ms ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-ss-out-left 320ms ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-ss-in-right 320ms ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-ss-out-right 320ms ease both; }
 
 /* Optional: removing previous after keep>0 */
 .vt-scope.is-removing-container { animation: vt-slide-far-left 240ms ease both; }
@@ -34,6 +38,12 @@
 @keyframes vt-slide-in-right  { from { transform: translateX(-100%); opacity: 0.98;} to { transform: translateX(0); opacity: 1; } }
 @keyframes vt-slide-out-right { from { transform: translateX(0); opacity: 1; }   to { transform: translateX(10%); opacity: 0.9; } }
 @keyframes vt-slide-far-left  { from { transform: translateX(-100%); opacity: 1;} to { transform: translateX(-200%); opacity: 0; } }
+
+/* Slideshow (full viewport travel, no fade) */
+@keyframes vt-ss-in-left   { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes vt-ss-out-left  { from { transform: translateX(0); }   to { transform: translateX(-100%); } }
+@keyframes vt-ss-in-right  { from { transform: translateX(-100%);} to { transform: translateX(0); } }
+@keyframes vt-ss-out-right { from { transform: translateX(0); }   to { transform: translateX(100%); } }
 
 @media (prefers-reduced-motion: reduce) {
   .vt-scope { animation: none !important; transition: none !important; }

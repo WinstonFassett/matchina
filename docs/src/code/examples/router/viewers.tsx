@@ -32,6 +32,20 @@ export const DebugVisProvider: React.FC<{ value: boolean; children?: React.React
 );
 export const useDebugVis = () => React.useContext(DebugVisContext);
 
+// Animation mode context (presentation-level). Defaults to slideshow for both directions.
+type AnimMode = 'slideshow' | 'slide';
+type AnimModeConfig = { forward: AnimMode; back: AnimMode };
+const AnimModeContext = React.createContext<AnimModeConfig>({ forward: 'slideshow', back: 'slideshow' });
+export const AnimModeProvider: React.FC<{ value: Partial<AnimModeConfig>; children?: React.ReactNode; }> = ({ value, children }) => {
+  const parent = React.useContext(AnimModeContext);
+  const merged = React.useMemo<AnimModeConfig>(() => ({
+    forward: value.forward ?? parent.forward ?? 'slideshow',
+    back: value.back ?? parent.back ?? 'slideshow',
+  }), [value.forward, value.back, parent.forward, parent.back]);
+  return <AnimModeContext.Provider value={merged}>{children}</AnimModeContext.Provider>;
+};
+export const useAnimMode = () => React.useContext(AnimModeContext);
+
 // A SWUP-like parallel transitions viewer.
 // - Renders previous and next layers together
 // - Adds scope classes and direction attribute
@@ -59,6 +73,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     return sp.get('vtDebug') === '1' || sp.get('vtdebug') === '1';
   }, []);
   const debug = debugCtx || debugParam;
+  const animMode = useAnimMode();
   // Direction: prefer prop from Routes; fallback to change.type when absent
   const lastDirRef = React.useRef<Direction>(direction);
   const effectiveDir: Direction = React.useMemo(() => {
@@ -147,6 +162,9 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     <div
       className={`${classNameBase}-scope`}
       data-vt-dir={effectiveDir}
+      data-vt-mode-forward={animMode.forward}
+      data-vt-mode-back={animMode.back}
+      data-vt-mode={effectiveDir === 'back' ? animMode.back : (effectiveDir === 'forward' ? animMode.forward : 'slide')}
       data-vt-changing={exitLayer ? 1 : undefined}
       style={{ display: 'grid' }}
     >
