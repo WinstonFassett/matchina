@@ -19,8 +19,10 @@
 .vt-scope.is-previous-container { z-index: 1; }
 
 /* Forward (push) — only when a change is active */
-[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
-[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
+[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-next-container,
+[data-vt-changing][data-vt-dir="replace"] .vt-scope.is-next-container { animation: vt-slide-in-left 240ms ease both; }
+[data-vt-changing][data-vt-dir="forward"] .vt-scope.is-previous-container,
+[data-vt-changing][data-vt-dir="replace"] .vt-scope.is-previous-container { animation: vt-slide-out-left 240ms ease both; }
 
 /* Back (pop) — only when a change is active */
 [data-vt-changing][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right 240ms ease both; }
