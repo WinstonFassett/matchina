@@ -50,7 +50,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     change: any | null;
     path: string; // current path from store entry
     fromPath: string; // previous path from last change
-
+    navDir: _Direction; // computed per navigation, stable for this render
   };
 
   const RouterContext = createContext<Ctx | null>(null);
@@ -81,12 +81,16 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const effectivePrevPath = changePrevPath || prevPath;
     const from = effectivePrevPath ? (defs.matchPath(effectivePrevPath) as RouteMatch<RouteName, any> | null) : null;
 
-    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath: effectivePrevPath };
+    // Compute navigation direction directly from change.type
+    const navDir: _Direction = change?.type === 'pop' ? 'back' : (change?.type === 'replace' ? 'replace' : 'forward');
+
+    const value: Ctx = { defs, history, store, from, to, base, useHash, change, path, fromPath: effectivePrevPath, navDir };
     // Debug: trace path and route resolution
     React.useEffect(() => {
       // eslint-disable-next-line no-console
-      console.log('[RouterProvider]', { path, changeType: change?.type, to: to ? { name: (to as any).name, params: (to as any).params } : null });
-    }, [path, change?.type, to?.name]);
+      console.log('[RouterProvider]', { path, changeType: change?.type, navDir, to: to ? { name: (to as any).name, params: (to as any).params } : null });
+    }, [path, change?.type, to?.name, navDir]);
+    // No extra index/session maintenance needed; history adapter handles state
     return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
   };
 
@@ -132,9 +136,9 @@ export function createRouter<const Patterns extends Record<string, string>>(
     views?: Record<string, React.ComponentType<any>>; // optional app-level view map
   }> = ({ children, viewer, keep, classNameBase, views }) => {
     const ctxAll = useRouterContext();
-    const { change, to, from, fromPath, path } = ctxAll as any;
+    const { change, to, from, fromPath, path, navDir } = ctxAll as any;
     if (!viewer) return null;
-    const direction: _Direction = mapDirection(change?.type, fromPath, path);
+    const direction: _Direction = navDir;
     const TopV = viewer as React.FC<_ViewerProps>;
 
     // Determine if current match is within this level's scope
@@ -255,20 +259,9 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
 
   // Helper: map store change type to direction hint
-  function mapDirection(t?: string, fromPath?: string, toPath?: string): _Direction {
+  function mapDirection(t?: string): _Direction {
     if (t === "pop") return "back";
     if (t === "push") return "forward";
-    // Infer for replace/unknown using path depth/length
-    const a = fromPath || "";
-    const b = toPath || "";
-    if (a && b && a !== b) {
-      const depth = (p: string) => (p.split(/[#/]/).filter(Boolean).length);
-      const da = depth(a), db = depth(b);
-      if (db < da) return "back";
-      if (db > da) return "forward";
-      // Same depth but changed path → assume back for browser back
-      return "back";
-    }
     return "replace";
   }
 

@@ -51,6 +51,15 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
   const { base = "", useHash = false, guard, loader, matchRoute, matchRouteByPath, matchAllRoutes } = opts;
   const matchParams = (path: string) => (opts.matchPath ? opts.matchPath(path) : opts.match!(path));
   const matchChain = (path: string) => (opts.matchAllPaths ? opts.matchAllPaths(path) : (matchAllRoutes ? matchAllRoutes(path) : null));
+  // Maintain a stable session index similar to React Router's history
+  function ensureStateIndex() {
+    const st: any = window.history.state || {};
+    if (typeof st.__vtIdx !== 'number') {
+      try { window.history.replaceState({ ...st, __vtIdx: 0 }, "", window.location.href); } catch {}
+      return 0;
+    }
+    return st.__vtIdx as number;
+  }
 
   async function maybeGuardAndLoad(pathFull: string) {
     // Optional: run guard/loader for side-effects or prefetching; store state is just path
@@ -90,11 +99,14 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
 
   function apply(mode: "push" | "replace" | "redirect", path: string) {
     const url = toUrl(path, { base, useHash });
-    const state = { key: generateKey() };
+    const st: any = window.history.state || {};
+    const curr = typeof st.__vtIdx === 'number' ? st.__vtIdx : ensureStateIndex();
+    const nextIdx = mode === "push" ? curr + 1 : curr;
+    const state = { ...st, key: generateKey(), __vtIdx: nextIdx };
     if (mode === "push") {
-      window.history.pushState(state, "", url);
+      try { window.history.pushState(state, "", url); } catch {}
     } else {
-      window.history.replaceState(state, "", url);
+      try { window.history.replaceState(state, "", url); } catch {}
     }
     store.dispatch(mode, path);
     void maybeGuardAndLoad(path);
@@ -103,19 +115,22 @@ export function createBrowserHistoryAdapter(store: RouterStore, opts: HistoryAda
   function start() {
     // Initialize from current location
     const initialPath = getPathFromLocation({ base, useHash });
+    // Seed an index into history.state if missing
+    ensureStateIndex();
     store.dispatch("replace", initialPath);
     void maybeGuardAndLoad(initialPath);
 
     window.addEventListener("popstate", () => {
       const path = getPathFromLocation({ base, useHash });
-      // Mark this replace as resulting from a browser pop so viewers can infer direction
-      store.dispatch("replace", path, "__pop__");
+      // Browser back/forward: emit POP so downstream can infer direction via state index
+      store.dispatch("pop", path);
       void maybeGuardAndLoad(path);
     });
     if (useHash) {
       window.addEventListener("hashchange", () => {
         const path = getPathFromLocation({ base, useHash });
-        store.dispatch("replace", path, "__pop__");
+        // Hash back/forward also treated as POP
+        store.dispatch("pop", path);
         void maybeGuardAndLoad(path);
       });
     }

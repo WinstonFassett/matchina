@@ -7,7 +7,7 @@ export type RouterTransitions = {
   push: (path: string) => (change: { from: RouterState }) => RouterState;
   replace: (path: string) => (change: { from: RouterState }) => RouterState;
   redirect: (path: string) => (change: { from: RouterState }) => RouterState;
-  pop: () => (change: { from: RouterState }) => RouterState;
+  pop: (path: string) => (change: { from: RouterState }) => RouterState;
 };
 
 export type RouterStore = StoreMachine<RouterState, RouterTransitions>;
@@ -17,6 +17,6 @@ export function createRouterStore(): RouterStore {
     push: (path: string) => ({ from }) => (from.path === path ? (undefined as any) : { path }),
     replace: (path: string) => ({ from }) => (from.path === path ? (undefined as any) : { path }),
     redirect: (path: string) => ({ from }) => (from.path === path ? (undefined as any) : { path }),
-    pop: () => ({ from }) => from,
+    pop: (path: string) => ({ from }) => (from.path === path ? (undefined as any) : { path }),
   });
 }
