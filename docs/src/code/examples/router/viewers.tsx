@@ -71,7 +71,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   return (
     <div ref={scopeRef} data-vt-dir={direction}>
       {/* Previous (pink) */}
-      {kept.map((k, i) => (
+      {(keep > 0 ? kept : []).map((k, i) => (
         <div
           key={k.id + ":" + i}
           className={`${classNameBase} is-previous-container`}

@@ -145,6 +145,18 @@ export function createRouter<const Patterns extends Record<string, string>>(
     // If keep is not provided by caller, auto-derive it from scope change
     const effectiveKeep = keep ?? (scopeChanged ? 1 : 0);
 
+    // Debug: log per-level routing/view resolution
+    // eslint-disable-next-line no-console
+    // console.log('[Routes]', {
+    //   to: to ? { name: (to as any).name, params: (to as any).params } : null,
+    //   viewKeys: views ? Object.keys(views) : [],
+    //   inScope,
+    //   currScopeKey,
+    //   prevScopeKey: prevScopeKeyRef.current,
+    //   scopeChanged,
+    //   effectiveKeep,
+    // });
+
     const content = (
       <>
         {autoChild}
