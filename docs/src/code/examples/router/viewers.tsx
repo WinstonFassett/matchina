@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RouterSnapshotProvider } from "./appRouter";
 
 // Shared types used by the adapter and viewers
@@ -47,15 +47,42 @@ export const AnimModeProvider: React.FC<{ value: Partial<AnimModeConfig>; childr
 };
 export const useAnimMode = () => React.useContext(AnimModeContext);
 
+
+export const SlideViewer: React.FC<ViewerProps> = ({
+  change,
+  children,
+}) => {
+
+  const [{ curView, newView }, setState] = React.useState({
+    curView: children,
+    newView: null as React.ReactNode | null,
+  });
+  
+  useEffect(() => {
+    console.log('View change', children, { curView } )
+    setState(({ curView }) => ({ curView, newView: children }));
+    setTimeout(() => {
+      setState(({ newView }) => ({ curView: newView, newView: null }));
+    }, 1000)
+  }, [children]);
+
+  return <>
+    <h2>SlideViewer</h2>
+    {/* <pre>{JSON.stringify(change, null, 2)}</pre> */}
+    {curView}
+    {newView}
+  </>;
+}
+
 // A SWUP-like parallel transitions viewer.
 // - Renders previous and next layers together
 // - Adds scope classes and direction attribute
 // - Waits for animationend/transitionend before unmounting previous
-export const SlideViewer: React.FC<ViewerProps> = ({
+export const SlideViewerFail1: React.FC<ViewerProps> = ({
   change,
   direction = "forward",
   keep = 0,
-  exitMaxMs = 5000,
+  exitMaxMs = 60000, //5000,
   classNameBase = "vt-scope",
   match,
   prevMatch,
@@ -99,10 +126,6 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? null), [makeRouteKey, prevMatch]);
   const currRouteName = React.useMemo(() => (match ? String((match as any).name ?? '') : ''), [match]);
   const prevRouteName = React.useMemo(() => (prevMatch ? String((prevMatch as any).name ?? '') : ''), [prevMatch]);
-  // Identity for DOM container keys should come from caller-provided view identity when available.
-  // This avoids coupling to route-level identity and works for multilevel views on the same route.
-  const currIdentityKey = React.useMemo(() => (viewKey ?? currRouteKey ?? 'curr'), [viewKey, currRouteKey]);
-  const prevIdentityKey = React.useMemo(() => (prevViewKey ?? prevRouteKey ?? 'prev'), [prevViewKey, prevRouteKey]);
   const scopeChanged = React.useMemo(() => {
     // Prefer explicit per-level view keys when provided by Routes
     if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
@@ -123,14 +146,14 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     console.log('SlideViewer: useLayoutEffect', { keep, prevChildren, scopeChanged, prevRouteKey });
     if (keep > 0 && prevChildren && scopeChanged) {
       console.log('SlideViewer: useLayoutEffect: setting exit layer');
-      const k = (prevIdentityKey ? `${prevIdentityKey}::prev` : 'prev');
-      setExitLayer({ node: prevChildren, key: k });
+      // Use the provided prevViewKey directly - no computation needed
+      setExitLayer({ node: prevChildren, key: prevViewKey || 'prev' });
     } else {
       console.log('SlideViewer: useLayoutEffect: no exit layer');
       setExitLayer(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keep, prevChildren, scopeChanged, prevIdentityKey]);
+  }, [keep, prevChildren, scopeChanged]);
   // Attach transition/animation end listeners to remove exit layer
   React.useEffect(() => {
     if (!exitLayer) return;
@@ -166,7 +189,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
     // eslint-disable-next-line no-console
     console.debug('[SlideViewer]', { level: classNameBase, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, dir: effectiveDir, hasExit: !!exitLayer });
   }, [debug, prevViewKey, viewKey, prevRouteKey, currRouteKey, scopeChanged, effectiveDir, classNameBase, exitLayer]);
-
+  const isTransitioning = exitLayer !== null;
   return (
     <div
       className={`${classNameBase}-scope`}
@@ -177,29 +200,28 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       // Only animate when an exit layer is actually mounted at this level
       data-vt-changing={exitLayer ? 1 : undefined}
       style={{ display: 'grid' }}
-    >
-      {/* New/Next (rendered first to match SWUP ordering) */}
-      <div
-        key={`${currIdentityKey}::curr`}
-        className={`${classNameBase} is-next-container`}
-        data-vt-view={currRouteName || undefined}
-        style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
-      >
-        {children ?? null}
-      </div>
-      {/* Previous (exiting) */}
-      {exitLayer ? (
+    >{isTransitioning&& "Transitioning"}
+      {/* When transitioning: NEW content first (per SWUP) */}
+      {exitLayer && (
         <div
-          key={exitLayer.key}
-          ref={prevContainerRef}
-          className={`${classNameBase} is-previous-container`}
-          data-vt-exiting="1"
-          data-vt-view={prevRouteName || undefined}
-          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginTop: 8, opacity: 0.92 } : undefined}
+          key={viewKey || 'current'}
+          className={`${classNameBase}`}
+          data-vt-view={currRouteName || undefined}
+          style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
         >
-          {exitLayer.node}
+          {children ?? null}
         </div>
-      ) : null}
+      )}
+      {/* Always render current content */}
+      <div
+        key={prevViewKey || exitLayer?.key || 'current'}
+        ref={exitLayer ? prevContainerRef : undefined}
+        className={`${classNameBase}`}
+        data-vt-view={exitLayer ? prevRouteName : currRouteName || undefined}
+        style={debug ? { border: exitLayer ? '2px solid hotpink' : '2px solid #16a34a', background: exitLayer ? '#ffe4e6' : '#dcfce7', padding: 8 } : undefined}
+      >
+        {exitLayer ? exitLayer.node : (children ?? null)}
+      </div>
     </div>
   );
 }
