@@ -30,24 +30,25 @@
 .vt-scope.is-previous-container { z-index: 1; pointer-events: none; }
 
 /* Mode: slide (short shift with fade) */
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-slide-out-left var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-slide-in-right var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-slide-out-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] > .vt-scope.is-next-container { animation: vt-slide-in-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] > .vt-scope.is-previous-container { animation: vt-slide-out-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] > .vt-scope.is-next-container { animation: vt-slide-in-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slide"][data-vt-dir="back"] > .vt-scope.is-previous-container { animation: vt-slide-out-right var(--vt-duration, 320ms) ease both; }
 
 /* Mode: slideshow (full slide, no fade) */
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-ss-in-left var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] .vt-scope.is-previous-container { animation: vt-ss-out-left var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-next-container { animation: vt-ss-in-right var(--vt-duration, 320ms) ease both; }
-[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] .vt-scope.is-previous-container { animation: vt-ss-out-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] > .vt-scope.is-next-container { animation: vt-ss-in-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="forward"] > .vt-scope.is-previous-container { animation: vt-ss-out-left var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] > .vt-scope.is-next-container { animation: vt-ss-in-right var(--vt-duration, 320ms) ease both; }
+[data-vt-changing][data-vt-mode="slideshow"][data-vt-dir="back"] > .vt-scope.is-previous-container { animation: vt-ss-out-right var(--vt-duration, 320ms) ease both; }
 
 /* Optional: removing previous after keep>0 */
 .vt-scope.is-removing-container { animation: vt-slide-far-left 240ms ease both; }
 
-@keyframes vt-slide-in-left   { from { transform: translateX(100%); opacity: 0.98; } to { transform: translateX(0); opacity: 1; } }
-@keyframes vt-slide-out-left  { from { transform: translateX(0); opacity: 1; }   to { transform: translateX(-10%); opacity: 0.9; } }
-@keyframes vt-slide-in-right  { from { transform: translateX(-100%); opacity: 0.98;} to { transform: translateX(0); opacity: 1; } }
-@keyframes vt-slide-out-right { from { transform: translateX(0); opacity: 1; }   to { transform: translateX(10%); opacity: 0.9; } }
+/* Short-travel slide: ~10% travel with slight fade */
+@keyframes vt-slide-in-left   { from { transform: translateX(10%);  opacity: 0.98; } to { transform: translateX(0); opacity: 1; } }
+@keyframes vt-slide-out-left  { from { transform: translateX(0);    opacity: 1; }   to { transform: translateX(-10%); opacity: 0.9; } }
+@keyframes vt-slide-in-right  { from { transform: translateX(-10%); opacity: 0.98;} to { transform: translateX(0); opacity: 1; } }
+@keyframes vt-slide-out-right { from { transform: translateX(0);    opacity: 1; }   to { transform: translateX(10%);  opacity: 0.9; } }
 @keyframes vt-slide-far-left  { from { transform: translateX(-100%); opacity: 1;} to { transform: translateX(-200%); opacity: 0; } }
 
 /* Slideshow (full viewport travel, no fade) */
@@ -60,7 +61,7 @@
 /* Circle reveal (center origin for now)   */
 /* Entering layer reveals; exiting stays   */
 /* --------------------------------------- */
-[data-vt-changing][data-vt-mode="circle"] .vt-scope.is-next-container {
+[data-vt-changing][data-vt-mode="circle"] > .vt-scope.is-next-container {
   /* Ensure fully clipped at first frame to prevent blink */
   clip-path: circle(0% at 50% 50%);
   /* Start fully clipped; animation reveals to full */
@@ -75,7 +76,7 @@
 /* --------------------------------------- */
 /* Gradient wipe (exact SWUP implementation) */
 /* --------------------------------------- */
-[data-vt-changing][data-vt-mode="gradient"] .vt-scope {
+[data-vt-changing][data-vt-mode="gradient"] > .vt-scope {
   transition: mask-position var(--vt-duration, 1000ms) cubic-bezier(0.5, 0, 0.15, 1), -webkit-mask-position var(--vt-duration, 1000ms) cubic-bezier(0.5, 0, 0.15, 1);
 }
 
@@ -88,7 +89,7 @@
   -webkit-mask-position: 0%;
 }
 
-[data-vt-mode="gradient"] .vt-scope + .vt-scope {
+[data-vt-mode="gradient"] > .vt-scope + .vt-scope {
   mask-position: 100%;
   -webkit-mask-position: 100%;
   z-index: 3;
@@ -99,7 +100,7 @@
 /* --------------------------------------- */
 /* Simple fade mode                         */
 /* --------------------------------------- */
-[data-vt-changing][data-vt-mode="fade"] .vt-scope.is-previous-container {
+[data-vt-changing][data-vt-mode="fade"] > .vt-scope.is-previous-container {
   animation: vt-fade-out var(--vt-duration, 240ms) ease both;
 }
 

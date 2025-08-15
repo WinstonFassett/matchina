@@ -183,13 +183,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
         const id = (to as any)?.params?.id;
         if (viewId === 'Product' && (id ?? '') !== '') return `${viewId}:id=${String(id)}` as string;
       } catch { /* ignore */ }
-      // If multiple route names map to the same view and we DO want transitions between them
-      // (e.g., Product tabs: Overview/Specs/Reviews all render `Products`), include route name.
-      // This keeps top-level collapsing behavior elsewhere unchanged.
-      try {
-        const routeName = (to as any)?.name as string | undefined;
-        if (viewId === 'Products' && routeName) return `${viewId}:${routeName}` as string;
-      } catch { /* ignore */ }
       return viewId as string;
     }, [inScope, to, views]);
     // Compute previous view identity at this level synchronously from `from` route
@@ -223,11 +216,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     //   effectiveKeep,
     // });
 
-    // Build previous children and context snapshot (kept for legacy viewers; RTGViewer uses prevMatch)
-    const prevChildren = prevAutoChild ?? null;
-    const prevCtx = prevChildren
-      ? { ...ctxAll, to: from, path: fromPath }
-      : undefined;
+    // Legacy viewer support (unused by RTGViewer): remove prevChildren/prevCtx
 
     // Let the viewer control rendering via a render function
     const renderView = React.useCallback(() => (
@@ -243,13 +232,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
         direction={direction}
         keep={effectiveKeep}
         classNameBase={classNameBase}
-        match={to as any}
-        prevMatch={from as any}
-        prevPath={fromPath}
-        prevChildren={prevChildren as any}
-        prevCtx={prevCtx as any}
         viewKey={currScopeKey ?? undefined}
-        prevViewKey={prevScopeKeyFromRoute ?? undefined}
         renderView={renderView as any}
       />
     );

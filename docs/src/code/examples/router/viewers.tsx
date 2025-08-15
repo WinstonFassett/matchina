@@ -316,8 +316,9 @@ export const RTGViewer: React.FC<ViewerProps> = ({
   // Note: Always render TransitionGroup so previous element can receive an exit animation
   // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
 
-  // Resolve current mode from animation context and direction (no hardcoded default)
-  const currentMode: AnimMode | undefined = effectiveDir === 'back' ? animMode.back : effectiveDir === 'forward' ? animMode.forward : undefined;
+  // Resolve current mode from animation context and direction.
+  // Use the provided context; if direction is unknown, default to the forward config from context.
+  const currentMode: AnimMode = effectiveDir === 'back' ? animMode.back : animMode.forward;
 
   return (
     <div
