@@ -36,8 +36,8 @@ export const DebugVisProvider: React.FC<{ value: boolean; children?: React.React
 export const useDebugVis = () => React.useContext(DebugVisContext);
 
 // Animation mode context (presentation-level). Defaults to slideshow for both directions.
-// Extended with 'circle' and 'gradient' modes; pointer-origin will default to center for now.
-type AnimMode = 'slideshow' | 'slide' | 'circle' | 'gradient';
+// Extended with 'circle', 'gradient', and 'fade' (exit-only by default) modes; pointer-origin will default to center for now.
+type AnimMode = 'slideshow' | 'slide' | 'circle' | 'gradient' | 'fade';
 type AnimModeConfig = { forward: AnimMode; back: AnimMode };
 const AnimModeContext = React.createContext<AnimModeConfig>({ forward: 'slideshow', back: 'slideshow' });
 export const AnimModeProvider: React.FC<{ value: Partial<AnimModeConfig>; children?: React.ReactNode; }> = ({ value, children }) => {
@@ -314,13 +314,16 @@ export const RTGViewer: React.FC<ViewerProps> = ({
   // Note: Always render TransitionGroup so previous element can receive an exit animation
   // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
 
+  // Resolve current mode from animation context and direction
+  const currentMode: AnimMode = effectiveDir === 'back' ? animMode.back : (effectiveDir === 'forward' ? animMode.forward : 'slide');
+
   return (
     <div
       className={`${classNameBase}-scope`}
       data-vt-dir={effectiveDir}
       data-vt-mode-forward={animMode.forward}
       data-vt-mode-back={animMode.back}
-      data-vt-mode={"fade"}
+      data-vt-mode={currentMode}
       data-vt-changing={isChanging ? 1 : undefined}
       style={{ display: 'grid' }}
     >
@@ -343,9 +346,18 @@ export const RTGViewer: React.FC<ViewerProps> = ({
                 // If an exit was interrupted and this key returned, clean any exit class
                 const node = ref.current;
                 if (node) node.classList.remove('is-previous-container');
+                // For non-fade modes, animate the next layer as well
+                if (currentMode !== 'fade') {
+                  setChanging(1);
+                  if (node) node.classList.add('is-next-container');
+                }
               }}
               onEntered={() => {
-                // No-op
+                const node = ref.current;
+                if (currentMode !== 'fade') {
+                  if (node) node.classList.remove('is-next-container');
+                  setChanging(-1);
+                }
               }}
               onExit={() => {
                 setChanging(1);

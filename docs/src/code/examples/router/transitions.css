@@ -25,7 +25,7 @@
 
 /* Layering */
 .vt-scope.is-next-container { z-index: 2; }
-.vt-scope.is-previous-container { z-index: 1; }
+.vt-scope.is-previous-container { z-index: 1; pointer-events: none; }
 
 /* Mode: slide (short shift with fade) */
 [data-vt-changing][data-vt-mode="slide"][data-vt-dir="forward"] .vt-scope.is-next-container { animation: vt-slide-in-left var(--vt-duration, 320ms) ease both; }

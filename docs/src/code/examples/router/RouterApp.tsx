@@ -35,6 +35,7 @@ export const RouterApp: React.FC = () => {
                 value={mode}
                 onChange={(e) => setMode(e.target.value as any)}
               >
+                <option value="fade">fade</option>
                 <option value="slideshow">slideshow</option>
                 <option value="slide">slide</option>
                 <option value="circle">circle</option>
