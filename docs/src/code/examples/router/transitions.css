@@ -7,6 +7,8 @@
   display: grid;
   grid-template-areas: 'stack';
   overflow: hidden;
+  /* Ensure nested viewers are isolated stacking/clip contexts */
+  isolation: isolate;
 }
 
 /* Each layer occupies the same grid area and can overlap */

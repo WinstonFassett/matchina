@@ -227,8 +227,7 @@ export const SlideViewerFail1: React.FC<ViewerProps> = ({
       </div>
     </div>
   );
-}
-;
+};
 
 // React-Transition-Group based viewer that keeps at most 2 layers (entering + exiting).
 // Integrates with existing transitions.css by:
@@ -272,10 +271,13 @@ export const RTGViewer: React.FC<ViewerProps> = ({
   // Track whether an exit is in progress to set data-vt-changing
   const exitingCountRef = React.useRef(0);
   const [isChanging, setIsChanging] = React.useState(false);
-  const setChanging = (delta: number) => {
+  // Logical, not timing-based: generation token for transition instances
+  const genRef = React.useRef(0);
+  // Track exiting instances by key so we can coalesce and force-complete deterministically
+  const exitsRef = React.useRef(new Map<string, { node: HTMLDivElement; done?: () => void }>());
+  const setChangingDelta = (delta: 1 | -1) => {
     exitingCountRef.current += delta;
-    const active = exitingCountRef.current > 0;
-    setIsChanging(active);
+    setIsChanging(exitingCountRef.current > 0);
   };
 
   // nodeRef per key to avoid findDOMNode
@@ -314,8 +316,8 @@ export const RTGViewer: React.FC<ViewerProps> = ({
   // Note: Always render TransitionGroup so previous element can receive an exit animation
   // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
 
-  // Resolve current mode from animation context and direction
-  const currentMode: AnimMode = effectiveDir === 'back' ? animMode.back : (effectiveDir === 'forward' ? animMode.forward : 'slide');
+  // Resolve current mode from animation context and direction (no hardcoded default)
+  const currentMode: AnimMode | undefined = effectiveDir === 'back' ? animMode.back : effectiveDir === 'forward' ? animMode.forward : undefined;
 
   return (
     <div
@@ -330,44 +332,51 @@ export const RTGViewer: React.FC<ViewerProps> = ({
       <TransitionGroup component={null}>
         {(() => {
           // Capture ref bound to this key/child instance
-          const ref = getNodeRef(currentKey);
+          const myKey = currentKey;
+          const ref = getNodeRef(myKey);
           return (
             <CSSTransition
-              key={currentKey}
+              key={myKey}
               nodeRef={ref}
               timeout={exitMaxMs}
               appear={false}
               addEndListener={(done: () => void) => {
                 const node = ref.current;
-                if (node) attachEndListener(node, done);
+                // Register done for this instance so we can force-complete logically on interrupts
+                const rec = exitsRef.current.get(myKey);
+                if (rec) rec.done = done;
+                if (node) attachEndListener(node, () => {
+                  // Cleanup registry on natural end
+                  exitsRef.current.delete(myKey);
+                  done();
+                });
                 else done();
               }}
               onEnter={() => {
                 // If an exit was interrupted and this key returned, clean any exit class
                 const node = ref.current;
                 if (node) node.classList.remove('is-previous-container');
-                // For non-fade modes, animate the next layer as well
-                if (currentMode !== 'fade') {
-                  setChanging(1);
-                  if (node) node.classList.add('is-next-container');
-                }
+                // Always mark next container; CSS decides whether it actually animates for mode
+                setChangingDelta(1);
+                if (node) node.classList.add('is-next-container');
               }}
               onEntered={() => {
                 const node = ref.current;
-                if (currentMode !== 'fade') {
-                  if (node) node.classList.remove('is-next-container');
-                  setChanging(-1);
-                }
+                if (node) node.classList.remove('is-next-container');
+                setChangingDelta(-1);
               }}
               onExit={() => {
-                setChanging(1);
+                setChangingDelta(1);
                 const node = ref.current;
                 if (node) node.classList.add('is-previous-container');
+                // Register this exiting instance by key for deterministic coalescing
+                if (node) exitsRef.current.set(myKey, { node });
               }}
               onExited={() => {
                 const node = ref.current;
                 if (node) node.classList.remove('is-previous-container');
-                setChanging(-1);
+                setChangingDelta(-1);
+                exitsRef.current.delete(myKey);
               }}
             >
               <div ref={ref} className={`${classNameBase}`} data-vt-view={currRouteName}>
