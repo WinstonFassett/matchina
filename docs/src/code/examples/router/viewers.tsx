@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { RouterSnapshotProvider } from "./appRouter";
 
 // Shared types used by the adapter and viewers
@@ -19,6 +20,8 @@ export type ViewerProps = {
   // Optional: per-level scoped view identity passed by Routes
   viewKey?: string;
   prevViewKey?: string;
+  // Optional render function so the viewer controls rendering rather than consuming children
+  renderView?: (ctx: { change: any | null; match?: any; prevMatch?: any }) => React.ReactNode;
 } & { children?: React.ReactNode };
 
 export const ImmediateViewer: React.FC<ViewerProps> = () => {
@@ -226,3 +229,140 @@ export const SlideViewerFail1: React.FC<ViewerProps> = ({
   );
 }
 ;
+
+// React-Transition-Group based viewer that keeps at most 2 layers (entering + exiting).
+// Integrates with existing transitions.css by:
+// - Rendering a single container with data-vt-* attributes
+// - Marking layers with `.vt-scope` and toggling `.is-next-container` / `.is-previous-container`
+// - Using transitionend/animationend to signal exit completion
+export const RTGViewer: React.FC<ViewerProps> = ({
+  children,
+  change,
+  direction,
+  exitMaxMs = 60000, // DEVELOPMENT VALUE
+  classNameBase = "vt-scope",
+  viewKey,
+  prevViewKey,
+  prevPath,
+  match,
+  prevMatch,
+  renderView,
+}) => {
+  const animMode = useAnimMode();
+  // Derive direction if not provided
+  const effectiveDir: Direction = React.useMemo(() => {
+    if (direction) return direction;
+    const t = change?.type as string | undefined;
+    if (t === 'pop') return 'back';
+    if (t === 'push' || t === 'replace') return (t as any) === 'replace' ? 'replace' : 'forward';
+    return 'forward';
+  }, [direction, change?.type]);
+
+  // Compute stable key for RTG
+  const currentKey = React.useMemo(() => {
+    const k =
+      viewKey ||
+      (change?.to && (change.to.key || change.to.name)) ||
+      prevViewKey ||
+      prevPath ||
+      'root';
+    return String(k);
+  }, [viewKey, change?.to, prevViewKey, prevPath]);
+
+  // Track whether an exit is in progress to set data-vt-changing
+  const exitingCountRef = React.useRef(0);
+  const [isChanging, setIsChanging] = React.useState(false);
+  const setChanging = (delta: number) => {
+    exitingCountRef.current += delta;
+    const active = exitingCountRef.current > 0;
+    setIsChanging(active);
+  };
+
+  // nodeRef per key to avoid findDOMNode
+  const nodeRefMap = React.useRef(new Map<string, React.RefObject<HTMLDivElement>>());
+  const getNodeRef = (key: string): React.RefObject<HTMLDivElement> => {
+    let ref = nodeRefMap.current.get(key) as React.RefObject<HTMLDivElement> | undefined;
+    if (!ref) {
+      ref = React.createRef<HTMLDivElement>();
+      nodeRefMap.current.set(key, ref);
+    }
+    return ref!;
+  };
+
+  // Helper: attach end listeners so CSSTransition knows when to unmount
+  const attachEndListener = (node: HTMLElement, done: () => void) => {
+    const onEnd = () => {
+      node.removeEventListener('transitionend', onEnd);
+      node.removeEventListener('animationend', onEnd);
+      done();
+    };
+    node.addEventListener('transitionend', onEnd);
+    node.addEventListener('animationend', onEnd);
+    // Safety timeout
+    window.setTimeout(() => done(), exitMaxMs + 50);
+  };
+
+  // Derive a label for current view for debugging or data attribute
+  const currRouteName = (change?.to && (change.to.name || change.to.key)) || undefined;
+
+  // Build content for the current layer; prefer renderView if provided
+  const buildContent = React.useCallback(() => {
+    if (renderView) return renderView({ change, match, prevMatch });
+    return children ?? null;
+  }, [renderView, change, match, prevMatch, children]);
+
+  // Note: Always render TransitionGroup so previous element can receive an exit animation
+  // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
+
+  return (
+    <div
+      className={`${classNameBase}-scope`}
+      data-vt-dir={effectiveDir}
+      data-vt-mode-forward={animMode.forward}
+      data-vt-mode-back={animMode.back}
+      data-vt-mode={"fade"}
+      data-vt-changing={isChanging ? 1 : undefined}
+      style={{ display: 'grid' }}
+    >
+      <TransitionGroup component={null}>
+        {(() => {
+          // Capture ref bound to this key/child instance
+          const ref = getNodeRef(currentKey);
+          return (
+            <CSSTransition
+              key={currentKey}
+              nodeRef={ref}
+              timeout={exitMaxMs}
+              appear={false}
+              addEndListener={(done: () => void) => {
+                const node = ref.current;
+                if (node) attachEndListener(node, done);
+                else done();
+              }}
+              onEnter={() => {
+                // No enter animation; only fade the old layer
+              }}
+              onEntered={() => {
+                // No-op
+              }}
+              onExit={() => {
+                setChanging(1);
+                const node = ref.current;
+                if (node) node.classList.add('is-previous-container');
+              }}
+              onExited={() => {
+                const node = ref.current;
+                if (node) node.classList.remove('is-previous-container');
+                setChanging(-1);
+              }}
+            >
+              <div ref={ref} className={`${classNameBase}`} data-vt-view={currRouteName}>
+                {buildContent()}
+              </div>
+            </CSSTransition>
+          );
+        })()}
+      </TransitionGroup>
+    </div>
+  );
+};

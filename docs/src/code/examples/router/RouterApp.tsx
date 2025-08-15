@@ -1,6 +1,6 @@
 import React from "react";
 import { RouterProvider, Routes, Route, Link } from "./appRouter";
-import { SlideViewer, DebugVisProvider, AnimModeProvider } from "./viewers";
+import { RTGViewer, DebugVisProvider, AnimModeProvider } from "./viewers";
 import "./transitions.css";
 import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductReviews, User, DebugPanel } from "./RouterAppScreens";
 
@@ -67,7 +67,7 @@ export const RouterApp: React.FC = () => {
               <div className="p-4">
                 <AnimModeProvider value={{ forward: mode, back: mode }}>
                   <Routes
-                    viewer={SlideViewer}
+                    viewer={RTGViewer}
                     keep={1}
                     views={{
                       Home,

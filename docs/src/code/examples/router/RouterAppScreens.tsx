@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, store, Routes, useNavigation, useRouter } from "./appRouter";
-import { SlideViewer } from "./viewers";
+import { RTGViewer } from "./viewers";
 
 export const Home: React.FC = () => (
   <div className="rounded-xl border border-black/10 dark:border-white/10 bg-rose-50 text-slate-900 dark:bg-rose-900 dark:text-slate-100 shadow-sm p-4">
@@ -46,7 +46,7 @@ export const Products: React.FC<React.PropsWithChildren> = () => {
       {/* Descendant route level for products list vs product shell */}
       <div className="p-4">
         {/* Leave inner views to render their own cards; wrapper provides themed, opaque bg */}
-        <Routes viewer={SlideViewer} views={ProductShellViews as any} />
+        <Routes viewer={RTGViewer} views={ProductShellViews as any} />
       </div>
     </div>
   );
@@ -89,7 +89,7 @@ export const Product: React.FC<React.PropsWithChildren<{ id: string; }>> = ({ ch
       </nav>
       {/* Descendant route level for tab content. If bare Product, show Overview default */}
       <Routes
-        viewer={SlideViewer}
+        viewer={RTGViewer}
         keep={1}
         views={{
           Product: ProductOverview,

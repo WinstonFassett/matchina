@@ -1,6 +1,6 @@
 /* SWUP-style parallel transitions aligned with SlideViewer */
 /* Default duration variable (can be overridden by demo controls) */
-:root { --vt-duration: 4000ms; }
+:root { --vt-duration: 320ms; }
 
 /* Scope container uses grid to prevent collapse while overlapping */
 [data-vt-dir] {
@@ -93,6 +93,15 @@
 }
 
 /* Remove hardcoded backgrounds; surfaces should be themed via Tailwind in components */
+
+/* --------------------------------------- */
+/* Simple fade mode                         */
+/* --------------------------------------- */
+[data-vt-changing][data-vt-mode="fade"] .vt-scope.is-previous-container {
+  animation: vt-fade-out var(--vt-duration, 240ms) ease both;
+}
+
+@keyframes vt-fade-out { from { opacity: 1; } to { opacity: 0.001; } }
 
 
 @media (prefers-reduced-motion: reduce) {
