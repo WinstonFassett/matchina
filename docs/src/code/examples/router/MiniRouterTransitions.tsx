@@ -1,7 +1,7 @@
 import React from "react";
 import "./transitions.css";
 import { createRouter } from "./createRouter";
-import { RTGViewer, AnimModeProvider } from "./viewers";
+import MiniViewer from "./MiniViewer";
 
 /** Minimal, self-contained router instance just for this demo */
 const {
@@ -50,21 +50,18 @@ export const MiniRouterTransitionsApp: React.FC = () => {
   // Choose a simple slideshow or fade; slideshow shows full travel.
   return (
     <RouterProvider>
-      {/* Presentation-only: choose animation mode; both directions same for this demo */}
-      <AnimModeProvider value={{ forward: "slideshow", back: "slideshow" }}>
-        <div className="min-h-[200px]">
-          <Routes
-            viewer={RTGViewer}
-            // keep=1 ensures previous remains mounted to animate out in parallel
-            keep={1}
-            views={{
-              A,
-              B,
-              Start: StartDemo,
-            }}
-          />
-        </div>
-      </AnimModeProvider>
+      <div className="min-h-[200px]">
+        <Routes
+          viewer={MiniViewer}
+          // keep=1 ensures previous remains mounted to animate out in parallel
+          keep={1}
+          views={{
+            A,
+            B,
+            Start: StartDemo,
+          }}
+        />
+      </div>
     </RouterProvider>
   );
 };

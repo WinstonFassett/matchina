@@ -234,14 +234,7 @@ export const SlideViewerFail1: React.FC<ViewerProps> = ({
 // - Rendering a single container with data-vt-* attributes
 // - Marking layers with `.vt-scope` and toggling `.is-next-container` / `.is-previous-container`
 // - Using transitionend/animationend to signal exit completion
-export const RTGViewer: React.FC<{
-  direction?: Direction;
-  keep?: number;
-  classNameBase?: string;
-  exitMaxMs?: number;
-  viewKey?: string | null;
-  renderView: () => React.ReactNode;
-}> = ({
+export const RTGViewer: React.FC<ViewerProps> = ({
   direction,
   keep,
   classNameBase = "vt-scope",
@@ -249,6 +242,7 @@ export const RTGViewer: React.FC<{
   exitMaxMs = 60000,
   viewKey,
   renderView,
+  children,
 }) => {
   const animMode = useAnimMode();
   // Derive direction if not provided
@@ -304,7 +298,12 @@ export const RTGViewer: React.FC<{
   };
 
   // Build content for the current layer
-  const buildContent = React.useCallback(() => renderView(), [renderView]);
+  // `renderView` may be provided by Routes; it may also be absent.
+  // It is typed to accept a ctx param, but our adapter doesn't need to pass it.
+  const buildContent = React.useCallback(() => {
+    if (renderView) return (renderView as any)();
+    return children ?? null;
+  }, [renderView, children]);
 
   // Note: Always render TransitionGroup so previous element can receive an exit animation
   // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
