@@ -340,7 +340,9 @@ export const RTGViewer: React.FC<ViewerProps> = ({
                 else done();
               }}
               onEnter={() => {
-                // No enter animation; only fade the old layer
+                // If an exit was interrupted and this key returned, clean any exit class
+                const node = ref.current;
+                if (node) node.classList.remove('is-previous-container');
               }}
               onEntered={() => {
                 // No-op
