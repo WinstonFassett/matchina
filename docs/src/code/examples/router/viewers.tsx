@@ -234,39 +234,32 @@ export const SlideViewerFail1: React.FC<ViewerProps> = ({
 // - Rendering a single container with data-vt-* attributes
 // - Marking layers with `.vt-scope` and toggling `.is-next-container` / `.is-previous-container`
 // - Using transitionend/animationend to signal exit completion
-export const RTGViewer: React.FC<ViewerProps> = ({
-  children,
-  change,
+export const RTGViewer: React.FC<{
+  direction?: Direction;
+  keep?: number;
+  classNameBase?: string;
+  exitMaxMs?: number;
+  viewKey?: string | null;
+  renderView: () => React.ReactNode;
+}> = ({
   direction,
-  exitMaxMs = 60000, // DEVELOPMENT VALUE
+  keep,
   classNameBase = "vt-scope",
+  // Keep a long safety timeout so CSS controls real timing; this only guards against missing end events
+  exitMaxMs = 60000,
   viewKey,
-  prevViewKey,
-  prevPath,
-  match,
-  prevMatch,
   renderView,
 }) => {
   const animMode = useAnimMode();
   // Derive direction if not provided
   const effectiveDir: Direction = React.useMemo(() => {
-    if (direction) return direction;
-    const t = change?.type as string | undefined;
-    if (t === 'pop') return 'back';
-    if (t === 'push' || t === 'replace') return (t as any) === 'replace' ? 'replace' : 'forward';
-    return 'forward';
-  }, [direction, change?.type]);
+    return direction ?? 'forward';
+  }, [direction]);
 
   // Compute stable key for RTG
   const currentKey = React.useMemo(() => {
-    const k =
-      viewKey ||
-      (change?.to && (change.to.key || change.to.name)) ||
-      prevViewKey ||
-      prevPath ||
-      'root';
-    return String(k);
-  }, [viewKey, change?.to, prevViewKey, prevPath]);
+    return String(viewKey ?? 'root');
+  }, [viewKey]);
 
   // Track whether an exit is in progress to set data-vt-changing
   const exitingCountRef = React.useRef(0);
@@ -274,21 +267,27 @@ export const RTGViewer: React.FC<ViewerProps> = ({
   // Logical, not timing-based: generation token for transition instances
   const genRef = React.useRef(0);
   // Track exiting instances by key so we can coalesce and force-complete deterministically
-  const exitsRef = React.useRef(new Map<string, { node: HTMLDivElement; done?: () => void }>());
+  const exitsRef = React.useRef(new Map<string, { node: HTMLElement; done?: () => void }>());
   const setChangingDelta = (delta: 1 | -1) => {
     exitingCountRef.current += delta;
     setIsChanging(exitingCountRef.current > 0);
   };
 
-  // nodeRef per key to avoid findDOMNode
-  const nodeRefMap = React.useRef(new Map<string, React.RefObject<HTMLDivElement>>());
-  const getNodeRef = (key: string): React.RefObject<HTMLDivElement> => {
-    let ref = nodeRefMap.current.get(key) as React.RefObject<HTMLDivElement> | undefined;
+  // nodeRef per key to avoid findDOMNode. Widen to HTMLElement to satisfy CSSTransition's nodeRef type.
+  // Loosen types to avoid RefObject invariance issues across libs
+  const nodeRefMap = React.useRef(new Map<string, any>());
+  const getNodeRef = (key: string): any => {
+    let ref = nodeRefMap.current.get(key) as any;
     if (!ref) {
-      ref = React.createRef<HTMLDivElement>();
+      ref = React.createRef<HTMLElement>();
       nodeRefMap.current.set(key, ref);
     }
     return ref!;
+  };
+  // Callback ref to bridge HTMLDivElement <- HTMLElement invariant
+  const getSetRef = (key: string) => (el: HTMLDivElement | null) => {
+    const r = getNodeRef(key);
+    (r as any).current = el as unknown as HTMLElement | null;
   };
 
   // Helper: attach end listeners so CSSTransition knows when to unmount
@@ -304,14 +303,8 @@ export const RTGViewer: React.FC<ViewerProps> = ({
     window.setTimeout(() => done(), exitMaxMs + 50);
   };
 
-  // Derive a label for current view for debugging or data attribute
-  const currRouteName = (change?.to && (change.to.name || change.to.key)) || undefined;
-
-  // Build content for the current layer; prefer renderView if provided
-  const buildContent = React.useCallback(() => {
-    if (renderView) return renderView({ change, match, prevMatch });
-    return children ?? null;
-  }, [renderView, change, match, prevMatch, children]);
+  // Build content for the current layer
+  const buildContent = React.useCallback(() => renderView(), [renderView]);
 
   // Note: Always render TransitionGroup so previous element can receive an exit animation
   // even when keys remain stable across micro-changes. Skipping TransitionGroup can drop exits.
@@ -335,6 +328,7 @@ export const RTGViewer: React.FC<ViewerProps> = ({
           // Capture ref bound to this key/child instance
           const myKey = currentKey;
           const ref = getNodeRef(myKey);
+          const setRef = getSetRef(myKey);
           return (
             <CSSTransition
               key={myKey}
@@ -380,7 +374,7 @@ export const RTGViewer: React.FC<ViewerProps> = ({
                 exitsRef.current.delete(myKey);
               }}
             >
-              <div ref={ref} className={`${classNameBase}`} data-vt-view={currRouteName}>
+              <div ref={setRef} className={`${classNameBase}`}>
                 {buildContent()}
               </div>
             </CSSTransition>

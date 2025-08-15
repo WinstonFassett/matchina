@@ -3,7 +3,7 @@ import { createRouterStore } from "@lib/src/router-store";
 import { createBrowserHistoryAdapter } from "@lib/src/router-history";
 import { useMachine } from "matchina/react";
 import React, { createContext, useContext } from "react";
-import type { ViewerProps as _ViewerProps, Direction as _Direction } from "./viewers";
+import type { Direction as _Direction } from "./viewers";
 
 export function createRouter<const Patterns extends Record<string, string>>(
   patterns: Patterns,
@@ -57,8 +57,8 @@ export function createRouter<const Patterns extends Record<string, string>>(
   // Discriminated union per route name so TS narrows `view` props based on `name`
   type RouteProps = {
     [K in RouteName]:
-      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode; index?: boolean; viewer?: React.FC<_ViewerProps>; keep?: number; classNameBase?: string })
-      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode; index?: boolean; viewer?: React.FC<_ViewerProps>; keep?: number; classNameBase?: string })
+      | ({ name: K } & { element: React.ReactNode; children?: React.ReactNode; index?: boolean; viewer?: React.FC<any>; keep?: number; classNameBase?: string })
+      | ({ name: K } & { view: React.ComponentType<ParamsOf<K>>; children?: React.ReactNode; index?: boolean; viewer?: React.FC<any>; keep?: number; classNameBase?: string })
   }[RouteName];
 
   const RouterProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
@@ -147,7 +147,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
   // - No child traversal. No chain resolution. Viewers own DOM.
   const Routes: React.FC<{
     children?: React.ReactNode;
-    viewer?: React.FC<_ViewerProps>; // optional top-level viewer
+    viewer?: React.FC<any>; // optional top-level viewer (lean viewer API)
     keep?: number;
     classNameBase?: string;
     views?: Record<string, React.ComponentType<any>>; // optional app-level view map
@@ -156,7 +156,7 @@ export function createRouter<const Patterns extends Record<string, string>>(
     const { change, to, from, fromPath, path, navDir } = ctxAll as any;
     if (!viewer) return null;
     const direction: _Direction = navDir;
-    const TopV = viewer as React.FC<_ViewerProps>;
+    const TopV = viewer as React.FC<any>;
 
     // Determine if current match is within this level's scope
     const inScope = Boolean(to && views && (views as any)[to.name as any]);
@@ -228,7 +228,6 @@ export function createRouter<const Patterns extends Record<string, string>>(
 
     return (
       <TopV
-        change={change}
         direction={direction}
         keep={effectiveKeep}
         classNameBase={classNameBase}
