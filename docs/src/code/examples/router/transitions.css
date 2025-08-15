@@ -1,6 +1,6 @@
 /* SWUP-style parallel transitions aligned with SlideViewer */
 /* Default duration variable (can be overridden by demo controls) */
-:root { --vt-duration: 320ms; }
+:root { --vt-duration: 4000ms; }
 
 /* Scope container uses grid to prevent collapse while overlapping */
 [data-vt-dir] {

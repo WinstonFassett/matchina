@@ -6,8 +6,8 @@ import { Home, About, Products, Product, ProductOverview, ProductSpecs, ProductR
 
 export const RouterApp: React.FC = () => {
   const [debugVis, setDebugVis] = React.useState(false);
-  const [mode, setMode] = React.useState<'slideshow' | 'slide' | 'circle' | 'gradient'>('slideshow');
-  const [durationSec, setDurationSec] = React.useState<number>(0.32);
+  const [mode, setMode] = React.useState<'slideshow' | 'slide' | 'circle' | 'gradient'>('gradient');
+  const [durationSec, setDurationSec] = React.useState<number>(4);
   const durationMs = Math.max(0, Math.round(durationSec * 1000));
   return (
     <RouterProvider>

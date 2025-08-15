@@ -55,7 +55,7 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   change,
   direction = "forward",
   keep = 0,
-  exitMaxMs = 700,
+  exitMaxMs = 5000,
   classNameBase = "vt-scope",
   match,
   prevMatch,
@@ -99,6 +99,10 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   const prevRouteKey = React.useMemo(() => makeRouteKey(prevMatch ?? null), [makeRouteKey, prevMatch]);
   const currRouteName = React.useMemo(() => (match ? String((match as any).name ?? '') : ''), [match]);
   const prevRouteName = React.useMemo(() => (prevMatch ? String((prevMatch as any).name ?? '') : ''), [prevMatch]);
+  // Identity for DOM container keys should come from caller-provided view identity when available.
+  // This avoids coupling to route-level identity and works for multilevel views on the same route.
+  const currIdentityKey = React.useMemo(() => (viewKey ?? currRouteKey ?? 'curr'), [viewKey, currRouteKey]);
+  const prevIdentityKey = React.useMemo(() => (prevViewKey ?? prevRouteKey ?? 'prev'), [prevViewKey, prevRouteKey]);
   const scopeChanged = React.useMemo(() => {
     // Prefer explicit per-level view keys when provided by Routes
     if (typeof viewKey !== 'undefined' || typeof prevViewKey !== 'undefined') {
@@ -116,14 +120,17 @@ export const SlideViewer: React.FC<ViewerProps> = ({
   // When a new transition occurs at this level, capture the previous children as an exit layer.
   // Use layout effect to avoid a paint before the container has [data-vt-changing].
   React.useLayoutEffect(() => {
+    console.log('SlideViewer: useLayoutEffect', { keep, prevChildren, scopeChanged, prevRouteKey });
     if (keep > 0 && prevChildren && scopeChanged) {
-      const k = (prevRouteKey ? `${prevRouteKey}::prev` : 'prev');
+      console.log('SlideViewer: useLayoutEffect: setting exit layer');
+      const k = (prevIdentityKey ? `${prevIdentityKey}::prev` : 'prev');
       setExitLayer({ node: prevChildren, key: k });
     } else {
+      console.log('SlideViewer: useLayoutEffect: no exit layer');
       setExitLayer(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keep, prevChildren, scopeChanged, prevRouteKey]);
+  }, [keep, prevChildren, scopeChanged, prevIdentityKey]);
   // Attach transition/animation end listeners to remove exit layer
   React.useEffect(() => {
     if (!exitLayer) return;
@@ -171,7 +178,16 @@ export const SlideViewer: React.FC<ViewerProps> = ({
       data-vt-changing={exitLayer ? 1 : undefined}
       style={{ display: 'grid' }}
     >
-      {/* Previous (pink) */}
+      {/* New/Next (rendered first to match SWUP ordering) */}
+      <div
+        key={`${currIdentityKey}::curr`}
+        className={`${classNameBase} is-next-container`}
+        data-vt-view={currRouteName || undefined}
+        style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
+      >
+        {children ?? null}
+      </div>
+      {/* Previous (exiting) */}
       {exitLayer ? (
         <div
           key={exitLayer.key}
@@ -179,20 +195,11 @@ export const SlideViewer: React.FC<ViewerProps> = ({
           className={`${classNameBase} is-previous-container`}
           data-vt-exiting="1"
           data-vt-view={prevRouteName || undefined}
-          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginBottom: 8, opacity: 0.92 } : undefined}
+          style={debug ? { border: '2px solid hotpink', background: '#ffe4e6', padding: 8, marginTop: 8, opacity: 0.92 } : undefined}
         >
           {exitLayer.node}
         </div>
       ) : null}
-      {/* Current (green) */}
-      <div
-        key={(currRouteKey ? `${currRouteKey}::curr` : 'curr')}
-        className={`${classNameBase} is-next-container`}
-        data-vt-view={currRouteName || undefined}
-        style={debug ? { border: '2px solid #16a34a', background: '#dcfce7', padding: 8 } : undefined}
-      >
-        {children ?? null}
-      </div>
     </div>
   );
 }
