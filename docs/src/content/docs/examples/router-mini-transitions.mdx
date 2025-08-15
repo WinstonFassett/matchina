@@ -1,0 +1,21 @@
+---
+title: Router Transitions (Mini)
+description: Minimal router transitions demo using RTGViewer with parallel enter/exit.
+---
+
+import { MiniRouterTransitionsRoot } from "@code/examples/router/MiniRouterTransitions";
+
+<div className="not-content">
+  <MiniRouterTransitionsRoot client:only="react" />
+</div>
+
+## About this demo
+
+This mirrors the classic React Router `TransitionGroup + CSSTransition` example but uses the Matchina router adapter:
+
+- `Routes` with a simple `views` map
+- `viewer={RTGViewer}` provides enter/exit and parallel animations
+- `keep={1}` keeps the previous layer mounted while the next layer enters
+- Styles come from `docs/src/code/examples/router/transitions.css`
+
+See also: [React Router compatibility notes](/guides/react-router-compat).

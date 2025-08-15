@@ -318,6 +318,10 @@ export default defineConfig({
                   label: "Advanced Router (React)",
                   link: "/examples/router-advanced",
                 },
+                {
+                  label: "Router Transitions (Mini)",
+                  link: "/examples/router-mini-transitions",
+                },
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",
@@ -331,6 +335,7 @@ export default defineConfig({
           label: "Extras",
           items: [
             { label: "Effects", link: "/guides/effects" },
+            { label: "React Router Compatibility", link: "/guides/react-router-compat" },
             // { label: "Subscriptions", link: "/guides/subscriptions" },
           ],
         },

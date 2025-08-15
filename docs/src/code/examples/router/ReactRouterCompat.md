@@ -1,0 +1,80 @@
+# React Router compatibility notes for matchina router demo
+
+This note explains how the docs demo router (`docs/src/code/examples/router/createRouter.tsx`) diverges from React Router and how to bridge the gap to achieve simple, ergonomic transition demos like the canonical `TransitionGroup + CSSTransition` snippet.
+
+## TL;DR
+
+- **matchina router is data-first:** `Routes` is a minimal adapter that takes a mapping of `views` and delegates DOM/animation to a **viewer** (e.g., `RTGViewer`).
+- **React Router is DOM-first:** `<Routes>` renders element trees and is often paired with `<TransitionGroup>`/`<CSSTransition>` around it.
+- **Bridge:** Use `Routes` with `viewer={RTGViewer}` and a small `views` map. Set `keep={1}` to keep the previous layer mounted for parallel animations (exit + enter). Style with `transitions.css` using `data-vt-*` attributes.
+
+See `MiniRouterTransitions.tsx` for the minimal example mirroring the RR version.
+
+---
+
+## Key differences
+
+- **Route identification**
+  - React Router: keyed by `location.key` and `useLocation()`.
+  - matchina router: keyed by `viewKey` resolved in `Routes` from the current and previous route (see `createRouter.tsx` `Routes()`), passed to the viewer (`RTGViewer`).
+
+- **Rendering responsibility**
+  - React Router: `<Routes>` returns elements; you wrap it with `<TransitionGroup>` and CSS classes.
+  - matchina router: `<Routes>` is data-only and delegates rendering to a viewer. The viewer owns the container, keys, mount/unmount timing.
+
+- **Parallel animations**
+  - React Router: doable with `<TransitionGroup>`/`<CSSTransition>` if you render both old and new.
+  - matchina router: set `keep={1}`; `RTGViewer` keeps at most two layers and tags them with `.is-next-container` / `.is-previous-container`. CSS in `transitions.css` performs the in/out choreography.
+
+- **Navigation direction**
+  - React Router: not provided by default. You derive heuristics if needed.
+  - matchina router: direction is derived in `RouterProvider` via history index deltas and exposed as `data-vt-dir` to viewers for CSS.
+
+- **Hash/base handling**
+  - React Router: `BrowserRouter`/`HashRouter` components.
+  - matchina router: `createRouter(..., { useHash, base })` and a history adapter (`createBrowserHistoryAdapter`).
+
+## How to bridge for the simple demo
+
+- **Replace `<BrowserRouter>` with `<RouterProvider>`**
+- **Replace `useLocation()` with nothing** (the viewer handles location changes internally via the store)
+- **Replace `<TransitionGroup>`/`<CSSTransition>` with `viewer={RTGViewer}`**
+- **Provide a `views` map** instead of nested `<Route element=...>` items
+- **Enable parallel exit/enter** with `keep={1}` and the provided `transitions.css`
+
+Minimal version (see `MiniRouterTransitions.tsx`):
+
+```tsx
+<RouterProvider>
+  <AnimModeProvider value={{ forward: "slideshow", back: "slideshow" }}>
+    <Routes viewer={RTGViewer} keep={1} views={{ A, B, Start: StartDemo }} />
+  </AnimModeProvider>
+</RouterProvider>
+```
+
+## Why this design
+
+- **Viewer abstraction** keeps routing concerns (matching, params, direction) separate from **presentation concerns** (DOM hierarchy, animation policy, CSS hooks).
+- Enables multiple strategies: `RTGViewer` (TransitionGroup-based), a SWUP-style parallel viewer, or an immediate viewer.
+
+## Parallel animations specifics
+
+- `RTGViewer` mounts 2 layers max: entering and exiting.
+- It sets:
+  - `data-vt-dir="forward|back|replace"` on the scope container.
+  - `data-vt-mode` from `AnimModeProvider`.
+  - `.is-next-container` on entering, `.is-previous-container` on exiting.
+- `docs/src/code/examples/router/transitions.css` defines the motion for `slide`, `slideshow`, `circle`, `gradient`, `fade`.
+- Control duration globally via `--vt-duration` CSS variable. The demo `RouterApp.tsx` shows a UI for this; the minimal demo inherits defaults.
+
+## Limitations vs React Router
+
+- No nested `<Route>` element tree; use `views` per level.
+- No built-in loaders/actions/guards in the demo adapter; these live in the app/store layer and can be added later.
+- Transition policies live in the viewer; if you need per-route timing or different keeps, pass props or split `Routes` levels.
+
+## Future interop ideas
+
+- Provide a small shim that accepts an array of `{ path, element }` and internally builds the `views` map for `Routes`.
+- Expose a `useLocation()`-like hook for easy drop-in of external examples while still driving `Routes`.
+- Add a `createReactRouterAdapter(Viewer)` that renders a `<TransitionGroup>` wrapper and internally wires `Routes` to mimic the RR composition.
