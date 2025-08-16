@@ -94,8 +94,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/withastro/starlight",
-          // github: "https://github.com/WinstonFassett/matchina",
+          href: "https://github.com/WinstonFassett/matchina",
         },
       ],
       sidebar: [
