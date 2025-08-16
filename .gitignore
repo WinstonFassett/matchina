@@ -12,3 +12,8 @@ types
 *.conf
 *.env*
 bun.lockb
+
+# Playwright
+test-results
+playwright-report
+playwright-video

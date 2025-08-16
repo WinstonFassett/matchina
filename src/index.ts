@@ -33,3 +33,5 @@ export * from "./function-types";
 // match-change
 export * from "./match-change";
 export * from "./match-filters";
+// routing core
+export * from "./extras/routing/define-routes";
