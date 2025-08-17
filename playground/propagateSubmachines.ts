@@ -60,7 +60,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const after = snapshot(child);
             const grandAfter = getChildFromParentState(after);
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
-            const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+            const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
             if (handled) {
               const looksExit = duck
                 ? !!after?.data?.final
@@ -87,7 +87,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const after = snapshot(child);
             const grandAfter = getChildFromParentState(after);
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
-            const handled = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+            const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
             if (handled) {
               const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
               if (looksExit) {
@@ -132,7 +132,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
         const after = snapshot(child);
         const grandAfter = getChildFromParentState(after);
         const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
-        const handledByState = !statesEqual(before, after) || (grandBefore && grandAfter && !statesEqual(grandBeforeSnap, grandAfterSnap));
+        const handledByState = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
         const handled = handledByState || lastDuckInvoked;
         if (handled) {
           const duckChild = !isMachine(child as any);
