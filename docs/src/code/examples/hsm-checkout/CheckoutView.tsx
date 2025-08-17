@@ -6,7 +6,7 @@ import { getAvailableActions, type FactoryMachine } from "matchina";
 type Machine = ReturnType<typeof createCheckoutMachine>;
 
 export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
-  if (machine.getState().data?.machine) return <div>Awaiting submachine</div>
+  // if (machine.getState().data?.machine) return <div>Awaiting submachine</div>
   return getAvailableActions(machine.transitions, machine.getState().key).map((action) => (
     <button key={action} onClick={() => machine.send(action as any)} className="btn">{action}</button>
   ))
