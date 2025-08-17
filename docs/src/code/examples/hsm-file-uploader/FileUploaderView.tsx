@@ -1,12 +1,14 @@
 import React from "react";
+import { useMachine } from "matchina/react";
 
 import type { createUploaderMachine } from "./machine";
 
 type Machine = ReturnType<typeof createUploaderMachine>;
 
 export function FileUploaderView({ machine }: { machine: Machine }) {
+  useMachine(machine);
   const state = machine.getState() as any;
-  const files = state.files as Record<string, { key: string; pct?: number }>;
+  const files: Record<string, { key: string; pct?: number }> = (state?.files ?? {});
   const online = state.key === "Online";
 
   return (
