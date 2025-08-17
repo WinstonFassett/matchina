@@ -1,12 +1,13 @@
 import { createMachine, defineStates, setup } from "matchina";
 import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
+import { withSubstates } from "../../../../../playground/withSubstates";
 
 // Parent checkout states and nested payment substates
 export const checkoutStates = defineStates({
   Cart: undefined,
   Shipping: undefined,
-  // Carry the child payment machine while in Payment so propagation can find it
-  Payment: (props: { machine: any }) => props,
+  // Attach a fresh payment submachine on every entry
+  Payment: withSubstates(() => createPayment(), { id: "payment" }),
   Review: undefined,
   Confirmation: undefined,
 });
@@ -20,9 +21,8 @@ export const paymentStates = defineStates({
   AuthorizationError: undefined,
 });
 
-export function createCheckoutMachine() {
-  // Create child first so we can embed it in Payment state data
-  const payment = createMachine(
+function createPayment() {
+  const m = createMachine(
     paymentStates,
     {
       MethodEntry: { authorize: "Authorizing" },
@@ -33,8 +33,13 @@ export function createCheckoutMachine() {
     },
     "MethodEntry"
   );
-  // Ensure child sends are wrapped so exits are detected even on direct child calls
-  setup(payment)(propagateSubmachines(payment));
+  // Optionally wrap child too (not strictly required for exit detection via parent wrapper,
+  // but keeps behavior consistent if called directly)
+  setup(m)(propagateSubmachines(m));
+  return m;
+}
+
+export function createCheckoutMachine() {
 
   const base = createMachine(
     checkoutStates,
@@ -44,16 +49,14 @@ export function createCheckoutMachine() {
       },
       Shipping: {
         back: "Cart",
-        proceed: () => () => checkoutStates.Payment({ machine: payment }),
+        proceed: "Payment",
       },
       Payment: {
         back: "Shipping",
-        proceed: "Review", // Gate in the view based on payment submachine
-        // When payment child exits (e.g., Authorized), advance parent to Review automatically
+        // No parent proceed; require child to finish
         "child.exit": "Review",
       },
       Review: {
-        // back: () => () => checkoutStates.Payment({ machine: payment }),
         back: "Shipping",
         submitOrder: "Confirmation",
       },
@@ -66,5 +69,5 @@ export function createCheckoutMachine() {
   // Enable child-first routing and child.exit propagation
   setup(base)(propagateSubmachines(base));
 
-  return Object.assign(base, { payment });
+  return base;
 }
