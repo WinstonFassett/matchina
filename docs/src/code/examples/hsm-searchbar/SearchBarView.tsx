@@ -42,7 +42,9 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      api.submit();
+      // api.submit();
+      // machine.send("submit")
+      activeMachine?.send("submit")
     }
     if (e.key === "Escape") {
       api.close();
@@ -70,7 +72,7 @@ export function SearchBarView({ machine }: { machine: Machine }) {
           onKeyDown={onKeyDown}
         />
         <button className="btn" onClick={() => api.close()}>Close</button>
-        <button className="btn" onClick={() => api.clear()}>Clear</button>
+        <button className="btn" onClick={() => activeMachine?.send('clear')}>Clear</button>
         {subKey === "Error" && (
           <button className="btn" onClick={() => api.retry()}>Retry</button>
         )}

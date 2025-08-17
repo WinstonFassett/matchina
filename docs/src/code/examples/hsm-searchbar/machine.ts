@@ -34,7 +34,8 @@ function createActiveMachine() {
       TextEntry: {
         ...commonTransitions,
         submit: () => (ev) => {
-          ev.from.data.fetcher?.send?.("start", ev.from.data.query);
+          // ev.from.data.fetcher?.send?.("start", ev.from.data.query);
+          console.log('submit', ev.from.data)
           return activeStates.TextEntry(ev.from.data.query);
         },
       },
