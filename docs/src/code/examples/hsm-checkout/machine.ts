@@ -1,4 +1,4 @@
-import { createMachine, defineStates, setup } from "matchina";
+import { createMachine, defineStates, effect, setup, whenEventType, withReset } from "matchina";
 import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
 import { withSubstates } from "../../../../../playground/withSubstates";
 
@@ -31,7 +31,7 @@ function createPayment() {
     "MethodEntry"
   );
   setup(m)(propagateSubmachines(m));
-  return m;
+  return withReset(m, paymentStates.MethodEntry());
 }
 
 const states = defineStates({
@@ -79,7 +79,10 @@ export function createCheckoutMachine() {
     },
     "Cart"
   );
-  setup(base)(propagateSubmachines(base));
+  setup(base)(
+    propagateSubmachines(base),
+    effect(whenEventType("restart", payment.reset))
+  );
 
   return Object.assign(base, { payment });
 }

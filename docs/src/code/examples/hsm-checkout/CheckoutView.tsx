@@ -6,9 +6,8 @@ import { getAvailableActions, type FactoryMachine } from "matchina";
 type Machine = ReturnType<typeof createCheckoutMachine>;
 
 export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
-  // if (machine.getState().data?.machine) return <div>Awaiting submachine</div>
   return getAvailableActions(machine.transitions, machine.getState().key).map((action) => (
-    <button key={action} onClick={() => machine.send(action as any)} className="btn">{action}</button>
+    <button className="px-3 py-1 rounded bg-blue-500 text-white text-sm" key={action} onClick={() => machine.send(action as any)}>{action}</button>
   ))
 }
 
@@ -19,9 +18,7 @@ function ChildPanel({ child }: { child: FactoryMachine<any> }) {
     <div className="pl-3 border-l">
       <div>Payment: <b>{childState.key}</b></div>
       <div className="flex gap-2 mt-2 flex-wrap">
-        {getAvailableActions(child.transitions, childState.key).map((action) => (
-          <button key={action} onClick={() => child.send(action as any)} className="btn">{action}</button>
-        ))}
+        <ActionButtons machine={child} />
       </div>
     </div>
   );
