@@ -6,8 +6,10 @@ import { withSubstates } from "../../../../../playground/withSubstates";
 export const checkoutStates = defineStates({
   Cart: undefined,
   Shipping: undefined,
+  // When user has already paid and navigates back, we land here to remember that fact
+  ShippingPaid: undefined,
   // Attach a fresh payment submachine on every entry
-  Payment: withSubstates(() => createPayment(), { id: "payment" }),
+  Payment: undefined, // placeholder; wired below where we have the instance
   Review: undefined,
   Confirmation: undefined,
 });
@@ -40,9 +42,19 @@ function createPayment() {
 }
 
 export function createCheckoutMachine() {
+  const payment = createPayment();
+
+  const states = defineStates({
+    Cart: undefined,
+    Shipping: undefined,
+    ShippingPaid: undefined,
+    Payment: withSubstates(() => payment, { id: "payment" }),
+    Review: undefined,
+    Confirmation: undefined,
+  });
 
   const base = createMachine(
-    checkoutStates,
+    states,
     {
       Cart: {
         proceed: "Shipping",
@@ -53,12 +65,17 @@ export function createCheckoutMachine() {
       },
       Payment: {
         back: "Shipping",
-        // No parent proceed; require child to finish
         "child.exit": "Review",
       },
       Review: {
-        back: "Shipping",
+        back: "ShippingPaid",
+        changePayment: "Payment",
         submitOrder: "Confirmation",
+      },
+      ShippingPaid: {
+        back: "Cart",
+        proceed: "Review",
+        changePayment: "Payment",
       },
       Confirmation: {
         restart: "Cart",
@@ -66,8 +83,7 @@ export function createCheckoutMachine() {
     },
     "Cart"
   );
-  // Enable child-first routing and child.exit propagation
   setup(base)(propagateSubmachines(base));
 
-  return base;
+  return Object.assign(base, { payment });
 }

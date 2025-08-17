@@ -31,7 +31,7 @@ export function CheckoutView({ machine }: { machine: Machine }) {
   useMachine(machine)
   const state: any = machine.getState();
   const key = state.key;
-  const child: FactoryMachine<any> | undefined = state?.data?.machine;
+  const child: FactoryMachine<any> | undefined = (machine as any).payment;
   return (
     <div className="p-4 space-y-3 border rounded">
       <h3 className="font-semibold">Checkout</h3>

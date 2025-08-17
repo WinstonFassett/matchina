@@ -52,7 +52,6 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
       const duck = !isMachine(child as any);
       const unSendChild = typeof (child as any).send === "function"
         ? enhanceMethod(child as any, "send", (next) => (type: string, ...params: any[]) => {
-            if (duck) lastDuckInvoked = true;
             const before = snapshot(child);
             const grandBefore = getChildFromParentState(before);
             const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
@@ -79,7 +78,6 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
         : () => {};
       const unDispatchChild = typeof (child as any).dispatch === "function"
         ? enhanceMethod(child as any, "dispatch", (next) => (type: string, ...params: any[]) => {
-            if (duck) lastDuckInvoked = true;
             const before = snapshot(child);
             const grandBefore = getChildFromParentState(before);
             const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
@@ -113,27 +111,21 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
       const parentState = machine.getState();
       const child = getChildFromParentState(parentState);
       if (child) {
-        // Fast-path for duck-typed children that don't expose a nested machine/state change
-        if (!isMachine(child as any)) {
-          if (typeof (child as any).dispatch === "function") {
-            (child as any).dispatch(type, ...params);
-            return true;
-          }
-          if (typeof (child as any).send === "function") {
-            (child as any).send(type, ...params);
-            return true;
-          }
-        }
         lastDuckInvoked = false;
         const before = snapshot(child);
         const grandBefore = getChildFromParentState(before);
         const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
-        trySend(child, type, ...params);
+        let threw = false;
+        try {
+          trySend(child, type, ...params);
+        } catch {
+          threw = true;
+        }
         const after = snapshot(child);
         const grandAfter = getChildFromParentState(after);
         const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
         const handledByState = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
-        const handled = handledByState || lastDuckInvoked;
+        const handled = !threw && handledByState;
         if (handled) {
           const duckChild = !isMachine(child as any);
           const looksExit = duckChild
