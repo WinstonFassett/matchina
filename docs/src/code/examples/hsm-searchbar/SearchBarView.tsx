@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useMachine } from "matchina/react";
-import { getAvailableActions, type FactoryMachine } from "matchina";
+import { type FactoryMachine, createMachine, getAvailableActions } from "matchina";
 import type { createSearchBarMachine } from "./machine";
 
 type Machine = ReturnType<typeof createSearchBarMachine>;
+
 
 export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
   return getAvailableActions(machine.transitions, machine.getState().key).map((action) => (
@@ -11,7 +12,8 @@ export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
   ))
 }
 
-const nullMachineHack = { getChange: () => null, notify: () => undefined }
+
+const dummyMachine = createMachine({}, {}, undefined as never)
 
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
@@ -21,30 +23,27 @@ export function SearchBarView({ machine }: { machine: Machine }) {
   if (state.is("Active")) {
     activeMachine = state.data.machine;
   }
-  console.log('activeMachine', activeMachine, activeMachine?.getState())
-  useMachine(activeMachine ?? nullMachineHack as any);
+  // if (activeMachine) useMachine(activeMachine);
+  useMachine(activeMachine ?? dummyMachine)
   const active = state.key === "Active";
+  const activeState = activeMachine?.getState();
+  const fetcher: FactoryMachine<any> | undefined = activeState?.data?.machine;
+  useMachine(fetcher ?? dummyMachine);
   const child = active ? activeMachine?.getState?.() : null;
-  // const query: string = child?.data?.query ?? "";
-  const query = activeMachine?.getState().data.query ?? "";
+  const query: string = activeMachine?.getState().data.query ?? "";
   const subKey: string | undefined = child?.key;
-  const results: Array<{ id: string; title: string }> = child?.results ?? [];
-  const error: string | undefined = child?.message;
   const api = machine.api;
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let v = e.target.value;
-    if (activeMachine) {
-      console.log('change', v)
-      activeMachine.send("typed", v)
-    }
+    const v = e.target.value;
+    if (!state.is("Active")) api.focus();
+    if (activeMachine) activeMachine.send("typed", v);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      // api.submit();
-      // machine.send("submit")
-      activeMachine?.send("submit")
+      console.log('submit', activeMachine?.getState().data, activeMachine.getState())
+      activeMachine?.send("submit");
     }
     if (e.key === "Escape") {
       api.close();
@@ -58,7 +57,7 @@ export function SearchBarView({ machine }: { machine: Machine }) {
         State: <b>{state.key}</b>{active && subKey ? ` / ${subKey}` : ""}
       </div>
       <ActionButtons machine={machine} />
-      {machine.getState().match({
+      {state.match({
         Active: (s: any) => s.machine && <ActionButtons machine={s.machine} />,
       }, false)}
       <div className="flex items-center gap-2">
@@ -73,22 +72,20 @@ export function SearchBarView({ machine }: { machine: Machine }) {
         />
         <button className="btn" onClick={() => api.close()}>Close</button>
         <button className="btn" onClick={() => activeMachine?.send('clear')}>Clear</button>
-        {subKey === "Error" && (
-          <button className="btn" onClick={() => api.retry()}>Retry</button>
-        )}
       </div>
-
-      {subKey === "Results" && results?.length > 0 && (
-        <ul className="list-disc pl-5 space-y-1">
-          {results.map((r) => (
-            <li key={r.id}>{r.title}</li>
-          ))}
-        </ul>
-      )}
-
-      {subKey === "Error" && (
-        <div className="text-red-600">{error}</div>
-      )}
+      {state.key === "Active" && <div>
+        active: {state.data.machine.getState().key}
+        {state.data.machine.getState().match({
+          Results: ({ machine }) => (<div>
+            Results: {machine.getState().key}
+            {machine.getState().match({
+              Pending: () => <div>Loading…</div>,
+              Resolved: (s: any) => <div>Resolved: {JSON.stringify(s)}</div>,
+              Rejected: (s: any) => <div>Rejected: {JSON.stringify(s)}</div>,
+            }, false)}
+          </div>),
+      }, false)}
+      </div>}
     </div>
   );
 }

@@ -1,13 +1,29 @@
-import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, type FactoryMachineEvent, type FactoryMachine } from "matchina";
+import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState } from "matchina";
 import { withSubstates } from "../../../../../playground/withSubstates";
 
-// Child machine for Active state: handles text, submit, results, error
+// Child machine for Active state: handles text, submit, results (results has a nested promise fetcher)
 const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
-  Results: (query: string, results: Array<{ id: string; title: string }>) => ({ query, results }),
-  Error: (query: string, message: string) => ({ query, message }),
+  // Compose the nested fetcher with withSubstates while preserving the query on the Results state
+  // Results: (query: string) => ({ query, ...withSubstates(createResultsFetcher)() }),
+  Results: (query: string) => ({ query, machine: createResultsFetcher(query) }),
 });
+
+// Grandchild: promise fetcher (Idle/Pending/Resolved/Rejected)
+function createResultsFetcher(query: string) {
+  const fetcher = createPromiseMachine(async (q: string) => {
+    // simple delayed autocomplete: 'err' -> reject, else N items
+    await new Promise((r) => setTimeout(r, 250));
+    const query = (q ?? "").trim();
+    if (!query.length) return [] as Array<{ id: string; title: string }>;
+    if (query.toLowerCase() === "err") throw new Error("Search failed (demo)");
+    const n = Math.max(1, Math.min(5, query.length));
+    return Array.from({ length: n }).map((_, i) => ({ id: `${query}-${i + 1}`, title: `Result ${i + 1} for "${query}"` }));
+  });
+  fetcher.execute(query)
+  return fetcher;
+}
 
 function createActiveMachine() {
   // Promise-based autocomplete fetcher: resolves with demo items after 250ms; 'err' rejects.
@@ -33,11 +49,12 @@ function createActiveMachine() {
       },
       TextEntry: {
         ...commonTransitions,
-        submit: () => (ev) => {
-          // ev.from.data.fetcher?.send?.("start", ev.from.data.query);
-          console.log('submit', ev.from.data)
-          return activeStates.TextEntry(ev.from.data.query);
-        },
+        submit: () => (ev) => activeStates.Results(ev.from.data.query),
+        // submit: () => (ev) => {
+        //   // ev.from.data.fetcher?.send?.("start", ev.from.data.query);
+        //   console.log('submit', ev.from.data)
+        //   // return activeStates.TextEntry(ev.fromrom.data.query);
+        // },
       },
       Results: {
         ...commonTransitions,
@@ -54,7 +71,7 @@ function createActiveMachine() {
   );
 
   const machine = addEventApi(base);
-  
+
   // On entering TextEntry, automatically start fetch for current query (acts like debounce handled by promise delay)
   setup(machine)(
     enter(
