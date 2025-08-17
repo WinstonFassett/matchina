@@ -27,47 +27,41 @@ See section “Appendix: Docs Examples Pipeline” at end for a deeper walkthrou
 
 ---
 
-## Demo 1: Powered Traffic Light (Working/Broken) — Hierarchical
-A classic traffic light with power and malfunction layers to show nested (hierarchical) states. This builds on existing traffic-light examples but demonstrates proper nesting and child-first routing.
+## Demo 1: E‑commerce Checkout — Flow with Nested Payment Authentication
+Relatable product flow where the parent checkout orchestrates steps and the payment step can spawn a nested authentication (3‑D Secure/MFA) subflow.
 
 Narrative:
-- Top-level modes:
-  - `Powered` (normal operations)
-  - `Unpowered` (power failure)
-- Within `Powered`, normal cycle:
-  - `Green` → `Yellow` → `Red` → loops
-- Malfunction submode under `Powered`:
-  - `FlashingYellow` (caution)
-  - `FlashingRed` (4-way stop)
-- Transitions:
-  - `tick` steps the normal cycle when in `Green|Yellow|Red`.
-  - `powerFailed` → `Unpowered` from anywhere.
-  - `powerRestored` → `Powered.Red` (safe return) or remembered last normal.
-  - `malfunction` → `Powered.FlashingYellow` (enter malfunction)
-  - `repair` → return to last normal sequence state.
+- Parent checkout steps (mode): `Cart` → `Shipping` → `Payment` → `Review` → `Confirmation`
+- Nested under `Payment`:
+  - `MethodEntry` (card/paypal/etc.)
+  - `Authorizing` → either `AuthChallenge` (3DS/MFA) or `Authorized`
+  - `AuthChallenge` → `Authorized` (on success) → back to parent `Review`
+  - Error path: `AuthorizationError` with `retry`
 
-Design focus:
-- Parent (`Powered|Unpowered`) owns child region (normal vs malfunction). Parent-only `send` routes events child-first, then bubbles to parent if unhandled.
-- Keep “brand-first with duck-typed fallback” on event naming and state factories.
-- No StoreMachine—only FactoryMachine.
+Transitions:
+- Parent-level: `proceed`, `back`, `cancel`, `submitOrder`
+- Payment-level: `enterMethod`, `authorize`, `authRequired`, `authSucceeded`, `authFailed`, `retry`
 
-Proposed files: `docs/src/code/examples/hsm-traffic-light/`
-- `states.ts` — keyed state factories (Powered, Unpowered, and Powered’s children)
-- `machine.ts` — FactoryMachine definition and child-first routing
-- `TrafficLightView.tsx` — visual UI (colors, flashing indicators)
-- `index.tsx` — usage entry (create machine, render view)
-- `example.tsx` — small wrapper for MDX to mount demo
+Design focus (why HSM is needed):
+- Parent controls the linear checkout; payment can temporarily capture control in a nested auth substate without losing the parent’s progress.
+- Child-first routing: payment/auth events handled inside payment; parent only advances when payment resolves.
+- Clear guards and side-effects at boundaries (e.g., only `submitOrder` when payment `Authorized`).
 
-MDX page: `docs/src/content/docs/examples/hsm-traffic-light.mdx`
-- Renders the demo and shows `states.ts`, `machine.ts`, `TrafficLightView.tsx`, and `index.tsx` via `CodeTabs`
+Proposed files: `docs/src/code/examples/hsm-checkout/`
+- `machine.ts` — FactoryMachine with parent step flow and nested payment auth submachine
+- `CheckoutView.tsx` — stepper UI, payment form, auth challenge view
+- `index.tsx`, `example.tsx`
+- Optional: `states.ts` for factories
+
+MDX page: `docs/src/content/docs/examples/hsm-checkout.mdx`
+- Live demo + `CodeTabs` with `machine.ts`, `CheckoutView.tsx`, `index.tsx`
 
 Sidebar entry (`docs/astro.config.mjs`):
-- Under Examples → Advanced: “Hierarchical Traffic Light” → `/examples/hsm-traffic-light`
+- Examples → Advanced: “Hierarchical Checkout” → `/examples/hsm-checkout`
 
 Key teaching points:
-- Child-first routing: event handled at deepest active child; bubbles if unhandled.
-- Exceptional modes as nested children (malfunction).
-- Controlled re-entry from `Unpowered` back to a safe child state.
+- Parent-driven wizard with a real nested interruptible flow (3‑D Secure).
+- Deterministic routing and resumption after child completion.
 
 
 ## Demo 2: Media Player — Mode with Nested Substates
@@ -108,13 +102,39 @@ Key teaching points:
 - Deterministic child-first bubbling.
 
 
-## Demo 3 (optional/future): Door with Lock (Simple Nesting)
-A minimal example to keep HSM mental model simple.
+## Demo 3: Offline-Capable File Uploader — App Mode + Per-File Substates
+Relatable product behavior where global connectivity and per-file lifecycles interact.
 
-- Top-level: `Powered` vs `Unpowered` (optional)
-- Nested under `Powered`: `Locked` ↔ `Unlocked`, with `Open` only possible in `Unlocked`
-- Events: `lock`, `unlock`, `open`, `close`, `powerFailed`, `powerRestored`
-- Shows guard patterns (e.g., `open` only allowed when `Unlocked`)
+Narrative:
+- Top-level app modes:
+  - `Online` (uploads allowed)
+  - `Offline` (queue only; retries disabled)
+- Within `Online`, per-file nested substates (for each file):
+  - `Queued` → `Uploading` → `Verifying` → `Completed`
+  - Error path: `Uploading` → `Error` (retryable)
+- Within `Offline`, files can be `Queued` but cannot transition to `Uploading` until back `Online`.
+
+Transitions:
+- App-level: `wentOffline` → `Offline`; `cameOnline` → `Online`
+- File-level (child-first): `enqueue(file)`, `startUpload(fileId)`, `progress(fileId, pct)`, `uploadOk(fileId)`, `uploadErr(fileId)`, `retry(fileId)`
+- Guard: starting upload only permitted when app is `Online`.
+
+Design focus (why HSM is needed):
+- Clear separation of global mode (connectivity) and per-file lifecycles.
+- Deterministic child-first routing: file events target file-submachines; app mode gates availability.
+- Persistence policy: keep per-file snapshot on offline mode; resume automatically when back online.
+
+Proposed files: `docs/src/code/examples/hsm-file-uploader/`
+- `machine.ts` — FactoryMachine for app mode + a registry of file submachines (child-first routing)
+- `FileUploaderView.tsx` — list of files, progress, retry buttons, offline banner
+- `index.tsx`, `example.tsx`
+- Optional: `states.ts` for factories
+
+MDX page: `docs/src/content/docs/examples/hsm-file-uploader.mdx`
+- Live demo + `CodeTabs` with `machine.ts`, `FileUploaderView.tsx`, `index.tsx`
+
+Sidebar entry:
+- Examples → Advanced: “Hierarchical File Uploader” → `/examples/hsm-file-uploader`
 
 
 ## Implementation Recipes (shared)
