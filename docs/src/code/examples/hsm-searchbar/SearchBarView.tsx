@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useMachine } from "matchina/react";
 import { type FactoryMachine, getAvailableActions, createMachine } from "matchina";
 import type { ActiveMachine, createSearchBarMachine } from "./machine";
@@ -94,17 +94,72 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
           Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
         }, false)}
       </div>),
-      Selecting: ({ items, highlightedIndex}) => {
-        const validIndex = Math.max(0, Math.min(items.length - 1, highlightedIndex));
-        return <div>
-          Selecting: {JSON.stringify({ items, highlightedIndex})}
-          {items.map((item, index) => <ResultItem key={item.id} {...item} isHighlighted={index === validIndex} />)}
-        </div>
-      }
+      Selecting: ({ query, items, highlightedIndex }) => <Selecting 
+        items={items} 
+        highlightedIndex={highlightedIndex} 
+        setHighlightedIndex={(highlightedIndex: number) => {
+          console.log("Set Highlighted Index", { highlightedIndex })
+          machine.highlight(highlightedIndex)
+        }}
+        select={(index: number) => {
+          console.log("Select", { index })
+          machine.done(query)
+        }}
+      />
     }, false)}
 
   </div>;
 }
+
+const Selecting = ({
+  items,
+  highlightedIndex,
+  setHighlightedIndex,
+  select,
+}: {
+  items: any[];
+  highlightedIndex: number;
+  setHighlightedIndex: (highlightedIndex: number) => void;
+  select: (index: number) => void;
+}) => {
+  const validIndex = Math.max(0, Math.min(items.length - 1, highlightedIndex));
+  // attach keyboard events
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowDown":
+          event.preventDefault();
+          setHighlightedIndex(validIndex + 1);
+          break;
+        case "ArrowUp":
+          event.preventDefault();
+          setHighlightedIndex(validIndex - 1);
+          break;
+        case "Enter":
+          event.preventDefault();
+          select(validIndex);
+          break;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [validIndex]);
+  return (
+    <div>
+      Selecting: {JSON.stringify({ items, highlightedIndex })}
+      {items.map((item, index) => (
+        <ResultItem
+          key={item.id}
+          {...item}
+          isHighlighted={index === validIndex}
+        />
+      ))}
+    </div>
+  );
+};
+
 
 function ResultItem({ id, title, isHighlighted }: { id: string; title: string, isHighlighted?: boolean }) {
   return <div key={id} className={isHighlighted ? "bg-blue-100 dark:bg-blue-900" : ""}>{title}</div>;

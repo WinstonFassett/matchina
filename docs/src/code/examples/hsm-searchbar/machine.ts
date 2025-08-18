@@ -1,5 +1,4 @@
-import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, matchina } from "matchina";
-import { withSubstates } from "../../../../../playground/withSubstates";
+import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType, whenState } from "matchina";
 import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
 
 interface SelectionState {
@@ -40,7 +39,7 @@ function createResultsFetcher(query: string) {
   return fetcher;
 }
 
-function createActiveMachine() {
+function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
   const commonTransitions = {
     typed: (value: string) => activeStates.TextEntry(value),
     clear: "Empty",
@@ -69,7 +68,8 @@ function createActiveMachine() {
       Selecting: {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-        highlight: "Selecting",
+        // highlight: "Selecting",
+        highlight: (index: number) => (ev) => activeStates.Selecting({ ...ev.from.data, highlightedIndex: index }),
         setError: "Error",
         done: "TextEntry",
       },
@@ -82,18 +82,13 @@ function createActiveMachine() {
     activeStates.Empty("")
   );
 
-
-  // On entering TextEntry, automatically start fetch for current query (acts like debounce handled by promise delay)
   setup(machine)(
-    // Enable child-first routing and child.exit propagation from the Query's promise submachine
     propagateSubmachines(machine),
-    enter(
-      whenState("TextEntry", (ev) => {
-        console.log('entering TextEntry', ev.to.data)
-      })
-    )
+    effect(whenState("TextEntry", (ev) => {
+      console.log('entering TextEntry', ev.to.data)
+    })),
+    effect(whenEventType("done", onDone))
   );
-  // return Object.assign(machine, { fetcher });
   return machine
 }
 
@@ -105,7 +100,10 @@ export const appStates = defineStates({
 });
 
 export function createSearchBarMachine() {
-  const activeMachine = createActiveMachine();
+  const activeMachine = createActiveMachine({onDone: (ev) => {
+    console.log('done', ev)
+    base.close()
+  }});
   const base = matchina(
     appStates,
     {
@@ -113,8 +111,8 @@ export function createSearchBarMachine() {
         focus: () => appStates.Active(activeMachine),
       },
       Active: {
-        blur: () => appStates.Inactive(),
-        close: () => appStates.Inactive(),
+        blur: "Inactive",
+        close: "Inactive",
       },
     },
     appStates.Inactive()
