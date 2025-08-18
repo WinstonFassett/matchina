@@ -11,12 +11,14 @@ import { withSubstates } from "../../../../../playground/withSubstates";
 //   | { type: "Select" };
 
 // Child machine for Active state: handles text, submit, results (results has a nested promise fetcher)
-const activeStates = defineStates({
+export const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
   // Compose the nested fetcher with withSubstates while preserving the query on the Results state
   // Results: (query: string) => ({ query, ...withSubstates(createResultsFetcher)() }),
   Results: (query: string) => ({ query, machine: createResultsFetcher(query) }),
+  // Add Error state so transitions can target it without using `as any`
+  Error: (query: string, message: string) => ({ query, message }),
 });
 
 // Grandchild: promise fetcher (Idle/Pending/Resolved/Rejected)
@@ -69,7 +71,7 @@ function createActiveMachine() {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
         setResults: "Results",
-        setError: "Error" as any,
+        setError: "Error",
       },
       Error: {
         retry: "TextEntry",
