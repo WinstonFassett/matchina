@@ -64,6 +64,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
               const looksExit = duck
                 ? !!after?.data?.final
                 : (!!after?.data?.final || (!after?.data?.machine && !after?.machine));
+              console.log('looksExit', looksExit);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
                 const beforeParent = machine.getState();
@@ -88,6 +89,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
             if (handled) {
               const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
+              console.log('looksExit', looksExit);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
                 const beforeParent = machine.getState();
@@ -131,6 +133,7 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
           const looksExit = duckChild
             ? !!after?.data?.final
             : (!!after?.data?.final || (!after?.data?.machine && !after?.machine));
+          console.log('looksExit', looksExit);
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
             const beforeParent = machine.getState();

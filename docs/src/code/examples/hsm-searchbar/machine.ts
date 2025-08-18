@@ -11,10 +11,8 @@ interface SelectionState {
 export const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
-  // Compose the nested fetcher with withSubstates while preserving the query on the Results state
-  // Results: (query: string) => ({ query, ...withSubstates(createResultsFetcher)() }),
-  Results: (query: string) => ({ query, machine: createResultsFetcher(query) }),
-  // Add Error state so transitions can target it without using `as any`
+  Query: (query: string) => ({ query, machine: createResultsFetcher(query) }),
+  Selecting: ({ query="", results=[], highlightedIndex=-1 }: Partial<SelectionState>) => ({ query, results, highlightedIndex }),
   Error: (query: string, message: string) => ({ query, message }),
 });
 
@@ -27,14 +25,18 @@ function createResultsFetcher(query: string) {
     if (!query.length) return [] as Array<{ id: string; title: string }>;
     if (query.toLowerCase() === "err") throw new Error("Search failed (demo)");
     const n = Math.max(1, Math.min(5, query.length));
-    return Array.from({ length: n }).map((_, i) => ({ id: `${query}-${i + 1}`, title: `Result ${i + 1} for "${query}"` }));
+    return {
+      query,
+      items: Array.from({ length: n }).map((_, i) => ({ id: `${query}-${i + 1}`, title: `Result ${i + 1} for "${query}"` })),
+      final: true
+    }
   });
   fetcher.execute(query)
+  console.log('fetching!', query)
   return fetcher;
 }
 
 function createActiveMachine() {
-
   const commonTransitions = {
     typed: "TextEntry",
     clear: "Empty",
@@ -48,14 +50,22 @@ function createActiveMachine() {
       },
       TextEntry: {
         ...commonTransitions,
-        submit: () => (ev) => activeStates.Results(ev.from.data.query),
+        submit: () => (ev) => activeStates.Query(ev.from.data.query),
       },
-      Results: {
+      Query: {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-        setResults: "Results",
+        "child.exit": "Selecting",
         setError: "Error",
       },
+      Selecting: {
+        ...commonTransitions,
+        refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
+        highlight: "Selecting",
+        setError: "Error",
+        done: "TextEntry",
+      },
+
       Error: {
         retry: "TextEntry",
         clear: "Empty",
@@ -79,7 +89,6 @@ function createActiveMachine() {
 
 export type ActiveMachine = ReturnType<typeof createActiveMachine>;
 
-// Parent machine: Inactive <-> Active(with child)
 export const appStates = defineStates({
   Inactive: () => ({}),
   Active: (machine: ActiveMachine) => ({ machine }),
@@ -92,12 +101,10 @@ export function createSearchBarMachine() {
     {
       Inactive: {
         focus: () => appStates.Active(activeMachine),
-        // typed: (_text: string) => appStates.Active(activeMachine),
       },
       Active: {
         blur: () => appStates.Inactive(),
         close: () => appStates.Inactive(),
-        // child-first routing for: typed, clear, submit
       },
     },
     appStates.Inactive()

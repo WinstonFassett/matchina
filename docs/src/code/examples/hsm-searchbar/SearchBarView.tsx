@@ -54,7 +54,7 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 function ActiveView({ machine }: { machine: ActiveMachine }) {
   useMachine(machine);  
   const state = machine.getState();
-  const fetcherMachine = state.is("Results") ? state.data.machine : undefined;
+  const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
   useMachineMaybe(fetcherMachine);
   
   const query = state.data.query;
@@ -84,12 +84,12 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
     </div>
 
     {state.match({
-      Results: ({ machine }) => (<div>
+      Query: ({ machine }) => (<div>
         Results status: {machine.getState().key}
         {machine.getState().match({
           Pending: () => <div>Loading…</div>,
-          Resolved: (items) => <div>
-            {items.map((item) => <div key={item.id}>{item.title}</div>)}
+          Resolved: ({ items }) => <div>
+            {items.map(item => <ResultItem key={item.id} {...item} />)}
           </div>,
           Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
         }, false)}
@@ -97,4 +97,8 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
     }, false)}
 
   </div>;
+}
+
+function ResultItem({ id, title }: { id: string; title: string }) {
+  return <div key={id}>{title}</div>;
 }
