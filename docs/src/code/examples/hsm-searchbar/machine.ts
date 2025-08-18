@@ -1,14 +1,11 @@
 import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, matchina } from "matchina";
 import { withSubstates } from "../../../../../playground/withSubstates";
 
-
-// type Event =
-//   | { type: "Query Change"; query: string }
-//   | { type: "Found Results"; results: Person[] }
-//   | { type: "Set Highlighted Index"; index: number }
-//   | { type: "Highlight Next" }
-//   | { type: "Highlight Previous" }
-//   | { type: "Select" };
+interface SelectionState {
+  query: string;
+  results: Array<{ id: string; title: string }>;
+  highlightedIndex: number;
+}
 
 // Child machine for Active state: handles text, submit, results (results has a nested promise fetcher)
 export const activeStates = defineStates({
@@ -37,15 +34,6 @@ function createResultsFetcher(query: string) {
 }
 
 function createActiveMachine() {
-  // Promise-based autocomplete fetcher: resolves with demo items after 250ms; 'err' rejects.
-  // const fetcher = createPromiseMachine(async (q: string) => {
-  //   await new Promise((r) => setTimeout(r, 250));
-  //   const query = (q ?? "").trim();
-  //   if (!query.length) return [] as Array<{ id: string; title: string }>;
-  //   if (query.toLowerCase() === "err") throw new Error("Search failed (demo)");
-  //   const n = Math.max(1, Math.min(5, query.length));
-  //   return Array.from({ length: n }).map((_, i) => ({ id: `${query}-${i + 1}`, title: `Result ${i + 1} for "${query}"` }));
-  // });
 
   const commonTransitions = {
     typed: "TextEntry",
@@ -61,11 +49,6 @@ function createActiveMachine() {
       TextEntry: {
         ...commonTransitions,
         submit: () => (ev) => activeStates.Results(ev.from.data.query),
-        // submit: () => (ev) => {
-        //   // ev.from.data.fetcher?.send?.("start", ev.from.data.query);
-        //   console.log('submit', ev.from.data)
-        //   // return activeStates.TextEntry(ev.fromrom.data.query);
-        // },
       },
       Results: {
         ...commonTransitions,
