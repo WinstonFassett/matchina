@@ -1,6 +1,15 @@
 import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, matchina } from "matchina";
 import { withSubstates } from "../../../../../playground/withSubstates";
 
+
+// type Event =
+//   | { type: "Query Change"; query: string }
+//   | { type: "Found Results"; results: Person[] }
+//   | { type: "Set Highlighted Index"; index: number }
+//   | { type: "Highlight Next" }
+//   | { type: "Highlight Previous" }
+//   | { type: "Select" };
+
 // Child machine for Active state: handles text, submit, results (results has a nested promise fetcher)
 const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
@@ -41,7 +50,7 @@ function createActiveMachine() {
     clear: "Empty",
   } as const;
 
-  const base = matchina(
+  const machine = matchina(
     activeStates,
     {
       Empty: {
@@ -70,7 +79,6 @@ function createActiveMachine() {
     activeStates.Empty("")
   );
 
-  const machine = addEventApi(base);
 
   // On entering TextEntry, automatically start fetch for current query (acts like debounce handled by promise delay)
   setup(machine)(
@@ -110,5 +118,5 @@ export function createSearchBarMachine() {
     appStates.Inactive()
   );
 
-  return addEventApi(base);
+  return Object.assign(base, { activeMachine });
 }

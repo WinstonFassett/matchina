@@ -5,14 +5,12 @@ import type { ActiveMachine, createSearchBarMachine } from "./machine";
 
 type Machine = ReturnType<typeof createSearchBarMachine>;
 
-
 export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
   return getAvailableActions(machine.transitions, machine.getState().key).map((action) => (
     <button className="px-3 py-1 rounded bg-blue-500 text-white text-sm" key={action} onClick={() => machine.send(action as any)}>{action}</button>
   ))
 }
-  // Always subscribe with a noop fallback to satisfy React hook rules
-  const noopMachine = createMachine({}, {}, undefined as never);
+const noopMachine = createMachine({}, {}, undefined as never);
 
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
@@ -22,8 +20,8 @@ export function SearchBarView({ machine }: { machine: Machine }) {
   if (state.is("Active")) {
     activeMachine = state.data.machine;
   }
-
   useMachine(activeMachine ?? noopMachine);
+
   const active = state.key === "Active";
   const activeState = activeMachine?.getState();
   const fetcher: FactoryMachine<any> | undefined = activeState?.data?.machine;
@@ -31,7 +29,6 @@ export function SearchBarView({ machine }: { machine: Machine }) {
   const child = active ? activeMachine?.getState?.() : null;
   const query: string = activeMachine?.getState().data.query ?? "";
   const subKey: string | undefined = child?.key;
-  const api = machine.api;
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
@@ -40,10 +37,10 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      (activeMachine as any)?.send("submit");
+      activeMachine?.submit();
     }
     if (e.key === "Escape") {
-      api.close();
+      machine.close();
     }
   };
 
@@ -55,20 +52,20 @@ export function SearchBarView({ machine }: { machine: Machine }) {
       </div>
       <ActionButtons machine={machine} />
       {state.match({
-        Active: (s: any) => s.machine && <ActionButtons machine={s.machine} />,
+        Active: ActiveView,
       }, false)}
       <div className="flex items-center gap-2">
         <input
           className="border rounded px-2 py-1 flex-1"
           placeholder="Type to search..."
           value={query}
-          onFocus={() => api.focus()}
-          onBlur={() => api.blur()}
+          onFocus={() => machine.focus()}
+          onBlur={() => machine.blur()}
           readOnly={!active}
           onChange={onChange}
           onKeyDown={onKeyDown}
         />
-        <button className="btn" onClick={() => api.close()}>Close</button>
+        <button className="btn" onClick={() => machine.close()}>Close</button>
         <button className="btn" onClick={() => activeMachine?.send('clear')}>Clear</button>
       </div>
       {state.key === "Active" && <div>
@@ -86,4 +83,10 @@ export function SearchBarView({ machine }: { machine: Machine }) {
       </div>}
     </div>
   );
+}
+
+function ActiveView({ machine }: { machine: ActiveMachine }) {
+  return <div>
+    Active View
+  </div>;
 }
