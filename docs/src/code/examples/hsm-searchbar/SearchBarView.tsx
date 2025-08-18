@@ -27,22 +27,8 @@ export function SearchBarView({ machine }: { machine: Machine }) {
   const fetcher: FactoryMachine<any> | undefined = activeState?.data?.machine;
   useMachine(fetcher ?? noopMachine);
   const child = active ? activeMachine?.getState?.() : null;
-  const query: string = activeMachine?.getState().data.query ?? "";
   const subKey: string | undefined = child?.key;
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    if (activeMachine) (activeMachine as any).send("typed", v);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      activeMachine?.submit();
-    }
-    if (e.key === "Escape") {
-      machine.close();
-    }
-  };
 
   return (
     <div className="p-4 space-y-3 border rounded">
@@ -52,41 +38,65 @@ export function SearchBarView({ machine }: { machine: Machine }) {
       </div>
       <ActionButtons machine={machine} />
       {state.match({
-        Active: ActiveView,
+        Active: ({machine}) => <ActiveView machine={machine} />,
+        Inactive: () => <a href="#" onClick={() => machine.focus()}>Click to search</a>,
       }, false)}
-      <div className="flex items-center gap-2">
-        <input
-          className="border rounded px-2 py-1 flex-1"
-          placeholder="Type to search..."
-          value={query}
-          onFocus={() => machine.focus()}
-          onBlur={() => machine.blur()}
-          readOnly={!active}
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-        />
-        <button className="btn" onClick={() => machine.close()}>Close</button>
-        <button className="btn" onClick={() => activeMachine?.send('clear')}>Clear</button>
-      </div>
-      {state.key === "Active" && <div>
-        active: {state.data.machine.getState().key}
-        {state.data.machine.getState().match({
-          Results: ({ machine }) => (<div>
-            Results: {machine.getState().key}
-            {machine.getState().match({
-              Pending: () => <div>Loading…</div>,
-              Resolved: (s: any) => <div>Resolved: {JSON.stringify(s)}</div>,
-              Rejected: (s: any) => <div>Rejected: {JSON.stringify(s)}</div>,
-            }, false)}
-          </div>),
-      }, false)}
-      </div>}
+      
     </div>
   );
 }
 
 function ActiveView({ machine }: { machine: ActiveMachine }) {
+  useMachine(machine);
+  const state = machine.getState();
+  const query = state.data.query;
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    machine.typed(v);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      console.log('submit', query)
+      machine.submit();
+    }
+    if (e.key === "Escape") {
+      // machine.close();
+    }
+  };
   return <div>
     Active View
+
+    <div className="flex items-center gap-2">
+      <input
+        className="border rounded px-2 py-1 flex-1"
+        placeholder="Type to search..."
+        value={query}
+        // onFocus={() => machine.focus()}
+        // onBlur={() => machine.blur()}
+        // readOnly={!active}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+      />
+      {/* <button className="btn" onClick={() => machine.close()}>Close</button> */}
+      <button className="btn" onClick={() => machine.clear()}>Clear</button>
+    </div>
+
+
+    {state.match({
+      Results: ({ machine }) => (<div>
+        Results: {machine.getState().key}
+        {machine.getState().match({
+          Pending: () => <div>Loading…</div>,
+          Resolved: (items: { id: string; title: string }[]) => <div>
+            {items.map((item) => <div key={item.id}>{item.title}</div>)}
+          </div>,
+          Rejected: (s: any) => <div>Rejected: {JSON.stringify(s)}</div>,
+        }, false)}
+      </div>),
+    }, false)}
+
+
+
   </div>;
 }
