@@ -16,8 +16,9 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
-  if (typeof m.send === "function") return (m.send as any)(type, ...params);
+  // Prefer dispatch for duck-typed children that may only expose dispatch
   if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
+  if (typeof m.send === "function") return (m.send as any)(type, ...params);
 }
 
 function snapshot(m: AnyMachine) {
@@ -132,9 +133,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
         const grandAfter = getChildFromParentState(after);
         const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
         const handledByState = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
-        const handled = !threw && handledByState;
+        // For duck-typed children (not branded machines), treat a successful dispatch/send
+        // as handled even if the child's state shape did not change. This allows routing to
+        // "dispatch-only" children that record side-effects without mutating state.
+        const duckChild = !isMachine(child as any);
+        const handled = !threw && (handledByState || duckChild);
         if (handled) {
-          const duckChild = !isMachine(child as any);
           const grandFinal = !!grandAfterSnap?.data?.final;
           const looksExit = duckChild
             ? !!after?.data?.final
