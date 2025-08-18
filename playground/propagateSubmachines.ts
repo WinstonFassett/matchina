@@ -61,9 +61,14 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
             const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
             if (handled) {
+              // Consider exit if:
+              // - Duck child marks itself final
+              // - Machine child marks itself final OR loses its nested machine
+              // - Grandchild (nested machine) marks itself final (e.g., promise machine resolved with { final: true })
+              const grandFinal = !!grandAfterSnap?.data?.final;
               const looksExit = duck
                 ? !!after?.data?.final
-                : (!!after?.data?.final || (!after?.data?.machine && !after?.machine));
+                : (!!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal);
               console.log('looksExit', looksExit);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
@@ -88,7 +93,8 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
             const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
             const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
             if (handled) {
-              const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine);
+              const grandFinal = !!grandAfterSnap?.data?.final;
+              const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal;
               console.log('looksExit', looksExit);
               if (looksExit) {
                 const id = parentState?.data?.id ?? parentState?.id;
@@ -130,9 +136,10 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
         const handled = !threw && handledByState;
         if (handled) {
           const duckChild = !isMachine(child as any);
+          const grandFinal = !!grandAfterSnap?.data?.final;
           const looksExit = duckChild
             ? !!after?.data?.final
-            : (!!after?.data?.final || (!after?.data?.machine && !after?.machine));
+            : (!!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal);
           console.log('looksExit', looksExit);
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
@@ -156,8 +163,9 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
           // Pre-resolve to honor immutable self-transition semantics
           const before = machine.getState();
           const resolved = (machine as any).resolveExit?.({ type, params, from: before });
-          if (resolved && resolved.to?.key === before.key) {
-            return; // no-op on self-transition to preserve identity
+          // Allow self-transitions when they carry parameters (e.g., data updates like typed(value))
+          if (resolved && resolved.to?.key === before.key && (!params || params.length === 0)) {
+            return; // no-op on parameterless self-transition to preserve identity
           }
           const res = (next as any)(type, ...params);
           // child may have changed identity; re-wrap
@@ -173,8 +181,8 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
           if (handled) return; // child handled
           const before = machine.getState();
           const resolved = (machine as any).resolveExit?.({ type, params, from: before });
-          if (resolved && resolved.to?.key === before.key) {
-            return;
+          if (resolved && resolved.to?.key === before.key && (!params || params.length === 0)) {
+            return; // skip only parameterless self-transition
           }
           const res = (next as any)(type, ...params);
           unwrapChild();

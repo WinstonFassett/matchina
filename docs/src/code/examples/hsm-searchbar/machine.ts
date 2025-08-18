@@ -1,9 +1,10 @@
 import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, matchina } from "matchina";
 import { withSubstates } from "../../../../../playground/withSubstates";
+import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
 
 interface SelectionState {
   query: string;
-  results: Array<{ id: string; title: string }>;
+  items: Array<{ id: string; title: string }>;
   highlightedIndex: number;
 }
 
@@ -12,7 +13,10 @@ export const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
   Query: (query: string) => ({ query, machine: createResultsFetcher(query) }),
-  Selecting: ({ query="", results=[], highlightedIndex=-1 }: Partial<SelectionState>) => ({ query, results, highlightedIndex }),
+  Selecting: ({ query="", items=[], highlightedIndex=-1 }: Partial<SelectionState>) => {
+    console.log('selecting', query, items, highlightedIndex)
+    return ({ query, items, highlightedIndex })
+  },
   Error: (query: string, message: string) => ({ query, message }),
 });
 
@@ -38,7 +42,7 @@ function createResultsFetcher(query: string) {
 
 function createActiveMachine() {
   const commonTransitions = {
-    typed: "TextEntry",
+    typed: (value: string) => activeStates.TextEntry(value),
     clear: "Empty",
   } as const;
 
@@ -55,7 +59,11 @@ function createActiveMachine() {
       Query: {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-        "child.exit": "Selecting",
+        "child.exit": ({ data, id, state }) => (ev) => {
+          console.log('child.exit', {data, id, state, ev})
+          const { query, items } = data
+          return activeStates.Selecting({ query, items })
+        },
         setError: "Error",
       },
       Selecting: {
@@ -77,6 +85,8 @@ function createActiveMachine() {
 
   // On entering TextEntry, automatically start fetch for current query (acts like debounce handled by promise delay)
   setup(machine)(
+    // Enable child-first routing and child.exit propagation from the Query's promise submachine
+    propagateSubmachines(machine),
     enter(
       whenState("TextEntry", (ev) => {
         console.log('entering TextEntry', ev.to.data)

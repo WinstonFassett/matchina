@@ -94,11 +94,18 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
           Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
         }, false)}
       </div>),
+      Selecting: ({ items, highlightedIndex}) => {
+        const validIndex = Math.max(0, Math.min(items.length - 1, highlightedIndex));
+        return <div>
+          Selecting: {JSON.stringify({ items, highlightedIndex})}
+          {items.map((item, index) => <ResultItem key={item.id} {...item} isHighlighted={index === validIndex} />)}
+        </div>
+      }
     }, false)}
 
   </div>;
 }
 
-function ResultItem({ id, title }: { id: string; title: string }) {
-  return <div key={id}>{title}</div>;
+function ResultItem({ id, title, isHighlighted }: { id: string; title: string, isHighlighted?: boolean }) {
+  return <div key={id} className={isHighlighted ? "bg-blue-100 dark:bg-blue-900" : ""}>{title}</div>;
 }
