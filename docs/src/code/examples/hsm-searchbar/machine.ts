@@ -1,4 +1,4 @@
-import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState } from "matchina";
+import { addEventApi, createMachine, defineStates, createPromiseMachine, setup, enter, whenState, matchina } from "matchina";
 import { withSubstates } from "../../../../../playground/withSubstates";
 
 // Child machine for Active state: handles text, submit, results (results has a nested promise fetcher)
@@ -41,7 +41,7 @@ function createActiveMachine() {
     clear: "Empty",
   } as const;
 
-  const base = createMachine(
+  const base = matchina(
     activeStates,
     {
       Empty: {
@@ -60,7 +60,7 @@ function createActiveMachine() {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
         setResults: "Results",
-        setError: "Error",
+        setError: "Error" as any,
       },
       Error: {
         retry: "TextEntry",
@@ -84,15 +84,17 @@ function createActiveMachine() {
   return machine
 }
 
+export type ActiveMachine = ReturnType<typeof createActiveMachine>;
+
 // Parent machine: Inactive <-> Active(with child)
 export const appStates = defineStates({
   Inactive: () => ({}),
-  Active: (machine: FactoryMachine<any>) => ({ machine }),
+  Active: (machine: ActiveMachine) => ({ machine }),
 });
 
 export function createSearchBarMachine() {
   const activeMachine = createActiveMachine();
-  const base = createMachine(
+  const base = matchina(
     appStates,
     {
       Inactive: {

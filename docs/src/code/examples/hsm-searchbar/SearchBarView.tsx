@@ -1,7 +1,7 @@
 import React from "react";
 import { useMachine } from "matchina/react";
-import { type FactoryMachine, createMachine, getAvailableActions } from "matchina";
-import type { createSearchBarMachine } from "./machine";
+import { type FactoryMachine, getAvailableActions, createMachine } from "matchina";
+import type { ActiveMachine, createSearchBarMachine } from "./machine";
 
 type Machine = ReturnType<typeof createSearchBarMachine>;
 
@@ -11,24 +11,23 @@ export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
     <button className="px-3 py-1 rounded bg-blue-500 text-white text-sm" key={action} onClick={() => machine.send(action as any)}>{action}</button>
   ))
 }
-
-
-const dummyMachine = createMachine({}, {}, undefined as never)
+  // Always subscribe with a noop fallback to satisfy React hook rules
+  const noopMachine = createMachine({}, {}, undefined as never);
 
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
   
   const state = machine.getState();
-  let activeMachine: FactoryMachine<any> | undefined = undefined;
+  let activeMachine: ActiveMachine | undefined = undefined;
   if (state.is("Active")) {
     activeMachine = state.data.machine;
   }
-  // if (activeMachine) useMachine(activeMachine);
-  useMachine(activeMachine ?? dummyMachine)
+
+  useMachine(activeMachine ?? noopMachine);
   const active = state.key === "Active";
   const activeState = activeMachine?.getState();
   const fetcher: FactoryMachine<any> | undefined = activeState?.data?.machine;
-  useMachine(fetcher ?? dummyMachine);
+  useMachine(fetcher ?? noopMachine);
   const child = active ? activeMachine?.getState?.() : null;
   const query: string = activeMachine?.getState().data.query ?? "";
   const subKey: string | undefined = child?.key;
@@ -36,14 +35,12 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
-    if (!state.is("Active")) api.focus();
-    if (activeMachine) activeMachine.send("typed", v);
+    if (activeMachine) (activeMachine as any).send("typed", v);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      console.log('submit', activeMachine?.getState().data, activeMachine.getState())
-      activeMachine?.send("submit");
+      (activeMachine as any)?.send("submit");
     }
     if (e.key === "Escape") {
       api.close();
@@ -67,6 +64,7 @@ export function SearchBarView({ machine }: { machine: Machine }) {
           value={query}
           onFocus={() => api.focus()}
           onBlur={() => api.blur()}
+          readOnly={!active}
           onChange={onChange}
           onKeyDown={onKeyDown}
         />
