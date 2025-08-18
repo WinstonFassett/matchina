@@ -12,6 +12,22 @@ export function ActionButtons({ machine }: { machine: FactoryMachine<any> }) {
 }
 const noopMachine = createMachine({}, {}, undefined as never);
 
+export function getStates(machine: FactoryMachine<any>) {
+  const state = machine.getState();
+  const states = [state]
+  const submachine = state.data?.machine;
+  if (submachine) {
+    states.push(...getStates(submachine))
+  }
+  return states
+}
+
+export function Statuses({ machine }: { machine: FactoryMachine<any> }) {
+  // return machine.getState().key;
+  const states = getStates(machine);
+  return states.map((state) => state.key).join(" / ")
+}
+
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
   
@@ -34,9 +50,12 @@ export function SearchBarView({ machine }: { machine: Machine }) {
     <div className="p-4 space-y-3 border rounded">
       <h3 className="font-semibold">Search Bar</h3>
       <div className="text-sm text-gray-600">
-        State: <b>{state.key}</b>{active && subKey ? ` / ${subKey}` : ""}
+        {/* State: <b>{state.key}</b>{active && subKey ? ` / ${subKey}` : ""} */}
+        <Statuses machine={machine} />
       </div>
-      <ActionButtons machine={machine} />
+      <div>
+        <ActionButtons machine={machine} />
+      </div>
       {state.match({
         Active: ({machine}) => <ActiveView machine={machine} />,
         Inactive: () => <a href="#" onClick={() => machine.focus()}>Click to search</a>,
@@ -50,10 +69,6 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
   useMachine(machine);
   const state = machine.getState();
   const query = state.data.query;
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    machine.typed(v);
-  };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -65,8 +80,6 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
     }
   };
   return <div>
-    Active View
-
     <div className="flex items-center gap-2">
       <input
         className="border rounded px-2 py-1 flex-1"
@@ -75,28 +88,24 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
         // onFocus={() => machine.focus()}
         // onBlur={() => machine.blur()}
         // readOnly={!active}
-        onChange={onChange}
+        onChange={e => machine.typed(e.target.value)}
         onKeyDown={onKeyDown}
       />
-      {/* <button className="btn" onClick={() => machine.close()}>Close</button> */}
       <button className="btn" onClick={() => machine.clear()}>Clear</button>
     </div>
 
-
     {state.match({
       Results: ({ machine }) => (<div>
-        Results: {machine.getState().key}
+        Results status: {machine.getState().key}
         {machine.getState().match({
           Pending: () => <div>Loading…</div>,
-          Resolved: (items: { id: string; title: string }[]) => <div>
+          Resolved: (items) => <div>
             {items.map((item) => <div key={item.id}>{item.title}</div>)}
           </div>,
-          Rejected: (s: any) => <div>Rejected: {JSON.stringify(s)}</div>,
+          Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
         }, false)}
       </div>),
     }, false)}
-
-
 
   </div>;
 }
