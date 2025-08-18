@@ -8,6 +8,7 @@ import { funcwareFromMiddleware } from "./ext/funcware/from-middleware";
 export type Adapters<E extends TransitionEvent = TransitionEvent> = {
   [key: string]: Func;
 } & {
+  send: (funcware: Funcware<StateMachine<E>["send"]>) => Funcware<StateMachine<E>["send"]>;
   transition: (
     middleware: MiddlewareFunc<E>
   ) => Funcware<StateMachine<E>["transition"]>;
@@ -33,6 +34,7 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
 type Transform<I, O = I> = (source: I) => O;
 
 export const HookAdapters = {
+  send: <E extends TransitionEvent>(funcware: Funcware<StateMachine<E>["send"]>) => funcware,
   transition: funcwareFromMiddleware,
   update: funcwareFromMiddleware,
   resolveExit: funcwareFromMiddleware,
