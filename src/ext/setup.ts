@@ -98,3 +98,18 @@ export const setup =
   <T>(target: T): ((...setups: SetupFunc<T>[]) => DisposeFunc) =>
   (...setups: SetupFunc<T>[]) =>
     createDisposer(setups.map((fn) => fn(target)));
+
+
+export const buildSetup = <T>(target: T) => {
+  const d: DisposeFunc[] = [];
+  const add = (...setups: SetupFunc<T>[]) => {
+    d.push(...setups.map((fn) => fn(target)));
+    return () => {
+      for (let i = d.length - 1; i >= 0; i--) {
+        d[i]();
+      }
+    };
+  };
+  return [add, () => createDisposer(d)()];
+};
+  
