@@ -1,7 +1,10 @@
-import { setup } from "../src/ext/setup";
+import { buildSetup, createSetup, setup } from "../src/ext/setup";
 import { resolveExit as hookResolveExit } from "../src/state-machine-hooks";
 import { isMachine } from "../src/is-machine";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
+import { createMethodEnhancer } from "../src/ext";
+import { DisposeFunc } from "../src/function-types";
+import { FactoryMachine } from "../src";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: Function; dispatch?: Function };
@@ -23,24 +26,21 @@ function snapshot(m: AnyMachine) {
   return m.getState();
 }
 
-function statesEqual(a: any, b: any) {
-  // Reference equality is sufficient for our immutable-first semantics
-  return Object.is(a, b);
-}
-
 // Setup function to enable child-first hierarchical routing on a machine.
 // Usage: setup(machine)(propagateSubmachines(machine))
-export function propagateSubmachines<M extends AnyMachine>(machine: M) {
-  // 1) Enhance resolveExit to supply sane defaults for probes
-  const enhanceResolve = hookResolveExit((ev: any, next: (ev: any) => any) => {
-    const from = ev?.from ?? machine.getState();
-    const params = Array.isArray(ev?.params) ? ev.params : [];
-    return next({ ...ev, from, params });
-  });
+export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnoreThis: M) {
 
-  // 2) Additionally, enhance send/dispatch using the library enhancer utilities
-  return (target: M) => {
-    const disposeResolve = enhanceResolve(target as any);
+  return (machine: M) => {
+    const [addSetup, disposeAll] = buildSetup(machine)
+    
+    // 1) Enhance resolveExit to supply sane defaults for probes
+    addSetup(hookResolveExit((ev: any, next: (ev: any) => any) => {
+      const from = ev?.from ?? machine.getState();
+      const params = Array.isArray(ev?.params) ? ev.params : [];
+      return next({ ...ev, from, params });
+    }))
+
+    // 2) Enhance send/dispatch using the library enhancer utilities
     const wrapped = new WeakSet<object>();
     let lastDuckInvoked = false;
 
@@ -156,46 +156,41 @@ export function propagateSubmachines<M extends AnyMachine>(machine: M) {
       return false;
     };
 
-    const unSend = typeof (target as any).send === "function"
-      ? enhanceMethod(target as any, "send", (next) => (type: string, ...params: any[]) => {
-          const handled = childFirst(type, ...params);
-          if (handled) return; // child handled
-          // Pre-resolve to honor immutable self-transition semantics
-          const before = machine.getState();
-          const resolved = (machine as any).resolveExit?.({ type, params, from: before });
-          // Allow self-transitions when they carry parameters (e.g., data updates like typed(value))
-          if (resolved && resolved.to?.key === before.key && (!params || params.length === 0)) {
-            return; // no-op on parameterless self-transition to preserve identity
-          }
-          const res = (next as any)(type, ...params);
-          // child may have changed identity; re-wrap
-          unwrapChild();
-          unwrapChild = wrapChild();
-          return res;
-        })
-      : () => {};
+    addSetup(m => () => { unwrapChild(); })
 
-    const unDispatch = typeof (target as any).dispatch === "function"
-      ? enhanceMethod(target as any, "dispatch", (next) => (type: string, ...params: any[]) => {
-          const handled = childFirst(type, ...params);
-          if (handled) return; // child handled
-          const before = machine.getState();
-          const resolved = (machine as any).resolveExit?.({ type, params, from: before });
-          if (resolved && resolved.to?.key === before.key && (!params || params.length === 0)) {
-            return; // skip only parameterless self-transition
-          }
-          const res = (next as any)(type, ...params);
-          unwrapChild();
-          unwrapChild = wrapChild();
-          return res;
-        })
-      : () => {};
-
-    return () => {
-      disposeResolve();
+    addSetup(m => enhanceMethod(m as any, "send", (send) => (type: string, ...params: any[]) => {
+      const handled = childFirst(type, ...params);
+      if (handled) return; // child handled
+      const from = machine.getState();
+      // Pre-resolve to honor immutable self-transition semantics
+      const resolved = (machine as any).resolveExit?.({ type, params, from });
+      // Allow self-transitions when they carry parameters (e.g., data updates like typed(value))
+      if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
+        return; // no-op on parameterless self-transition to preserve identity
+      }
+      const resultMaybe = send(type, ...params);
+      // child may have changed identity; re-wrap
       unwrapChild();
-      unSend();
-      unDispatch();
-    };
+      unwrapChild = wrapChild();
+      return resultMaybe;
+    }))
+    
+    addSetup(target => enhanceMethod(target as any, "dispatch", (dispatch) => (type: string, ...params: any[]) => {
+      const handled = childFirst(type, ...params);
+      if (handled) return; // child handled
+      const from = machine.getState();
+      // Pre-resolve to honor immutable self-transition semantics
+      const resolved = (machine as any).resolveExit?.({ type, params, from });
+      // Allow self-transitions when they carry parameters (e.g., data updates like typed(value))
+      if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
+        return; // skip only parameterless self-transition
+      }
+      const resultMaybe = dispatch(type, ...params);
+      unwrapChild();
+      unwrapChild = wrapChild();
+      return resultMaybe;
+    }))
+
+    return disposeAll;
   };
 }

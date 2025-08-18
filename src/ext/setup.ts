@@ -110,6 +110,6 @@ export const buildSetup = <T>(target: T) => {
       }
     };
   };
-  return [add, () => createDisposer(d)()];
+  return [add, createDisposer(d)];
 };
   
