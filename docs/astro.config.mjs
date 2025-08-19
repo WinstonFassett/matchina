@@ -9,8 +9,14 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://winstonfassett.github.io",
-  base: "matchina",
+  // Use Netlify preview URL when available; fall back to GitHub Pages site.
+  site: process.env.DEPLOY_PRIME_URL || "https://winstonfassett.github.io",
+  // Control base path via env so Netlify previews can use "/" and GH Pages can use "/matchina/".
+  // Ensure leading and trailing slashes for Astro.
+  base:
+    (process.env.DOCS_BASE || "/matchina/")
+      .replace(/^(?!\/)*/, "/")
+      .replace(/(?<!\/)$/, "/"),
   build: {
     assets: "assets",
   },
