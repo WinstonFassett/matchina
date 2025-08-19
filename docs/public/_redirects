@@ -1,0 +1,6 @@
+# Serve the site under /matchina/ on Netlify previews
+# If a request is already under /matchina/, serve as-is
+/matchina/*   /matchina/:splat   200
+
+# Otherwise, rewrite everything to /matchina/
+/*            /matchina/:splat   200
