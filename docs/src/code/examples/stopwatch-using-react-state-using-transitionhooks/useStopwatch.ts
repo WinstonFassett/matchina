@@ -1,4 +1,4 @@
-import { setup, transitionHooks } from "matchina";
+import { effect, setup, transitionHooks, whenState } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import { tickEffect } from "../lib/tick-effect";
@@ -12,50 +12,41 @@ export function useStopwatch() {
     setup(machine)(
       transitionHooks(
         {
-          to: "Ticking",
-          enter: () =>
-            tickEffect(() => {
+          // `when` hooks are change-aware.
+          // They can be used for disposable effects
+          effect: whenState("Ticking", () => {
+            return tickEffect(() => {
               setElapsed(Date.now() - (machine.startTime ?? 0));
-            }),
+            });
+          })
         },
         {
           type: "start",
-          effect: () => {
-            setStartTime(Date.now());
-          },
+          effect: () => { setStartTime(Date.now()); },
+        },
+        {
+          type: "clear",
+          effect: () => { setElapsed(0); },
+        },
+        {
+          type: "stop",
+          effect: () => { setElapsed(0); },
+        },
+        {
+          type: "resume",
+          effect: () => { setStartTime(Date.now() - (machine.elapsed ?? 0)); },
         },
         {
           from: "Ticking",
           type: "clear",
-          effect: () => {
-            setStartTime(Date.now());
-          },
+          effect: () => { setStartTime(Date.now()); },
         },
         {
           from: "Suspended",
           type: "clear",
-          effect: () => {
-            setStartTime(undefined);
-          },
+          effect: () => { setStartTime(undefined); },
         },
-        {
-          type: "clear",
-          effect: () => {
-            setElapsed(0);
-          },
-        },
-        {
-          type: "stop",
-          effect: () => {
-            setElapsed(0);
-          },
-        },
-        {
-          type: "resume",
-          effect: () => {
-            setStartTime(Date.now() - (machine.elapsed ?? 0));
-          },
-        }
+        
       )
     );
     return machine;
