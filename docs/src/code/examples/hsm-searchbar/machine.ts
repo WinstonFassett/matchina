@@ -25,7 +25,11 @@ function createResultsFetcher(query: string) {
     // simple delayed autocomplete: 'err' -> reject, else N items
     await new Promise((r) => setTimeout(r, 250));
     const query = (q ?? "").trim();
-    if (!query.length) return [] as Array<{ id: string; title: string }>;
+    if (!query.length) return {
+      query,
+      items: [] as Array<{ id: string; title: string }>,
+      final: true
+    };
     if (query.toLowerCase() === "err") throw new Error("Search failed (demo)");
     const n = Math.max(1, Math.min(5, query.length));
     return {

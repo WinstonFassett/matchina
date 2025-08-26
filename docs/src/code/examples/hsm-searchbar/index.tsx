@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { SearchBarView } from "./SearchBarView";
 import { createSearchBarMachine } from "./machine";
 
