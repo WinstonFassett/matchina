@@ -1,7 +1,6 @@
-import React from "react";
-import type { createCheckoutMachine } from "./machine";
-import { useMachine } from "matchina/react";
 import { getAvailableActions, type FactoryMachine } from "matchina";
+import { useMachine } from "matchina/react";
+import type { createCheckoutMachine } from "./machine";
 
 type Machine = ReturnType<typeof createCheckoutMachine>;
 

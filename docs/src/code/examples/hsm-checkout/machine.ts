@@ -1,6 +1,5 @@
 import { createMachine, defineStates, effect, setup, whenEventType, withReset } from "matchina";
 import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
-import { withSubstates } from "../../../../../playground/withSubstates";
 
 export const checkoutStates = defineStates({
   Cart: undefined,

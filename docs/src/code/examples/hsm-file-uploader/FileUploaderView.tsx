@@ -1,4 +1,3 @@
-import React from "react";
 import { useMachine } from "matchina/react";
 
 import type { createUploaderMachine } from "./machine";

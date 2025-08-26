@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { FileUploaderView } from "./FileUploaderView";
 import { createUploaderMachine } from "./machine";
 
