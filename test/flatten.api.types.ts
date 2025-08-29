@@ -1,6 +1,9 @@
 // Type-only tests for flattened API param inference and state typing
 import { defineMachine, defineSubmachine, flattenMachineDefinition } from "../src/definitions";
 import { defineStates } from "../src/define-states";
+import { eventApi } from "../src/factory-machine-event-api";
+import { createMachine } from "../src/factory-machine";
+import { expectTypeOf } from 'vitest';
 
 // Simple type equality helpers
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B
@@ -104,3 +107,43 @@ type _TestWorkingRedStateParams = Expect<
 type _TestWorkingGreenStateParams = Expect<
   States['Working.Green'] extends () => any ? true : false
 >;
+
+// 5. Test machine creation and event API
+const machine = createMachine(Flat.states, Flat.transitions, 'Working.Red');
+const api = eventApi(machine);
+
+type _TestEventApi = {
+  // Test that all expected methods exist with correct types
+  hasTick: Expect<Equal<typeof api.tick, () => void>>,
+  hasBump: Expect<Equal<typeof api.bump, (delta: number) => void>>,
+  hasRepair: Expect<Equal<typeof api.repair, (reason: string) => void>>,
+  
+  // Test parameter types
+  tickParams: Expect<Equal<Parameters<typeof api.tick>, []>>,
+  bumpParams: Expect<Equal<Parameters<typeof api.bump>, [number]>>,
+  repairParams: Expect<Equal<Parameters<typeof api.repair>, [string]>>,
+  
+  // Test return types
+  tickReturn: Expect<Equal<ReturnType<typeof api.tick>, void>>,
+  bumpReturn: Expect<Equal<ReturnType<typeof api.bump>, void>>,
+  repairReturn: Expect<Equal<ReturnType<typeof api.repair>, void>>
+};
+
+// Test invalid calls (should show type errors)
+// @ts-expect-error - missing required parameter
+api.bump();
+// @ts-expect-error - wrong parameter type
+api.repair(123);
+
+// Test state transitions
+type _TestStateTransitions = {
+  // From Working.Red
+  redToGreen: Expect<Equal<ReturnType<typeof api.tick>, void>>,
+  // From Working.Green
+  greenToYellow: Expect<Equal<ReturnType<typeof api.tick>, void>>,
+  greenToYellowWithBump: Expect<Equal<ReturnType<typeof api.bump>, void>>,
+  // From Working.Yellow
+  yellowToRed: Expect<Equal<ReturnType<typeof api.tick>, void>>,
+  // From Broken
+  repairToWorking: Expect<Equal<ReturnType<typeof api.repair>, void>>
+};
