@@ -1,8 +1,8 @@
 import { defineStates } from "./define-states";
 import type { StateMatchboxFactory } from "./state-types";
 import type { FactoryMachineTransitions } from "./factory-machine-types";
+import type { KeysWithZeroRequiredArgs } from "./utility-types";
 import { createMachine } from "./factory-machine";
-// Note: we avoid importing KeysWithZeroRequiredArgs here to keep definition typing flexible
 
 // Internal marker for a static Submachine Definition
 export type SubmachineMarker = {
@@ -61,10 +61,21 @@ export function defineSubmachine(
 }
 
 // Convenience: create an instance directly from a definition
-export function createMachineFrom<SF extends StateMatchboxFactory<any>, T extends FactoryMachineTransitions<SF>, I extends keyof SF>(
+export function createMachineFrom<
+  SF extends StateMatchboxFactory<any>, 
+  T extends FactoryMachineTransitions<SF>, 
+  I extends KeysWithZeroRequiredArgs<SF>
+>(
   def: MachineDefinition<SF, T, I>
+): any;
+// Overload for flattened machines
+export function createMachineFrom(
+  def: MachineDefinition<any, any, any>
+): any;
+export function createMachineFrom(
+  def: MachineDefinition<any, any, any>
 ) {
-  return createMachine(def.states as SF, def.transitions as T, def.initial as I);
+  return createMachine(def.states, def.transitions, def.initial);
 }
 
 export type FlattenOptions = {
@@ -72,11 +83,16 @@ export type FlattenOptions = {
   delimiter?: string;
 };
 
+
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
-export function flattenMachineDefinition<SF extends StateMatchboxFactory<any>, T extends FactoryMachineTransitions<SF>, I extends keyof SF>(
+export function flattenMachineDefinition<
+  SF extends StateMatchboxFactory<any>, 
+  T extends FactoryMachineTransitions<SF>, 
+  I extends keyof SF
+>(
   def: MachineDefinition<SF, T, I>,
   _opts: FlattenOptions = {}
-): MachineDefinition<any, any, any> {
+) {
   const opts: Required<FlattenOptions> = {
     eventCollision: _opts.eventCollision ?? "error",
     delimiter: _opts.delimiter ?? ".",
@@ -96,10 +112,10 @@ export function flattenMachineDefinition<SF extends StateMatchboxFactory<any>, T
 
   return {
     states: flatStatesFactory,
-    transitions: flattened.transitions,
+    transitions: flattened.transitions as any,
     initial: flattened.initial as any,
     _rawStates: Object.fromEntries(Object.keys(flattened.states).map((k) => [k, undefined])),
-  };
+  } as const;
 }
 
 // --- helpers ---
