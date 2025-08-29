@@ -1,6 +1,6 @@
 import { defineStates } from "./define-states";
 import type { StateMatchboxFactory } from "./state-types";
-import type { FactoryMachineTransitions } from "./factory-machine-types";
+import type { FactoryMachineTransitions, FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
 import type { KeysWithZeroRequiredArgs } from "./utility-types";
 import { createMachine } from "./factory-machine";
 
@@ -62,19 +62,10 @@ export function defineSubmachine(
 
 // Convenience: create an instance directly from a definition
 export function createMachineFrom<
-  SF extends StateMatchboxFactory<any>, 
+  SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>, 
   I extends KeysWithZeroRequiredArgs<SF>
->(
-  def: MachineDefinition<SF, T, I>
-): any;
-// Overload for flattened machines
-export function createMachineFrom(
-  def: MachineDefinition<any, any, any>
-): any;
-export function createMachineFrom(
-  def: MachineDefinition<any, any, any>
-) {
+>(def: MachineDefinition<SF, T, I>) {
   return createMachine(def.states, def.transitions, def.initial);
 }
 
@@ -84,15 +75,33 @@ export type FlattenOptions = {
 };
 
 
+
+// Type-level flattening of state keys
+type FlattenStateKeys<Raw extends Record<string, any>, Delim extends string = "."> = {
+  [K in keyof Raw]: Raw[K] extends SubmachineMarker
+    ? Raw[K]["statesConfig"] extends Record<string, any>
+      ? {
+          [SK in keyof Raw[K]["statesConfig"]]: `${K & string}${Delim}${SK & string}`
+        }[keyof Raw[K]["statesConfig"]]
+      : never
+    : K & string
+}[keyof Raw];
+
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
 export function flattenMachineDefinition<
-  SF extends StateMatchboxFactory<any>, 
-  T extends FactoryMachineTransitions<SF>, 
-  I extends keyof SF
+  SF extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<SF>,
+  I extends keyof SF,
+  Raw = SF extends StateMatchboxFactory<infer R> ? R : never,
+  FlatKeys = Raw extends Record<string, any> ? FlattenStateKeys<Raw> : string
 >(
   def: MachineDefinition<SF, T, I>,
   _opts: FlattenOptions = {}
-) {
+): MachineDefinition<
+  StateMatchboxFactory<Record<FlatKeys & string, undefined>>,
+  Record<FlatKeys & string, Record<string, FlatKeys & string>>,
+  FlatKeys & string
+> {
   const opts: Required<FlattenOptions> = {
     eventCollision: _opts.eventCollision ?? "error",
     delimiter: _opts.delimiter ?? ".",
@@ -105,17 +114,20 @@ export function flattenMachineDefinition<
     opts
   );
 
-  // Build a states factory from flat keys (simple undefined payloads for now)
-  const flatStatesFactory = defineStates(
-    Object.fromEntries(Object.keys(flattened.states).map((k) => [k, undefined])) as any
-  );
+  // Build the flattened states config
+  const flatStatesConfig = Object.fromEntries(
+    Object.keys(flattened.states).map(k => [k, undefined])
+  ) as Record<string, undefined>;
+  
+  // Create factory with proper typing
+  const flatStatesFactory = defineStates(flatStatesConfig);
 
   return {
     states: flatStatesFactory,
-    transitions: flattened.transitions as any,
-    initial: flattened.initial as any,
-    _rawStates: Object.fromEntries(Object.keys(flattened.states).map((k) => [k, undefined])),
-  } as const;
+    transitions: flattened.transitions as Record<FlatKeys & string, Record<string, FlatKeys & string>>,
+    initial: flattened.initial as FlatKeys & string,
+    _rawStates: flatStatesConfig,
+  };
 }
 
 // --- helpers ---
