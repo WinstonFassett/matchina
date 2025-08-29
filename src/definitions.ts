@@ -108,13 +108,11 @@ type FlattenStateKeys<
 type FlattenedStateSpecs<
   Raw extends Record<string, any>,
   Delim extends string = ".",
-> = UnionToIntersection<
-  {
-    [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, any, any>
-      ? PrefixKeys<FlattenedStateSpecs<CRaw, Delim>, `${K}${Delim}`>
-      : { [P in K]: Raw[K] }
-  }[keyof Raw & string]
->;
+> = {
+  [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, any, any>
+    ? PrefixKeys<FlattenedStateSpecs<CRaw, Delim>, `${K}${Delim}`>
+    : { [P in K]: Raw[K] }
+}[keyof Raw & string];
 
 type PrefixKeys<T extends Record<string, any>, P extends string> = {
   [K in keyof T as K extends string ? `${P}${K}` : never]: T[K]
@@ -129,7 +127,7 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 
 // Type for flattened state factory preserving specs
 type FlattenedStatesFactory<Raw extends Record<string, any>, FlatKeys extends string> = StateMatchboxFactory<
-  FlattenedStateSpecs<Raw> & Record<Exclude<FlatKeys, keyof FlattenedStateSpecs<Raw>>, undefined>
+  Record<FlatKeys, any>
 >;
 
 // Collect event keys from parent transitions and all descendants (global union)
