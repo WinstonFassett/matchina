@@ -109,7 +109,7 @@ type FlattenedStatesFactory<FlatKeys extends string> = StateMatchboxFactory<
   Record<FlatKeys, undefined>
 >;
 
-// Collect event keys from parent transitions and all descendants
+// Collect event keys from parent transitions and all descendants (global union)
 type _CollectEventKeys<Raw extends Record<string, any>, TR extends Record<string, any>> =
   | ({ [K in keyof TR & string]: keyof TR[K] & string }[keyof TR & string])
   | ({
@@ -119,25 +119,63 @@ type _CollectEventKeys<Raw extends Record<string, any>, TR extends Record<string
     }[keyof Raw & string]);
 type CollectEventKeys<Raw extends Record<string, any>, TR extends Record<string, any>> = Extract<_CollectEventKeys<Raw, TR>, string>;
 
-// Type for flattened transitions - per state, events available equal the union across tree
-type FlattenedTransitions<FlatKeys extends string, Events extends string> = Record<FlatKeys, Record<Events, FlatKeys>>;
+// Per-leaf event computation (top-down): parent events apply at each branch; child events only on its leaves
+type EventsForLeaf<
+  Raw extends Record<string, any>,
+  TR extends Record<string, any>,
+  Leaf extends string,
+  Delim extends string = ".",
+> = Leaf extends `${infer H}${Delim}${infer T}`
+  ? H extends keyof TR
+    ? Raw[H] extends SubmachineMarker<infer CRaw, infer CTR, any>
+      ? (keyof TR[H] & string) | EventsForLeaf<CRaw, CTR, Extract<T, string>, Delim>
+      : keyof TR[H] & string
+    : never
+  : Leaf extends keyof TR
+    ? keyof TR[Leaf] & string
+    : never;
+
+// Merge full transition definitions along the path to the leaf (top-down)
+type TransitionsForLeaf<
+  Raw extends Record<string, any>,
+  TR extends Record<string, any>,
+  Leaf extends string,
+  Delim extends string = ".",
+> = Leaf extends `${infer H}${Delim}${infer T}`
+  ? H extends keyof TR
+    ? Raw[H] extends SubmachineMarker<infer CRaw, infer CTR, any>
+      ? (TR[H] & Record<string, unknown>) & TransitionsForLeaf<CRaw, CTR, Extract<T, string>, Delim>
+      : TR[H]
+    : {}
+  : Leaf extends keyof TR
+    ? TR[Leaf]
+    : {};
+
+// Type for flattened transitions - per state, compute full transition map type
+type FlattenedTransitionsPerState<
+  Raw extends Record<string, any>,
+  TR extends Record<string, any>,
+  FlatKeys extends string,
+> = {
+  [L in FlatKeys]: TransitionsForLeaf<Raw, TR, L>;
+};
 
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
 export function flattenMachineDefinition<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>,
   I extends keyof SF,
-  Raw = SF extends StateMatchboxFactory<infer R> ? R : never,
+  Raw extends Record<string, any> = SF extends StateMatchboxFactory<infer R> ? R : never,
   FlatKeys extends string = Raw extends Record<string, any> ? FlattenStateKeys<Raw> : never,
-  Events extends string = string & (Raw extends Record<string, any>
+  Events extends string = Raw extends Record<string, any>
     ? CollectEventKeys<Raw, T & Record<string, any>>
-    : string)
+    : never
 >(
-  def: MachineDefinition<SF, T, I>,
+  def: MachineDefinition<SF, T, I, Raw>,
   _opts: FlattenOptions = {}
 ): MachineDefinition<
   FlattenedStatesFactory<FlatKeys>,
-  FlattenedTransitions<FlatKeys, Events>,
+  FlattenedTransitionsPerState<Raw, T & Record<string, any>, FlatKeys>,
   FlatKeys
 > {
   const opts: Required<FlattenOptions> = {
@@ -162,7 +200,11 @@ export function flattenMachineDefinition<
 
   return {
     states: flatStatesFactory,
-    transitions: flattened.transitions as FlattenedTransitions<FlatKeys, Events>,
+    transitions: flattened.transitions as FlattenedTransitionsPerState<
+      Raw,
+      T & Record<string, any>,
+      FlatKeys
+    >,
     initial: flattened.initial as FlatKeys,
     _rawStates: flatStatesConfig as any,
   };
@@ -178,11 +220,17 @@ function isImplicitSubmachineObject(v: any): v is { states: any; transitions: an
   return v && typeof v === "object" && "states" in v && "transitions" in v && "initial" in v;
 }
 
-function normalizeStates(input: any): { factory: StateMatchboxFactory<any>; raw: any } {
+function normalizeStates<
+  SS extends Record<string, any> | StateMatchboxFactory<any>,
+>(
+  input: SS
+): SS extends StateMatchboxFactory<infer R>
+  ? { factory: StateMatchboxFactory<R>; raw: R }
+  : { factory: StateMatchboxFactory<SS>; raw: SS } {
   if (isStatesFactory(input)) {
     // We cannot recover raw; assume keys align 1:1 and synthesize a raw with `undefined` placeholders
-    const raw = Object.fromEntries(Object.keys(input).map((k) => [k, undefined]));
-    return { factory: input, raw };
+    const raw = Object.fromEntries(Object.keys(input).map((k) => [k, undefined])) as any;
+    return { factory: input as any, raw } as any;
   }
   // Treat as shorthand object; unwrap implicit submachine objects to explicit Submachine markers
   const raw = Object.fromEntries(
@@ -192,9 +240,9 @@ function normalizeStates(input: any): { factory: StateMatchboxFactory<any>; raw:
       }
       return [k, v];
     })
-  );
-  const factory = defineStates(raw as any) as StateMatchboxFactory<any>;
-  return { factory, raw };
+  ) as any;
+  const factory = defineStates(raw) as any;
+  return { factory, raw } as any;
 }
 
 // ---- flattening internals ----

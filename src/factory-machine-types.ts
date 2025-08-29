@@ -53,9 +53,16 @@ export interface FactoryMachine<
    */
   send<T extends FactoryMachineEvent<FC>["type"]>(
     type: T,
-    ...params: ExtractEventParams<FC, T>
+    ...params: NormalizeParams<ExtractEventParams<FC, T>>
   ): void;
 }
+
+// If param inference produces a non-array (e.g., never), normalize to [] so zero-arg events are callable.
+type NormalizeParams<P> = [P] extends [never]
+  ? []
+  : P extends any[]
+    ? P
+    : [];
 
 /**
  * @interface
