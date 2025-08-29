@@ -135,29 +135,13 @@ type EventsForLeaf<
     ? keyof TR[Leaf] & string
     : never;
 
-// Merge full transition definitions along the path to the leaf (top-down)
-type TransitionsForLeaf<
-  Raw extends Record<string, any>,
-  TR extends Record<string, any>,
-  Leaf extends string,
-  Delim extends string = ".",
-> = Leaf extends `${infer H}${Delim}${infer T}`
-  ? H extends keyof TR
-    ? Raw[H] extends SubmachineMarker<infer CRaw, infer CTR, any>
-      ? (TR[H] & Record<string, unknown>) & TransitionsForLeaf<CRaw, CTR, Extract<T, string>, Delim>
-      : TR[H]
-    : {}
-  : Leaf extends keyof TR
-    ? TR[Leaf]
-    : {};
-
-// Type for flattened transitions - per state, compute full transition map type
+// Type for flattened transitions - per state, compute event union and map to flattened leaf keys
 type FlattenedTransitionsPerState<
   Raw extends Record<string, any>,
   TR extends Record<string, any>,
   FlatKeys extends string,
 > = {
-  [L in FlatKeys]: TransitionsForLeaf<Raw, TR, L>;
+  [L in FlatKeys]: Record<EventsForLeaf<Raw, TR, L>, FlatKeys>;
 };
 
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
@@ -200,11 +184,7 @@ export function flattenMachineDefinition<
 
   return {
     states: flatStatesFactory,
-    transitions: flattened.transitions as FlattenedTransitionsPerState<
-      Raw,
-      T & Record<string, any>,
-      FlatKeys
-    >,
+    transitions: flattened.transitions as FlattenedTransitionsPerState<Raw, T & Record<string, any>, FlatKeys>,
     initial: flattened.initial as FlatKeys,
     _rawStates: flatStatesConfig as any,
   };
