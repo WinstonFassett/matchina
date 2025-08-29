@@ -16,9 +16,15 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
-  // Prefer dispatch for duck-typed children that may only expose dispatch
-  if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
-  if (typeof m.send === "function") return (m.send as any)(type, ...params);
+  // Prefer send for branded machines, dispatch for duck-typed children
+  if (isMachine(m)) {
+    if (typeof m.send === "function") return (m.send as any)(type, ...params);
+    if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
+  } else {
+    // Duck-typed children may only expose dispatch
+    if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
+    if (typeof m.send === "function") return (m.send as any)(type, ...params);
+  }
 }
 
 function snapshot(m: AnyMachine) {
@@ -71,10 +77,19 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
           // - Machine child marks itself final OR loses its nested machine
           // - Grandchild (nested machine) marks itself final (e.g., promise machine resolved with { final: true })
           const grandFinal = !!grandAfterSnap?.data?.final;
+          // Check if child machine was lost (existed before but not after)
+          const hadMachine = before?.data?.machine || before?.machine;
+          const hasMachine = after?.data?.machine || after?.machine;
+          const machineLost = hadMachine && !hasMachine;
+          
+          // Check if this is a data state with no child machine (exit state pattern)
+          const hasData = after?.data !== undefined && after?.data !== null;
+          const noMachine = !hasMachine;
+          const dataStateExit = hasData && noMachine && !duck;
+          
           const looksExit = duck
             ? !!after?.data?.final
-            : (!!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal);
-          console.log('looksExit', looksExit);
+            : (!!after?.data?.final || machineLost || grandFinal || dataStateExit);
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
             const beforeParent = machine.getState();
@@ -87,7 +102,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
         return res;          
       }) as any)
 
-      addSetup(child => enhanceMethod(child as any, "dispatch", (next) => (type: string, ...params: any[]) => {
+      // Only enhance dispatch if the child originally has one
+      const hasDispatch = typeof child.dispatch === 'function';
+      if (hasDispatch) {
+        addSetup(child => enhanceMethod(child as any, "dispatch", (next) => (type: string, ...params: any[]) => {
         const before = snapshot(child);
         const grandBefore = getChildFromParentState(before);
         const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
@@ -98,8 +116,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
         const handled = before?.key !== after?.key || (grandBefore && grandAfter && grandBeforeSnap?.key !== grandAfterSnap?.key);
         if (handled) {
           const grandFinal = !!grandAfterSnap?.data?.final;
-          const looksExit = !!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal;
-          console.log('looksExit', looksExit);
+          // Check if child machine was lost (existed before but not after)
+          const hadMachine = before?.data?.machine || before?.machine;
+          const hasMachine = after?.data?.machine || after?.machine;
+          const machineLost = hadMachine && !hasMachine;
+          
+          // Check if this is a data state with no child machine (exit state pattern)
+          const hasData = after?.data !== undefined && after?.data !== null;
+          const noMachine = !hasMachine;
+          const dataStateExit = hasData && noMachine;
+          
+          const looksExit = !!after?.data?.final || machineLost || grandFinal || dataStateExit;
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
             const beforeParent = machine.getState();
@@ -111,6 +138,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
         }
         return res;
       }))
+      }
       return disposeAll;
     };
     let unwrapChild = wrapChild();
@@ -140,10 +168,20 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
         const handled = !threw && (handledByState || duckChild);
         if (handled) {
           const grandFinal = !!grandAfterSnap?.data?.final;
+          // Check if child machine was lost (existed before but not after)
+          const hadMachine = before?.data?.machine || before?.machine;
+          const hasMachine = after?.data?.machine || after?.machine;
+          const machineLost = hadMachine && !hasMachine;
+          
+          // Check if this is a data state with no child machine (exit state pattern)
+          const hasData = after?.data !== undefined && after?.data !== null;
+          const noMachine = !hasMachine;
+          const dataStateExit = hasData && noMachine && !duckChild;
+          
           const looksExit = duckChild
             ? !!after?.data?.final
-            : (!!after?.data?.final || (!after?.data?.machine && !after?.machine) || grandFinal);
-          console.log('looksExit', looksExit);
+            : (!!after?.data?.final || machineLost || grandFinal || dataStateExit);
+          
           if (looksExit) {
             const id = parentState?.data?.id ?? parentState?.id;
             const beforeParent = machine.getState();
