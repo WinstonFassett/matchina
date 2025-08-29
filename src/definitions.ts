@@ -104,9 +104,32 @@ type FlattenStateKeys<
     : K
 }[keyof Raw & string];
 
-// Type for flattened state factory 
-type FlattenedStatesFactory<FlatKeys extends string> = StateMatchboxFactory<
-  Record<FlatKeys, undefined>
+// Flatten raw state specs to fully-qualified leaf keys while preserving each leaf's original spec
+type FlattenedStateSpecs<
+  Raw extends Record<string, any>,
+  Delim extends string = ".",
+> = UnionToIntersection<
+  {
+    [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, any, any>
+      ? PrefixKeys<FlattenedStateSpecs<CRaw, Delim>, `${K}${Delim}`>
+      : { [P in K]: Raw[K] }
+  }[keyof Raw & string]
+>;
+
+type PrefixKeys<T extends Record<string, any>, P extends string> = {
+  [K in keyof T as K extends string ? `${P}${K}` : never]: T[K]
+};
+
+// Helper to turn union of object types into an intersection
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
+  ? I
+  : never;
+
+// Type for flattened state factory preserving specs
+type FlattenedStatesFactory<Raw extends Record<string, any>, FlatKeys extends string> = StateMatchboxFactory<
+  FlattenedStateSpecs<Raw> & Record<Exclude<FlatKeys, keyof FlattenedStateSpecs<Raw>>, undefined>
 >;
 
 // Collect event keys from parent transitions and all descendants (global union)
@@ -158,7 +181,7 @@ export function flattenMachineDefinition<
   def: MachineDefinition<SF, T, I, Raw>,
   _opts: FlattenOptions = {}
 ): MachineDefinition<
-  FlattenedStatesFactory<FlatKeys>,
+  FlattenedStatesFactory<Raw, FlatKeys>,
   FlattenedTransitionsPerState<Raw, T & Record<string, any>, FlatKeys>,
   FlatKeys
 > {
@@ -180,7 +203,7 @@ export function flattenMachineDefinition<
   ) as Record<FlatKeys, undefined>;
   
   // Create factory with computed types
-  const flatStatesFactory = defineStates(flatStatesConfig) as FlattenedStatesFactory<FlatKeys>;
+  const flatStatesFactory = defineStates(flatStatesConfig) as FlattenedStatesFactory<Raw, FlatKeys>;
 
   return {
     states: flatStatesFactory,
