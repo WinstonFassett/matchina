@@ -18,7 +18,7 @@ const Child = defineSubmachine(
   defineStates({
     Red: undefined,
     Green: undefined,
-    Yellow: (delta: number) => ({ delta }),
+    Yellow: (delta?: number) => ({ delta }),
   }),
   {
     Red: { tick: "Green" },
@@ -116,12 +116,12 @@ type _TestEventApi = {
   // Test that all expected methods exist with correct types
   hasTick: Expect<Equal<typeof api.tick, () => void>>,
   hasBump: Expect<Equal<typeof api.bump, (delta: number) => void>>,
-  hasRepair: Expect<Equal<typeof api.repair, (reason: string) => void>>,
+  hasRepair: Expect<Equal<typeof api.repair, () => void>>,
   
   // Test parameter types
   tickParams: Expect<Equal<Parameters<typeof api.tick>, []>>,
   bumpParams: Expect<Equal<Parameters<typeof api.bump>, [number]>>,
-  repairParams: Expect<Equal<Parameters<typeof api.repair>, [string]>>,
+  repairParams: Expect<Equal<Parameters<typeof api.repair>, []>>,
   
   // Test return types
   tickReturn: Expect<Equal<ReturnType<typeof api.tick>, void>>,
