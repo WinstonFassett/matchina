@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm test:*)",
       "Bash(tsc --noEmit --skipLibCheck)",
-      "Bash(npm run test:types:*)"
+      "Bash(npm run test:types:*)",
+      "Bash(git show-branch:*)",
+      "Bash(npm run test:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

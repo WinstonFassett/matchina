@@ -3,7 +3,7 @@ import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { withSubstates } from "../playground/withSubstates";
+import { submachine } from "../playground/submachine";
 
 // 1) Explicit final-state should trigger child.exit
 function createChildWithFinal() {
@@ -40,7 +40,7 @@ function createDuckSendOnly() {
 // Helper to create a parent with child machine
 function createParentWithChild(childFactory: () => any) {
   const states = defineStates({
-    WithChild: withSubstates(childFactory, { id: "c1" }),
+    WithChild: submachine(childFactory, { id: "c1" }),
     Next: undefined,
   });
   const transitions = {
@@ -65,8 +65,8 @@ function createSwappingParent() {
     return m;
   };
   const states = defineStates({
-    S1: withSubstates(() => mk("one"), { id: "c1" }),
-    S2: withSubstates(() => mk("two"), { id: "c1" }),
+    S1: submachine(() => mk("one"), { id: "c1" }),
+    S2: submachine(() => mk("two"), { id: "c1" }),
     Done: undefined,
   });
   const transitions = {

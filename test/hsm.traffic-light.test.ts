@@ -3,7 +3,7 @@ import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { withSubstates } from "../playground/withSubstates";
+import { submachine } from "../playground/submachine";
 import { routedFacade } from "../playground/routedFacade";
 
 function createTrafficLight() {
@@ -24,7 +24,7 @@ type TrafficLight = ReturnType<typeof createTrafficLight>;
 function createSignalController() {
   const states = defineStates({
     Broken: undefined,
-    Working: withSubstates(() => createTrafficLight()), // Child inferred
+    Working: submachine(() => createTrafficLight()), // Child inferred
   });
 
   const ctrl = createMachine(

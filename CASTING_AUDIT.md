@@ -299,7 +299,7 @@ const interval = (task as any)?.options?.debounceInterval || 500;
 ### Critical Findings 🚨
 - **HSM Type System is Fundamentally Broken**: Runtime behavior works, but TypeScript types don't reflect event propagation capabilities
 - **8+ Casts Remain in HSM Tests**: All due to type system limitations, not code issues
-- **Playground Utilities Have Type Issues**: `routedFacade`, `withSubstates` have incomplete typing
+- **Playground Utilities Have Type Issues**: `routedFacade`, `submachine` have incomplete typing
 
 ### Root Cause
 The `propagateSubmachines` function enhances machine behavior at runtime but doesn't update TypeScript types to reflect:

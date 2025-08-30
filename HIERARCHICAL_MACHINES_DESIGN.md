@@ -264,10 +264,10 @@ const powerStates = defineStates({
 Alternate syntactic sugar (future, same semantics):
 
 ```ts
-// withSubstates: wraps a child factory
+// submachine: wraps a child factory
 const powerStates = defineStates({
   Off: undefined,
-  On: withSubstates(() => createTrafficLight()),
+  On: submachine(() => createTrafficLight()),
 });
 ```
 
@@ -277,7 +277,7 @@ Either way, the runtime remains “state HAS a machine” with child-first routi
 
 All FactoryMachine-only.
 
-* __withSubstates(createChild)__
+* __submachine(createChild)__
   - Input: `() => ChildMachine`
   - Expands to state factory: `() => ({ machine: createChild() })`
   - Types: infers `Child` and applies to `state.data.machine`

@@ -31,4 +31,4 @@ A hierarchical Search Bar machine with an `Inactive → Active` parent flow. The
 - Child states (inside `Active`): `Empty`, `TextEntry`, `Results`, `Error`.
 - Child-first routing for `typed`, `clear`, `submit`, `setResults`, `setError`, `refine`, `retry`.
 - Demonstrates an async fetch simulation: after `submit`, `Results` resolves with items or an `Error`.
-- Uses `withSubstates` to embed a child machine into the `Active` state.
+- Uses `submachine` to embed a child machine into the `Active` state.

@@ -3,7 +3,7 @@ import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { withSubstates } from "../playground/withSubstates";
+import { submachine } from "../playground/submachine";
 import { routedFacade } from "../playground/routedFacade";
 
 // Demo: Checkout with Shipping -> Payment using exit-as-output.
@@ -41,8 +41,8 @@ describe("child.exit: checkout shipping -> payment", () => {
 
   function createCheckout() {
     const states = defineStates({
-      ShippingStep: withSubstates(() => createShipping(), { id: "shipping" }),
-      PaymentStep: withSubstates(() => createPayment(), { id: "payment" }),
+      ShippingStep: submachine(() => createShipping(), { id: "shipping" }),
+      PaymentStep: submachine(() => createPayment(), { id: "payment" }),
       Done: undefined,
     });
 

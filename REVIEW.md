@@ -14,7 +14,7 @@ This change set improves hierarchical state machine ergonomics and reliability:
 ## Files Reviewed
 
 - `playground/propagateSubmachines.ts`
-- `playground/withSubstates.ts`
+- `playground/submachine.ts`
 - `test/hsm.child-exit-checkout.test.ts`
 - `test/hsm.duck-child.test.ts`
 - `test/hsm.resolve-exit-and-nesting.test.ts`
@@ -29,7 +29,7 @@ This change set improves hierarchical state machine ergonomics and reliability:
   - Re-wraps child after parent transitions to account for identity changes.
   - Improves nested child extraction by checking `state.machine`, `state.data.machine`, and `state.data.data.machine`.
 
-- **`withSubstates.ts`**
+- **`submachine.ts`**
   - Adds overload with optional `{ id?: string }` for addressable children.
   - Retains legacy options helper and forwards `id` for compatibility.
 
@@ -54,7 +54,7 @@ This change set improves hierarchical state machine ergonomics and reliability:
 
 - Consider a way to opt-in/out of exit detection per state (e.g., `final: true`) to reduce heuristic ambiguity.
 - Add lightweight debug tracing utilities to observe child-first routing and exit propagation during development.
-- Document addressable child usage patterns (`withSubstates(..., { id })`) and `routedFacade` ergonomics in a README section with examples.
+- Document addressable child usage patterns (`submachine(..., { id })`) and `routedFacade` ergonomics in a README section with examples.
 
 ## Conclusion
 

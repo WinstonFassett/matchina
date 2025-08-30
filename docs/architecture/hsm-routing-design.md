@@ -33,7 +33,7 @@ We need a clean, ergonomic design for hierarchical event routing that:
 
 ## Current building blocks
 
-- `withSubstates(createChild, { id? })` puts the child on parent state data under `data.machine` (and optional `id`). File: `playground/withSubstates.ts`.
+- `submachine(createChild, { id? })` puts the child on parent state data under `data.machine` (and optional `id`). File: `playground/submachine.ts`.
 - `propagateSubmachines(parent)` enables hierarchical routing and child exit signaling. File: `playground/propagateSubmachines.ts`.
 - Demo machine: `docs/src/code/examples/hsm-checkout/machine.ts`.
 
@@ -65,7 +65,7 @@ We route and bubble purely by state keys (no functions required):
     - `Payment: { "done.state.payment.Cancelled": "Shipping" }`
 
 - __Fresh child per entry__
-  - Use `withSubstates(() => createPayment(), { id: "payment" })` so each entry instantiates a new child.
+  - Use `submachine(() => createPayment(), { id: "payment" })` so each entry instantiates a new child.
 
 Minimal typed policy surface (helper options):
 - `bubbleBy: 'key'` (default) — handled detection via key comparison.

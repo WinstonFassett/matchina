@@ -44,7 +44,7 @@ Scope: FactoryMachine only. Usage-first examples. Definition-first by default; i
   - Convenience delegating to `createMachine(def.states, def.transitions, def.initial)`.
 
 - `submachine(factory)` → state creator for instanceful HSM (secondary)
-  - Alias/rename of `withSubstates` in `playground/withSubstates.ts`.
+  - Alias/rename of `submachine` in `playground/submachine.ts`.
   - Accepts only a machine factory `(...args) => FactoryMachine`.
   - Parameterization is instance-only.
 
