@@ -24,8 +24,5 @@ looking great!
   - seems ok. only using on checkout so far. 
   - need to really evaluate our usages in tests and examples and consider what makes most sense
   - want good coverage demoing options but want to use sanest option(s) for given example
+  - ok i think we are good on the lib design, not sure about examples
 * write docs explaining HSM usage patterns, referring to examples, funcs, types etc
-
-routedFacade snuck in. what is it? how does it relate to other stuff?
-we have a sep router project? was planning to delete this but deps on t are all over tests.
-
