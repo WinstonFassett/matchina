@@ -308,6 +308,10 @@ export default defineConfig({
                 label: "Search Bar (Hierarchical)",
                 link: "/examples/hsm-searchbar",
                },
+               {
+                label: "Checkout Flow (Hierarchical)",
+                link: "/examples/hsm-checkout",
+              },
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",
@@ -323,17 +327,14 @@ export default defineConfig({
                   link: "/examples/traffic-light-extended",
                 },
                 {
-                  label: "Authentication Flow",
+                  label: "Authentication with UI",
                   link: "/examples/auth-flow",
                 },
                 {
-                  label: "Checkout Flow",
+                  label: "Checkout with UI",
                   link: "/examples/checkout",
                 },
-                {
-                  label: "Checkout (Hierarchical)",
-                  link: "/examples/hsm-checkout",
-                },
+
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",
