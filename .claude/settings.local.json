@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(tsc --noEmit --skipLibCheck)",
+      "Bash(npm run test:types:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

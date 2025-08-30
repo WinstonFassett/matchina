@@ -12,6 +12,9 @@ import type {
   FlattenedMachineDefinition,
   FlattenOptions,
   FlatBuild,
+  FlattenedStateMatchboxFactory,
+  FlattenedFactoryTransitions,
+  FlattenFactoryStateKeys,
 } from "./definition-types";
 
 // Overload: states as factory
@@ -290,9 +293,10 @@ export function flattenMachineDefinition<
   // Convert back to factory
   const flattenedFactory = defineStates(flattened.states);
   
+  // Return with properly typed structure
   return {
-    states: flattenedFactory as any,
-    transitions: flattened.transitions as any,
-    initial: flattened.initial as any,
+    states: flattenedFactory as FlattenedStateMatchboxFactory<SF>,
+    transitions: flattened.transitions as FlattenedFactoryTransitions<SF, T>,
+    initial: flattened.initial as FlattenFactoryStateKeys<SF>,
   } as FlattenedMachineDefinition<SF, T>;
 }
