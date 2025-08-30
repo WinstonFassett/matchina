@@ -23,7 +23,7 @@ export const hookSetup =
     ...config: Parameters<Adapters<AdapterEvent<MethodOf<T, K>>>[K]>
   ) =>
     ((target: T) => {
-      const adapter = HookAdapters[key](...config) as unknown as Funcware<MethodOf<T, K>>;
+      const adapter = HookAdapters[key](...config) as Funcware<MethodOf<T, K>>;  
       return createMethodEnhancer<K>(key)(adapter)(target);
     }) as (target: T) => DisposeFunc;
 
