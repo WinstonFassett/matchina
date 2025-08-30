@@ -14,11 +14,20 @@ looking great!
 * ✅ **removed file uploader demo** - wasn't particularly expressive of HSM patterns
 * ✅ **made remaining HSM examples more expressive/compact** - cleaner syntax, better comments showing hierarchical structure
 * ✅ **fixed all build errors** - resolved type issues in HSM examples
+* ✅ **investigated "refine is weird" issue** - syntax was correct: `() => (ev) => ...` for parameterless actions 
+* ✅ **explored nested vs flattened patterns** - nested = child instances (encapsulation), flattened = dot-notation keys (efficiency)
+* ✅ **verified examples work in browser** - hsm-searchbar shows hierarchical state display and full functionality
 
 ## what remains?
 
-* demo both nested and flattened approaches with real examples
-* explore nuances between nested vs flattened patterns
 * create elegant hierarchical machine factory (typed, handles propagation)
 * write docs explaining HSM usage patterns
-* investigate "refine is weird" issue in searchbar demo
+
+hsm checkout error on load:
+matchbox-factory.mjs:66 Uncaught Error: Match did not handle key: 'Cart'
+    at MatchboxImpl.match (matchbox-factory.mjs:66:11)
+    at CheckoutView (CheckoutView.tsx:42:14)
+
+routedFacade snuck in. what is it? how does it relate to other stuff?
+we have a sep router project? was planning to delete this but deps on t are all over tests.
+
