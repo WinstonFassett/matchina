@@ -56,8 +56,8 @@
     "test": "bun test:types && vitest run --coverage",
     "test:types": "tsc --noEmit --skipLibCheck",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
-    "publish:lib": "npm publish --access public",
-    "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"
+    "publish": "npm publish --access public"
+    
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",

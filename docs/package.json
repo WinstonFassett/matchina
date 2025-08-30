@@ -13,9 +13,7 @@
     "prebuild": "npm run build:typedoc-plugin",
     "build": "rm -rf dist && npm run build:typedoc-plugin && astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "predeploy": "npm run build",
-    "deploy": "npx gh-pages -d dist --branch gh-pages --dotfiles"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
