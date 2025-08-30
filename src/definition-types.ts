@@ -19,48 +19,97 @@ export type MachineDefinition<
   initial: I;
 };
 
-// State configuration that can be a leaf or have a submachine
-export type StateConfig = any | { machine: MachineDefinition<any, any, any> };
+// Extract the config type from a StateMatchboxFactory
+export type ExtractFactoryConfig<F> = F extends StateMatchboxFactory<infer C> ? C : never;
 
-// Precise type computation for flattened state keys
-export type FlattenStateKeys<
-  Raw extends Record<string, StateConfig>,
-  Delim extends string = ".",
+// Detect if a factory entry creates a state with a machine property
+export type HasMachineProperty<V> = V extends (...args: any[]) => infer R
+  ? R extends { machine: MachineDefinition<any, any, any> } ? true : false
+  : false;
+
+// Extract the machine from a factory entry
+export type ExtractMachineFromFactory<V> = V extends (...args: any[]) => infer R
+  ? R extends { machine: infer M } ? M : never
+  : never;
+
+// Get the state keys from a factory
+export type FactoryStateKeys<F> = F extends StateMatchboxFactory<infer C> ? keyof C & string : never;
+
+// Flatten state keys from a factory
+export type FlattenFactoryStateKeys<
+  F extends StateMatchboxFactory<any>,
+  Delim extends string = "."
+> = 
+  // Include all top-level keys that are not submachines
+  | Exclude<FactoryStateKeys<F>, { [K in FactoryStateKeys<F>]: HasMachineProperty<F[K]> extends true ? K : never }[FactoryStateKeys<F>]>
+  // Include all flattened submachine keys
+  | {
+      [K in FactoryStateKeys<F>]: HasMachineProperty<F[K]> extends true
+        ? ExtractMachineFromFactory<F[K]> extends MachineDefinition<infer SF, any, any>
+          ? SF extends StateMatchboxFactory<infer C>
+            ? keyof C & string extends infer SubKeys
+              ? SubKeys extends string
+                ? `${K & string}${Delim}${SubKeys}`
+                : never
+              : never
+            : never
+          : never
+        : never
+    }[FactoryStateKeys<F>];
+
+// Create flattened state specs from a factory
+export type FlattenedFactoryStateSpecs<
+  F extends StateMatchboxFactory<any>,
+  Delim extends string = "."
 > = {
-  [K in keyof Raw & string]: Raw[K] extends { machine: MachineDefinition<any, any, any> }
-    ? `${K}${Delim}${keyof Raw[K]['machine']['states'] & string}`
-    : K
-}[keyof Raw & string];
+  [K in FlattenFactoryStateKeys<F>]: 
+    K extends `${infer Parent}${Delim}${infer Child}`
+      ? Parent extends FactoryStateKeys<F>
+        ? HasMachineProperty<F[Parent]> extends true
+          ? ExtractMachineFromFactory<F[Parent]> extends MachineDefinition<infer SF, any, any>
+            ? SF extends StateMatchboxFactory<infer C>
+              ? C[Child]
+              : never
+            : never
+          : never
+        : never
+      : K extends FactoryStateKeys<F>
+        ? F[K]
+        : never
+};
 
-// Precise flattened state specs
-export type FlattenedStateSpecs<
-  Raw extends Record<string, StateConfig>,
-  Delim extends string = ".",
+// Create flattened factory from a factory
+export type FlattenedStateMatchboxFactory<F extends StateMatchboxFactory<any>> =
+  StateMatchboxFactory<FlattenedFactoryStateSpecs<F>>;
+
+// Flatten transitions to use flattened state keys
+export type FlattenedFactoryTransitions<
+  F extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<F>
 > = {
-  [K in keyof Raw & string]: Raw[K] extends { machine: MachineDefinition<any, any, any> }
-    ? { [SubK in keyof Raw[K]['machine']['states'] & string as `${K}${Delim}${SubK}`]: Raw[K]['machine']['states'][SubK] }
-    : { [P in K]: Raw[K] }
-}[keyof Raw & string];
+  [K in FlattenFactoryStateKeys<F>]?: {
+    [EventKey in string]?: any; // Simplified for now
+  };
+};
 
-// Precise flattened transitions - compatible with FactoryMachineTransitions
-export type FlattenedTransitions<
-  Raw extends Record<string, StateConfig>,
-  TR extends Record<string, any>
-> = Record<string, Record<string, string | ((...a: any[]) => any)>>;
+// Simplified flattened types
+export type FlattenedStates = StateMatchboxFactory<{
+  [K: string]: any;
+}>;
 
-// Precise flattened states factory
-export type FlattenedStatesFactory<
-  Raw extends Record<string, StateConfig>
-> = StateMatchboxFactory<FlattenedStateSpecs<Raw>>;
+export type FlattenedTransitions = {
+  [K: string]: {
+    [E: string]: any;
+  };
+};
 
-// Precise return type for flattenMachineDefinition - simplified
 export type FlattenedMachineDefinition<
-  Raw extends Record<string, StateConfig>,
-  TR extends Record<string, any>
+  SF extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<SF>
 > = MachineDefinition<
-  FlattenedStatesFactory<Raw>,
-  any,
-  any
+  FlattenedStates,
+  FlattenedTransitions,
+  string
 >;
 
 export type FlattenOptions = {
@@ -74,10 +123,3 @@ export type FlatBuild = {
   transitions: Record<string, Record<string, string | ((...a: any[]) => any)>>;
   initial: string;
 };
-
-// Collect event keys - simplified
-export type _CollectEventKeys = string;
-export type CollectEventKeys = string;
-
-// Per-leaf event computation - simplified
-export type EventsForLeaf = string;

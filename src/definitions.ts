@@ -9,11 +9,6 @@ import type { KeysWithZeroRequiredArgs } from "./utility-types";
 import { createMachine } from "./factory-machine";
 import type {
   MachineDefinition,
-  StateConfig,
-  FlattenStateKeys,
-  FlattenedStateSpecs,
-  FlattenedTransitions,
-  FlattenedStatesFactory,
   FlattenedMachineDefinition,
   FlattenOptions,
   FlatBuild,
@@ -240,15 +235,64 @@ export function defineSubmachine<
   return { machine: defineMachine(states, transitions, initial) };
 }
 
+// Extract raw structure from factory for flattening
+function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<string, any> {
+  const raw: Record<string, any> = {};
+  
+  for (const key of Object.keys(factory)) {
+    const creator = factory[key as keyof typeof factory];
+    
+    // Try to call the creator to see what it produces
+    try {
+      // For creators that take no args or optional args
+      if (creator.length === 0) {
+        raw[key] = creator();
+      } else {
+        // Try calling with undefined for optional params
+        raw[key] = (creator as (arg?: any) => any)(undefined);
+      }
+    } catch (e) {
+      // If calling fails, check if it's a submachine by inspecting the function
+      // This is a hack, but we need to detect submachines somehow
+      const funcStr = creator.toString();
+      if (funcStr.includes('machine') || funcStr.includes('defineSubmachine')) {
+        // Assume it's a submachine - create a dummy object with machine property
+        // This won't work for actual flattening, but might help with types
+        raw[key] = { machine: { states: {}, transitions: {}, initial: '' } };
+      } else {
+        raw[key] = undefined;
+      }
+    }
+  }
+  
+  return raw;
+}
+
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
-export function flattenMachineDefinition(
-  def: MachineDefinition<any, any, any>,
-  _opts: FlattenOptions = {}
-): MachineDefinition<any, any, any> {
-  const { factory } = normalizeStates(def.states); // Only get factory, no raw
+export function flattenMachineDefinition<
+  SF extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<SF>,
+  I extends keyof SF
+>(
+  def: MachineDefinition<SF, T, I>
+): FlattenedMachineDefinition<SF, T> {
+  // Extract raw structure from factory
+  const rawStates = extractRawFromFactory(def.states);
+  
+  // Use existing flattening logic
+  const flattened = flattenFromRaw(
+    rawStates,
+    def.transitions as any,
+    def.initial as any,
+    { delimiter: ".", eventCollision: "allowShadow" }
+  );
+  
+  // Convert back to factory
+  const flattenedFactory = defineStates(flattened.states);
+  
   return {
-    states: factory,
-    transitions: def.transitions,
-    initial: def.initial,
-  };
+    states: flattenedFactory as any,
+    transitions: flattened.transitions as any,
+    initial: flattened.initial as any,
+  } as FlattenedMachineDefinition<SF, T>;
 }

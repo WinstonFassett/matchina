@@ -3,6 +3,8 @@ import { defineMachine, defineSubmachine, flattenMachineDefinition } from "../sr
 import { defineStates } from "../src/define-states";
 import { eventApi } from "../src/factory-machine-event-api";
 import { createMachine } from "../src/factory-machine";
+import type { StateMatchboxFactory } from "../src/state-types";
+import type { HasMachineProperty, ExtractMachineFromFactory, FactoryStateKeys, FlattenFactoryStateKeys } from "../src/definition-types";
 import { expectTypeOf } from 'vitest';
 
 // Simple type equality helpers
@@ -32,10 +34,10 @@ const Child = defineSubmachine(
 );
 
 const Parent = defineMachine(
-  {
+  defineStates({
     Broken: undefined,
     Working: Child,
-  },
+  }),
   {
     Broken: { repair: "Working" },
     Working: { break: "Broken" },
@@ -147,3 +149,10 @@ type _TestStateTransitions = {
   // From Broken
   repairToWorking: Expect<Equal<ReturnType<typeof api.repair>, void>>
 };
+
+// Debug types
+type TestChild = typeof Child;
+type TestHasMachine = HasMachineProperty<TestChild>; // Should be true
+type TestExtractMachine = ExtractMachineFromFactory<TestChild>;
+type TestSubKeys = FactoryStateKeys<TestExtractMachine['states']>; // Should be 'Red' | 'Green' | 'Yellow'
+type TestFlattenedKeys = FlattenFactoryStateKeys<StateMatchboxFactory<{ Broken: undefined; Working: TestChild }>>;
