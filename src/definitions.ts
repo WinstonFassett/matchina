@@ -296,17 +296,23 @@ export function flattenMachineDefinition<
   T extends FactoryMachineTransitions<SF>,
   I extends keyof SF
 >(
-  def: MachineDefinition<SF, T, I>
+  def: MachineDefinition<SF, T, I>,
+  opts?: FlattenOptions
 ): FlattenedMachineDefinition<SF, T> {
   // Extract raw structure from factory
   const rawStates = extractRawFromFactory(def.states);
   
-  // Use existing flattening logic
+  // Use existing flattening logic with defaults for missing options
+  const options = {
+    delimiter: opts?.delimiter || ".",
+    eventCollision: opts?.eventCollision || "allowShadow"
+  } as Required<FlattenOptions>;
+  
   const flattened = flattenFromRaw(
     rawStates,
     def.transitions as any,
     def.initial as any,
-    { delimiter: ".", eventCollision: "allowShadow" }
+    options
   );
   
   // Convert back to factory
