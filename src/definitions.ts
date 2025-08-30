@@ -7,32 +7,17 @@ import type {
 } from "./factory-machine-types";
 import type { KeysWithZeroRequiredArgs } from "./utility-types";
 import { createMachine } from "./factory-machine";
-
-// Internal marker for a static Submachine Definition
-// Generic to preserve child raw states, transitions, and initial key types
-export type SubmachineMarker<
-  RawStates extends Record<string, any> = any,
-  TR extends Record<string, any> = any,
-  I extends string = string
-> = {
-  __kind: "SubmachineDef";
-  statesConfig: RawStates;
-  transitions: TR;
-  initial: I;
-};
-
-// User-facing MachineDefinition type (keeps both factory and raw config for flattening)
-export type MachineDefinition<
-  SF extends StateMatchboxFactory<any>,
-  T extends FactoryMachineTransitions<SF>,
-  I extends keyof SF
-> = {
-  states: SF;
-  transitions: T;
-  initial: I;
-  // raw config used to build states; needed for flattening traversal
-  _rawStates: any;
-};
+import type {
+  MachineDefinition,
+  StateConfig,
+  FlattenStateKeys,
+  FlattenedStateSpecs,
+  FlattenedTransitions,
+  FlattenedStatesFactory,
+  FlattenedMachineDefinition,
+  FlattenOptions,
+  FlatBuild,
+} from "./definition-types";
 
 // Overload: states as factory
 export function defineMachine<
@@ -50,24 +35,12 @@ export function defineMachine<
 >(states: SS, transitions: T, initial: I): MachineDefinition<SF, T, I>;
 
 export function defineMachine(states: any, transitions: any, initial: any): any {
-  const { factory, raw } = normalizeStates(states);
+  const { factory } = normalizeStates(states);  // Only get factory, no raw
   return {
     states: factory,
     transitions,
     initial,
-    _rawStates: raw,
   };
-}
-
-// Static-only submachine definition (no factories, no args)
-export function defineSubmachine<
-  SS extends Record<string, any> | StateMatchboxFactory<any>,
-  T extends Record<string, any>,
-  I extends string,
-  Raw extends Record<string, any> = SS extends StateMatchboxFactory<infer R> ? R : SS
->(states: SS, transitions: T, initial: I): SubmachineMarker<Raw, T, I> {
-  const { raw } = normalizeStates(states);
-  return { __kind: "SubmachineDef", statesConfig: raw, transitions, initial };
 }
 
 // Convenience: create an instance directly from a definition  
@@ -77,94 +50,6 @@ export function createMachineFrom<
   I extends KeysWithZeroRequiredArgs<SF>
 >(def: MachineDefinition<SF, T, I>) {
   return createMachine(def.states, def.transitions, def.initial);
-}
-
-export type FlattenOptions = {
-  eventCollision?: "error" | "namespaced" | "allowShadow";
-  delimiter?: string;
-};
-
-
-
-// Simplified type computation for flattened state keys (recursive)
-type FlattenStateKeys<
-  Raw extends Record<string, any>,
-  Delim extends string = ".",
-> = {
-  [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, any, any>
-    ? `${K}${Delim}${FlattenStateKeys<CRaw, Delim>}`
-    : K
-}[keyof Raw & string];
-
-// Flatten raw state specs to fully-qualified leaf keys while preserving each leaf's original spec
-type FlattenedStateSpecs<
-  Raw extends Record<string, any>,
-  Delim extends string = ".",
-> = {
-  [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, any, any>
-    ? PrefixKeys<FlattenedStateSpecs<CRaw, Delim>, `${K}${Delim}`>
-    : { [P in K]: Raw[K] }
-}[keyof Raw & string];
-
-// PrefixKeys type remains unchanged
-type PrefixKeys<T extends Record<string, any>, P extends string> = {
-  [K in keyof T as K extends string ? `${P}${K}` : never]: T[K]
-};
-
-// Helper to turn union of object types into an intersection
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
-  ? I
-  : never;
-
-// Type for flattened transitions - per state, compute event union and map to flattened leaf keys or functions
-type FlattenedTransitionsPerState<
-  Raw extends Record<string, any>,
-  TR extends Record<string, any>,
-  FlatKeys extends string,
-> = {
-  [L in FlatKeys]: Record<EventsForLeaf<Raw, TR, L>, FlatKeys | ((...a: any[]) => any)>;
-};
-
-// Type for flattened state factory preserving specs
-type FlattenedStatesFactory<Raw extends Record<string, any>, FlatKeys extends string> = StateMatchboxFactory<
-  FlattenedStateSpecs<Raw>
->;
-
-// Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
-export function flattenMachineDefinition<
-  SF extends StateMatchboxFactory<any>,
-  T extends FactoryMachineTransitions<SF>,
-  I extends keyof SF
->(
-  def: MachineDefinition<SF, T, I>,
-  _opts: FlattenOptions = {}
-): MachineDefinition<any, any, any> {
-  const opts: Required<FlattenOptions> = {
-    eventCollision: _opts.eventCollision ?? "error",
-    delimiter: _opts.delimiter ?? ".",
-  } as any;
-
-  const flattened = flattenFromRaw(
-    def._rawStates,
-    def.transitions as any,
-    def.initial as any,
-    opts
-  );
-
-  // Create flattened states config with computed literal keys
-  const flatStatesConfig = flattened.states;
-  
-  // Create factory with computed types
-  const flatStatesFactory = defineStates(flatStatesConfig);
-
-  return {
-    states: flatStatesFactory,
-    transitions: flattened.transitions,
-    initial: flattened.initial,
-    _rawStates: flatStatesConfig,
-  };
 }
 
 // --- helpers ---
@@ -189,10 +74,11 @@ function normalizeStates<
     const raw = Object.fromEntries(Object.keys(input).map((k) => [k, undefined])) as any;
     return { factory: input as any, raw } as any;
   }
-  // Treat as shorthand object; unwrap implicit submachine objects to explicit Submachine markers
+  // Treat as shorthand object; unwrap implicit submachine objects to explicit machine property
   const raw = Object.fromEntries(
     Object.entries(input ?? {}).map(([k, v]) => {
       if (isImplicitSubmachineObject(v)) {
+        // Use defineSubmachine to create machine property
         return [k, defineSubmachine(v.states as any, v.transitions as any, v.initial as any)];
       }
       return [k, v];
@@ -204,14 +90,9 @@ function normalizeStates<
 
 // ---- flattening internals ----
 
-type FlatBuild = {
-  states: Record<string, any>; // state key -> factory function or undefined
-  transitions: Record<string, Record<string, string | ((...a: any[]) => any)>>; // fromLeaf -> event -> toLeaf
-  initial: string;
-};
-
-function isSubmachineMarker(x: any): x is SubmachineMarker {
-  return x && typeof x === "object" && x.__kind === "SubmachineDef";
+// Update isSubmachineMarker to check for machine property
+function isSubmachineMarker(x: any): x is { machine: MachineDefinition<any, any, any> } {
+  return x && typeof x === "object" && "machine" in x;
 }
 
 function flattenFromRaw(
@@ -233,9 +114,9 @@ function flattenFromRaw(
   for (const [key, val] of Object.entries(rawStates)) {
     if (isSubmachineMarker(val)) {
       const child = flattenFromRaw(
-        val.statesConfig as any,
-        val.transitions as any,
-        val.initial as any,
+        val.machine.states as any,  // Access via machine property
+        val.machine.transitions as any,
+        val.machine.initial as any,
         opts
       );
       childFlatCache[key] = child;
@@ -350,28 +231,24 @@ function ensureFlatTransition(
   row[ev] = toLeaf;
 }
 
-// Collect event keys from parent transitions and all descendants (global union)
-type _CollectEventKeys<Raw extends Record<string, any>, TR extends Record<string, any>> =
-  | ({ [K in keyof TR & string]: keyof TR[K] & string }[keyof TR & string])
-  | ({
-      [K in keyof Raw & string]: Raw[K] extends SubmachineMarker<infer CRaw, infer CTR, any>
-        ? _CollectEventKeys<CRaw, CTR>
-        : never;
-    }[keyof Raw & string]);
-type CollectEventKeys<Raw extends Record<string, any>, TR extends Record<string, any>> = Extract<_CollectEventKeys<Raw, TR>, string>;
+// Simple defineSubmachine for backward compatibility
+export function defineSubmachine<
+  SS extends Record<string, any> | StateMatchboxFactory<any>,
+  T extends Record<string, any>,
+  I extends string
+>(states: SS, transitions: T, initial: I): { machine: MachineDefinition<any, any, I> } {
+  return { machine: defineMachine(states, transitions, initial) };
+}
 
-// Per-leaf event computation (top-down): parent events apply at each branch; child events only on its leaves
-type EventsForLeaf<
-  Raw extends Record<string, any>,
-  TR extends Record<string, any>,
-  Leaf extends string,
-  Delim extends string = ".",
-> = Leaf extends `${infer H}${Delim}${infer T}`
-  ? H extends keyof TR
-    ? Raw[H] extends SubmachineMarker<infer CRaw, infer CTR, any>
-      ? (keyof TR[H] & string) | EventsForLeaf<CRaw, CTR, Extract<T, string>, Delim>
-      : keyof TR[H] & string
-    : never
-  : Leaf extends keyof TR
-    ? keyof TR[Leaf] & string
-    : never;
+// Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
+export function flattenMachineDefinition(
+  def: MachineDefinition<any, any, any>,
+  _opts: FlattenOptions = {}
+): MachineDefinition<any, any, any> {
+  const { factory } = normalizeStates(def.states); // Only get factory, no raw
+  return {
+    states: factory,
+    transitions: def.transitions,
+    initial: def.initial,
+  };
+}
