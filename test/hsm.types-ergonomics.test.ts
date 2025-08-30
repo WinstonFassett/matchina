@@ -4,7 +4,7 @@ import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
 import { submachine } from "../src/nesting/submachine";
-import { StatesOf, EventsOf, AllEventsOf, ActiveEvents, sendWhen } from "../playground/types";
+import { StatesOf, EventsOf, AllEventsOf, ActiveEvents, sendWhen } from "../src/nesting/types";
 
 function createTrafficLight() {
   const states = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });

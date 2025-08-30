@@ -1,10 +1,9 @@
-import type { FactoryMachine } from "../src";
-import { resolveExit as hookResolveExit, send } from "../src";
-import { enhanceMethod } from "../src/ext/methodware/enhance-method";
-import { buildSetup, setup } from "../src/ext/setup";
-import { isFactoryMachine } from "../src/machine-brand";
-// legacy: remove any leftover isMachine imports
-import type { AllEventsOf } from "./types";
+import type { FactoryMachine } from "../factory-machine";
+import { resolveExit as hookResolveExit, send } from "../state-machine-hooks";
+import { enhanceMethod } from "../ext/methodware/enhance-method";
+import { buildSetup, setup } from "../ext/setup";
+import { isFactoryMachine } from "../machine-brand";
+import { AllEventsOf } from "./types";
 
 // Minimal duck-typed machine shape 
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void };

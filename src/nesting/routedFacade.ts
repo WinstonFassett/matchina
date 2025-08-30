@@ -1,4 +1,4 @@
-import { AllEventsOf, ChildOf, StatesOf } from "../../playground/types";
+import { AllEventsOf, ChildOf, StatesOf } from "./types";
 
 // RoutedEventsOf<M>: parent events unioned with all child events across parent states
 export type RoutedEventsOf<M> =
