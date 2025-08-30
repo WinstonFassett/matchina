@@ -1,11 +1,9 @@
-import { createMethodEnhancer } from "../src";
 import type { FactoryMachine } from "../src";
+import { resolveExit as hookResolveExit, send } from "../src";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
-import { setup, buildSetup } from "../src/ext/setup";
+import { buildSetup, setup } from "../src/ext/setup";
 import { isMachine } from "../src/is-machine";
-import { before, resolveExit as hookResolveExit, send } from "../src";
-import type { AllEventsOf, ChildOf, StatesOf } from "./types";
-import type { MethodOf } from "../src";
+import type { AllEventsOf } from "./types";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void; dispatch?: (...args: any[]) => void };
