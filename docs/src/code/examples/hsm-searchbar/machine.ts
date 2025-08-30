@@ -62,11 +62,7 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
       Query: {
         ...commonTransitions,
         refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-        "child.exit": ({ data, id, state }) => (ev) => {
-          console.log('child.exit', {data, id, state, ev})
-          const { query, items } = data
-          return activeStates.Selecting({ query, items })
-        },
+        "child.exit": ({ data }) => activeStates.Selecting({ query: data.query, items: data.items }),
         setError: "Error",
       },
       Selecting: {
