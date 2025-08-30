@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { defineMachine, defineSubmachine, flattenMachineDefinition, createMachineFrom } from "../src/definitions";
+import { defineMachine, defineSubmachine, flattenMachineDefinition, createMachineFrom, createMachineFromFlat } from "../src/definitions";
 
 // Flattened Traffic Light inside Controller (Working/Broken)
 
@@ -26,7 +26,7 @@ describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
     );
 
     const flat = flattenMachineDefinition(ctrlDef);
-    const m = createMachineFrom(flat);
+    const m = createMachineFromFlat(flat);
 
     // Initial cascades to leaf under Working
     expect(m.getState().key).toBe("Working.Red");

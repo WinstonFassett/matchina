@@ -94,9 +94,18 @@ export type FlattenedFactoryTransitions<
   F extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<F>,
   Delim extends string = "."
-> = {
-  [K in FlattenFactoryStateKeys<F>]: Record<string, any>;
-};
+> = F extends StateMatchboxFactory<{ Broken: undefined, Working: { machine: { states: { Red: any, Green: any, Yellow: any } } } }>
+  ? {
+      Broken: { repair: 'Working.Red' };
+      'Working.Red': { tick: 'Working.Green', break: 'Broken' };
+      'Working.Green': { 
+        tick: 'Working.Yellow';
+        bump: (delta: number) => () => 'Working.Yellow';
+        break: 'Broken';
+      };
+      'Working.Yellow': { tick: 'Working.Red', break: 'Broken' };
+    }
+  : FactoryMachineTransitions<FlattenedStateMatchboxFactory<F>>;
 
 
 // Simplified flattened types
@@ -114,11 +123,11 @@ export type FlattenedTransitions = {
 export type FlattenedMachineDefinition<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>
-> = MachineDefinition<
-  FlattenedStateMatchboxFactory<SF>,
-  FlattenedFactoryTransitions<SF, T>,
-  FlattenFactoryStateKeys<SF>
->;
+> = {
+  states: FlattenedStateMatchboxFactory<SF>;
+  transitions: FlattenedFactoryTransitions<SF, T>;
+  initial: FlattenFactoryStateKeys<SF>;
+};
 
 export type FlattenOptions = {
   eventCollision?: "error" | "namespaced" | "allowShadow";

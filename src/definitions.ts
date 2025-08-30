@@ -50,6 +50,18 @@ export function createMachineFrom<
   return createMachine(def.states, def.transitions, def.initial);
 }
 
+// Convenience: create an instance from a flattened definition  
+export function createMachineFromFlat<
+  SF extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<SF>
+>(def: FlattenedMachineDefinition<SF, T>) {
+  return createMachine(
+    def.states as any, 
+    def.transitions as any, 
+    def.initial as string
+  );
+}
+
 // --- helpers ---
 
 function isStatesFactory(x: any): x is StateMatchboxFactory<any> {
@@ -296,7 +308,7 @@ export function flattenMachineDefinition<
   // Return with properly typed structure
   return {
     states: flattenedFactory as FlattenedStateMatchboxFactory<SF>,
-    transitions: flattened.transitions as FlattenedFactoryTransitions<SF, T>,
+    transitions: flattened.transitions as unknown as FlattenedFactoryTransitions<SF, T>,
     initial: flattened.initial as FlattenFactoryStateKeys<SF>,
-  } as FlattenedMachineDefinition<SF, T>;
+  };
 }
