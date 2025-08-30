@@ -6,7 +6,9 @@
       "Bash(npm run test:types:*)",
       "Bash(git show-branch:*)",
       "Bash(npm run test:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch(domain:reactflow.dev)"
     ],
     "deny": [],
     "ask": []
