@@ -43,24 +43,22 @@ export type FactoryStateKeys<F> = F extends StateMatchboxFactory<infer C> ? keyo
 export type FlattenFactoryStateKeys<
   F extends StateMatchboxFactory<any>,
   Delim extends string = "."
-> = F extends StateMatchboxFactory<{ Broken: undefined, Working: { machine: { states: { Red: any, Green: any, Yellow: any } } } }>
-  ? 'Broken' | 'Working.Red' | 'Working.Green' | 'Working.Yellow'
-  : F extends StateMatchboxFactory<infer C>
-    ? keyof {
-        // Include all top-level keys that are not submachines
-        [K in keyof C & string as HasMachineProperty<F[K]> extends true ? never : K]: C[K];
-      } |
-      {
-        // Include all flattened submachine keys
-        [K in keyof C & string]: HasMachineProperty<F[K]> extends true
-          ? ExtractMachineFromFactory<F[K]> extends MachineDefinition<infer SF, any, any>
-            ? SF extends StateMatchboxFactory<infer SC>
-              ? { [SubKey in keyof SC & string]: `${K}${Delim}${SubKey}` }[keyof SC & string]
-              : never
+> = F extends StateMatchboxFactory<infer C>
+  ? keyof {
+      // Include all top-level keys that are not submachines
+      [K in keyof C & string as HasMachineProperty<F[K]> extends true ? never : K]: C[K];
+    } |
+    {
+      // Include all flattened submachine keys
+      [K in keyof C & string]: HasMachineProperty<F[K]> extends true
+        ? ExtractMachineFromFactory<F[K]> extends MachineDefinition<infer SF, any, any>
+          ? SF extends StateMatchboxFactory<infer SC>
+            ? { [SubKey in keyof SC & string]: `${K}${Delim}${SubKey}` }[keyof SC & string]
             : never
           : never
-      }[keyof C & string]
-    : never;
+        : never
+    }[keyof C & string]
+  : never;
 
 // Create flattened state specs from a factory
 export type FlattenedFactoryStateSpecs<
@@ -89,23 +87,16 @@ export type FlattenedFactoryStateSpecs<
 export type FlattenedStateMatchboxFactory<F extends StateMatchboxFactory<any>> =
   StateMatchboxFactory<FlattenedFactoryStateSpecs<F>>;
 
-// Flatten transitions to use flattened state keys
+// Flatten transitions to use flattened state keys - this is for type compatibility only
 export type FlattenedFactoryTransitions<
   F extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<F>,
   Delim extends string = "."
-> = F extends StateMatchboxFactory<{ Broken: undefined, Working: { machine: { states: { Red: any, Green: any, Yellow: any } } } }>
-  ? {
-      Broken: { repair: 'Working.Red' };
-      'Working.Red': { tick: 'Working.Green', break: 'Broken' };
-      'Working.Green': { 
-        tick: 'Working.Yellow';
-        bump: (delta: number) => () => 'Working.Yellow';
-        break: 'Broken';
-      };
-      'Working.Yellow': { tick: 'Working.Red', break: 'Broken' };
-    }
-  : FactoryMachineTransitions<FlattenedStateMatchboxFactory<F>>;
+> = {
+  [K in FlattenFactoryStateKeys<F>]?: {
+    [E in string]?: string | ((...args: any[]) => any);
+  };
+};
 
 
 // Simplified flattened types
