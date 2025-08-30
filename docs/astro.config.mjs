@@ -302,6 +302,24 @@ export default defineConfig({
               ],
             },
             {
+              label: "Hierarchical",
+              items: [
+               {
+                label: "Search Bar (Hierarchical)",
+                link: "/examples/hsm-searchbar",
+               },
+                {
+                  label: "File Uploader (Hierarchical)",
+                  link: "/examples/hsm-file-uploader",
+                },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
+              ],
+            },
+            {
               label: "Advanced",
               items: [
                 {
@@ -319,10 +337,6 @@ export default defineConfig({
                 {
                   label: "Checkout (Hierarchical)",
                   link: "/examples/hsm-checkout",
-                },
-                {
-                  label: "File Uploader (Hierarchical)",
-                  link: "/examples/hsm-file-uploader",
                 },
                 // Currently buggy. State lags input
                 // {
