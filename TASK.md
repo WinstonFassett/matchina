@@ -63,3 +63,40 @@ So I disagree wiht the strategic direction almost entirely.
 No. The strategic direction should be to rip out any cheating/casting from the tests and make the tests real, and make the types work.
 
 You must not be vague and hand wavy about runtime type erasure. We are talking about build-time. in the IDE. If we are losing types due to some exotic feature of TS then I need you to explain it in detail with the specifics.
+
+
+---
+
+older:
+
+This branch was vibe-coded. Meaning it is YOUR code, not the user's.
+
+Do a git diff of head and hierarchical-machines to see how we have refactored.
+
+It should support both the nested machine approach and the approach
+that flattens a nested machine or def into a single machine/def with no submachines.
+
+It has been a pain in the ass getting here. 
+
+It is very messy.
+
+On the plus side you wrote some type tests and I had nothing like those. I want to have type tests. In many cases they would be more helpful for tracking down issues than the usage tests. The generic typing is more complex than the implementation in most cases.
+
+With hierarchy there is some complexity but its all deterministic and we just need to make sure we handle all edge cases.
+
+The AI's have invented concepts that are not mine. "snapshot" and "dummy" are not things I usually deal in. I am suspicious of them.
+
+For one thing, my machines already effectively snapshot their states which are already immutable and they track a change event { type, from, to }
+
+States are objects with typed keys and typed data payloads for each of those keys.
+
+Review the git log going back to hierarchical-machines branch.
+
+We got things working after several revisions, then started doing code cov and uncovered more issues.
+
+
+Something in this code is allowing machines to get into invalid states. That should be impossible.
+
+We must not allow invalid states. Ever. The lib should not, in most cases need the overhead of checking. As long as the lib itself is not doing the wrong thing. So for this we need to add validation to wherever we are doinging transition in order to figure out what is allowing our machines to get into an invalid state. We must never do that. Ever. Not for a moment.
+
+
