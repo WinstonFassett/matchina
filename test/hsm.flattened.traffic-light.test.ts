@@ -7,7 +7,7 @@ import { defineStates } from "../src";
 describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
   it("hoists child events and uses fully-qualified keys", () => {
     const ctrlDef = defineMachine(
-      {
+      defineStates({
         Broken: undefined,
         Working: defineSubmachine(
           defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
@@ -18,7 +18,7 @@ describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
           },
           "Red"
         ),
-      },
+      }),
       {
         Broken: { repair: "Working" },
         Working: { break: "Broken" },
@@ -26,15 +26,8 @@ describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
       "Working"
     );
     
-    console.log('Original definition:', JSON.stringify(ctrlDef, (key, value) => 
-      typeof value === 'function' ? '[Function]' : value, 2));
-    
     const flat = flattenMachineDefinition(ctrlDef);
-    console.log('Flattened initial state:', flat.initial);
-    console.log('Flattened machine definition:', JSON.stringify(flat, (key, value) => 
-      typeof value === 'function' ? '[Function]' : value, 2));
     const m = createMachineFromFlat(flat);
-    console.log('Machine initial state:', m.getState().key);
 
     // Initial cascades to leaf under Working
     expect(m.getState().key).toBe("Working.Red");
