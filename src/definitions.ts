@@ -249,6 +249,8 @@ function ensureFlatTransition(
 }
 
 // Simple defineSubmachine for backward compatibility
+// 
+// ⚠️  EXPERIMENTAL: Part of the flattening API. See flattenMachineDefinition for details.
 export function defineSubmachine<
   SS extends Record<string, any> | StateMatchboxFactory<any>,
   T extends Record<string, any>,
@@ -291,6 +293,9 @@ function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<strin
 }
 
 // Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
+// 
+// ⚠️  EXPERIMENTAL: This API has known limitations with type inference.
+// Submachine references may require explicit typing. See FlatteningDefinitions.md for details.
 export function flattenMachineDefinition<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>,
