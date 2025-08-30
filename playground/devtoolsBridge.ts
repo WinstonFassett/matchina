@@ -1,6 +1,6 @@
 import { setup } from "../src/ext/setup";
 import { transition as hookTransition } from "../src/state-machine-hooks";
-import { isMachine } from "../src/is-machine";
+import { adaptForDevtools } from "../src/devtools-adapter";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any };
@@ -27,7 +27,8 @@ export function devtoolsBridge<M extends AnyMachine>(machine: M, opts: DevtoolsB
     : undefined;
 
   const serializeState = () => {
-    const s = machine.getState();
+    const adapted = adaptForDevtools(machine);
+    const s = adapted.getState();
     const shallowData = s?.data && typeof s.data === "object" ? { ...s.data } : s?.data;
     if (shallowData && shallowData.machine) {
       try {

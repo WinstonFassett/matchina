@@ -1,18 +1,5 @@
-export const MATCHINA_MACHINE = Symbol("matchina.machine");
+// Compat shim: re-export new branding helpers to consolidate branding modules.
+// Old symbol and helpers removed; prefer src/machine-brand and src/store-brand.
 
-export function brandMachine(target: object) {
-  try {
-    Object.defineProperty(target, MATCHINA_MACHINE, {
-      value: true,
-      enumerable: false,
-      configurable: false,
-      writable: false,
-    });
-  } catch {
-    // ignore if cannot define (shouldn't happen in normal usage)
-  }
-}
-
-export function isMachine(x: any): boolean {
-  return !!x && x[MATCHINA_MACHINE] === true;
-}
+export { MATCHINA_FACTORY, brandFactoryMachine as brandMachine, isFactoryMachine as isMachine } from "./machine-brand";
+export { MATCHINA_STORE, brandStoreMachine, isStoreMachine } from "./store-brand";

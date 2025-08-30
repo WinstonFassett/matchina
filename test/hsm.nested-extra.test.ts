@@ -35,7 +35,9 @@ describe("HSM edge cases", () => {
     const m = parentAlsoHandlesStart();
     m.send("toFirst");
     expect(m.getState().key).toBe("First");
-    m.send("start" as any);
+    // cast required because parent type is agnostic of child type
+    // see flattened test for cast-free approach
+    m.send("start" as any); 
     expect(m.getState().key).toBe("Executing");
   });
 });

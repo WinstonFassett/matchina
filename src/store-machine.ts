@@ -4,7 +4,7 @@ import {
   CurriedTransition,
   DirectTransition,
 } from "./store-machine-api";
-import { brandMachine } from "./is-machine";
+import { brandStoreMachine } from "./store-brand";
 
 export interface StoreMachine<
   T,
@@ -143,7 +143,7 @@ export function createStoreMachine<
       lastChange = change;
     }
   );
-  brandMachine(machine);
+  brandStoreMachine(machine);
   return machine;
 }
 

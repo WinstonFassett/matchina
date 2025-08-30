@@ -2,7 +2,8 @@ import type { FactoryMachine } from "../src";
 import { resolveExit as hookResolveExit, send } from "../src";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 import { buildSetup, setup } from "../src/ext/setup";
-import { isMachine } from "../src/is-machine";
+import { isFactoryMachine } from "../src/machine-brand";
+// legacy: remove any leftover isMachine imports
 import type { AllEventsOf } from "./types";
 
 // Minimal duck-typed machine shape 
@@ -11,9 +12,10 @@ type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
 function getChildFromParentState(state: any): AnyMachine | undefined {
   const m = (state?.machine ?? state?.data?.machine ?? state?.data?.data?.machine) as any;
   if (!m) return undefined;
-  if (isMachine(m)) return m as AnyMachine;
-  
-  // STRICT VALIDATION: A real machine MUST have getState AND send
+  // Prefer brand-based detection for our FactoryMachine instances
+  if (isFactoryMachine(m)) return m as AnyMachine;
+
+  // STRICT VALIDATION fallback: require getState AND send
   const isValidMachine = typeof m?.getState === "function" && typeof m?.send === "function";
   return isValidMachine ? (m as AnyMachine) : undefined;
 }
@@ -56,11 +58,12 @@ function looksLikeExit(after: any, grandAfterSnap: any, hadMachine: boolean, has
 
 function triggerExit(machine: FactoryMachine<any>, parentState: any, after: any) {
   const id = parentState?.data?.id ?? parentState?.id;
-  const beforeParent = machine.getState();
-  const ev = (machine as any).resolveExit?.({ 
-    type: "child.exit", 
-    params: [{ id, state: after?.key, data: after?.data }], 
-    from: beforeParent 
+  // Read parent state fresh when triggering exit to avoid stale capture
+  const currentParentState = machine.getState();
+  const ev = (machine as any).resolveExit?.({
+    type: "child.exit",
+    params: [{ id, state: after?.key, data: after?.data }],
+    from: currentParentState,
   });
   if (ev) {
     machine.transition?.(ev);
@@ -82,7 +85,8 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
       const hasMachine = after?.data?.machine || after?.machine;
       
       if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duck, includeDataStateExitForDuck)) {
-        triggerExit(machine, parentState, after);
+        // Use up-to-date parent state when signaling exit
+        triggerExit(machine, machine.getState(), after);
       }
     }
     return res;
@@ -110,7 +114,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       const child = getChildFromParentState(parentState);
       if (!child || wrapped.has(child as any)) return () => {};
       wrapped.add(child as any);
-      const duck = !isMachine(child as any);
+      const duck = !isFactoryMachine(child as any);
 
       const [addSetup, disposeAll] = buildSetup(child);
       
@@ -145,7 +149,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
       
       const handledByState = isHandled(before, after, grandBeforeSnap, grandAfterSnap);
-      const duckChild = !isMachine(child as any);
+      const duckChild = !isFactoryMachine(child as any);
       const handled = !threw && (handledByState || duckChild);
       
       if (handled) {
