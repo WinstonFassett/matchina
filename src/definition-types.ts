@@ -84,7 +84,7 @@ export type FlattenedFactoryTransitions<
   T extends FactoryMachineTransitions<F>,
   Delim extends string = "."
 > = {
-  [K in FlattenFactoryStateKeys<F>]?: Record<string, FlattenFactoryStateKeys<F> | ((...args: any[]) => any)>;
+  [K in string]?: Record<string, FlattenFactoryStateKeys<F> | ((...args: any[]) => any)>;
 };
 
 
