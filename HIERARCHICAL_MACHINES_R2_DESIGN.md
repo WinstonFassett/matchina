@@ -36,7 +36,6 @@ Scope: FactoryMachine only. Usage-first examples. Definition-first by default; i
     - Initial cascades to leaf (e.g., `On.Red`).
     - Events are hoisted to a single root namespace.
   - Options (future):
-    - `eventCollision?: "error" | "namespaced" | "allowShadow"` (default: `"error"`)
     - `delimiter?: string` (default: `"."`)
 
 - `createMachine(states, transitions, initial)` → FactoryMachine (existing)
@@ -131,10 +130,12 @@ const m = createMachine(
   - Cascade by following `initial` at each nested level to reach a leaf key.
 
 - Transitions
-  - For each leaf state, combine applicable transitions:
-    - Parent transitions that reference ancestor-level keys are retargeted to appropriate fully-qualified keys.
-    - Child transitions map to fully-qualified targets under the same parent prefix.
-  - Event collisions handled by `opts.eventCollision` (default: throw, listing conflicting paths).
+    - For each leaf state, combine applicable transitions:
+      - Parent transitions that reference ancestor-level keys are retargeted to appropriate fully-qualified keys.
+      - Child transitions map to fully-qualified targets under the same parent prefix.
+    - Event collisions are resolved deterministically: the first transition encountered for a given
+      (from, event) pair is kept. Because the flattener processes child-local transitions before
+      applying parent-level retargeting, this means the lowest descendant (child) wins.
 
 - Type inference
   - `defineMachine` remains 3-arg to preserve transitions autocomplete.

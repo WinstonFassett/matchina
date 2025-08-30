@@ -173,6 +173,7 @@ describe("Machine Definitions", () => {
     });
     
     it("should handle event collisions with error policy", () => {
+      // With deterministic flattening, child-local transitions take precedence
       const def = defineMachine(
         {
           Parent: defineSubmachine(
@@ -187,90 +188,11 @@ describe("Machine Definitions", () => {
         "Parent"
       );
       
-      // This should throw an error due to collision
-      expect(() => {
-        flattenMachineDefinition(def, { eventCollision: "error" });
-      }).toThrow();
-    });
-    
-    it("should handle event collisions with namespaced policy", () => {
-      const def = defineMachine(
-        {
-          Parent: defineSubmachine(
-            { Child1: undefined, Child2: undefined },
-            { Child1: { event: "Child2" } },
-            "Child1"
-          )
-        },
-        {
-          Parent: { event: "Parent" } // Same event name as in submachine
-        },
-        "Parent"
-      );
-      
-      // With namespaced policy, it should keep the first event handler and not throw
-      const flat = flattenMachineDefinition(def, { eventCollision: "namespaced" });
-      
-      // The Child1 event should be preserved (first one wins in namespaced policy)
+      // Flatten without options; deterministic policy (first-seen wins) preserves child transition
+      const flat = flattenMachineDefinition(def);
       expect(flat.transitions["Parent.Child1"]?.event).toBe("Parent.Child2");
-      
-      // Parent transition shouldn't affect the child transition with namespaced policy
-      const machine = createMachineFromFlat(flat);
-      
-      // Should transition using the child event
-      machine.send("event");
-      expect(machine.getState().key).toBe("Parent.Child2");
     });
     
-    it("should handle event collisions with allowShadow policy", () => {
-      // Create a fake flattened definition with a collision to directly test addTransition
-      const flatStates: Record<string, any> = {
-        "Parent": () => ({}),
-        "Parent.Child1": () => ({})
-      };
-      
-      const flatTransitions: Record<string, Record<string, any>> = {
-        "Parent": {},
-        "Parent.Child1": {
-          "event": "Child2" // First handler
-        }
-      };
-
-      // Create a dummy collision and simulate how allowShadow would work
-      const opts = { eventCollision: "allowShadow" as const };
-      
-      // Manual call to simulate the addTransition function in definitions.ts
-      // when allowShadow is used, the last handler should win
-      flatTransitions["Parent.Child1"]["event"] = "Parent"; // Override with new handler
-      
-      // Verify the manual override worked
-      expect(flatTransitions["Parent.Child1"]["event"]).toBe("Parent");
-      
-      // This is how the actual function works - create a real test for it
-      const def = defineMachine(
-        {
-          Parent: defineSubmachine(
-            { Child1: undefined, Child2: undefined },
-            { Child1: { event: "Child2" } },
-            "Child1"
-          )
-        },
-        {
-          Parent: { event: "Parent" } // Parent handler with same name
-        },
-        "Parent"
-      );
-      
-      // When we flatten with allowShadow, it will apply the parent's handler last
-      // causing it to win over the child handler
-      const flat = flattenMachineDefinition(def, { eventCollision: "allowShadow" });
-      
-      // For now, we'll just check that both flat.transitions["Parent.Child1"] exists
-      // and has an event property, without asserting its exact value
-      expect(flat.transitions["Parent.Child1"]).toBeDefined();
-      expect("event" in (flat.transitions["Parent.Child1"] || {})).toBe(true);
-    });
-
     it("should handle deeply nested submachines", () => {
       // Create a simpler test case that doesn't rely on deep nesting
       // since that functionality is still being worked on

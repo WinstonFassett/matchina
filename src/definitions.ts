@@ -154,7 +154,7 @@ function flattenFromRaw(
               return result;
             };
           }
-          ensureFlatTransition(flatTransitions, prefFrom, ev, prefTo, opts);
+          ensureFlatTransition(flatTransitions, prefFrom, ev, prefTo);
         }
       }
       // add child leaves to flat states
@@ -202,7 +202,7 @@ function flattenFromRaw(
       }
 
       for (const s of sourceLeaves) {
-        ensureFlatTransition(flatTransitions, s, ev, targetValue, opts);
+        ensureFlatTransition(flatTransitions, s, ev, targetValue);
       }
     }
   }
@@ -214,27 +214,13 @@ function ensureFlatTransition(
   out: Record<string, Record<string, string | ((...a: any[]) => any)>>,
   fromLeaf: string,
   ev: string,
-  toLeaf: string | ((...a: any[]) => any),
-  opts: Required<FlattenOptions>
+  toLeaf: string | ((...a: any[]) => any)
 ) {
   const row = (out[fromLeaf] = out[fromLeaf] ?? {});
-  if (row[ev] && row[ev] !== toLeaf) {
-    if (opts.eventCollision === "error") {
-      throw new Error(
-        `Event collision for "${ev}" from "${fromLeaf}": collision handling for functions not implemented`
-      );
-    }
-    // Basic fallback policies
-    if (opts.eventCollision === "namespaced") {
-      // keep first
-      return;
-    }
-    if (opts.eventCollision === "allowShadow") {
-      // allow last one to win
-      row[ev] = toLeaf;
-      return;
-    }
-  }
+  // Deterministic policy: first-seen transition wins. Child-local transitions
+  // are processed before parent-level retargeting, so the lowest descendant
+  // takes precedence. Do not overwrite existing entries.
+  if (row[ev]) return;
   row[ev] = toLeaf;
 }
 
@@ -300,8 +286,7 @@ export function flattenMachineDefinition<
   // Use existing flattening logic with defaults for missing options
   const options = {
     delimiter: opts?.delimiter || ".",
-    eventCollision: opts?.eventCollision || "allowShadow"
-  } as Required<FlattenOptions>;
+   } as Required<FlattenOptions>;
   
   const flattened = flattenFromRaw(
     rawStates,

@@ -239,7 +239,9 @@ m.getState().key; // "Working.Red"
 
 Notes:
 - Hierarchical APIs are experimental; types may require explicit annotations in complex cases.
-- Event collisions are resolved with a simple "allow last wins" policy by default when flattening.
+- Event collisions are resolved deterministically when flattening: first-seen wins. Child-local
+  transitions are processed before parent-level retargeting, so the lowest descendant (child)
+  takes precedence.
 
 ## Core Concepts
 

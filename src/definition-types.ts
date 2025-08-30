@@ -110,7 +110,6 @@ export type FlattenedMachineDefinition<
 };
 
 export type FlattenOptions = {
-  eventCollision?: "error" | "namespaced" | "allowShadow";
   delimiter?: string;
 };
 
