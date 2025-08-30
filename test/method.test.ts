@@ -78,7 +78,7 @@ describe("enhanceMethod", () => {
   });
 
   it("should use method stub if no method exists", () => {
-    const obj = {} as any;
+    const obj: Record<string, any> = {};
 
     enhanceMethod(obj, "method", (inner) => {
       return (value: string) => {

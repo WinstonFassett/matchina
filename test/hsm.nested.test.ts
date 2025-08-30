@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../playground/propagateSubmachines";
+import { setupTyped } from "../playground/propagateSubmachines";
 import type { FactoryMachine } from "../src/factory-machine";
 
 function createChild() {
@@ -35,7 +35,7 @@ function createParent() {
     },
     "Idle"
   );
-  setup(m)(propagateSubmachines(m));
+  setup(m)(setupTyped(m));
   return m;
 }
 

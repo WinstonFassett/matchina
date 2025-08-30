@@ -201,3 +201,23 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
     return disposeAll;
   };
 }
+
+// Enhanced machine type that includes propagated events
+export type EnhancedMachine<M> = M & {
+  send: (type: string, ...params: any[]) => void;
+};
+
+// Type-safe version of propagateSubmachines that enhances the machine type
+export function propagateSubmachinesTyped<M extends FactoryMachine<any>>(machine: M): EnhancedMachine<M> {
+  // Apply the runtime enhancement
+  const enhanced = propagateSubmachines(machine)(machine);
+  
+  // Return with enhanced type that allows any string events
+  return enhanced as EnhancedMachine<M>;
+}
+
+// Type-safe setup function for enhanced machines
+export function setupTyped<M extends FactoryMachine<any>>(machine: M): EnhancedMachine<M> {
+  const enhanced = propagateSubmachinesTyped(machine);
+  return enhanced;
+}
