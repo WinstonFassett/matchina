@@ -60,17 +60,24 @@ export function createCheckoutMachine() {
       },
       Payment: {
         back: "Shipping",
+        exit: "Shipping",
         "child.exit": "Review",
       },
       Review: {
         back: "ShippingPaid",
-        changePayment: "Payment",
+        changePayment: () => {
+          payment.reset();
+          return states.Payment(payment);
+        },
         submitOrder: "Confirmation",
       },
       ShippingPaid: {
         back: "Cart",
         proceed: "Review",
-        changePayment: "Payment",
+        changePayment: () => {
+          payment.reset();
+          return states.Payment(payment);
+        },
       },
       Confirmation: {
         restart: "Cart",
