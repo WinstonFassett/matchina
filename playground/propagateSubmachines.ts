@@ -11,24 +11,46 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
   const m = (state?.machine ?? state?.data?.machine ?? state?.data?.data?.machine) as any;
   if (!m) return undefined;
   if (isMachine(m)) return m as AnyMachine;
-  const duck = typeof m?.getState === "function" && (typeof m?.send === "function" || typeof m?.dispatch === "function");
-  return duck ? (m as AnyMachine) : undefined;
+  
+  // STRICT VALIDATION: A real machine MUST have getState AND either send or dispatch
+  // Otherwise it's not a valid state machine at all and should be rejected
+  const isValidMachine = typeof m?.getState === "function" && (typeof m?.send === "function" || typeof m?.dispatch === "function");
+  return isValidMachine ? (m as AnyMachine) : undefined;
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
+  // Ensure m exists and is an object
+  if (!m) {
+    throw new Error('Cannot send to undefined machine');
+  }
+  
+  // A valid machine MUST have either send or dispatch
+  if (typeof m.send !== "function" && typeof m.dispatch !== "function") {
+    throw new Error('Invalid state machine: neither send nor dispatch method exists');
+  }
+  
   // Prefer send for branded machines, dispatch for duck-typed children
   if (isMachine(m)) {
     if (typeof m.send === "function") return (m.send as any)(type, ...params);
     if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
   } else {
-    // Duck-typed children may only expose dispatch
+    // Duck-typed children may use either method
     if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
     if (typeof m.send === "function") return (m.send as any)(type, ...params);
   }
 }
 
 function snapshot(m: AnyMachine) {
-  return m.getState();
+  // If m is not a valid machine, it should never have gotten here in the first place
+  // But just in case, add a defensive check
+  if (!m || typeof m.getState !== 'function') {
+    throw new Error('Invalid state machine: getState is not a function');
+  }
+  const state = m.getState();
+  if (state === undefined) {
+    throw new Error('Invalid state: getState() returned undefined');
+  }
+  return state;
 }
 
 const hookSend = hookSetup("send")
