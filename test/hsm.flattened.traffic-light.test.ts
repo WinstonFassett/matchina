@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { defineMachine, defineSubmachine, flattenMachineDefinition, createMachineFrom, createMachineFromFlat } from "../src/definitions";
+import { defineStates } from "../src";
 
 // Flattened Traffic Light inside Controller (Working/Broken)
 
@@ -9,7 +10,7 @@ describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
       {
         Broken: undefined,
         Working: defineSubmachine(
-          { Red: undefined, Green: undefined, Yellow: undefined },
+          defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
           {
             Red: { tick: "Green" },
             Green: { tick: "Yellow" },
@@ -24,9 +25,16 @@ describe("Flattened HSM: Traffic Light (Working/Broken)", () => {
       },
       "Working"
     );
-
+    
+    console.log('Original definition:', JSON.stringify(ctrlDef, (key, value) => 
+      typeof value === 'function' ? '[Function]' : value, 2));
+    
     const flat = flattenMachineDefinition(ctrlDef);
+    console.log('Flattened initial state:', flat.initial);
+    console.log('Flattened machine definition:', JSON.stringify(flat, (key, value) => 
+      typeof value === 'function' ? '[Function]' : value, 2));
     const m = createMachineFromFlat(flat);
+    console.log('Machine initial state:', m.getState().key);
 
     // Initial cascades to leaf under Working
     expect(m.getState().key).toBe("Working.Red");

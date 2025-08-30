@@ -40,24 +40,17 @@ export type ExtractMachineFromFactory<V> = V extends (...args: any[]) => infer R
 export type FactoryStateKeys<F> = F extends StateMatchboxFactory<infer C> ? keyof C & string : never;
 
 // Flatten state keys from a factory
+// This simplified version focuses on the output type without complex conditional logic
 export type FlattenFactoryStateKeys<
   F extends StateMatchboxFactory<any>,
   Delim extends string = "."
 > = F extends StateMatchboxFactory<infer C>
-  ? keyof {
-      // Include all top-level keys that are not submachines
-      [K in keyof C & string as HasMachineProperty<F[K]> extends true ? never : K]: C[K];
-    } |
-    {
-      // Include all flattened submachine keys
-      [K in keyof C & string]: HasMachineProperty<F[K]> extends true
-        ? ExtractMachineFromFactory<F[K]> extends MachineDefinition<infer SF, any, any>
-          ? SF extends StateMatchboxFactory<infer SC>
-            ? { [SubKey in keyof SC & string]: `${K}${Delim}${SubKey}` }[keyof SC & string]
-            : never
-          : never
-        : never
-    }[keyof C & string]
+  ? (
+      // Direct state keys that are not submachines
+      | (HasMachineProperty<F[keyof C & string]> extends false ? keyof C & string : never)
+      // Nested state keys for submachines (Parent.Child format)
+      | `${Extract<keyof C, string>}${Delim}${string}`
+    )
   : never;
 
 // Create flattened state specs from a factory
@@ -65,22 +58,20 @@ export type FlattenedFactoryStateSpecs<
   F extends StateMatchboxFactory<any>,
   Delim extends string = "."
 > = {
-  [K in FlattenFactoryStateKeys<F>]: 
+  // For keys without a delimiter (direct states)
+  [K in Extract<FlattenFactoryStateKeys<F>, keyof F>]: F[K];
+} & {
+  // For keys with a delimiter (nested states)
+  [K in Exclude<FlattenFactoryStateKeys<F>, keyof F>]: 
     K extends `${infer Parent}${Delim}${infer Child}`
       ? Parent extends keyof F
-        ? HasMachineProperty<F[Parent]> extends true
-          ? ExtractMachineFromFactory<F[Parent]> extends MachineDefinition<infer SF, any, any>
-            ? SF extends StateMatchboxFactory<any>
-              ? Child extends keyof SF
-                ? SF[Child]
-                : never
-              : never
-            : never
-          : never
-        : never
-      : K extends keyof F
-        ? F[K]
-        : never
+        ? ExtractMachineFromFactory<F[Parent]> extends MachineDefinition<infer SF, any, any>
+          ? Child extends keyof SF
+            ? SF[Child]
+            : any
+          : any
+        : any
+      : any;
 };
 
 // Create flattened factory from a factory
@@ -93,20 +84,18 @@ export type FlattenedFactoryTransitions<
   T extends FactoryMachineTransitions<F>,
   Delim extends string = "."
 > = {
-  [K in FlattenFactoryStateKeys<F>]?: {
-    [E in string]?: string | ((...args: any[]) => any);
-  };
+  [K in FlattenFactoryStateKeys<F>]?: Record<string, FlattenFactoryStateKeys<F> | ((...args: any[]) => any)>;
 };
 
 
-// Simplified flattened types
-export type FlattenedStates = StateMatchboxFactory<{
-  [K: string]: any;
+// Simplified flattened types for internal use
+export type FlattenedStates<S = any> = StateMatchboxFactory<{
+  [K: string]: S;
 }>;
 
-export type FlattenedTransitions = {
+export type FlattenedTransitions<E extends string = string, To = any> = {
   [K: string]: {
-    [E: string]: any;
+    [Event in E]: To;
   };
 };
 
