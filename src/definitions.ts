@@ -252,19 +252,13 @@ function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<strin
         raw[key] = (creator as (arg?: any) => any)(undefined);
       }
     } catch (e) {
-      // If calling fails, check if it's a submachine by inspecting the function
-      // This is a hack, but we need to detect submachines somehow
-      const funcStr = creator.toString();
-      if (funcStr.includes('machine') || funcStr.includes('defineSubmachine')) {
-        // Assume it's a submachine - create a dummy object with machine property
-        // This won't work for actual flattening, but might help with types
-        raw[key] = { machine: { states: {}, transitions: {}, initial: '' } };
-      } else {
-        raw[key] = undefined;
-      }
+      // If calling the creator fails, treat the raw value as undefined.
+      // Avoid brittle heuristics (inspecting function source). Consumers
+      // should mark submachines explicitly via `defineSubmachine` or
+      // provide an explicit `{ machine: ... }` object when needed.
+      raw[key] = undefined;
     }
   }
-  
   return raw;
 }
 
@@ -286,6 +280,7 @@ export function flattenMachineDefinition<
   // Use existing flattening logic with defaults for missing options
   const options = {
     delimiter: opts?.delimiter || ".",
+    // and implemented in ensureFlatTransition (first-seen wins).
    } as Required<FlattenOptions>;
   
   const flattened = flattenFromRaw(
