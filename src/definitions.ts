@@ -17,23 +17,13 @@ import type {
   FlattenFactoryStateKeys,
 } from "./definition-types";
 
-// Overload: states as factory
 export function defineMachine<
-  SF extends StateMatchboxFactory<any>,
-  T extends FactoryMachineTransitions<SF>,
-  I extends keyof SF
->(states: SF, transitions: T, initial: I): MachineDefinition<SF, T, I>;
-
-// Overload: states as shorthand object
-export function defineMachine<
-  SS extends Record<string, any>,
-  SF extends StateMatchboxFactory<any>,
-  T extends FactoryMachineTransitions<SF>,
-  I extends keyof SF
->(states: SS, transitions: T, initial: I): MachineDefinition<SF, T, I>;
-
-export function defineMachine(states: any, transitions: any, initial: any): any {
-  const { factory } = normalizeStates(states);  // Only get factory, no raw
+  S extends Record<string, any> | StateMatchboxFactory<any>,
+  T,
+  I extends string
+>(states: S, transitions: T, initial: I) {
+  // If states is already a factory, use it directly; otherwise normalize
+  const factory = isStatesFactory(states) ? states : normalizeStates(states).factory;
   return {
     states: factory,
     transitions,

@@ -94,14 +94,14 @@ describe("Machine Definitions", () => {
     it("should flatten nested machine definitions", () => {
       // Define a machine with a submachine
       const def = defineMachine(
-        {
+        defineStates({
           Idle: undefined,
           Running: defineSubmachine(
             { Fast: undefined, Slow: undefined },
             { Fast: { slow: "Slow" }, Slow: { fast: "Fast" } },
             "Slow"
           )
-        },
+        }),
         {
           Idle: { start: "Running" },
           Running: { stop: "Idle" }
@@ -126,19 +126,16 @@ describe("Machine Definitions", () => {
       expect(flat.initial).toBe("Idle");
     });
     
-    it("should handle dynamic transition functions", () => {
-      // For this test, let's just verify that the transition function is preserved
-      // through the flattening process
+    it("should handle static string transitions", () => {
+      // Test the common case: static string transitions  
       const def = defineMachine(
-        {
+        defineStates({
           A: undefined,
           B: undefined,
           C: undefined
-        },
+        }),
         {
-          A: { 
-            next: (param: number) => param > 10 ? "B" : "C"
-          } as any,
+          A: { next: "B" },  // Simple static transition
           B: { back: "A" },
           C: { back: "A" }
         },
@@ -147,23 +144,22 @@ describe("Machine Definitions", () => {
       
       const flat = flattenMachineDefinition(def);
       
-      // Dynamic transition functions should be preserved
-      expect(typeof (flat.transitions as any)["A"]["next"]).toBe("function");
+      // Static transitions should be preserved
+      expect(flat.transitions["A"]?.["next"]).toBe("B");
     });
     
-    it("should handle dynamic transition functions that return functions", () => {
-      // Skip this test for now - the feature may not be properly implemented yet
-      // This test is just verifying the function type preservation
+    it("should handle transition functions returning state objects", () => {
+      // Test the documented pattern: functions returning state objects
       const def = defineMachine(
-        {
-          A: undefined,
-          B: undefined,
-          C: undefined
-        },
+        defineStates({
+          A: () => ({ count: 0 }),
+          B: () => ({ count: 0 }),
+          C: () => ({ count: 0 })
+        }),
         {
           A: { 
-            next: () => (ev: any) => "B" 
-          } as any,
+            next: (ev: any) => def.states.B({ count: ev.from.data.count + 1 })  // Function returning state object
+          },
           B: { back: "A" },
           C: { back: "A" }
         },
@@ -172,8 +168,8 @@ describe("Machine Definitions", () => {
       
       const flat = flattenMachineDefinition(def);
       
-      // Just verify the function type is preserved
-      expect(typeof (flat.transitions as any)["A"]["next"]).toBe("function");
+      // Function transitions should be preserved
+      expect(typeof flat.transitions["A"]?.["next"]).toBe("function");
     });
     
     it("should handle event collisions with error policy", () => {

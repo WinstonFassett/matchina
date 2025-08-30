@@ -69,12 +69,7 @@ export function createMachine<
 ): FactoryMachine<FC> {
   const initialState = typeof init === "string" ? states[init]({}) : init;
 
-  let lastChange: E = new FactoryMachineEventImpl<E>(
-    "__initialize" as E["type"],
-    initialState as E["from"],
-    initialState as E["to"],
-    []
-  ) as E;
+  let lastChange: E; // Will be set after machine is created
 
   const machine = withLifecycle(
     {
@@ -95,7 +90,7 @@ export function createMachine<
       resolveExit: (ev) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params, machine as any)
           : undefined;
       },
     } as Partial<FactoryMachine<FC>>,
@@ -103,6 +98,15 @@ export function createMachine<
       lastChange = ev;
     }
   ) as FactoryMachine<FC>;
+
+  // Now that machine exists, create the initial event with proper machine reference
+  lastChange = new FactoryMachineEventImpl<E>(
+    "__initialize" as E["type"],
+    initialState as E["from"],
+    initialState as E["to"],
+    [],
+    machine as any
+  ) as E;
 
   // Brand the instance for robust type guarding
   brandMachine(machine);

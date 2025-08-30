@@ -44,7 +44,8 @@ const createTestEvent = (
     type,
     { key: "from", data: {} },
     { key: "to", data: {} },
-    params
+    params,
+    createMockMachine() as any
   ) as any;
 
   event.machine = createMockMachine();
