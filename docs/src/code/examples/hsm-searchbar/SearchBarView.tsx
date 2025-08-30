@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useMachine } from "matchina/react";
 import { type FactoryMachine, getAvailableActions, createMachine } from "matchina";
 import type { ActiveMachine, createSearchBarMachine } from "./machine";
@@ -39,13 +39,13 @@ export function SearchBarView({ machine }: { machine: Machine }) {
   return (
     <div className="p-4 space-y-3 border rounded">
       <h3 className="font-semibold">Search Bar</h3>
-      <div className="text-sm text-gray-600">
-        <Statuses machine={machine} />
+      <div className="text-sm text-gray-600 font-medium">
+        State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200"><Statuses machine={machine} /></span>
       </div>
       {/* <div><ActionButtons machine={machine} /></div> */}
       {state.match({
         Active: ({machine}) => <ActiveView machine={machine} />,
-        Inactive: () => <a href="#" onClick={() => machine.focus()}>Click to search</a>,
+        Inactive: () => <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline" onClick={() => machine.focus()}>Click to search</button>,
       }, false)}
     </div>
   );
@@ -56,6 +56,14 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
   const state = machine.getState();
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
   useMachineMaybe(fetcherMachine);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Autofocus when component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
   
   const query = state.data.query;
 
@@ -65,22 +73,20 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
       machine.submit();
     }
     if (e.key === "Escape") {
-      // machine.close();
+      machine.close();
     }
   };
   return <div>
     <div className="flex items-center gap-2">
       <input
-        className="border rounded px-2 py-1 flex-1"
-        placeholder="Type to search..."
+        ref={inputRef}
+        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+        placeholder="Type to search... (Press ESC to cancel)"
         value={query}
-        // onFocus={() => machine.focus()}
-        // onBlur={() => machine.blur()}
-        // readOnly={!active}
         onChange={e => machine.typed(e.target.value)}
         onKeyDown={onKeyDown}
       />
-      <button className="btn" onClick={() => machine.clear()}>Clear</button>
+      <button className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors" onClick={() => machine.clear()}>Clear</button>
     </div>
 
     {state.match({
@@ -148,7 +154,7 @@ const Selecting = ({
   }, [validIndex]);
   return (
     <div>
-      Selecting: {JSON.stringify({ items, highlightedIndex })}
+      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Use ↑↓ arrows to navigate, Enter to select</div>
       {items.map((item, index) => (
         <ResultItem
           key={item.id}
@@ -162,5 +168,9 @@ const Selecting = ({
 
 
 function ResultItem({ id, title, isHighlighted }: { id: string; title: string, isHighlighted?: boolean }) {
-  return <div key={id} className={isHighlighted ? "bg-blue-100 dark:bg-blue-900" : ""}>{title}</div>;
+  return <div key={id} className={`p-2 rounded cursor-pointer transition-colors ${
+    isHighlighted 
+      ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700" 
+      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+  }`}>{title}</div>;
 }
