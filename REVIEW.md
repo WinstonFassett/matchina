@@ -13,8 +13,8 @@ This change set improves hierarchical state machine ergonomics and reliability:
 
 ## Files Reviewed
 
-- `playground/propagateSubmachines.ts`
-- `playground/submachine.ts`
+- `src/nesting/propagateSubmachines.ts`
+- `src/nesting/submachine.ts`
 - `test/hsm.child-exit-checkout.test.ts`
 - `test/hsm.duck-child.test.ts`
 - `test/hsm.resolve-exit-and-nesting.test.ts`

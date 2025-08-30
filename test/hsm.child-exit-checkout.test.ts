@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { submachine } from "../playground/submachine";
-import { routedFacade } from "../playground/routedFacade";
+import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
+import { submachine } from "../src/nesting/submachine";
+import { routedFacade } from "../src/nesting/routedFacade";
 
 // Demo: Checkout with Shipping -> Payment using exit-as-output.
 // - Shipping exits in 'Quoted' (has no nested machine), parent gets 'child.exit' and transitions to PaymentStep.

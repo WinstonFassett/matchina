@@ -1,5 +1,5 @@
 import { createMachine, defineStates, effect, setup, whenEventType, withReset } from "matchina";
-import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
+import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({

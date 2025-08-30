@@ -9,9 +9,9 @@ import {
   flattenMachineDefinition, 
   createMachineFromFlat
 } from "../../../../../src/definitions";
-import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
-import { submachine } from "../../../../../playground/submachine";
-import { routedFacade } from "../../../../../playground/routedFacade";
+import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
+import { submachine } from "../../../../../src/nesting/submachine";
+import { routedFacade } from "../../../../../src/nesting/routedFacade";
 
 // === NESTED APPROACH ===
 // Child machines exist as separate instances within parent states

@@ -33,8 +33,8 @@ We need a clean, ergonomic design for hierarchical event routing that:
 
 ## Current building blocks
 
-- `submachine(createChild, { id? })` puts the child on parent state data under `data.machine` (and optional `id`). File: `playground/submachine.ts`.
-- `propagateSubmachines(parent)` enables hierarchical routing and child exit signaling. File: `playground/propagateSubmachines.ts`.
+- `submachine(createChild, { id? })` puts the child on parent state data under `data.machine` (and optional `id`). File: `src/nesting/submachine.ts`.
+- `propagateSubmachines(parent)` enables hierarchical routing and child exit signaling. File: `src/nesting/propagateSubmachines.ts`.
 - Demo machine: `docs/src/code/examples/hsm-checkout/machine.ts`.
 
 ## Keys: the ground truth for routing

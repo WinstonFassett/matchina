@@ -24,7 +24,7 @@ Based on git diff from hierarchical-machines branch:
 
 **Modified Files:**
 - `src/factory-machine-types.ts` - Added `NormalizeParams` type fix (9 line change)
-- `playground/propagateSubmachines.ts` - Enhanced validation and error handling (86 line change)
+- `src/nesting/propagateSubmachines.ts` - Enhanced validation and error handling (86 line change)
 
 ## CORRECTED FINDINGS
 
@@ -185,7 +185,7 @@ This is a legitimate fix, not cruft.
 
 ### Propagate Submachines Enhancement ✅
 
-Changes to `playground/propagateSubmachines.ts` add proper validation and error handling. The enhanced validation is good:
+Changes to `src/nesting/propagateSubmachines.ts` add proper validation and error handling. The enhanced validation is good:
 
 ```typescript
 const isValidMachine = typeof m?.getState === "function" && 

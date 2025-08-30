@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../playground/propagateSubmachines";
+import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
 
 function childWithNoStart() {
   const states = defineStates({ Idle: undefined });

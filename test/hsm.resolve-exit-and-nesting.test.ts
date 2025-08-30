@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { routedFacade } from "../playground/routedFacade";
+import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
+import { routedFacade } from "../src/nesting/routedFacade";
 
 // 1) resolveExit parity (child-first)
 // 2) lifecycle identity swap (break/repair creates new child)

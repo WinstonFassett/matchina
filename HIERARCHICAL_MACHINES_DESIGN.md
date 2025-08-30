@@ -49,7 +49,7 @@ export type Child = ReturnType<typeof createChild>; // precise child type
 import { createMachine } from "./src/factory-machine";
 import { defineStates } from "./src/define-states";
 import { setup } from "./src/ext/setup";
-import { propagateSubmachines } from "./playground/propagateSubmachines";
+import { propagateSubmachines } from "./src/nesting/propagateSubmachines";
 import { createChild, type Child } from "./child";
 
 export function createParent() {
@@ -140,7 +140,7 @@ export type TrafficLight = ReturnType<typeof createTrafficLight>;
 import { createMachine } from "./src/factory-machine";
 import { defineStates } from "./src/define-states";
 import { setup } from "./src/ext/setup";
-import { propagateSubmachines } from "./playground/propagateSubmachines";
+import { propagateSubmachines } from "./src/nesting/propagateSubmachines";
 import { createTrafficLight, type TrafficLight } from "./traffic-light";
 
 export function createSignalController() {
@@ -211,7 +211,7 @@ Takeaway: You can pick (1) explicit child calls or (2) parent-only sends. Both a
   * Pre-handle probe with `resolveExit` if available.
   * Otherwise snapshot child state before/after to detect handling.
   * If child handled, abort parent handling; else let parent continue.
-  * Implemented by `playground/propagateSubmachines.ts` using `enhanceMethod()` on `send` and `dispatch` (dispatch supported for interop).
+  * Implemented by `src/nesting/propagateSubmachines.ts` using `enhanceMethod()` on `send` and `dispatch` (dispatch supported for interop).
 * __Scope__: v1 targets `FactoryMachine`. Hierarchical stores are out of scope.
 * __Hierarchy propagation__: Apply the same helper on any child machine instance; deep routing emerges naturally without explicit recursion in the helper.
 * __Typing guidance__: Avoid `as any` by typing the child instance in the state data (see “Hierarchy Declaration and Typing”).

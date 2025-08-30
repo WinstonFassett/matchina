@@ -342,7 +342,7 @@ The `propagateSubmachines` function enhances machine behavior at runtime but doe
 
 ### ✅ **FIXED: Type System Bug in propagateSubmachines.ts**
 
-**File:** `playground/propagateSubmachines.ts:216`  
+**File:** `src/nesting/propagateSubmachines.ts:216`  
 **Issue:** Incorrect type casting in `propagateSubmachinesTyped` function  
 **Error:** `Conversion of type '(() => void) | ((...setups: SetupFunc<M>[]) => () => void)' to type 'EnhancedMachine<M>' may be a mistake`
 

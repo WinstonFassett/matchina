@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
-import { createHierarchicalMachine } from "../playground/propagateSubmachines";
+import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
 import type { FactoryMachine } from "../src/factory-machine";
 
 function createChild() {

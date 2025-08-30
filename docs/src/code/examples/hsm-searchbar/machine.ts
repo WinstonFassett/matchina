@@ -1,5 +1,5 @@
 import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType } from "matchina";
-import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
+import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 
 interface SelectionState {
   query: string;

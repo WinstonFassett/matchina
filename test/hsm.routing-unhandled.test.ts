@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../playground/propagateSubmachines";
-import { submachine } from "../playground/submachine";
+import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
+import { submachine } from "../src/nesting/submachine";
 
 // Scenario: child does NOT handle 'nudge', parent does. Ensure bubble to parent.
 describe("HSM routing: unhandled child bubbles to parent", () => {
