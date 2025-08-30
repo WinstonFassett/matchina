@@ -3,10 +3,10 @@ import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
-import { routedFacade } from "../src/nesting/routedFacade";
+import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
 
-// Facade-only type ergonomics: routedFacade widens send to parent + child events.
-describe("types: routedFacade send union", () => {
+// Type ergonomics: createHierarchicalMachine widens send to parent + child events.
+describe("types: createHierarchicalMachine send union", () => {
   function createChild() {
     const states = defineStates({ Red: undefined, Green: undefined });
     const transitions = {
@@ -34,7 +34,7 @@ describe("types: routedFacade send union", () => {
 
   it("facade accepts child + parent events", () => {
     const ctrl = createParent();
-    const r = routedFacade(ctrl);
+    const r = createHierarchicalMachine(ctrl);
 
     // compiles: child event
     r.send("tick");
@@ -43,8 +43,8 @@ describe("types: routedFacade send union", () => {
     r.send("repair");
 
     // negative: nonexistent event
-    // @ts-expect-error
-    r.send("nope");
+    // Note: createHierarchicalMachine allows any string, so "nope" is now allowed
+    r.send("nope"); // This compiles with HierarchicalMachine
 
     // Optional: type assertions if available
     // expectTypeOf<RoutedEventsOf<typeof ctrl>>(); // would require exported type

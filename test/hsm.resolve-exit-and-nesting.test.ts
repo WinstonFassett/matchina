@@ -3,7 +3,7 @@ import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
-import { routedFacade } from "../src/nesting/routedFacade";
+import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
 
 // 1) resolveExit parity (child-first)
 // 2) lifecycle identity swap (break/repair creates new child)
@@ -37,7 +37,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
 
   it("resolveExit mirrors child-first send for tick", () => {
     const ctrl = createController();
-    const r = routedFacade(ctrl);
+    const r = createHierarchicalMachine(ctrl);
 
     const before = ctrl.getState();
     const probe = (ctrl as any).resolveExit?.({ type: "tick" });
@@ -53,7 +53,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
   it("break/repair uses a new child instance", () => {
     const ctrl = createController();
     const first = ctrl.getState().as("Working").data.machine;
-    routedFacade(ctrl).send("tick");
+    createHierarchicalMachine(ctrl).send("tick");
     expect(first.getState().key).toBe("Green");
 
     // break -> Broken
@@ -90,7 +90,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
     const p = createMachine(states, transitions, "Run");
     setup(p)(propagateSubmachines(p));
 
-    const r = routedFacade(p);
+    const r = createHierarchicalMachine(p);
     expect((p as any).getState().key).toBe("Run");
     const before = p.getState();
     (r as any).send("g");

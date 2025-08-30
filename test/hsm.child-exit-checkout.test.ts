@@ -4,11 +4,10 @@ import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
 import { submachine } from "../src/nesting/submachine";
-import { routedFacade } from "../src/nesting/routedFacade";
 
 // Demo: Checkout with Shipping -> Payment using exit-as-output.
 // - Shipping exits in 'Quoted' (has no nested machine), parent gets 'child.exit' and transitions to PaymentStep.
-// - Parent then sends 'authorize' to Payment child via routedFacade.
+// - Parent then sends 'authorize' to Payment child via hierarchical routing.
 
 describe("child.exit: checkout shipping -> payment", () => {
   function createShipping() {
@@ -65,7 +64,8 @@ describe("child.exit: checkout shipping -> payment", () => {
 
   it("routes child.exit to parent and allows parent to continue flow", () => {
     const checkout = createCheckout();
-    const r = routedFacade(checkout);
+    // checkout already has propagateSubmachines applied, so just use it directly
+    const r = checkout;
 
     // In ShippingStep, child is Quoting
     expect((checkout as any).getState().key).toBe("ShippingStep");

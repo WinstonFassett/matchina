@@ -21,12 +21,10 @@ looking great!
 ## what remains?
 
 * create elegant hierarchical machine factory (typed, handles propagation)
-* write docs explaining HSM usage patterns
-
-hsm checkout error on load:
-matchbox-factory.mjs:66 Uncaught Error: Match did not handle key: 'Cart'
-    at MatchboxImpl.match (matchbox-factory.mjs:66:11)
-    at CheckoutView (CheckoutView.tsx:42:14)
+  - seems ok. only using on checkout so far. 
+  - need to really evaluate our usages in tests and examples and consider what makes most sense
+  - want good coverage demoing options but want to use sanest option(s) for given example
+* write docs explaining HSM usage patterns, referring to examples, funcs, types etc
 
 routedFacade snuck in. what is it? how does it relate to other stuff?
 we have a sep router project? was planning to delete this but deps on t are all over tests.

@@ -11,7 +11,7 @@ import {
 } from "../../../../../src/definitions";
 import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 import { submachine } from "../../../../../src/nesting/submachine";
-import { routedFacade } from "../../../../../src/nesting/routedFacade";
+import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 
 // === NESTED APPROACH ===
 // Child machines exist as separate instances within parent states
@@ -48,8 +48,9 @@ export function createNestedController() {
 
   setup(ctrl)(propagateSubmachines(ctrl));
   
-  // Return with facade for convenient child event routing
-  return Object.assign(routedFacade(ctrl), { nested: ctrl });
+  // Return with hierarchical machine for child event routing
+  const hierarchical = createHierarchicalMachine(ctrl);
+  return Object.assign(hierarchical, { nested: ctrl });
 }
 
 // === FLATTENED APPROACH ===  

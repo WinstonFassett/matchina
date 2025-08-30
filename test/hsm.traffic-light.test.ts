@@ -4,7 +4,7 @@ import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
 import { submachine } from "../src/nesting/submachine";
-import { routedFacade } from "../src/nesting/routedFacade";
+import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
 
 function createTrafficLight() {
   const states = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
@@ -57,7 +57,7 @@ describe("Traffic Light HSM (Working/Broken)", () => {
 
   it("parent-only sends: tick routes to child when Working", () => {
     const ctrl = createSignalController();
-    const r = routedFacade(ctrl);
+    const r = createHierarchicalMachine(ctrl);
 
     expect(ctrl.getState().key).toBe("Working");
     // parent-only routing
@@ -72,7 +72,7 @@ describe("Traffic Light HSM (Working/Broken)", () => {
 
   it("break/repair swaps child lifecycle; repaired starts at Red", () => {
     const ctrl = createSignalController();
-    const r = routedFacade(ctrl);
+    const r = createHierarchicalMachine(ctrl);
 
     // advance child
     r.send("tick"); // Red->Green

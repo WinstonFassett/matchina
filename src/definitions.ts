@@ -54,6 +54,7 @@ export function createMachineFromFlat<
   );
 }
 
+
 // --- helpers ---
 
 function isStatesFactory(x: any): x is StateMatchboxFactory<any> {
