@@ -185,7 +185,61 @@ const message = adder.getState().match({
   Resolved: (result) => `Result: ${result}`,
   Rejected: (error) => `Error: ${error.message}`,
 });
+
+## Hierarchical Machines (experimental)
+
+Build nested machines and run them as a single flat machine with fully-qualified state keys and hoisted events.
+
+```ts
+import { defineStates } from "matchina";
+import {
+  defineMachine,
+  defineSubmachine,
+  flattenMachineDefinition,
+  createMachineFromFlat,
+} from "matchina";
+
+// Parent controller with a nested traffic light
+const ctrlDef = defineMachine(
+  defineStates({
+    Broken: undefined,
+    Working: defineSubmachine(
+      defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
+      {
+        Red: { tick: "Green" },
+        Green: { tick: "Yellow" },
+        Yellow: { tick: "Red" },
+      },
+      "Red",
+    ),
+  }),
+  {
+    Broken: { repair: "Working" },
+    Working: { break: "Broken" },
+  },
+  "Working",
+);
+
+// Flatten and create a runnable machine
+const flat = flattenMachineDefinition(ctrlDef);
+const m = createMachineFromFlat(flat);
+
+// Initial cascades to child initial state
+m.getState().key; // "Working.Red"
+
+m.send("tick");
+m.getState().key; // "Working.Green"
+
+m.send("break");
+m.getState().key; // "Broken"
+
+m.send("repair");
+m.getState().key; // "Working.Red"
 ```
+
+Notes:
+- Hierarchical APIs are experimental; types may require explicit annotations in complex cases.
+- Event collisions are resolved with a simple "allow last wins" policy by default when flattening.
 
 ## Core Concepts
 
