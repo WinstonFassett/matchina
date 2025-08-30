@@ -40,8 +40,8 @@ export function CheckoutView({ machine }: { machine: Machine }) {
         Step: <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-semibold">{key}</span>
       </div>
       {state.match({
-        Payment: ({ machine }: any) => <ChildPanel child={machine} />
-      }, null)}
+        Payment: ({ machine }: any) => <ChildPanel child={machine} />,
+      }, false)}
       <div className="flex gap-2 mt-2 flex-wrap">
         <ActionButtons machine={machine} />
       </div>
