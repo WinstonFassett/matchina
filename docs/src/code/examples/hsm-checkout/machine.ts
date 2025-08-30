@@ -1,5 +1,4 @@
-import { createMachine, defineStates, effect, setup, whenEventType, withReset } from "matchina";
-import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
+import { createMachine, defineStates, effect, setup, whenEventType, withReset, createHierarchicalMachine } from "matchina";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
@@ -23,15 +22,14 @@ function createPayment() {
     Authorized: {},
   }, "MethodEntry");
   
-  setup(m)(propagateSubmachines(m));
-  return withReset(m, paymentStates.MethodEntry());
+  return withReset(createHierarchicalMachine(m), paymentStates.MethodEntry());
 }
 
 const checkoutStates = defineStates({
   Cart: undefined,
   Shipping: undefined,
   ShippingPaid: undefined,
-  Payment: (machine: any) => ({ machine, id: "payment" }),
+  Payment: (machine: ReturnType<typeof createPayment>) => ({ machine, id: "payment" }),
   Review: undefined,
   Confirmation: undefined,
 });
@@ -63,10 +61,11 @@ export function createCheckoutMachine() {
     Confirmation: { restart: "Cart" },
   }, "Cart");
 
-  setup(checkout)(
-    propagateSubmachines(checkout),
+  const hierarchical = createHierarchicalMachine(checkout);
+  
+  setup(hierarchical)(
     effect(whenEventType("restart", payment.reset))
   );
 
-  return Object.assign(checkout, { payment });
+  return Object.assign(hierarchical, { payment });
 }
