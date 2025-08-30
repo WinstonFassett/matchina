@@ -17,10 +17,8 @@ looking great!
 
 ## what remains?
 
-* better visualizations - need actual mermaid/react-flow implementation  
 * demo both nested and flattened approaches with real examples
 * explore nuances between nested vs flattened patterns
 * create elegant hierarchical machine factory (typed, handles propagation)
 * write docs explaining HSM usage patterns
-* investigate "refine is weird" issue
-
+* investigate "refine is weird" issue in searchbar demo
