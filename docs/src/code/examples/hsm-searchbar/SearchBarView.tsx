@@ -44,14 +44,14 @@ export function SearchBarView({ machine }: { machine: Machine }) {
       </div>
       {/* <div><ActionButtons machine={machine} /></div> */}
       {state.match({
-        Active: ({machine}) => <ActiveView machine={machine} />,
+        Active: ({machine: activeMachine}: any) => <ActiveView machine={activeMachine} parentMachine={machine} />,
         Inactive: () => <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline" onClick={() => machine.focus()}>Click to search</button>,
       }, false)}
     </div>
   );
 }
 
-function ActiveView({ machine }: { machine: ActiveMachine }) {
+function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parentMachine: Machine }) {
   useMachine(machine);  
   const state = machine.getState();
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
@@ -73,7 +73,7 @@ function ActiveView({ machine }: { machine: ActiveMachine }) {
       machine.submit();
     }
     if (e.key === "Escape") {
-      machine.close();
+      parentMachine.close();
     }
   };
   return <div>

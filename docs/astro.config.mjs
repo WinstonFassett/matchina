@@ -308,10 +308,6 @@ export default defineConfig({
                 label: "Search Bar (Hierarchical)",
                 link: "/examples/hsm-searchbar",
                },
-                {
-                  label: "File Uploader (Hierarchical)",
-                  link: "/examples/hsm-file-uploader",
-                },
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",

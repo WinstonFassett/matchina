@@ -101,7 +101,7 @@ const machine2 = matchina(
       retry: "Idle",
     },
   },
-  states2.Idle()
+  states3.Idle()
 );
 
 // These now properly type-check:

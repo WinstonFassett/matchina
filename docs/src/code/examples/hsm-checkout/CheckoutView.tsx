@@ -33,7 +33,6 @@ export function CheckoutView({ machine }: { machine: Machine }) {
   useMachine(machine)
   const state: any = machine.getState();
   const key = state.key;
-  const child: FactoryMachine<any> | undefined = (machine as any).payment;
   return (
     <div className="p-4 space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
       <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">Checkout</h3>
@@ -41,7 +40,7 @@ export function CheckoutView({ machine }: { machine: Machine }) {
         Step: <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-semibold">{key}</span>
       </div>
       {state.match({
-        Payment: ({ machine }) => <ChildPanel child={machine} />
+        Payment: ({ machine }: any) => <ChildPanel child={machine} />
       }, null)}
       <div className="flex gap-2 mt-2 flex-wrap">
         <ActionButtons machine={machine} />

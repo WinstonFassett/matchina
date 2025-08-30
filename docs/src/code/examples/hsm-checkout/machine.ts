@@ -1,14 +1,7 @@
 import { createMachine, defineStates, effect, setup, whenEventType, withReset } from "matchina";
 import { propagateSubmachines } from "../../../../../playground/propagateSubmachines";
 
-export const checkoutStates = defineStates({
-  Cart: undefined,
-  Shipping: undefined,
-  Payment: undefined,
-  Review: undefined,
-  Confirmation: undefined,
-});
-
+// Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
   MethodEntry: undefined,
   Authorizing: undefined,
@@ -18,22 +11,23 @@ export const paymentStates = defineStates({
 });
 
 function createPayment() {
-  const m = createMachine(
-    paymentStates,
-    {
-      MethodEntry: { authorize: "Authorizing" },
-      Authorizing: { authRequired: "AuthChallenge", authSucceeded: "Authorized", authFailed: "AuthorizationError" },
-      AuthChallenge: { authSucceeded: "Authorized", authFailed: "AuthorizationError" },
-      AuthorizationError: { retry: "MethodEntry" },
-      Authorized: {},
+  const m = createMachine(paymentStates, {
+    MethodEntry: { authorize: "Authorizing" },
+    Authorizing: { 
+      authRequired: "AuthChallenge", 
+      authSucceeded: "Authorized", 
+      authFailed: "AuthorizationError" 
     },
-    "MethodEntry"
-  );
+    AuthChallenge: { authSucceeded: "Authorized", authFailed: "AuthorizationError" },
+    AuthorizationError: { retry: "MethodEntry" },
+    Authorized: {},
+  }, "MethodEntry");
+  
   setup(m)(propagateSubmachines(m));
   return withReset(m, paymentStates.MethodEntry());
 }
 
-const states = defineStates({
+const checkoutStates = defineStates({
   Cart: undefined,
   Shipping: undefined,
   ShippingPaid: undefined,
@@ -45,50 +39,34 @@ const states = defineStates({
 export function createCheckoutMachine() {
   const payment = createPayment();
 
-  const base = createMachine(
-    {
-      ...states,
-      Payment: () => states.Payment(payment),
+  const checkout = createMachine({
+    ...checkoutStates,
+    Payment: () => checkoutStates.Payment(payment),
+  }, {
+    Cart: { proceed: "Shipping" },
+    Shipping: { back: "Cart", proceed: "Payment" },
+    Payment: { 
+      back: "Shipping", 
+      exit: "Shipping", 
+      "child.exit": "Review"  // When payment completes, go to review
     },
-    {
-      Cart: {
-        proceed: "Shipping",
-      },
-      Shipping: {
-        back: "Cart",
-        proceed: "Payment",
-      },
-      Payment: {
-        back: "Shipping",
-        exit: "Shipping",
-        "child.exit": "Review",
-      },
-      Review: {
-        back: "ShippingPaid",
-        changePayment: () => {
-          payment.reset();
-          return states.Payment(payment);
-        },
-        submitOrder: "Confirmation",
-      },
-      ShippingPaid: {
-        back: "Cart",
-        proceed: "Review",
-        changePayment: () => {
-          payment.reset();
-          return states.Payment(payment);
-        },
-      },
-      Confirmation: {
-        restart: "Cart",
-      },
+    Review: {
+      back: "ShippingPaid",
+      changePayment: () => { payment.reset(); return checkoutStates.Payment(payment); },
+      submitOrder: "Confirmation",
     },
-    "Cart"
-  );
-  setup(base)(
-    propagateSubmachines(base),
+    ShippingPaid: {
+      back: "Cart", 
+      proceed: "Review",
+      changePayment: () => { payment.reset(); return checkoutStates.Payment(payment); },
+    },
+    Confirmation: { restart: "Cart" },
+  }, "Cart");
+
+  setup(checkout)(
+    propagateSubmachines(checkout),
     effect(whenEventType("restart", payment.reset))
   );
 
-  return Object.assign(base, { payment });
+  return Object.assign(checkout, { payment });
 }
