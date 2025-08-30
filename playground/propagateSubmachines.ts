@@ -1,8 +1,9 @@
 import { FactoryMachine } from "../src";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
-import { buildSetup } from "../src/ext/setup";
+import { setup, buildSetup } from "../src/ext/setup";
 import { isMachine } from "../src/is-machine";
 import { resolveExit as hookResolveExit } from "../src/state-machine-hooks";
+import { AllEventsOf, ChildOf, StatesOf } from "./types";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void; dispatch?: (...args: any[]) => void };
@@ -172,7 +173,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       return false;
     };
 
-    addSetup(m => () => { unwrapChild(); });
+    addSetup(() => () => { unwrapChild(); });
 
     const dispatchware = (send: any) => (type: string, ...params: any[]) => {
       const handled = childFirst(type, ...params);
@@ -194,30 +195,29 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
     };
 
     addSetup(
-      m => enhanceMethod(m as any, "send", dispatchware),
-      m => enhanceMethod(m as any, "dispatch", dispatchware)
+      (m: any) => enhanceMethod(m as any, "send", dispatchware),
+      (m: any) => enhanceMethod(m as any, "dispatch", dispatchware)
     );
 
     return disposeAll;
   };
 }
 
-// Enhanced machine type that includes propagated events
-export type EnhancedMachine<M> = M & {
-  send: (type: string, ...params: any[]) => void;
+// Type that represents all possible events in a hierarchical machine
+export type HierarchicalEvents<M> = 
+  | AllEventsOf<M>  // Parent events
+  | string; // Allow any string for propagated child events
+
+// Enhanced machine type with hierarchical event support
+export type HierarchicalMachine<M> = M & {
+  send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
 };
 
-// Type-safe version of propagateSubmachines that enhances the machine type
-export function propagateSubmachinesTyped<M extends FactoryMachine<any>>(machine: M): EnhancedMachine<M> {
-  // Apply the runtime enhancement and get the disposal function
-  const dispose = propagateSubmachines(machine)(machine);
+// Create a typed hierarchical machine facade
+export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M): HierarchicalMachine<M> {
+  // Apply runtime enhancement
+  setup(machine)(propagateSubmachines(machine));
   
-  // Return the machine with enhanced type (the enhancement is already applied)
-  return machine as EnhancedMachine<M>;
-}
-
-// Type-safe setup function for enhanced machines
-export function setupTyped<M extends FactoryMachine<any>>(machine: M): EnhancedMachine<M> {
-  const enhanced = propagateSubmachinesTyped(machine);
-  return enhanced;
+  // Return with enhanced type
+  return machine as HierarchicalMachine<M>;
 }

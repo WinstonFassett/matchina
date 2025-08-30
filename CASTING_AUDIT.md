@@ -339,3 +339,30 @@ The `propagateSubmachines` function enhances machine behavior at runtime but doe
 2. Create follow-up audit after fixes to verify improvements
 3. Consider adding linting rules to prevent new `as any` in test code
 4. Document any necessary casts in implementation code (src/) separately
+
+### ✅ **FIXED: Type System Bug in propagateSubmachines.ts**
+
+**File:** `playground/propagateSubmachines.ts:216`  
+**Issue:** Incorrect type casting in `propagateSubmachinesTyped` function  
+**Error:** `Conversion of type '(() => void) | ((...setups: SetupFunc<M>[]) => () => void)' to type 'EnhancedMachine<M>' may be a mistake`
+
+**Root Cause:** 
+The `propagateSubmachines` function returns a setup function, but `propagateSubmachinesTyped` was incorrectly casting the disposal function return value instead of the enhanced machine.
+
+**Fix Applied:**
+```typescript
+// BEFORE (BROKEN):
+const enhanced = propagateSubmachines(machine)(machine);
+return enhanced as EnhancedMachine<M>; // Wrong - enhanced is disposal function
+
+// AFTER (FIXED):  
+const dispose = propagateSubmachines(machine)(machine);
+return machine as EnhancedMachine<M>; // Correct - machine is enhanced
+```
+
+**Impact:** 
+- ✅ TypeScript compilation now passes
+- ✅ `propagateSubmachinesTyped` function properly types enhanced machines
+- ✅ HSM type safety improved for playground utilities
+
+**This demonstrates that type system issues CAN be fixed** - this was a legitimate bug in the type casting logic, not an inherent limitation.

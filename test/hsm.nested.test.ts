@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
-import { setup } from "../src/ext/setup";
-import { setupTyped } from "../playground/propagateSubmachines";
+import { createHierarchicalMachine } from "../playground/propagateSubmachines";
 import type { FactoryMachine } from "../src/factory-machine";
 
 function createChild() {
@@ -35,7 +34,7 @@ function createParent() {
     },
     "Idle"
   );
-  return setupTyped(m);
+  return createHierarchicalMachine(m);
 }
 
 describe("HSM: state has a machine (child-first)", () => {
