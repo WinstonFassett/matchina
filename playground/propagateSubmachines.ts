@@ -5,33 +5,25 @@ import { buildSetup, setup } from "../src/ext/setup";
 import { isMachine } from "../src/is-machine";
 import type { AllEventsOf } from "./types";
 
-// Minimal duck-typed machine shape
-type AnyMachine = { getState(): any; send?: (...args: any[]) => void; dispatch?: (...args: any[]) => void };
+// Minimal duck-typed machine shape 
+type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
 
 function getChildFromParentState(state: any): AnyMachine | undefined {
   const m = (state?.machine ?? state?.data?.machine ?? state?.data?.data?.machine) as any;
   if (!m) return undefined;
   if (isMachine(m)) return m as AnyMachine;
   
-  // STRICT VALIDATION: A real machine MUST have getState AND either send or dispatch
-  const isValidMachine = typeof m?.getState === "function" && (typeof m?.send === "function" || typeof m?.dispatch === "function");
+  // STRICT VALIDATION: A real machine MUST have getState AND send
+  const isValidMachine = typeof m?.getState === "function" && typeof m?.send === "function";
   return isValidMachine ? (m as AnyMachine) : undefined;
 }
 
 function trySend(m: AnyMachine, type: string, ...params: any[]) {
-  if (!m) throw new Error('Cannot send to undefined machine');
-  if (typeof m.send !== "function" && typeof m.dispatch !== "function") {
-    throw new Error('Invalid state machine: neither send nor dispatch method exists');
+  if (!m) throw new Error("Cannot send to undefined machine");
+  if (typeof m.send !== "function") {
+    throw new Error('Invalid state machine: send method is required');
   }
-  
-  // Prefer send for branded machines, dispatch for duck-typed children
-  if (isMachine(m)) {
-    if (typeof m.send === "function") return (m.send as any)(type, ...params);
-    if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
-  } else {
-    if (typeof m.dispatch === "function") return (m.dispatch as any)(type, ...params);
-    if (typeof m.send === "function") return (m.send as any)(type, ...params);
-  }
+  return (m.send as any)(type, ...params);
 }
 
 function snapshot(m: AnyMachine) {
@@ -75,7 +67,7 @@ function triggerExit(machine: FactoryMachine<any>, parentState: any, after: any)
   }
 }
 
-function enhanceSendOrDispatch(child: AnyMachine, machine: FactoryMachine<any>, parentState: any, duck: boolean, includeDataStateExitForDuck: boolean) {
+function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentState: any, duck: boolean, includeDataStateExitForDuck: boolean) {
   return (send: any) => (type: string, ...params: any[]) => {
     const before = snapshot(child);
     const grandBefore = getChildFromParentState(before);
@@ -110,7 +102,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       return next({ ...ev, from, params });
     }));
 
-    // 2) Enhance send/dispatch using the library enhancer utilities
+    // 2) Enhance send using the library enhancer utilities
     const wrapped = new WeakSet<object>();
     
     const wrapChild = () => {
@@ -124,12 +116,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       
       // Enhance send if it exists
       if (typeof child.send === 'function') {
-        addSetup(child => enhanceMethod(child as any, "send", enhanceSendOrDispatch(child, machine, parentState, duck, false)));
-      }
-      
-      // Only enhance dispatch if the child originally has one
-      if (typeof child.dispatch === 'function') {
-        addSetup(child => enhanceMethod(child as any, "dispatch", enhanceSendOrDispatch(child, machine, parentState, duck, true)));
+        addSetup(child => enhanceMethod(child as any, "send", enhanceSend(child, machine, parentState, duck, false)));
       }
       
       return disposeAll;
