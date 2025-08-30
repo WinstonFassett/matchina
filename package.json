@@ -54,7 +54,8 @@
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "npm run  test && changelogen --release && npm publish && git push --follow-tags",
     "test": "vitest run --coverage",
-    "test:types": "tsc --noEmit --skipLibCheck",
+    "type-check": "tsc --noEmit --skipLibCheck",
+    "test:types": "npm run type-check",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish:lib": "npm publish --access public",
     "publish:docs": "npm --workspace docs run deploy || echo 'Add a deploy script to docs/package.json'"

@@ -246,6 +246,12 @@ However, coverage quality concerns:
 3. **Mark experimental APIs clearly** - Good practice for new features
 4. **Focus on polish** - The core functionality is sound
 
+### REQUIRED ACTIONS BEFORE MERGE
+- [x] ~~**Remove `normalizeStates` and exported overloads**: the code should not rely on a runtime "normalization" helper. `normalizeStates` must be factored out of the public implementation (delete the helper and inline/replace its behavior where necessary) and any exported overloads removed so the public API surface is explicit and singular.~~ This is on branch `remove-normalize-states`.
+- [ ] **All public APIs must be explicitly typed**: ensure `defineSubmachine`, `defineMachine`, `flattenMachineDefinition`, and related exports provide the full compile-time typings so consumers never need to cast. Add type-level tests that assert inference without `as`/`any`.
+- [x] **Tests as the gate for "experimental"**: do not merge the feature labelled "experimental" unless the test-suite and type-tests reach parity with the core library expectations. If we keep the experimental tag, treat the feature as an opt-in extra (documented and covered by tests) and require a follow-up to remove the tag only after test coverage and type assertions reach an agreed threshold.
+- [ ] **Remove any remaining test shortcuts**: scan for `as any`, `as unknown as` and other casts and remove or justify them with targeted tests.
+
 ---
 
 *Generated on: 2025-08-30*

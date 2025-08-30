@@ -44,30 +44,31 @@ describe("HSM: state has a machine (child-first)", () => {
     const parent = createParent();
     expect(parent.getState().key).toBe("Idle");
     parent.send("toFirst");
-    const s = parent.getState().as("First");
+    const s = parent.getState();
     expect(s.key).toBe("First");
-    // @ts-ignore
-    expect(s.data?.machine).toBeTruthy();
+    expect(s.is("First") && s.data.machine ? true : false).toBe(true);
   });
 
   it("routes start to child first and keeps parent in First", () => {
     const parent = createParent();
     parent.send("toFirst");
-    const before = parent.getState().as("First");
-    const child = (before as any).data.machine as FactoryMachine<any>;
-    expect(child.getState().key).toBe("Idle");
+    const state = parent.getState();
+    expect(state.is("First")).toBe(true);
+    const child = state.is("First") ? state.data.machine : undefined;
+    expect(child?.getState().key).toBe("Idle");
 
     parent.send("start" as any);
 
     expect(parent.getState().key).toBe("First");
-    const afterChild = parent.getState().as("First").data.machine as FactoryMachine<any>;
-    expect(afterChild.getState().key).toBe("Executing");
+    const afterState = parent.getState();
+    const afterChild = afterState.is("First") ? afterState.data.machine : undefined;
+    expect(afterChild?.getState().key).toBe("Executing");
   });
 
   it("bubbles to parent when child cannot handle", () => {
     const parent = createParent();
     parent.send("toFirst");
-    parent.send("done" as any);
+    parent.send("done");
     expect(parent.getState().key).toBe("Done");
   });
 });
