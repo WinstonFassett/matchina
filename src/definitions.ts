@@ -108,8 +108,9 @@ function normalizeStates<
 // ---- flattening internals ----
 
 // Update isSubmachineMarker to check for machine property
-function isSubmachineMarker(x: any): x is { machine: MachineDefinition<any, any, any> } {
-  return x && typeof x === "object" && "machine" in x;
+function isSubmachineMarker(x: any): x is { machine: MachineDefinition<any, any, any> } | { data: { machine: MachineDefinition<any, any, any> } } {
+  return x && typeof x === "object" && 
+    ("machine" in x || (x.data && typeof x.data === "object" && "machine" in x.data));
 }
 
 function flattenFromRaw(
@@ -130,10 +131,15 @@ function flattenFromRaw(
 
   for (const [key, val] of Object.entries(rawStates)) {
     if (isSubmachineMarker(val)) {
+      console.log(`Detected submachine for ${key}:`, val);
+      // Handle both direct machine property and machine in data
+      const machine = 'machine' in val ? val.machine : val.data.machine;
+      console.log(`Submachine for ${key}:`, machine);
+      
       const child = flattenFromRaw(
-        val.machine.states as any,  // Access via machine property
-        val.machine.transitions as any,
-        val.machine.initial as any,
+        machine.states as any,
+        machine.transitions as any,
+        machine.initial as any,
         opts
       );
       childFlatCache[key] = child;
@@ -182,6 +188,7 @@ function flattenFromRaw(
 
   // Compute initial leaf
   // If the initial state is a submachine, use its fully qualified initial state
+  console.log(`childInitialLeaf[${initial}] = ${childInitialLeaf[initial]}, initialLeaf = ${childInitialLeaf[initial] || initial}`);
   const initialLeaf = childInitialLeaf[initial] || initial;
   console.log(`childInitialLeaf[${initial}] = ${childInitialLeaf[initial]}, initialLeaf = ${initialLeaf}`);
 
@@ -261,25 +268,34 @@ export function defineSubmachine<
 
 // Extract raw structure from factory for flattening
 function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<string, any> {
+  console.log('Extracting raw from factory:', Object.keys(factory));
   const raw: Record<string, any> = {};
   
   for (const key of Object.keys(factory)) {
     const creator = factory[key as keyof typeof factory];
+    console.log(`Examining creator for ${key}:`, creator);
     
     // Try to call the creator to see what it produces
     try {
       // For creators that take no args or optional args
       if (creator.length === 0) {
-        raw[key] = creator();
+        const result = creator();
+        console.log(`Creator for ${key} returned:`, result);
+        raw[key] = result;
       } else {
         // Try calling with undefined for optional params
-        raw[key] = (creator as (arg?: any) => any)(undefined);
+        const result = (creator as (arg?: any) => any)(undefined);
+        console.log(`Creator for ${key} with undefined returned:`, result);
+        raw[key] = result;
       }
     } catch (e) {
+      console.log(`Error calling creator for ${key}:`, e);
       // If calling fails, check if it's a submachine by inspecting the function
       // This is a hack, but we need to detect submachines somehow
       const funcStr = creator.toString();
+      console.log(`Creator function string for ${key}:`, funcStr);
       if (funcStr.includes('machine') || funcStr.includes('defineSubmachine')) {
+        console.log(`Detected submachine for ${key}`);
         // Assume it's a submachine - create a dummy object with machine property
         // This won't work for actual flattening, but might help with types
         raw[key] = { machine: { states: {}, transitions: {}, initial: '' } };
@@ -289,6 +305,7 @@ function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<strin
     }
   }
   
+  console.log('Extracted raw:', raw);
   return raw;
 }
 
