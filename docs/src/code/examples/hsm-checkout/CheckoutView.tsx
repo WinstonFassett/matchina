@@ -17,7 +17,9 @@ function ChildPanel({ child }: { child: FactoryMachine<any> }) {
     <div className="pl-4 border-l-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950 p-3 rounded">
       <div className="text-sm mb-2">
         Payment: <span className={childState.match({
+          MethodEntry: () => "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
           Authorizing: () => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+          AuthChallenge: () => "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
           Authorized: () => "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
           AuthorizationError: () => "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
         }, "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200")}>{childState.key}</span>
