@@ -35,8 +35,7 @@ function createParent() {
     },
     "Idle"
   );
-  setup(m)(setupTyped(m));
-  return m;
+  return setupTyped(m);
 }
 
 describe("HSM: state has a machine (child-first)", () => {
@@ -57,7 +56,7 @@ describe("HSM: state has a machine (child-first)", () => {
     const child = state.is("First") ? state.data.machine : undefined;
     expect(child?.getState().key).toBe("Idle");
 
-    parent.send("start" as any);
+    parent.send("start");
 
     expect(parent.getState().key).toBe("First");
     const afterState = parent.getState();

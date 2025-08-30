@@ -209,11 +209,11 @@ export type EnhancedMachine<M> = M & {
 
 // Type-safe version of propagateSubmachines that enhances the machine type
 export function propagateSubmachinesTyped<M extends FactoryMachine<any>>(machine: M): EnhancedMachine<M> {
-  // Apply the runtime enhancement
-  const enhanced = propagateSubmachines(machine)(machine);
+  // Apply the runtime enhancement and get the disposal function
+  const dispose = propagateSubmachines(machine)(machine);
   
-  // Return with enhanced type that allows any string events
-  return enhanced as EnhancedMachine<M>;
+  // Return the machine with enhanced type (the enhancement is already applied)
+  return machine as EnhancedMachine<M>;
 }
 
 // Type-safe setup function for enhanced machines
