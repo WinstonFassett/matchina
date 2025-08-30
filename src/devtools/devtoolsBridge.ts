@@ -1,6 +1,6 @@
 import { setup } from "../src/ext/setup";
 import { transition as hookTransition } from "../src/state-machine-hooks";
-import { adaptForDevtools } from "../src/devtools-adapter";
+import { adaptForDevtools } from "../src/devtools/devtools-adapter";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any };
