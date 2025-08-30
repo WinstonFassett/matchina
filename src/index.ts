@@ -33,3 +33,5 @@ export * from "./function-types";
 // match-change
 export * from "./match-change";
 export * from "./match-filters";
+// Re-export method-utility types so everyone imports the same symbol
+export type { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";

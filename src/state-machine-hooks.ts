@@ -1,6 +1,7 @@
 import { createMethodEnhancer } from "./ext";
-import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
+import type { HasMethod, MethodOf } from ".";
 import { DisposeFunc } from "./function-types";
+import type { Funcware } from "./function-types";
 import type { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
@@ -13,14 +14,19 @@ import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
  * hookSetup("before")(config)(machine)
  * ```
  */
+type FirstArg<F> = F extends (arg: infer A, ...args: any[]) => any ? A : never;
+// If the first arg is a TransitionEvent use it, otherwise fall back to TransitionEvent
+type AdapterEvent<F> = FirstArg<F> extends TransitionEvent ? FirstArg<F> : TransitionEvent<any, any>;
+
 export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
   <T extends HasMethod<K>>(
-    ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
+    ...config: Parameters<Adapters<AdapterEvent<MethodOf<T, K>>>[K]>
   ) =>
-    createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
-      target: T
-    ) => DisposeFunc;
+    ((target: T) => {
+      const adapter = HookAdapters[key](...config) as unknown as Funcware<MethodOf<T, K>>;
+      return createMethodEnhancer<K>(key)(adapter)(target);
+    }) as (target: T) => DisposeFunc;
 
 /**
  * Composes two event handler functions for a state machine lifecycle method.
@@ -194,3 +200,21 @@ export const after = hookSetup("after");
  * ```
  */
 export const notify = hookSetup("notify");
+
+
+/** * @function send
+ * Enhances the `send` method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.send}.
+ *
+ * Usage:
+ * ```ts
+ * setup(machine)(send(
+ *   (innerSend) => (type, ...params) => {
+ *     // custom logic
+ *     return innerSend(type, ...params);
+ *   }
+ * ))
+ * ```
+ */
+export const send = hookSetup("send");

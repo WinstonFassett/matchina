@@ -24,14 +24,15 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
   handle: (
     handleFn: StateMachine<E>["handle"]
   ) => Funcware<StateMachine<E>["handle"]>;
-  before: (abortware: AbortableEventHandler<E>) => Funcware<Transform<E>>;
-  leave: Transform<EffectFunc<E>, Funcware<EffectFunc<E>>>;
-  after: Transform<EffectFunc<E>, Funcware<EffectFunc<E>>>;
-  enter: Transform<EffectFunc<E>, Funcware<EffectFunc<E>>>;
-  effect: Transform<EffectFunc<E>, Funcware<EffectFunc<E>>>;
-  notify: Transform<EffectFunc<E>, Funcware<EffectFunc<E>>>;
+  // before receives an AbortableEventHandler and returns a funcware that wraps an event handler
+  before: (abortware: AbortableEventHandler<E>) => Funcware<Func<[E], any>>;
+  // lifecycle hooks operate on EffectFunc<E> and their funcware wraps EffectFunc<E>
+  leave: (fn: EffectFunc<E>) => Funcware<EffectFunc<E>>;
+  after: (fn: EffectFunc<E>) => Funcware<EffectFunc<E>>;
+  enter: (fn: EffectFunc<E>) => Funcware<EffectFunc<E>>;
+  effect: (fn: EffectFunc<E>) => Funcware<EffectFunc<E>>;
+  notify: (fn: EffectFunc<E>) => Funcware<EffectFunc<E>>;
 };
-type Transform<I, O = I> = (source: I) => O;
 
 export const HookAdapters = {
   send: <E extends TransitionEvent>(funcware: Funcware<StateMachine<E>["send"]>) => funcware,

@@ -1,9 +1,11 @@
-import { FactoryMachine } from "../src";
+import { createMethodEnhancer } from "../src";
+import type { FactoryMachine } from "../src";
 import { enhanceMethod } from "../src/ext/methodware/enhance-method";
 import { setup, buildSetup } from "../src/ext/setup";
 import { isMachine } from "../src/is-machine";
-import { resolveExit as hookResolveExit } from "../src/state-machine-hooks";
-import { AllEventsOf, ChildOf, StatesOf } from "./types";
+import { before, resolveExit as hookResolveExit, send } from "../src";
+import type { AllEventsOf, ChildOf, StatesOf } from "./types";
+import type { MethodOf } from "../src";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void; dispatch?: (...args: any[]) => void };
@@ -175,28 +177,25 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
 
     addSetup(() => () => { unwrapChild(); });
 
-    const dispatchware = (send: any) => (type: string, ...params: any[]) => {
-      const handled = childFirst(type, ...params);
-      if (handled) return; // child handled
-      
-      const from = machine.getState();
-      const resolved = (machine as any).resolveExit?.({ type, params, from });
-      
-      // Allow self-transitions when they carry parameters
-      if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
-        return; // no-op on parameterless self-transition
-      }
-      
-      const resultMaybe = send(type, ...params);
-      // child may have changed identity; re-wrap
-      unwrapChild();
-      unwrapChild = wrapChild();
-      return resultMaybe;
-    };
-
     addSetup(
-      (m: any) => enhanceMethod(m as any, "send", dispatchware),
-      (m: any) => enhanceMethod(m as any, "dispatch", dispatchware)
+      send(innerSend => (type, ...params) => {
+        const handled = childFirst(type, ...params);
+        if (handled) return; // child handled
+        
+        const from = machine.getState();
+        const resolved = (machine).resolveExit?.({ type, params, from } as any);
+        
+        // Allow self-transitions when they carry parameters
+        if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
+          return; // no-op on parameterless self-transition
+        }
+        
+        const resultMaybe = innerSend(type, ...params);
+        // child may have changed identity; re-wrap
+        unwrapChild();
+        unwrapChild = wrapChild();
+        return resultMaybe;        
+      })
     );
 
     return disposeAll;
