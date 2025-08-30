@@ -57,16 +57,11 @@ export function createMachineFromFlat<
 >(def: FlattenedMachineDefinition<SF, T>) {
   // The flattened definition should already have the fully-qualified leaf state
   // like "Working.Red" as the initial value
-  const machine = createMachine(
+  return createMachine(
     def.states as any, 
     def.transitions as any, 
     def.initial as any
   );
-  
-  // Debug log to help diagnose the issue
-  console.log('Creating machine with initial:', def.initial);
-  
-  return machine;
 }
 
 // --- helpers ---
@@ -187,7 +182,6 @@ function flattenFromRaw(
   // Compute initial leaf
   // If the initial state is a submachine, use its fully qualified initial state
   const initialLeaf = childInitialLeaf[initial] || initial;
-  console.log(`childInitialLeaf[${initial}] = ${childInitialLeaf[initial]}, initialLeaf = ${initialLeaf}`);
 
   // Parent-level transitions retargeting
   for (const [fromKey, events] of Object.entries(transitions ?? {})) {
