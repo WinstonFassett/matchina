@@ -92,8 +92,35 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
   };
 }
 
-// Setup function to enable child-first hierarchical routing on a machine.
-// Usage: setup(machine)(propagateSubmachines(machine))
+/**
+ * Setup function to enable child-first hierarchical routing on a machine.
+ * 
+ * Automatically routes events through nested hierarchies with child-first processing.
+ * Events are first sent to child machines, and if not handled, bubble up to the parent.
+ * Supports `child.exit` transitions that fire when child machines reach final states.
+ * 
+ * @example
+ * ```ts
+ * const activeMachine = matchina(activeStates, transitions, initialState);
+ * 
+ * // Enable automatic event propagation
+ * setup(activeMachine)(propagateSubmachines(activeMachine));
+ * 
+ * const app = matchina(appStates, {
+ *   Inactive: { focus: () => appStates.Active(activeMachine) },
+ *   Active: { close: "Inactive" },
+ * }, appStates.Inactive());
+ * 
+ * // Events automatically route to child machines
+ * app.focus();        // Parent handles
+ * app.typed("hello");  // Routes to child if Active
+ * ```
+ * 
+ * @param machineIgnoreThis - The machine parameter (unused, for type inference)
+ * @returns Setup function to be used with `setup(machine)(propagateSubmachines(machine))`
+ * 
+ * @experimental This API is experimental and may change
+ */
 export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnoreThis: M) {
   return (machine: M) => {
     const [addSetup, disposeAll] = buildSetup(machine);
@@ -200,7 +227,51 @@ export type HierarchicalMachine<M> = M & {
   send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
 };
 
-// Create a typed hierarchical machine facade
+/**
+ * Create a hierarchical machine wrapper with enhanced event routing.
+ * 
+ * Wraps a factory machine to support hierarchical features like `child.exit` transitions
+ * and enhanced `send()` method for event routing. Use this when you need direct control
+ * over child machines and want to expose them for external access.
+ * 
+ * @example
+ * ```ts
+ * // Create child payment machine
+ * function createPayment() {
+ *   const payment = createMachine(paymentStates, transitions, "MethodEntry");
+ *   return createHierarchicalMachine(payment);
+ * }
+ * 
+ * // Create parent checkout machine
+ * function createCheckout() {
+ *   const payment = createPayment();
+ *   
+ *   const checkout = createMachine({
+ *     ...checkoutStates,
+ *     Payment: () => checkoutStates.Payment(payment),
+ *   }, {
+ *     Cart: { proceed: "Payment" },
+ *     Payment: { 
+ *       "child.exit": "Review"  // React when child completes
+ *     },
+ *     Review: { back: "Payment" },
+ *   }, "Cart");
+ * 
+ *   const hierarchical = createHierarchicalMachine(checkout);
+ *   return Object.assign(hierarchical, { payment }); // Expose child
+ * }
+ * 
+ * // Usage with direct child access
+ * const machine = createCheckout();
+ * machine.proceed();           // Parent transition
+ * machine.payment.authorize(); // Direct child access
+ * ```
+ * 
+ * @param machine - The factory machine to wrap with hierarchical features
+ * @returns Enhanced machine with hierarchical capabilities and typed event routing
+ * 
+ * @experimental This API is experimental and may change
+ */
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M): HierarchicalMachine<M> {
   // Apply runtime enhancement
   setup(machine)(propagateSubmachines(machine));

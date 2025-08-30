@@ -1,0 +1,219 @@
+---
+title: Hierarchical Machines
+description: Build complex nested state machines with child machines embedded in parent states
+---
+
+import { LinkCard } from "@astrojs/starlight/components";
+
+:::caution[Experimental Feature]
+Hierarchical state machines are experimental in Matchina. The APIs may change and complex nested types may require explicit annotations. Use with caution in production code.
+:::
+
+## What are Hierarchical Machines?
+
+Hierarchical State Machines (HSMs) allow you to build complex state machines by nesting child machines within parent states. This enables better organization, encapsulation, and reusability of state logic.
+
+**Key benefits:**
+- **Modular organization** - Separate concerns between high-level flow and detailed sub-processes
+- **Reusable state logic** - Child machines can be used in multiple contexts
+- **Reduced complexity** - Avoid unwieldy flat machines for complex workflows
+- **Natural modeling** - Match real-world hierarchical processes
+
+## Two Approaches
+
+Matchina provides two approaches to hierarchical state machines:
+
+### 1. Hierarchical Wrapper with Child Access
+
+Create parent machines with embedded child machines, exposing child APIs for direct control.
+
+```ts
+import { 
+  createMachine, 
+  defineStates, 
+  createHierarchicalMachine 
+} from "matchina";
+
+// Child machine for payment processing
+const paymentStates = defineStates({
+  MethodEntry: undefined,
+  Authorizing: undefined,
+  Authorized: () => ({ final: true }),
+});
+
+function createPayment() {
+  const payment = createMachine(paymentStates, {
+    MethodEntry: { authorize: "Authorizing" },
+    Authorizing: { authSucceeded: "Authorized" },
+    Authorized: {},
+  }, "MethodEntry");
+  
+  return createHierarchicalMachine(payment);
+}
+
+// Parent machine embedding the child
+const checkoutStates = defineStates({
+  Cart: undefined,
+  Payment: (machine: ReturnType<typeof createPayment>) => ({ machine }),
+  Review: undefined,
+});
+
+function createCheckoutMachine() {
+  const payment = createPayment();
+
+  const checkout = createMachine({
+    ...checkoutStates,
+    Payment: () => checkoutStates.Payment(payment),
+  }, {
+    Cart: { proceed: "Payment" },
+    Payment: { 
+      "child.exit": "Review"  // React when child completes
+    },
+    Review: { 
+      back: () => {
+        payment.reset(); 
+        return checkoutStates.Payment(payment); 
+      }
+    },
+  }, "Cart");
+
+  const hierarchical = createHierarchicalMachine(checkout);
+  
+  // Expose child for direct access
+  return Object.assign(hierarchical, { payment });
+}
+
+// Usage
+const machine = createCheckoutMachine();
+machine.proceed();           // Parent transition
+machine.payment.authorize(); // Direct child access
+```
+
+**Key features:**
+- `child.exit` transitions when child reaches final state
+- Direct child machine access via exposed properties  
+- Parent controls child lifecycle (reset, etc.)
+- Type-safe child interactions
+
+### 2. Event Propagation
+
+Automatically route events through nested hierarchies with child-first processing.
+
+```ts
+import { matchina, defineStates, setup } from "matchina";
+import { propagateSubmachines } from "matchina";
+
+// Child states for search functionality
+const searchStates = defineStates({
+  Empty: (query: string = "") => ({ query }),
+  TextEntry: (query: string) => ({ query }),
+  Results: (items: any[]) => ({ items }),
+});
+
+function createSearchMachine() {
+  const search = matchina(searchStates, {
+    Empty: { 
+      typed: (value: string) => searchStates.TextEntry(value) 
+    },
+    TextEntry: { 
+      clear: "Empty",
+      submit: () => searchStates.Results([])
+    },
+    Results: { clear: "Empty" },
+  }, searchStates.Empty());
+
+  // Enable automatic event propagation
+  setup(search)(propagateSubmachines(search));
+  return search;
+}
+
+// Parent machine with embedded search
+const appStates = defineStates({
+  Inactive: undefined,
+  Active: (machine: ReturnType<typeof createSearchMachine>) => ({ machine }),
+});
+
+const app = matchina(appStates, {
+  Inactive: { 
+    focus: () => appStates.Active(createSearchMachine()) 
+  },
+  Active: { close: "Inactive" },
+}, appStates.Inactive());
+
+// Events automatically route to appropriate machine
+app.focus();   // Parent handles
+app.typed("hello"); // Routes to child search machine
+app.clear();   // Routes to child search machine
+```
+
+**Key features:**
+- Child-first event routing
+- Events flow through hierarchy automatically  
+- Less explicit child management
+- Simpler API for complex event routing
+
+---
+
+## Key Concepts
+
+### `child.exit` Transitions
+
+A special transition syntax for reacting when child machines complete:
+
+```ts
+const transitions = {
+  PaymentState: {
+    "child.exit": "ReviewState",  // When payment child completes
+    "child.exit": ({ data }) => ReviewState(data), // Access child final data
+  }
+};
+```
+
+### Child-First Event Routing
+
+Events flow through the hierarchy with children handling events before parents:
+
+1. **Child machines** process events first
+2. **Parent machines** handle unprocessed events  
+3. **`child.exit`** events bubble up when children complete
+
+---
+
+## Choosing an Approach
+
+| Aspect | Hierarchical Wrapper | Event Propagation |
+|--------|---------------------|-------------------|
+| **Child Access** | Direct via exposed properties | Automatic via event routing |
+| **Event Routing** | Manual via child API | Automatic child-first |
+| **Complexity** | More explicit control | Simpler event handling |
+| **Best For** | Controlled workflows | Natural event delegation |
+| **Type Safety** | Full child API typing | Event-based interactions |
+
+## Notes
+
+- Complex nested types may require explicit annotations
+- Event collision resolution is first-seen wins  
+- Performance overhead with deep nesting
+- Limited tooling support for visualization
+
+## Examples
+
+<LinkCard
+  title="🔍 Search Bar (HSM)"
+  href="/matchina/examples/hsm-searchbar/"
+  description="Event propagation pattern with async search results"
+/>
+
+<LinkCard
+  title="🛒 Checkout Flow (HSM)" 
+  href="/matchina/examples/hsm-checkout/"
+  description="Hierarchical wrapper pattern with payment submachine"
+/>
+
+## API Reference
+
+For detailed API documentation, see:
+
+- [`createHierarchicalMachine`](/matchina/reference/functions/createhierarchicalmachine/) - Wrap machines with hierarchical features
+- [`propagateSubmachines`](/matchina/reference/functions/propagatesubmachines/) - Enable automatic event propagation  
+- [`HierarchicalMachine`](/matchina/reference/type-aliases/hierarchicalmachine/) - Enhanced machine type

@@ -169,6 +169,10 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
+              label: "Hierarchical Machines",
+              link: "/guides/hierarchical-machines",
+            },
+            {
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
@@ -304,6 +308,10 @@ export default defineConfig({
             {
               label: "Hierarchical",
               items: [
+                {
+                  label: "Overview",
+                  link: "/examples/hsm-overview",
+                },
                {
                 label: "Search Bar (Hierarchical)",
                 link: "/examples/hsm-searchbar",
