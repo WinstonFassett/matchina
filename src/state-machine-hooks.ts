@@ -2,7 +2,6 @@ import { createMethodEnhancer } from "./ext";
 import type { HasMethod, MethodOf } from ".";
 import { DisposeFunc } from "./function-types";
 import type { Funcware } from "./function-types";
-import type { StateMachine, TransitionEvent } from "./state-machine";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
 /**
@@ -15,8 +14,8 @@ import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
  * ```
  */
 type FirstArg<F> = F extends (arg: infer A, ...args: any[]) => any ? A : never;
-// If the first arg is a TransitionEvent use it, otherwise fall back to TransitionEvent
-type AdapterEvent<F> = FirstArg<F> extends TransitionEvent ? FirstArg<F> : TransitionEvent<any, any>;
+// Use the first parameter type of the method directly. Do not widen.
+type AdapterEvent<F> = FirstArg<F>;
 
 export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
@@ -38,12 +37,11 @@ export const hookSetup =
  * ```
  */
 export const composeHandlers =
-  <E extends TransitionEvent>(
+  <E>(
     outer: (value: E) => E | undefined,
     inner: (value: E) => E | undefined
   ): ((value: E) => E | undefined) =>
-  (ev) =>
-    outer(inner(ev) as any);
+  (ev) => outer(inner(ev) as any);
 
 /**
  * Combines two guard functions for a state machine transition.
@@ -55,14 +53,11 @@ export const composeHandlers =
  * ```
  */
 export const combineGuards =
-  <E extends TransitionEvent>(
+  <E>(
     first: (value: E) => boolean,
     next: (value: E) => boolean
   ): ((value: E) => boolean) =>
-  (ev) => {
-    const res = first(ev) && next(ev);
-    return res;
-  };
+  (ev) => first(ev) && next(ev);
 
 // #region Interceptors
 /**

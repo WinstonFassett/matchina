@@ -1,29 +1,30 @@
 import { abortable, tap } from "./ext";
 import { AbortableEventHandler } from "./ext/abortable-event-handler";
 import { EffectFunc, Func, Funcware, MiddlewareFunc } from "./function-types";
-import { StateMachine, TransitionEvent } from "./state-machine";
+import { EventLifecycle } from "./event-lifecycle";
 import { combineGuards, composeHandlers } from "./state-machine-hooks";
 import { funcwareFromMiddleware } from "./ext/funcware/from-middleware";
 
-export type Adapters<E extends TransitionEvent = TransitionEvent> = {
+export type Adapters<E = any> = {
   [key: string]: Func;
 } & {
-  send: (funcware: Funcware<StateMachine<E>["send"]>) => Funcware<StateMachine<E>["send"]>;
+  // Note: "send" exists on StateMachine, not EventLifecycle. Keep it structural for consumers that have it.
+  send: (funcware: Funcware<(...args: any[]) => void>) => Funcware<(...args: any[]) => void>;
   transition: (
     middleware: MiddlewareFunc<E>
-  ) => Funcware<StateMachine<E>["transition"]>;
+  ) => Funcware<EventLifecycle<E>["transition"]>;
   update: (
     middleware: MiddlewareFunc<E>
-  ) => Funcware<StateMachine<E>["update"]>;
+  ) => Funcware<EventLifecycle<E>["update"]>;
   resolveExit: (
     middleware: MiddlewareFunc<E>
-  ) => Funcware<StateMachine<E>["resolveExit"]>;
+  ) => Funcware<(ev: E) => E | undefined>;
   guard: (
-    guardFn: StateMachine<E>["guard"]
-  ) => Funcware<StateMachine<E>["guard"]>;
+    guardFn: EventLifecycle<E>["guard"]
+  ) => Funcware<EventLifecycle<E>["guard"]>;
   handle: (
-    handleFn: StateMachine<E>["handle"]
-  ) => Funcware<StateMachine<E>["handle"]>;
+    handleFn: EventLifecycle<E>["handle"]
+  ) => Funcware<EventLifecycle<E>["handle"]>;
   // before receives an AbortableEventHandler and returns a funcware that wraps an event handler
   before: (abortware: AbortableEventHandler<E>) => Funcware<Func<[E], any>>;
   // lifecycle hooks operate on EffectFunc<E> and their funcware wraps EffectFunc<E>
@@ -35,12 +36,12 @@ export type Adapters<E extends TransitionEvent = TransitionEvent> = {
 };
 
 export const HookAdapters = {
-  send: <E extends TransitionEvent>(funcware: Funcware<StateMachine<E>["send"]>) => funcware,
+  send: <E>(funcware: Funcware<(...args: any[]) => void>) => funcware,
   transition: funcwareFromMiddleware,
   update: funcwareFromMiddleware,
   resolveExit: funcwareFromMiddleware,
-  guard: (guardFn) => (inner) => combineGuards(inner, guardFn),
-  handle: (handleFn) => (inner) => composeHandlers(handleFn, inner),
+  guard: (guardFn) => (inner) => combineGuards(inner as any, guardFn as any) as any,
+  handle: (handleFn) => (inner) => composeHandlers(handleFn as any, inner as any) as any,
   before: (abortware) => abortable(abortware),
   leave: tap,
   after: tap,
