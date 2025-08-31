@@ -1,0 +1,34 @@
+---
+title: Search Bar (Hierarchical)
+description: Inactive/Active with nested child states for Empty, Text Entry, Results, and Error. Demonstrates child-first routing and async results.
+---
+
+import SearchBarExample from "@code/examples/hsm-searchbar/example";
+import machineCode from "@code/examples/hsm-searchbar/machine.ts?raw";
+import viewCode from "@code/examples/hsm-searchbar/SearchBarView.tsx?raw";
+import indexCode from "@code/examples/hsm-searchbar/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A hierarchical Search Bar machine with an `Inactive → Active` parent flow. The `Active` state owns a nested child machine that models `Empty`, `TextEntry`, `Results`, and `Error`. Input events are routed child-first to keep the parent small and focused.
+
+<div className="not-content">
+  <SearchBarExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "SearchBarView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Notes
+
+- Parent states: `Inactive`, `Active`.
+- Child states (inside `Active`): `Empty`, `TextEntry`, `Results`, `Error`.
+- Child-first routing for `typed`, `clear`, `submit`, `setResults`, `setError`, `refine`, `retry`.
+- Demonstrates an async fetch simulation: after `submit`, `Results` resolves with items or an `Error`.
+- Uses `submachine` to embed a child machine into the `Active` state.

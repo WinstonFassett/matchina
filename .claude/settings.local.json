@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(tsc --noEmit --skipLibCheck)",
+      "Bash(npm run test:types:*)",
+      "Bash(git show-branch:*)",
+      "Bash(npm run test:*)",
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch(domain:reactflow.dev)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_close"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

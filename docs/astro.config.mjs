@@ -169,6 +169,10 @@ export default defineConfig({
               link: "/guides/promises",
             },
             {
+              label: "Hierarchical Machines",
+              link: "/guides/hierarchical-machines",
+            },
+            {
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
@@ -302,6 +306,28 @@ export default defineConfig({
               ],
             },
             {
+              label: "Hierarchical",
+              items: [
+                {
+                  label: "Overview",
+                  link: "/examples/hsm-overview",
+                },
+               {
+                label: "Search Bar (Hierarchical)",
+                link: "/examples/hsm-searchbar",
+               },
+               {
+                label: "Checkout Flow (Hierarchical)",
+                link: "/examples/hsm-checkout",
+              },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
+              ],
+            },
+            {
               label: "Advanced",
               items: [
                 {
@@ -309,13 +335,14 @@ export default defineConfig({
                   link: "/examples/traffic-light-extended",
                 },
                 {
-                  label: "Authentication Flow",
+                  label: "Authentication with UI",
                   link: "/examples/auth-flow",
                 },
                 {
-                  label: "Checkout Flow",
+                  label: "Checkout with UI",
                   link: "/examples/checkout",
                 },
+
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",

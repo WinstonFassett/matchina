@@ -1,7 +1,7 @@
 import { createMethodEnhancer } from "./ext";
-import { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
+import type { HasMethod, MethodOf } from ".";
 import { DisposeFunc } from "./function-types";
-import type { StateMachine, TransitionEvent } from "./state-machine";
+import type { Funcware } from "./function-types";
 import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
 
 /**
@@ -13,14 +13,19 @@ import { Adapters, HookAdapters } from "./state-machine-hook-adapters";
  * hookSetup("before")(config)(machine)
  * ```
  */
+type FirstArg<F> = F extends (arg: infer A, ...args: any[]) => any ? A : never;
+// Use the first parameter type of the method directly. Do not widen.
+type AdapterEvent<F> = FirstArg<F>;
+
 export const hookSetup =
   <K extends string & keyof Adapters>(key: K) =>
   <T extends HasMethod<K>>(
-    ...config: Parameters<Adapters<Parameters<MethodOf<T, K>>[0]>[K]>
+    ...config: Parameters<Adapters<AdapterEvent<MethodOf<T, K>>>[K]>
   ) =>
-    createMethodEnhancer<K>(key)(HookAdapters[key](...config)) as (
-      target: T
-    ) => DisposeFunc;
+    ((target: T) => {
+      const adapter = HookAdapters[key](...config) as Funcware<MethodOf<T, K>>;  
+      return createMethodEnhancer<K>(key)(adapter)(target);
+    }) as (target: T) => DisposeFunc;
 
 /**
  * Composes two event handler functions for a state machine lifecycle method.
@@ -32,12 +37,11 @@ export const hookSetup =
  * ```
  */
 export const composeHandlers =
-  <E extends TransitionEvent>(
+  <E>(
     outer: (value: E) => E | undefined,
     inner: (value: E) => E | undefined
   ): ((value: E) => E | undefined) =>
-  (ev) =>
-    outer(inner(ev) as any);
+  (ev) => outer(inner(ev) as any);
 
 /**
  * Combines two guard functions for a state machine transition.
@@ -49,14 +53,11 @@ export const composeHandlers =
  * ```
  */
 export const combineGuards =
-  <E extends TransitionEvent>(
+  <E>(
     first: (value: E) => boolean,
     next: (value: E) => boolean
   ): ((value: E) => boolean) =>
-  (ev) => {
-    const res = first(ev) && next(ev);
-    return res;
-  };
+  (ev) => first(ev) && next(ev);
 
 // #region Interceptors
 /**
@@ -194,3 +195,21 @@ export const after = hookSetup("after");
  * ```
  */
 export const notify = hookSetup("notify");
+
+
+/** * @function send
+ * Enhances the `send` method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ * See {@link StateMachine.send}.
+ *
+ * Usage:
+ * ```ts
+ * setup(machine)(send(
+ *   (innerSend) => (type, ...params) => {
+ *     // custom logic
+ *     return innerSend(type, ...params);
+ *   }
+ * ))
+ * ```
+ */
+export const send = hookSetup("send");
