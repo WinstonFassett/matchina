@@ -320,10 +320,14 @@ addChildSetup(send(enhancer)); // Use proper send hook, not manual method replac
 These bugs are all new in recent code:
 
 - search bar 
-  - state does not reflect typing anymore, shows Active/Empty. wrong
+  - Does not return to Empty after clearing
   - enter while typing shows  ux messages about results pending and resolved BUT stays stuck at Active/Query/Pending does not move to Active/Selecting anymore. And keyboard events during Selecting do not work
   - may be an issue with child.exit not working properly
   - when i hit enter during data entry it logs "A component is changing a controlled input to be uncontrolled."
 - checkout hsm exmample
   - Payment should reset to initial MethodEntry when reentering after it was successful. perhaps use reset method for this. 
+  - mermaid fails to render due to syntax error Expecting 'SPACE', 'AMP', 'COLON', 'DOWN', 'DEFAULT', 'NUM', 'COMMA', 'NODE_STRING', 'BRKT', 'MINUS', 'MULT', 'UNICODE_TEXT', got 'SQS'
+
+React Flow should just be removed from options until it is working. later.
+
 
