@@ -6,9 +6,13 @@ mermaid.initialize({
   // startOnLoad: true
   themeVariables: {},
   themeCSS: `
+    /* Ensure text colors (SVG <text> and HTML <span>/<p> in foreignObject) */
+    g.node text, g.state text, g.stateGroup text { fill: var(--sl-color-text); }
     .label text, span, p {
       color: var(--sl-color-text);
      }; 
+    /* Invert for active state labels rendered as spans (statechart + flowchart) */
+    g.node.active span, g.state.active span, g.stateGroup.active span { color: var(--sl-color-text-invert); }
     .node rect {
       fill: var(--sl-color-bg);
       stroke: var(--sl-color-text);
@@ -340,7 +344,7 @@ const MermaidInspector = memo(
         if (candidate) candidate.classList.add("active");
       }
 
-      // Edge labels: style and click when available from current state
+      // Edge labels: class-based styling and click binding when available
       root.querySelectorAll<HTMLParagraphElement>("span.edgeLabel > p").forEach((p) => {
         const meta = (p as any)._edge as { fromState?: string; type?: string } | undefined;
         const type = meta?.type;
@@ -348,16 +352,13 @@ const MermaidInspector = memo(
         const action = type ? actions?.[type] : undefined;
         const clickable = !!action && interactive && from === debouncedStateKey;
 
+        // Reset classes
+        p.classList.remove('edge-active', 'edge-inactive', 'edge-interactive');
         if (from === debouncedStateKey && action) {
-          p.style.backgroundColor = "var(--sl-color-gray-5)";
-          p.style.color = "var(--sl-color-accent-high)";
-          p.style.textDecoration = clickable ? "underline" : "none";
-          p.style.cursor = clickable ? "pointer" : "default";
+          p.classList.add('edge-active');
+          if (clickable) p.classList.add('edge-interactive');
         } else {
-          p.style.backgroundColor = "var(--sl-color-bg)";
-          p.style.color = "var(--sl-color-gray-3)";
-          p.style.textDecoration = "none";
-          p.style.cursor = "default";
+          p.classList.add('edge-inactive');
         }
         p.onclick = clickable ? () => action?.() : null;
       });
