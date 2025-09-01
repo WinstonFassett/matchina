@@ -39,26 +39,23 @@ export function getXStateDefinition<
           
           // Add transition
           definition.states[fromKey].on[event] = targetKey;
-          
-          // Check if this transition creates a state with nested machine
-          if ('handle' in transition) {
-            try {
-              const testResult = transition.handle();
-              if (testResult?.data?.machine && testResult.key === targetKey) {
-                const childMachine = testResult.data.machine;
-                if (typeof childMachine.getState === 'function' && childMachine.transitions) {
-                  const childDefinition = getXStateDefinition(childMachine);
-                  definition.states[targetKey].initial = childDefinition.initial;
-                  definition.states[targetKey].states = childDefinition.states;
-                }
-              }
-            } catch (e) {
-              // Ignore errors when testing transitions
-            }
-          }
         }
       });
     });
+  }
+  
+  // Check current state for nested machine - this is the single right way
+  const currentState = machine.getState();
+  if (currentState?.data?.machine) {
+    const childMachine = currentState.data.machine;
+    if (typeof childMachine.getState === 'function' && childMachine.transitions) {
+      const childDefinition = getXStateDefinition(childMachine);
+      if (!definition.states[currentState.key]) {
+        definition.states[currentState.key] = { on: {} };
+      }
+      definition.states[currentState.key].initial = childDefinition.initial;
+      definition.states[currentState.key].states = childDefinition.states;
+    }
   }
   // Object.entries(machine.states).forEach(([key, state]) => {
   //   definition.states[key] = {

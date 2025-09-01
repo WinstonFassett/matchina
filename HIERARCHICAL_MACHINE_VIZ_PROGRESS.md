@@ -260,4 +260,57 @@ addChildSetup(send(enhancer)); // Use proper send hook, not manual method replac
 
 **Result**: 178/178 tests passing (100% success rate)
 
-**🚀 NEXT PHASE**: Port visualization components from R1 branch and create unified HSM visualization system
+**🚀 CURRENT PHASE**: Port visualization components from R1 branch and create unified HSM visualization system
+
+### 📊 CURRENT STATUS - VISUALIZATION INTEGRATION IN PROGRESS
+
+**Date**: 2025-01-09  
+**Branch**: `hierarchical-machine-viz-r2`  
+**Status**: Working on nested machine visualization - top-level states only showing
+
+### 🎯 Current Issues
+
+**✅ COMPLETE**: Core hierarchical machine implementation with 178/178 tests passing  
+**✅ COMPLETE**: Context propagation (stack, depth, fullkey) working correctly  
+**⚠️ IN PROGRESS**: Visualization system integration  
+
+### 🔧 Visualization Problems Identified
+
+1. **Nested machine content not showing**: Both searchbar and checkout demos only display top-level states
+   - Searchbar shows: Inactive, Active (but not Active's nested: Empty, TextEntry, Query, etc.)
+   - Checkout shows: Cart, Shipping, Payment (but not Payment's nested: MethodEntry, Authorizing, etc.)
+
+2. **Visualizer reactivity issues**: Visualizers not recalculating when entering nested states
+   - Fixed dependency arrays in `HSMMermaidInspector` and `SketchInspector` 
+   - Added `currentState.key`, `nestedMachine`, `nestedState?.key` to `useMemo` dependencies
+   - Still testing if changes resolve the issue
+
+3. **XState definition generation**: `getXStateDefinition` not properly handling nested machines
+   - Removed problematic `getStateValues` approach (was calling state factories with wrong params)
+   - Implemented transition-based discovery approach  
+   - May need further refinement
+
+### 🛠️ Work Completed This Session
+
+- **Updated HSM examples** to use inspectable `{ to, handle }` transition format (matches 178/178 passing tests)
+- **Fixed SketchInspector** to show full machine structure instead of just current state
+- **Added reactivity** to visualizers for nested machine state changes
+- **Standardized all inspectors** to follow: get definition → derive view → reactively highlight pattern
+- **Fixed React rendering errors** in transition target display
+
+### 🎯 Next Steps
+
+1. **Debug nested machine discovery** - verify `getXStateDefinition` finds child machines correctly
+2. **Test visualizer updates** - ensure visualizers recalculate when entering Active/Payment states  
+3. **Verify examples work** after dev server restart
+4. **Complete unified visualization system** once nested content displays properly
+
+### 📁 Modified Files This Session
+```
+✅ docs/src/components/inspectors/SketchInspector.tsx - Full structure rendering + reactivity
+✅ docs/src/components/inspectors/HSMMermaidInspector.tsx - Added nested state dependencies  
+✅ docs/src/code/examples/lib/matchina-machine-to-xstate-definition.ts - Transition-based discovery
+✅ docs/src/code/examples/hsm-searchbar/machine.ts - Inspectable transitions
+✅ docs/src/code/examples/hsm-checkout/machine.ts - Inspectable transitions  
+✅ docs/src/components/MachineExampleWithChart.tsx - Added picker inspector type
+```
