@@ -1,9 +1,24 @@
 import type { FactoryMachine } from "../factory-machine";
 import { resolveExit as hookResolveExit, send } from "../state-machine-hooks";
 import { enhanceMethod } from "../ext/methodware/enhance-method";
-import { buildSetup, setup } from "../ext/setup";
+import { buildSetup } from "../ext/setup";
 import { isFactoryMachine } from "../machine-brand";
 import { AllEventsOf } from "./types";
+
+// Shared stack that all machines reference
+let globalHierarchyStack: any[] = [];
+
+// Export function to reset the global stack (useful for testing)
+export function resetGlobalHierarchyStack() {
+  globalHierarchyStack.length = 0;
+}
+
+// Type definition for enhanced states with context
+interface StateWithContext {
+  stack: any[];
+  depth: number;
+  fullkey: string;
+}
 
 // Minimal duck-typed machine shape 
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
@@ -36,6 +51,26 @@ function snapshot(m: AnyMachine) {
     throw new Error('Invalid state: getState() returned undefined');
   }
   return state;
+}
+
+// Build context for a state using the shared stack
+function buildStateContext(state: any, sharedStack: any[], myDepth: number): StateWithContext {
+  const fullkey = sharedStack.slice(0, myDepth + 1).map(s => s.key).join('.');
+  
+  return { 
+    stack: sharedStack, 
+    depth: myDepth, 
+    fullkey 
+  };
+}
+
+// Enhance a state with context information  
+function enhanceStateWithContext(state: any, context: StateWithContext): any {
+  return Object.assign(state, {
+    stack: context.stack,
+    depth: context.depth,
+    fullkey: context.fullkey
+  });
 }
 
 function isHandled(before: any, after: any, grandBeforeSnap?: any, grandAfterSnap?: any): boolean {
@@ -93,67 +128,72 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
 }
 
 /**
- * Setup function to enable child-first hierarchical routing on a machine.
+ * Setup function to enable child-first hierarchical routing with shared stack context.
  * 
- * Automatically routes events through nested hierarchies with child-first processing.
- * Events are first sent to child machines, and if not handled, bubble up to the parent.
- * Supports `child.exit` transitions that fire when child machines reach final states.
- * 
- * @example
- * ```ts
- * const activeMachine = matchina(activeStates, transitions, initialState);
- * 
- * // Enable automatic event propagation
- * setup(activeMachine)(propagateSubmachines(activeMachine));
- * 
- * const app = matchina(appStates, {
- *   Inactive: { focus: () => appStates.Active(activeMachine) },
- *   Active: { close: "Inactive" },
- * }, appStates.Inactive());
- * 
- * // Events automatically route to child machines
- * app.focus();        // Parent handles
- * app.typed("hello");  // Routes to child if Active
- * ```
+ * Each machine automatically determines its depth by looking at the current shared stack.
  * 
  * @param machineIgnoreThis - The machine parameter (unused, for type inference)
  * @returns Setup function to be used with `setup(machine)(propagateSubmachines(machine))`
- * 
- * @experimental This API is experimental and may change
  */
 export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnoreThis: M) {
   return (machine: M) => {
     const [addSetup, disposeAll] = buildSetup(machine);
     
-    // 1) Enhance resolveExit to supply sane defaults for probes
+    // Auto-determine my depth from current shared stack
+    const myDepth = globalHierarchyStack.length;
+    
+    // Enhance getState to add context using shared stack
+    const originalGetState = machine.getState;
+    const childEnhanced = new WeakSet<object>();
+    
+    machine.getState = () => {
+      const state = originalGetState.call(machine);
+      
+      // Update the shared stack at my position
+      globalHierarchyStack[myDepth] = state;
+      
+      // Auto-enhance any child machines when parent state is accessed
+      const child = getChildFromParentState(state);
+      if (child && !childEnhanced.has(child as any)) {
+        childEnhanced.add(child as any);
+        const childDepth = myDepth + 1;
+        const originalChildGetState = (child as any).getState;
+        (child as any).getState = () => {
+          const childState = originalChildGetState.call(child);
+          globalHierarchyStack[childDepth] = childState;
+          
+          // Also enhance any grandchildren (one level deep only)
+          const grandChild = getChildFromParentState(childState);
+          if (grandChild && !childEnhanced.has(grandChild as any)) {
+            childEnhanced.add(grandChild as any);
+            const grandChildDepth = childDepth + 1;
+            const originalGrandChildGetState = (grandChild as any).getState;
+            (grandChild as any).getState = () => {
+              const grandChildState = originalGrandChildGetState.call(grandChild);
+              globalHierarchyStack[grandChildDepth] = grandChildState;
+              const grandChildContext = buildStateContext(grandChildState, globalHierarchyStack, grandChildDepth);
+              return enhanceStateWithContext(grandChildState, grandChildContext);
+            };
+          }
+          
+          const context = buildStateContext(childState, globalHierarchyStack, childDepth);
+          return enhanceStateWithContext(childState, context);
+        };
+      }
+      
+      // Build context using shared stack
+      const context = buildStateContext(state, globalHierarchyStack, myDepth);
+      return enhanceStateWithContext(state, context);
+    };
+    
+    // Enhance resolveExit to supply sane defaults for probes
     addSetup(hookResolveExit((ev: any, next: (ev: any) => any) => {
       const from = ev?.from ?? machine.getState();
       const params = Array.isArray(ev?.params) ? ev.params : [];
       return next({ ...ev, from, params });
     }));
 
-    // 2) Enhance send using the library enhancer utilities
-    const wrapped = new WeakSet<object>();
-    
-    const wrapChild = () => {
-      const parentState = machine.getState();
-      const child = getChildFromParentState(parentState);
-      if (!child || wrapped.has(child as any)) return () => {};
-      wrapped.add(child as any);
-      const duck = !isFactoryMachine(child as any);
-
-      const [addSetup, disposeAll] = buildSetup(child);
-      
-      // Enhance send if it exists
-      if (typeof child.send === 'function') {
-        addSetup(child => enhanceMethod(child as any, "send", enhanceSend(child, machine, parentState, duck, false)));
-      }
-      
-      return disposeAll;
-    };
-    
-    let unwrapChild = wrapChild();
-
+    // Child-first event routing
     const childFirst = (type: string, ...params: any[]): boolean => {
       const parentState = machine.getState();
       const child = getChildFromParentState(parentState);
@@ -190,8 +230,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
       return false;
     };
 
-    addSetup(() => () => { unwrapChild(); });
-
     addSetup(
       send(innerSend => (type, ...params) => {
         const handled = childFirst(type, ...params);
@@ -205,11 +243,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
           return; // no-op on parameterless self-transition
         }
         
-        const resultMaybe = innerSend(type, ...params);
-        // child may have changed identity; re-wrap
-        unwrapChild();
-        unwrapChild = wrapChild();
-        return resultMaybe;        
+        return innerSend(type, ...params);
       })
     );
 
@@ -217,64 +251,26 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnor
   };
 }
 
+// Enhanced machine type with hierarchical event support
+export type HierarchicalMachine<M> = M & {
+  send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
+  getState: () => (M extends { getState(): infer S } ? S : any) & StateWithContext;
+};
+
 // Type that represents all possible events in a hierarchical machine
 export type HierarchicalEvents<M> = 
   | AllEventsOf<M>  // Parent events
   | string; // Allow any string for propagated child events
 
-// Enhanced machine type with hierarchical event support
-export type HierarchicalMachine<M> = M & {
-  send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
-};
-
 /**
- * Create a hierarchical machine wrapper with enhanced event routing.
- * 
- * Wraps a factory machine to support hierarchical features like `child.exit` transitions
- * and enhanced `send()` method for event routing. Use this when you need direct control
- * over child machines and want to expose them for external access.
- * 
- * @example
- * ```ts
- * // Create child payment machine
- * function createPayment() {
- *   const payment = createMachine(paymentStates, transitions, "MethodEntry");
- *   return createHierarchicalMachine(payment);
- * }
- * 
- * // Create parent checkout machine
- * function createCheckout() {
- *   const payment = createPayment();
- *   
- *   const checkout = createMachine({
- *     ...checkoutStates,
- *     Payment: () => checkoutStates.Payment(payment),
- *   }, {
- *     Cart: { proceed: "Payment" },
- *     Payment: { 
- *       "child.exit": "Review"  // React when child completes
- *     },
- *     Review: { back: "Payment" },
- *   }, "Cart");
- * 
- *   const hierarchical = createHierarchicalMachine(checkout);
- *   return Object.assign(hierarchical, { payment }); // Expose child
- * }
- * 
- * // Usage with direct child access
- * const machine = createCheckout();
- * machine.proceed();           // Parent transition
- * machine.payment.authorize(); // Direct child access
- * ```
+ * Create a hierarchical machine wrapper with enhanced event routing and shared stack context.
  * 
  * @param machine - The factory machine to wrap with hierarchical features
- * @returns Enhanced machine with hierarchical capabilities and typed event routing
- * 
- * @experimental This API is experimental and may change
+ * @returns Enhanced machine with hierarchical capabilities, typed event routing, and context
  */
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M): HierarchicalMachine<M> {
-  // Apply runtime enhancement
-  setup(machine)(propagateSubmachines(machine));
+  // Initialize machine with auto-determined depth
+  propagateSubmachines(machine)(machine);
   
   // Return with enhanced type
   return machine as HierarchicalMachine<M>;

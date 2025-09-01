@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { defineStates, createMachine } from "../src";
-import { createHierarchicalMachineWithContext } from "../src/nesting/propagateSubmachinesWithContext";
+import { createHierarchicalMachine, resetGlobalHierarchyStack } from "../src/nesting/propagateSubmachines";
 
 // Recursive machine factory for testing infinite depth
 function createNestedMachine(level: number, maxDepth: number = 5): any {
@@ -32,10 +32,14 @@ function createNestedMachine(level: number, maxDepth: number = 5): any {
     Done: {},
   }, "Idle");
   
-  return createHierarchicalMachineWithContext(machine);
+  return createHierarchicalMachine(machine);
 }
 
 describe("HSM: Infinite Depth Support", () => {
+  beforeEach(() => {
+    resetGlobalHierarchyStack();
+  });
+
   it("handles deep nesting (5 levels) with context propagation", () => {
     const root = createNestedMachine(0, 5);
     

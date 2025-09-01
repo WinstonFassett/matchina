@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { defineStates, createMachine } from "../src";
-import { createHierarchicalMachineWithContext } from "../src/nesting/propagateSubmachinesWithContext";
+import { createHierarchicalMachine, resetGlobalHierarchyStack } from "../src/nesting/propagateSubmachines";
 
 // Level 3: Fetch machine (ephemeral, created when entering Fetching state)
 function createFetchMachine() {
@@ -41,7 +41,7 @@ function createSearchMachine() {
     Fetching: {},
   }, "Idle");
   
-  return createHierarchicalMachineWithContext(machine);
+  return createHierarchicalMachine(machine);
 }
 
 // Level 1: Root machine (permanent)
@@ -56,10 +56,14 @@ function createRootMachine() {
     Active: { blur: "Inactive" },
   }, "Inactive");
   
-  return createHierarchicalMachineWithContext(machine);
+  return createHierarchicalMachine(machine);
 }
 
 describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
+  beforeEach(() => {
+    resetGlobalHierarchyStack();
+  });
+
   it("adds context properties to states at all hierarchy levels", () => {
     const root = createRootMachine();
     

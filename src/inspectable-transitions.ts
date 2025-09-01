@@ -4,7 +4,8 @@
  * This enables the { to: key, handle: fn } format for better debugging and visualization.
  */
 
-import { FactoryMachineContext, ResolveEvent, FactoryMachineEvent } from "./factory-machine-types";
+import { FactoryMachineContext, FactoryMachineEvent } from "./factory-machine-types";
+import { ResolveEvent } from "./state-machine-types";
 import { resolveExitState as originalResolveExitState } from "./factory-machine";
 
 // Enhanced transition format

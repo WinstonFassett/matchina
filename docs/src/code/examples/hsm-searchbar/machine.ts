@@ -74,7 +74,6 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
   }, activeStates.Empty(""));
 
   setup(active)(
-    propagateSubmachines(active),
     effect(whenEventType("done", onDone))
   );
   return active;
@@ -98,6 +97,10 @@ export function createSearchBarMachine() {
     Inactive: { focus: () => appStates.Active(activeMachine) },
     Active: { blur: "Inactive", close: "Inactive" },
   }, appStates.Inactive());
+
+  setup(searchBar)(
+    propagateSubmachines(searchBar)
+  );
 
   return Object.assign(searchBar, { activeMachine });
 }
