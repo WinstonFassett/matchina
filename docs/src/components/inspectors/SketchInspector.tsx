@@ -10,6 +10,7 @@ interface SketchInspectorProps {
   className?: string;
 }
 
+// why is this memoized???
 const SketchInspector = memo(({ 
   machine, 
   actions, 
@@ -19,7 +20,7 @@ const SketchInspector = memo(({
   // Step 1: Listen to machine changes for reactivity
   useMachine(machine);
   const currentState = machine.getState();
-  
+  console.log("currentState", currentState)
   // Step 2: Get the definition (recalculate when own state or nested machine state changes)
   const nestedMachine = currentState?.data?.machine;
   const nestedState = nestedMachine?.getState?.();
@@ -30,23 +31,14 @@ const SketchInspector = memo(({
   const fullkey = currentState?.fullkey || currentStateKey;
   const depth = currentState?.depth ?? 0;
   
-  // Find the deepest active state by following nested machines
-  const getDeepestActiveState = (machine: any): string => {
-    const state = machine.getState();
-    const nestedMachine = state?.data?.machine;
-    if (nestedMachine && typeof nestedMachine.getState === 'function') {
-      return getDeepestActiveState(nestedMachine);
-    }
-    return state.key;
-  };
-  
-  const deepestActiveState = getDeepestActiveState(machine);
+  // const deepestActiveState = getDeepestActiveState(machine);
   
   // Step 4: Render using recursive components for proper nesting
-  const StateItem = ({ stateKey, stateConfig, isActive, depth = 0 }: { 
+  const StateItem = ({ stateKey, stateConfig, isActive, isBranchActive = false, depth = 0 }: { 
     stateKey: string; 
     stateConfig: any; 
     isActive: boolean; 
+    isBranchActive?: boolean;
     depth?: number;
   }) => {
     const hasNested = stateConfig.states && Object.keys(stateConfig.states).length > 0;
@@ -100,7 +92,8 @@ const SketchInspector = memo(({
           <div className="nested-states">
             {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]) => {
               // Only highlight if this is the deepest active state
-              const nestedIsActive = nestedKey === deepestActiveState;
+              const nestedIsActive = nestedKey === currentStateKey;
+              
               
               return (
                 <StateItem 
@@ -108,6 +101,7 @@ const SketchInspector = memo(({
                   stateKey={nestedKey}
                   stateConfig={nestedConfig}
                   isActive={nestedIsActive}
+                  isBranchActive={isActive}
                   depth={depth + 1}
                 />
               );
@@ -122,8 +116,11 @@ const SketchInspector = memo(({
     const { states } = config;
     return Object.keys(states).map(stateKey => {
       // Only highlight if this is the deepest active state
-      const isActive = stateKey === deepestActiveState;
+      // const isActive = stateKey === deepestActiveState;
+      // const isAtDepth = depth === currentState?.depth;
+      const isActive = stateKey === currentStateKey;
       const stateConfig = states[stateKey];
+      console.log('render', stateKey, isActive, stateConfig)
       
       return (
         <StateItem 
@@ -131,6 +128,7 @@ const SketchInspector = memo(({
           stateKey={stateKey}
           stateConfig={stateConfig}
           isActive={isActive}
+          isBranchActive={isActive}
           depth={0}
         />
       );
@@ -149,3 +147,13 @@ const SketchInspector = memo(({
 });
 
 export default SketchInspector;
+
+// // Find the deepest active state by following nested machines
+// const getDeepestActiveState = (machine: any): string => {
+//   const state = machine.getState();
+//   const nestedMachine = state?.data?.machine;
+//   if (nestedMachine && typeof nestedMachine.getState === 'function') {
+//     return getDeepestActiveState(nestedMachine);
+//   }
+//   return state.key;
+// };
