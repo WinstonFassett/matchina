@@ -37,7 +37,7 @@ function getFullStatePath(machine: any): string {
 
 type VisualizerType = 'mermaid' | 'sketch' | 'reactflow';
 
-interface HSMVisualizerDemoProps {
+interface VisualizerDemoProps {
   machine: any;
   actions?: Record<string, () => void>;
   title?: string;
@@ -48,7 +48,7 @@ interface HSMVisualizerDemoProps {
   className?: string;
 }
 
-export function HSMVisualizerDemo({
+export function VisualizerDemo({
   machine,
   actions,
   title,
@@ -57,7 +57,7 @@ export function HSMVisualizerDemo({
   showControls = true,
   interactive = true,
   className = ''
-}: HSMVisualizerDemoProps) {
+}: VisualizerDemoProps) {
   const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>(defaultVisualizer);
   const currentChange = useMachine(machine) as any;
   const visualizers = useMemo(() => [
@@ -173,4 +173,5 @@ export function HSMVisualizerDemo({
   );
 }
 
-export default HSMVisualizerDemo;
+export default VisualizerDemo;
+export { VisualizerDemo as HSMVisualizerDemo }; // Legacy export

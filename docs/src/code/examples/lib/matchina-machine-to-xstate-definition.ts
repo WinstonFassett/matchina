@@ -16,27 +16,49 @@ export function getXStateDefinition<
   }>,
 >(machine: F) {
   const initialState = machine.getState();
-  const stateValues = getStateValues(machine.states);
   const definition = {
     initial: initialState.key,
     states: {} as any,
   };
   
-  for (const state of stateValues) {
-    const childMachine = getChildMachine(state);
-    const stateConfig: any = { on: {} };
-    
-    if (childMachine) {
-      // Hierarchical state with nested machine
-      const childDefinition = getXStateDefinition(childMachine);
-      stateConfig.initial = childDefinition.initial;
-      stateConfig.states = childDefinition.states;
-    } else if (isStateFinal(state)) {
-      // Final state
-      stateConfig.type = 'final';
-    }
-    
-    definition.states[state.key] = stateConfig;
+  // Build states from transitions - this gives us the complete structure
+  if (machine.transitions) {
+    Object.entries(machine.transitions as object).forEach(([fromKey, events]) => {
+      if (!definition.states[fromKey]) {
+        definition.states[fromKey] = { on: {} };
+      }
+      
+      Object.entries(events as object).forEach(([event, transition]) => {
+        if (typeof transition === 'object' && 'to' in transition) {
+          const targetKey = transition.to as string;
+          
+          // Add target state if not exists
+          if (!definition.states[targetKey]) {
+            definition.states[targetKey] = { on: {} };
+          }
+          
+          // Add transition
+          definition.states[fromKey].on[event] = targetKey;
+          
+          // Check if this transition creates a state with nested machine
+          if ('handle' in transition) {
+            try {
+              const testResult = transition.handle();
+              if (testResult?.data?.machine && testResult.key === targetKey) {
+                const childMachine = testResult.data.machine;
+                if (typeof childMachine.getState === 'function' && childMachine.transitions) {
+                  const childDefinition = getXStateDefinition(childMachine);
+                  definition.states[targetKey].initial = childDefinition.initial;
+                  definition.states[targetKey].states = childDefinition.states;
+                }
+              }
+            } catch (e) {
+              // Ignore errors when testing transitions
+            }
+          }
+        }
+      });
+    });
   }
   // Object.entries(machine.states).forEach(([key, state]) => {
   //   definition.states[key] = {

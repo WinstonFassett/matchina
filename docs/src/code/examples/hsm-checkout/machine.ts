@@ -11,14 +11,17 @@ export const paymentStates = defineStates({
 
 function createPayment() {
   const m = createMachine(paymentStates, {
-    MethodEntry: { authorize: "Authorizing" },
+    MethodEntry: { authorize: { to: "Authorizing", handle: () => paymentStates.Authorizing() } },
     Authorizing: { 
-      authRequired: "AuthChallenge", 
-      authSucceeded: "Authorized", 
-      authFailed: "AuthorizationError" 
+      authRequired: { to: "AuthChallenge", handle: () => paymentStates.AuthChallenge() }, 
+      authSucceeded: { to: "Authorized", handle: () => paymentStates.Authorized() }, 
+      authFailed: { to: "AuthorizationError", handle: () => paymentStates.AuthorizationError() }
     },
-    AuthChallenge: { authSucceeded: "Authorized", authFailed: "AuthorizationError" },
-    AuthorizationError: { retry: "MethodEntry" },
+    AuthChallenge: { 
+      authSucceeded: { to: "Authorized", handle: () => paymentStates.Authorized() }, 
+      authFailed: { to: "AuthorizationError", handle: () => paymentStates.AuthorizationError() } 
+    },
+    AuthorizationError: { retry: { to: "MethodEntry", handle: () => paymentStates.MethodEntry() } },
     Authorized: {},
   }, "MethodEntry");
   
@@ -41,24 +44,27 @@ export function createCheckoutMachine() {
     ...checkoutStates,
     Payment: () => checkoutStates.Payment(payment),
   }, {
-    Cart: { proceed: "Shipping" },
-    Shipping: { back: "Cart", proceed: "Payment" },
+    Cart: { proceed: { to: "Shipping", handle: () => checkoutStates.Shipping() } },
+    Shipping: { 
+      back: { to: "Cart", handle: () => checkoutStates.Cart() }, 
+      proceed: { to: "Payment", handle: () => checkoutStates.Payment(payment) } 
+    },
     Payment: { 
-      back: "Shipping", 
-      exit: "Shipping", 
-      "child.exit": "Review"  // When payment completes, go to review
+      back: { to: "Shipping", handle: () => checkoutStates.Shipping() }, 
+      exit: { to: "Shipping", handle: () => checkoutStates.Shipping() }, 
+      "child.exit": { to: "Review", handle: () => checkoutStates.Review() }  // When payment completes, go to review
     },
     Review: {
-      back: "ShippingPaid",
-      changePayment: () => { payment.reset(); return checkoutStates.Payment(payment); },
-      submitOrder: "Confirmation",
+      back: { to: "ShippingPaid", handle: () => checkoutStates.ShippingPaid() },
+      changePayment: { to: "Payment", handle: () => { payment.reset(); return checkoutStates.Payment(payment); } },
+      submitOrder: { to: "Confirmation", handle: () => checkoutStates.Confirmation() },
     },
     ShippingPaid: {
-      back: "Cart", 
-      proceed: "Review",
-      changePayment: () => { payment.reset(); return checkoutStates.Payment(payment); },
+      back: { to: "Cart", handle: () => checkoutStates.Cart() }, 
+      proceed: { to: "Review", handle: () => checkoutStates.Review() },
+      changePayment: { to: "Payment", handle: () => { payment.reset(); return checkoutStates.Payment(payment); } },
     },
-    Confirmation: { restart: "Cart" },
+    Confirmation: { restart: { to: "Cart", handle: () => checkoutStates.Cart() } },
   }, "Cart");
 
   const hierarchical = createHierarchicalMachine(checkout);

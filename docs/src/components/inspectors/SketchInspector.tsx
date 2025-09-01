@@ -1,6 +1,7 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import './SketchInspector.css';
 import { useMachine } from "matchina/react";
+import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
 
 interface SketchInspectorProps {
   machine: any;
@@ -15,71 +16,79 @@ const SketchInspector = memo(({
   interactive = true,
   className = '' 
 }: SketchInspectorProps) => {
-  // Trust our hierarchical context system - only listen to the main machine
-  const currentState = useMachine(machine);
+  // Step 1: Get the definition
+  const config = useMemo(() => getXStateDefinition(machine), [machine]);
   
-  // Trust our hierarchical context system completely
-  const fullkey = currentState?.fullkey || currentState?.key;
+  // Step 2: Listen to machine changes for reactivity 
+  useMachine(machine);
+  const currentState = machine.getState();
+  
+  // Step 3: Prepare highlighting info
+  const currentStateKey = currentState?.key;
+  const fullkey = currentState?.fullkey || currentStateKey;
   const depth = currentState?.depth ?? 0;
-  const isInnermostActive = depth === (currentState?.stack?.length - 1);
   
-  return (
-    <div className={`sketch-inspector ${className}`}>
-      <div className="statechart">
-        <div className="state-tree">
-          <div 
-            className={`state-item ${isInnermostActive ? 'active' : ''}`}
-            data-fullkey={fullkey}
-            data-depth={depth}
-          >
-            <div className="state-content">
-              <span className="state-name">{currentState?.key || 'Unknown'}</span>
-              
-              {fullkey && fullkey !== currentState?.key && (
-                <div className="state-fullkey">
-                  <span className="fullkey-label">path:</span> {fullkey}
-                </div>
-              )}
-              
-              {currentState?.data && typeof currentState.data === 'object' && (
-                <div className="state-metadata">
-                  {currentState.data.query && (
-                    <span className="query">"{currentState.data.query}"</span>
-                  )}
-                  {currentState.data.items && (
-                    <span className="items">{currentState.data.items.length} items</span>
-                  )}
-                  {currentState.data.highlightedIndex !== undefined && currentState.data.highlightedIndex >= 0 && (
-                    <span className="highlight">highlighted: {currentState.data.highlightedIndex}</span>
-                  )}
-                </div>
-              )}
-              
-              {/* Show available transitions for the current state */}
-              {actions && Object.keys(actions).length > 0 && (
-                <div className="transitions-inline">
-                  {Object.entries(actions).map(([event, action]) => (
+  // Step 4: Render the full structure from definition, then highlight reactively
+  const renderStates = () => {
+    const { states } = config;
+    return Object.keys(states).map(stateKey => {
+      const isActive = stateKey === currentStateKey;
+      const stateConfig = states[stateKey];
+      
+      return (
+        <div 
+          key={stateKey}
+          className={`state-item ${isActive ? 'active' : ''}`}
+          data-state-key={stateKey}
+        >
+          <div className="state-content">
+            <span className="state-name">{stateKey}</span>
+            
+            {isActive && fullkey && fullkey !== stateKey && (
+              <div className="state-fullkey">
+                <span className="fullkey-label">path:</span> {fullkey}
+              </div>
+            )}
+            
+            {/* Show transitions from this state */}
+            {stateConfig.on && Object.keys(stateConfig.on).length > 0 && (
+              <div className="transitions-inline">
+                {Object.entries(stateConfig.on).map(([event, target]) => {
+                  // Handle different target formats - could be string or object with target property
+                  const targetKey = typeof target === 'string' ? target : target?.target || String(target);
+                  
+                  return (
                     <div key={event} className="transition-row">
                       <button 
-                        className={`transition-button ${isInnermostActive ? 'enabled' : 'disabled'}`}
+                        className={`transition-button ${isActive && interactive ? 'enabled' : 'disabled'}`}
                         onClick={() => {
-                          if (interactive && isInnermostActive && action) {
-                            action();
+                          if (interactive && isActive && actions?.[event]) {
+                            actions[event]();
                           }
                         }}
-                        disabled={!isInnermostActive || !interactive}
+                        disabled={!isActive || !interactive || !actions?.[event]}
                         type="button"
                       >
                         {event}
                       </button>
                       <span className="transition-arrow"> → </span>
-                      <span className="transition-target">?</span>
+                      <span className="transition-target">{targetKey}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className={`sketch-inspector ${className}`}>
+      <div className="statechart">
+        <div className="state-tree">
+          {renderStates()}
         </div>
       </div>
     </div>

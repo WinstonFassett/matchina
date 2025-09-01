@@ -41,36 +41,39 @@ function createResultsFetcher(query: string) {
 
 function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
   const commonTransitions = {
-    typed: (value: string) => activeStates.TextEntry(value),
-    clear: "Empty",
+    typed: { to: "TextEntry", handle: (value: string) => activeStates.TextEntry(value) },
+    clear: { to: "Empty", handle: () => activeStates.Empty("") },
   } as const;
 
   const active = matchina(activeStates, {
     Empty: commonTransitions,
     TextEntry: {
       ...commonTransitions,
-      submit: () => (ev) => activeStates.Query(ev.from.data.query),
+      submit: { to: "Query", handle: () => (ev) => activeStates.Query(ev.from.data.query) },
     },
     Query: {
       ...commonTransitions,
-      refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-      "child.exit": ({ data }) => activeStates.Selecting({ 
+      refine: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
+      "child.exit": { to: "Selecting", handle: ({ data }) => activeStates.Selecting({ 
         query: data.query, 
         items: data.items 
-      }),
-      setError: "Error",
+      }) },
+      setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
     },
     Selecting: {
       ...commonTransitions,
-      refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-      highlight: (index: number) => (ev) => activeStates.Selecting({
+      refine: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
+      highlight: { to: "Selecting", handle: (index: number) => (ev) => activeStates.Selecting({
         ...ev.from.data, 
         highlightedIndex: index
-      }),
-      setError: "Error",
-      done: "TextEntry",
+      }) },
+      setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
+      done: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
     },
-    Error: { retry: "TextEntry", clear: "Empty" },
+    Error: { 
+      retry: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query || "") }, 
+      clear: { to: "Empty", handle: () => activeStates.Empty("") } 
+    },
   }, activeStates.Empty(""));
 
   setup(active)(
@@ -94,8 +97,11 @@ export function createSearchBarMachine() {
   });
   
   searchBar = matchina(appStates, {
-    Inactive: { focus: () => appStates.Active(activeMachine) },
-    Active: { blur: "Inactive", close: "Inactive" },
+    Inactive: { focus: { to: "Active", handle: () => appStates.Active(activeMachine) } },
+    Active: { 
+      blur: { to: "Inactive", handle: () => appStates.Inactive() }, 
+      close: { to: "Inactive", handle: () => appStates.Inactive() } 
+    },
   }, appStates.Inactive());
 
   setup(searchBar)(
