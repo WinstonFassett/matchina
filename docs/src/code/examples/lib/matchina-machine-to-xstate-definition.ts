@@ -21,25 +21,20 @@ export function getXStateDefinition<
     states: {} as any,
   };
   
-  // Build states from transitions - this gives us the complete structure
+  // Build states from transitions using resolveState to ensure string targets
   if (machine.transitions) {
     Object.entries(machine.transitions as object).forEach(([fromKey, events]) => {
       if (!definition.states[fromKey]) {
         definition.states[fromKey] = { on: {} };
       }
-      
-      Object.entries(events as object).forEach(([event, transition]) => {
-        if (typeof transition === 'object' && 'to' in transition) {
-          const targetKey = transition.to as string;
-          
-          // Add target state if not exists
-          if (!definition.states[targetKey]) {
-            definition.states[targetKey] = { on: {} };
-          }
-          
-          // Add transition
-          definition.states[fromKey].on[event] = targetKey;
+      Object.entries(events as object).forEach(([event, entry]) => {
+        const resolved = resolveState(machine.states, fromKey, entry).key;
+        // Ensure target state bucket exists
+        if (!definition.states[resolved]) {
+          definition.states[resolved] = { on: {} };
         }
+        // Always store a string target (Mermaid-friendly)
+        definition.states[fromKey].on[event] = resolved;
       });
     });
   }
@@ -61,31 +56,6 @@ export function getXStateDefinition<
   } catch (e) {
     // Don't break if nested machine inspection fails
   }
-  // Object.entries(machine.states).forEach(([key, state]) => {
-  //   definition.states[key] = {
-  //     ...state,
-  //     on: {} as any,
-  //   }
-  // })
-  Object.entries(machine.transitions as object).forEach(
-    ([from, stateEvents]) => {
-      Object.entries(stateEvents as object).forEach(([event, entry]) => {
-        if (event === 'child.exit') {
-          // Handle hierarchical exit transitions
-          definition.states[from].on[event] = {
-            target: resolveState(machine.states, from, entry).key,
-            // Add metadata for hierarchical transitions
-            internal: false
-          };
-        } else {
-          definition.states[from].on[event] = resolveState(
-            machine.states,
-            from,
-            entry
-          ).key;
-        }
-      });
-    }
-  );
+  // All transitions already normalized above.
   return definition;
 }
