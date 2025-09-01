@@ -6,10 +6,9 @@ mermaid.initialize({
   // startOnLoad: true
   themeVariables: {},
   themeCSS: `
-    .label text, span, p {
-      color: var(--sl-color-text);
- 
-     }
+    /* Base text colors: SVG text uses fill, HTML spans use color */
+    .label text, g.node text, g.state text, g.stateGroup text { fill: var(--sl-color-text); }
+    span, p { color: var(--sl-color-text); }
     .node rect {
       fill: var(--sl-color-bg);
       stroke: var(--sl-color-text);
@@ -40,14 +39,9 @@ mermaid.initialize({
     .flowchart-link {
       stroke: var(--sl-color-text);
     }
-    .active rect {
-      fill: var(--sl-color-text-accent);
-
-    }
-    .active span, .active .label {
-      color: var(--sl-color-text-invert);
-      animation: fadeInText .8s ease forwards;
-    }
+    .active rect { fill: var(--sl-color-accent); stroke: var(--sl-color-accent); }
+    .active text { fill: var(--sl-color-text-invert); }
+    .active span, .active .label { color: var(--sl-color-text-invert); animation: fadeInText .8s ease forwards; }
     .marker {
       fill: var(--sl-color-text);
     }
@@ -176,7 +170,8 @@ function toStateChart(config: any) {
         walk(state, id, depth + 1);
         if (state.initial) {
           const nestedInitial = getStateId(state.initial, id);
-          rows.push(`${indent}  ${id} --> ${nestedInitial}`);
+          // In stateDiagram-v2 the initial state inside a composite is [*] --> child
+          rows.push(`${indent}  [*] --> ${nestedInitial}`);
         }
         rows.push(`${indent}}`);
       }

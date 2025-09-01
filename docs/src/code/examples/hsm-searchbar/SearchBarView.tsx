@@ -26,6 +26,18 @@ export function getStates(machine: FactoryMachine<any>) {
   return states
 }
 
+// Returns canonical hierarchical state path for a machine
+export function getStatusPath(machine: FactoryMachine<any>) {
+  const states = getStates(machine);
+  // Only show up to Selecting/Error, not deep fetcher states
+  const keys = [];
+  for (const state of states) {
+    keys.push(state.key);
+    if (state.key === "Selecting" || state.key === "Error") break;
+  }
+  return keys.join(" / ");
+}
+
 export function Statuses({ machine }: { machine: FactoryMachine<any> }) {
   return getStates(machine)
     .map((state) => state.key)
