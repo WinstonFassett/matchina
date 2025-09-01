@@ -44,7 +44,13 @@ export function SearchBarView({ machine }: { machine: Machine }) {
       </div>
       {/* <div><ActionButtons machine={machine} /></div> */}
       {state.match({
-        Active: ({machine: activeMachine}: any) => <ActiveView machine={activeMachine} parentMachine={machine} />,
+        Active: ({machine: activeMachine}: {machine: ActiveMachine}) => 
+          !activeMachine ? <div>Machine missing from Active state
+            <pre>State keys: {JSON.stringify(Object.keys(state), null, 2)}</pre>
+            <pre>State.data: {JSON.stringify(state.data, null, 2)}</pre>
+            <pre>Context: {JSON.stringify({ stack_keys: state.stack?.map((s) => s.key), depth: state.depth, fullkey: state.fullkey }, null, 2)}</pre>
+          </div> :
+          <ActiveView machine={activeMachine} parentMachine={machine} />,
         Inactive: () => <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline" onClick={() => machine.focus()}>Click to search</button>,
       }, false)}
     </div>
@@ -52,12 +58,9 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 }
 
 function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parentMachine: Machine }) {
-  console.log('ActiveView machine:', machine, typeof machine);
-  if (!machine || typeof machine.getState !== 'function') {
-    return <div>Error: Invalid machine instance</div>;
-  }
-  useMachine(machine);  
-  const state = machine.getState();
+  const activeMachine = machine as ActiveMachine;
+  useMachine(activeMachine);  
+  const state = activeMachine.getState();
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
   useMachineMaybe(fetcherMachine);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +77,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       console.log('submit', query)
-      machine.submit();
+      activeMachine.submit();
     }
     if (e.key === "Escape") {
       parentMachine.close();
@@ -87,33 +90,33 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
         className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
         placeholder="Type to search... (Press ESC to cancel)"
         value={query}
-        onChange={e => machine.typed(e.target.value)}
+        onChange={e => activeMachine.typed(e.target.value)}
         onKeyDown={onKeyDown}
       />
-      <button className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors" onClick={() => machine.clear()}>Clear</button>
+      <button className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors" onClick={() => activeMachine.clear()}>Clear</button>
     </div>
 
     {state.match({
-      Query: ({ machine }) => (<div>
-        Results status: {machine.getState().key}
-        {machine.getState().match({
+      Query: ({ machine: queryMachine }: {machine: any}) => (<div>
+        Results status: {queryMachine.getState().key}
+        {queryMachine.getState().match({
           Pending: () => <div>Loading…</div>,
-          Resolved: ({ items }) => <div>
-            {items.map(item => <ResultItem key={item.id} {...item} />)}
+          Resolved: ({ items }: {items: any[]}) => <div>
+            {items.map((item: any) => <ResultItem key={item.id} {...item} />)}
           </div>,
-          Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
+          Rejected: (error: any) => <div>Rejected: {JSON.stringify(error)}</div>,
         }, false)}
       </div>),
-      Selecting: ({ query, items, highlightedIndex }) => <Selecting 
+      Selecting: ({ query, items, highlightedIndex }: {query: string, items: any[], highlightedIndex: number}) => <Selecting 
         items={items} 
         highlightedIndex={highlightedIndex} 
         setHighlightedIndex={(highlightedIndex: number) => {
           console.log("Set Highlighted Index", { highlightedIndex })
-          machine.highlight(highlightedIndex)
+          activeMachine.highlight(highlightedIndex)
         }}
         select={(index: number) => {
           console.log("Select", { index })
-          machine.done(query)
+          activeMachine.done(query)
         }}
       />
     }, false)}

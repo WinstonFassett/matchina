@@ -21,7 +21,7 @@ interface StateWithContext {
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
 
 function getChildFromParentState(state: any): AnyMachine | undefined {
-  const m = (state?.machine ?? state?.data?.machine ?? state?.data?.data?.machine) as any;
+  const m = state?.data?.machine as any;
   if (!m) return undefined;
   // Prefer brand-based detection for our FactoryMachine instances
   if (isFactoryMachine(m)) return m as AnyMachine;
@@ -116,8 +116,8 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
     const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
     
     if (isHandled(before, after, grandBeforeSnap, grandAfterSnap)) {
-      const hadMachine = before?.data?.machine || before?.machine;
-      const hasMachine = after?.data?.machine || after?.machine;
+      const hadMachine = before?.data?.machine;
+      const hasMachine = after?.data?.machine;
       
       if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duck, includeDataStateExitForDuck)) {
         // Use up-to-date parent state when signaling exit
@@ -225,8 +225,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       const handled = !threw && (handledByState || duckChild);
       
       if (handled) {
-        const hadMachine = before?.data?.machine || before?.machine;
-        const hasMachine = after?.data?.machine || after?.machine;
+        const hadMachine = before?.data?.machine;
+        const hasMachine = after?.data?.machine;
         
         if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duckChild, true)) {
           triggerExit(machine, parentState, after);

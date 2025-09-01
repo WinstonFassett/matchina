@@ -1,5 +1,5 @@
 import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType } from "matchina";
-import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
+import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 
 interface SelectionState {
   query: string;
@@ -91,9 +91,10 @@ export const appStates = defineStates({
 
 export function createSearchBarMachine() {
   let searchBar: any;
+  let hierarchical: any;
   
   const activeMachine = createActiveMachine({
-    onDone: () => searchBar.close()
+    onDone: () => hierarchical.close()
   });
   
   searchBar = matchina(appStates, {
@@ -104,9 +105,11 @@ export function createSearchBarMachine() {
     },
   }, appStates.Inactive());
 
-  setup(searchBar)(
-    propagateSubmachines(searchBar)
+  hierarchical = createHierarchicalMachine(searchBar);
+  
+  setup(hierarchical)(
+    effect(whenEventType("done", () => hierarchical.close()))
   );
 
-  return Object.assign(searchBar, { activeMachine });
+  return Object.assign(hierarchical, { activeMachine });
 }

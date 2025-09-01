@@ -25,10 +25,22 @@ const SketchInspector = memo(({
   const nestedState = nestedMachine?.getState?.();
   const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
-  // Step 3: Prepare highlighting info
+  // Step 3: Prepare highlighting info - find the deepest active state
   const currentStateKey = currentState?.key;
   const fullkey = currentState?.fullkey || currentStateKey;
   const depth = currentState?.depth ?? 0;
+  
+  // Find the deepest active state by following nested machines
+  const getDeepestActiveState = (machine: any): string => {
+    const state = machine.getState();
+    const nestedMachine = state?.data?.machine;
+    if (nestedMachine && typeof nestedMachine.getState === 'function') {
+      return getDeepestActiveState(nestedMachine);
+    }
+    return state.key;
+  };
+  
+  const deepestActiveState = getDeepestActiveState(machine);
   
   // Step 4: Render using recursive components for proper nesting
   const StateItem = ({ stateKey, stateConfig, isActive, depth = 0 }: { 
@@ -87,8 +99,8 @@ const SketchInspector = memo(({
         {hasNested && (
           <div className="nested-states">
             {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]) => {
-              // Check if this nested state is active
-              const nestedIsActive = isActive && nestedMachine && nestedState?.key === nestedKey;
+              // Only highlight if this is the deepest active state
+              const nestedIsActive = nestedKey === deepestActiveState;
               
               return (
                 <StateItem 
@@ -109,7 +121,8 @@ const SketchInspector = memo(({
   const renderStates = () => {
     const { states } = config;
     return Object.keys(states).map(stateKey => {
-      const isActive = stateKey === currentStateKey;
+      // Only highlight if this is the deepest active state
+      const isActive = stateKey === deepestActiveState;
       const stateConfig = states[stateKey];
       
       return (

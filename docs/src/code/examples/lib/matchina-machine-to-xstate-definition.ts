@@ -45,17 +45,21 @@ export function getXStateDefinition<
   }
   
   // Check current state for nested machine - this is the single right way
-  const currentState = machine.getState();
-  if (currentState?.data?.machine) {
-    const childMachine = currentState.data.machine;
-    if (typeof childMachine.getState === 'function' && childMachine.transitions) {
-      const childDefinition = getXStateDefinition(childMachine);
-      if (!definition.states[currentState.key]) {
-        definition.states[currentState.key] = { on: {} };
+  try {
+    const currentState = machine.getState();
+    if (currentState?.data?.machine) {
+      const childMachine = currentState.data.machine;
+      if (childMachine && typeof childMachine.getState === 'function' && childMachine.transitions) {
+        const childDefinition = getXStateDefinition(childMachine);
+        if (!definition.states[currentState.key]) {
+          definition.states[currentState.key] = { on: {} };
+        }
+        definition.states[currentState.key].initial = childDefinition.initial;
+        definition.states[currentState.key].states = childDefinition.states;
       }
-      definition.states[currentState.key].initial = childDefinition.initial;
-      definition.states[currentState.key].states = childDefinition.states;
     }
+  } catch (e) {
+    // Don't break if nested machine inspection fails
   }
   // Object.entries(machine.states).forEach(([key, state]) => {
   //   definition.states[key] = {
