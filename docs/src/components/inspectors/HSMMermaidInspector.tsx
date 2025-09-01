@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { useMachine, useMachineMaybe } from "matchina/react";
 import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
 import MermaidInspector from "./MermaidInspector";
@@ -35,7 +35,7 @@ const HSMMermaidInspector = memo(({
     return stateKey;
   }, [stateKey, nestedState, nestedMachine, actualState]);
   
-  // Convert matchina machine to xstate-like configuration  
+  // Convert matchina machine to xstate-like configuration (now stable per render)
   const currentNestedState = nestedMachine?.getState?.();
   const xstateConfig = useMemo(() => {
     try {
@@ -53,6 +53,17 @@ const HSMMermaidInspector = memo(({
       };
     }
   }, [machine, currentChange, actualState?.key, nestedMachine, currentNestedState?.key]);
+  
+  // Debug: log a short hash of the config string whenever it changes
+  useEffect(() => {
+    try {
+      const s = JSON.stringify(xstateConfig);
+      let x = 0; for (let i = 0; i < s.length; i++) x = ((x << 5) - x) + s.charCodeAt(i) | 0;
+      const hash = (x >>> 0).toString(16);
+      // keep minimal to avoid noise
+      console.log('[HSMMermaidInspector.config]', hash, 'state=', hierarchicalStateKey);
+    } catch {}
+  }, [xstateConfig, hierarchicalStateKey]);
   
   return (
     <MermaidInspector

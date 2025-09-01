@@ -333,3 +333,43 @@ React Flow should just be removed from options until it is working. later.
 
 The mermaid inspector is immature. We got further in R1. We should lift from that to complete this. 
 What we want is for it to not rerender the diagram unless the def changes. and to use DOM manipulation and/or CSS to update the edges to make them clickable and the active state highlighted. 
+
+---
+
+## 📈 STATUS UPDATE — Mermaid Initial-State Stability (2025-09-01)
+
+### 🔥 Problem
+- Nested composite initial arrow flipped: `[∗] --> Payment_MethodEntry` vs `[∗] --> Payment_Authorizing`.
+- Root cause: diagram used runtime state for `initial` during build instead of the declared initial.
+
+### ✅ Fix (minimal, correct, no caching)
+- Brand-first with duck-typed fallback:
+  - `src/factory-machine.ts`: At machine creation, stamp declared initial once: `(machine as any).initialKey = initialState.key`.
+  - `docs/src/code/examples/lib/matchina-machine-to-xstate-definition.ts`:
+    - Top-level: `definition.initial` from `machine.initialKey`.
+    - Nested: only set a child composite’s `initial` if child exposes `initialKey`; otherwise omit (no runtime fallback).
+  - `src/nesting/propagateSubmachines.ts`: Leave fallback stamping only if missing (non-invasive for external/foreign machines).
+  - No memoization/caching in `HSMMermaidInspector.tsx` — stability comes from correct declared initial.
+
+### 🧪 Result
+- Diagram no longer flips on intra-child navigation.
+- Chart string remains stable while active states change; Mermaid stops unnecessary re-renders.
+- `[∗] --> Payment_MethodEntry` remains fixed (declared initial).
+
+### 📄 Session Log
+- Added: `docs/architecture/HSMDiagramStability_Session_2025-09-01.md` with detailed timeline, wrong turns, final approach, and verification steps.
+
+### 📂 Files Changed
+- `src/factory-machine.ts` — stamp `initialKey` at creation.
+- `docs/src/code/examples/lib/matchina-machine-to-xstate-definition.ts` — consume `initialKey`; avoid runtime fallback for nested.
+- `docs/src/components/inspectors/HSMMermaidInspector.tsx` — no caching reliance (done previously).
+- `src/nesting/propagateSubmachines.ts` — keep non-invasive fallback only.
+
+### 📌 Lessons
+- Inspectors must use declared configuration, not runtime snapshots.
+- Capture invariants at source-of-truth (factory creation) to avoid timing/race issues.
+- Prefer omission over incorrect guesses for semantics-critical fields (like `initial`).
+
+### ▶️ Next
+- Add tests asserting `initialKey` presence and usage in nested definitions.
+- Document `initialKey` duck-typing for integrators.

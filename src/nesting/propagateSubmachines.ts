@@ -148,6 +148,15 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     const hierarchyStack = parentStack || [];
     const depth = myDepth !== undefined ? myDepth : 0;
     
+    // Set a stable initialKey once per machine (duck-typed field for inspectors)
+    try {
+      const anyMachine = machine as any;
+      if (anyMachine.initialKey === undefined) {
+        // Use current key at setup time, which on creation equals the declared initial
+        anyMachine.initialKey = machine.getState()?.key;
+      }
+    } catch {}
+
     // Enhance getState to add context using incremental stack
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();

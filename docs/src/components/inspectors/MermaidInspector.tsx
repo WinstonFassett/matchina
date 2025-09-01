@@ -287,10 +287,28 @@ const MermaidInspector = memo(
   }) => {
     const [id] = useState((lastId++).toString());
     const diagramType = diagramTypeProp ?? 'statechart';
-    const { states } = config;
-    const chart = useMemo(() => (
+    // Generate chart string and only update when it actually changes
+    const initialChart = useMemo(() => (
       diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id)
-    ), [states, diagramType]);
+    ), []);
+    const chartRef = useRef<string>(initialChart);
+    const [chart, setChart] = useState<string>(initialChart);
+    useEffect(() => {
+      const next = diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id);
+      if (next !== chartRef.current) {
+        try {
+          // Log the exact chart string diff context
+          console.log('[MermaidInspector.chart change]', {
+            diagramType,
+            prevLen: chartRef.current?.length ?? 0,
+            nextLen: next.length,
+          });
+          console.log('--- prev chart ---\n' + (chartRef.current ?? '') + '\n--- next chart ---\n' + next);
+        } catch {}
+        chartRef.current = next;
+        setChart(next);
+      }
+    }, [diagramType, config]);
     const debouncedStateKey = useDebouncedValue(stateKey, 60);
 
     // Cache the rendered container for DOM manipulation without re-rendering the SVG

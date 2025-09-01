@@ -99,6 +99,11 @@ export function createMachine<
     }
   ) as FactoryMachine<FC>;
 
+  // Expose the declared initial key for inspectors (duck-typed, non-breaking)
+  try {
+    (machine as any).initialKey = initialState.key;
+  } catch {}
+
   // Now that machine exists, create the initial event with proper machine reference
   lastChange = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],

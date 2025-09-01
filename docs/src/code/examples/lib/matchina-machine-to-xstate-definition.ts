@@ -16,8 +16,9 @@ export function getXStateDefinition<
   }>,
 >(machine: F) {
   const initialState = machine.getState();
+  const declaredInitial = (machine as any).initialKey ?? initialState.key;
   const definition = {
-    initial: initialState.key,
+    initial: declaredInitial,
     states: {} as any,
   };
   
@@ -39,9 +40,9 @@ export function getXStateDefinition<
     });
   }
   
-  // Check current state for nested machine - this is the single right way
+  // Check the captured state for nested machine (avoid refetching during build)
   try {
-    const currentState = machine.getState();
+    const currentState = initialState;
     if (currentState?.data?.machine) {
       const childMachine = currentState.data.machine;
       if (childMachine && typeof childMachine.getState === 'function' && childMachine.transitions) {
@@ -49,7 +50,12 @@ export function getXStateDefinition<
         if (!definition.states[currentState.key]) {
           definition.states[currentState.key] = { on: {} };
         }
-        definition.states[currentState.key].initial = childDefinition.initial;
+        // Only render nested initial if the child exposes a declared initialKey.
+        // Falling back to current state causes incorrect diagrams and re-renders.
+        const hasDeclaredChildInitial = (childMachine as any)?.initialKey !== undefined;
+        if (hasDeclaredChildInitial) {
+          definition.states[currentState.key].initial = (childMachine as any).initialKey;
+        }
         definition.states[currentState.key].states = childDefinition.states;
       }
     }
