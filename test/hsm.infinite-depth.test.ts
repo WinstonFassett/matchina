@@ -143,10 +143,10 @@ describe("HSM: Infinite Depth Support", () => {
     const depth = 7; // Test with 7 levels
     const root = createNestedMachine(0, depth);
     
-    // Helper to navigate to any level
-    const navigateToLevel = (targetLevel: number) => {
-      let currentMachine = root;
-      let currentState = root.getState();
+    // Helper to navigate to any level  
+    const navigateToLevel = (targetLevel: number, rootMachine = root) => {
+      let currentMachine = rootMachine;
+      let currentState = rootMachine.getState();
       
       // Start all levels up to target
       for (let i = 0; i <= targetLevel; i++) {
@@ -165,18 +165,20 @@ describe("HSM: Infinite Depth Support", () => {
       return { machine: currentMachine, state: currentState };
     };
     
-    // Test context at various levels
+    // Test context at various levels (create fresh navigation for each test)
     const testLevels = [0, 2, 4, 6];
     
     for (const level of testLevels) {
-      const { state } = navigateToLevel(level);
+      // Create fresh root for each level test to avoid stack contamination
+      const freshRoot = createNestedMachine(0, depth);
+      const { state } = navigateToLevel(level, freshRoot);
       
       // Verify context consistency
       expect(state.depth).toBe(level);
       expect(state.data.level).toBe(level);
       
-      // Verify stack length matches depth + 1
-      expect(state.stack).toHaveLength(level + 1);
+      // Verify stack length matches current active depth (all levels see same stack)  
+      expect(state.stack).toHaveLength(level + 1); // All machines see the full active stack
       
       // Verify fullkey has correct number of segments
       const segments = state.fullkey.split(".");

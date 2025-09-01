@@ -5,12 +5,9 @@ import { buildSetup } from "../ext/setup";
 import { isFactoryMachine } from "../machine-brand";
 import { AllEventsOf } from "./types";
 
-// Shared stack that all machines reference
-let globalHierarchyStack: any[] = [];
-
 // Export function to reset the global stack (useful for testing)
 export function resetGlobalHierarchyStack() {
-  globalHierarchyStack.length = 0;
+  // No-op: global stack removed, keeping for backward compatibility
 }
 
 // Type definition for enhanced states with context
@@ -53,12 +50,16 @@ function snapshot(m: AnyMachine) {
   return state;
 }
 
-// Build context for a state using the shared stack
-function buildStateContext(state: any, sharedStack: any[], myDepth: number): StateWithContext {
-  const fullkey = sharedStack.slice(0, myDepth + 1).map(s => s.key).join('.');
+// Build context for a state using incremental stack - add self to stack, reuse same stack
+function buildStateContext(state: any, parentStack: any[], myDepth: number): StateWithContext {
+  // Add myself to the stack at my depth
+  parentStack[myDepth] = state;
+  
+  // Build fullkey from the current stack up to my depth
+  const fullkey = parentStack.slice(0, myDepth + 1).map(s => s.key).join('.');
   
   return { 
-    stack: sharedStack, 
+    stack: parentStack, // Same stack reference - everyone sees the full active state stack
     depth: myDepth, 
     fullkey 
   };
@@ -135,54 +136,49 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
  * @param machineIgnoreThis - The machine parameter (unused, for type inference)
  * @returns Setup function to be used with `setup(machine)(propagateSubmachines(machine))`
  */
-export function propagateSubmachines<M extends FactoryMachine<any>>(machineIgnoreThis: M) {
+export function propagateSubmachines<M extends FactoryMachine<any>>(
+  machineIgnoreThis: M, 
+  parentStack?: any[], 
+  myDepth?: number
+) {
   return (machine: M) => {
     const [addSetup, disposeAll] = buildSetup(machine);
     
-    // Auto-determine my depth from current shared stack
-    const myDepth = globalHierarchyStack.length;
+    // If no parent stack provided, create root stack; otherwise use parent stack and increment depth
+    const hierarchyStack = parentStack || [];
+    const depth = myDepth !== undefined ? myDepth : 0;
     
-    // Enhance getState to add context using shared stack
+    // Enhance getState to add context using incremental stack
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();
     
     machine.getState = () => {
       const state = originalGetState.call(machine);
       
-      // Update the shared stack at my position
-      globalHierarchyStack[myDepth] = state;
+      // Add myself to the stack and build context
+      const context = buildStateContext(state, hierarchyStack, depth);
       
       // Auto-enhance any child machines when parent state is accessed
       const child = getChildFromParentState(state);
       if (child && !childEnhanced.has(child as any)) {
         childEnhanced.add(child as any);
-        const childDepth = myDepth + 1;
-        const originalChildGetState = (child as any).getState;
-        (child as any).getState = () => {
-          const childState = originalChildGetState.call(child);
-          globalHierarchyStack[childDepth] = childState;
+        
+        // Set up child with the same stack and incremented depth
+        propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+        
+        // Set up child send middleware to notify parent of state changes (needed for child.exit)
+        if (isFactoryMachine(child as any)) {
+          const duckChild = !isFactoryMachine(child as any);
+          const enhancer = enhanceSend(child, machine, state, duckChild, true);
           
-          // Also enhance any grandchildren (one level deep only)
-          const grandChild = getChildFromParentState(childState);
-          if (grandChild && !childEnhanced.has(grandChild as any)) {
-            childEnhanced.add(grandChild as any);
-            const grandChildDepth = childDepth + 1;
-            const originalGrandChildGetState = (grandChild as any).getState;
-            (grandChild as any).getState = () => {
-              const grandChildState = originalGrandChildGetState.call(grandChild);
-              globalHierarchyStack[grandChildDepth] = grandChildState;
-              const grandChildContext = buildStateContext(grandChildState, globalHierarchyStack, grandChildDepth);
-              return enhanceStateWithContext(grandChildState, grandChildContext);
-            };
-          }
-          
-          const context = buildStateContext(childState, globalHierarchyStack, childDepth);
-          return enhanceStateWithContext(childState, context);
-        };
+          // Use proper setup mechanism instead of manual enhancement
+          const childMachine = child as FactoryMachine<any>;
+          const [addChildSetup] = buildSetup(childMachine);
+          addChildSetup(send(enhancer));
+        }
       }
       
-      // Build context using shared stack
-      const context = buildStateContext(state, globalHierarchyStack, myDepth);
+      // Return state enhanced with context
       return enhanceStateWithContext(state, context);
     };
     
@@ -263,13 +259,13 @@ export type HierarchicalEvents<M> =
   | string; // Allow any string for propagated child events
 
 /**
- * Create a hierarchical machine wrapper with enhanced event routing and shared stack context.
+ * Create a hierarchical machine wrapper with enhanced event routing and incremental stack context.
  * 
  * @param machine - The factory machine to wrap with hierarchical features
  * @returns Enhanced machine with hierarchical capabilities, typed event routing, and context
  */
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M): HierarchicalMachine<M> {
-  // Initialize machine with auto-determined depth
+  // Initialize machine as root (no parent stack or depth)
   propagateSubmachines(machine)(machine);
   
   // Return with enhanced type
