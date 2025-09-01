@@ -321,10 +321,9 @@ These bugs are all new in recent code:
 
 - search bar 
   - state does not reflect typing anymore, shows Active/Empty. wrong
-  - enter while typing shows  ux messages about results pending and resolved BUT stays stuck at Empty does not move to Selecting anymore.
-  - esc is not closing
+  - enter while typing shows  ux messages about results pending and resolved BUT stays stuck at Active/Query/Pending does not move to Active/Selecting anymore. And keyboard events during Selecting do not work
+  - may be an issue with child.exit not working properly
   - when i hit enter during data entry it logs "A component is changing a controlled input to be uncontrolled."
 - checkout hsm exmample
-  - all target states showing as undefined means transitions were not inspected ok
-  - Payment should go back to MethodEntry when reentering after it was successful
+  - Payment should reset to initial MethodEntry when reentering after it was successful. perhaps use reset method for this. 
 
