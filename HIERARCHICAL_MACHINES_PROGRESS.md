@@ -17,12 +17,9 @@ looking great!
 * ✅ **investigated "refine is weird" issue** - syntax was correct: `() => (ev) => ...` for parameterless actions 
 * ✅ **explored nested vs flattened patterns** - nested = child instances (encapsulation), flattened = dot-notation keys (efficiency)
 * ✅ **verified examples work in browser** - hsm-searchbar shows hierarchical state display and full functionality
-
-## what remains?
-
-* create elegant hierarchical machine factory (typed, handles propagation)
+* ✅ create elegant hierarchical machine factory (typed, handles propagation)
   - seems ok. only using on checkout so far. 
   - need to really evaluate our usages in tests and examples and consider what makes most sense
   - want good coverage demoing options but want to use sanest option(s) for given example
   - ok i think we are good on the lib design, not sure about examples
-* write docs explaining HSM usage patterns, referring to examples, funcs, types etc
+* ✅ write docs explaining HSM usage patterns, referring to examples, funcs, types etc
