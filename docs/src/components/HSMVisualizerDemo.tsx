@@ -139,7 +139,7 @@ export function VisualizerDemo({
           </div>
           
           {interactive && (
-            <div className="mt-2 text-xs text-gray-600">
+            <div className="mt-2 text-xs">
               💡 Click on transitions to trigger them when available
             </div>
           )}
@@ -147,24 +147,24 @@ export function VisualizerDemo({
       )}
 
       <div className="visualizer-container border border-neutral-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-2 bg-gray-50 border-b border-neutral-200">
+        <div className="px-4 py-2 border-b border-neutral-200">
           <span className="text-sm font-medium">
             {visualizers.find(v => v.key === activeVisualizer)?.label}
           </span>
-          <span className="text-xs text-gray-600 ml-2">
+          <span className="text-xs ml-2">
             Current state: <strong>{getFullStatePath(machine)}</strong>
           </span>
         </div>
         
-        <div className="p-4 bg-white min-h-[300px]">
+        <div className="p-4 min-h-[300px]">
           {renderVisualizer()}
         </div>
       </div>
 
       {currentChange?.data && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-md">
-          <div className="text-sm font-medium text-gray-700 mb-1">State Data:</div>
-          <pre className="text-xs text-gray-600 font-mono">
+        <div className="mt-4 p-3 rounded-md">
+          <div className="text-sm font-medium mb-1">State Data:</div>
+          <pre className="text-xs font-mono">
             {JSON.stringify(currentChange.data, null, 2)}
           </pre>
         </div>
