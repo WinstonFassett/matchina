@@ -19,6 +19,8 @@
   max-width: 100%;
 }
 
+/* Remove duplicate .state-item definition */
+
 /* Nested states wrap efficiently */
 .nested-states {
   margin: 8px 0 0 16px;
@@ -63,6 +65,8 @@
   border-width: 2px;
 }
 
+/* State content - no styling, just content container */
+
 /* State name and badge on same line */
 .state-name {
   font-size: 16px;
@@ -71,7 +75,7 @@
   margin-bottom: 8px;
 }
 
-.state-item.active .state-name {
+.state-content.active .state-name {
   color: var(--sl-color-white);
 }
 
@@ -85,27 +89,9 @@
   font-weight: normal;
 }
 
-.state-item.active .state-badge {
+.state-content.active .state-badge {
   background: var(--sl-color-white);
   color: var(--sl-color-accent);
-}
-
-/* Hierarchical fullkey path display */
-.state-fullkey {
-  font-size: 11px;
-  color: var(--sl-color-gray-3);
-  margin-top: 4px;
-  font-family: 'SF Mono', Monaco, monospace;
-}
-
-.state-item.active .state-fullkey {
-  color: var(--sl-color-white);
-  opacity: 0.8;
-}
-
-.fullkey-label {
-  font-weight: 600;
-  opacity: 0.7;
 }
 
 /* Transitions listed vertically */
@@ -146,18 +132,6 @@
   border-color: var(--sl-color-accent);
 }
 
-.state-item.active .transition-button.enabled {
-  color: var(--sl-color-white);
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.state-item.active .transition-button.enabled:hover {
-  background: rgba(255, 255, 255, 0.3);
-  color: var(--sl-color-white);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
 .transition-name {
   font-family: 'SF Mono', Monaco, monospace;
   font-style: italic;
@@ -169,17 +143,8 @@
   margin: 0 4px;
 }
 
-.state-item.active .transition-arrow {
-  color: var(--sl-color-white);
-  opacity: 0.7;
-}
-
 .transition-target {
   font-size: 13px;
-}
-
-.state-item.active .transition-target {
-  color: var(--sl-color-white);
 }
 
 /* Metadata */
@@ -192,18 +157,9 @@
   gap: 2px;
 }
 
-.state-item.active .state-metadata {
-  color: var(--sl-color-white);
-  opacity: 0.9;
-}
-
 .state-metadata .query {
   background: var(--sl-color-gray-6);
   padding: 2px 4px;
   border-radius: 2px;
   font-family: 'SF Mono', Monaco, monospace;
-}
-
-.state-item.active .state-metadata .query {
-  background: rgba(255, 255, 255, 0.2);
 }
