@@ -52,6 +52,10 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 }
 
 function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parentMachine: Machine }) {
+  console.log('ActiveView machine:', machine, typeof machine);
+  if (!machine || typeof machine.getState !== 'function') {
+    return <div>Error: Invalid machine instance</div>;
+  }
   useMachine(machine);  
   const state = machine.getState();
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;

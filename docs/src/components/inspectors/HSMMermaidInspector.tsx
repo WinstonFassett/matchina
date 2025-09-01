@@ -35,7 +35,8 @@ const HSMMermaidInspector = memo(({
     return stateKey;
   }, [stateKey, nestedState, nestedMachine, actualState]);
   
-  // Convert matchina machine to xstate-like configuration
+  // Convert matchina machine to xstate-like configuration  
+  const currentNestedState = nestedMachine?.getState?.();
   const xstateConfig = useMemo(() => {
     try {
       return getXStateDefinition(machine);
@@ -51,7 +52,7 @@ const HSMMermaidInspector = memo(({
         }
       };
     }
-  }, [machine, currentChange]);
+  }, [machine, currentChange, actualState?.key, nestedMachine, currentNestedState?.key]);
   
   return (
     <MermaidInspector

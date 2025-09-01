@@ -16,12 +16,14 @@ const SketchInspector = memo(({
   interactive = true,
   className = '' 
 }: SketchInspectorProps) => {
-  // Step 1: Get the definition
-  const config = useMemo(() => getXStateDefinition(machine), [machine]);
-  
-  // Step 2: Listen to machine changes for reactivity 
+  // Step 1: Listen to machine changes for reactivity
   useMachine(machine);
   const currentState = machine.getState();
+  
+  // Step 2: Get the definition (recalculate when own state or nested machine state changes)
+  const nestedMachine = currentState?.data?.machine;
+  const nestedState = nestedMachine?.getState?.();
+  const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
   // Step 3: Prepare highlighting info
   const currentStateKey = currentState?.key;
