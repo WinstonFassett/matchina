@@ -1,5 +1,4 @@
-import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType } from "matchina";
-import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
+import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType, createHierarchicalMachine, whenState } from "matchina";
 
 interface SelectionState {
   query: string;
@@ -19,8 +18,11 @@ export const activeStates = defineStates({
 });
 
 function createResultsFetcher(query: string) {
+  if (!query?.length) return undefined;
+  console.log('creating fetcher for', query, typeof query);
   const fetcher = createPromiseMachine(async (q: string) => {
     await new Promise((r) => setTimeout(r, 250));
+    console.log("Fetching results for", q, typeof q)
     const trimmed = (q ?? "").trim();
     if (!trimmed.length) return { query: trimmed, items: [], final: true };
     if (trimmed.toLowerCase() === "err") throw new Error("Search failed (demo)");
@@ -35,7 +37,9 @@ function createResultsFetcher(query: string) {
       final: true
     };
   });
-  fetcher.execute(query);
+  // // ah we should not run this yet, should wait until hook call
+  // console.log('executing', query)
+  // fetcher.execute(query);
   return fetcher;
 }
 
@@ -49,11 +53,13 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     Empty: commonTransitions,
     TextEntry: {
       ...commonTransitions,
-      submit: { to: "Query", handle: () => (ev) => activeStates.Query(ev.from.data.query) },
+      // Submit with explicit query string to avoid relying on internal event object
+      submit: { to: "Query", handle: (query: string) => activeStates.Query(query) },
     },
     Query: {
       ...commonTransitions,
-      refine: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
+      // Refine back to TextEntry with explicit query
+      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
       "child.exit": { to: "Selecting", handle: ({ data }) => activeStates.Selecting({ 
         query: data.query, 
         items: data.items 
@@ -62,16 +68,18 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     },
     Selecting: {
       ...commonTransitions,
-      refine: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
+      // Refine from Selecting to TextEntry with explicit query
+      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
       highlight: { to: "Selecting", handle: (index: number) => (ev) => activeStates.Selecting({
         ...ev.from.data, 
         highlightedIndex: index
       }) },
       setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
-      done: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query) },
+      // Complete selection and keep query explicit
+      done: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
     },
     Error: { 
-      retry: { to: "TextEntry", handle: () => (ev) => activeStates.TextEntry(ev.from.data.query || "") }, 
+      retry: { to: "TextEntry", handle: (query: string = "") => activeStates.TextEntry(query) }, 
       clear: { to: "Empty", handle: () => activeStates.Empty("") } 
     },
   }, activeStates.Empty(""));
@@ -109,6 +117,14 @@ export function createSearchBarMachine() {
       close: "Inactive",
     },
   }, appStates.Inactive());
+
+  setup(activeMachine)(
+    effect(whenState("Query", (ev: any) => {
+      console.log('start query', ev)
+      ev.to.data.machine?.execute(ev.to.data.query as string);
+      return () => {};
+    }))
+  );
 
   hierarchical = createHierarchicalMachine(searchBar);
   

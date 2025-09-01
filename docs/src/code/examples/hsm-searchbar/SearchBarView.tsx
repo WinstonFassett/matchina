@@ -77,7 +77,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       console.log('submit', query)
-      activeMachine.submit();
+      activeMachine.submit(query ?? "");
     }
     if (e.key === "Escape") {
       parentMachine.close();
@@ -89,7 +89,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
         ref={inputRef}
         className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
         placeholder="Type to search... (Press ESC to cancel)"
-        value={query}
+        value={query ?? ""}
         onChange={e => activeMachine.typed(e.target.value)}
         onKeyDown={onKeyDown}
       />
@@ -116,7 +116,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
         }}
         select={(index: number) => {
           console.log("Select", { index })
-          activeMachine.done(query)
+          activeMachine.done(query ?? "")
         }}
       />
     }, false)}

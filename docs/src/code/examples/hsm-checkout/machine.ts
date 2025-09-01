@@ -47,7 +47,8 @@ export function createCheckoutMachine() {
     Cart: { proceed: { to: "Shipping", handle: () => checkoutStates.Shipping() } },
     Shipping: { 
       back: { to: "Cart", handle: () => checkoutStates.Cart() }, 
-      proceed: { to: "Payment", handle: () => checkoutStates.Payment(payment) } 
+      // Always reset payment when (re)entering Payment from Shipping
+      proceed: { to: "Payment", handle: () => { payment.reset(); return checkoutStates.Payment(payment); } } 
     },
     Payment: { 
       back: { to: "Shipping", handle: () => checkoutStates.Shipping() }, 
