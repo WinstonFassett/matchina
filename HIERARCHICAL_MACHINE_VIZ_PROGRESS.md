@@ -331,3 +331,5 @@ These bugs are all new in recent code:
 React Flow should just be removed from options until it is working. later.
 
 
+The mermaid inspector is immature. We got further in R1. We should lift from that to complete this. 
+What we want is for it to not rerender the diagram unless the def changes. and to use DOM manipulation and/or CSS to update the edges to make them clickable and the active state highlighted. 
