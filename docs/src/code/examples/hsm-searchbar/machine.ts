@@ -97,11 +97,16 @@ export function createSearchBarMachine() {
     onDone: () => hierarchical.close()
   });
   
-  searchBar = matchina(appStates, {
-    Inactive: { focus: { to: "Active", handle: () => appStates.Active(activeMachine) } },
+  searchBar = matchina({
+    ...appStates,
+    Active: () => appStates.Active(activeMachine),
+  }, {
+    Inactive: { 
+      focus: "Active"
+    },
     Active: { 
-      blur: { to: "Inactive", handle: () => appStates.Inactive() }, 
-      close: { to: "Inactive", handle: () => appStates.Inactive() } 
+      blur: "Inactive", 
+      close: "Inactive",
     },
   }, appStates.Inactive());
 
