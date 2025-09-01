@@ -29,7 +29,12 @@ mermaid.initialize({
     .transition {
       stroke: var(--sl-color-text);      
   }
-      
+    .labelBkg,
+    .edgeLabel,  
+    .edgeLabel p {
+      background-color: transparent;
+    }
+
     .cluster rect {
       fill: var(--sl-color-accent-high);
       opacity: 0.15;
