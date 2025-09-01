@@ -34,23 +34,15 @@ export function Statuses({ machine }: { machine: FactoryMachine<any> }) {
 
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
-  const state = machine.getState();
-
+  const statusPath = getStatusPath(machine);
   return (
-    <div className="p-4 space-y-3 border rounded">
-      <h3 className="font-semibold">Search Bar</h3>
-      <div className="text-sm text-gray-600 font-medium">
-        State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200"><Statuses machine={machine} /></span>
+    <div className="p-4 space-y-3 border rounded bg-white dark:bg-gray-800">
+      <h3 className="font-semibold text-lg mb-2">Search Bar</h3>
+      <div className="text-base text-gray-700 dark:text-gray-200 font-medium mb-2">
+        State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200">{statusPath}</span>
       </div>
-      {/* <div><ActionButtons machine={machine} /></div> */}
-      {state.match({
-        Active: ({machine: activeMachine}: {machine: ActiveMachine}) => 
-          !activeMachine ? <div>Machine missing from Active state
-            <pre>State keys: {JSON.stringify(Object.keys(state), null, 2)}</pre>
-            <pre>State.data: {JSON.stringify(state.data, null, 2)}</pre>
-            <pre>Context: {JSON.stringify({ stack_keys: state.stack?.map((s) => s.key), depth: state.depth, fullkey: state.fullkey }, null, 2)}</pre>
-          </div> :
-          <ActiveView machine={activeMachine} parentMachine={machine} />,
+      {machine.getState().match({
+        Active: ({machine: activeMachine}: any) => <ActiveView machine={activeMachine} parentMachine={machine} />,
         Inactive: () => <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline" onClick={() => machine.focus()}>Click to search</button>,
       }, false)}
     </div>
