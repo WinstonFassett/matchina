@@ -6,45 +6,112 @@ mermaid.initialize({
   // startOnLoad: true
   themeVariables: {},
   themeCSS: `
-    /* Base text colors: SVG text uses fill, HTML spans use color */
-    .label text, g.node text, g.state text, g.stateGroup text { fill: var(--sl-color-text); }
-    span, p { color: var(--sl-color-text); }
+    .label text, span, p {
+      color: var(--sl-color-text);
+     }; 
     .node rect {
       fill: var(--sl-color-bg);
       stroke: var(--sl-color-text);
       rx: 10; ry: 10;
       
     }
-    /* Statechart nodes */
-    .state rect, .stateGroup rect {
-      fill: var(--sl-color-bg);
-      stroke: var(--sl-color-text);
-      rx: 8; ry: 8;
-    }
-    .state .label, .stateGroup .label, g.node .label {
+    .node span {
       color: var(--sl-color-text);
     }
-    /* Edge labels */
-    span.edgeLabel > p {
-      background: var(--sl-color-bg);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--sl-color-gray-5);
-      transition: color .12s ease, background-color .12s ease, text-decoration .12s ease;
+    .node circle.state-start {
+      fill: var(--sl-color-text);
+      stroke: var(--sl-color-text);
+    }
+    .transition {
+      stroke: var(--sl-color-text);      
+  }
+      
+    .cluster rect {
+      fill: var(--sl-color-accent-high);
+      opacity: 0.15;
+      stroke: var(--sl-color-black);
+      stroke-width: 5;
+      border-radius: 10px;
+      rx: 10; ry: 10;
+    }
+    .cluster span {
+      color: var(--sl-color-text);
     }
 
-    .active rect {
+    .cluster-label,
+    .nodeLabel {
+      color: var(--sl-color-text);
+    }
+    
+    .statediagram-cluster rect,
+    .statediagram-cluster.statediagram-cluster .inner {
+      fill: var(--sl-color-bg);
+      stroke: var(--sl-color-text);
+    }
+    /* used by flowchart but not stateDiagram */
+    .node.active {
       animation: fadeInBg .8s ease forwards;
     }
     .flowchart-link {
       stroke: var(--sl-color-text);
     }
-    .active rect { fill: var(--sl-color-accent); stroke: var(--sl-color-accent); }
-    .active text { fill: var(--sl-color-text-invert); }
-    .active span, .active .label { color: var(--sl-color-text-invert); animation: fadeInText .8s ease forwards; }
+    .active rect {
+      fill: var(--sl-color-accent-high);
+    }
+    .active span {
+      color: var(--sl-color-text-invert);
+      animation: fadeInText .8s ease forwards;
+    }
     .marker {
       fill: var(--sl-color-text);
     }
+    
+    /* State diagram specific styles */
+    .stateDiagram .state-box {
+      fill: var(--sl-color-bg);
+      stroke: var(--sl-color-text);
+      stroke-width: 1;
+    }
+    
+    /* DOM manipulation classes for state charts */
+    .state-highlight rect {
+      fill: var(--sl-color-text-accent) !important;
+      stroke: var(--sl-color-accent-high) !important;
+      stroke-width: 2px !important;
+      animation: fadeInBg .8s ease forwards;
+    }
+    
+    .state-highlight span {
+      color: var(--sl-color-text-invert) !important;
+      animation: fadeInText .8s ease forwards;
+    }
+    
+    .state-container-highlight rect {
+      stroke: var(--sl-color-accent-high) !important;
+      stroke-width: 2px !important;
+      fill: var(--sl-color-text-accent) !important;
+      fill-opacity: 0.15 !important;
+      animation: fadeInBg .8s ease forwards;
+    }
+    
+    /* Edge label styling classes */
+    .edge-active {
+      background-color: var(--sl-color-gray-5) !important;
+      color: var(--sl-color-accent-high) !important;
+      text-decoration: underline !important;
+      cursor: pointer !important;
+    }
+    
+    .edge-inactive {
+      background-color: var(--sl-color-bg) !important;
+      color: var(--sl-color-gray-3) !important;
+      cursor: default !important;
+    }
+    
+    .edge-interactive {
+      cursor: pointer !important;
+    }
+    
     @keyframes fadeInBg {
       from {
         fill-opacity: 0;
