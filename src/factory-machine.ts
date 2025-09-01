@@ -152,6 +152,34 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
     return undefined;
   }
 
+  // Handle inspectable transition format: { to: key, handle?: fn }
+  if (typeof transition === "object" && transition !== null && "to" in transition) {
+    const { to, handle } = transition as { to: keyof FC["states"]; handle?: (...params: any[]) => any };
+    
+    // If there's a handler, call it to get dynamic parameters
+    if (handle) {
+      const result = handle(...ev.params);
+      
+      // Handler can return:
+      // 1. A state instance directly
+      // 2. Parameters to pass to the target state factory
+      // 3. undefined (use default parameters)
+      if (result && typeof result === "object" && "key" in result) {
+        // Handler returned a state instance directly
+        return result;
+      } else if (Array.isArray(result)) {
+        // Handler returned parameters for state factory
+        return states[to](...result) as any;
+      } else if (result !== undefined) {
+        // Handler returned a single parameter
+        return states[to](result) as any;
+      }
+    }
+    
+    // No handler or handler returned undefined, use event params
+    return states[to](...ev.params) as any;
+  }
+
   if (typeof transition === "function") {
     const stateOrFn = transition(...ev.params);
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
