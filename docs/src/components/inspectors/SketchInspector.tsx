@@ -77,11 +77,11 @@ const SketchInspector = memo(({
                     <button 
                       className={`transition-button ${isActive && interactive ? 'enabled' : 'disabled'}`}
                       onClick={() => {
-                        if (interactive && isActive && actions?.[event]) {
-                          actions[event]();
+                        if (interactive && isActive) {
+                          machine.send(event);
                         }
                       }}
-                      disabled={!isActive || !interactive || !actions?.[event]}
+                      disabled={!isActive || !interactive}
                       type="button"
                     >
                       {event}
