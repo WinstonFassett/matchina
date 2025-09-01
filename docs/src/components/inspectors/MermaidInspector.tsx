@@ -8,13 +8,32 @@ mermaid.initialize({
   themeCSS: `
     .label text, span, p {
       color: var(--sl-color-text);
-     }; 
+ 
+     }
     .node rect {
       fill: var(--sl-color-bg);
       stroke: var(--sl-color-text);
       rx: 10; ry: 10;
       
     }
+    /* Statechart nodes */
+    .state rect, .stateGroup rect {
+      fill: var(--sl-color-bg);
+      stroke: var(--sl-color-text);
+      rx: 8; ry: 8;
+    }
+    .state .label, .stateGroup .label, g.node .label {
+      color: var(--sl-color-text);
+    }
+    /* Edge labels */
+    span.edgeLabel > p {
+      background: var(--sl-color-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--sl-color-gray-5);
+      transition: color .12s ease, background-color .12s ease, text-decoration .12s ease;
+    }
+
     .active rect {
       animation: fadeInBg .8s ease forwards;
     }
@@ -25,7 +44,7 @@ mermaid.initialize({
       fill: var(--sl-color-text-accent);
 
     }
-    .active span {
+    .active span, .active .label {
       color: var(--sl-color-text-invert);
       animation: fadeInText .8s ease forwards;
     }
@@ -92,16 +111,13 @@ ${rows.join("\n")}
       let renderedState = false;
       const stateTransitions = states[stateKey]?.on;
       if (stateTransitions) {
-        Object.keys(stateTransitions).forEach((eventType) => {
-          const targetStateEntry = stateTransitions[eventType];
-          if (targetStateEntry) {
-            const targetStateKey = targetStateEntry;
-            rows.push(
-              `    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetStateKey}[${targetStateKey}]`
-            );
-            // rows.push(`${indent()}${stateKey} --> ${state.key}: ${eventType}`);
+        Object.entries(stateTransitions).forEach(([eventType, target]: [string, any]) => {
+          if (!target) return;
+          const targetId: string | undefined = typeof target === 'string' ? target : ((target as any)?.target as string | undefined);
+          if (targetId) {
+            rows.push(`    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetId}[${targetId}]`);
             renderedStates.add(stateKey);
-            renderedStates.add(targetStateKey);
+            renderedStates.add(targetId);
             renderedState = true;
           }
         });
@@ -136,6 +152,57 @@ ${rows.join("\n")}
   }
 }
 
+// Generate a Mermaid stateDiagram-v2 string from a nested machine config
+// Labels include "fromState<br>eventType" to align with DOM normalization
+function toStateChart(config: any) {
+  const rows: string[] = [];
+
+  function getStateId(stateName: string, parentPrefix: string = ""): string {
+    return parentPrefix ? `${parentPrefix}_${stateName}` : stateName;
+  }
+
+  function walk(cfg: any, parentPrefix: string = "", depth = 0) {
+    if (!cfg?.states) return;
+    const indent = "    ".repeat(depth);
+    const stateKeys = Object.keys(cfg.states);
+
+    stateKeys.forEach((stateKey) => {
+      const state = cfg.states[stateKey];
+      const id = getStateId(stateKey, parentPrefix);
+
+      // Nested state (composite)
+      if (state?.states) {
+        rows.push(`${indent}state ${id} {`);
+        walk(state, id, depth + 1);
+        if (state.initial) {
+          const nestedInitial = getStateId(state.initial, id);
+          rows.push(`${indent}  ${id} --> ${nestedInitial}`);
+        }
+        rows.push(`${indent}}`);
+      }
+
+      // Transitions
+      if (state?.on) {
+        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+          if (!target) return;
+          const targetId: string | undefined =
+            typeof target === "string"
+              ? getStateId(target, parentPrefix)
+              : (target as any)?.target
+              ? getStateId((target as any).target, parentPrefix)
+              : undefined;
+          if (targetId) {
+            rows.push(`${indent}${id} --> ${targetId}: ${stateKey}<br>${eventType}`);
+          }
+        });
+      }
+    });
+  }
+
+  walk(config);
+  return `stateDiagram-v2\n${rows.join("\n")}`;
+}
+
 let lastId = 0;
 
 const MermaidInspector = memo(
@@ -144,15 +211,20 @@ const MermaidInspector = memo(
     stateKey,
     actions,
     interactive = true,
+    diagramType: diagramTypeProp,
   }: {
     config: any;
     stateKey: string;
     actions?: Record<string, any>;
     interactive?: boolean;
+    diagramType?: 'flowchart' | 'statechart';
   }) => {
     const [id] = useState((lastId++).toString());
+    const diagramType = diagramTypeProp ?? 'statechart';
     const { states } = config;
-    const chart = useMemo(() => toStateDiagram(config, id), [states]);
+    const chart = useMemo(() => (
+      diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id)
+    ), [states, diagramType]);
     const debouncedStateKey = useDebouncedValue(stateKey, 60);
 
     // Cache the rendered container for DOM manipulation without re-rendering the SVG
@@ -200,7 +272,8 @@ const MermaidInspector = memo(
       } catch {}
       // Fallback by text content
       if (!activated) {
-        const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node, g.state, g.stateGroup"))
+        const nodeSelector = diagramType === 'flowchart' ? "g.node" : "g.state, g.stateGroup";
+        const candidate = Array.from(root.querySelectorAll<SVGGElement>(nodeSelector))
           .find((g) => g.textContent?.trim() === debouncedStateKey);
         if (candidate) candidate.classList.add("active");
       }
@@ -226,7 +299,7 @@ const MermaidInspector = memo(
         }
         p.onclick = clickable ? () => action?.() : null;
       });
-    }, [debouncedStateKey, actions, interactive]);
+    }, [debouncedStateKey, actions, interactive, diagramType]);
     if (!chart) return <div>NO CHART!!!</div>;
 
     return (
@@ -239,8 +312,60 @@ const MermaidInspector = memo(
     );
   }
 );
+export { MermaidInspector };
 
-export default MermaidInspector;
+// Optional helper with UI to switch diagram types (default to statechart)
+export const MermaidInspectorWithSettings = memo(
+  ({
+    config,
+    stateKey,
+    actions,
+    interactive = true,
+  }: {
+    config: any;
+    stateKey: string;
+    actions?: Record<string, any>;
+    interactive?: boolean;
+  }) => {
+    const [diagramType, setDiagramType] = useState<'flowchart' | 'statechart'>('statechart');
+    return (
+      <div>
+        <div style={{
+          marginBottom: '12px',
+          padding: '8px',
+          backgroundColor: 'var(--sl-color-gray-6)',
+          borderRadius: '6px',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center'
+        }}>
+          <label style={{ fontSize: '14px', fontWeight: 500 }}>Diagram Type:</label>
+          <select
+            value={diagramType}
+            onChange={(e) => setDiagramType(e.target.value as 'flowchart' | 'statechart')}
+            style={{
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid var(--sl-color-gray-4)',
+              backgroundColor: 'var(--sl-color-bg)',
+              color: 'var(--sl-color-text)'
+            }}
+          >
+            <option value="statechart">State Chart</option>
+            <option value="flowchart">Flowchart</option>
+          </select>
+        </div>
+        <MermaidInspector
+          config={config}
+          stateKey={stateKey}
+          actions={actions}
+          interactive={interactive}
+          diagramType={diagramType}
+        />
+      </div>
+    );
+  }
+);
 
 export function useDebouncedValue<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -255,3 +380,5 @@ export function useDebouncedValue<T>(value: T, delay?: number): T {
 
   return debouncedValue;
 }
+
+export default MermaidInspectorWithSettings;
