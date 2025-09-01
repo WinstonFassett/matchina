@@ -179,13 +179,14 @@ describe("HSM: Infinite Depth Support", () => {
       expect(state.depth).toBe(level);
       expect(state.data.level).toBe(level);
       
-      // Debug what's in the stack
-      console.log(`Level ${level}: stack length ${state.stack.length}, expected ${level + 1}`);
-      console.log(`Stack: ${state.stack.map((s, i) => `[${i}] ${s.key}`).join(', ')}`);
-      
-      // Verify stack contains at least the expected active states
-      // Note: stack may contain additional states from enhanced child machines
+      // Verify stack length matches current active depth (all levels see same stack)  
+      // Note: stack may contain additional states from auto-enhanced child machines
       expect(state.stack.length).toBeGreaterThanOrEqual(level + 1);
+      
+      // Verify the first (level + 1) states in stack are all Processing states in our hierarchy
+      for (let i = 0; i <= level; i++) {
+        expect(state.stack[i]?.key).toBe("Processing");
+      }
       
       // Verify fullkey has correct number of segments
       const segments = state.fullkey.split(".");
