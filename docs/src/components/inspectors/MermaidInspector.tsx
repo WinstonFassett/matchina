@@ -324,24 +324,47 @@ const MermaidInspector = memo(
       const root = containerRef.current;
       if (!root) return;
 
-      // Highlight active node (flowchart/statechart friendly)
-      // Clear previous
-      root.querySelectorAll("g.node.active, g.state.active, g.stateGroup.active, .active-container").forEach((n) => n.classList.remove("active", "active-container"));
-      // Try id match first
-      let activated = false;
-      try {
-        const byId = root.querySelector(`g#${CSS.escape(debouncedStateKey)}`) as SVGGElement | null;
-        if (byId) {
-          byId.classList.add("active");
-          activated = true;
+      // Clear previous highlights for both modes
+      root
+        .querySelectorAll(
+          ".state-highlight, .state-container-highlight, g.node.active, g.state.active, g.stateGroup.active, .active-container"
+        )
+        .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
+
+      if (diagramType === 'statechart') {
+        // R1 approach: target Mermaid-generated IDs for state groups
+        const activeSel = `[id*="state-${debouncedStateKey}-"]`;
+        const activeEl = root.querySelector(activeSel) as Element | null;
+        if (activeEl) activeEl.classList.add('state-highlight');
+
+        // Parent container highlight for hierarchical context
+        if (debouncedStateKey.includes('_')) {
+          const parentKey = debouncedStateKey.split('_')[0];
+          const parentSel = `[id*="state-${parentKey}-"]`;
+          const parentEl = root.querySelector(parentSel) as Element | null;
+          if (parentEl && parentEl !== activeEl) parentEl.classList.add('state-container-highlight');
         }
-      } catch {}
-      // Fallback by text content
-      if (!activated) {
-        const nodeSelector = diagramType === 'flowchart' ? "g.node" : "g.state, g.stateGroup";
-        const candidate = Array.from(root.querySelectorAll<SVGGElement>(nodeSelector))
-          .find((g) => g.textContent?.trim() === debouncedStateKey);
-        if (candidate) candidate.classList.add("active");
+      } else {
+        // Flowchart: id match or text fallback, add .active and optional .active-container
+        let activated = false;
+        try {
+          const byId = root.querySelector(`g#${CSS.escape(debouncedStateKey)}`) as SVGGElement | null;
+          if (byId) {
+            byId.classList.add("active");
+            activated = true;
+          }
+        } catch {}
+        if (!activated) {
+          const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
+            .find((g) => g.textContent?.trim() === debouncedStateKey);
+          if (candidate) candidate.classList.add("active");
+        }
+        if (debouncedStateKey.includes('_')) {
+          const parentKey = debouncedStateKey.split('_')[0];
+          const parentNode = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
+            .find((g) => g.textContent?.trim() === parentKey);
+          if (parentNode) parentNode.classList.add('active-container');
+        }
       }
 
       // Edge labels: class-based styling and click binding when available
