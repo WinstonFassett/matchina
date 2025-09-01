@@ -1,5 +1,5 @@
 import mermaid from "mermaid";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mermaid from "../Mermaid";
 
 mermaid.initialize({
@@ -154,57 +154,84 @@ const MermaidInspector = memo(
     const { states } = config;
     const chart = useMemo(() => toStateDiagram(config, id), [states]);
     const debouncedStateKey = useDebouncedValue(stateKey, 60);
-    const onRender = useCallback(
-      (el: HTMLElement) => {
-        console.log("onRender", el);
-        setTimeout(() => {
-          el.querySelectorAll("span.edgeLabel").forEach((span) => {
-            // Find the <p> inside the span
-            const p = span.querySelector("p");
-            if (!p) return;
-            // Get the text, split on line breaks
-            const lines = Array.from(p.childNodes)
-              .map((node) =>
-                node.nodeType === Node.ELEMENT_NODE &&
-                (node as HTMLElement).tagName === "BR"
-                  ? "\n"
-                  : node.textContent
-              )
-              .join("")
-              .split("\n");
-            const [state, type] = lines;
-            const action = actions?.[type];
-            p.innerHTML = type; // Show only the event type
-            const clickable = action && interactive;
-            p.onclick = clickable ? () => action() : null;
-            if (action && state === debouncedStateKey) {
-              p.style.backgroundColor = "var(--sl-color-gray-5)";
-              p.style.color = "var(--sl-color-accent-high)";
-              if (clickable) {
-                p.style.textDecoration = "underline";
-                p.style.cursor = action ? "pointer" : "default";
-              }
-            } else {
-              p.style.backgroundColor = "var(--sl-color-bg)";
-              // p.style.backgroundColor = "transparent";
-              p.style.color = "var(--sl-color-gray-3)";
-              // p.style.textDecoration = "none";
-            }
-          });
-        }, 1);
-      },
-      [debouncedStateKey]
-    );
+
+    // Cache the rendered container for DOM manipulation without re-rendering the SVG
+    const containerRef = useRef<HTMLElement | null>(null);
+
+    // One-time setup after render: normalize edge labels and cache metadata
+    const onRender = useCallback((el: HTMLElement) => {
+      containerRef.current = el;
+      setTimeout(() => {
+        el.querySelectorAll("span.edgeLabel").forEach((span) => {
+          const p = span.querySelector("p");
+          if (!p) return;
+          const lines = Array.from(p.childNodes)
+            .map((node) =>
+              node.nodeType === Node.ELEMENT_NODE &&
+              (node as HTMLElement).tagName === "BR"
+                ? "\n"
+                : node.textContent
+            )
+            .join("")
+            .split("\n");
+          const [fromState, type] = lines;
+          (p as any)._edge = { fromState, type };
+          p.innerHTML = type; // Only show the event type
+        });
+      }, 1);
+    }, []);
+
+    // Update active node highlighting and edge interactivity on state changes
+    useEffect(() => {
+      const root = containerRef.current;
+      if (!root) return;
+
+      // Highlight active node (flowchart/statechart friendly)
+      // Clear previous
+      root.querySelectorAll("g.node.active, g.state.active, g.stateGroup.active, .active-container").forEach((n) => n.classList.remove("active", "active-container"));
+      // Try id match first
+      let activated = false;
+      try {
+        const byId = root.querySelector(`g#${CSS.escape(debouncedStateKey)}`) as SVGGElement | null;
+        if (byId) {
+          byId.classList.add("active");
+          activated = true;
+        }
+      } catch {}
+      // Fallback by text content
+      if (!activated) {
+        const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node, g.state, g.stateGroup"))
+          .find((g) => g.textContent?.trim() === debouncedStateKey);
+        if (candidate) candidate.classList.add("active");
+      }
+
+      // Edge labels: style and click when available from current state
+      root.querySelectorAll<HTMLParagraphElement>("span.edgeLabel > p").forEach((p) => {
+        const meta = (p as any)._edge as { fromState?: string; type?: string } | undefined;
+        const type = meta?.type;
+        const from = meta?.fromState;
+        const action = type ? actions?.[type] : undefined;
+        const clickable = !!action && interactive && from === debouncedStateKey;
+
+        if (from === debouncedStateKey && action) {
+          p.style.backgroundColor = "var(--sl-color-gray-5)";
+          p.style.color = "var(--sl-color-accent-high)";
+          p.style.textDecoration = clickable ? "underline" : "none";
+          p.style.cursor = clickable ? "pointer" : "default";
+        } else {
+          p.style.backgroundColor = "var(--sl-color-bg)";
+          p.style.color = "var(--sl-color-gray-3)";
+          p.style.textDecoration = "none";
+          p.style.cursor = "default";
+        }
+        p.onclick = clickable ? () => action?.() : null;
+      });
+    }, [debouncedStateKey, actions, interactive]);
     if (!chart) return <div>NO CHART!!!</div>;
 
     return (
       <div className="container">
-        <Mermaid
-          content={`${chart}
-    ${debouncedStateKey}:::active
-`}
-          onRender={onRender}
-        />
+        <Mermaid content={chart} onRender={onRender} />
         {/* <pre>{chart}</pre> */}
         {/* <pre>{JSON.stringify(machine, null, 2)}</pre> */}
         {/*<pre>{JSON.stringify(definition, null, 2)}</pre>*/}
