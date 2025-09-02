@@ -48,7 +48,7 @@ const SketchInspector = memo(({
     
     return (
       <div 
-        className={`state-item ${isActive ? 'active' : ''} depth-${depth}`}
+        className={`state-item ${isActive ? 'active' : isBranchActive ? 'active-ancestor' : ''} depth-${depth}`}
         data-state-key={stateKey}
       >
         <div className="state-content">
@@ -98,6 +98,7 @@ const SketchInspector = memo(({
               // Only highlight if this is the deepest active state
               // const nestedIsActive = nestedKey === currentStateKey;
               const isMatch = nestedConfig.fullKey === fullKey;
+              const nestedBranchActive = !!fullKey && (fullKey === nestedConfig.fullKey || fullKey.startsWith(nestedConfig.fullKey + '.'));
               console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
               return (
                 <StateItem 
@@ -106,7 +107,7 @@ const SketchInspector = memo(({
                   fullKey={nestedConfig.fullKey}
                   stateConfig={nestedConfig}
                   isActive={isMatch}
-                  isBranchActive={isBranchActive}
+                  isBranchActive={nestedBranchActive}
                   depth={depth + 1}
                 />
               );
@@ -125,6 +126,7 @@ const SketchInspector = memo(({
       // const isAtDepth = depth === currentState?.depth;
       const stateConfig = states[stateKey];
       const isActive = stateConfig.fullKey === fullKey;
+      const branchActive = !!fullKey && (fullKey === stateConfig.fullKey || fullKey.startsWith(stateConfig.fullKey + '.'));
       // console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
       
       return (
@@ -134,7 +136,7 @@ const SketchInspector = memo(({
           fullKey={stateKey}
           stateConfig={stateConfig}
           isActive={isActive}
-          isBranchActive={isActive}
+          isBranchActive={branchActive}
           depth={0}
         />
       );
