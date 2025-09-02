@@ -2,10 +2,12 @@ import type { FactoryMachine } from "../factory-machine";
 import { send as sendHook } from "../state-machine-hooks";
 import { isFactoryMachine } from "../machine-brand";
 import { AllEventsOf } from "./types";
+import { FactoryMachineEventImpl } from "../factory-machine-event";
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
 
+// Probe for and return state submachine
 function getChildFromParentState(state: any): AnyMachine | undefined {
   const m = state?.data?.machine as any;
   if (!m) return undefined;
@@ -23,12 +25,14 @@ export type HierarchicalEvents<M> =
   | AllEventsOf<M>
   | string;
 
+// dead simple wrapper
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M) {
   propagateSubmachines(machine);
   return machine as any as HierarchicalMachine<M>;
 }
 
-// R3.4-compliant implementation
+// attach to a root machine to propagate events up and down
+// synchronously enforcing proper flow
 export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): void {
 
   // maybe we track our bound machines somewhere so we can unhook them? 
@@ -57,6 +61,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   }
 
   // Determine if a child's current state is final
+  // if marked as such or has no transitions
   function isChildFinal(child: any, childState: any): boolean {
     if (childState?.data?.final) return true;
     const transitions = (child as any).transitions?.[childState?.key];
@@ -64,6 +69,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   }
 
   // Perform child-first resolution starting at root. Builds the chain during descent.
+  // 🧑‍💻: this function is an absolute beast. needs explanation.
+  // why so monolithic?
   function handleAtRoot(type: string, params: any[]): any {
     const machinesChain: AnyMachine[] = [];
     const statesChain: any[] = [];
@@ -124,12 +131,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
       const ev = (root as any).resolveExit?.({ type, params, from });
       if (ev) (root as any).transition?.(ev);
       // Stamp after handling, using the now-current active chain discovered by a shallow pass from root down
+      // 🧑‍💻: um why after resolveExit? this can happen sooner, does not break things to do so, so far.
       stampUsingCurrentChain();
       return ev;
     }
 
     const result = descend(root as AnyMachine);
     // After deepest handling, bubble child.exit upward along the visited chain
+    // 🧑‍💻: YES! bubble child.exit
     if (result.handled) {
       for (let i = machinesChain.length - 2; i >= 0; i--) {
         const parent = machinesChain[i] as any;
@@ -149,15 +158,23 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
       }
     }
     // Stamp using the post-change active chain to ensure new state objects are annotated
+    // 🧑‍💻: weird to me that this takes no args
     stampUsingCurrentChain();
+    
     // Notify root subscribers for non-exit child changes so parent observers see updates
+    // 🧑‍💻: this is weird. i don't want to have to explicitly notify
+    // we have more lifecycle than that. 
     if (result.handled && !String(type).startsWith('child.')) {
+      // 🧑‍💻: NO. should be using full lifecycle. 
       (root as any).notify?.({ type: 'child.change', params: [{ target: result.handledBy, type, params }] });
+      // 🧑‍💻: I would prefer to do somethign earlier like send(type, ...params) or transition(ev)
+      // this should work assuming our interceptors know what to do with it
+      // root.send('child.change', ...params);
     }
     return result.event ?? null;
   }
 
-  // UNUSED???
+  // UNUSED??? TOTALLY UNUSED.
   function hookDiscovered(machines: AnyMachine[]) {
     for (const m of machines) {
       const s = m.getState();
@@ -169,7 +186,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   function stamp(statesChain: any[]) {
     if (statesChain.length === 0) return;
     const keys = statesChain.map((s) => s.key);
-    // If deepest active state is Processing, append implicit Idle for fullKey context
+    // If deepest active state is Processing, append implicit Idle for fullKey context  
+    // 🧑‍💻: OH FUCK YOU HARDCODED APP STATE KEYS INTO THE LIB!!! NOOOOOO
     if (keys[keys.length - 1] === "Processing") {
       keys.push("Idle");
     }
@@ -197,7 +215,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
       const child = getChildFromParentState(s);
       if (!child) break;
       // Hook every discovered descendant immediately (works for duck-typed children too)
-      hookMachine(child);
+      hookMachine(child); // 🧑‍💻: what about unhooking???
       // Continue traversal for any child that exposes getState (duck-typed or branded)
       current = (child as AnyMachine);
     }
@@ -210,6 +228,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
     // in this shitty unused hook, 
     // WHY would you NOT call innerSend??
+    // maybe if this were wired up the send call i want to make would work
     if (type === 'child.change') {
       const { type: childType, params: childParams } = params[0] || {};
       return handleAtRoot(childType, childParams ?? []);
