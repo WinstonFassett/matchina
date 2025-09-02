@@ -78,8 +78,9 @@ describe("HSM: Infinite Depth Support", () => {
         expect(childState?.depth).toBe(expectedLevel + 1);
         expect(childState?.data.level).toBe(expectedLevel + 1);
         
-        // Verify fullKey builds correctly
-        const expectedFullkey = Array(expectedLevel + 2).fill("Processing").join(".");
+        // Verify fullKey builds correctly - should be Processing states + child's Idle
+        const processingStates = Array(expectedLevel + 2).fill("Processing");
+        const expectedFullkey = processingStates.join(".") + ".Idle";
         expect(childState?.nested.fullKey).toBe(expectedFullkey);
         
         // Move to next level
@@ -172,7 +173,7 @@ describe("HSM: Infinite Depth Support", () => {
       const freshRoot = createNestedMachine(0, depth);
       const { state } = navigateToLevel(level, freshRoot);
       
-      const expectedPath = Array(level + 1).fill("Processing").join(".");
+      const expectedPath = Array(level + 1).fill("Processing").join(".") + ".Idle";
       // Verify context consistency
       expect(state.nested.fullKey).toBe(expectedPath);
       expect(state.data.level).toBe(level);
@@ -188,16 +189,13 @@ describe("HSM: Infinite Depth Support", () => {
       
       // Verify fullKey has correct number of segments
       const segments = state.nested.fullKey.split(".");
-      expect(segments).toHaveLength(level + 2); // +1 for Processing, +1 for Idle
+      expect(segments).toHaveLength(level + 2); // level+1 Processing states + 1 Idle
       
-      // All segments should be "Processing" except possibly the first
-      for (let i = 0; i < segments.length; i++) {
-        if (i === 0) {
-          expect(segments[i]).toMatch(/^(Idle|Processing)$/);
-        } else {
-          expect(segments[i]).toBe("Processing");
-        }
+      // All segments should be "Processing" except the last which is "Idle"
+      for (let i = 0; i < segments.length - 1; i++) {
+        expect(segments[i]).toBe("Processing");
       }
+      expect(segments[segments.length - 1]).toBe("Idle");
       
       // Verify stack contains correct states
       for (let i = 0; i < state.stack.length; i++) {
