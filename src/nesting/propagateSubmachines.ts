@@ -1,6 +1,5 @@
 import type { FactoryMachine } from "../factory-machine";
 import { send as sendHook } from "../state-machine-hooks";
-import { buildSetup } from "../ext/setup";
 import { isFactoryMachine } from "../machine-brand";
 import { AllEventsOf } from "./types";
 
@@ -47,23 +46,21 @@ function synthesizeChildExit(machine: FactoryMachine<any>, childState: any) {
 }
 
 export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M): void {
-  const [addSetup] = buildSetup(machine);
-
   // Hook machines discovered in the active chain
   function hookMachine(m: AnyMachine, root: FactoryMachine<any>) {
     if ((m as any).__propagateUnhook) return; // Already hooked
     
-    (m as any).__propagateUnhook = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
-      if (type.startsWith('child.')) {
-        // Handle child.* at this machine's level
-        const ev = (m as any).resolveExit?.({ type, params, from: m.getState() });
-        if (ev) (m as any).transition?.(ev);
-        return;
-      }
+    console.log(`[HOOK] Hooking machine:`, m.getState().key);
+    
+    // Install send hook on child machine to intercept sends
+    const unhook = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+      console.log(`[CHILD_SEND] Child ${m.getState().key} sending:`, type, params);
       
-      // Non-root send - block and redirect to root via child.change
-      return root.send('child.change', { target: m, type, params });
+      // Route child sends to root for child-first resolution
+      return (root as any).send('child.change', { target: m, type, params });
     })(m as any);
+    
+    (m as any).__propagateUnhook = unhook;
   }
 
   function unhookMachine(m: AnyMachine) {
@@ -108,8 +105,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       hookNewMachines();
       
       // Check for child exit after transition
-      const newState = machine.getState();
-      checkForChildExit(newState);
+      checkForChildExit(machine);
     }
     
     return ev;
@@ -145,6 +141,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
   }
 
   function checkForChildExit(parentMachine: any) {
+    if (!parentMachine?.getState) return;
+    
     const state = parentMachine.getState();
     const child = getChildFromParentState(state);
     
