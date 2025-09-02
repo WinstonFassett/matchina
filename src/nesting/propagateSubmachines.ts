@@ -107,7 +107,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     const state = m.getState();
     const child = getChildFromParentState(state);
     
-    if (child && isFactoryMachine(child)) {
+    if (child) {
       
       // Try child's children first (recursive)
       const deepResult = tryChildFirst(child, type, params);
@@ -164,12 +164,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     while (true) {
       const state = current.getState();
       if (!state || !state.key) {
+        break;
       } else {
         chain.push(state);
       }
       
       const child = getChildFromParentState(state);
-      if (!child || !isFactoryMachine(child)) break;
+      if (!child) break;
       current = child;
     }
     
@@ -185,6 +186,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     chain.forEach((state, i) => {
       (state as any).depth = i;
       (state as any).nested = nested;
+      (state as any).fullKey = nested.fullKey;
+      (state as any).stack = nested.stack;
     });
   }
 
@@ -193,7 +196,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     while (true) {
       const state = current.getState();
       const child = getChildFromParentState(state);
-      if (!child || !isFactoryMachine(child)) break;
+      if (!child) break;
       
       hookMachine(child, machine);
       current = child;

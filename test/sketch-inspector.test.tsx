@@ -7,11 +7,10 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { createSearchBarMachine } from "../docs/src/code/examples/hsm-searchbar/machine";
-import { resetGlobalHierarchyStack } from "../src/nesting/propagateSubmachines";
 
 describe("SketchInspector Context Requirements", () => {
   beforeEach(() => {
-    resetGlobalHierarchyStack();
+    // No global state to reset - each machine manages its own hierarchy
   });
 
   test("hierarchical machine should provide fullKey context", () => {

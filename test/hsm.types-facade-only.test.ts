@@ -14,7 +14,7 @@ describe("types: createHierarchicalMachine send union", () => {
       Green: { tick: "Red" },
     } as const;
     const m = createMachine(states, transitions, "Red");
-    setup(m)(propagateSubmachines(m));
+    setup(m)(propagateSubmachines);
     return m;
   }
 
@@ -28,7 +28,7 @@ describe("types: createHierarchicalMachine send union", () => {
       Broken: { repair: "Working" },
     } as const;
     const m = createMachine(states, transitions, "Working");
-    setup(m)(propagateSubmachines(m));
+    setup(m)(propagateSubmachines);
     return m;
   }
 

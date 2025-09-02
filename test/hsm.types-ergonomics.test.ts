@@ -36,7 +36,7 @@ function createSignalController() {
     "Working"
   );
 
-  setup(ctrl)(propagateSubmachines(ctrl));
+  setup(ctrl)(propagateSubmachines);
   return ctrl;
 }
 
