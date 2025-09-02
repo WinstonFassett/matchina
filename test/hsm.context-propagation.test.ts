@@ -190,10 +190,10 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     expect(searchState?.fullKey).toBe("Active.Fetching");
     expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
     
-    // Verify stack consistency - all levels share the same full active state stack
-    expect(rootState.stack).toHaveLength(3); // Full stack: [Active, Fetching, Pending]
-    expect(searchState?.stack).toHaveLength(3); // Same stack
-    expect(fetchState?.stack).toHaveLength(3); // Same stack
+    // Verify stack lengths follow shallow model per level
+    expect(rootState.stack).toHaveLength(1); // Root-only
+    expect(searchState?.stack).toHaveLength(2); // Root + Search
+    expect(fetchState?.stack).toHaveLength(3); // Root + Search + Fetch
     
     // Verify stack contents match expectations
     expect(rootState.stack[0].key).toBe("Active");

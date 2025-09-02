@@ -75,7 +75,9 @@ function enhanceStateWithContext(state: any, context: StateWithContext): any {
     .filter(s => s)
     .map(s => s.key)
     .join('.');
-  return Object.assign(state, {
+  // Return a new object preserving prototype so identity changes without losing methods
+  const clone = Object.assign(Object.create(Object.getPrototypeOf(state)), state);
+  return Object.assign(clone, {
     stack: context.stack,
     depth: context.depth,
     fullKey: fullKey
@@ -197,6 +199,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         }
       : undefined;
 
+    // Identity cache to preserve reference when nothing changed
+    let lastDerived: { base: any; result: any } | undefined;
+
     // Wrap getState so every read carries up-to-date context and child setup
     (machine as any).getState = () => {
       const state = originalGetState.call(machine);
@@ -204,14 +209,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       // Record this machine's current state at my depth
       hierarchyStack[depth] = state;
 
-      // Auto-setup child machine (if present) for hierarchical routing
+      // Auto-setup child machine (if present) for hierarchical routing (no traversal)
       const child = getChildFromParentState(state);
       if (child && !childEnhanced.has(child as any)) {
         childEnhanced.add(child as any);
-        // Inherit stack and increment depth for child
         propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
-
-        // If the child is a FactoryMachine, add send enhancer to notify exits
         if (isFactoryMachine(child as any)) {
           const duckChild = !isFactoryMachine(child as any);
           const enhancer = enhanceSend(child, machine, state, duckChild, true);
@@ -221,61 +223,49 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         }
       }
 
-      // Attach hierarchy context up to this machine's depth
-      const completeFullKey = hierarchyStack
-        .slice(0, depth + 1)
+      // Build shallow key and working stack slice for current depth
+      const stackSlice = hierarchyStack.slice(0, depth + 1);
+      const shallowKey = stackSlice
         .filter(s => s)
         .map(s => s.key)
         .join('.');
-      return enhanceStateWithContext(state, {
-        stack: hierarchyStack,
+
+      // If base state reference is unchanged, preserve identity
+      if (lastDerived && lastDerived.base === state) {
+        try {
+          // Update contextual fields on the same object
+          const updated = stackSlice.slice();
+          updated[depth] = lastDerived.result;
+          (lastDerived.result as any).stack = updated;
+          (lastDerived.result as any).depth = depth;
+          (lastDerived.result as any).fullKey = shallowKey;
+          // Write back to shared stack so descendants see enhanced reference
+          hierarchyStack[depth] = lastDerived.result;
+        } catch {}
+        return lastDerived.result;
+      }
+      const enhanced = enhanceStateWithContext(state, {
+        stack: stackSlice,
         depth: depth,
-        fullKey: completeFullKey
+        fullKey: shallowKey
       });
+      // Ensure the stack references the enhanced instance at this depth
+      try {
+        const updated = stackSlice.slice();
+        updated[depth] = enhanced;
+        (enhanced as any).stack = updated;
+      } catch {}
+      // Write back to shared stack so descendants see enhanced reference
+      try { hierarchyStack[depth] = enhanced; } catch {}
+      lastDerived = { base: state, result: enhanced };
+      return enhanced;
     };
     
     // Auto-enhance any child machines when parent state is accessed through resolveExit
     const originalResolveExit = (machine as any).resolveExit;
     (machine as any).resolveExit = (ev: any) => {
-      const resolvedEvent = originalResolveExit ? originalResolveExit(ev) : ev;
-      
-      if (resolvedEvent && resolvedEvent.to) {
-        const state = resolvedEvent.to;
-
-        // Persist parent state at this depth so subsequent child getState sees a populated ancestor slot
-        hierarchyStack[depth] = state;
-
-        // Ensure child machine (if any) is enhanced for future calls at correct depth
-        const maybeChild = getChildFromParentState(state);
-        if (maybeChild && !childEnhanced.has(maybeChild as any)) {
-          childEnhanced.add(maybeChild as any);
-          // Initialize child wrappers with same shared stack and incremented depth
-          propagateSubmachines(maybeChild as any, hierarchyStack, depth + 1)(maybeChild as any);
-          // Set up send middleware to notify parent of child exits
-          if (isFactoryMachine(maybeChild as any)) {
-            const duckChild = !isFactoryMachine(maybeChild as any);
-            const enhancer = enhanceSend(maybeChild, machine, state, duckChild, true);
-            const childMachine = maybeChild as FactoryMachine<any>;
-            const [addChildSetup] = buildSetup(childMachine);
-            addChildSetup(send(enhancer));
-          }
-        }
-        // Now enhance the state with hierarchy info up to this depth
-        const completeFullKey = hierarchyStack
-          .slice(0, depth + 1)
-          .filter(s => s)
-          .map(s => s.key)
-          .join('.');
-        const enhancedState = enhanceStateWithContext(state, {
-          stack: hierarchyStack,
-          depth: depth,
-          fullKey: completeFullKey
-        });
-
-        return { ...resolvedEvent, to: enhancedState };
-      }
-      
-      return resolvedEvent;
+      // Do not enhance or mutate the returned 'to' state here; keep identity intact.
+      return originalResolveExit ? originalResolveExit(ev) : ev;
     };
     
     // Enhance resolveExit to supply sane defaults for probes (non-mutating)
@@ -285,6 +275,25 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       const params = Array.isArray(ev?.params) ? ev.params : [];
       return next({ ...ev, from, params });
     }));
+
+    // Eagerly set up child enhancement so direct child sends still route via parent
+    // This covers cases where UIs hold a reference to the child machine and send events
+    // before any code has called parent getState() (which otherwise performs the setup).
+    try {
+      const state = originalGetState.call(machine);
+      const child = getChildFromParentState(state);
+      if (child && !childEnhanced.has(child as any)) {
+        childEnhanced.add(child as any);
+        propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
+        if (isFactoryMachine(child as any)) {
+          const duckChild = !isFactoryMachine(child as any);
+          const enhancer = enhanceSend(child, machine, state, duckChild, true);
+          const childMachine = child as FactoryMachine<any>;
+          const [addChildSetup] = buildSetup(childMachine);
+          addChildSetup(send(enhancer));
+        }
+      }
+    } catch {}
 
     // Child-first event routing
     const childFirst = (type: string, ...params: any[]): boolean => {

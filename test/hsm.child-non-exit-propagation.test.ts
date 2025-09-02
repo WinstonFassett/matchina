@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { readHierarchicalFullKey } from "../src/nesting/readHierarchicalFullKey";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 import { setup } from "../src/ext/setup";
@@ -107,8 +108,15 @@ describe("hierarchical checkout rerouting: [proceed, proceed, authorize]", () =>
 
     // Send authorize directly to payment child
     const beforeDirect = (calls as any).mock.calls.length;
+    const rootStateBeforeSend = root.getState();
     paymentMachine.send("authorize");
     expect(paymentMachine.getState().key).toBe("Authorizing");
+
+    const rootStateAfterSend = root.getState();
+    // Root identity is preserved when only a child changes
+    expect(rootStateAfterSend).toBe(rootStateBeforeSend);
+    // Deep hierarchical path can be computed via helper for UI
+    expect(readHierarchicalFullKey(root)).toBe("Checkout.Payment.Authorizing");
 
     // Parent should still notify subscribers (at least +1)
     expect((calls as any).mock.calls.length).toBeGreaterThanOrEqual(beforeDirect + 1);

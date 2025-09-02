@@ -20,7 +20,7 @@ const SketchInspector = memo(({
   // Step 1: Listen to machine changes for reactivity
   useMachine(machine);
   const currentState = machine.getState();
-  console.log("currentState", currentState)
+  // console.log("currentState", currentState)
   // Step 2: Get the definition (recalculate when own state or nested machine state changes)
   const nestedMachine = currentState?.data?.machine;
   const nestedState = nestedMachine?.getState?.();
@@ -29,7 +29,7 @@ const SketchInspector = memo(({
   // Step 3: Prepare highlighting info - find the deepest active state
   const currentStateKey = currentState?.key;
   const fullKey = currentState?.fullKey || currentStateKey;
-  console.log('currentState', fullKey, currentState.fullKey, currentState)
+  // console.log('currentState', fullKey, currentState.fullKey, currentState)
   const depth = currentState?.depth ?? 0;
   
   // const deepestActiveState = getDeepestActiveState(machine);
@@ -43,7 +43,7 @@ const SketchInspector = memo(({
     isBranchActive?: boolean;
     depth?: number;
   }) => {
-    console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
+    // console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
     const hasNested = stateConfig.states && Object.keys(stateConfig.states).length > 0;
     
     return (
@@ -99,7 +99,7 @@ const SketchInspector = memo(({
               // const nestedIsActive = nestedKey === currentStateKey;
               const isMatch = nestedConfig.fullKey === fullKey;
               const nestedBranchActive = !!fullKey && (fullKey === nestedConfig.fullKey || fullKey.startsWith(nestedConfig.fullKey + '.'));
-              console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
+              // console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
               return (
                 <StateItem 
                   key={nestedKey}
