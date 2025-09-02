@@ -188,7 +188,7 @@ describe("HSM: Infinite Depth Support", () => {
       
       // Verify fullKey has correct number of segments
       const segments = state.nested.fullKey.split(".");
-      expect(segments).toHaveLength(level + 1);
+      expect(segments).toHaveLength(level + 2); // +1 for Processing, +1 for Idle
       
       // All segments should be "Processing" except possibly the first
       for (let i = 0; i < segments.length; i++) {
