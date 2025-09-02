@@ -8,9 +8,9 @@ function getFullStatePath(machine: any): string {
   const currentState = machine.getState();
   if (!currentState) return 'Unknown';
   
-  // Use the new fullkey property if available
-  if (currentState.fullkey) {
-    return currentState.fullkey;
+  // Use the new fullKey property if available
+  if (currentState.fullKey) {
+    return currentState.fullKey;
   }
   
   // Fallback to building path manually for backward compatibility

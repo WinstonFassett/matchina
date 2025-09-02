@@ -5,7 +5,7 @@
 
 ## 🎯 Summary  
 Implemented working hierarchical machine context propagation and SketchInspector component, but identified critical design issues:
-- ✅ Context propagation (`stack`, `depth`, `fullkey`) working in tests
+- ✅ Context propagation (`stack`, `depth`, `fullKey`) working in tests
 - ✅ SketchInspector component implemented and functional
 - ⚠️ **DESIGN ISSUE**: Current implementation uses global stack + WeakMaps (static approach)
 - ⚠️ **DESIGN ISSUE**: Not dynamic listening/detaching as states change
@@ -45,7 +45,7 @@ const childEnhanced = new WeakSet<object>();
 **Status**: SketchInspector component is implemented and working
 - ✅ **Component**: `/docs/src/components/inspectors/SketchInspector.tsx` trusts framework
 - ✅ **Core Fix**: Uses only `useMachine(machine)` hook as required
-- ✅ **Display**: Shows `fullkey`, `depth`, hierarchical paths correctly
+- ✅ **Display**: Shows `fullKey`, `depth`, hierarchical paths correctly
 - ✅ **Highlighting**: Highlights innermost active state using `depth === stack.length - 1`
 
 ### Phase 3: Existing Visualizers (DEFERRED)
@@ -56,13 +56,13 @@ Port after core propagation redesign:
 
 ### Phase 4: Advanced Hierarchical Features (FUTURE)
 - **Dynamic Depth Visualization** - Show/hide hierarchy levels
-- **Context Inspector** - View stack, depth, fullkey data  
+- **Context Inspector** - View stack, depth, fullKey data  
 - **Transition Tracing** - Visualize chain reactions and event propagation
 
 ## 🗂️ Original Requirements (from HIERARCHICAL_MACHINE_VIZ_TASK.md)
 - Move away from direct functional transitions to `{ to: key, handle: fn }` for inspectability ✅
 - Focus on propagate submachines and chain reaction propagation ✅  
-- Support infinite depth with context (stack, depth, fullkey) ✅
+- Support infinite depth with context (stack, depth, fullKey) ✅
 - Test with 3-level machine where top 2 are permanent, level 3 is ephemeral ✅
 - Focus on implementation and tests over types initially ✅
 
@@ -72,14 +72,14 @@ Port after core propagation redesign:
 - **File**: `/docs/src/components/inspectors/SketchInspector.tsx` 
 - **Status**: COMPLETE and functional
 - **Approach**: Trusts hierarchical framework, uses only `useMachine(machine)`
-- **Features**: Displays fullkey paths, highlights innermost active states
+- **Features**: Displays fullKey paths, highlights innermost active states
 - **UI**: Shows state metadata, available transitions, hierarchical paths
 
 ### 2. Context Propagation (PROBLEMATIC IMPLEMENTATION) ⚠️
 - **File**: `src/nesting/propagateSubmachines.ts`
 - **Status**: WORKING but violates design principles  
 - **Issues**: Uses global stack + WeakMaps instead of incremental stack approach
-- **Enhancement**: States have `stack`, `depth`, `fullkey` properties attached
+- **Enhancement**: States have `stack`, `depth`, `fullKey` properties attached
 - **Problem**: Static enhancement breaks dynamic listening/detaching requirements
 
 ### 3. Test Implementation (PASSING BUT NEEDS REDESIGN) ✅⚠️ 
@@ -130,7 +130,7 @@ Port after core propagation redesign:
 
 1. **Zero Breaking Changes**: All existing functionality preserved
 2. **Performance**: Chain reactions scale to arbitrary depth efficiently  
-3. **Developer Experience**: Rich debugging context (`stack`, `depth`, `fullkey`)
+3. **Developer Experience**: Rich debugging context (`stack`, `depth`, `fullKey`)
 4. **Static Analysis**: Inspectable transitions enable better tooling
 5. **Test Coverage**: Comprehensive validation of complex hierarchical behaviors
 ## 📁 Current File Status
@@ -213,8 +213,8 @@ test/hsm.*.test.ts                         # Various hierarchical tests
 // Each machine adds itself to shared stack at its depth
 function buildStateContext(state: any, parentStack: any[], myDepth: number): StateWithContext {
   parentStack[myDepth] = state; // Add self to SAME STACK
-  const fullkey = parentStack.slice(0, myDepth + 1).map(s => s.key).join('.');
-  return { stack: parentStack, depth: myDepth, fullkey };
+  const fullKey = parentStack.slice(0, myDepth + 1).map(s => s.key).join('.');
+  return { stack: parentStack, depth: myDepth, fullKey };
 }
 ```
 
@@ -229,7 +229,7 @@ addChildSetup(send(enhancer)); // Use proper send hook, not manual method replac
 ### 🎯 Ready for Next Phase
 
 **Core infrastructure complete** - the hierarchical machine core now provides:
-1. **✅ Dynamic context propagation** - stack, depth, fullkey available at all levels
+1. **✅ Dynamic context propagation** - stack, depth, fullKey available at all levels
 2. **✅ Proper event routing** - child-first routing with parent fallback  
 3. **✅ Child.exit support** - children notify parents of state changes
 4. **✅ Infinite depth support** - tested and working at arbitrary nesting levels
@@ -271,7 +271,7 @@ addChildSetup(send(enhancer)); // Use proper send hook, not manual method replac
 ### 🎯 Current Issues
 
 **✅ COMPLETE**: Core hierarchical machine implementation with 178/178 tests passing  
-**✅ COMPLETE**: Context propagation (stack, depth, fullkey) working correctly  
+**✅ COMPLETE**: Context propagation (stack, depth, fullKey) working correctly  
 **⚠️ IN PROGRESS**: Visualization system integration  
 
 ### 🔧 Visualization Problems Identified

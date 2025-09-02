@@ -20,11 +20,11 @@ const HSMMermaidInspector = memo(({
   const nestedMachine = actualState?.data?.machine;
   const nestedState = useMachineMaybe(nestedMachine);
   
-  // Build hierarchical state key using new fullkey property or fallback
+  // Build hierarchical state key using new fullKey property or fallback
   const hierarchicalStateKey = useMemo(() => {
-    if (actualState?.fullkey) {
-      // Use the new fullkey property from hierarchical context
-      return actualState.fullkey.replace(/\./g, '_');
+    if (actualState?.fullKey) {
+      // Use the new fullKey property from hierarchical context
+      return actualState.fullKey.replace(/\./g, '_');
     }
     
     // Fallback to manual building for backward compatibility  

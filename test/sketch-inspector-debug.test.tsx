@@ -12,7 +12,7 @@ describe("Debug Hierarchical Context", () => {
     console.log("=== INITIAL STATE ===");
     const initialState = machine.getState();
     console.log("Initial state key:", initialState.key);
-    console.log("Initial state fullkey:", initialState.fullkey);
+    console.log("Initial state fullKey:", initialState.fullKey);
     console.log("Initial state depth:", initialState.depth);
     console.log("Initial state stack:", initialState.stack);
     console.log("Initial state data:", initialState.data);
@@ -21,7 +21,7 @@ describe("Debug Hierarchical Context", () => {
     machine.focus();
     const activeState = machine.getState();
     console.log("Active state key:", activeState.key);
-    console.log("Active state fullkey:", activeState.fullkey);
+    console.log("Active state fullKey:", activeState.fullKey);
     console.log("Active state depth:", activeState.depth);
     console.log("Active state stack:", activeState.stack);
     console.log("Active state data keys:", Object.keys(activeState.data || {}));
@@ -31,7 +31,7 @@ describe("Debug Hierarchical Context", () => {
       const nestedMachine = activeState.data.machine;
       const nestedState = nestedMachine.getState();
       console.log("Nested state key:", nestedState.key);
-      console.log("Nested state fullkey:", nestedState.fullkey);
+      console.log("Nested state fullKey:", nestedState.fullKey);
       console.log("Nested state depth:", nestedState.depth);
       console.log("Nested state stack:", nestedState.stack);
       console.log("Nested state data:", nestedState.data);
@@ -42,7 +42,7 @@ describe("Debug Hierarchical Context", () => {
       
       const queryState = nestedMachine.getState();
       console.log("Query state key:", queryState.key);
-      console.log("Query state fullkey:", queryState.fullkey);
+      console.log("Query state fullKey:", queryState.fullKey);
       console.log("Query state depth:", queryState.depth);
       console.log("Query state stack:", queryState.stack);
       console.log("Query state data keys:", Object.keys(queryState.data || {}));
@@ -52,7 +52,7 @@ describe("Debug Hierarchical Context", () => {
         const promiseMachine = queryState.data.machine;
         const promiseState = promiseMachine.getState();
         console.log("Promise state key:", promiseState.key);
-        console.log("Promise state fullkey:", promiseState.fullkey);
+        console.log("Promise state fullKey:", promiseState.fullKey);
         console.log("Promise state depth:", promiseState.depth);
         console.log("Promise state stack:", promiseState.stack);
         console.log("Promise state data:", promiseState.data);

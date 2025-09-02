@@ -29,12 +29,12 @@ describe("Debug Context Propagation Mechanism", () => {
       // Check if the child's getState has been enhanced
       const childState = childMachine.getState();
       console.log("Child state key:", childState.key);
-      console.log("Child state has fullkey property:", 'fullkey' in childState);
+      console.log("Child state has fullKey property:", 'fullKey' in childState);
       console.log("Child state has depth property:", 'depth' in childState);
       console.log("Child state has stack property:", 'stack' in childState);
       
-      if ('fullkey' in childState) {
-        console.log("Child state fullkey:", childState.fullkey);
+      if ('fullKey' in childState) {
+        console.log("Child state fullKey:", childState.fullKey);
       }
       if ('depth' in childState) {
         console.log("Child state depth:", childState.depth);  

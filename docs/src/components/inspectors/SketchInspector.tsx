@@ -42,6 +42,7 @@ const SketchInspector = memo(({
     isBranchActive?: boolean;
     depth?: number;
   }) => {
+    console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
     const hasNested = stateConfig.states && Object.keys(stateConfig.states).length > 0;
     
     return (
@@ -52,9 +53,9 @@ const SketchInspector = memo(({
         <div className="state-content">
           <span className="state-name">{stateKey}</span>
           <pre>{JSON.stringify({ isActive, isBranchActive }, null, 2)}</pre>
-          {isActive && fullkey && fullkey !== stateKey && (
-            <div className="state-fullkey">
-              <span className="fullkey-label">path:</span> {fullkey}
+          {isActive && fullKey && fullKey !== stateKey && (
+            <div className="state-fullKey">
+              <span className="fullKey-label">path:</span> {fullKey}
             </div>
           )}
           
@@ -94,8 +95,8 @@ const SketchInspector = memo(({
             {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]: [string,any]) => {
               // Only highlight if this is the deepest active state
               // const nestedIsActive = nestedKey === currentStateKey;
-              const isMatch = nestedConfig.fullKey === fullkey;
-              
+              const isMatch = nestedConfig.fullKey === fullKey;
+              console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
               return (
                 <StateItem 
                   key={nestedKey}
@@ -120,8 +121,8 @@ const SketchInspector = memo(({
       // const isActive = stateKey === deepestActiveState;
       // const isAtDepth = depth === currentState?.depth;
       const stateConfig = states[stateKey];
-      const isActive = stateConfig.fullKey === fullkey;
-      console.log('render', stateKey, isActive, stateConfig.fullKey, fullkey, stateConfig);
+      const isActive = stateConfig.fullKey === fullKey;
+      // console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
       
       return (
         <StateItem 

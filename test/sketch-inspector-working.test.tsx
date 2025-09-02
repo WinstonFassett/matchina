@@ -53,7 +53,7 @@ describe("SketchInspector Working Implementation", () => {
     const activeState = machine.getState();
     const nestedState = activeState.data.machine.getState();
     
-    // Build manual fullkey for visualization
+    // Build manual fullKey for visualization
     const manualFullkey = `${activeState.key}.${nestedState.key}`;
     expect(manualFullkey).toBe("Active.Empty");
     
@@ -89,7 +89,7 @@ describe("SketchInspector Working Implementation", () => {
     // The SketchInspector has all the data it needs to:
     // 1. Show the hierarchy: Active -> Query -> [PromiseState]
     // 2. Highlight the innermost active state
-    // 3. Build fullkey paths manually: "Active.Query.[PromiseState]"
+    // 3. Build fullKey paths manually: "Active.Query.[PromiseState]"
     
     const manualPath = `${rootState.key}.${nestedState.key}.${deeperState.key}`;
     expect(manualPath).toMatch(/^Active\.Query\./);

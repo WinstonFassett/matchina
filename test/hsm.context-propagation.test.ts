@@ -59,7 +59,7 @@ function createRootMachine() {
   return createHierarchicalMachine(machine);
 }
 
-describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
+describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
   beforeEach(() => {
     resetGlobalHierarchyStack();
   });
@@ -73,7 +73,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // At root level, these should be minimal
     expect(rootState.stack).toBeDefined();
     expect(rootState.depth).toBeDefined();
-    expect(rootState.fullkey).toBeDefined();
+    expect(rootState.fullKey).toBeDefined();
     
     // Focus to activate search
     root.send("focus");
@@ -83,7 +83,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Check root level context
     expect(rootState.stack).toEqual([rootState]);
     expect(rootState.depth).toBe(0);
-    expect(rootState.fullkey).toBe("Active");
+    expect(rootState.fullKey).toBe("Active");
     
     // Level 2: Search machine state should have context
     const searchMachine = rootState.is("Active") ? rootState.data.machine : null;
@@ -94,7 +94,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Check search level context
     expect(searchState?.stack).toEqual([rootState, searchState]);
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullkey).toBe("Active.Idle");
+    expect(searchState?.fullKey).toBe("Active.Idle");
     
     // Type to start search
     root.send("type", "test query");
@@ -104,7 +104,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Check context after transition
     expect(searchState?.stack).toBeDefined();
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullkey).toBe("Active.Typing");
+    expect(searchState?.fullKey).toBe("Active.Typing");
     
     // Submit to start fetching (creates level 3 machine)
     root.send("submit");
@@ -114,7 +114,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Check search level context after creating child
     expect(searchState?.stack).toBeDefined();
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullkey).toBe("Active.Fetching");
+    expect(searchState?.fullKey).toBe("Active.Fetching");
     
     // Level 3: Fetch machine state should have deepest context
     const fetchMachine = searchState?.is("Fetching") ? searchState.data.machine : null;
@@ -125,7 +125,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Check fetch level context (deepest level)
     expect(fetchState?.stack).toBeDefined();
     expect(fetchState?.depth).toBe(2);
-    expect(fetchState?.fullkey).toBe("Active.Fetching.Pending");
+    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
     
     // Verify the full stack contains all ancestor states
     expect(fetchState?.stack).toHaveLength(3);
@@ -151,7 +151,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     // Initially at Pending
     let fetchState = fetchMachine?.getState();
     expect(fetchState?.key).toBe("Pending");
-    expect(fetchState?.fullkey).toBe("Active.Fetching.Pending");
+    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
     
     // Resolve to Success
     root.send("resolve", "test data");
@@ -159,7 +159,7 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     expect(fetchState?.key).toBe("Success");
     
     // Context should update to reflect new state
-    expect(fetchState?.fullkey).toBe("Active.Fetching.Success");
+    expect(fetchState?.fullKey).toBe("Active.Fetching.Success");
     expect(fetchState?.depth).toBe(2);
     expect(fetchState?.stack).toHaveLength(3);
     expect(fetchState?.stack[2].key).toBe("Success");
@@ -185,10 +185,10 @@ describe("HSM: Context Propagation (stack, depth, fullkey)", () => {
     expect(searchState?.depth).toBe(1);
     expect(fetchState?.depth).toBe(2);
     
-    // Verify fullkey builds correctly
-    expect(rootState.fullkey).toBe("Active");
-    expect(searchState?.fullkey).toBe("Active.Fetching");
-    expect(fetchState?.fullkey).toBe("Active.Fetching.Pending");
+    // Verify fullKey builds correctly
+    expect(rootState.fullKey).toBe("Active");
+    expect(searchState?.fullKey).toBe("Active.Fetching");
+    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
     
     // Verify stack consistency - all levels share the same full active state stack
     expect(rootState.stack).toHaveLength(3); // Full stack: [Active, Fetching, Pending]

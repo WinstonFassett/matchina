@@ -2,7 +2,7 @@
  * TDD tests for SketchInspector with hierarchical machines
  * 
  * Tests the core expectation that hierarchical machines provide the necessary
- * context (fullkey, depth, stack) for visualization without needing extraction.
+ * context (fullKey, depth, stack) for visualization without needing extraction.
  */
 
 import { describe, test, expect, beforeEach } from "vitest";
@@ -14,7 +14,7 @@ describe("SketchInspector Context Requirements", () => {
     resetGlobalHierarchyStack();
   });
 
-  test("hierarchical machine should provide fullkey context", () => {
+  test("hierarchical machine should provide fullKey context", () => {
     const machine = createSearchBarMachine();
     const initialState = machine.getState();
     
@@ -34,13 +34,13 @@ describe("SketchInspector Context Requirements", () => {
     expect(nestedState.key).toBe("Empty");
     
     // This is what we expect from our hierarchical context system:
-    // - fullkey should show the full path
+    // - fullKey should show the full path
     // - depth should indicate nesting level  
     // - stack should show the hierarchy
     
-    expect(nestedState.fullkey).toBeDefined();
-    expect(nestedState.fullkey).toContain("Active");
-    expect(nestedState.fullkey).toContain("Empty");
+    expect(nestedState.fullKey).toBeDefined();
+    expect(nestedState.fullKey).toContain("Active");
+    expect(nestedState.fullKey).toContain("Empty");
     
     expect(nestedState.depth).toBeDefined();
     expect(typeof nestedState.depth).toBe("number");
@@ -88,9 +88,9 @@ describe("SketchInspector Context Requirements", () => {
     const promiseState = promiseMachine.getState();
     
     // This is a 3-level hierarchy: App.Active.Query.PromiseState
-    expect(promiseState.fullkey).toBeDefined();
-    expect(promiseState.fullkey).toContain("Active");
-    expect(promiseState.fullkey).toContain("Query");
+    expect(promiseState.fullKey).toBeDefined();
+    expect(promiseState.fullKey).toContain("Active");
+    expect(promiseState.fullKey).toContain("Query");
     
     expect(promiseState.depth).toBeDefined();
     expect(promiseState.stack).toBeDefined();
@@ -107,10 +107,10 @@ describe("SketchInspector Context Requirements", () => {
     expect(initialState.key).toBe("Inactive");
     
     // Fallback logic should handle missing context gracefully
-    const fullkey = initialState.fullkey || initialState.key;
+    const fullKey = initialState.fullKey || initialState.key;
     const depth = initialState.depth ?? 0;
     
-    expect(fullkey).toBe("Inactive");
+    expect(fullKey).toBe("Inactive");
     expect(depth).toBe(0);
     
     // Stack-based logic should handle missing stack

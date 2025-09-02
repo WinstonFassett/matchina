@@ -14,7 +14,7 @@ export function resetGlobalHierarchyStack() {
 interface StateWithContext {
   stack: any[];
   depth: number;
-  fullkey: string;
+  fullKey: string;
 }
 
 // Minimal duck-typed machine shape 
@@ -54,23 +54,23 @@ function snapshot(m: AnyMachine) {
 function buildStateContext(state: any, parentStack: any[], myDepth: number): StateWithContext {
   // DON'T modify the stack here - it should be set before calling this
   
-  // Build fullkey from the COMPLETE stack - all states get the same fullkey representing full active path
-  const fullkey = parentStack.filter(s => s).map(s => s.key).join('.');
+  // Build fullKey from the COMPLETE stack - all states get the same fullKey representing full active path
+  const fullKey = parentStack.filter(s => s).map(s => s.key).join('.');
   
   return { 
     stack: parentStack, // Same stack reference - everyone sees the same stack
     depth: myDepth, 
-    fullkey // Same fullkey for all states in the active hierarchy
+    fullKey // Same fullKey for all states in the active hierarchy
   };
 }
 
 // Enhance a state with context information  
 function enhanceStateWithContext(state: any, context: StateWithContext): any {
-  const fullkey = context.stack.filter(s => s).map(s => s.key).join('.');
+  const fullKey = context.stack.filter(s => s).map(s => s.key).join('.');
   return Object.assign(state, {
     stack: context.stack,
     depth: context.depth,
-    fullkey: fullkey
+    fullKey: fullKey
   });
 }
 
@@ -202,7 +202,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         const enhancedState = enhanceStateWithContext(state, {
           stack: hierarchyStack,
           depth: depth,
-          fullkey: completeFullkey
+          fullKey: completeFullkey
         });
         
         return { ...resolvedEvent, to: enhancedState };

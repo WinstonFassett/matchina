@@ -6,7 +6,7 @@ We have built a lot. We have examples. We have tests. We have docs.
 
 We already have visualizers but they are not hierarchical yet.
 
-This branch is round 2 (R2). We have another branch `hierarchical-visualizers-r1` with viz built out but had lots of issues, got rather hacky. So we are restarting from latest `hierarchical-machines` branch onto this `hierarchical-machine-viz-r2` branch. We also fell into a sort of trap of trying to do machine "definitions", an intermediate concept we don't have yet in this lib. We also worked out how to "flatten" a hierarchical machine definition into a flat definition ie with namespaced states and a single set of transitions and no submachines. It was cool. Was on quest to figure out how to do fullkeys. But some of those ideas were too much. Some useful, but a lot slowed us down.
+This branch is round 2 (R2). We have another branch `hierarchical-visualizers-r1` with viz built out but had lots of issues, got rather hacky. So we are restarting from latest `hierarchical-machines` branch onto this `hierarchical-machine-viz-r2` branch. We also fell into a sort of trap of trying to do machine "definitions", an intermediate concept we don't have yet in this lib. We also worked out how to "flatten" a hierarchical machine definition into a flat definition ie with namespaced states and a single set of transitions and no submachines. It was cool. Was on quest to figure out how to do fullKeys. But some of those ideas were too much. Some useful, but a lot slowed us down.
 
 The goal of R2 is to 
 - tech design and build hierachical machine core to better support runtime inspection 
@@ -18,7 +18,7 @@ The goal of R2 is to
       - while resolving to transition, should propagate to states:
         - stack of states
         - depth in stack
-        - fullkey of state
+        - fullKey of state
       - based on thoughts below, iirc, 
         - resolveExit (state) goes top down
           - as it goes, we know the stack (so far) and the depth

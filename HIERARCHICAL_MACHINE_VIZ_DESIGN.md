@@ -5,7 +5,7 @@ Building hierarchical machine inspection and visualization with focus on `propag
 
 ## Core Goals
 1. **Propagate Submachines** - Chain reaction propagation supporting infinite depth
-2. **Runtime Inspection** - Full context (stack, depth, fullkey) for debugging
+2. **Runtime Inspection** - Full context (stack, depth, fullKey) for debugging
 3. **Test-Driven Development** - Focus on ONE TEST THAT MATTERS first
 4. **Inspectable Transitions** - Move from functional to structured format
 
@@ -17,7 +17,7 @@ Building hierarchical machine inspection and visualization with focus on `propag
 This tests:
 - Permanent vs ephemeral submachines
 - Chain reaction propagation 
-- Full context propagation (stack, depth, fullkey)
+- Full context propagation (stack, depth, fullKey)
 
 ## Technical Architecture
 
@@ -28,7 +28,7 @@ state = {
   // existing state properties
   stack: [state1, state2, state3], // full ancestor chain
   depth: 2, // position in hierarchy
-  fullkey: "active.fetching.pending" // dot-separated path
+  fullKey: "active.fetching.pending" // dot-separated path
 }
 ```
 
@@ -103,7 +103,7 @@ Benefits:
 src/
   hierarchical/
     propagate-submachines.js    # Core enhancer
-    context-helpers.js          # Stack/depth/fullkey utils
+    context-helpers.js          # Stack/depth/fullKey utils
     transition-utils.js         # { to, handle } format support
   tests/
     hierarchical/
@@ -120,6 +120,6 @@ src/
 ## Next Steps
 1. Create search bar test case first (TDD approach)
 2. Implement minimal propagateSubmachines to make test pass
-3. Add context enhancement (stack, depth, fullkey)
+3. Add context enhancement (stack, depth, fullKey)
 4. Iterate on chain reaction propagation
 5. Add structured transition format support
