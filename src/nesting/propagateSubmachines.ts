@@ -61,17 +61,18 @@ function normalizeActiveStackAfterTransition(rootLike: AnyMachine | FactoryMachi
       cursor = next;
     }
     const keys = states.map(s => s?.key).filter(Boolean);
+    const full = keys.join('.');
     for (let i = 0; i < states.length; i++) {
       const st = states[i];
       if (!st) continue;
       try {
         (st as any).depth = i;
-        (st as any).fullKey = keys.slice(0, i + 1).join('.');
+        (st as any).fullKey = full;
       } catch {}
     }
     try {
       (root as any).__activeStackKeys = keys;
-      (root as any).__activeFullKey = keys.join('.');
+      (root as any).__activeFullKey = full;
     } catch {}
   } catch {}
 }
