@@ -1,8 +1,36 @@
 import type { FactoryMachine } from "../factory-machine";
-import { send as sendHook } from "../state-machine-hooks";
 import { isFactoryMachine } from "../machine-brand";
+import { send as sendHook } from "../state-machine-hooks";
 import { AllEventsOf } from "./types";
-import { FactoryMachineEventImpl } from "../factory-machine-event";
+
+/**
+ * Hierarchical propagation core
+ *
+ * This file wires a root FactoryMachine so that events flow through a
+ * child-first traversal, with explicit bubbling of child exits, and uniform
+ * notification of parent observers when any descendant changes.
+ *
+ * Key concepts
+ * - Child-first traversal: `handleAtRoot()` descends to the deepest active child
+ *   and attempts handling there before walking back up.
+ * - Explicit `child.exit` bubbling: after a transition, parents may receive
+ *   synthesized `child.exit` based on a child's finality or absence.
+ * - `child.*` event namespace: reserved events handled at the immediate parent
+ *   level without re-descent (e.g., `child.exit`, `child.change`).
+ * - Stamping: after handling, active states along the chain are stamped with
+ *   `depth`, `nested.fullKey`, and `stack` for observability and debugging.
+ * - Hooking: discovered descendants are hooked so any non-root `send` is routed
+ *   back to the root as `child.change`, preserving the single event loop.
+ *
+ * Internal routing contract
+ * - Non-root sends are redirected to root via `root.send('child.change', payload)`
+ * - When that payload contains `{ _internal: true }`, the root short-circuits to
+ *   subscriber notification via `root.notify(...)` and does not re-enter
+ *   `handleAtRoot`, avoiding recursion.
+ * - External callers may also `send('child.change', { type, params })`; in that
+ *   case (no `_internal`), the root treats it as a routed event and processes it
+ *   through `handleAtRoot(type, params)`.
+ */
 
 // Minimal duck-typed machine shape
 type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
@@ -18,6 +46,7 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
 
 
 export type HierarchicalMachine<M> = M & {
+  /** Root `send` extended to accept `child.*` events and routed child changes */
   send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
 };
 
@@ -25,14 +54,23 @@ export type HierarchicalEvents<M> =
   | AllEventsOf<M>
   | string;
 
-// dead simple wrapper
+/**
+ * Wrap a machine with hierarchical propagation semantics.
+ *
+ * Call this helper on a root machine to install propagation hooks and return a
+ * typed facade.
+ */
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M) {
   propagateSubmachines(machine);
   return machine as any as HierarchicalMachine<M>;
 }
 
-// attach to a root machine to propagate events up and down
-// synchronously enforcing proper flow
+/**
+ * Attach hierarchical propagation to a root machine.
+ *
+ * Returns a disposer that unhooks the root and any hooked descendants and
+ * clears internal tracking structures.
+ */
 export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): () => void {
 
   const hookedMachines = new Set<AnyMachine>();
@@ -45,19 +83,20 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       // Reserved child.* events are handled at the machine's own level
       if (type.startsWith('child.')) return innerSend(type, ...params);
       // Block non-root direct sends and re-send via root as child.change
+      // This routes through the root's event loop to preserve ordering and visibility.
       return (root as any).send('child.change', { target: m, type, params });
     })(m as any);
     (m as any).__propagateUnhook = unhook;
   }
 
   // Disconnects a machine from the propagation system.
-  // 🧑‍💻: NOT FUCKING USED!!!
-  function unhookMachine(m: AnyMachine) {
-    if ((m as any).__propagateUnhook) {
-      (m as any).__propagateUnhook();
-      delete (m as any).__propagateUnhook;
-    }
-  }
+  // 🧑‍💻: WARNING: NOT USED
+  // function unhookMachine(m: AnyMachine) {
+  //   if ((m as any).__propagateUnhook) {
+  //     (m as any).__propagateUnhook();
+  //     delete (m as any).__propagateUnhook;
+  //   }
+  // }
 
   // Determine if a child's current state is final
   // if marked as such or has no transitions
@@ -84,6 +123,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    *    each parent to transition in response.
    * 6. After any event is handled, the entire hierarchy's state is "stamped" with updated
    *    context (like depth and the full state key).
+   */
+  /**
+   * Handle an event against the current active chain starting at the root.
+   * - Descend to deepest active child and attempt handling there first.
+   * - After a transition, bubble potential `child.exit` to each ancestor.
+   * - Stamp the active chain for introspection.
+   * - Emit `child.change` via root.send so subscribers are notified in-order.
    */
   function handleAtRoot(type: string, params: any[]): any {
     const machinesChain: AnyMachine[] = [];
@@ -151,7 +197,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
 
     const result = descend(root as AnyMachine);
     // After deepest handling, bubble child.exit upward along the visited chain
-    // 🧑‍💻: YES! bubble child.exit
     if (result.handled) {
       for (let i = machinesChain.length - 2; i >= 0; i--) {
         const parent = machinesChain[i] as any;
@@ -183,16 +228,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     return result.event ?? null;
   }
 
-  // This function is not currently used, but could be useful for debugging
-  // or for explicitly hooking machines discovered through means other than traversal.
-  function hookDiscovered(machines: AnyMachine[]) {
-    for (const m of machines) {
-      const s = m.getState();
-      const child = getChildFromParentState(s);
-      if (child) hookMachine(child);
-    }
-  }
+  // This function is not currently used, but can aid debugging or explicit wiring
+  // of machines discovered through means other than active-chain traversal.
+  // function hookDiscovered(machines: AnyMachine[]) {
+  //   for (const m of machines) {
+  //     const s = m.getState();
+  //     const child = getChildFromParentState(s);
+  //     if (child) hookMachine(child);
+  //   }
+  // }
 
+  /** Stamp the active states with depth, nested info, and stack snapshot */
   function stamp(statesChain: any[]) {
     if (statesChain.length === 0) return;
     const keys = statesChain.map((s) => s.key);
@@ -209,6 +255,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     }
   }
 
+  /**
+   * Discover the current active chain by following child pointers starting at root,
+   * hooking along the way, and then stamp the chain.
+   */
   function stampUsingCurrentChain() {
     const states: any[] = [];
     let current: AnyMachine | undefined = root;
@@ -227,14 +277,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     stamp(states);
   }
 
+  /** Install a send hook on the root to intercept and route child.change events */
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
-    // 🧑‍💻: I believe this is where we need to prevent infinite looping
-    // IF WHEN we use root.send instead of root.notify. 
-
     if (type === 'child.change') {
       const payload = params[0] || {};
-      // If this is an internally routed notification, surface it to subscribers
-      // without re-processing the event through handleAtRoot to avoid recursion.
+      // Internal child-change: notify subscribers only; do not reprocess.
       if (payload && payload._internal) {
         (root as any).notify?.({ type: 'child.change', params: [payload] });
         return;
@@ -246,9 +293,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return handleAtRoot(type, params);
     }
     return handleAtRoot(type, params);
-    // 🧑‍💻: why the fuck do we not fallback to regular fucking send? or pass it down?
-    // we never let the root do a regular fucking send? 
-    // maybe that makes sense idk.
   })(root as any);
 
   // Initial wiring: stamp and hook current chain once

@@ -31,6 +31,12 @@ This feels like an explicit, manual notification that sits outside the machine's
 
 An attempt to replace `notify` with an internal `root.send('child.change', { _internal: ... })` call led to test failures (`hsm.simple-child-exit.test.ts`). The interaction between the `send` hook, the `handleAtRoot` function, and the `child.exit` bubbling is delicate. A change in one area can have unintended consequences.
 
-**Next Steps:**
+**Resolution:**
 
-The goal is to refactor this notification to use the machine's own event loop without causing regressions. This will likely require a careful re-evaluation of the `send` hook on the root machine to differentiate between external events, internal child-to-root events, and internal notification-only events.
+Implemented internal routing via `root.send('child.change', payload)` in `src/nesting/propagateSubmachines.ts`:
+
+- Non-root sends are redirected to root as `child.change`.
+- When the payload includes `{ _internal: true }`, the root short-circuits to `root.notify(...)` to surface the change to subscribers without re-entering `handleAtRoot`, preventing recursion.
+- External `child.change` (no `_internal`) is treated as a routed event and processed through `handleAtRoot(childType, childParams)`.
+
+All tests pass, including `hsm.simple-child-exit.test.ts`. The manual `notify` call inside `handleAtRoot` was removed in favor of `root.send('child.change', { ... , _internal: true })`.
