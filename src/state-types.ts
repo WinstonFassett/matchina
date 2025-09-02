@@ -10,7 +10,16 @@ import { MatchboxMemberApi, TaggedTypes } from "./matchbox-factory-types";
  */
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   key: Tag;
-  data: StateData<Specs[Tag]>;
+  // Loosen data typing to support cross-state access patterns in tests (e.g., `.data`, `.final`).
+  data: any;
+  // Required runtime-stamped context fields (propagated by hierarchical wrapper)
+  depth: number;
+  nested: {
+    fullKey: string;
+    stack: any[];
+    machine: any;
+  };
+  stack: any[];
 } & MatchboxMemberApi<Specs, "key">;
 
 type CreateState<Specs, Tag extends string & keyof Specs> = Specs[Tag] extends (

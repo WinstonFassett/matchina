@@ -10,6 +10,7 @@ import { withLifecycle } from "./event-lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
+import { brandFactoryMachine } from "./machine-brand";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -68,12 +69,7 @@ export function createMachine<
 ): FactoryMachine<FC> {
   const initialState = typeof init === "string" ? states[init]({}) : init;
 
-  let lastChange: E = new FactoryMachineEventImpl<E>(
-    "__initialize" as E["type"],
-    initialState as E["from"],
-    initialState as E["to"],
-    []
-  ) as E;
+  let lastChange: E; // Will be set after machine is created
 
   const machine = withLifecycle(
     {
@@ -94,7 +90,7 @@ export function createMachine<
       resolveExit: (ev) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params, machine as any)
           : undefined;
       },
     } as Partial<FactoryMachine<FC>>,
@@ -102,6 +98,23 @@ export function createMachine<
       lastChange = ev;
     }
   ) as FactoryMachine<FC>;
+
+  // Expose the declared initial key for inspectors (duck-typed, non-breaking)
+  try {
+    (machine as any).initialKey = initialState.key;
+  } catch {}
+
+  // Now that machine exists, create the initial event with proper machine reference
+  lastChange = new FactoryMachineEventImpl<E>(
+    "__initialize" as E["type"],
+    initialState as E["from"],
+    initialState as E["to"],
+    [],
+    machine as any
+  ) as E;
+
+  // Brand the instance for robust type guarding
+  brandFactoryMachine(machine);
 
   return machine;
 }
@@ -142,6 +155,34 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
 ) {
   if (!transition) {
     return undefined;
+  }
+
+  // Handle inspectable transition format: { to: key, handle?: fn }
+  if (typeof transition === "object" && transition !== null && "to" in transition) {
+    const { to, handle } = transition as { to: keyof FC["states"]; handle?: (...params: any[]) => any };
+    
+    // If there's a handler, call it to get dynamic parameters
+    if (handle) {
+      const result = handle(...ev.params);
+      
+      // Handler can return:
+      // 1. A state instance directly
+      // 2. Parameters to pass to the target state factory
+      // 3. undefined (use default parameters)
+      if (result && typeof result === "object" && "key" in result) {
+        // Handler returned a state instance directly
+        return result;
+      } else if (Array.isArray(result)) {
+        // Handler returned parameters for state factory
+        return states[to](...result) as any;
+      } else if (result !== undefined) {
+        // Handler returned a single parameter
+        return states[to](result) as any;
+      }
+    }
+    
+    // No handler or handler returned undefined, use event params
+    return states[to](...ev.params) as any;
   }
 
   if (typeof transition === "function") {

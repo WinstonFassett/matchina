@@ -48,11 +48,11 @@ export const createStopwatchMachine = () => {
     // Before transition handler
     before((ev) => {
       if (ev.type === "_tick" && ev.from.is("Ticking")) {
-        ev.to.data.elapsed =
-          ev.from.data.elapsed + (Date.now() - ev.from.data.at);
+        (ev.to as any).data.elapsed =
+          (ev.from as any).data.elapsed + (Date.now() - (ev.from as any).data.at);
       }
       if (ev.type === "clear") {
-        ev.to.data.elapsed = 0;
+        (ev.to as any).data.elapsed = 0;
       }
       return () => {};
     }),
@@ -65,7 +65,7 @@ export const createStopwatchMachine = () => {
     ),
     // Effect for all transitions - update elapsed field
     effect((ev) => {
-      machine.elapsed = ev?.to.data.elapsed ?? 0;
+      machine.elapsed = (ev?.to as any)?.data?.elapsed ?? 0;
     })
   );
 

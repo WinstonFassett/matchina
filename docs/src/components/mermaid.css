@@ -9,6 +9,9 @@
 .edgeLabel {
   background-color: transparent;
 }
+.edgeLabel p {
+  background-color: transparent;
+}
 
 .nodeLabel p {
   color: inherit !important;

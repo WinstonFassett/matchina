@@ -12,6 +12,11 @@ export function resolveState<S extends AnyStatesFactory>(
   from: string,
   entry: TransitionEntry<any>
 ): FactoryKeyedState<S> {
+  // Handle transition objects like { to: "Target", handle: ... }
+  if (entry && typeof entry === "object" && "to" in (entry as any)) {
+    const target = (entry as any).to as string;
+    return states[target]({} as any) as any;
+  }
   if (typeof entry === "string") {
     return states[entry]({} as any); // as FactoryState<S>
   }

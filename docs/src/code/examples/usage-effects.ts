@@ -37,7 +37,7 @@ bindEffects(machine, (state) => state.data.effects as any, {
 const checkState = () =>
   console.log({
     state: machine.getState().key,
-    effects: machine.getState().data.effects.map(({ effect }) => effect),
+    effects: machine.getState().data.effects.map(({ effect }: any) => effect),
   });
 checkState();
 machine.api.next();

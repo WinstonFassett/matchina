@@ -1,6 +1,6 @@
-import { DisposeFunc, Funcware } from "../../function-types";
+import type { DisposeFunc, Funcware } from "../../function-types";
 import { enhanceMethod } from "./enhance-method";
-import { MethodOf, HasMethod } from "./method-utility-types";
+import type { HasMethod, MethodOf } from "../../";
 
 /**
  * @interface
@@ -10,7 +10,7 @@ import { MethodOf, HasMethod } from "./method-utility-types";
  *
  * Call with a target object to enhance its method, and receive a disposer to restore the original method.
  *
- * See {@link Funcware} for details on the enhancer function type.
+ * See {@link Funcware} for details on the enhancer function type used to enhance methods.
  */
 export type MethodEnhancer<K extends string, T extends HasMethod<K>> = (
   target: T

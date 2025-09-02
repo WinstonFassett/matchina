@@ -1,5 +1,5 @@
-import { HasMethod, MethodOf } from "../methodware/method-utility-types";
-import { Funcware } from "../../function-types";
+import type { HasMethod, MethodOf } from "../../";
+import type { Funcware } from "../../function-types";
 
 /**
  * Creates funcware that taps into a method call, running a side-effect function after the original method.
@@ -29,9 +29,9 @@ export const tap =
   <K extends string, T extends HasMethod<K>>(
     fn: T[K]
   ): Funcware<MethodOf<HasMethod<K>, K>> =>
-  (inner) =>
-  (...params) => {
+  (inner: MethodOf<HasMethod<K>, K>) =>
+  (...params: Parameters<MethodOf<HasMethod<K>, K>>) => {
     const res = inner(...params);
-    fn(...params);
+    (fn as unknown as (...a: Parameters<MethodOf<HasMethod<K>, K>>) => any)(...params);
     return res;
   };

@@ -41,7 +41,7 @@ export type MiddlewareFunc<E> = (event: E, next: (event: E) => void) => void;
  * @ignore
  * Func is a generic function type: (...args) => result.
  */
-export type Func<A = any, R = any> = (...args: A[]) => R;
+export type Func<A extends any[] = any[], R = any> = (...args: A) => R;
 
 /**
  * @interface
@@ -67,4 +67,4 @@ export type Func<A = any, R = any> = (...args: A[]) => R;
  * };
  * ```
  */
-export type Funcware<F extends Func> = (inner: F) => F;
+export type Funcware<F extends Func = Func> = (inner: F) => F;

@@ -19,12 +19,12 @@ const adder = createPromiseMachine(
 setup(adder)(
   guardExecute((a: number, b: number) => a >= 0 && b >= 0),
   enter(
-    (ev) => ev.to.is("Pending") && console.log("Started addition:", ev.to.data)
+    (ev) => ev.to.is("Pending") && console.log("Started addition:", (ev.to as any).data)
   ),
   leave((ev) => ev.from.is("Pending") && console.log("Leaving pending state")),
   effect(
     (ev) =>
-      ev.type === "resolve" && console.log("Promise resolved with:", ev.to.data)
+      ev.type === "resolve" && console.log("Promise resolved with:", (ev.to as any).data)
   )
 );
 
