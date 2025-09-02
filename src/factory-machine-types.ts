@@ -111,7 +111,8 @@ export type FactoryMachineTransition<
         type: EventKey;
         from: FactoryKeyedState<SF, FromStateKey>;
       }
-    ) => ReturnType<SF[keyof SF]>);
+    ) => ReturnType<SF[keyof SF]>)
+  | ({ to: keyof SF; handle?: (...params: any[]) => any });
 
 export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
   [K in keyof FC["transitions"]]: {

@@ -11,6 +11,16 @@ import { MatchboxMemberApi, TaggedTypes } from "./matchbox-factory-types";
 export type StateMatchbox<Tag extends string & keyof Specs, Specs> = {
   key: Tag;
   data: StateData<Specs[Tag]>;
+  /** Optional runtime-stamped depth in a hierarchical chain */
+  depth?: number;
+  /** Optional runtime-stamped nested context (shared object across chain) */
+  nested?: {
+    fullKey: string;
+    stack: any[];
+    machine: any;
+  };
+  /** Optional runtime-stamped stack slice up to this depth */
+  stack?: any[];
 } & MatchboxMemberApi<Specs, "key">;
 
 type CreateState<Specs, Tag extends string & keyof Specs> = Specs[Tag] extends (
