@@ -122,6 +122,25 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
     }
 
     const result = descend(root as AnyMachine);
+    // After deepest handling, bubble child.exit upward along the visited chain
+    if (result.handled) {
+      for (let i = machinesChain.length - 2; i >= 0; i--) {
+        const parent = machinesChain[i] as any;
+        const parentState = parent.getState?.();
+        if (!parentState) continue;
+        const child = getChildFromParentState(parentState) as any;
+        if (!child) continue;
+        const childState = child.getState?.();
+        if (!childState || isChildFinal(child, childState)) {
+          const exitEv = parent.resolveExit?.({
+            type: 'child.exit',
+            params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
+            from: parentState,
+          });
+          if (exitEv) parent.transition?.(exitEv);
+        }
+      }
+    }
     // Stamp using the post-change active chain to ensure new state objects are annotated
     stampUsingCurrentChain();
     // Notify root subscribers for non-exit child changes so parent observers see updates
