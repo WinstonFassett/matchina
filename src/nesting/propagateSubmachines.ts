@@ -115,43 +115,20 @@ function triggerExit(machine: FactoryMachine<any>, parentState: any, after: any)
   }
 }
 
-function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentState: any, duck: boolean, includeDataStateExitForDuck: boolean) {
-  return (send: any) => (type: string, ...params: any[]) => {
-    const before = snapshot(child);
-    const grandBefore = getChildFromParentState(before);
-    const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
-    const res = send(type, ...params);
-    const after = snapshot(child);
-    const grandAfter = getChildFromParentState(after);
-    const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
-    
-    if (isHandled(before, after, grandBeforeSnap, grandAfterSnap)) {
-      const hadMachine = before?.data?.machine;
-      const hasMachine = after?.data?.machine;
-      const changedLocal = before?.key !== after?.key;
-      
-      if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duck, includeDataStateExitForDuck)) {
-        // Use up-to-date parent state when signaling exit
-        triggerExit(machine, machine.getState(), after);
-      } else if (changedLocal) {
-        // Non-exit child transition: notify parent subscribers
-        try {
-          // If the event was routed via parent, parent will notify; skip here to avoid double
-          if (!(child as any).__suppressChildNotify) {
-            const currentParentState = machine.getState();
-            // Only bubble upward to ancestors (e.g., root) to avoid double notifications
-            (machine as any).__parentNotify?.({
-              type: "child.changed",
-              from: currentParentState,
-              to: currentParentState,
-              params: [{ id: parentState?.data?.id ?? parentState?.id, child: after?.key }],
-              machine,
-            });
-          }
-        } catch {}
-      }
+function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>) {
+  return (origSend: any) => (type: string, ...params: any[]) => {
+    // If this invocation is part of parent-driven child-first routing, let the child handle it directly
+    if ((child as any).__fromParent) {
+      return origSend(type, ...params);
     }
-    return res;
+    // Otherwise, route child-originating events to the root machine for handling.
+    const root = (machine as any).__rootMachine || machine;
+    const handler = (root as any).__handleFromChild as undefined | ((t: string, ...p: any[]) => any);
+    if (typeof handler === 'function') {
+      return handler(type, ...params);
+    }
+    // Fallback: if no special handler, send to parent (may still work with existing routing)
+    return (machine as any).send?.(type, ...params);
   };
 }
 
@@ -189,7 +166,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();
 
-    // Provide a bubbling notifier to ancestors
+    // Provide root pointer and bubbling notifier to ancestors
+    (machine as any).__rootMachine = parentMachine ? ((parentMachine as any).__rootMachine || parentMachine) : machine;
     (machine as any).__parentNotify = parentMachine
       ? (ev: any) => {
           try {
@@ -213,17 +191,20 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       const child = getChildFromParentState(state);
       if (child && !childEnhanced.has(child as any)) {
         childEnhanced.add(child as any);
+        // Attach parent and root pointers before propagating
+        try {
+          (child as any).__parentMachine = machine;
+          (child as any).__rootMachine = (machine as any).__rootMachine || machine;
+        } catch {}
         propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
         if (isFactoryMachine(child as any)) {
-          const duckChild = !isFactoryMachine(child as any);
-          const enhancer = enhanceSend(child, machine, state, duckChild, true);
           const childMachine = child as FactoryMachine<any>;
           const [addChildSetup] = buildSetup(childMachine);
-          addChildSetup(send(enhancer));
+          addChildSetup(send(enhanceSend(childMachine, machine as any)));
         }
       }
 
-      // Build shallow key and working stack slice for current depth
+      // Build shallow key and working stack slice for current depth only
       const stackSlice = hierarchyStack.slice(0, depth + 1);
       const shallowKey = stackSlice
         .filter(s => s)
@@ -276,7 +257,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       return next({ ...ev, from, params });
     }));
 
-    // Eagerly set up child enhancement so direct child sends still route via parent
+    // Eagerly set up child enhancement so direct child sends still route via root
     // This covers cases where UIs hold a reference to the child machine and send events
     // before any code has called parent getState() (which otherwise performs the setup).
     try {
@@ -284,13 +265,15 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       const child = getChildFromParentState(state);
       if (child && !childEnhanced.has(child as any)) {
         childEnhanced.add(child as any);
+        try {
+          (child as any).__parentMachine = machine;
+          (child as any).__rootMachine = (machine as any).__rootMachine || machine;
+        } catch {}
         propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
         if (isFactoryMachine(child as any)) {
-          const duckChild = !isFactoryMachine(child as any);
-          const enhancer = enhanceSend(child, machine, state, duckChild, true);
           const childMachine = child as FactoryMachine<any>;
           const [addChildSetup] = buildSetup(childMachine);
-          addChildSetup(send(enhancer));
+          addChildSetup(send(enhanceSend(childMachine, machine as any)));
         }
       }
     } catch {}
@@ -307,12 +290,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       
       let threw = false;
       try {
-        // Suppress child's own notify when routed via parent to avoid double notification
+        // Suppress child's own notify and mark call as coming from parent to allow local handling
         try {
           (child as any).__suppressChildNotify = true;
+          (child as any).__fromParent = true;
           trySend(child, type, ...params);
         } finally {
           try { delete (child as any).__suppressChildNotify; } catch {}
+          try { delete (child as any).__fromParent; } catch {}
         }
       } catch {
         threw = true;
@@ -360,19 +345,115 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     };
 
     addSetup(
-      send(innerSend => (type, ...params) => {
-        const handled = childFirst(type, ...params);
-        if (handled) return; // child handled
+      send(innerSend => {
+        // Expose a direct handler for child-originating events that should be processed here
+        try {
+          (machine as any).__innerSend = innerSend;
+          (machine as any).__handleFromChild = (type: string, ...params: any[]) => {
+            // Attempt to handle at parent first
+            const beforeParent = originalGetState.call(machine);
+            const beforeChild = getChildFromParentState(beforeParent);
+            const beforeChildSnap = beforeChild ? snapshot(beforeChild) : undefined;
+
+            const resolved = (machine as any).resolveExit?.({ type, params, from: beforeParent } as any);
+            if (resolved && resolved.to?.key === beforeParent.key && (!params || params.length === 0)) {
+              // parent considered this a parameterless self-transition (no-op)
+            } else {
+              innerSend(type, ...params);
+            }
+
+            const afterParent = originalGetState.call(machine);
+            const afterChild = getChildFromParentState(afterParent);
+            const afterChildSnap = afterChild ? snapshot(afterChild) : undefined;
+
+            // If parent changed or bubbled an exit, we're done
+            const parentHandled = beforeParent?.key !== afterParent?.key;
+            if (parentHandled) return;
+
+            // Otherwise, delegate to child under a transient from-parent flag
+            if (afterChild) {
+              const before = afterChildSnap;
+              const grandBefore = before ? getChildFromParentState(before) : undefined;
+              const grandBeforeSnap = grandBefore ? snapshot(grandBefore) : undefined;
+              try {
+                (afterChild as any).__suppressChildNotify = true;
+                (afterChild as any).__fromParent = true;
+                trySend(afterChild, type, ...params);
+              } finally {
+                try { delete (afterChild as any).__suppressChildNotify; } catch {}
+                try { delete (afterChild as any).__fromParent; } catch {}
+              }
+
+              const after = snapshot(afterChild);
+              const grandAfter = getChildFromParentState(after);
+              const grandAfterSnap = grandAfter ? snapshot(grandAfter) : undefined;
+
+              const handledByState = isHandled(before, after, grandBeforeSnap, grandAfterSnap);
+              const duckChild = !isFactoryMachine(afterChild as any);
+              const handled = handledByState || duckChild;
+              if (handled) {
+                const hadMachine = (before as any)?.data?.machine;
+                const hasMachine = (after as any)?.data?.machine;
+                const changedLocal = (before as any)?.key !== (after as any)?.key;
+                if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duckChild, true)) {
+                  triggerExit(machine, beforeParent, after);
+                } else if (changedLocal) {
+                  try {
+                    const currentParentState = machine.getState();
+                    (machine as any).notify?.({
+                      type: "child.changed",
+                      from: currentParentState,
+                      to: currentParentState,
+                      params: [{ id: beforeParent?.data?.id ?? beforeParent?.id, child: (after as any)?.key }],
+                      machine,
+                    });
+                    (machine as any).__parentNotify?.({
+                      type: "child.changed",
+                      from: currentParentState,
+                      to: currentParentState,
+                      params: [{ id: beforeParent?.data?.id ?? beforeParent?.id, child: (after as any)?.key }],
+                      machine,
+                    });
+                  } catch {}
+                }
+              }
+            }
+          };
+        } catch {}
         
-        const from = originalGetState.call(machine);
-        const resolved = (machine).resolveExit?.({ type, params, from } as any);
-        
-        // Allow self-transitions when they carry parameters
-        if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
-          return; // no-op on parameterless self-transition
-        }
-        
-        return innerSend(type, ...params);
+        return (type, ...params) => {
+          const handled = childFirst(type, ...params);
+          if (handled) return; // child handled
+          
+          const from = originalGetState.call(machine);
+          const resolved = (machine).resolveExit?.({ type, params, from } as any);
+          
+          // Allow self-transitions when they carry parameters
+          if (resolved && resolved.to?.key === from.key && (!params || params.length === 0)) {
+            return; // no-op on parameterless self-transition
+          }
+          
+          const result = innerSend(type, ...params);
+          // After parent handles an event, eagerly enhance a newly active child (if any)
+          try {
+            const newState = originalGetState.call(machine);
+            const child = getChildFromParentState(newState);
+            if (child && !childEnhanced.has(child as any)) {
+              childEnhanced.add(child as any);
+              try {
+                (child as any).__parentMachine = machine;
+                (child as any).__rootMachine = (machine as any).__rootMachine || machine;
+              } catch {}
+              propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
+              if (isFactoryMachine(child as any)) {
+                const childMachine = child as FactoryMachine<any>;
+                const [addChildSetup] = buildSetup(childMachine);
+                addChildSetup(send(enhanceSend(childMachine, machine as any)));
+              }
+            }
+          } catch {}
+          return result;
+        };
       })
     );
 

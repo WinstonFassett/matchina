@@ -1,7 +1,6 @@
 import { getAvailableActions, type FactoryMachine } from "matchina";
 import { useMachine } from "matchina/react";
 import React from "react";
-import { readHierarchicalFullKey } from "../../../../../src/nesting/readHierarchicalFullKey";
 import type { createCheckoutMachine } from "./machine";
 
 type Machine = ReturnType<typeof createCheckoutMachine>;
@@ -36,7 +35,11 @@ function ChildPanel({ child }: { child: FactoryMachine<any> }) {
 export function CheckoutView({ machine }: { machine: Machine }) {
   useMachine(machine)
   const state = machine.getState();
-  const path = readHierarchicalFullKey(machine) || state.fullKey || state.key;
+  const s: any = state as any;
+  const childMachine: any = s?.data?.machine;
+  const childState = childMachine?.getState?.();
+  // Prefer child's fullKey if present so we never show just the parent when a child exists
+  const path = childState?.fullKey || state.fullKey || state.key;
   return (
     <div className="p-4 space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
       <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">Checkout</h3>

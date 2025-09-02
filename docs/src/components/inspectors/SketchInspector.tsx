@@ -26,9 +26,11 @@ const SketchInspector = memo(({
   const nestedState = nestedMachine?.getState?.();
   const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
-  // Step 3: Prepare highlighting info - find the deepest active state
+  // Step 3: Prepare highlighting info - prefer child's fullKey so we never show only the parent when a child exists
   const currentStateKey = currentState?.key;
-  const fullKey = currentState?.fullKey || currentStateKey;
+  const childMachine: any = currentState?.data?.machine;
+  const childState = childMachine?.getState?.();
+  const fullKey = childState?.fullKey || currentState?.fullKey || currentStateKey;
   // console.log('currentState', fullKey, currentState.fullKey, currentState)
   const depth = currentState?.depth ?? 0;
   
@@ -73,7 +75,9 @@ const SketchInspector = memo(({
                     <button 
                       className={`transition-button ${isActive && interactive ? 'enabled' : 'disabled'}`}
                       onClick={() => {
+                        console.log('click', event, isActive, interactive)
                         if (interactive && isActive) {
+                          console.log('send', machine, event)
                           machine.send(event);
                         }
                       }}
