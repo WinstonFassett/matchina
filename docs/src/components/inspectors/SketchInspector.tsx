@@ -29,7 +29,7 @@ const SketchInspector = memo(({
   // Step 3: Prepare highlighting info - find the deepest active state
   const currentStateKey = currentState?.key;
   const fullKey = currentState?.fullKey || currentStateKey;
-  console.log('currentState', currentState, fullKey)
+  console.log('currentState', fullKey, currentState.fullKey, currentState)
   const depth = currentState?.depth ?? 0;
   
   // const deepestActiveState = getDeepestActiveState(machine);
@@ -43,7 +43,7 @@ const SketchInspector = memo(({
     isBranchActive?: boolean;
     depth?: number;
   }) => {
-    console.log('render', stateKey, isActive, stateConfig.fullKey, fullkey, stateConfig);
+    console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
     const hasNested = stateConfig.states && Object.keys(stateConfig.states).length > 0;
     
     return (
@@ -53,6 +53,7 @@ const SketchInspector = memo(({
       >
         <div className="state-content">
           <span className="state-name">{stateKey}</span>
+          {/* [{fullKey}] */}
           <pre>{JSON.stringify({ isActive, isBranchActive }, null, 2)}</pre>
           {isActive && fullKey && fullKey !== stateKey && (
             <div className="state-fullKey">
@@ -96,12 +97,13 @@ const SketchInspector = memo(({
             {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]: [string,any]) => {
               // Only highlight if this is the deepest active state
               // const nestedIsActive = nestedKey === currentStateKey;
-              const isMatch = nestedConfig.fullKey === fullkey;
-              console.log('isMatch', isMatch, nestedConfig.fullKey, fullkey)
+              const isMatch = nestedConfig.fullKey === fullKey;
+              console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
               return (
                 <StateItem 
                   key={nestedKey}
                   stateKey={nestedKey}
+                  fullKey={nestedConfig.fullKey}
                   stateConfig={nestedConfig}
                   isActive={isMatch}
                   isBranchActive={isBranchActive}
@@ -122,14 +124,14 @@ const SketchInspector = memo(({
       // const isActive = stateKey === deepestActiveState;
       // const isAtDepth = depth === currentState?.depth;
       const stateConfig = states[stateKey];
-      const isActive = stateConfig.fullKey === fullkey;
-      // console.log('render', stateKey, isActive, stateConfig.fullKey, fullkey, stateConfig);
+      const isActive = stateConfig.fullKey === fullKey;
+      // console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
       
       return (
         <StateItem 
           key={stateKey}
           stateKey={stateKey}
-          fullKey={stateConfig.fullKey}
+          fullKey={stateKey}
           stateConfig={stateConfig}
           isActive={isActive}
           isBranchActive={isActive}

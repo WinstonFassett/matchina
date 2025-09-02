@@ -30,6 +30,7 @@ export function getXStateDefinition<
 
     Object.entries(machine.states).forEach(([key, state]) => {
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
+      console.log('state', key, {fullKey, parentKey});
       definition.states[key] = { key, fullKey, on: {} };
     });
 
@@ -53,6 +54,7 @@ export function getXStateDefinition<
           const childFullKey = parentKey
             ? `${parentKey}.${currentState.key}`
             : currentState.key;
+          console.log('child full key', childFullKey);
           const childStack = [...stack, { key: currentState.key, fullKey: childFullKey }];
           const childDefinition = buildDefinition(
             childMachine,
@@ -81,7 +83,7 @@ export function getXStateDefinition<
         state.stack = [...stack, { key: state.key, fullKey: state.fullKey }];
       }
     });
-
+    console.log('definition', definition);
     return definition;
   }
 
