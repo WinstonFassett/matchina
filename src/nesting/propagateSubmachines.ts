@@ -11,14 +11,6 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
   if (!m) return undefined;
   if (isFactoryMachine(m)) return m as AnyMachine;
   const isValid = typeof m?.getState === "function" && typeof m?.send === "function";
-  console.log('getChildFromParentState:', { 
-    hasData: !!state?.data, 
-    hasMachine: !!m, 
-    isFactory: isFactoryMachine(m),
-    hasGetState: typeof m?.getState === "function",
-    hasSend: typeof m?.send === "function",
-    isValid 
-  });
   return isValid ? (m as AnyMachine) : undefined;
 }
 
@@ -134,13 +126,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     const state = m.getState();
     const child = getChildFromParentState(state);
     
-    console.log('tryChildFirst:', { 
-      machineState: state?.key, 
-      hasChild: !!child, 
-      childIsFactory: child ? isFactoryMachine(child) : null,
-      type 
-    });
-    
     if (child) {
       
       // Try child's children first (recursive) - only for FactoryMachines
@@ -153,7 +138,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       
       // Try this child - first check if it's a FactoryMachine
       if (isFactoryMachine(child)) {
-        console.log('Trying FactoryMachine child');
         const childEv = (child as any).resolveExit?.({ type, params, from: child.getState() });
         if (childEv) {
           (child as any).transition?.(childEv);
@@ -181,21 +165,15 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
         }
       } else if ((child as any).send) {
         // Duck-typed child with send method - call directly
-        console.log('Trying duck-typed child with send', { type, params, childSend: typeof (child as any).send });
         try {
-          console.log('About to call child.send');
           (child as any).send(type, ...params);
-          console.log('Child.send called successfully');
           // Treat as handled if child has send method
           return { machine: child, event: null };
         } catch (e) {
-          console.log('Child.send failed:', e);
           // If send fails, don't treat as handled
           return null;
         }
       }
-      
-      console.log('Child found but no handler matched');
     }
     
     return null;
@@ -230,20 +208,24 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     
     // Create shared nested object for all states in hierarchy
     const fullHierarchyKeys = chain.map(s => s.key);
-    const sharedNested = Object.freeze({
+    const sharedNested = {
       fullKey: fullHierarchyKeys.join('.'),
       stack: chain.slice(),
       machine: machine
-    });
+    };
     
     // Stamp each state with its own hierarchical context
     chain.forEach((state, i) => {
       const pathToState = chain.slice(0, i + 1);
       const pathKeys = pathToState.map(s => s.key);
-      (state as any).depth = i;
-      (state as any).fullKey = pathKeys.join('.');
-      (state as any).stack = pathToState.slice();
-      (state as any).nested = sharedNested; // All states share same nested object
+      
+      // Only stamp if object is extensible (not frozen/sealed)
+      if (Object.isExtensible(state)) {
+        (state as any).depth = i;
+        (state as any).fullKey = pathKeys.join('.');
+        (state as any).stack = pathToState.slice();
+        (state as any).nested = sharedNested; // All states share same nested object
+      }
     });
   }
 

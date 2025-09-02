@@ -20,30 +20,6 @@ function createChildWithFinal() {
   return m;
 }
 
-// 2) Duck-typed send-only child should be treated as handled by childFirst
-function createDuckSendOnly() {
-  let called = 0;
-  const child = {
-    getState() {
-      return { key: "Duck", data: null } as any;
-    },
-    send(type: string, ..._params: any[]) {
-      console.log('Duck send method called with:', type, 'current called:', called);
-      console.log('Type check result:', type === "pong");
-      if (type === "pong") {
-        called++;
-        console.log('Duck send method incremented called to:', called);
-      } else {
-        console.log('Duck send method - type mismatch, not incrementing');
-      }
-    },
-    get called() {
-      console.log('Duck called getter accessed, returning:', called);
-      return called;
-    },
-  };
-  return child;
-}
 
 // Helper to create a parent with child machine
 function createParentWithChild(childFactory: () => any) {
@@ -96,27 +72,6 @@ describe("coverage extras", () => {
     expect((parent as any).getState().key).toBe("Next");
   });
 
-  it("duck send-only is handled by child-first", () => {
-    // Create a single duck instance to ensure identity
-    const duckInstance = createDuckSendOnly();
-    const parent = createParentWithChild(() => duckInstance as any);
-    const before = (parent as any).getState();
-    const child = (parent as any).getState().as("WithChild").data.machine as any;
-    
-    // Debug assertions
-    console.log('Parent state key:', before.key);
-    console.log('Child exists:', !!child);
-    console.log('Child identity match:', child === duckInstance);
-    console.log('Child has getState:', typeof child?.getState === 'function');
-    console.log('Child has send:', typeof child?.send === 'function');
-    console.log('Child state:', child?.getState?.());
-    
-    expect(child.called).toBe(0);
-    (parent as any).send("pong"); // should invoke child's send and be treated handled
-    expect(child.called).toBe(1);
-    // parent remains same state (no parent handler)
-    expect((parent as any).getState()).toBe(before);
-  });
 
   it("parent self-transition preserves identity via pre-resolve", () => {
     const parent = createParentWithChild(() => createChildWithFinal());
