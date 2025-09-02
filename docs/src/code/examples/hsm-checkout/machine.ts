@@ -71,7 +71,7 @@ export function createCheckoutMachine() {
   const hierarchical = createHierarchicalMachine(checkout);
   
   setup(hierarchical)(
-    effect(whenEventType("restart", payment.reset))
+    effect((ev: any) => ev.type === "restart" && (payment.reset(), true))
   );
 
   return Object.assign(hierarchical, { payment });

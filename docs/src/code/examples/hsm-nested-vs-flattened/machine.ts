@@ -46,7 +46,7 @@ export function createNestedController() {
     "Working"
   );
 
-  setup(ctrl)(propagateSubmachines(ctrl));
+  setup(ctrl)((_m) => propagateSubmachines(ctrl));
   
   // Return with hierarchical machine for child event routing
   const hierarchical = createHierarchicalMachine(ctrl);

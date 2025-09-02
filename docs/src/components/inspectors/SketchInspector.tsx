@@ -89,9 +89,9 @@ function SketchInspector({
           {/* Show transitions from this state */}
           {stateConfig.on && Object.keys(stateConfig.on).length > 0 && (
             <div className="transitions-inline">
-              {Object.entries(stateConfig.on).map(([event, target]) => {
+              {Object.entries(stateConfig.on).map(([event, target]: [string, any]) => {
                 // Handle different target formats - could be string or object with target property
-                const targetKey = typeof target === 'string' ? target : target?.target || String(target);
+                const targetKey = typeof target === 'string' ? target : (target as any)?.target || String(target);
                 
                 return (
                   <div key={event} className="transition-row">
