@@ -175,13 +175,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     // from the root each time, ensuring the stamps are always based on the latest state.
     stampUsingCurrentChain();
     
-    // Notify root subscribers for non-exit child changes so parent observers see updates
+    // Emit a routed child change via root.send so observers can react through the normal loop.
+    // Use an internal flag to avoid re-entering handleAtRoot and causing recursion.
     if (result.handled && !String(type).startsWith('child.')) {
-      // 🧑‍💻: I FUCKING HATE THIS. 
-      (root as any).notify?.({ type: 'child.change', params: [{ target: result.handledBy, type, params }] });
-      // WE should be using the lib not fighting it, hacking around 90% of the lifecycle.
-      // root.send is what we want. we just need to be sure that root knows what to do
-      // root may be handling all child events the same but they are not all the same
+      (root as any).send?.('child.change', { target: result.handledBy, type, params, _internal: true });
     }
     return result.event ?? null;
   }
@@ -235,7 +232,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     // IF WHEN we use root.send instead of root.notify. 
 
     if (type === 'child.change') {
-      const { type: childType, params: childParams } = params[0] || {};
+      const payload = params[0] || {};
+      // If this is an internally routed notification, surface it to subscribers
+      // without re-processing the event through handleAtRoot to avoid recursion.
+      if (payload && payload._internal) {
+        (root as any).notify?.({ type: 'child.change', params: [payload] });
+        return;
+      }
+      const { type: childType, params: childParams } = payload;
       return handleAtRoot(childType, childParams ?? []);
     }
     if (type.startsWith('child.')) {
