@@ -51,6 +51,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   }
 
   // Disconnects a machine from the propagation system.
+  // 🧑‍💻: NOT FUCKING USED!!!
   function unhookMachine(m: AnyMachine) {
     if ((m as any).__propagateUnhook) {
       (m as any).__propagateUnhook();
@@ -176,7 +177,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     
     // Notify root subscribers for non-exit child changes so parent observers see updates
     if (result.handled && !String(type).startsWith('child.')) {
+      // 🧑‍💻: I FUCKING HATE THIS. 
       (root as any).notify?.({ type: 'child.change', params: [{ target: result.handledBy, type, params }] });
+      // WE should be using the lib not fighting it, hacking around 90% of the lifecycle.
+      // root.send is what we want. we just need to be sure that root knows what to do
+      // root may be handling all child events the same but they are not all the same
     }
     return result.event ?? null;
   }
