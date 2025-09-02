@@ -231,6 +231,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   }
 
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+    // 🧑‍💻: I believe this is where we need to prevent infinite looping
+    // IF WHEN we use root.send instead of root.notify. 
+
     if (type === 'child.change') {
       const { type: childType, params: childParams } = params[0] || {};
       return handleAtRoot(childType, childParams ?? []);
@@ -239,6 +242,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return handleAtRoot(type, params);
     }
     return handleAtRoot(type, params);
+    // 🧑‍💻: why the fuck do we not fallback to regular fucking send? or pass it down?
+    // we never let the root do a regular fucking send? 
+    // maybe that makes sense idk.
   })(root as any);
 
   // Initial wiring: stamp and hook current chain once
