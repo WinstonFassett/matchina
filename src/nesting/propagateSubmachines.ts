@@ -172,13 +172,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         // Add myself to the stack at my depth
         hierarchyStack[depth] = state;
         
-        // Set up child machines
+        // Set up child machines and build complete stack
         const child = getChildFromParentState(state);
         if (child && !childEnhanced.has(child as any)) {
           childEnhanced.add(child as any);
           
           // Set up child with the same stack and incremented depth
           propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+          
+          // Add child state to complete the hierarchy
+          const childState = child.getState();
+          hierarchyStack[depth + 1] = childState;
           
           // Set up child send middleware to notify parent of state changes
           if (isFactoryMachine(child as any)) {
@@ -192,7 +196,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         }
         
         // Now enhance the state with complete hierarchy info - this is PART of resolving the exit
-        const completeFullkey = hierarchyStack.filter(s => s).map(s => s.key).join('.');
+        const activeLength = hierarchyStack.findIndex(s => !s);
+        const stackLength = activeLength === -1 ? hierarchyStack.length : activeLength;
+        const completeFullkey = hierarchyStack.slice(0, stackLength).map(s => s.key).join('.');
         const enhancedState = enhanceStateWithContext(state, {
           stack: hierarchyStack,
           depth: depth,
