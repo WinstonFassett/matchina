@@ -69,8 +69,18 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
   }
 
   function handleAtRoot(type: string, params: any[]) {
+    // Handle child.exit events directly at root level without child-first routing
+    if (type === 'child.exit') {
+      const ev = (machine as any).resolveExit?.({ type, params, from: machine.getState() });
+      if (ev) {
+        (machine as any).transition?.(ev);
+        stampHierarchy();
+        hookNewMachines();
+      }
+      return ev;
+    }
     
-    // Recursive child-first resolution: try deepest child first, then work up
+    // Try child-first resolution for other events
     const result = tryChildFirst(machine, type, params);
     if (result) {
       // Root must notify its subscribers without changing state
@@ -81,6 +91,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       
       // Hook any newly discovered machines
       hookNewMachines();
+      
+      // child.exit is now handled in tryChildFirst
       
       return result.event;
     }
@@ -97,7 +109,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       // Hook any newly discovered machines
       hookNewMachines();
       
-      // Child exit is handled in tryChildFirst, no need to check here
+      // child.exit is now handled in tryChildFirst
     }
     
     return ev;
@@ -121,7 +133,23 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
         (child as any).transition?.(childEv);
         
         // Check if child reached final state and synthesize child.exit
-        checkForChildExit(m);
+        const childState = child.getState();
+        if (isChildFinal(child, childState)) {
+          // Synthesize child.exit event for the parent
+          const exitEv = (m as any).resolveExit?.({ 
+            type: 'child.exit', 
+            params: [{
+              id: state.data?.id || 'unknown',
+              state: childState.key,
+              data: childState.data
+            }], 
+            from: state 
+          });
+          if (exitEv) {
+            (m as any).transition?.(exitEv);
+            return { machine: m, event: exitEv };
+          }
+        }
         
         return { machine: child, event: childEv };
       }
@@ -130,30 +158,15 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     return null;
   }
 
-  function checkForChildExit(parentMachine: any) {
-    if (!parentMachine?.getState) return;
-    
-    const state = parentMachine.getState();
-    const child = getChildFromParentState(state);
-    
-    if (child && isFactoryMachine(child)) {
-      const childState = child.getState();
-      if (childState?.data?.final) {
-        // Synthesize child.exit event directly on parent machine to avoid double processing
-        const ev = (parentMachine as any).resolveExit?.({ 
-          type: 'child.exit', 
-          params: [{
-            id: state.data?.id || 'unknown',
-            state: childState.key,
-            data: childState.data
-          }], 
-          from: state 
-        });
-        if (ev) {
-          (parentMachine as any).transition?.(ev);
-        }
-      }
+  function isChildFinal(child: any, childState: any): boolean {
+    // Check if state has explicit final flag
+    if (childState?.data?.final) {
+      return true;
     }
+    
+    // Check if state has no transitions (empty transitions object)
+    const transitions = (child as any).transitions?.[childState.key];
+    return transitions && Object.keys(transitions).length === 0;
   }
 
   function stampHierarchy() {
@@ -163,9 +176,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     // Build the chain of active states
     while (true) {
       const state = current.getState();
-      if (!state || !state.key) {
-        break;
-      } else {
+      if (state) {
         chain.push(state);
       }
       
@@ -174,17 +185,22 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       current = child;
     }
     
+    // Create shared nested object for all states in hierarchy
+    const fullHierarchyKeys = chain.map(s => s.key);
+    const sharedNested = Object.freeze({
+      fullKey: fullHierarchyKeys.join('.'),
+      stack: chain.slice(),
+      machine: machine
+    });
+    
     // Stamp each state with its own hierarchical context
     chain.forEach((state, i) => {
-      const pathToState = chain.slice(0, i + 1).map(s => s.key);
+      const pathToState = chain.slice(0, i + 1);
+      const pathKeys = pathToState.map(s => s.key);
       (state as any).depth = i;
-      (state as any).fullKey = pathToState.join('.');
-      (state as any).stack = chain.slice();
-      (state as any).nested = Object.freeze({
-        fullKey: pathToState.join('.'),
-        stack: chain.slice(),
-        machine: machine
-      });
+      (state as any).fullKey = pathKeys.join('.');
+      (state as any).stack = pathToState.slice();
+      (state as any).nested = sharedNested; // All states share same nested object
     });
   }
 
