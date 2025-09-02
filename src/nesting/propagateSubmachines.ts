@@ -164,41 +164,31 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     machine.getState = () => {
       const state = originalGetState.call(machine);
       
-      // Add myself to the stack and build context - only if not already there
-      if (hierarchyStack[depth] !== state) {
-        const context = buildStateContext(state, hierarchyStack, depth);
+      // Always update stack position and build context
+      const context = buildStateContext(state, hierarchyStack, depth);
+      
+      // Auto-enhance any child machines when parent state is accessed
+      const child = getChildFromParentState(state);
+      if (child && !childEnhanced.has(child as any)) {
+        childEnhanced.add(child as any);
         
-        // Auto-enhance any child machines when parent state is accessed
-        const child = getChildFromParentState(state);
-        if (child && !childEnhanced.has(child as any)) {
-          childEnhanced.add(child as any);
+        // Set up child with the same stack and incremented depth
+        propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+        
+        // Set up child send middleware to notify parent of state changes (needed for child.exit)
+        if (isFactoryMachine(child as any)) {
+          const duckChild = !isFactoryMachine(child as any);
+          const enhancer = enhanceSend(child, machine, state, duckChild, true);
           
-          // Set up child with the same stack and incremented depth
-          propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
-          
-          // Set up child send middleware to notify parent of state changes (needed for child.exit)
-          if (isFactoryMachine(child as any)) {
-            const duckChild = !isFactoryMachine(child as any);
-            const enhancer = enhanceSend(child, machine, state, duckChild, true);
-            
-            // Use proper setup mechanism instead of manual enhancement
-            const childMachine = child as FactoryMachine<any>;
-            const [addChildSetup] = buildSetup(childMachine);
-            addChildSetup(send(enhancer));
-          }
+          // Use proper setup mechanism instead of manual enhancement
+          const childMachine = child as FactoryMachine<any>;
+          const [addChildSetup] = buildSetup(childMachine);
+          addChildSetup(send(enhancer));
         }
-        
-        // Return state enhanced with context
-        return enhanceStateWithContext(state, context);
-      } else {
-        // State hasn't changed, just enhance with existing context
-        const fullkey = hierarchyStack.slice(0, depth + 1).map(s => s.key).join('.');
-        return enhanceStateWithContext(state, {
-          stack: hierarchyStack,
-          depth,
-          fullkey
-        });
       }
+      
+      // Always return state enhanced with context
+      return enhanceStateWithContext(state, context);
     };
     
     // Enhance resolveExit to supply sane defaults for probes

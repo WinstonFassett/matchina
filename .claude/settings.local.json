@@ -13,7 +13,8 @@
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_type",
       "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(npx vitest run:*)"
     ],
     "deny": [],
     "ask": []
