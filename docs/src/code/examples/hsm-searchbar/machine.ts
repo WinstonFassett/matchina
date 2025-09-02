@@ -59,12 +59,17 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     },
     Query: {
       ...commonTransitions,
-      // Refine back to TextEntry; accept optional query and fallback to current state's query
-      refine: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
-      "child.exit": { to: "Selecting", handle: ({ data }) => activeStates.Selecting({ 
-        query: data.query, 
-        items: data.items 
-      }) },
+      // Refine back to TextEntry with explicit query
+      // handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
+      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
+      // Child promise machine completed; accept either ev or ev.data shape
+      "child.exit": { to: "Selecting", handle: (ev: any) => {
+        const payload = ev?.data ?? ev ?? {};
+        return activeStates.Selecting({ 
+          query: payload.query ?? "", 
+          items: payload.items ?? []
+        });
+      } },
       setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
     },
     Selecting: {
