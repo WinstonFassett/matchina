@@ -213,28 +213,21 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       
       if (resolvedEvent && resolvedEvent.to) {
         const state = resolvedEvent.to;
-        
-        // Add myself to the stack at my depth
+
+        // Persist parent state at this depth so subsequent child getState sees a populated ancestor slot
         hierarchyStack[depth] = state;
-        
-        // Set up child machines and build complete stack
-        const child = getChildFromParentState(state);
-        if (child && !childEnhanced.has(child as any)) {
-          childEnhanced.add(child as any);
-          
-          // Set up child with the same stack and incremented depth
-          propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
-          
-          // Add child state to complete the hierarchy
-          const childState = child.getState();
-          hierarchyStack[depth + 1] = childState;
-          
-          // Set up child send middleware to notify parent of state changes
-          if (isFactoryMachine(child as any)) {
-            const duckChild = !isFactoryMachine(child as any);
-            const enhancer = enhanceSend(child, machine, state, duckChild, true);
-            
-            const childMachine = child as FactoryMachine<any>;
+
+        // Ensure child machine (if any) is enhanced for future calls at correct depth
+        const maybeChild = getChildFromParentState(state);
+        if (maybeChild && !childEnhanced.has(maybeChild as any)) {
+          childEnhanced.add(maybeChild as any);
+          // Initialize child wrappers with same shared stack and incremented depth
+          propagateSubmachines(maybeChild as any, hierarchyStack, depth + 1)(maybeChild as any);
+          // Set up send middleware to notify parent of child exits
+          if (isFactoryMachine(maybeChild as any)) {
+            const duckChild = !isFactoryMachine(maybeChild as any);
+            const enhancer = enhanceSend(maybeChild, machine, state, duckChild, true);
+            const childMachine = maybeChild as FactoryMachine<any>;
             const [addChildSetup] = buildSetup(childMachine);
             addChildSetup(send(enhancer));
           }
@@ -250,16 +243,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
           depth: depth,
           fullKey: completeFullKey
         });
-        
+
         return { ...resolvedEvent, to: enhancedState };
       }
       
       return resolvedEvent;
     };
     
-    // Enhance resolveExit to supply sane defaults for probes
+    // Enhance resolveExit to supply sane defaults for probes (non-mutating)
     addSetup(hookResolveExit((ev: any, next: (ev: any) => any) => {
-      const from = ev?.from ?? machine.getState();
+      // Use originalGetState to avoid mutating the shared stack during probes
+      const from = ev?.from ?? originalGetState.call(machine);
       const params = Array.isArray(ev?.params) ? ev.params : [];
       return next({ ...ev, from, params });
     }));
@@ -306,7 +300,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
         const handled = childFirst(type, ...params);
         if (handled) return; // child handled
         
-        const from = machine.getState();
+        const from = originalGetState.call(machine);
         const resolved = (machine).resolveExit?.({ type, params, from } as any);
         
         // Allow self-transitions when they carry parameters
