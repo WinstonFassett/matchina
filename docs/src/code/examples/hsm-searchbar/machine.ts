@@ -1,4 +1,5 @@
-import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType, createHierarchicalMachine, whenState } from "matchina";
+import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType, whenState } from "matchina";
+import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 
 interface SelectionState {
   query: string;
@@ -53,13 +54,13 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     Empty: commonTransitions,
     TextEntry: {
       ...commonTransitions,
-      // Submit with explicit query string to avoid relying on internal event object
-      submit: { to: "Query", handle: (query: string) => activeStates.Query(query) },
+      // Submit allows optional query; fallback to current state's query for backward compatibility
+      submit: { to: "Query", handle: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query) },
     },
     Query: {
       ...commonTransitions,
-      // Refine back to TextEntry with explicit query
-      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
+      // Refine back to TextEntry; accept optional query and fallback to current state's query
+      refine: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
       "child.exit": { to: "Selecting", handle: ({ data }) => activeStates.Selecting({ 
         query: data.query, 
         items: data.items 
@@ -68,15 +69,15 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     },
     Selecting: {
       ...commonTransitions,
-      // Refine from Selecting to TextEntry with explicit query
-      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
+      // Refine from Selecting to TextEntry; accept optional query
+      refine: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
       highlight: { to: "Selecting", handle: (index: number) => (ev) => activeStates.Selecting({
         ...ev.from.data, 
         highlightedIndex: index
       }) },
       setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
-      // Complete selection and keep query explicit
-      done: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
+      // Complete selection; accept optional query and fallback to current state's query
+      done: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
     },
     Error: { 
       retry: { to: "TextEntry", handle: (query: string = "") => activeStates.TextEntry(query) }, 
