@@ -60,115 +60,23 @@ When a non-root machine tries to send `someEvent`, the send hook transforms it:
 ## Algorithm
 
 ### A) propagateSubmachines(root)
-```typescript
-// Attach send hook to root that handles child.* events at parent level
-const unhookRoot = sendHook((innerSend) => (type, ...params) => {
-  if (type.startsWith('child.')) {
-    // Handle at this level via resolveExit → transition
-    const ev = root.resolveExit({ type, params, from: root.getState() });
-    if (ev) root.transition(ev);
-    return;
-  }
-  // Normal event - proceed to root resolveExit chain
-  return handleAtRoot(type, params);
-})(root);
-
-// Hook any currently active descendants
-hookActiveDescendants(root);
-```
+- Attach send hook to root that handles child.* events at parent level
+- Hook intercepts child.* events and handles them via resolveExit → transition at root level
+- Normal events proceed to root resolveExit chain
+- Hook any currently active descendants
 
 ### B) Root resolveExit chain (child-first, with stamping)
-```typescript
-function handleAtRoot(type, params) {
-  const chain = []; // Will be built during resolution
-  const result = resolveWithChain(root, { type, params }, chain);
-  
-  // Stamp depth and nested on all states in the chain
-  const nested = Object.freeze({
-    fullKey: chain.map(s => s.key).join('.'),
-    stack: chain.slice(),
-    machine: root
-  });
-  
-  chain.forEach((state, i) => {
-    state.depth = i;
-    state.nested = nested;
-  });
-  
-  // Hook any newly discovered machines
-  hookNewlyDiscovered(chain);
-  
-  return result;
-}
-
-function resolveWithChain(machine, event, chain) {
-  const state = machine.getState();
-  chain.push(state);
-  
-  // Try to resolve at this level
-  const ev = machine.resolveExit(event);
-  if (ev) {
-    machine.transition(ev);
-    
-    // Check for child exit after transition
-    const newState = machine.getState();
-    if (childWentFinal(state, newState)) {
-      // Synthesize child.exit and handle at parent
-      synthesizeChildExit(machine, newState);
-    }
-    
-    return ev;
-  }
-  
-  // If unresolved and has child, descend
-  const child = state.data?.machine;
-  if (child && isFactoryMachine(child)) {
-    return resolveWithChain(child, event, chain);
-  }
-  
-  // Unresolved
-  return null;
-}
-```
+- Build chain during resolution by collecting states as we descend
+- Use normal resolveExit/transition lifecycle - no custom chain walking
+- After resolution, stamp depth and nested on all states in the chain
+- Hook any newly discovered machines
+- Child-first resolution: try child.resolveExit first, then parent if unresolved
 
 ### C) Send hook mechanics
-```typescript
-function hookActiveDescendants(root) {
-  // Walk current active chain and hook each machine
-  let current = root;
-  while (true) {
-    const state = current.getState();
-    const child = state.data?.machine;
-    if (!child || !isFactoryMachine(child)) break;
-    
-    hookMachine(child, root);
-    current = child;
-  }
-}
-
-function hookMachine(machine, root) {
-  if (machine.__propagateUnhook) return; // Already hooked
-  
-  machine.__propagateUnhook = sendHook((innerSend) => (type, ...params) => {
-    if (type.startsWith('child.')) {
-      // Handle at this machine's level
-      const ev = machine.resolveExit({ type, params, from: machine.getState() });
-      if (ev) machine.transition(ev);
-      return;
-    }
-    
-    // Non-root send - block and redirect to root
-    return root.send('child.change', { target: machine, type, params });
-  })(machine);
-}
-
-function unhookMachine(machine) {
-  if (machine.__propagateUnhook) {
-    machine.__propagateUnhook();
-    delete machine.__propagateUnhook;
-  }
-}
-```
+- Walk current active chain and hook each discovered machine
+- Each hooked machine intercepts sends and redirects non-child.* events to root as child.change
+- child.* events are handled at the machine's own level
+- Use machine.__propagateUnhook property to track hook disposer
 
 ## Event contracts
 
