@@ -35,11 +35,17 @@ function ChildPanel({ child }: { child: FactoryMachine<any> }) {
 export function CheckoutView({ machine }: { machine: Machine }) {
   useMachine(machine)
   const state = machine.getState();
-  const s: any = state as any;
-  const childMachine: any = s?.data?.machine;
-  const childState = childMachine?.getState?.();
-  // Prefer child's fullKey if present so we never show just the parent when a child exists
-  const path = childState?.fullKey || state.fullKey || state.key;
+  // Derive path by walking down the active child chain to ensure consistency
+  const parts: string[] = [];
+  let cursorMachine: any = machine as any;
+  let guard = 0;
+  while (cursorMachine && guard++ < 10) {
+    const s = cursorMachine.getState?.();
+    if (!s) break;
+    parts.push(s.key);
+    cursorMachine = s?.data?.machine;
+  }
+  const path = parts.join(".");
   return (
     <div className="p-4 space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
       <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">Checkout</h3>
