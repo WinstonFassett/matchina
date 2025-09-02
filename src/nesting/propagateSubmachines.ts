@@ -39,6 +39,43 @@ function trySend(m: AnyMachine, type: string, ...params: any[]) {
   return (m.send as any)(type, ...params);
 }
 
+// Write-time normalization: walk the active chain and stamp depth/fullKey on each active state.
+// Uses only public getState and follows state.data?.machine. Bounded and cycle-safe.
+function normalizeActiveStackAfterTransition(rootLike: AnyMachine | FactoryMachine<any>) {
+  try {
+    const root = (rootLike as any).__rootMachine || rootLike;
+    const visited = new Set<any>();
+    const states: any[] = [];
+    const machines: AnyMachine[] = [];
+    let cursor: AnyMachine | undefined = root as AnyMachine;
+    let guard = 0;
+    while (cursor && guard++ < 50) {
+      if (visited.has(cursor)) break;
+      visited.add(cursor);
+      machines.push(cursor);
+      const s = (cursor as any).getState?.();
+      if (!s) break;
+      states.push(s);
+      const next = s?.data?.machine as AnyMachine | undefined;
+      if (!next) break;
+      cursor = next;
+    }
+    const keys = states.map(s => s?.key).filter(Boolean);
+    for (let i = 0; i < states.length; i++) {
+      const st = states[i];
+      if (!st) continue;
+      try {
+        (st as any).depth = i;
+        (st as any).fullKey = keys.slice(0, i + 1).join('.');
+      } catch {}
+    }
+    try {
+      (root as any).__activeStackKeys = keys;
+      (root as any).__activeFullKey = keys.join('.');
+    } catch {}
+  } catch {}
+}
+
 function snapshot(m: AnyMachine) {
   if (!m || typeof m.getState !== 'function') {
     throw new Error('Invalid state machine: getState is not a function');
@@ -339,6 +376,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
             });
           } catch {}
         }
+        // Write-time remediation: ensure stack/fullKey stamped after child-first handling
+        try { normalizeActiveStackAfterTransition(machine); } catch {}
         return true;
       }
       return false;
@@ -368,7 +407,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
 
             // If parent changed or bubbled an exit, we're done
             const parentHandled = beforeParent?.key !== afterParent?.key;
-            if (parentHandled) { return; }
+            if (parentHandled) { try { normalizeActiveStackAfterTransition(machine); } catch {} return; }
 
             // Otherwise, delegate to child under a transient from-parent flag
             if (afterChild) {
@@ -416,7 +455,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
                     });
                   } catch {}
                 }
-                
+                // Write-time remediation after delegated child handling
+                try { normalizeActiveStackAfterTransition(machine); } catch {}
               }
             }
           };
@@ -453,6 +493,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
               }
             }
           } catch {}
+          // Write-time remediation after parent handling
+          try { normalizeActiveStackAfterTransition(machine); } catch {}
           return result;
         };
       })
