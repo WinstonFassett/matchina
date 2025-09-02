@@ -2,7 +2,14 @@
 
 I suggest you look at 3.1 to understand what NOT to do. You are forbidden from repeating past mistakes.
 
-# HIERARCHICAL_MACHINES R3.3 – Propagation Of New Descendants (Tech Design)
+# HIERARCHICAL_MACHINES R3.3 – Propagation Of New Descendants (Tech Design) — FUCKING FAIL
+
+🧑‍💻: This design FAILS because it still drifts into GPT's shitty thinking patterns instead of following my explicit guidance:
+- Still talks about "traversal" and "discovery passes" instead of letting resolveExit chain BE the propagation
+- Missing child.change event contract I explicitly defined
+- Vague about send hook mechanics I specified
+- Still implies separate stamping phase instead of stamping DURING resolveExit chain
+See R3.4 for the corrected design that actually follows my guidance.
 
 🧑‍💻: Previous R3 and R3.1 attempts failed; see `HIERARCHICAL_MACHINES_R3_FUCKING_PROPAGATION_OF_NEW_DESCENDANTS_DESIGN_FUCKING_FAIL.md` and `HIERARCHICAL_MACHINES_R3.1_FUCKING_PROPAGATION_OF_NEW_DESCENDANTS_DESIGN_FUCKING_FAIL.md`. R3.2 also failed due to forbidden registry/Map usage; see `HIERARCHICAL_MACHINES_R3.2_FUCKING_PROPAGATION_OF_NEW_DESCENDANTS_DESIGN_FUCKING_FAIL.md`.
 
