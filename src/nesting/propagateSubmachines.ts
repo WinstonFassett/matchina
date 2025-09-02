@@ -134,6 +134,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     const state = m.getState();
     const child = getChildFromParentState(state);
     
+    console.log('tryChildFirst:', { 
+      machineState: state?.key, 
+      hasChild: !!child, 
+      childIsFactory: child ? isFactoryMachine(child) : null,
+      type 
+    });
+    
     if (child) {
       
       // Try child's children first (recursive) - only for FactoryMachines
@@ -146,6 +153,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       
       // Try this child - first check if it's a FactoryMachine
       if (isFactoryMachine(child)) {
+        console.log('Trying FactoryMachine child');
         const childEv = (child as any).resolveExit?.({ type, params, from: child.getState() });
         if (childEv) {
           (child as any).transition?.(childEv);
@@ -173,15 +181,21 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
         }
       } else if ((child as any).send) {
         // Duck-typed child with send method - call directly
+        console.log('Trying duck-typed child with send', { type, params, childSend: typeof (child as any).send });
         try {
+          console.log('About to call child.send');
           (child as any).send(type, ...params);
+          console.log('Child.send called successfully');
           // Treat as handled if child has send method
           return { machine: child, event: null };
         } catch (e) {
+          console.log('Child.send failed:', e);
           // If send fails, don't treat as handled
           return null;
         }
       }
+      
+      console.log('Child found but no handler matched');
     }
     
     return null;
