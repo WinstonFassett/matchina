@@ -40,7 +40,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
     const r = createHierarchicalMachine(ctrl);
 
     const before = ctrl.getState();
-    const probe = (ctrl as any).resolveExit?.({ type: "tick" });
+    const probe = (ctrl as any).resolveExit?.({ type: "tick", from: before });
     // Parent should not change on probe
     expect(ctrl.getState()).toBe(before);
 
