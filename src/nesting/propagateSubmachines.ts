@@ -30,6 +30,12 @@ export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine
 
 // R3.4-compliant implementation
 export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): void {
+
+  // maybe we track our bound machines somewhere so we can unhook them? 
+  // it may be ok to track these non-globally, while func is in use, until disposed
+  // surprised not to see more problems related to cleanup
+  // but maybe propagate hook is prop there is helping, idk
+
   // Install a send hook on any discovered machine to re-route non-root sends to root
   function hookMachine(m: AnyMachine) {
     if ((m as any).__propagateUnhook) return;
@@ -42,6 +48,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
     (m as any).__propagateUnhook = unhook;
   }
 
+  // UNUSED dspose function???
   function unhookMachine(m: AnyMachine) {
     if ((m as any).__propagateUnhook) {
       (m as any).__propagateUnhook();
@@ -150,6 +157,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
     return result.event ?? null;
   }
 
+  // UNUSED???
   function hookDiscovered(machines: AnyMachine[]) {
     for (const m of machines) {
       const s = m.getState();
@@ -197,7 +205,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   }
 
   // Root send hook
+  // UNUSED disposer??? we never unhook? 
+  // propagate is supposed to have cleanup, cleanup should clean stuff up off root etc. 
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+    // in this shitty unused hook, 
+    // WHY would you NOT call innerSend??
     if (type === 'child.change') {
       const { type: childType, params: childParams } = params[0] || {};
       return handleAtRoot(childType, childParams ?? []);
