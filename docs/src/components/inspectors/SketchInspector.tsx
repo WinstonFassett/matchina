@@ -28,7 +28,8 @@ const SketchInspector = memo(({
   
   // Step 3: Prepare highlighting info - find the deepest active state
   const currentStateKey = currentState?.key;
-  const fullkey = currentState?.fullkey || currentStateKey;
+  console.log('currentState', currentState)
+  const fullkey = currentState?.fullKey || currentStateKey;
   const depth = currentState?.depth ?? 0;
   
   // const deepestActiveState = getDeepestActiveState(machine);
@@ -50,7 +51,7 @@ const SketchInspector = memo(({
       >
         <div className="state-content">
           <span className="state-name">{stateKey}</span>
-          
+          <pre>{JSON.stringify({ isActive, isBranchActive }, null, 2)}</pre>
           {isActive && fullkey && fullkey !== stateKey && (
             <div className="state-fullkey">
               <span className="fullkey-label">path:</span> {fullkey}
@@ -90,18 +91,18 @@ const SketchInspector = memo(({
         {/* Render nested states recursively */}
         {hasNested && (
           <div className="nested-states">
-            {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]) => {
+            {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]: [string,any]) => {
               // Only highlight if this is the deepest active state
-              const nestedIsActive = nestedKey === currentStateKey;
-              
+              // const nestedIsActive = nestedKey === currentStateKey;
+              const isMatch = nestedConfig.fullKey === fullkey;
               
               return (
                 <StateItem 
                   key={nestedKey}
                   stateKey={nestedKey}
                   stateConfig={nestedConfig}
-                  isActive={nestedIsActive}
-                  isBranchActive={isActive}
+                  isActive={isMatch}
+                  isBranchActive={isBranchActive}
                   depth={depth + 1}
                 />
               );
@@ -118,9 +119,9 @@ const SketchInspector = memo(({
       // Only highlight if this is the deepest active state
       // const isActive = stateKey === deepestActiveState;
       // const isAtDepth = depth === currentState?.depth;
-      const isActive = stateKey === currentStateKey;
       const stateConfig = states[stateKey];
-      console.log('render', stateKey, isActive, stateConfig)
+      const isActive = stateConfig.fullKey === fullkey;
+      console.log('render', stateKey, isActive, stateConfig.fullKey, fullkey, stateConfig);
       
       return (
         <StateItem 
