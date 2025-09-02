@@ -52,25 +52,25 @@ function snapshot(m: AnyMachine) {
 
 // Build context for a state using incremental stack - add self to stack, reuse same stack
 function buildStateContext(state: any, parentStack: any[], myDepth: number): StateWithContext {
-  // Add myself to the stack at my depth
-  parentStack[myDepth] = state;
+  // DON'T modify the stack here - it should be set before calling this
   
-  // Build fullkey from the current stack up to my depth
-  const fullkey = parentStack.slice(0, myDepth + 1).map(s => s.key).join('.');
+  // Build fullkey from the COMPLETE stack - all states get the same fullkey representing full active path
+  const fullkey = parentStack.filter(s => s).map(s => s.key).join('.');
   
   return { 
     stack: parentStack, // Same stack reference - everyone sees the same stack
     depth: myDepth, 
-    fullkey 
+    fullkey // Same fullkey for all states in the active hierarchy
   };
 }
 
 // Enhance a state with context information  
 function enhanceStateWithContext(state: any, context: StateWithContext): any {
+  const fullkey = context.stack.filter(s => s).map(s => s.key).join('.');
   return Object.assign(state, {
     stack: context.stack,
     depth: context.depth,
-    fullkey: context.fullkey
+    fullkey: fullkey
   });
 }
 
@@ -161,34 +161,48 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();
     
-    machine.getState = () => {
-      const state = originalGetState.call(machine);
+    // Auto-enhance any child machines when parent state is accessed through resolveExit
+    const originalResolveExit = (machine as any).resolveExit;
+    (machine as any).resolveExit = (ev: any) => {
+      const resolvedEvent = originalResolveExit ? originalResolveExit(ev) : ev;
       
-      // Always update stack position and build context
-      const context = buildStateContext(state, hierarchyStack, depth);
-      
-      // Auto-enhance any child machines when parent state is accessed
-      const child = getChildFromParentState(state);
-      if (child && !childEnhanced.has(child as any)) {
-        childEnhanced.add(child as any);
+      if (resolvedEvent && resolvedEvent.to) {
+        const state = resolvedEvent.to;
         
-        // Set up child with the same stack and incremented depth
-        propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+        // Add myself to the stack at my depth
+        hierarchyStack[depth] = state;
         
-        // Set up child send middleware to notify parent of state changes (needed for child.exit)
-        if (isFactoryMachine(child as any)) {
-          const duckChild = !isFactoryMachine(child as any);
-          const enhancer = enhanceSend(child, machine, state, duckChild, true);
+        // Set up child machines
+        const child = getChildFromParentState(state);
+        if (child && !childEnhanced.has(child as any)) {
+          childEnhanced.add(child as any);
           
-          // Use proper setup mechanism instead of manual enhancement
-          const childMachine = child as FactoryMachine<any>;
-          const [addChildSetup] = buildSetup(childMachine);
-          addChildSetup(send(enhancer));
+          // Set up child with the same stack and incremented depth
+          propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+          
+          // Set up child send middleware to notify parent of state changes
+          if (isFactoryMachine(child as any)) {
+            const duckChild = !isFactoryMachine(child as any);
+            const enhancer = enhanceSend(child, machine, state, duckChild, true);
+            
+            const childMachine = child as FactoryMachine<any>;
+            const [addChildSetup] = buildSetup(childMachine);
+            addChildSetup(send(enhancer));
+          }
         }
+        
+        // Now enhance the state with complete hierarchy info - this is PART of resolving the exit
+        const completeFullkey = hierarchyStack.filter(s => s).map(s => s.key).join('.');
+        const enhancedState = enhanceStateWithContext(state, {
+          stack: hierarchyStack,
+          depth: depth,
+          fullkey: completeFullkey
+        });
+        
+        return { ...resolvedEvent, to: enhancedState };
       }
       
-      // Always return state enhanced with context
-      return enhanceStateWithContext(state, context);
+      return resolvedEvent;
     };
     
     // Enhance resolveExit to supply sane defaults for probes
