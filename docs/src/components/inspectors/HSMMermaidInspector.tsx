@@ -61,7 +61,7 @@ const HSMMermaidInspector = memo(({
       let x = 0; for (let i = 0; i < s.length; i++) x = ((x << 5) - x) + s.charCodeAt(i) | 0;
       const hash = (x >>> 0).toString(16);
       // keep minimal to avoid noise
-      console.log('[HSMMermaidInspector.config]', hash, 'state=', hierarchicalStateKey);
+      // console.log('[HSMMermaidInspector.config]', hash, 'state=', hierarchicalStateKey);
     } catch {}
   }, [xstateConfig, hierarchicalStateKey]);
   

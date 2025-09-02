@@ -13,7 +13,7 @@ const useMermaid = (id: string, content: string): string | null => {
       let x = 0; for (let i = 0; i < content.length; i++) x = ((x << 5) - x) + content.charCodeAt(i) | 0;
       const hash = (x >>> 0).toString(16);
       // Keep log ultra-short to avoid console spam
-      console.log('[Mermaid.render]', id, hash, content.length);
+      // console.log('[Mermaid.render]', id, hash, content.length);
     } catch {}
 
     mermaid.render(id, content).then((svgraph) => {

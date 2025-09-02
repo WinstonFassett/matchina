@@ -301,15 +301,15 @@ const MermaidInspector = memo(
     useEffect(() => {
       const next = diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id);
       if (next !== chartRef.current) {
-        try {
-          // Log the exact chart string diff context
-          console.log('[MermaidInspector.chart change]', {
-            diagramType,
-            prevLen: chartRef.current?.length ?? 0,
-            nextLen: next.length,
-          });
-          console.log('--- prev chart ---\n' + (chartRef.current ?? '') + '\n--- next chart ---\n' + next);
-        } catch {}
+        // try {
+        //   // Log the exact chart string diff context
+        //   console.log('[MermaidInspector.chart change]', {
+        //     diagramType,
+        //     prevLen: chartRef.current?.length ?? 0,
+        //     nextLen: next.length,
+        //   });
+        //   console.log('--- prev chart ---\n' + (chartRef.current ?? '') + '\n--- next chart ---\n' + next);
+        // } catch {}
         chartRef.current = next;
         setChart(next);
       }
