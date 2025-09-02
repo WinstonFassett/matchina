@@ -126,10 +126,27 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
     if (isHandled(before, after, grandBeforeSnap, grandAfterSnap)) {
       const hadMachine = before?.data?.machine;
       const hasMachine = after?.data?.machine;
+      const changedLocal = before?.key !== after?.key;
       
       if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duck, includeDataStateExitForDuck)) {
         // Use up-to-date parent state when signaling exit
         triggerExit(machine, machine.getState(), after);
+      } else if (changedLocal) {
+        // Non-exit child transition: notify parent subscribers
+        try {
+          // If the event was routed via parent, parent will notify; skip here to avoid double
+          if (!(child as any).__suppressChildNotify) {
+            const currentParentState = machine.getState();
+            // Only bubble upward to ancestors (e.g., root) to avoid double notifications
+            (machine as any).__parentNotify?.({
+              type: "child.changed",
+              from: currentParentState,
+              to: currentParentState,
+              params: [{ id: parentState?.data?.id ?? parentState?.id, child: after?.key }],
+              machine,
+            });
+          }
+        } catch {}
       }
     }
     return res;
@@ -147,7 +164,8 @@ function enhanceSend(child: AnyMachine, machine: FactoryMachine<any>, parentStat
 export function propagateSubmachines<M extends FactoryMachine<any>>(
   machineIgnoreThis: M, 
   parentStack?: any[], 
-  myDepth?: number
+  myDepth?: number,
+  parentMachine?: FactoryMachine<any>
 ) {
   return (machine: M) => {
     const [addSetup, disposeAll] = buildSetup(machine);
@@ -169,6 +187,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();
 
+    // Provide a bubbling notifier to ancestors
+    (machine as any).__parentNotify = parentMachine
+      ? (ev: any) => {
+          try {
+            (parentMachine as any).notify?.(ev);
+            (parentMachine as any).__parentNotify?.(ev);
+          } catch {}
+        }
+      : undefined;
+
     // Wrap getState so every read carries up-to-date context and child setup
     (machine as any).getState = () => {
       const state = originalGetState.call(machine);
@@ -181,7 +209,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       if (child && !childEnhanced.has(child as any)) {
         childEnhanced.add(child as any);
         // Inherit stack and increment depth for child
-        propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+        propagateSubmachines(child as any, hierarchyStack, depth + 1, machine as any)(child as any);
 
         // If the child is a FactoryMachine, add send enhancer to notify exits
         if (isFactoryMachine(child as any)) {
@@ -270,7 +298,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       
       let threw = false;
       try {
-        trySend(child, type, ...params);
+        // Suppress child's own notify when routed via parent to avoid double notification
+        try {
+          (child as any).__suppressChildNotify = true;
+          trySend(child, type, ...params);
+        } finally {
+          try { delete (child as any).__suppressChildNotify; } catch {}
+        }
       } catch {
         threw = true;
       }
@@ -286,9 +320,30 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
       if (handled) {
         const hadMachine = before?.data?.machine;
         const hasMachine = after?.data?.machine;
+        const changedLocal = before?.key !== after?.key;
         
         if (looksLikeExit(after, grandAfterSnap, hadMachine, hasMachine, duckChild, true)) {
           triggerExit(machine, parentState, after);
+        } else if (changedLocal) {
+          // Non-exit child transition: notify parent subscribers
+          try {
+            const currentParentState = machine.getState();
+            (machine as any).notify?.({
+              type: "child.changed",
+              from: currentParentState,
+              to: currentParentState,
+              params: [{ id: parentState?.data?.id ?? parentState?.id, child: after?.key }],
+              machine,
+            });
+            // bubble
+            (machine as any).__parentNotify?.({
+              type: "child.changed",
+              from: currentParentState,
+              to: currentParentState,
+              params: [{ id: parentState?.data?.id ?? parentState?.id, child: after?.key }],
+              machine,
+            });
+          } catch {}
         }
         return true;
       }
