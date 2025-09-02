@@ -20,7 +20,7 @@ describe("child.exit: checkout shipping -> payment", () => {
       Quoted: {},
     } as const;
     const m = createMachine(states, transitions, "Quoting");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 
@@ -34,7 +34,7 @@ describe("child.exit: checkout shipping -> payment", () => {
       Authorized: {},
     } as const;
     const m = createMachine(states, transitions, "Idle");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 
@@ -58,7 +58,7 @@ describe("child.exit: checkout shipping -> payment", () => {
     } as const;
 
     const m = createMachine(states, transitions, "ShippingStep");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 

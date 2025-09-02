@@ -17,7 +17,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
       Green: { tick: "Red" },
     } as const;
     const m = createMachine(states, transitions, "Red");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 
@@ -31,7 +31,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
       Broken: { repair: "Working" },
     } as const;
     const m = createMachine(states, transitions, "Working");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 
@@ -73,7 +73,7 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
       const states = defineStates({ A: undefined, B: undefined });
       const transitions = { A: { g: "B" }, B: { g: "A" } } as const;
       const m = createMachine(states, transitions, "A");
-      setup(m)(propagateSubmachines);
+      propagateSubmachines(m);
       return m;
     }
     // Child embeds grandchild; does not handle 'g'
@@ -81,14 +81,14 @@ describe("HSM resolve-exit, lifecycle, deep nesting", () => {
       const states = defineStates({ On: () => ({ machine: createGrand() }) });
       const transitions = { On: {} } as const;
       const m = createMachine(states, transitions, "On");
-      setup(m)(propagateSubmachines);
+      propagateSubmachines(m);
       return m;
     }
     // Parent embeds child; does not handle 'g'
     const states = defineStates({ Run: () => ({ machine: createChild() }) });
     const transitions = { Run: {} } as const;
     const p = createMachine(states, transitions, "Run");
-    setup(p)(propagateSubmachines);
+    propagateSubmachines(p);
 
     const r = createHierarchicalMachine(p);
     expect((p as any).getState().key).toBe("Run");

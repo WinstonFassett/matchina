@@ -16,7 +16,7 @@ function createChildWithFinal() {
     Final: {},
   } as const;
   const m = createMachine(states, transitions, "Start");
-  setup(m)(propagateSubmachines);
+  propagateSubmachines(m);
   return m;
 }
 
@@ -51,7 +51,7 @@ function createParentWithChild(childFactory: () => any) {
     Next: {},
   } as const;
   const m = createMachine(states, transitions, "WithChild");
-  setup(m)(propagateSubmachines);
+  propagateSubmachines(m);
   return m;
 }
 
@@ -61,7 +61,7 @@ function createSwappingParent() {
     const states = defineStates({ A: () => ({ label }) });
     const transitions = { A: {} } as const;
     const m = createMachine(states, transitions, "A");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   };
   const states = defineStates({
@@ -75,7 +75,7 @@ function createSwappingParent() {
     Done: {},
   } as const;
   const m = createMachine(states, transitions, "S1");
-  setup(m)(propagateSubmachines);
+  propagateSubmachines(m);
   return m;
 }
 

@@ -174,20 +174,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       current = child;
     }
     
-    
-    // Create shared nested object
-    const nested = Object.freeze({
-      fullKey: chain.map(s => s.key).join('.'),
-      stack: chain.slice(),
-      machine: machine
-    });
-    
-    // Stamp all states in the chain
+    // Stamp each state with its own hierarchical context
     chain.forEach((state, i) => {
+      const pathToState = chain.slice(0, i + 1).map(s => s.key);
       (state as any).depth = i;
-      (state as any).nested = nested;
-      (state as any).fullKey = nested.fullKey;
-      (state as any).stack = nested.stack;
+      (state as any).fullKey = pathToState.join('.');
+      (state as any).stack = chain.slice();
+      (state as any).nested = Object.freeze({
+        fullKey: pathToState.join('.'),
+        stack: chain.slice(),
+        machine: machine
+      });
     });
   }
 

@@ -15,7 +15,7 @@ describe("HSM routing: unhandled child bubbles to parent", () => {
       },
     } as const;
     const m = createMachine(states, transitions, "A");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 
@@ -37,7 +37,7 @@ describe("HSM routing: unhandled child bubbles to parent", () => {
     } as const;
 
     const m = createMachine(states, transitions, "Idle");
-    setup(m)(propagateSubmachines);
+    propagateSubmachines(m);
     return m;
   }
 

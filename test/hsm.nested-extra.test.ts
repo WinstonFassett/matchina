@@ -26,7 +26,7 @@ function parentAlsoHandlesStart() {
     },
     "Idle"
   );
-  setup(m)(propagateSubmachines);
+  propagateSubmachines(m);
   return m;
 }
 
