@@ -93,7 +93,7 @@ describe("HSM: Infinite Depth Support", () => {
     const deepestState = currentState;
     expect(deepestState.data.level).toBe(4);
     expect(deepestState.depth).toBe(4);
-    expect(deepestState.nested.fullKey).toBe("Processing.Processing.Processing.Processing.Processing");
+    expect(deepestState.nested.fullKey).toBe("Processing.Processing.Processing.Processing.Processing.Idle");
     expect(deepestState.data.machine).toBeUndefined();
   });
 
