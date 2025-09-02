@@ -33,8 +33,12 @@ function ChildPanel({ child }: { child: FactoryMachine<any> }) {
 }
 
 export function CheckoutView({ machine }: { machine: Machine }) {
+  // Subscribe to parent
   useMachine(machine)
+  // Also subscribe to active child (so Step updates on child-only transitions)
   const state = machine.getState();
+  const possibleChild: any = (state as any)?.data?.machine;
+  useMachine(possibleChild || machine);
   // Derive path by walking down the active child chain to ensure consistency
   const parts: string[] = [];
   let cursorMachine: any = machine as any;

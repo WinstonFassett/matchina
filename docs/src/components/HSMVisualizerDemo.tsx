@@ -5,34 +5,20 @@ import ReactFlowInspector from './inspectors/ReactFlowInspector';
 import { useMachine } from 'matchina/react';
 
 function getFullStatePath(machine: any): string {
-  const currentState = machine.getState();
-  if (!currentState) return 'Unknown';
-  
-  // Use the new fullKey property if available
-  if (currentState.fullKey) {
-    return currentState.fullKey;
-  }
-  
-  // Fallback to building path manually for backward compatibility
-  let path = currentState.key;
-  
-  // Check if there's a nested machine with an active state
-  if (currentState.data?.machine) {
-    const nestedState = currentState.data.machine.getState();
-    if (nestedState) {
-      path += '.' + nestedState.key;
-      
-      // Check for further nesting (e.g., Query state with fetcher machine)
-      if (nestedState.data?.machine) {
-        const deepNestedState = nestedState.data.machine.getState();
-        if (deepNestedState) {
-          path += '.' + deepNestedState.key;
-        }
-      }
+  try {
+    const parts: string[] = [];
+    let cursor: any = machine;
+    let guard = 0;
+    while (cursor && guard++ < 25) {
+      const s = cursor.getState?.();
+      if (!s) break;
+      parts.push(s.key);
+      cursor = s?.data?.machine;
     }
+    return parts.length ? parts.join('.') : 'Unknown';
+  } catch {
+    return 'Unknown';
   }
-  
-  return path;
 }
 
 type VisualizerType = 'mermaid' | 'sketch' | 'reactflow';
@@ -60,6 +46,10 @@ export function VisualizerDemo({
 }: VisualizerDemoProps) {
   const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>(defaultVisualizer);
   const currentChange = useMachine(machine) as any;
+  // Also subscribe to active child (first level) to catch child-only transitions
+  const cs = machine.getState?.();
+  const child = cs?.data?.machine;
+  useMachine(child || machine);
   const visualizers = useMemo(() => [
     { 
       key: 'sketch', 
