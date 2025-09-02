@@ -54,19 +54,27 @@ function snapshot(m: AnyMachine) {
 function buildStateContext(state: any, parentStack: any[], myDepth: number): StateWithContext {
   // DON'T modify the stack here - it should be set before calling this
   
-  // Build fullKey from the COMPLETE stack - all states get the same fullKey representing full active path
-  const fullKey = parentStack.filter(s => s).map(s => s.key).join('.');
+  // Build fullKey up to this state's depth (inclusive)
+  const fullKey = parentStack
+    .slice(0, myDepth + 1)
+    .filter(s => s)
+    .map(s => s.key)
+    .join('.');
   
   return { 
-    stack: parentStack, // Same stack reference - everyone sees the same stack
+    stack: parentStack, // Shared stack reference
     depth: myDepth, 
-    fullKey // Same fullKey for all states in the active hierarchy
+    fullKey
   };
 }
 
 // Enhance a state with context information  
 function enhanceStateWithContext(state: any, context: StateWithContext): any {
-  const fullKey = context.stack.filter(s => s).map(s => s.key).join('.');
+  const fullKey = context.stack
+    .slice(0, context.depth + 1)
+    .filter(s => s)
+    .map(s => s.key)
+    .join('.');
   return Object.assign(state, {
     stack: context.stack,
     depth: context.depth,
@@ -160,6 +168,43 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
     // Enhance getState to add context using incremental stack
     const originalGetState = machine.getState;
     const childEnhanced = new WeakSet<object>();
+
+    // Wrap getState so every read carries up-to-date context and child setup
+    (machine as any).getState = () => {
+      const state = originalGetState.call(machine);
+
+      // Record this machine's current state at my depth
+      hierarchyStack[depth] = state;
+
+      // Auto-setup child machine (if present) for hierarchical routing
+      const child = getChildFromParentState(state);
+      if (child && !childEnhanced.has(child as any)) {
+        childEnhanced.add(child as any);
+        // Inherit stack and increment depth for child
+        propagateSubmachines(child as any, hierarchyStack, depth + 1)(child as any);
+
+        // If the child is a FactoryMachine, add send enhancer to notify exits
+        if (isFactoryMachine(child as any)) {
+          const duckChild = !isFactoryMachine(child as any);
+          const enhancer = enhanceSend(child, machine, state, duckChild, true);
+          const childMachine = child as FactoryMachine<any>;
+          const [addChildSetup] = buildSetup(childMachine);
+          addChildSetup(send(enhancer));
+        }
+      }
+
+      // Attach hierarchy context up to this machine's depth
+      const completeFullKey = hierarchyStack
+        .slice(0, depth + 1)
+        .filter(s => s)
+        .map(s => s.key)
+        .join('.');
+      return enhanceStateWithContext(state, {
+        stack: hierarchyStack,
+        depth: depth,
+        fullKey: completeFullKey
+      });
+    };
     
     // Auto-enhance any child machines when parent state is accessed through resolveExit
     const originalResolveExit = (machine as any).resolveExit;
@@ -194,15 +239,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
             addChildSetup(send(enhancer));
           }
         }
-        
-        // Now enhance the state with complete hierarchy info - this is PART of resolving the exit
-        const activeLength = hierarchyStack.findIndex(s => !s);
-        const stackLength = activeLength === -1 ? hierarchyStack.length : activeLength;
-        const completeFullkey = hierarchyStack.slice(0, stackLength).map(s => s.key).join('.');
+        // Now enhance the state with hierarchy info up to this depth
+        const completeFullKey = hierarchyStack
+          .slice(0, depth + 1)
+          .filter(s => s)
+          .map(s => s.key)
+          .join('.');
         const enhancedState = enhanceStateWithContext(state, {
           stack: hierarchyStack,
           depth: depth,
-          fullKey: completeFullkey
+          fullKey: completeFullKey
         });
         
         return { ...resolvedEvent, to: enhancedState };
