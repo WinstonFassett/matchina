@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 import './SketchInspector.css';
 import { useMachine } from "matchina/react";
 import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -10,15 +10,29 @@ interface SketchInspectorProps {
   className?: string;
 }
 
-// why is this memoized???
-const SketchInspector = memo(({ 
+function SketchInspector({ 
   machine, 
   actions, 
   interactive = true,
   className = '' 
-}: SketchInspectorProps) => {
-  // Step 1: Listen to machine changes for reactivity
+}: SketchInspectorProps) {
+  // Step 1: Listen to machine changes for reactivity (parent + deepest active child)
   useMachine(machine);
+  // Find deepest active machine to subscribe to leaf-only transitions
+  const deepestMachine = (() => {
+    let cursor: any = machine;
+    let last: any = machine;
+    let guard = 0;
+    while (cursor && guard++ < 25) {
+      last = cursor;
+      const s = cursor.getState?.();
+      const next = s?.data?.machine;
+      if (!next) break;
+      cursor = next;
+    }
+    return last;
+  })();
+  useMachine(deepestMachine || machine);
   const currentState = machine.getState();
   // console.log("currentState", currentState)
   // Step 2: Get the definition (recalculate when own state or nested machine state changes)
@@ -26,11 +40,20 @@ const SketchInspector = memo(({
   const nestedState = nestedMachine?.getState?.();
   const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
-  // Step 3: Prepare highlighting info - prefer child's fullKey so we never show only the parent when a child exists
+  // Step 3: Prepare highlighting info - compute deepest active path by walking child chain
   const currentStateKey = currentState?.key;
-  const childMachine: any = currentState?.data?.machine;
-  const childState = childMachine?.getState?.();
-  const fullKey = childState?.fullKey || currentState?.fullKey || currentStateKey;
+  const fullPath = (() => {
+    const parts: string[] = [];
+    let cursor: any = machine;
+    let guard = 0;
+    while (cursor && guard++ < 25) {
+      const s = cursor.getState?.();
+      if (!s) break;
+      parts.push(s.key);
+      cursor = s?.data?.machine;
+    }
+    return parts.join('.');
+  })();
   // console.log('currentState', fullKey, currentState.fullKey, currentState)
   const depth = currentState?.depth ?? 0;
   
@@ -57,9 +80,9 @@ const SketchInspector = memo(({
           <span className="state-name">{stateKey}</span>
           {/* [{fullKey}] */}
           <pre>{JSON.stringify({ isActive, isBranchActive }, null, 2)}</pre>
-          {isActive && fullKey && fullKey !== stateKey && (
+          {isActive && fullPath && fullPath !== stateKey && (
             <div className="state-fullKey">
-              <span className="fullKey-label">path:</span> {fullKey}
+              <span className="fullKey-label">path:</span> {fullPath}
             </div>
           )}
           
@@ -101,8 +124,8 @@ const SketchInspector = memo(({
             {Object.entries(stateConfig.states).map(([nestedKey, nestedConfig]: [string,any]) => {
               // Only highlight if this is the deepest active state
               // const nestedIsActive = nestedKey === currentStateKey;
-              const isMatch = nestedConfig.fullKey === fullKey;
-              const nestedBranchActive = !!fullKey && (fullKey === nestedConfig.fullKey || fullKey.startsWith(nestedConfig.fullKey + '.'));
+              const isMatch = nestedConfig.fullKey === fullPath;
+              const nestedBranchActive = !!fullPath && (fullPath === nestedConfig.fullKey || fullPath.startsWith(nestedConfig.fullKey + '.'));
               // console.log('isMatch', isMatch, nestedConfig.fullKey, fullKey)
               return (
                 <StateItem 
@@ -129,8 +152,8 @@ const SketchInspector = memo(({
       // const isActive = stateKey === deepestActiveState;
       // const isAtDepth = depth === currentState?.depth;
       const stateConfig = states[stateKey];
-      const isActive = stateConfig.fullKey === fullKey;
-      const branchActive = !!fullKey && (fullKey === stateConfig.fullKey || fullKey.startsWith(stateConfig.fullKey + '.'));
+      const isActive = stateConfig.fullKey === fullPath;
+      const branchActive = !!fullPath && (fullPath === stateConfig.fullKey || fullPath.startsWith(stateConfig.fullKey + '.'));
       // console.log('render', stateKey, isActive, stateConfig.fullKey, fullKey, stateConfig);
       
       return (
@@ -156,7 +179,7 @@ const SketchInspector = memo(({
       </div>
     </div>
   );
-});
+}
 
 export default SketchInspector;
 

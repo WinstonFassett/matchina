@@ -368,7 +368,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
 
             // If parent changed or bubbled an exit, we're done
             const parentHandled = beforeParent?.key !== afterParent?.key;
-            if (parentHandled) return;
+            if (parentHandled) { return; }
 
             // Otherwise, delegate to child under a transient from-parent flag
             if (afterChild) {
@@ -416,6 +416,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
                     });
                   } catch {}
                 }
+                
               }
             }
           };
