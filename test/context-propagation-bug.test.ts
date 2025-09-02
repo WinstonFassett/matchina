@@ -15,7 +15,7 @@ describe("Context Propagation Bug", () => {
     
     const activeState = machine.getState();
     expect(activeState.key).toBe("Active");
-    expect(activeState.fullKey).toBe("Active"); // Root level should be just "Active"
+    expect(activeState.nested.fullKey).toBe("Active.Empty"); // Root level includes child state
     
     // The nested machine should have context that includes parent
     const nestedMachine = activeState.data.machine;
@@ -26,7 +26,7 @@ describe("Context Propagation Bug", () => {
     console.log("DEBUG: nested state stack:", nestedState.stack?.map((s: any) => s.key));
     
     // BUG: This fails - we get "Empty" instead of "Active.Empty"
-    expect(nestedState.fullKey).toBe("Active.Empty");
+    expect(nestedState.nested.fullKey).toBe("Active.Empty");
     expect(nestedState.depth).toBe(1);
     expect(nestedState.stack).toHaveLength(2); // [Active, Empty]
   });

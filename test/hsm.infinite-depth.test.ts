@@ -44,7 +44,7 @@ describe("HSM: Infinite Depth Support", () => {
     let rootState = root.getState();
     expect(rootState.key).toBe("Idle");
     expect(rootState.depth).toBe(0);
-    expect(rootState.fullKey).toBe("Idle");
+    expect(rootState.nested.fullKey).toBe("Idle");
     expect(rootState.data.level).toBe(0);
     
     // Start processing to create deep hierarchy
@@ -52,7 +52,7 @@ describe("HSM: Infinite Depth Support", () => {
     rootState = root.getState();
     expect(rootState.key).toBe("Processing");
     expect(rootState.depth).toBe(0);
-    expect(rootState.fullKey).toBe("Processing");
+    expect(rootState.nested.fullKey).toBe("Processing.Idle");
     
     // Navigate down the hierarchy and verify context at each level
     let currentMachine: any = root;
@@ -80,7 +80,7 @@ describe("HSM: Infinite Depth Support", () => {
         
         // Verify fullKey builds correctly
         const expectedFullkey = Array(expectedLevel + 2).fill("Processing").join(".");
-        expect(childState?.fullKey).toBe(expectedFullkey);
+        expect(childState?.nested.fullKey).toBe(expectedFullkey);
         
         // Move to next level
         currentMachine = childMachine;
@@ -92,7 +92,7 @@ describe("HSM: Infinite Depth Support", () => {
     const deepestState = currentState;
     expect(deepestState.data.level).toBe(4);
     expect(deepestState.depth).toBe(4);
-    expect(deepestState.fullKey).toBe("Processing.Processing.Processing.Processing.Processing");
+    expect(deepestState.nested.fullKey).toBe("Processing.Processing.Processing.Processing.Processing");
     expect(deepestState.data.machine).toBeUndefined();
   });
 
@@ -172,8 +172,9 @@ describe("HSM: Infinite Depth Support", () => {
       const freshRoot = createNestedMachine(0, depth);
       const { state } = navigateToLevel(level, freshRoot);
       
+      const expectedPath = Array(level + 1).fill("Processing").join(".");
       // Verify context consistency
-      expect(state.depth).toBe(level);
+      expect(state.nested.fullKey).toBe(expectedPath);
       expect(state.data.level).toBe(level);
       
       // Verify stack length matches current active depth (all levels see same stack)  
@@ -186,7 +187,7 @@ describe("HSM: Infinite Depth Support", () => {
       }
       
       // Verify fullKey has correct number of segments
-      const segments = state.fullKey.split(".");
+      const segments = state.nested.fullKey.split(".");
       expect(segments).toHaveLength(level + 1);
       
       // All segments should be "Processing" except possibly the first

@@ -37,9 +37,9 @@ describe("SketchInspector Context Requirements", () => {
     // - depth should indicate nesting level  
     // - stack should show the hierarchy
     
-    expect(nestedState.fullKey).toBeDefined();
-    expect(nestedState.fullKey).toContain("Active");
-    expect(nestedState.fullKey).toContain("Empty");
+    expect(nestedState.nested.fullKey).toBeDefined();
+    expect(nestedState.nested.fullKey).toContain("Active");
+    expect(nestedState.nested.fullKey).toContain("Empty");
     
     expect(nestedState.depth).toBeDefined();
     expect(typeof nestedState.depth).toBe("number");

@@ -8,14 +8,14 @@ describe('Context Propagation Bug', () => {
     
     const activeState = machine.getState();
     expect(activeState.key).toBe("Active");
-    expect(activeState.fullKey).toBe("Active");
+    expect(activeState.nested.fullKey).toBe("Active.Empty");
     
     const nestedMachine = activeState.data.machine;
     expect(nestedMachine).toBeDefined();
     
     const nestedState = nestedMachine.getState();
     expect(nestedState.key).toBe("Empty");
-    expect(nestedState.fullKey).toBe("Active.Empty");
+    expect(nestedState.nested.fullKey).toBe("Active.Empty");
     expect(nestedState.depth).toBe(1);
   });
 });

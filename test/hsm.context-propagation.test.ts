@@ -70,7 +70,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // At root level, these should be minimal
     expect(rootState.stack).toBeDefined();
     expect(rootState.depth).toBeDefined();
-    expect(rootState.fullKey).toBeDefined();
+    expect(rootState.nested.fullKey).toBeDefined();
     
     // Focus to activate search
     root.send("focus");
@@ -80,7 +80,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Check root level context
     expect(rootState.stack).toEqual([rootState]);
     expect(rootState.depth).toBe(0);
-    expect(rootState.fullKey).toBe("Active");
+    expect(rootState.nested.fullKey).toBe("Active.Idle");
     
     // Level 2: Search machine state should have context
     const searchMachine = rootState.is("Active") ? rootState.data.machine : null;
@@ -91,7 +91,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Check search level context
     expect(searchState?.stack).toEqual([rootState, searchState]);
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullKey).toBe("Active.Idle");
+    expect(searchState?.nested.fullKey).toBe("Active.Idle");
     
     // Type to start search
     root.send("type", "test query");
@@ -101,7 +101,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Check context after transition
     expect(searchState?.stack).toBeDefined();
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullKey).toBe("Active.Typing");
+    expect(searchState?.nested.fullKey).toBe("Active.Typing");
     
     // Submit to start fetching (creates level 3 machine)
     root.send("submit");
@@ -111,7 +111,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Check search level context after creating child
     expect(searchState?.stack).toBeDefined();
     expect(searchState?.depth).toBe(1);
-    expect(searchState?.fullKey).toBe("Active.Fetching");
+    expect(searchState?.nested.fullKey).toBe("Active.Fetching.Pending");
     
     // Level 3: Fetch machine state should have deepest context
     const fetchMachine = searchState?.is("Fetching") ? searchState.data.machine : null;
@@ -122,7 +122,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Check fetch level context (deepest level)
     expect(fetchState?.stack).toBeDefined();
     expect(fetchState?.depth).toBe(2);
-    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
+    expect(fetchState?.nested.fullKey).toBe("Active.Fetching.Pending");
     
     // Verify the full stack contains all ancestor states
     expect(fetchState?.stack).toHaveLength(3);
@@ -148,7 +148,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     // Initially at Pending
     let fetchState = fetchMachine?.getState();
     expect(fetchState?.key).toBe("Pending");
-    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
+    expect(fetchState?.nested.fullKey).toBe("Active.Fetching.Pending");
     
     // Resolve to Success
     root.send("resolve", "test data");
@@ -156,7 +156,7 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     expect(fetchState?.key).toBe("Success");
     
     // Context should update to reflect new state
-    expect(fetchState?.fullKey).toBe("Active.Fetching.Success");
+    expect(fetchState?.nested.fullKey).toBe("Active.Fetching.Success");
     expect(fetchState?.depth).toBe(2);
     expect(fetchState?.stack).toHaveLength(3);
     expect(fetchState?.stack[2].key).toBe("Success");
@@ -183,9 +183,9 @@ describe("HSM: Context Propagation (stack, depth, fullKey)", () => {
     expect(fetchState?.depth).toBe(2);
     
     // Verify fullKey builds correctly
-    expect(rootState.fullKey).toBe("Active");
-    expect(searchState?.fullKey).toBe("Active.Fetching");
-    expect(fetchState?.fullKey).toBe("Active.Fetching.Pending");
+    expect(rootState.nested.fullKey).toBe("Active.Fetching.Pending");
+    expect(searchState?.nested.fullKey).toBe("Active.Fetching.Pending");
+    expect(fetchState?.nested.fullKey).toBe("Active.Fetching.Pending");
     
     // Verify stack lengths follow shallow model per level
     expect(rootState.stack).toHaveLength(1); // Root-only

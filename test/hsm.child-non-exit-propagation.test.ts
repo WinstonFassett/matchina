@@ -70,28 +70,28 @@ describe("hierarchical checkout rerouting: [proceed, proceed, authorize]", () =>
     const checkout = root.getState().as("Checkout").data.machine as any;
     expect(checkout.getState().key).toBe("Cart");
     // Write-time remediation: fullKey/depth stamped at start
-    expect((root.getState() as any).fullKey).toBe("Checkout");
+    expect((root.getState() as any).nested.fullKey).toBe("Checkout.Cart");
     expect((root.getState() as any).depth).toBe(0);
-    expect((checkout.getState() as any).fullKey).toBe("Checkout.Cart");
+    expect((checkout.getState() as any).nested.fullKey).toBe("Checkout.Cart");
     expect((checkout.getState() as any).depth).toBe(1);
 
     // proceed -> Shipping (parent transition)
     root.send("proceed");
     expect(checkout.getState().key).toBe("Shipping");
-    expect((root.getState() as any).fullKey).toBe("Checkout.Shipping");
+    expect((root.getState() as any).nested.fullKey).toBe("Checkout.Shipping");
     expect((root.getState() as any).depth).toBe(0);
-    expect((checkout.getState() as any).fullKey).toBe("Checkout.Shipping");
+    expect((checkout.getState() as any).nested.fullKey).toBe("Checkout.Shipping");
     expect((checkout.getState() as any).depth).toBe(1);
 
     // proceed -> Payment (parent transition)
     root.send("proceed");
     expect(checkout.getState().key).toBe("Payment");
-    expect((root.getState() as any).fullKey).toBe("Checkout.Payment");
-    expect((checkout.getState() as any).fullKey).toBe("Checkout.Payment");
+    expect((root.getState() as any).nested.fullKey).toBe("Checkout.Payment.MethodEntry");
+    expect((checkout.getState() as any).nested.fullKey).toBe("Checkout.Payment.MethodEntry");
 
     const paymentMachine = (checkout.getState().as("Payment").data as any).machine;
     expect(paymentMachine.getState().key).toBe("MethodEntry");
-    expect((paymentMachine.getState() as any).fullKey).toBe("Checkout.Payment.MethodEntry");
+    expect((paymentMachine.getState() as any).nested.fullKey).toBe("Checkout.Payment.MethodEntry");
     expect((paymentMachine.getState() as any).depth).toBe(2);
 
     // authorize -> Authorizing (child-only transition)
@@ -99,9 +99,9 @@ describe("hierarchical checkout rerouting: [proceed, proceed, authorize]", () =>
     root.send("authorize");
     expect(paymentMachine.getState().key).toBe("Authorizing");
     // Write-time remediation after child-only transition
-    expect((root.getState() as any).fullKey).toBe("Checkout.Payment.Authorizing");
-    expect((checkout.getState() as any).fullKey).toBe("Checkout.Payment.Authorizing");
-    expect((paymentMachine.getState() as any).fullKey).toBe("Checkout.Payment.Authorizing");
+    expect((root.getState() as any).nested.fullKey).toBe("Checkout.Payment.Authorizing");
+    expect((checkout.getState() as any).nested.fullKey).toBe("Checkout.Payment.Authorizing");
+    expect((paymentMachine.getState() as any).nested.fullKey).toBe("Checkout.Payment.Authorizing");
     expect((root.getState() as any).depth).toBe(0);
     expect((checkout.getState() as any).depth).toBe(1);
     expect((paymentMachine.getState() as any).depth).toBe(2);
@@ -132,9 +132,9 @@ describe("hierarchical checkout rerouting: [proceed, proceed, authorize]", () =>
     paymentMachine.send("authorize");
     expect(paymentMachine.getState().key).toBe("Authorizing");
     // Write-time remediation after direct child send
-    expect(root.getState().fullKey).toBe("Checkout.Payment.Authorizing");
-    expect(checkout.getState().fullKey).toBe("Checkout.Payment.Authorizing");
-    expect(paymentMachine.getState().fullKey).toBe("Checkout.Payment.Authorizing");
+    expect(root.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
+    expect(checkout.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
+    expect(paymentMachine.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
     expect(root.getState().depth).toBe(0);
     expect(checkout.getState().depth).toBe(1);
     expect(paymentMachine.getState().depth).toBe(2);

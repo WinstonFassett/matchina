@@ -162,6 +162,25 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
           }
           
           return { machine: child, event: childEv };
+        } else {
+          // Child didn't handle the event, check if child is already final
+          const childState = child.getState();
+          if (isChildFinal(child, childState)) {
+            // Synthesize child.exit event for the parent
+            const exitEv = (m as any).resolveExit?.({ 
+              type: 'child.exit', 
+              params: [{
+                id: state.data?.id || 'unknown',
+                state: childState.key,
+                data: childState.data
+              }], 
+              from: state 
+            });
+            if (exitEv) {
+              (m as any).transition?.(exitEv);
+              return { machine: m, event: exitEv };
+            }
+          }
         }
       } else if ((child as any).send) {
         // Duck-typed child with send method - call directly
@@ -206,6 +225,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
       current = child;
     }
     
+    
     // Create shared nested object for all states in hierarchy
     const fullHierarchyKeys = chain.map(s => s.key);
     const sharedNested = {
@@ -217,14 +237,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     // Stamp each state with its own hierarchical context
     chain.forEach((state, i) => {
       const pathToState = chain.slice(0, i + 1);
-      const pathKeys = pathToState.map(s => s.key);
       
-      // Only stamp if object is extensible (not frozen/sealed)
-      if (Object.isExtensible(state)) {
+      // Try to stamp - use try/catch to handle frozen objects
+      try {
         (state as any).depth = i;
-        (state as any).fullKey = pathKeys.join('.');
         (state as any).stack = pathToState.slice();
         (state as any).nested = sharedNested; // All states share same nested object
+      } catch (e) {
+        // Object is frozen/sealed - skip stamping
       }
     });
   }
