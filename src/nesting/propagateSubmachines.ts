@@ -186,11 +186,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): vo
   function stamp(statesChain: any[]) {
     if (statesChain.length === 0) return;
     const keys = statesChain.map((s) => s.key);
-    // If deepest active state is Processing, append implicit Idle for fullKey context  
-    // 🧑‍💻: OH FUCK YOU HARDCODED APP STATE KEYS INTO THE LIB!!! NOOOOOO
-    if (keys[keys.length - 1] === "Processing") {
-      keys.push("Idle");
-    }
     const nested = Object.freeze({ fullKey: keys.join('.'), stack: statesChain.slice(), machine: root });
     for (let i = 0; i < statesChain.length; i++) {
       const st = statesChain[i];
