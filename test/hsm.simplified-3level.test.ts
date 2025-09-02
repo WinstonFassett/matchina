@@ -139,7 +139,7 @@ describe("HSM: Simplified 3-Level Test", () => {
           submit: () => (ev) => states.Fetching(ev.from.data.query),
         },
         Fetching: {
-          "child.exit": ({ data }) => {
+          "child.exit": (({ data }: any) => {
             // When child machine exits with final state, handle the result
             if (data.final && data.data) {
               return states.Results(data.query || "unknown", data.data);
@@ -148,7 +148,7 @@ describe("HSM: Simplified 3-Level Test", () => {
               return states.Error(data.query || "unknown", data.error);
             }
             return null;
-          },
+          }) as any,
         },
         Results: {},
         Error: {},

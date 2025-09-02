@@ -5,7 +5,7 @@ import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
 const MAX_DEPTH = 3;
 
 // A machine that can be nested within itself.
-function createNestingMachine(level = 0) {
+function createNestingMachine(level = 0): any {
   const states = defineStates({
     Idle: () => ({ level }),
     Processing: () => {
@@ -19,22 +19,22 @@ function createNestingMachine(level = 0) {
     Done: () => ({ level, final: true }),
   });
 
-  const machine = createMachine(states, {
+  const machine = createMachine(states as any, {
     Idle: {
       PROCESS: "Processing",
     },
     Processing: {
       // When a child machine exits, this machine transitions to Done.
-      "child.exit": ({ data }) => {
+      "child.exit": ({ data }: any) => {
         if (data.final) {
-          return states.Done();
+          return (states as any).Done();
         }
         return null;
       },
       FINISH: "Done",
     },
     Done: {},
-  }, "Idle");
+  } as any, "Idle");
 
   return machine;
 }

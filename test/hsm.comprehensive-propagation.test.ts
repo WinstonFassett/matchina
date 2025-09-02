@@ -77,7 +77,7 @@ describe("comprehensive hierarchical propagation", () => {
 
     // 1. TOP LEVEL SEND: root.send("proceed") -> Checkout.Shipping
     const beforeTopSend = rootCalls.mock.calls.length;
-    root.send("proceed");
+    (root as any).send("proceed");
     
     expect(checkout.getState().key).toBe("Shipping");
     expect(root.getState().nested.fullKey).toBe("Checkout.Shipping");

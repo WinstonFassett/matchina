@@ -46,8 +46,8 @@ function createResultsFetcher(query: string) {
 
 function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
   const commonTransitions = {
-    typed: { to: "TextEntry", handle: (value: string) => activeStates.TextEntry(value) },
-    clear: { to: "Empty", handle: () => activeStates.Empty("") },
+    typed: (value: string) => activeStates.TextEntry(value),
+    clear: () => activeStates.Empty(""),
   } as const;
 
   const active = matchina(activeStates, {
@@ -55,38 +55,39 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     TextEntry: {
       ...commonTransitions,
       // Submit allows optional query; fallback to current state's query for backward compatibility
-      submit: { to: "Query", handle: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query) },
+      submit: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query),
     },
     Query: {
       ...commonTransitions,
       // Refine back to TextEntry with explicit query
       // handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
-      refine: { to: "TextEntry", handle: (query: string) => activeStates.TextEntry(query) },
+      refine: (query: string) => activeStates.TextEntry(query),
       // Child promise machine completed; accept either ev or ev.data shape
-      "child.exit": { to: "Selecting", handle: (ev: any) => {
+      "child.exit": (ev: any) => {
         const payload = ev?.data ?? ev ?? {};
-        return activeStates.Selecting({ 
-          query: payload.query ?? "", 
-          items: payload.items ?? []
+        return activeStates.Selecting({
+          query: payload.query ?? "",
+          items: payload.items ?? [],
         });
-      } },
-      setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
+      },
+      setError: (query: string, message: string) => activeStates.Error(query, message),
     },
     Selecting: {
       ...commonTransitions,
       // Refine from Selecting to TextEntry; accept optional query
-      refine: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
-      highlight: { to: "Selecting", handle: (index: number) => (ev) => activeStates.Selecting({
-        ...ev.from.data, 
-        highlightedIndex: index
-      }) },
-      setError: { to: "Error", handle: (query: string, message: string) => activeStates.Error(query, message) },
+      refine: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+      highlight: (index: number) => (ev) =>
+        activeStates.Selecting({
+          ...ev.from.data,
+          highlightedIndex: index,
+        }),
+      setError: (query: string, message: string) => activeStates.Error(query, message),
       // Complete selection; accept optional query and fallback to current state's query
-      done: { to: "TextEntry", handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
+      done: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
     },
     Error: { 
-      retry: { to: "TextEntry", handle: (query: string = "") => activeStates.TextEntry(query) }, 
-      clear: { to: "Empty", handle: () => activeStates.Empty("") } 
+      retry: (query: string = "") => activeStates.TextEntry(query),
+      clear: () => activeStates.Empty(""),
     },
   }, activeStates.Empty(""));
 
@@ -134,9 +135,7 @@ export function createSearchBarMachine() {
 
   hierarchical = createHierarchicalMachine(searchBar);
   
-  setup(hierarchical)(
-    effect(whenEventType("done", () => hierarchical.close()))
-  );
+  setup(hierarchical)(effect(whenEventType("done", () => hierarchical.close()) as any));
 
   return Object.assign(hierarchical, { activeMachine });
 }

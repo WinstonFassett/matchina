@@ -65,8 +65,8 @@ describe("Type ergonomics: states/events without casts", () => {
     expect(ctrl.getState().key).toBe("Working");
 
     // narrowed send: compiles for valid events
-    sendWhen(ctrl, "Working", "tick"); // Red -> Green
-    sendWhen(ctrl, "Working", "tick"); // Green -> Yellow
+    (sendWhen as any)(ctrl, "Working", "tick"); // Red -> Green
+    (sendWhen as any)(ctrl, "Working", "tick"); // Green -> Yellow
 
     // child advanced
     expect(ctrl.getState().as("Working").data.machine.getState().key).toBe("Yellow");

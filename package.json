@@ -56,6 +56,7 @@
     "test": "vitest run --coverage",
     "test:all": "npm run test:types && npm run test",
     "type-check": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "test:types": "npm run type-check",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish:lib": "npm publish --access public",

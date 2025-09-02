@@ -40,7 +40,7 @@ export interface FactoryMachineContext<
  */
 export interface FactoryMachine<
   FC extends FactoryMachineContext<any> = FactoryMachineContext,
-> extends Omit<StateMachine<FactoryMachineEvent<FC>>, "send"> {
+> extends Omit<StateMachine<FactoryMachineEvent<FC>>, "send" | "getState"> {
   states: FC["states"];
   transitions: FC["transitions"];
 
@@ -55,6 +55,12 @@ export interface FactoryMachine<
     type: T,
     ...params: NormalizeParams<ExtractEventParams<FC, T>>
   ): void;
+
+  /**
+   * Strongly-typed current state accessor: returns a state produced by this machine's state factory.
+   * This avoids over-narrowing via event unions that can drop some states from the type.
+   */
+  getState(): FactoryKeyedState<FC["states"]>;
 }
 
 // If param inference produces a non-array (e.g., never), normalize to [] so zero-arg events are callable.
@@ -111,7 +117,7 @@ export type FactoryMachineTransition<
         type: EventKey;
         from: FactoryKeyedState<SF, FromStateKey>;
       }
-    ) => ReturnType<SF[keyof SF]>)
+    ) => FactoryKeyedState<SF> | null | undefined)
   | ({ to: keyof SF; handle?: (...params: any[]) => any });
 
 export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
