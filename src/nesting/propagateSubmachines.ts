@@ -11,6 +11,14 @@ function getChildFromParentState(state: any): AnyMachine | undefined {
   if (!m) return undefined;
   if (isFactoryMachine(m)) return m as AnyMachine;
   const isValid = typeof m?.getState === "function" && typeof m?.send === "function";
+  console.log('getChildFromParentState:', { 
+    hasData: !!state?.data, 
+    hasMachine: !!m, 
+    isFactory: isFactoryMachine(m),
+    hasGetState: typeof m?.getState === "function",
+    hasSend: typeof m?.send === "function",
+    isValid 
+  });
   return isValid ? (m as AnyMachine) : undefined;
 }
 
@@ -69,6 +77,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
   }
 
   function handleAtRoot(type: string, params: any[]) {
+    // Prevent infinite recursion from duck-typed children
+    if ((machine as any).__inChildFirst) {
+      return null;
+    }
+    
     // Handle child.exit events directly at root level without child-first routing
     if (type === 'child.exit') {
       const ev = (machine as any).resolveExit?.({ type, params, from: machine.getState() });
@@ -81,7 +94,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     }
     
     // Try child-first resolution for other events
+    (machine as any).__inChildFirst = true;
     const result = tryChildFirst(machine, type, params);
+    delete (machine as any).__inChildFirst;
     if (result) {
       // Root must notify its subscribers without changing state
       (machine as any).notify?.({ type: 'child.change', params: [{ target: result.machine, type, params }] });
@@ -121,37 +136,51 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(machine: M):
     
     if (child) {
       
-      // Try child's children first (recursive)
-      const deepResult = tryChildFirst(child, type, params);
-      if (deepResult) {
-        return deepResult;
+      // Try child's children first (recursive) - only for FactoryMachines
+      if (isFactoryMachine(child)) {
+        const deepResult = tryChildFirst(child, type, params);
+        if (deepResult) {
+          return deepResult;
+        }
       }
       
-      // Try this child
-      const childEv = (child as any).resolveExit?.({ type, params, from: child.getState() });
-      if (childEv) {
-        (child as any).transition?.(childEv);
-        
-        // Check if child reached final state and synthesize child.exit
-        const childState = child.getState();
-        if (isChildFinal(child, childState)) {
-          // Synthesize child.exit event for the parent
-          const exitEv = (m as any).resolveExit?.({ 
-            type: 'child.exit', 
-            params: [{
-              id: state.data?.id || 'unknown',
-              state: childState.key,
-              data: childState.data
-            }], 
-            from: state 
-          });
-          if (exitEv) {
-            (m as any).transition?.(exitEv);
-            return { machine: m, event: exitEv };
+      // Try this child - first check if it's a FactoryMachine
+      if (isFactoryMachine(child)) {
+        const childEv = (child as any).resolveExit?.({ type, params, from: child.getState() });
+        if (childEv) {
+          (child as any).transition?.(childEv);
+          
+          // Check if child reached final state and synthesize child.exit
+          const childState = child.getState();
+          if (isChildFinal(child, childState)) {
+            // Synthesize child.exit event for the parent
+            const exitEv = (m as any).resolveExit?.({ 
+              type: 'child.exit', 
+              params: [{
+                id: state.data?.id || 'unknown',
+                state: childState.key,
+                data: childState.data
+              }], 
+              from: state 
+            });
+            if (exitEv) {
+              (m as any).transition?.(exitEv);
+              return { machine: m, event: exitEv };
+            }
           }
+          
+          return { machine: child, event: childEv };
         }
-        
-        return { machine: child, event: childEv };
+      } else if ((child as any).send) {
+        // Duck-typed child with send method - call directly
+        try {
+          (child as any).send(type, ...params);
+          // Treat as handled if child has send method
+          return { machine: child, event: null };
+        } catch (e) {
+          // If send fails, don't treat as handled
+          return null;
+        }
       }
     }
     

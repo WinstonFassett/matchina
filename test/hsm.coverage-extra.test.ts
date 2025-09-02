@@ -25,12 +25,15 @@ function createDuckSendOnly() {
   let called = 0;
   const child = {
     getState() {
-      return { key: "Duck", data: {} } as any;
+      return { key: "Duck", data: null } as any;
     },
     send(type: string, ..._params: any[]) {
+      console.log('Duck send method called with:', type, 'current called:', called);
       if (type === "pong") called++;
+      console.log('Duck send method after increment:', called);
     },
     get called() {
+      console.log('Duck called getter accessed, returning:', called);
       return called;
     },
   };
