@@ -11,7 +11,10 @@ interface SelectionState {
 export const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
-  Query: (query: string) => ({ query, machine: createResultsFetcher(query) }),
+  Query: (query: string) => {
+    console.log('Creating Query state with query:', query);
+    return { query, machine: createResultsFetcher(query) };
+  },
   Selecting: ({ query="", items=[], highlightedIndex=-1 }: Partial<SelectionState>) => ({
     query, items, highlightedIndex
   }),
@@ -65,28 +68,42 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
       refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
       // Don't reset to Empty on submit, let the promise machine complete
       // and transition to Selecting with results
-      submit: () => (ev) => activeStates.Query(ev.from.data.query),
+      submit: () => (ev) => {
+        const currentQuery = ev.from.data.query;
+        console.log('Submit with query:', currentQuery);
+        return activeStates.Query(currentQuery);
+      },
       // Child promise machine completed; accept either ev or ev.data shape
       "child.exit": (ev: any) => {
+        // Get the current state to access the query
+        const currentState = ev?.machine?.getState?.();
+        const currentQuery = currentState?.data?.query || "";
+        
         console.log('child.exit event received', JSON.stringify(ev, null, 2));
+        console.log('Current state query:', currentQuery);
+        
         // Extract data from the event structure based on propagateSubmachines format
-        // The data structure is different in the current version vs r2 branch
         const params = ev?.params || [];
         const param0 = params[0] || {};
         const data = param0.data || {};
         
         console.log('Extracted data:', data);
         
-        // Create a hardcoded set of items for testing if needed
+        // Get items from the resolved data
         const items = data.items || [
           { id: 'test-1', title: 'Test Result 1' },
           { id: 'test-2', title: 'Test Result 2' },
           { id: 'test-3', title: 'Test Result 3' },
         ];
         
+        // Use query from data or fall back to current state query
+        const query = data.query || currentQuery;
+        
+        console.log('Using query:', query, 'with items:', items);
+        
         return activeStates.Selecting({
-          query: data.query || ev.from.data.query || "",
-          items: items,
+          query,
+          items,
           highlightedIndex: -1
         });
       },
