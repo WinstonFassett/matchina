@@ -1,5 +1,5 @@
-import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType, whenState } from "matchina";
-import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
+import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType } from "matchina";
+import { createHierarchicalMachine, propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 
 interface SelectionState {
   query: string;
@@ -29,7 +29,7 @@ function createResultsFetcher(query: string) {
     if (trimmed.toLowerCase() === "err") throw new Error("Search failed (demo)");
     
     const itemCount = Math.max(1, Math.min(5, trimmed.length));
-    return {
+    const result = {
       query: trimmed,
       items: Array.from({ length: itemCount }, (_, i) => ({
         id: `${trimmed}-${i + 1}`, 
@@ -37,10 +37,12 @@ function createResultsFetcher(query: string) {
       })),
       final: true
     };
+    console.log('Promise result:', result);
+    return result;
   });
-  // // ah we should not run this yet, should wait until hook call
-  // console.log('executing', query)
-  // fetcher.execute(query);
+  // Execute the fetcher immediately like in the r2 branch
+  console.log('Executing fetcher with query:', query);
+  fetcher.execute(query);
   return fetcher;
 }
 
@@ -60,14 +62,15 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
     Query: {
       ...commonTransitions,
       // Refine back to TextEntry with explicit query
-      // handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
-      refine: (query: string) => activeStates.TextEntry(query),
+      refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
       // Don't reset to Empty on submit, let the promise machine complete
       // and transition to Selecting with results
-      submit: () => (ev) => ev.from,
+      submit: () => (ev) => activeStates.Query(ev.from.data.query),
       // Child promise machine completed; accept either ev or ev.data shape
       "child.exit": (ev: any) => {
-        const payload = ev?.data ?? ev ?? {};
+        console.log('child.exit event received', ev);
+        const payload = ev?.params?.[0]?.data ?? ev?.data ?? ev ?? {};
+        console.log('payload for selecting', payload);
         return activeStates.Selecting({
           query: payload.query ?? "",
           items: payload.items ?? [],
@@ -112,7 +115,7 @@ export function createSearchBarMachine() {
   let hierarchical: any;
   
   const activeMachine = createActiveMachine({
-    onDone: () => hierarchical.close()
+    onDone: (ev: any) => console.log('Done event received', ev)
   });
   
   searchBar = matchina({
@@ -128,16 +131,11 @@ export function createSearchBarMachine() {
     },
   }, appStates.Inactive());
 
-  setup(activeMachine)(
-    effect(whenState("Query", (ev: any) => {
-      console.log('start query', ev)
-      ev.to.data.machine?.execute(ev.to.data.query as string);
-      return () => {};
-    }))
-  );
+  // No need for additional setup on activeMachine, the promise machine is executed immediately
 
   hierarchical = createHierarchicalMachine(searchBar);
   
+  // Add effect for done event on the hierarchical machine
   setup(hierarchical)(effect(whenEventType("done", () => hierarchical.close()) as any));
 
   return Object.assign(hierarchical, { activeMachine });

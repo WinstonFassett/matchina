@@ -65,8 +65,17 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
   const activeMachine = machine as ActiveMachine;
   useMachine(activeMachine);  
   const state = activeMachine.getState();
+  console.log('Active state:', state.key, state.data);
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
   useMachineMaybe(fetcherMachine);
+  
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('State changed to:', state.key, state.data);
+    if (state.is("Selecting")) {
+      console.log('Items in Selecting state:', state.data.items);
+    }
+  }, [state.key, state.data]);
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Autofocus when component mounts
