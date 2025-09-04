@@ -83,6 +83,28 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       // First, let the machine handle its own event
       const result = innerSend(type, ...params);
       
+      // Check if the machine has reached a final state after handling the event
+      const state = m.getState?.();
+      if (state && isChildFinal(m, state)) {
+        let current = root;
+        let parent = null;
+        while (current) {
+          const currentState = current.getState?.();
+          if (!currentState) break;
+          const child = getChildFromParentState(currentState);
+          if (child === m) {
+            parent = current;
+            break;
+          }
+          if (!child) break;
+          current = child as any;
+        }
+        if (parent) {
+          (parent as any).send('child.exit');
+          stampUsingCurrentChain();
+        }
+      }
+      
       // Reserved child.* events are handled at the machine's own level
       if (type.startsWith('child.')) return result;
       
@@ -93,6 +115,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return result;
     })(m as any);
     (m as any).__propagateUnhook = unhook;
+    (m as any).hierarchical = true;
   }
 
   // Disconnects a machine from the propagation system.
