@@ -26,18 +26,6 @@ export function getStates(machine: FactoryMachine<any>) {
   return states
 }
 
-// Returns canonical hierarchical state path for a machine
-export function getStatusPath(machine: FactoryMachine<any>) {
-  const states = getStates(machine);
-  // Only show up to Selecting/Error, not deep fetcher states
-  const keys = [];
-  for (const state of states) {
-    keys.push(state.key);
-    if (state.key === "Selecting" || state.key === "Error") break;
-  }
-  return keys.join(" / ");
-}
-
 export function Statuses({ machine }: { machine: FactoryMachine<any> }) {
   return getStates(machine)
     .map((state) => state.key)
@@ -46,14 +34,16 @@ export function Statuses({ machine }: { machine: FactoryMachine<any> }) {
 
 export function SearchBarView({ machine }: { machine: Machine }) {
   useMachine(machine);
-  const statusPath = getStatusPath(machine);
+  const state = machine.getState();
+
   return (
-    <div className="p-4 space-y-3 border rounded bg-white dark:bg-gray-800">
-      <h3 className="font-semibold text-lg mb-2">Search Bar</h3>
-      <div className="text-base text-gray-700 dark:text-gray-200 font-medium mb-2">
-        State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200">{statusPath}</span>
+    <div className="p-4 space-y-3 border rounded">
+      <h3 className="font-semibold">Search Bar</h3>
+      <div className="text-sm text-gray-600 font-medium">
+        State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200"><Statuses machine={machine} /></span>
       </div>
-      {machine.getState().match({
+      {/* <div><ActionButtons machine={machine} /></div> */}
+      {state.match({
         Active: ({machine: activeMachine}: any) => <ActiveView machine={activeMachine} parentMachine={machine} />,
         Inactive: () => <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline" onClick={() => machine.focus()}>Click to search</button>,
       }, false)}
@@ -62,20 +52,10 @@ export function SearchBarView({ machine }: { machine: Machine }) {
 }
 
 function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parentMachine: Machine }) {
-  const activeMachine = machine as ActiveMachine;
-  useMachine(activeMachine);  
-  const state = activeMachine.getState();
-  console.log('Active state:', state.key, state.data);
+  useMachine(machine);  
+  const state = machine.getState();
   const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
   useMachineMaybe(fetcherMachine);
-  
-  // Log state changes for debugging
-  useEffect(() => {
-    console.log('State changed to:', state.key, state.data);
-    if (state.is("Selecting")) {
-      console.log('Items in Selecting state:', state.data.items);
-    }
-  }, [state.key, state.data]);
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Autofocus when component mounts
@@ -90,7 +70,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       console.log('submit', query)
-      activeMachine.submit(query ?? "");
+      machine.submit();
     }
     if (e.key === "Escape") {
       parentMachine.close();
@@ -102,48 +82,39 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
         ref={inputRef}
         className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
         placeholder="Type to search... (Press ESC to cancel)"
-        value={query ?? ""}
-        onChange={e => activeMachine.typed(e.target.value)}
+        value={query}
+        onChange={e => machine.typed(e.target.value)}
         onKeyDown={onKeyDown}
       />
-      <button className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors" onClick={() => activeMachine.clear()}>Clear</button>
+      <button className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors" onClick={() => machine.clear()}>Clear</button>
     </div>
 
     {state.match({
-      Query: ({ machine: queryMachine }: {machine: any}) => {
-        console.log('Query machine state:', queryMachine?.getState());
-        return (<div>
-          Results status: {queryMachine?.getState()?.key || 'No machine'}
-          {queryMachine?.getState()?.match({
-            Pending: () => <div>Loading…</div>,
-            Resolved: ({ data }: {data: any}) => {
-              console.log('Resolved data:', data);
-              return <div>
-                {(data?.items || []).map((item: any) => <ResultItem key={item.id} {...item} />)}
-              </div>;
-            },
-            Rejected: (error: any) => <div>Rejected: {JSON.stringify(error)}</div>,
-          }, false)}
-        </div>);
-      },
-      Selecting: ({ query, items, highlightedIndex }: {query: string, items: any[], highlightedIndex: number}) => {
-        console.log('Rendering Selecting with items:', items);
-        return <Selecting 
-          items={items || []} 
-          highlightedIndex={highlightedIndex} 
-          setHighlightedIndex={(highlightedIndex: number) => {
-            console.log("Set Highlighted Index", { highlightedIndex })
-            activeMachine.highlight(highlightedIndex)
-          }}
-          select={(index: number) => {
-            console.log("Select", { index })
-            activeMachine.done(query ?? "")
-          }}
-        />;
-      }
-    }, false)
+      Query: ({ machine }) => (<div>
+        Results status: {machine.getState().key}
+        {machine.getState().match({
+          Pending: () => <div>Loading…</div>,
+          Resolved: ({ items }) => <div>
+            {items.map(item => <ResultItem key={item.id} {...item} />)}
+          </div>,
+          Rejected: (error) => <div>Rejected: {JSON.stringify(error)}</div>,
+        }, false)}
+      </div>),
+      Selecting: ({ query, items, highlightedIndex }) => <Selecting 
+        items={items} 
+        highlightedIndex={highlightedIndex} 
+        setHighlightedIndex={(highlightedIndex: number) => {
+          console.log("Set Highlighted Index", { highlightedIndex })
+          machine.highlight(highlightedIndex)
+        }}
+        select={(index: number) => {
+          console.log("Select", { index })
+          machine.done(query)
+        }}
+      />
+    }, false)}
 
-  </div>
+  </div>;
 }
 
 const Selecting = ({
