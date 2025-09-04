@@ -80,11 +80,17 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     if ((m as any).__propagateUnhook) return;
     hookedMachines.add(m);
     const unhook = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+      // First, let the machine handle its own event
+      const result = innerSend(type, ...params);
+      
       // Reserved child.* events are handled at the machine's own level
-      if (type.startsWith('child.')) return innerSend(type, ...params);
-      // Block non-root direct sends and re-send via root as child.change
-      // This routes through the root's event loop to preserve ordering and visibility.
-      return (root as any).send('child.change', { target: m, type, params });
+      if (type.startsWith('child.')) return result;
+      
+      // After handling, send a child.change event to the root to notify of state changes
+      // This routes through the root's event loop to preserve ordering and visibility
+      (root as any).send('child.change', { target: m, type, params });
+      
+      return result;
     })(m as any);
     (m as any).__propagateUnhook = unhook;
   }
