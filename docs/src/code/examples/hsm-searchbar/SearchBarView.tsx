@@ -70,7 +70,7 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       console.log('submit', query)
-      machine.submit();
+      machine.submit(query);
     }
     if (e.key === "Escape") {
       parentMachine.close();
