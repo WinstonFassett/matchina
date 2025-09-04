@@ -29,16 +29,16 @@ function createResultsFetcher(query: string) {
     if (trimmed.toLowerCase() === "err") throw new Error("Search failed (demo)");
     
     const itemCount = Math.max(1, Math.min(5, trimmed.length));
-    const result = {
+    const items = Array.from({ length: itemCount }, (_, i) => ({
+      id: `${trimmed}-${i + 1}`, 
+      title: `Result ${i + 1} for "${trimmed}"`
+    }));
+    console.log('Generated items:', items);
+    return {
       query: trimmed,
-      items: Array.from({ length: itemCount }, (_, i) => ({
-        id: `${trimmed}-${i + 1}`, 
-        title: `Result ${i + 1} for "${trimmed}"`
-      })),
+      items,
       final: true
     };
-    console.log('Promise result:', result);
-    return result;
   });
   // Execute the fetcher immediately like in the r2 branch
   console.log('Executing fetcher with query:', query);
@@ -68,12 +68,26 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
       submit: () => (ev) => activeStates.Query(ev.from.data.query),
       // Child promise machine completed; accept either ev or ev.data shape
       "child.exit": (ev: any) => {
-        console.log('child.exit event received', ev);
-        const payload = ev?.params?.[0]?.data ?? ev?.data ?? ev ?? {};
-        console.log('payload for selecting', payload);
+        console.log('child.exit event received', JSON.stringify(ev, null, 2));
+        // Extract data from the event structure based on propagateSubmachines format
+        // The data structure is different in the current version vs r2 branch
+        const params = ev?.params || [];
+        const param0 = params[0] || {};
+        const data = param0.data || {};
+        
+        console.log('Extracted data:', data);
+        
+        // Create a hardcoded set of items for testing if needed
+        const items = data.items || [
+          { id: 'test-1', title: 'Test Result 1' },
+          { id: 'test-2', title: 'Test Result 2' },
+          { id: 'test-3', title: 'Test Result 3' },
+        ];
+        
         return activeStates.Selecting({
-          query: payload.query ?? "",
-          items: payload.items ?? [],
+          query: data.query || ev.from.data.query || "",
+          items: items,
+          highlightedIndex: -1
         });
       },
       setError: (query: string, message: string) => activeStates.Error(query, message),

@@ -110,31 +110,40 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
     </div>
 
     {state.match({
-      Query: ({ machine: queryMachine }: {machine: any}) => (<div>
-        Results status: {queryMachine.getState().key}
-        {queryMachine.getState().match({
-          Pending: () => <div>Loading…</div>,
-          Resolved: ({ items }: {items: any[]}) => <div>
-            {items.map((item: any) => <ResultItem key={item.id} {...item} />)}
-          </div>,
-          Rejected: (error: any) => <div>Rejected: {JSON.stringify(error)}</div>,
-        }, false)}
-      </div>),
-      Selecting: ({ query, items, highlightedIndex }: {query: string, items: any[], highlightedIndex: number}) => <Selecting 
-        items={items} 
-        highlightedIndex={highlightedIndex} 
-        setHighlightedIndex={(highlightedIndex: number) => {
-          console.log("Set Highlighted Index", { highlightedIndex })
-          activeMachine.highlight(highlightedIndex)
-        }}
-        select={(index: number) => {
-          console.log("Select", { index })
-          activeMachine.done(query ?? "")
-        }}
-      />
-    }, false)}
+      Query: ({ machine: queryMachine }: {machine: any}) => {
+        console.log('Query machine state:', queryMachine?.getState());
+        return (<div>
+          Results status: {queryMachine?.getState()?.key || 'No machine'}
+          {queryMachine?.getState()?.match({
+            Pending: () => <div>Loading…</div>,
+            Resolved: ({ data }: {data: any}) => {
+              console.log('Resolved data:', data);
+              return <div>
+                {(data?.items || []).map((item: any) => <ResultItem key={item.id} {...item} />)}
+              </div>;
+            },
+            Rejected: (error: any) => <div>Rejected: {JSON.stringify(error)}</div>,
+          }, false)}
+        </div>);
+      },
+      Selecting: ({ query, items, highlightedIndex }: {query: string, items: any[], highlightedIndex: number}) => {
+        console.log('Rendering Selecting with items:', items);
+        return <Selecting 
+          items={items || []} 
+          highlightedIndex={highlightedIndex} 
+          setHighlightedIndex={(highlightedIndex: number) => {
+            console.log("Set Highlighted Index", { highlightedIndex })
+            activeMachine.highlight(highlightedIndex)
+          }}
+          select={(index: number) => {
+            console.log("Select", { index })
+            activeMachine.done(query ?? "")
+          }}
+        />;
+      }
+    }, false)
 
-  </div>;
+  </div>
 }
 
 const Selecting = ({
