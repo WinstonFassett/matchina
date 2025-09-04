@@ -101,8 +101,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         }
         if (parent) {
           (parent as any).send('child.exit');
-          stampUsingCurrentChain();
+          stampUsingCurrentChain(true); // Notify on child.exit
         }
+      } else if (state && !type.startsWith('child.')) {
+        // For non-final states and non-child events, update the hierarchy
+        // This ensures direct child sends update the parent's nested fullKey
+        stampUsingCurrentChain(true); // Notify on direct child sends
       }
       
       // Reserved child.* events are handled at the machine's own level
@@ -110,7 +114,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       
       // After handling, send a child.change event to the root to notify of state changes
       // This routes through the root's event loop to preserve ordering and visibility
-      (root as any).send('child.change', { target: m, type, params });
+      // Use _internal flag to avoid infinite recursion but ensure notification happens
+      // Only send if the event was actually handled to avoid excessive notifications
+      if (result) {
+        (root as any).send('child.change', { target: m, type, params, _internal: true });
+      }
       
       return result;
     })(m as any);
@@ -217,9 +225,21 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     // Reserved child.* events: handle at immediate parent (root here) without descent
     if (type.startsWith('child.')) {
       const from = (root as any).getState();
+      if (type === 'child.change') {
+        const { target, type: innerType, params: innerParams, _internal } = params[0];
+        if (target !== root) {
+          // This is a notification from a child machine
+          // If it's an internal notification, we need to stamp and notify subscribers
+          if (_internal) {
+            stampUsingCurrentChain(false); // Don't notify again to avoid double notifications
+            return;
+          }
+          // Otherwise, don't handle
+          return;
+        }
+      }
+      stampUsingCurrentChain(false); // Don't notify on reserved events
       const ev = (root as any).resolveExit?.({ type, params, from });
-      // Stamping can happen before the transition, as it's based on the current state chain.
-      stampUsingCurrentChain();
       if (ev) (root as any).transition?.(ev);
       return ev;
     }
@@ -271,10 +291,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   function stamp(statesChain: any[]) {
     if (statesChain.length === 0) return;
     const keys = statesChain.map((s) => s.key);
-    const nested = Object.freeze({ fullKey: keys.join('.'), stack: statesChain.slice(), machine: root });
+    const fullKey = keys.join('.');
+    
+    // Create a nested object with the full hierarchical path
+    const nested = Object.freeze({ fullKey, stack: statesChain.slice(), machine: root });
+    
+    // Apply to each state in the chain
     for (let i = 0; i < statesChain.length; i++) {
       const st = statesChain[i];
       try {
+        // Each state gets the same nested info but its own depth
         (st as any).depth = i;
         (st as any).nested = nested;
         (st as any).stack = statesChain.slice(0, i + 1);
@@ -287,10 +313,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   /**
    * Discover the current active chain by following child pointers starting at root,
    * hooking along the way, and then stamp the chain.
+   * 
+   * This is called after any event handling to ensure the hierarchy is properly updated
+   * with the latest state information, including fullKey and depth.
+   * 
+   * @param {boolean} notify - Whether to force a notification after stamping (default: false)
    */
-  function stampUsingCurrentChain() {
+  function stampUsingCurrentChain(notify = false) {
     const states: any[] = [];
     let current: AnyMachine | undefined = root;
+    
     // Single pass following active chain to build states for stamping and hook along the way
     while (current) {
       const s = current.getState?.();
@@ -298,12 +330,21 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       states.push(s);
       const child = getChildFromParentState(s);
       if (!child) break;
+      
       // Hook every discovered descendant immediately (works for duck-typed children too)
       hookMachine(child);
+      
       // Continue traversal for any child that exposes getState (duck-typed or branded)
       current = (child as AnyMachine);
     }
+    
+    // Apply stamps to the entire chain to ensure consistent state
     stamp(states);
+    
+    // Only notify if explicitly requested to avoid excessive notifications
+    if (notify && states.length > 0) {
+      (root as any).notify?.({ type: 'child.change', params: [{ _internal: true }] });
+    }
   }
 
   /** Install a send hook on the root to intercept and route child.change events */
@@ -325,7 +366,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   })(root as any);
 
   // Initial wiring: stamp and hook current chain once
-  stampUsingCurrentChain();
+  stampUsingCurrentChain(true); // Notify on initial wiring
 
   return () => {
     unhookRoot();

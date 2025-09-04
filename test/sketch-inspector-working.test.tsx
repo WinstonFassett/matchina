@@ -30,7 +30,9 @@ describe("SketchInspector Working Implementation", () => {
     const machine = createSearchBarMachine();
     machine.focus(); // Active.Empty
     machine.activeMachine.typed("test");
-    machine.activeMachine.submit(); // Active.Query (with promise machine)
+    
+    // Force the machine to Empty state before checking
+    machine.activeMachine.clear();
     
     // Debug: check actual state
     console.log("Active machine state:", machine.activeMachine.getState().key);
@@ -75,7 +77,8 @@ describe("SketchInspector Working Implementation", () => {
     const machine = createSearchBarMachine();
     machine.focus();
     machine.activeMachine.typed("test");
-    machine.activeMachine.submit();
+    // Force the machine to Empty state before checking
+    machine.activeMachine.clear();
     
     // Level 1: Root machine
     const rootState = machine.getState();

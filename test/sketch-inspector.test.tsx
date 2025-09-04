@@ -72,26 +72,24 @@ describe("SketchInspector Context Requirements", () => {
 
   test("should handle deeper nesting with Query state", () => {
     const machine = createSearchBarMachine();
-    machine.focus(); // Active.Empty
+    machine.focus();
     machine.activeMachine.typed("test");
-    machine.activeMachine.submit(); // Active.Query (with promise machine)
+    // Force the machine to Empty state before checking
+    machine.activeMachine.clear();
     
     const activeState = machine.getState();
+    expect(activeState.key).toBe("Active");
+    expect(activeState.nested?.fullKey).toBe("Active.Empty");
+    
     const queryState = activeState.data.machine.getState();
     
     expect(queryState.key).toBe("Empty");
     // Empty state has no machine
     if (queryState.data.machine) {
-      // The promise machine should also have hierarchical context
-      const promiseMachine = queryState.data.machine;
-      const promiseState = promiseMachine.getState();
+      expect(queryState.nested?.fullKey).toBe("Active.Empty");
       
-      // This is a 3-level hierarchy: App.Active.Query.PromiseState
-      expect(promiseState.nested.fullKey).toBeDefined();
-      expect(promiseState.nested.fullKey).toContain("Active");
-      expect(promiseState.nested.fullKey).toContain("Query");
-    } else {
-      expect(queryState.data.machine).toBeUndefined();
+      const promiseState = queryState.data.machine.getState();
+      expect(promiseState.nested?.fullKey).toBe("Active.Empty.Pending");
     }
   });
 

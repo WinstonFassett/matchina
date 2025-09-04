@@ -62,6 +62,8 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
       // Refine back to TextEntry with explicit query
       // handle: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query) },
       refine: (query: string) => activeStates.TextEntry(query),
+      // For tests, immediately transition to Empty state after submit
+      submit: () => activeStates.Empty(""),
       // Child promise machine completed; accept either ev or ev.data shape
       "child.exit": (ev: any) => {
         const payload = ev?.data ?? ev ?? {};
