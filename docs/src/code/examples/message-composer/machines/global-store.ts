@@ -1,7 +1,4 @@
-/**
- * Mock global store to simulate synced state across multiple "clients"
- * This simulates what would be a real-time sync system in production
- */
+import { createStoreMachine, storeApi } from "matchina";
 
 export type Message = {
   id: string;
@@ -19,25 +16,14 @@ export type Channel = {
 };
 
 export type GlobalStoreState = {
-  channels: Map<string, Channel>;
+  channels: Record<string, Channel>;
   currentChannelId: string | null;
   currentThreadId: string | null;
 };
 
-export type GlobalStoreListener = (state: GlobalStoreState) => void;
-
-class MockGlobalStore {
-  private state: GlobalStoreState = {
-    channels: new Map(),
-    currentChannelId: null,
-    currentThreadId: null,
-  };
-
-  private listeners = new Set<GlobalStoreListener>();
-
-  constructor() {
-    // Initialize with some mock data
-    this.state.channels.set("general", {
+const initialState: GlobalStoreState = {
+  channels: {
+    general: {
       id: "general",
       name: "General",
       messages: [
@@ -49,74 +35,66 @@ class MockGlobalStore {
           channelId: "general",
         },
       ],
-    });
-
-    this.state.channels.set("random", {
+    },
+    random: {
       id: "random",
       name: "Random",
       messages: [],
-    });
+    },
+  },
+  currentChannelId: "general",
+  currentThreadId: null,
+};
 
-    this.state.currentChannelId = "general";
-  }
-
-  getState(): GlobalStoreState {
-    return this.state;
-  }
-
-  subscribe(listener: GlobalStoreListener): () => void {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  }
-
-  notify(ev?: any) {
-    this.listeners.forEach(listener => listener(this.state));
-  }
-
-  // Actions
-  setCurrentChannel(channelId: string) {
-    this.state.currentChannelId = channelId;
-    this.state.currentThreadId = null; // Clear thread when changing channels
-    this.notify();
-  }
-
-  setCurrentThread(threadId: string | null) {
-    this.state.currentThreadId = threadId;
-    this.notify();
-  }
-
-  addMessage(message: Omit<Message, "id" | "timestamp">) {
-    const channel = this.state.channels.get(message.channelId);
-    if (!channel) return;
-
+const globalStoreBase = createStoreMachine(initialState, {
+  setCurrentChannel: (channelId: string) => (change) => ({
+    ...change.from,
+    currentChannelId: channelId,
+    currentThreadId: null,
+  }),
+  setCurrentThread: (threadId: string | null) => (change) => ({
+    ...change.from,
+    currentThreadId: threadId,
+  }),
+  addMessage: (message: Omit<Message, "id" | "timestamp">) => (change) => {
+    console.log("Adding message to global store:", message);
+    const channel = change.from.channels[message.channelId];
+    console.log("Channel found:", channel);
+    if (!channel) return change.from;
     const newMessage: Message = {
       ...message,
       id: Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
     };
+    return {
+      ...change.from,
+      channels: {
+        ...change.from.channels,
+        [message.channelId]: {
+          ...channel,
+          messages: [...channel.messages, newMessage],
+        },
+      },
+    };
+  },
+});
+export const globalStore = {
+  ...globalStoreBase,
+  actions: storeApi(globalStoreBase),
+};
 
-    channel.messages.push(newMessage);
-    this.notify();
-  }
+(globalThis as any).globalStore = globalStore;
 
-  getCurrentChannel(): Channel | null {
-    if (!this.state.currentChannelId) return null;
-    return this.state.channels.get(this.state.currentChannelId) || null;
-  }
-
-  getCurrentMessages(): Message[] {
-    const channel = this.getCurrentChannel();
-    if (!channel) return [];
-
-    if (this.state.currentThreadId) {
-      // Return messages in the thread
-      return channel.messages.filter(msg => msg.threadId === this.state.currentThreadId);
-    }
-
-    // Return top-level channel messages
-    return channel.messages.filter(msg => !msg.threadId);
-  }
+export function getCurrentChannel(state: GlobalStoreState): Channel | null {
+  if (!state.currentChannelId) return null;
+  return state.channels[state.currentChannelId] || null;
 }
 
-// Singleton instance for the demo
-export const globalStore = new MockGlobalStore();
+export function getCurrentMessages(state: GlobalStoreState): Message[] {
+  const channel = getCurrentChannel(state);
+  if (!channel) return [];
+  if (state.currentThreadId) {
+    return channel.messages.filter(msg => msg.threadId === state.currentThreadId);
+  }
+  return channel.messages.filter(msg => !msg.threadId);
+}

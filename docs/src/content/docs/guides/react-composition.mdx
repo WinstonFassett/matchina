@@ -5,12 +5,17 @@ description: React composition patterns with machines
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import { SimpleComposer } from "@code/examples/message-composer/components/SimpleComposer";
+import { EditMessageDemo } from "@code/examples/message-composer/components/EditMessageDemo";
+import { ChannelComposer } from "@code/examples/message-composer/components/ChannelComposer";
+import { ForwardMessageDemo } from "@code/examples/message-composer/components/ForwardMessageDemo";
 import { Code } from "@astrojs/starlight/components";
 import SimpleComposerCode from "@code/examples/message-composer/components/SimpleComposer.tsx?raw";
+import EditMessageComposerCode from "@code/examples/message-composer/components/EditMessageComposer.tsx?raw";
+import ChannelComposerCode from "@code/examples/message-composer/components/ChannelComposer.tsx?raw";
 
-## Single Component Pattern
+{/* ## Single Component Pattern */}
 
-<Tabs>
+{/* <Tabs>
   <TabItem label="Basic">
     <div class="not-content">
       <SimpleComposer
@@ -21,7 +26,13 @@ import SimpleComposerCode from "@code/examples/message-composer/components/Simpl
         showClearButton={false}
       />
     </div>
-    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+    <Code code={`<SimpleComposer
+        client:only="react"
+        title="Send Message"
+        showDropZone={false}
+        showEmojiButton={false}
+        showClearButton={false}
+      />`} lang="tsx" title="BasicComposer.tsx" />
   </TabItem>
   <TabItem label="Full Featured">
     <div class="not-content">
@@ -33,9 +44,15 @@ import SimpleComposerCode from "@code/examples/message-composer/components/Simpl
         showClearButton={true}
       />
     </div>
-    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+    <Code code={`<SimpleComposer
+        client:only="react"
+        title="New Message"
+        showDropZone={true}
+        showEmojiButton={true}
+        showClearButton={true}
+      />`} lang="tsx" title="FullComposer.tsx" />
   </TabItem>
-  <TabItem label="Edit Mode">
+  <TabItem label="Edit Mode (Simple)">
     <div class="not-content">
       <SimpleComposer
         client:only="react"
@@ -47,15 +64,50 @@ import SimpleComposerCode from "@code/examples/message-composer/components/Simpl
         initialMessage="This is the original message that needs editing"
       />
     </div>
-    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+    <Code code={`<SimpleComposer
+        client:only="react"
+        title="Edit Message"
+        showDropZone={false}
+        showEmojiButton={true}
+        showClearButton={true}
+        isEditMode={true}
+        initialMessage="This is the original message that needs editing"
+      />`} lang="tsx" title="EditComposer.tsx" />
   </TabItem>
-</Tabs>
+  
+</Tabs> */}
 
 
 
 ## Multiple Component Pattern
 
 When your application grows, you might want to split your UI into multiple components. You can still use the `useMachine` hook in each component, but you need to ensure that they share the same machine instance.
+
+<Tabs>
+  <TabItem label="Channel Composer (Canonical)">
+    <div class="not-content">
+      <ChannelComposer
+        client:only="react"
+        channelId="general"
+      />
+    </div>
+    <Code code={ChannelComposerCode} lang="tsx" title="ChannelComposer.tsx" />
+  </TabItem>
+  <TabItem label="Edit Message Composer (Dialog Pattern)">
+    <div class="not-content">
+      <EditMessageDemo client:only="react" />
+    </div>
+    <Code code={EditMessageComposerCode} lang="tsx" title="EditMessageComposer.tsx" />
+  </TabItem>
+  <TabItem label="Forward Message Composer (Dialog Pattern)">
+    <div class="not-content">
+      <ForwardMessageDemo client:only="react" />
+    </div>
+    {/* Add code sample for ForwardComposer if/when available */}
+  </TabItem>
+</Tabs>
+
+---
 
 Fernando Rojas has a great React talk called Composition is All You Need.
 
