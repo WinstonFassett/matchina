@@ -4,11 +4,52 @@ description: React composition patterns with machines
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import { SimpleComposerDemo } from "@code/examples/message-composer/components/SimpleComposerDemo";
+import { SimpleComposer } from "@code/examples/message-composer/components/SimpleComposer";
+import { Code } from "@astrojs/starlight/components";
+import SimpleComposerCode from "@code/examples/message-composer/components/SimpleComposer.tsx?raw";
 
 ## Single Component Pattern
 
-<SimpleComposerDemo client:only="react" />
+<Tabs>
+  <TabItem label="Basic">
+    <div class="not-content">
+      <SimpleComposer
+        client:only="react"
+        title="Send Message"
+        showDropZone={false}
+        showEmojiButton={false}
+        showClearButton={false}
+      />
+    </div>
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+  </TabItem>
+  <TabItem label="Full Featured">
+    <div class="not-content">
+      <SimpleComposer
+        client:only="react"
+        title="New Message"
+        showDropZone={true}
+        showEmojiButton={true}
+        showClearButton={true}
+      />
+    </div>
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+  </TabItem>
+  <TabItem label="Edit Mode">
+    <div class="not-content">
+      <SimpleComposer
+        client:only="react"
+        title="Edit Message"
+        showDropZone={false}
+        showEmojiButton={true}
+        showClearButton={true}
+        isEditMode={true}
+        initialMessage="This is the original message that needs editing"
+      />
+    </div>
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
+  </TabItem>
+</Tabs>
 
 
 

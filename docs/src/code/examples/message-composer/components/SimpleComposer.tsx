@@ -60,11 +60,12 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
       )}
 
       <Footer>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {showEmojiButton && (
             <button
               onClick={handleEmojiClick}
-              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              className="h-10 w-10 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors flex items-center justify-center leading-none"
+              style={{ fontSize: '14px' }}
             >
               😊
             </button>
@@ -76,7 +77,8 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
                 console.log("Clearing composer");
                 machine.actions.clear();
               }}
-              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              className="h-10 px-4 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors flex items-center justify-center leading-none"
+              style={{ fontSize: '14px' }}
             >
               Clear
             </button>
@@ -86,7 +88,8 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
         <button
           onClick={handleSubmit}
           disabled={!state.input.trim()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="h-10 px-4 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center leading-none"
+          style={{ fontSize: '14px' }}
         >
           {isEditMode ? "Save" : "Send"}
         </button>
