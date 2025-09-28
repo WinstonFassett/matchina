@@ -201,6 +201,10 @@ export default defineConfig({
               label: "React Integration",
               link: "/guides/react",
             },
+            {
+              label: "React Composition",
+              link: "/guides/react-composition",
+            }
           ],
         },
         // {

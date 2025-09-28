@@ -18,9 +18,9 @@
       "require": "./dist/index.js"
     },
     "./react": {
-      "types": "./dist/integrations/react.d.ts",
-      "import": "./dist/integrations/react.mjs",
-      "require": "./dist/integrations/react.js"
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.cjs"
     },
     "./zod": {
       "types": "./dist/integrations/zod.d.ts",
