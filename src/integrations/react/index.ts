@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { EffectFunc } from "../function-types";
+import { EffectFunc } from "../../function-types";
 
 /**
  * React hook to subscribe a component to a machine's state changes.
