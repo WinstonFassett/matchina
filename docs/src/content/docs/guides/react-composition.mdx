@@ -11,11 +11,12 @@ import { ForwardMessageDemo } from "@code/examples/message-composer/components/F
 import { Code } from "@astrojs/starlight/components";
 import SimpleComposerCode from "@code/examples/message-composer/components/SimpleComposer.tsx?raw";
 import EditMessageComposerCode from "@code/examples/message-composer/components/EditMessageComposer.tsx?raw";
+import ForwardComposerCode from "@code/examples/message-composer/components/ForwardComposer.tsx?raw";
 import ChannelComposerCode from "@code/examples/message-composer/components/ChannelComposer.tsx?raw";
 
-{/* ## Single Component Pattern */}
+## Single Component Pattern
 
-{/* <Tabs>
+<Tabs>
   <TabItem label="Basic">
     <div class="not-content">
       <SimpleComposer
@@ -33,6 +34,7 @@ import ChannelComposerCode from "@code/examples/message-composer/components/Chan
         showEmojiButton={false}
         showClearButton={false}
       />`} lang="tsx" title="BasicComposer.tsx" />
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
   </TabItem>
   <TabItem label="Full Featured">
     <div class="not-content">
@@ -51,6 +53,7 @@ import ChannelComposerCode from "@code/examples/message-composer/components/Chan
         showEmojiButton={true}
         showClearButton={true}
       />`} lang="tsx" title="FullComposer.tsx" />
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
   </TabItem>
   <TabItem label="Edit Mode (Simple)">
     <div class="not-content">
@@ -73,9 +76,10 @@ import ChannelComposerCode from "@code/examples/message-composer/components/Chan
         isEditMode={true}
         initialMessage="This is the original message that needs editing"
       />`} lang="tsx" title="EditComposer.tsx" />
+    <Code code={SimpleComposerCode} lang="tsx" title="SimpleComposer.tsx" />
   </TabItem>
   
-</Tabs> */}
+</Tabs>
 
 
 
@@ -104,6 +108,7 @@ When your application grows, you might want to split your UI into multiple compo
       <ForwardMessageDemo client:only="react" />
     </div>
     {/* Add code sample for ForwardComposer if/when available */}
+    <Code code={ForwardComposerCode} lang="tsx" title="ForwardComposer.tsx" />
   </TabItem>
 </Tabs>
 

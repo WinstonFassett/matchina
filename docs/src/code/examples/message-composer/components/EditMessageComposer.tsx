@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
-import { ComposerProvider, useComposerContext } from "../providers/composer-context";
+import React from "react";
+import { ComposerProvider } from "../providers/composer-context";
 import { createComposerMachine } from "../machines/composer-machine";
+import { useMachine } from "matchina/react";
 import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";
@@ -25,45 +26,33 @@ export const EditMessageComposer: React.FC<EditMessageComposerProps> = ({
   showDropZone = false,
   className = "",
 }) => {
-  const machine = React.useMemo(() => createComposerMachine({ input: initialValue, metadata: { messageId } }), [initialValue, messageId]);
-  return (
-    <ComposerProvider machine={machine}>
-      <EditMessageComposerInner
-        onSave={onSave}
-        onCancel={onCancel}
-        showDropZone={showDropZone}
-        className={className}
-      />
-    </ComposerProvider>
+  const composerMachine = React.useMemo(
+    () => createComposerMachine({ input: initialValue, metadata: { messageId } }),
+    [initialValue, messageId]
   );
-};
+  const state = useMachine(composerMachine);
 
-const EditMessageComposerInner: React.FC<Omit<EditMessageComposerProps, "messageId" | "initialValue">> = ({
-  onSave,
-  onCancel,
-  showDropZone,
-  className,
-}) => {
-  const [state, { machine }] = useComposerContext();
+  const handleInput = (val: string) => {
+    composerMachine.actions.updateInput(val);
+  };
 
-  const handleInputChange = useCallback((value: string) => {
-    machine.actions.updateInput(value);
-  }, [machine]);
-
-  const handleSave = useCallback(() => {
+  const handleSave = () => {
     onSave(state.input);
-  }, [onSave, state.input]);
+    composerMachine.actions.clear();
+  };
 
   return (
-    <Frame className={className}>
-      <Header>Edit Message</Header>
-      {showDropZone && <DropZone onFileAdd={(fileName: string) => machine.actions.addAttachment(fileName)} />}
-      <Input value={state.input} onChange={handleInputChange} />
-      <Footer>
-        <CommonActions />
-        <button type="button" className="btn btn-primary" onClick={handleSave}>Save</button>
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-      </Footer>
-    </Frame>
+    <ComposerProvider machine={composerMachine}>
+      <Frame className={className}>
+        <Header>Edit Message</Header>
+        {showDropZone && <DropZone onFileAdd={composerMachine.actions.addAttachment} />}
+        <Input value={state.input} onChange={handleInput} />
+        <Footer>
+          <CommonActions />
+          <button type="button" className="btn btn-primary" onClick={handleSave}>Save</button>
+          <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+        </Footer>
+      </Frame>
+    </ComposerProvider>
   );
 };
