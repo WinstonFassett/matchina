@@ -13,6 +13,7 @@ export interface SimpleComposerProps {
   showEmojiButton?: boolean;
   showClearButton?: boolean;
   isEditMode?: boolean;
+  initialMessage?: string;
   className?: string;
 }
 
@@ -22,17 +23,20 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
   showEmojiButton = true,
   showClearButton = true,
   isEditMode = false,
+  initialMessage = "",
   className = "",
 }) => {
-  const [machine] = useState(() => createComposerMachine());
+  const [machine] = useState(() => createComposerMachine({ input: initialMessage }));
   const state = useMachine(machine);
 
   const handleSubmit = () => {
-    machine.api.submit();
+    console.log("Submitting message:", state);
+    machine.actions.submit();
   };
 
   const handleEmojiClick = () => {
-    machine.api.updateInput(state.input + " 😊");
+    console.log("Adding emoji to:", state.input);
+    machine.actions.updateInput(state.input + " 😊");
   };
 
   return (
@@ -41,12 +45,12 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
 
       <Input
         value={state.input}
-        onChange={machine.api.updateInput}
+        onChange={machine.actions.updateInput}
         placeholder="Type your message..."
       />
 
       {showDropZone && (
-        <DropZone onFileAdd={machine.api.addAttachment} />
+        <DropZone onFileAdd={machine.actions.addAttachment} />
       )}
 
       {state.attachments.length > 0 && (
@@ -60,7 +64,7 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
           {showEmojiButton && (
             <button
               onClick={handleEmojiClick}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
             >
               😊
             </button>
@@ -68,8 +72,11 @@ export const SimpleComposer: React.FC<SimpleComposerProps> = ({
 
           {showClearButton && (
             <button
-              onClick={machine.api.clear}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+              onClick={() => {
+                console.log("Clearing composer");
+                machine.actions.clear();
+              }}
+              className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
             >
               Clear
             </button>

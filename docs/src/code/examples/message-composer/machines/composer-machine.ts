@@ -1,5 +1,4 @@
-import { createStateMachine } from "matchina";
-import { storeApi } from "matchina";
+import { createStoreMachine, storeApi } from "matchina";
 
 export type ComposerState = {
   input: string;
@@ -7,66 +6,53 @@ export type ComposerState = {
   metadata: Record<string, any>;
 };
 
-export type ComposerActions = {
-  updateInput: (value: string) => void;
-  addAttachment: (file: string) => void;
-  removeAttachment: (index: number) => void;
-  clearInput: () => void;
-  clear: () => void;
-  submit: () => void;
-};
-
 export function createComposerMachine(initialState?: Partial<ComposerState>) {
-  const machine = createStateMachine<ComposerState>({
+  const defaultState: ComposerState = {
     input: "",
     attachments: [],
     metadata: {},
     ...initialState,
-  });
-
-  const api: ComposerActions = {
-    updateInput: (value: string) => {
-      machine.setState(draft => {
-        draft.input = value;
-      });
-    },
-
-    addAttachment: (file: string) => {
-      machine.setState(draft => {
-        draft.attachments.push(file);
-      });
-    },
-
-    removeAttachment: (index: number) => {
-      machine.setState(draft => {
-        draft.attachments.splice(index, 1);
-      });
-    },
-
-    clearInput: () => {
-      machine.setState(draft => {
-        draft.input = "";
-      });
-    },
-
-    clear: () => {
-      machine.setState(draft => {
-        draft.input = "";
-        draft.attachments = [];
-      });
-    },
-
-    submit: () => {
-      console.log("Submitting:", machine.getState());
-      // In real app, this would dispatch to external systems
-      machine.setState(draft => {
-        draft.input = "";
-        draft.attachments = [];
-      });
-    },
   };
 
-  return Object.assign(machine, { api });
+  const machine = createStoreMachine(defaultState, {
+    updateInput: (value: string) => (change) => ({
+      ...change.from,
+      input: value,
+    }),
+
+    addAttachment: (file: string) => (change) => ({
+      ...change.from,
+      attachments: [...change.from.attachments, file],
+    }),
+
+    removeAttachment: (index: number) => (change) => ({
+      ...change.from,
+      attachments: change.from.attachments.filter((_, i) => i !== index),
+    }),
+
+    clearInput: () => (change) => ({
+      ...change.from,
+      input: "",
+    }),
+
+    clear: () => (change) => ({
+      ...change.from,
+      input: "",
+      attachments: [],
+    }),
+
+    submit: () => (change) => {
+      console.log("Submitting:", change.from);
+      // In real app, this would dispatch to external systems
+      return {
+        ...change.from,
+        input: "",
+        attachments: [],
+      };
+    },
+  });
+
+  return Object.assign(machine, { actions: storeApi(machine) });
 }
 
 export type ComposerMachine = ReturnType<typeof createComposerMachine>;
