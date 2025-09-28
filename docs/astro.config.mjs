@@ -27,64 +27,66 @@ export default defineConfig({
   integrations: [
     starlight({
       plugins: [
-        starlightTypeDoc({
-          watch: true,
-          sidebar: {
-            label: "Reference",
-          },
-          entryPoints: ["../src/index.ts"],
-          tsconfig: "../tsconfig.typedoc.json",
-          output: "reference",
-          watch: true,
-          typeDoc: {
-            sort: "source-order",
-            entryPointStrategy: "expand",
-            tableColumnSettings: {
-              hideSources: true,
+        ...( import.meta.env.DEV ? [] : [
+          starlightTypeDoc({
+            watch: true,
+            sidebar: {
+              label: "Reference",
             },
-            blockTags: [
-              "@deprecated",
-              "@see",
-              "@example",
-              "@parameters",
-              "@typeParameters",
-              "@source",
-            ],
-            // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
-            excludePrivate: true,
-            excludeInternal: true,
-            categorizeByGroup: false,
-            groupOrder: [
-              "Interfaces",
-              "Functions",
-              "Type Alias",
-              "Variables",
-              "*",
-            ],
-            navigation: {
-              includeGroups: true,
-              includeCategories: true,
+            entryPoints: ["../src/index.ts"],
+            tsconfig: "../tsconfig.typedoc.json",
+            output: "reference",
+            watch: true,
+            typeDoc: {
+              sort: "source-order",
+              entryPointStrategy: "expand",
+              tableColumnSettings: {
+                hideSources: true,
+              },
+              blockTags: [
+                "@deprecated",
+                "@see",
+                "@example",
+                "@parameters",
+                "@typeParameters",
+                "@source",
+              ],
+              // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
+              excludePrivate: true,
+              excludeInternal: true,
+              categorizeByGroup: false,
+              groupOrder: [
+                "Interfaces",
+                "Functions",
+                "Type Alias",
+                "Variables",
+                "*",
+              ],
+              navigation: {
+                includeGroups: true,
+                includeCategories: true,
+              },
+              parametersFormat: "table",
+              typeAliasPropertiesFormat: "table",
+              propertyMembersFormat: "table",
+              expandObjects: true,
+              expandParameters: true,
+              indexFormat: "table",
+              interfacePropertiesFormat: "table",
+              // interfaceMethodsFormat: "table",
+              // interfaceIndexFormat: "table",
+              typeDeclarationFormat: "table",
+  
+              plugin: [
+                // "./src/lib/starlight-typedoc/register-theme.ts",
+                "./dist/typedoc-plugin/register-theme.cjs",
+                "typedoc-plugin-inline-sources",
+              ],
+              theme: "starlight-typedoc-custom",
+              // "excludeNotDocumented": true
             },
-            parametersFormat: "table",
-            typeAliasPropertiesFormat: "table",
-            propertyMembersFormat: "table",
-            expandObjects: true,
-            expandParameters: true,
-            indexFormat: "table",
-            interfacePropertiesFormat: "table",
-            // interfaceMethodsFormat: "table",
-            // interfaceIndexFormat: "table",
-            typeDeclarationFormat: "table",
-
-            plugin: [
-              // "./src/lib/starlight-typedoc/register-theme.ts",
-              "./dist/typedoc-plugin/register-theme.cjs",
-              "typedoc-plugin-inline-sources",
-            ],
-            theme: "starlight-typedoc-custom",
-            // "excludeNotDocumented": true
-          },
-        }),
+          }),
+        ]),
       ],
       expressiveCode: {
         themes: ["material-theme-ocean"],
