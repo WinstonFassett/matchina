@@ -69,7 +69,7 @@ class MockGlobalStore {
     return () => this.listeners.delete(listener);
   }
 
-  private notify() {
+  notify(ev?: any) {
     this.listeners.forEach(listener => listener(this.state));
   }
 
