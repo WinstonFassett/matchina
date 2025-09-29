@@ -87,7 +87,7 @@ function MessagesContent({ messages }: { messages: any[] }) {
   return (
     <ul className="space-y-2">
       {messages.map((msg) => (
-        <li key={msg.id} className="p-2 border rounded bg-white">
+        <li key={msg.id} className="p-2 border rounded bg-sl-black">
           <div>{msg.content}</div>
           {msg.attachments.length > 0 && (
             <div className="text-sm text-gray-600">
