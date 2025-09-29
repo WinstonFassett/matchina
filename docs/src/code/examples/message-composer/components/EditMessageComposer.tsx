@@ -6,24 +6,19 @@ import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";
 import { Footer } from "../ui/Footer";
-import { DropZone } from "../ui/DropZone";
 import { CommonActions } from "./CommonActions";
 
 export interface EditMessageComposerProps {
-  messageId: string;
   initialValue: string;
   onSave: (value: string) => void;
   onCancel: () => void;
-  showDropZone?: boolean;
   className?: string;
 }
 
 export const EditMessageComposer: React.FC<EditMessageComposerProps> = ({
-  messageId,
   initialValue,
   onSave,
   onCancel,
-  showDropZone = false,
   className = "",
 }) => {
   const composerMachine = React.useMemo(
@@ -44,9 +39,8 @@ export const EditMessageComposer: React.FC<EditMessageComposerProps> = ({
   return (
     <ComposerProvider machine={composerMachine}>
       <Frame className={className}>
-        <Header>Edit Message</Header>
-        {showDropZone && <DropZone onFileAdd={composerMachine.actions.addAttachment} />}
-        <Input value={state.input} onChange={handleInput} />
+  <Header>Edit Message</Header>
+  <Input value={state.input} onChange={handleInput} />
         <Footer>
           <CommonActions />
           <button type="button" className="btn btn-primary" onClick={handleSave}>Save</button>

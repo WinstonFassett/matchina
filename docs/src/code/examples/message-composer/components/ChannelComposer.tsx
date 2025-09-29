@@ -1,3 +1,4 @@
+import { DropZone } from "../ui/DropZone";
 import React from "react";
 import { globalStore } from "../machines/global-store";
 import { useMachine } from "matchina/react";
@@ -7,7 +8,6 @@ import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";
 import { Footer } from "../ui/Footer";
-import { DropZone } from "../ui/DropZone";
 import { CommonActions } from "./CommonActions";
 
 export interface ChannelComposerProps {
@@ -51,35 +51,36 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
 
   return (
     <ComposerProvider machine={composerMachine}>
-      <Frame className={className}>
-        <Header>Channel: {globalState.currentChannelId}</Header>
-        <DropZone onFileAdd={composerMachine.actions.addAttachment} />
-        <Input value={composerState.input} onChange={composerMachine.actions.updateInput} />
-        <Footer>
-          <CommonActions />
-          {composerState.input && (
-            <button type="button" className="btn btn-secondary mr-2" onClick={handleCancel}>
-              Cancel
-            </button>
-          )}
-          <button type="button" className="btn btn-primary" onClick={handleSend}>
-            Send
-          </button>
-        </Footer>
-        <div className="mt-4">
-          <div className="font-bold mb-2">Messages:</div>
-          <ul className="space-y-1 p-0">
-            {messages.length === 0 && (
-              <li className="text-gray-400 italic">No messages</li>
+      <DropZone onFileAdd={composerMachine.actions.addAttachment}>
+        <Frame className={className}>
+          <Header>Channel: {globalState.currentChannelId}</Header>
+          <Input value={composerState.input} onChange={composerMachine.actions.updateInput} />
+          <Footer>
+            <CommonActions />
+            {composerState.input && (
+              <button type="button" className="btn btn-secondary mr-2" onClick={handleCancel}>
+                Cancel
+              </button>
             )}
-            {messages.map((msg: any) => (
-              <li key={msg.id} className="border rounded px-2 py-1 text-sm list-none">
-                {msg.content}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Frame>
+            <button type="button" className="btn btn-primary" onClick={handleSend}>
+              Send
+            </button>
+          </Footer>
+          <div className="mt-4">
+            <div className="font-bold mb-2">Messages:</div>
+            <ul className="space-y-1 p-0">
+              {messages.length === 0 && (
+                <li className="text-gray-400 italic">No messages</li>
+              )}
+              {messages.map((msg: any) => (
+                <li key={msg.id} className="border rounded px-2 py-1 text-sm list-none">
+                  {msg.content}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Frame>
+      </DropZone>
     </ComposerProvider>
   );
 }
