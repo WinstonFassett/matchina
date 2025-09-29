@@ -23,10 +23,10 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
     () => createComposerMachine({ input: "" }),
     [channelId]
   );
-  const composerState = useMachine(composerMachine);
+  const {input} = useMachine(composerMachine, ({input}) => ({input}));
 
   const handleSend = () => {
-    const input = composerState.input;
+    const input = composerMachine.getState().input;
     if (input.trim()) {
       globalStore.actions.addMessage({
         content: input,
@@ -43,23 +43,25 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
 
   // Get messages for this channel from global state
   const channel = globalState.currentChannelId ? globalState.channels[globalState.currentChannelId] : null;
-  const messages = channel
-    ? (globalState.currentThreadId
-        ? channel.messages.filter((msg: any) => msg.threadId === globalState.currentThreadId)
-        : channel.messages.filter((msg: any) => !msg.threadId))
-    : [];
+  const messages = React.useMemo(() => {
+    return channel
+      ? (globalState.currentThreadId
+          ? channel.messages.filter((msg: any) => msg.threadId === globalState.currentThreadId)
+          : channel.messages.filter((msg: any) => !msg.threadId))
+      : [];
+  }, [channel, globalState.currentThreadId]);
 
   return (
     <ComposerProvider machine={composerMachine}>
         <Frame className={className}>
           <Header>Channel: {globalState.currentChannelId}</Header>
           <DropZone onFileAdd={composerMachine.actions.addAttachment}>
-            <Input value={composerState.input} onChange={composerMachine.actions.updateInput} />
+            <Input value={input} onChange={composerMachine.actions.updateInput} />
           </DropZone>
           <Footer>
             <CommonActions />
             <div className="flex-1" />
-            {composerState.input && (
+            {input && (
               <button type="button" className="btn btn-secondary mr-2" onClick={handleCancel}>
                 Cancel
               </button>
@@ -72,17 +74,29 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
         </Frame>
       <div className="mt-4">
         <div className="font-bold mb-2">Messages:</div>
-        <ul className="space-y-1 p-0">
-          {messages.length === 0 && (
-            <li className="text-gray-400 italic">No messages</li>
-          )}
-          {messages.map((msg: any) => (
-            <li key={msg.id} className="border rounded px-2 py-1 text-sm list-none">
-              {msg.content}
-            </li>
-          ))}
-        </ul>
+        <Messages messages={messages} />
       </div>
     </ComposerProvider>
   );
 }
+const Messages = React.memo(MessagesContent);
+function MessagesContent({ messages }: { messages: any[] }) {
+  if (messages.length === 0) {
+    return <div className="text-sm text-gray-600">No messages yet.</div>;
+  }
+  return (
+    <ul className="space-y-2">
+      {messages.map((msg) => (
+        <li key={msg.id} className="p-2 border rounded bg-white">
+          <div>{msg.content}</div>
+          {msg.attachments.length > 0 && (
+            <div className="text-sm text-gray-600">
+              Attachments: {msg.attachments.join(", ")}
+            </div>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+

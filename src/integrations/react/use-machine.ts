@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { memoizeFn } from "./memoizeFn";
 import { withSubscribe } from "../../extras/with-subscribe";
 import { BindableMachine } from "./bindable";
 
@@ -20,9 +21,19 @@ export function useMachine<
 ): TResult {
   const subMachine = withSubscribe(machine);
 
+
+
+  // Memoize selector results based on arguments (state, machine)
+  const memoizedSelector = React.useRef<ReturnType<typeof memoizeFn> | null>(null);
+  if (!memoizedSelector.current && selector) {
+    memoizedSelector.current = memoizeFn(selector);
+  }
+
   const getSnapshot = useCallback(() => {
     const state = subMachine.getState();
-    return selector ? selector(state, subMachine) : state;
+    if (!selector) return state;
+    // Use memoized selector
+    return memoizedSelector.current!(state, subMachine);
   }, [subMachine, selector]);
 
   return React.useSyncExternalStore(

@@ -1,6 +1,7 @@
+import React from "react";
 import * as Composer from "./Composer.tsx";
 
-export function CommonActions() {
+export const CommonActions = React.memo(() => {
   return (
     <>
       <Composer.PlusMenu />
@@ -13,4 +14,4 @@ export function CommonActions() {
       <Composer.SlashCommands />
     </>
   );
-}
+});

@@ -10,7 +10,8 @@ export { Footer } from '../ui/Footer';
 export { DropZone } from '../ui/DropZone';
 
 export function useClickInput(label: string) {
-  const [, {machine}] = useComposerContext()
+  const [, {machine}] = useComposerContext(() => true)
+  console.log('useClickInput', label, machine);
   return () => {
     const state = machine.getState();
     console.log(`${label} clicked, current input:`, state.input);
