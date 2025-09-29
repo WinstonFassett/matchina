@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Composer from './Composer.tsx';
-import { ComposerProvider } from '../providers/composer-context';
-import { createComposerMachine } from '../machines/composer-machine';
+import { ComposerProvider } from '../composer.context.tsx';
+import { createComposerMachine } from '../composer.machine.ts';
 import { CommonActions } from './CommonActions.tsx';
 
 export interface ThreadComposerProps {

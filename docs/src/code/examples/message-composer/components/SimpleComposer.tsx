@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useMachine } from "matchina/react";
-import { createComposerMachine } from "../machines/composer-machine";
+import { createComposerMachine } from "../composer.machine";
 import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";

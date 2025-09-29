@@ -1,5 +1,5 @@
 import { createMachineContext } from "matchina/react";
-import { globalStore } from "../machines/global-store";
+import { globalStore } from "./demo-store.machine";
 
 // Context for the GlobalStore (now a proper machine)
 export const {

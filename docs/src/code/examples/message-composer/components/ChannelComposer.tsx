@@ -1,9 +1,9 @@
 import { DropZone } from "../ui/DropZone";
 import React from "react";
-import { globalStore } from "../machines/global-store";
+import { globalStore } from "../demo-store.machine";
 import { useMachine } from "matchina/react";
-import { ComposerProvider } from "../providers/composer-context";
-import { createComposerMachine } from "../machines/composer-machine";
+import { ComposerProvider } from "../composer.context";
+import { createComposerMachine } from "../composer.machine";
 import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";

@@ -1,6 +1,6 @@
 import React from "react";
-import { ComposerProvider } from "../providers/composer-context";
-import { createComposerMachine } from "../machines/composer-machine";
+import { ComposerProvider } from "../composer.context";
+import { createComposerMachine } from "../composer.machine";
 import { useMachine } from "matchina/react";
 import { Frame } from "../ui/Frame";
 import { Header } from "../ui/Header";

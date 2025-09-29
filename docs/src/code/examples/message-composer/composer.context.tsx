@@ -1,5 +1,5 @@
 import { createMachineContext } from "matchina/react";
-import { createComposerMachine } from "../machines/composer-machine";
+import { createComposerMachine } from "./composer.machine";
 
 // Context for the ComposerMachine
 export const {

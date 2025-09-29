@@ -1,6 +1,6 @@
 // Composer namespace for UI primitives and actions
 import React from 'react';
-import { useComposerContext } from '../providers/composer-context';
+import { useComposerContext } from '../composer.context';
 
 // Core UI primitives
 export { Frame } from '../ui/Frame';
