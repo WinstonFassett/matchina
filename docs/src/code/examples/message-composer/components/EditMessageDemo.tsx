@@ -11,8 +11,8 @@ export const EditMessageDemo: React.FC = () => {
         Edit Message
       </button>
       {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded shadow-lg p-6 min-w-[320px] max-w-full">
+        <div className="fixed inset-0 flex items-center justify-center bg-sl-black/60  z-50">
+          <div className="bg-sl-gray-7 rounded shadow-lg p-6 min-w-[320px] max-w-full">
             <EditMessageComposer
               initialValue="Edit this message via composition"
               onSave={(val) => {

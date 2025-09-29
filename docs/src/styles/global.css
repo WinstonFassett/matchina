@@ -5,11 +5,38 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
-  /*
-	Configure your Tailwind theme that will be used by Starlight.
-	https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind
-	*/
+  /* Restore custom variables and only map gray scale to zinc */
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  /* --color-gray-50: var(--color-zinc-50);
+  --color-gray-100: var(--color-zinc-100);
+  --color-gray-200: var(--color-zinc-200);
+  --color-gray-300: var(--color-zinc-300);
+  --color-gray-400: var(--color-zinc-400);
+  --color-gray-500: var(--color-zinc-500);
+  --color-gray-600: var(--color-zinc-600);
+  --color-gray-700: var(--color-zinc-700);
+  --color-gray-800: var(--color-zinc-800);
+  --color-gray-900: var(--color-zinc-900);
+  --color-gray-950: var(--color-zinc-950); */
+  --color-sl-gray-1: var(--sl-color-gray-1);
+  --color-sl-gray-2: var(--sl-color-gray-2);
+  --color-sl-gray-3: var(--sl-color-gray-3);
+  --color-sl-gray-4: var(--sl-color-gray-4);
+  --color-sl-gray-5: var(--sl-color-gray-5);
+  --color-sl-gray-6: var(--sl-color-gray-6);
+  --color-sl-gray-7: var(--sl-color-black);
+  --color-sl-white: var(--sl-color-white);
+  --color-sl-black: var(--sl-color-black);
+  --color-whitish: var(--sl-color-white);
+  --color-blackish: var(--sl-color-black);
+
+
 }
+
+
 
 /*
 Add additional Tailwind styles to this file:

@@ -7,7 +7,7 @@ export interface FrameProps {
 
 export const Frame: React.FC<FrameProps> = ({ children, className = "" }) => {
   return (
-    <div className={`border rounded-lg p-4 space-y-3 ${className}`}>
+    <div className={`rounded-lg space-y-3 ${className}`}>
       {children}
     </div>
   );

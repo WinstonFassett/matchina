@@ -11,8 +11,8 @@ export const ForwardMessageDemo: React.FC = () => {
         Forward Message
       </button>
       {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded shadow-lg p-6 min-w-[320px] max-w-full">
+        <div className="fixed inset-0 flex items-center justify-center bg-sl-black/60 bg-opacity-40 z-50">
+          <div className="bg-sl-black rounded shadow-lg p-6 min-w-[320px] max-w-full">
             <ForwardComposer
               message={{ id: "42", content: "This is the message to forward." }}
               onForward={({ comment, message }) => {

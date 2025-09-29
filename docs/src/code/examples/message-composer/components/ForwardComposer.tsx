@@ -39,7 +39,7 @@ export const ForwardComposer: React.FC<ForwardComposerProps> = ({
     <ComposerProvider machine={composerMachine}>
       <Frame className={className}>
         <Header>Forward Message</Header>
-        <div className="mb-2 p-2 bg-gray-100 rounded text-sm text-gray-700">
+        <div className="mb-2 p-2 bg-gray-1 rounded text-sm text-gray-7">
           <div className="font-semibold mb-1">Original Message:</div>
           <div>{message.content}</div>
         </div>

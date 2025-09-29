@@ -90,7 +90,7 @@ import ChannelComposerCode from "@code/examples/message-composer/components/Chan
 When your application grows, you might want to split your UI into multiple components. You can still use the `useMachine` hook in each component, but you need to ensure that they share the same machine instance.
 
 <Tabs>
-  <TabItem label="Channel Composer (Canonical)">
+  <TabItem label="Channel Composer">
     <div class="not-content">
       <ChannelComposer
         client:only="react"
@@ -99,19 +99,19 @@ When your application grows, you might want to split your UI into multiple compo
     </div>
     <Code code={ChannelComposerCode} lang="tsx" title="ChannelComposer.tsx" />
   </TabItem>
-  <TabItem label="Thread Composer (Thread Reply)">
+  <TabItem label="Thread Composer">
     <div class="not-content">
       <ThreadComposerDemo client:only="react" />
     </div>
     <Code code={ThreadComposerCode} lang="tsx" title="ThreadComposer.tsx" />
   </TabItem>
-  <TabItem label="Edit Message Composer (Dialog Pattern)">
+  <TabItem label="Edit Message Composer">
     <div class="not-content">
       <EditMessageDemo client:only="react" />
     </div>
     <Code code={EditMessageComposerCode} lang="tsx" title="EditMessageComposer.tsx" />
   </TabItem>
-  <TabItem label="Forward Message Composer (Dialog Pattern)">
+  <TabItem label="Forward Message Composer">
     <div class="not-content">
       <ForwardMessageDemo client:only="react" />
     </div>
