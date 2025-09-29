@@ -7,6 +7,8 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 import { SimpleComposer } from "@code/examples/message-composer/components/SimpleComposer";
 import { EditMessageDemo } from "@code/examples/message-composer/components/EditMessageDemo";
 import { ChannelComposer } from "@code/examples/message-composer/components/ChannelComposer";
+import { ThreadComposerDemo } from "@code/examples/message-composer/components/ThreadComposerDemo";
+import ThreadComposerCode from "@code/examples/message-composer/components/ThreadComposer.tsx?raw";
 import { ForwardMessageDemo } from "@code/examples/message-composer/components/ForwardMessageDemo";
 import { Code } from "@astrojs/starlight/components";
 import SimpleComposerCode from "@code/examples/message-composer/components/SimpleComposer.tsx?raw";
@@ -96,6 +98,12 @@ When your application grows, you might want to split your UI into multiple compo
       />
     </div>
     <Code code={ChannelComposerCode} lang="tsx" title="ChannelComposer.tsx" />
+  </TabItem>
+  <TabItem label="Thread Composer (Thread Reply)">
+    <div class="not-content">
+      <ThreadComposerDemo client:only="react" />
+    </div>
+    <Code code={ThreadComposerCode} lang="tsx" title="ThreadComposer.tsx" />
   </TabItem>
   <TabItem label="Edit Message Composer (Dialog Pattern)">
     <div class="not-content">
