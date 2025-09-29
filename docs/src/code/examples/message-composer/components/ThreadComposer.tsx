@@ -2,6 +2,7 @@ import React from 'react';
 import * as Composer from './Composer.tsx';
 import { ComposerProvider } from '../providers/composer-context';
 import { createComposerMachine } from '../machines/composer-machine';
+import { CommonActions } from './CommonActions.tsx';
 
 export interface ThreadComposerProps {
   channelId: string;
@@ -21,7 +22,7 @@ export function ThreadComposer({ channelId, className }: ThreadComposerProps) {
           <Composer.Input value={machine.getState().input} onChange={machine.actions.updateInput} />
           {/* Example: AlsoSendToChannel primitive could be added here if implemented */}
           <Composer.Footer>
-            <Composer.CommonActions />
+            <CommonActions />
             <button type="button" className="btn btn-primary">Send</button>
           </Composer.Footer>
         </Composer.Frame>

@@ -1,19 +1,3 @@
-// CommonActions fragment for use in composer footers
-export function CommonActions() {
-  return (
-    <>
-      <PlusMenu />
-      <TextFormat />
-      <Emojis />
-      <Mentions />
-      <Divider />
-      <Video />
-      <Audio />
-      <Divider />
-      <SlashCommands />
-    </>
-  );
-}
 // Composer namespace for UI primitives and actions
 import React from 'react';
 import { useComposerContext } from '../providers/composer-context';
@@ -25,7 +9,7 @@ export { Input } from '../ui/Input';
 export { Footer } from '../ui/Footer';
 export { DropZone } from '../ui/DropZone';
 
-function useClickInput(label: string) {
+export function useClickInput(label: string) {
   const [, {machine}] = useComposerContext()
   return () => {
     const state = machine.getState();

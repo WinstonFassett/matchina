@@ -21,9 +21,8 @@ export const ForwardComposer: React.FC<ForwardComposerProps> = ({
   onCancel,
   className = "",
 }) => {
-  const composerMachine = React.useMemo(
+  const [composerMachine] = React.useState(
     () => createComposerMachine({ input: "" }),
-    []
   );
   const state = useMachine(composerMachine);
 
