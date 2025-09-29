@@ -10,7 +10,7 @@ export interface ThreadComposerProps {
 
 export function ThreadComposer({ channelId, className }: ThreadComposerProps) {
   const machine = React.useMemo(
-    () => createComposerMachine({ input: '', metadata: { channelId } }),
+    () => createComposerMachine({ input: '' }),
     [channelId]
   );
   return (

@@ -27,8 +27,8 @@ export const EditMessageComposer: React.FC<EditMessageComposerProps> = ({
   className = "",
 }) => {
   const composerMachine = React.useMemo(
-    () => createComposerMachine({ input: initialValue, metadata: { messageId } }),
-    [initialValue, messageId]
+    () => createComposerMachine({ input: initialValue }),
+    [initialValue]
   );
   const state = useMachine(composerMachine);
 

@@ -20,7 +20,7 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
   const globalState = useMachine(globalStore);
   // Local composer machine for input
   const composerMachine = React.useMemo(
-    () => createComposerMachine({ input: "", metadata: { channelId } }),
+    () => createComposerMachine({ input: "" }),
     [channelId]
   );
   const composerState = useMachine(composerMachine);

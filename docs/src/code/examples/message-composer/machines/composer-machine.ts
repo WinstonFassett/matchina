@@ -1,16 +1,16 @@
 import { createStoreMachine, storeApi } from "matchina";
 
+
 export type ComposerState = {
   input: string;
   attachments: string[];
-  metadata: Record<string, any>;
 };
+
 
 export function createComposerMachine(initialState?: Partial<ComposerState>) {
   const defaultState: ComposerState = {
     input: "",
     attachments: [],
-    metadata: {},
     ...initialState,
   };
 
