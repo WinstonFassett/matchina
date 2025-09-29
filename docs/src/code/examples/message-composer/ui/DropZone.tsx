@@ -8,11 +8,9 @@ export interface DropZoneProps {
 
 export const DropZone: React.FC<DropZoneProps> = ({ onFileAdd, className = "", children }) => {
   const handleClick = (e: React.MouseEvent) => {
-    // Only trigger file add if click is on the DropZone itself, not on children
-    if (e.target === e.currentTarget) {
-      const fileName = `file_${Date.now()}.txt`;
-      onFileAdd(fileName);
-    }
+    const fileName = `file_${Date.now()}.txt`;
+    console.log(`Simulated file drop: ${fileName}`);
+    onFileAdd(fileName);
   };
 
   return (
@@ -22,7 +20,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFileAdd, className = "", c
     >
       {children}
       <div className="text-sm mt-4">
-        📎 Click to add files (simulated)
+        📎 Drop Zone (simulated)
       </div>
     </div>
   );
