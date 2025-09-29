@@ -20,10 +20,10 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFileAdd, className = "", c
       className={`border-2 border-dashed border-gray-300 rounded-lg p-4 text-center text-gray-500 hover:border-gray-400 cursor-pointer transition-colors ${className}`}
       onClick={handleClick}
     >
-      <div className="text-sm mb-2">
+      {children}
+      <div className="text-sm mt-4">
         📎 Click to add files (simulated)
       </div>
-      {children}
     </div>
   );
 };

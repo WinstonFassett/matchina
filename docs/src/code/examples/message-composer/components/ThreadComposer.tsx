@@ -16,17 +16,18 @@ export function ThreadComposer({ channelId, className }: ThreadComposerProps) {
   );
   return (
     <ComposerProvider machine={machine}>
-      <Composer.DropZone onFileAdd={machine.actions.addAttachment}>
         <Composer.Frame className={className}>
           <Composer.Header>Thread Reply</Composer.Header>
-          <Composer.Input value={machine.getState().input} onChange={machine.actions.updateInput} />
-          {/* Example: AlsoSendToChannel primitive could be added here if implemented */}
+          <Composer.DropZone onFileAdd={machine.actions.addAttachment}>
+            <Composer.Input value={machine.getState().input} onChange={machine.actions.updateInput} />
+            {/* Example: AlsoSendToChannel primitive could be added here if implemented */}
+          </Composer.DropZone>
           <Composer.Footer>
             <CommonActions />
+            <div className="flex-1" />
             <button type="button" className="btn btn-primary">Send</button>
           </Composer.Footer>
         </Composer.Frame>
-      </Composer.DropZone>
     </ComposerProvider>
   );
 }

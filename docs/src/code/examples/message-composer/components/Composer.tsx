@@ -48,5 +48,6 @@ export const Audio: React.FC = () => (
 );
 
 export const SlashCommands: React.FC = () => (
-  <button type="button" title="Slash commands" className="icon-btn">/</button>
+  // <button type="button" title="Slash commands" className="icon-btn">/</button>
+  <></>
 );

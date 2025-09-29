@@ -7,7 +7,7 @@ export interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ children, className = "" }) => {
   return (
-    <div className={`flex items-center justify-between gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       {children}
     </div>
   );
