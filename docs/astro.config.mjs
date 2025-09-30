@@ -109,6 +109,10 @@ export default defineConfig({
               link: "/guides/quickstart",
             },
             {
+              label: "Installation",
+              link: "/guides/installation",
+            },
+            {
               label: "About Matchina",
               link: "/guides/inside",
             },

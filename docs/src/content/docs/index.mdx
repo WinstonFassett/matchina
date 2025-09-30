@@ -35,7 +35,7 @@ import typeGuardsCode from "@code/examples/teaser/typeguards.ts?raw";
 import { Code } from "@astrojs/starlight/components";
 
 {/* ## Key Features */}
-
+{/* 
 <CodeTabs
   files={[
     {
@@ -63,47 +63,44 @@ import { Code } from "@astrojs/starlight/components";
       twoslash: true,
     },
   ]}
-></CodeTabs>
+></CodeTabs> 
+*/}
 
-## Quick Installation
-
-```sh
-npm install matchina
-```
 
 ## Get Started
 
 <CardGrid>
   <LinkCard
-    title="📚 Quick Start Guide"
+    title="📚 Quick Start"
     href="/matchina/guides/quickstart/"
     description="Get up and running with Matchina in minutes"
   />
   <LinkCard
-    title="⚙️ State Machines Guide"
+    title="⚙️ State Machines"
     href="/matchina/guides/machines/"
     description="Learn how to build complex state machines with type safety"
-  />
-  <LinkCard
-    title="⏳ Promise Machines Guide"
-    href="/matchina/guides/promises/"
-    description="Manage async operations with type-safe promise machines"
-  />
-  <LinkCard
-    title="🛡️ Type Guards Guide"
-    href="/matchina/guides/matchbox-typescript-inference/"
-    description="Understand type-safe state handling with Matchina"
-  />
-  <LinkCard
-    title="⚛️ React Integration Guide"
-    href="/matchina/guides/react/"
-    description="Integrate state machines with React components"
   />
   <LinkCard    
     title="🧩 Matchbox Factories"
     href="/matchina/guides/matchbox-factories/"
     description="Create type-safe tagged union factories with pattern matching"
+  />  
+  {/* <LinkCard
+    title="⏳ Promise Machines"
+    href="/matchina/guides/promises/"
+    description="Manage async operations with type-safe promise machines"
+  /> */}
+  {/* <LinkCard
+    title="🛡️ Type Guards"
+    href="/matchina/guides/matchbox-typescript-inference/"
+    description="Understand type-safe state handling with Matchina"
+  /> */}
+  <LinkCard
+    title="⚛️ React Integration"
+    href="/matchina/guides/react/"
+    description="Integrate state machines with React components"
   />
+
 
 </CardGrid>
 
@@ -115,15 +112,26 @@ npm install matchina
     href="/matchina/examples/toggle/"
     description="Simple on/off toggle state machine"
   />
+
+  {/* <LinkCard
+    title="🚦 Traffic Light"
+    href="/matchina/examples/traffic-light/"
+    description="State machine with automatic transitions"
+  /> */}
+
+  <LinkCard
+    title="⏱️ Stopwatches"
+    href="/matchina/examples/stopwatch-overview/"
+    description="Different approaches to implementing a stopwatch using Matchina state machines"
+  />
   <LinkCard
     title="📡 Data Fetching"
     href="/matchina/examples/fetcher-advanced/"
     description="Type-safe async data fetching"
   />
   <LinkCard
-    title="🚦 Traffic Light"
-    href="/matchina/examples/traffic-light/"
+    title="🚦 Traffic Light Simulator"
+    href="/matchina/examples/traffic-light-extended/"
     description="State machine with automatic transitions"
-  />
-
+  />  
 </CardGrid>
