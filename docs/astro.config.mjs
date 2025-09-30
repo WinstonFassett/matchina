@@ -114,7 +114,7 @@ export default defineConfig({
             },
             {
               label: "About Matchina",
-              link: "/guides/inside",
+              link: "/guides/about",
             },
           ],
         },
