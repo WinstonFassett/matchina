@@ -6,3 +6,4 @@ export * from "./methodware/enhance-function";
 export * from "./methodware/enhance-method";
 export * from "./methodware/method-enhancer";
 export * from "./setup";
+export * from "./memoize-one";

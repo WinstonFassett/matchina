@@ -1,5 +1,4 @@
-// Basic memoizeFn: memoizes the last call based on arguments (like useCallback deps)
-export function memoizeFn<F extends (...args: any[]) => any>(fn: F): F {
+export function memoizeOne<F extends (...args: any[]) => any>(fn: F): F {
   let lastArgs: any[] | null = null;
   let lastResult: any;
   return function (...args: any[]) {
