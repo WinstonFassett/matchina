@@ -1,8 +1,10 @@
 ---
-title: Type safety with Matchbox
-description: Master type inference in Matchbox for tagged unions and pattern matching
+title: Matchbox Usage
+description: Learn how to use Matchbox factories for type-safe operations and pattern matching
 ---
 
+import CodeBlock from "@components/CodeBlock.astro";
+import code from "@code/examples/usage-typeguards.ts?raw";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
@@ -12,48 +14,67 @@ import lightDefaultCaseRaw from "../../../code/examples/matchbox-usage/light-def
 import lightCastingRaw from "../../../code/examples/matchbox-usage/light-casting.ts?raw";
 import lightCustomTagRaw from "../../../code/examples/matchbox-usage/light-custom-tag.ts?raw";
 import lightAdvancedMatchingRaw from "../../../code/examples/matchbox-usage/light-advanced-matching.ts?raw";
+import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?raw";
+import matchRaw from "../../../code/examples/matchbox-usage/match.ts?raw";
+import matchWithDefaultRaw from "../../../code/examples/matchbox-usage/match-with-default.ts?raw";
+import matchNonExhaustiveRaw from "../../../code/examples/matchbox-usage/match-non-exhaustive.ts?raw";
 import tsNativeUnionRaw from "../../../code/examples/matchbox-usage/ts-native-union.ts?raw";
 import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.ts?raw";
 import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
 import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
-import matchSetupRaw from "../../../code/examples/matchbox-usage/match-setup.ts?raw";
 
-import CodeBlock from "@components/CodeBlock.astro";
-import code from "@code/examples/usage-typeguards.ts?raw";
 
-## Pattern Matching with Exhaustive Checking
+## Handle cases with `match()`
 
-One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method:
+One of the most powerful features of Matchbox is exhaustive pattern matching with the `match` method, serving as an alternative to `switch` statements that are not guaranteed to be exhaustive.
 
-```ts
-// Calculate area with pattern matching
-const getArea = (shape) => shape.match({
-  Circle: ({ radius }) => Math.PI * radius * radius,
-  Rectangle: ({ width, height }) => width * height,
-  Triangle: ({ base, height }) => (base * height) / 2,
-});
+Given the following matchbox factory:
 
-// TypeScript error if you forget a case!
-const getPerimeter = (shape) => shape.match({
-  Circle: ({ radius }) => 2 * Math.PI * radius,
-  Rectangle: ({ width, height }) => 2 * (width + height),
-  // Error: Property 'Triangle' is missing in type '...'
-});
-```
+<CodeBlock code={matchSetupRaw} lang="ts" twoslash={false} />
+
+### Pattern Matching with Exhaustive Checking
+
+
+The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
+
+<CodeBlock code={matchRaw} lang="ts" twoslash={true} />
+
+### Using Default Cases
+
+Sometimes you want to handle multiple states with a single case, or provide a fallback:
+
+<CodeBlock code={matchWithDefaultRaw} lang="ts" twoslash={true} />
+
+### Non-Exhaustive Matching
+
+You can opt-out of exhaustiveness checking by passing `false` as the second argument:
+
+<CodeBlock code={matchNonExhaustiveRaw} lang="ts" twoslash={true} />
+
 
 ## Type Guards
+
+Using type guards in Matchbox provides several benefits:
+
+- **Type safety**: Prevent runtime errors by catching type mismatches at compile time
+- **Code completion**: Get proper IDE suggestions based on narrowed types
+- **Refactoring safety**: When you change a state's structure, TypeScript will flag all places that need updates
+- **Exhaustive checking**: Ensure all possible states are handled with pattern matching
+
+
+### Type Narrow using `is()`
 
 Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
 
 <CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
 
-## Type-Safe Casting with Runtime Validation
+### Cast using `as()`
 
 Use the `as` method for type-safe casting with runtime validation:
 
 <CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
 
-## Advanced Type Guards with Filters
+### Filter using with Type Predicates
 
 Matchina also provides filter functions for more complex type guards:
 
@@ -96,12 +117,6 @@ const largeCircles = shapes.filter(
 console.log(`Found ${largeCircles.length} large circles`);
 ````
 
-## Benefits of Type Guards
-
-- **Type safety**: Prevent runtime errors by catching type mismatches at compile time
-- **Code completion**: Get proper IDE suggestions based on narrowed types
-- **Refactoring safety**: When you change a state's structure, TypeScript will flag all places that need updates
-- **Exhaustive checking**: Ensure all possible states are handled with pattern matching
 
 ## Next Steps
 
