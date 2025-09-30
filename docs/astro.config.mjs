@@ -138,14 +138,9 @@ export default defineConfig({
               label: "Matchbox Factories",
               link: "/guides/matchbox-factories",
             },
-            // pattern matching and exhaustiveness checking, type inference (guards, casting, etc.)
             {
-              label: "Pattern Matching",
-              link: "/guides/pattern-matching",
-            },
-            {
-              label: "Type Safety",
-              link: "/guides/matchbox-typescript-inference",
+              label: "Matchbox Usage",
+              link: "/guides/matchbox-usage",
             },
           ],
         },
