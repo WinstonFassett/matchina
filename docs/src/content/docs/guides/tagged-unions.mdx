@@ -1,18 +1,7 @@
 ---
 title: Tagged Unions
-description: "A powerful typed factory for creating tagged ## Conclusion
-
-The `matchboxFactory` provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than using plain TypeScript discriminated unions.
-
-The key advantages are:
-- Factory functions for creating properly typed tagged union instances
-- Exhaustive pattern matching
-- Built-in type guards and assertions
-- Excellent type inference
-
-This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.ypeScript"
+description: "Type-Safe Tagged Unions"
 ---
-
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "@components/CodeBlock.astro";
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
@@ -29,17 +18,27 @@ import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.t
 import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
 import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
 
-The `matchboxFactory` function creates factories for working with tagged unions in TypeScript, providing type-safe pattern matching, exhaustiveness checking, and comprehensive type inference.
-
-## What are Tagged Unions?
+{/* ## What are Tagged Unions? */}
 
 Tagged unions (also known as discriminated unions or sum types) are a powerful way to represent data that can be one of several distinct types, each with its own structure:
 
 <CodeBlock code={tsNativeUnionRaw} lang="ts" twoslash={true} />
 
-## How to Create a Tagged Union Matchbox Factory
+The `matchboxFactory` provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than using plain TypeScript discriminated unions.
 
-Use `matchboxFactory` or `defineStates`, which calls `matchboxFactory` and uses `key` for its tag property.
+The key advantages are:
+
+- Factory functions for creating properly typed tagged union instances
+- Exhaustive pattern matching
+- Built-in type guards and assertions
+- Excellent type inference
+
+This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.ypeScript"
+
+
+## Tagged Unions in Matchina
+
+Create tagged unions using `matchboxFactory` to define unions of any type, or using `defineStates` to create states for use with [state machines](/matchina/guides/state-machine-interface).
 
 <CardGrid>
   <LinkCard
@@ -50,6 +49,6 @@ Use `matchboxFactory` or `defineStates`, which calls `matchboxFactory` and uses 
   <LinkCard
     title="🔧 defineStates"
     href="/matchina/guides/states/"
-    description="Define state machines with type-safe tagged unions"
+    description="Define states as matchbox factories"
   />
 </CardGrid>

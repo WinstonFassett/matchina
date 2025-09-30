@@ -123,7 +123,7 @@ export default defineConfig({
           items: [
             {
               label: "Tagged Unions",
-              link: "/guides/unions",
+              link: "/guides/tagged-unions",
             },
             {
               label: "State Machines",

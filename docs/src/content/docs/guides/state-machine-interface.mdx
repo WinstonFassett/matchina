@@ -15,10 +15,12 @@ import stateMachineCode from "@lib/src/state-machine-types.ts?raw";
 A minimal (pure) state machine in Matchina looks like this:
 
 ```ts
-const { getState, send } = createMachine(states, transitions, initialState);
+const { getState, send } = createMachine(
+  states, transitions, initialState
+);
 ```
 
-## How to Create a State Machine
+## State Machines in Matchina
 
 After first defining your states (i.e. by using `defineStates` or `matchboxFactory`), you can create a state machine using the `createMachine` for a minimal factory machine, or `matchina` for a machine wrapped with `assignEventApi`, giving it a convenience API for firing events.
 
