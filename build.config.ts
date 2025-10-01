@@ -24,9 +24,10 @@ export default defineBuildConfig({
       format: "cjs",      
     },    
     {
-      input: 'src/integrations/react/',
-      outDir: "./dist/integrations/react",
-      builder: 'mkdist'
+      input: 'src/integrations/react/index.ts',
+      outDir: "./dist/integrations/",
+      name: 'react',
+      builder: 'rollup'
     }
   ],
   declaration: true,

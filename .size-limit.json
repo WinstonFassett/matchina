@@ -70,7 +70,7 @@
   },
   {
     "name": "react-dist",
-    "path": "src/integrations/react.ts",
+    "path": "src/integrations/react/index.ts",
     "import": "{ useMachine }",
     "ignore": ["react"]
   },

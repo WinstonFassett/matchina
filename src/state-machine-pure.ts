@@ -49,5 +49,5 @@ export function pure<E extends TransitionEvent>(
  * PureStateMachine exposes only the minimal API: `getState` and `send`.
  * This is a lightweight wrapper for consumers who do not need full lifecycle access.
  */
-interface PureStateMachine<E extends TransitionEvent>
+export interface PureStateMachine<E extends TransitionEvent>
   extends Pick<StateMachine<E>, "getState" | "send"> {}
