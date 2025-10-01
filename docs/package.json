@@ -28,6 +28,7 @@
     "elkjs": "^0.10.0",
     "force-graph": "^1.50.1",
     "matchina": "file:..",
+    "memoize-one": "^6.0.0",
     "mermaid": "^11.9.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

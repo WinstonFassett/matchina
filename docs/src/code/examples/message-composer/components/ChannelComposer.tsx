@@ -1,5 +1,5 @@
 import { DropZone } from "../ui/DropZone";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { globalStore } from "../demo-store.machine";
 import { useMachine } from "matchina/react";
 import { ComposerProvider } from "../composer.context";
@@ -9,6 +9,7 @@ import { Header } from "../ui/Header";
 import { Input } from "../ui/Input";
 import { Footer } from "../ui/Footer";
 import { CommonActions } from "./CommonActions";
+import memoizeOne from 'memoize-one'
 
 export interface ChannelComposerProps {
   channelId: string;
@@ -23,7 +24,8 @@ export function ChannelComposer({ channelId, className }: ChannelComposerProps) 
     () => createComposerMachine({ input: "" }),
     [channelId]
   );
-  const {input} = useMachine(composerMachine, ({input}) => ({input}));
+  
+  const input = useMachine(composerMachine, ({input}) => input);
 
   const handleSend = () => {
     const input = composerMachine.getState().input;
