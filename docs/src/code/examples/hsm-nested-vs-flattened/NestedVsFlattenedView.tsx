@@ -102,21 +102,21 @@ export function NestedVsFlattenedView() {
           <div>
             <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-1">Nested Approach</h4>
             <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li>• Child machines exist as separate instances</li>
-              <li>• Events can be routed between parent and child</li>
-              <li>• Child state is accessed via parent state data</li>
-              <li>• More memory overhead (multiple machine instances)</li>
-              <li>• Natural composition and encapsulation</li>
+              <li>Child machines exist as separate instances</li>
+              <li>Events can be routed between parent and child</li>
+              <li>Child state is accessed via parent state data</li>
+              <li>More memory overhead (multiple machine instances)</li>
+              <li>Natural composition and encapsulation</li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium text-green-600 dark:text-green-400 mb-1">Flattened Approach</h4>
             <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li>• All states exist in a single machine</li>
-              <li>• Dot-notation keys represent hierarchy</li>
-              <li>• Direct state access with compound keys</li>
-              <li>• More memory efficient (single machine)</li>
-              <li>• Simpler runtime, but less encapsulation</li>
+              <li>All states exist in a single machine</li>
+              <li>Dot-notation keys represent hierarchy</li>
+              <li>Direct state access with compound keys</li>
+              <li>More memory efficient (single machine)</li>
+              <li>Simpler runtime, but less encapsulation</li>
             </ul>
           </div>
         </div>
