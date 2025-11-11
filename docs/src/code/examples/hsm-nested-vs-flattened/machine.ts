@@ -16,23 +16,23 @@ import { createHierarchicalMachine } from "../../../../../src/nesting/propagateS
 // === NESTED APPROACH ===
 // Child machines exist as separate instances within parent states
 
-function createTrafficLight() {
-  const states = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
-  return createMachine(
-    states,
-    {
-      Red: { tick: "Green" },
-      Green: { tick: "Yellow" }, 
-      Yellow: { tick: "Red" },
-    },
-    "Red"
-  );
-}
+
+const lightStates = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
 
 export function createNestedController() {
   const states = defineStates({
     Broken: undefined,
-    Working: submachine(() => createTrafficLight()), // Child created on demand
+    Working: submachine(() => // Child created on demand
+      createMachine(
+        lightStates,
+        {
+          Red: { tick: "Green" },
+          Green: { tick: "Yellow" },
+          Yellow: { tick: "Red" },
+        },
+        "Red"
+      )
+    ), 
     Maintenance: undefined,
   });
 
@@ -46,7 +46,7 @@ export function createNestedController() {
     "Working"
   );
 
-  setup(ctrl)(propagateSubmachines(ctrl));
+  // setup(ctrl)(propagateSubmachines);
   
   // Return with hierarchical machine for child event routing
   const hierarchical = createHierarchicalMachine(ctrl);
@@ -98,7 +98,33 @@ export function getStateDisplay(machine: any) {
 }
 
 export function getAvailableTransitions(machine: any) {
-  const state = machine.getState();
-  const transitions = machine.transitions[state.key];
-  return transitions ? Object.keys(transitions) : [];
+  // Walk down into nested machines (state.data.machine) until we reach the deepest
+  // child. Collect transitions at each level so we can present child-first ordering.
+  const levels: string[][] = [];
+  let cur: any = machine;
+  while (cur) {
+    const st = cur.getState();
+    const t = cur.transitions && cur.transitions[st.key]
+      ? Object.keys(cur.transitions[st.key])
+      : [];
+    levels.push(t);
+
+    // descend if this state's data contains a nested machine instance
+    const next = st.data?.machine;
+    if (next) {
+      cur = next;
+      continue;
+    }
+    break;
+  }
+
+  // Merge transitions starting from deepest child to outer parent, deduping while
+  // preserving first-seen order (child-first).
+  const merged: string[] = [];
+  for (let i = levels.length - 1; i >= 0; i--) {
+    for (const ev of levels[i]) {
+      if (merged.indexOf(ev) === -1) merged.push(ev);
+    }
+  }
+  return merged;
 }
