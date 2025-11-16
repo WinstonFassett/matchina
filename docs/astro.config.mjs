@@ -320,6 +320,10 @@ export default defineConfig({
                 label: "Checkout Flow (Hierarchical)",
                 link: "/examples/hsm-checkout",
               },
+              {
+                label: "Nested vs Flattened",
+                link: "/examples/hsm-nested-vs-flattened",
+              },
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",

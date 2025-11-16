@@ -158,10 +158,10 @@ export function MachineExampleWithChart({
         <div className="mt-4">
           <details>
             <summary className="cursor-pointer text-sm">
-              Show State Data
+              Show State JSON
             </summary>
             <pre className="text-xs mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded">
-              {JSON.stringify(currentState.data, null, 2)}
+              {JSON.stringify(currentState, null, 2)}
             </pre>
           </details>
         </div>
