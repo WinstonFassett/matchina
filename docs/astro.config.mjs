@@ -109,8 +109,12 @@ export default defineConfig({
               link: "/guides/quickstart",
             },
             {
+              label: "Installation",
+              link: "/guides/installation",
+            },
+            {
               label: "About Matchina",
-              link: "/guides/inside",
+              link: "/guides/about",
             },
           ],
         },
@@ -119,7 +123,7 @@ export default defineConfig({
           items: [
             {
               label: "Tagged Unions",
-              link: "/guides/unions",
+              link: "/guides/tagged-unions",
             },
             {
               label: "State Machines",
@@ -128,28 +132,23 @@ export default defineConfig({
           ],
         },
         {
-          label: "Tagged Unions",
+          label: "Tagged Union Matchboxes",
           items: [
             {
               label: "Matchbox Factories",
               link: "/guides/matchbox-factories",
             },
-            // pattern matching and exhaustiveness checking, type inference (guards, casting, etc.)
             {
-              label: "Pattern Matching",
-              link: "/guides/pattern-matching",
-            },
-            {
-              label: "Type Safety",
-              link: "/guides/matchbox-typescript-inference",
+              label: "Matchbox Usage",
+              link: "/guides/matchbox-usage",
             },
           ],
         },
         {
-          label: "Creating Machines",
+          label: "Machines",
           items: [
             {
-              label: "Interfaces",
+              label: "Overview",
               link: "/guides/state-machines",
             },
             {
@@ -165,6 +164,10 @@ export default defineConfig({
               link: "/guides/machines",
             },
             {
+              label: "Type Inference",
+              link: "/guides/machine-inference",
+            },            
+            {
               label: "Promise Machines",
               link: "/guides/promises",
             },
@@ -176,33 +179,49 @@ export default defineConfig({
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
-            {
-              label: "Type Inference",
-              link: "/guides/machine-inference",
-            },
-          ],
+          ]
         },
         {
-          label: "Using Machines",
+          label: "Machine Setup",
           items: [
-            {
+{
               label: "Lifecycle",
               link: "/guides/lifecycle",
             },
             {
-              label: "Hooks",
+              label: "Lifecycle Hooks",
               link: "/guides/lifecycle-hooks",
-            },
+            },            
             {
-              label: "onLifecycle",
-              link: "/guides/on-lifecycle",
-            },
-            {
-              label: "transitionHooks",
+              label: "transitionHooks()",
               link: "/guides/transition-hooks",
-            },
+            },            
+{
+              label: "onLifecycle()",
+              link: "/guides/on-lifecycle",
+            },            
+            { label: "Subscriptions", link: "/guides/subscriptions" },
+            { label: "Declarative Effects", link: "/guides/effects" },
+          ],
+        },
+        // {
+        //   label: "Schema Validation",
+        //   items: [
+        //     {
+        //       label: "Zod",
+        //       link: "/guides/zod",
+        //     },
+        //     {
+        //       label: "Valibot",
+        //       link: "/guides/valibot",
+        //     },
+        //   ],
+        // },
+        {
+          label: "Frontend Integration",
+          items: [                        
             {
-              label: "React Integration",
+              label: "React",
               link: "/guides/react",
             },
           ],
@@ -356,13 +375,11 @@ export default defineConfig({
             },
           ],
         },
-        {
-          label: "Extras",
-          items: [
-            { label: "Effects", link: "/guides/effects" },
-            // { label: "Subscriptions", link: "/guides/subscriptions" },
-          ],
-        },
+        // {
+        //   label: "Extras",
+        //   items: [
+        //   ],
+        // },
         // {
         //   label: "Appendix",
         //   collapsed: true,

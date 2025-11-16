@@ -1,16 +1,7 @@
 ---
 title: Matchbox Factories
-description: "A powerful typed factory for creating tagged ## Conclusion
+description: "A powerful typed factory for creating tagged unions"
 
-The `matchboxFactory` provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than using plain TypeScript discriminated unions.
-
-The key advantages are:
-- Factory functions for creating properly typed tagged union instances
-- Exhaustive pattern matching
-- Built-in type guards and assertions
-- Excellent type inference
-
-This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime TypeScript"
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
@@ -29,11 +20,10 @@ import defaultCaseRaw from "../../../code/examples/matchbox-usage/default-case.t
 import nonExhaustiveRaw from "../../../code/examples/matchbox-usage/non-exhaustive.ts?raw";
 import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?raw";
 
+
 The `matchboxFactory` function creates factories for working with tagged unions in TypeScript, providing type-safe pattern matching, exhaustiveness checking, and comprehensive type inference.
 
-## Why MatchboxFactory?
-
-While TypeScript has built-in support for discriminated unions, the `matchboxFactory` system adds powerful capabilities:
+Its main features include:
 
 1. **Factory Functions** - Create tagged union instances with proper typing
 2. **Pattern Matching** - Match against union variants with exhaustiveness checking
@@ -55,13 +45,6 @@ By default, the tag property is named `tag`, but you can customize it:
 
 ## Conclusion
 
-Matchbox provides a powerful way to work with tagged unions in TypeScript, offering better type safety, pattern matching, and developer experience than plain TypeScript discriminated unions.
+Matchbox provides a powerful way to work with tagged unions in TypeScript, with additional type safety mechanisms, pattern matching, and improved developer experience.
 
-The key advantages are:
-
-- Factory functions for creating properly typed variants
-- Exhaustive pattern matching
-- Built-in type guards and assertions
-- Excellent type inference
-
-This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.
+This makes complex state modeling and data handling more robust and maintainable, with TypeScript providing excellent completion support and helping to catch errors at compile time rather than runtime.
