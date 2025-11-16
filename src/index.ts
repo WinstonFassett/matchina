@@ -38,3 +38,4 @@ export type { HasMethod, MethodOf } from "./ext/methodware/method-utility-types"
 // Hierarchical machine experimental APIs
 export * from "./definitions";
 export * from "./nesting/propagateSubmachines";
+export * from "./nesting/submachine";
