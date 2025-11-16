@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { defineStates } from '../../define-states';
-import { matchina } from '../../matchina';
-import { createHierarchicalMachine } from '../propagateSubmachines';
+import { defineStates } from '../src/define-states';
+import { matchina } from '../src/matchina';
+import { createHierarchicalMachine } from '../src/nesting/propagateSubmachines';
 
 describe('propagateSubmachines bubbling', () => {
   it('bubbles to root when branded child has no matching transition (factory child)', () => {
