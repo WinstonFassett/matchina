@@ -35,7 +35,7 @@ export function AsyncCalculatorView({ machine }: AsyncCalculatorViewProps) {
           />
           <button
             onClick={handleCalculate}
-            disabled={state.is("Pending")}
+            disabled={!state.is("Idle")}
             className="px-4 py-1 bg-blue-500 text-white rounded disabled:opacity-50"
           >
             Calculate
@@ -51,7 +51,7 @@ export function AsyncCalculatorView({ machine }: AsyncCalculatorViewProps) {
         </div>
       </div>
 
-      <div className="p-3 bg-gray-50 rounded">
+      <div className="p-3 bg-gray-50 dark:bg-gray-800 border rounded text-center">
         {state.match({
           Idle: () => <span>Ready to calculate</span>,
           Pending: ({ params }: any) => (
