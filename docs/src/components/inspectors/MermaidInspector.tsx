@@ -156,6 +156,27 @@ const MermaidInspector = memo(
     // Cache the rendered container for DOM manipulation without re-rendering the SVG
     const containerRef = useRef<HTMLElement | null>(null);
 
+    // Refs to hold latest values for use from onRender (which can be called before
+    // React effects that update state run). This ensures the highlight function
+    // always uses the most recent values when invoked directly from onRender.
+    const debouncedStateKeyRef = useRef(debouncedStateKey);
+    const actionsRef = useRef(actions);
+    const interactiveRef = useRef(interactive);
+    const diagramTypeRef = useRef(diagramType);
+
+    useEffect(() => {
+      debouncedStateKeyRef.current = debouncedStateKey;
+    }, [debouncedStateKey]);
+    useEffect(() => {
+      actionsRef.current = actions;
+    }, [actions]);
+    useEffect(() => {
+      interactiveRef.current = interactive;
+    }, [interactive]);
+    useEffect(() => {
+      diagramTypeRef.current = diagramType;
+    }, [diagramType]);
+
     // One-time setup after render: normalize edge labels and cache metadata
     const onRender = useCallback((el: HTMLElement) => {
       containerRef.current = el;
@@ -176,13 +197,26 @@ const MermaidInspector = memo(
           (p as any)._edge = { fromState, type };
           p.innerHTML = type; // Only show the event type
         });
+        // Ensure the active state is highlighted immediately after Mermaid
+        // finishes rendering and we normalized the DOM. This fixes the case
+        // (observed in Astro on first render) where the highlight effect
+        // ran before the container existed.
+        applyHighlights(el);
       }, 1);
     }, []);
 
     // Update active node highlighting and edge interactivity on state changes
-    useEffect(() => {
-      const root = containerRef.current;
+    // Extracted highlighting function so it can be invoked both from the
+    // render-time callback (when the SVG first appears) and from a React
+    // effect that runs on updates.
+    function applyHighlights(rootEl?: HTMLElement | null) {
+      const root = rootEl ?? containerRef.current;
       if (!root) return;
+
+      const currentKey = debouncedStateKeyRef.current;
+      const currentActions = actionsRef.current;
+      const currentInteractive = interactiveRef.current;
+      const currentDiagramType = diagramTypeRef.current;
 
       // Clear previous highlights for both modes
       root
@@ -191,24 +225,21 @@ const MermaidInspector = memo(
         )
         .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
 
-      if (diagramType === 'statechart') {
-        // R1 approach: target Mermaid-generated IDs for state groups
-        const activeSel = `[id*="state-${debouncedStateKey}-"]`;
+      if (currentDiagramType === 'statechart') {
+        const activeSel = `[id*="state-${currentKey}-"]`;
         const activeEl = root.querySelector(activeSel) as Element | null;
         if (activeEl) activeEl.classList.add('state-highlight');
 
-        // Parent container highlight for hierarchical context
-        if (debouncedStateKey.includes('_')) {
-          const parentKey = debouncedStateKey.split('_')[0];
+        if (currentKey.includes('_')) {
+          const parentKey = currentKey.split('_')[0];
           const parentSel = `[id*="state-${parentKey}-"]`;
           const parentEl = root.querySelector(parentSel) as Element | null;
           if (parentEl && parentEl !== activeEl) parentEl.classList.add('state-container-highlight');
         }
       } else {
-        // Flowchart: id match or text fallback, add .active and optional .active-container
         let activated = false;
         try {
-          const byId = root.querySelector(`g#${CSS.escape(debouncedStateKey)}`) as SVGGElement | null;
+          const byId = root.querySelector(`g#${CSS.escape(currentKey)}`) as SVGGElement | null;
           if (byId) {
             byId.classList.add("active");
             activated = true;
@@ -216,11 +247,11 @@ const MermaidInspector = memo(
         } catch {}
         if (!activated) {
           const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
-            .find((g) => g.textContent?.trim() === debouncedStateKey);
+            .find((g) => g.textContent?.trim() === currentKey);
           if (candidate) candidate.classList.add("active");
         }
-        if (debouncedStateKey.includes('_')) {
-          const parentKey = debouncedStateKey.split('_')[0];
+        if (currentKey.includes('_')) {
+          const parentKey = currentKey.split('_')[0];
           const parentNode = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
             .find((g) => g.textContent?.trim() === parentKey);
           if (parentNode) parentNode.classList.add('active-container');
@@ -232,12 +263,11 @@ const MermaidInspector = memo(
         const meta = (p as any)._edge as { fromState?: string; type?: string } | undefined;
         const type = meta?.type;
         const from = meta?.fromState;
-        const action = type ? actions?.[type] : undefined;
-        const clickable = !!action && interactive && from === debouncedStateKey;
+        const action = type ? currentActions?.[type] : undefined;
+        const clickable = !!action && currentInteractive && from === currentKey;
 
-        // Reset classes
         p.classList.remove('edge-active', 'edge-inactive', 'edge-interactive');
-        if (from === debouncedStateKey && action) {
+        if (from === currentKey && action) {
           p.classList.add('edge-active');
           if (clickable) p.classList.add('edge-interactive');
         } else {
@@ -245,6 +275,11 @@ const MermaidInspector = memo(
         }
         p.onclick = clickable ? () => action?.() : null;
       });
+    }
+
+    useEffect(() => {
+      // Re-apply highlights on updates (state changes, actions, etc.)
+      applyHighlights();
     }, [debouncedStateKey, actions, interactive, diagramType]);
     if (!chart) return <div>NO CHART!!!</div>;
 
