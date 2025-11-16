@@ -1,1 +1,3 @@
-export { NestedVsFlattenedDemo } from "./example";
+import { NestedVsFlattenedView } from "./NestedVsFlattenedView";
+
+export default NestedVsFlattenedView
