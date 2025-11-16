@@ -99,8 +99,6 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 .edge-active {
   background-color: var(--sl-color-gray-5) !important;
   color: var(--sl-color-accent-high) !important;
-  text-decoration: underline !important;
-  cursor: pointer !important;
 }
 
 .edge-inactive {
@@ -110,6 +108,7 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 }
 
 .edge-interactive {
+  text-decoration: underline !important;
   cursor: pointer !important;
 }
 
