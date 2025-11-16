@@ -4,7 +4,6 @@ import Mermaid from "../Mermaid";
 import mermaidInspectorCss from "./MermaidInspector.css?raw";
 
 mermaid.initialize({
-  // startOnLoad: true
   themeVariables: {},
   themeCSS: mermaidInspectorCss,
 });
@@ -61,32 +60,11 @@ ${rows.join("\n")}
         });
       } else {
         rows.push(`${indent()}${stateKey} --> [*]`);
-        // need something here so the state appears?
-        // end node
       }
       if (!renderedState) {
       }
-      // if composite
-      // if (state.states) {
-      //   compositeStates.push(state)
-      // }
-      // rows.push(["   ", "click", key, callbackName].join(" "));
+      
     });
-    // compositeStates.forEach(state => {
-    //   rows.push(`${indent()}state ${state.name} {`)
-    //   addMachine(state.states)
-
-    //   rows.push(`${indent()}}`)
-    // })
-    // const unrenderedStates = Object.keys(config).filter(
-    //   (state) => !renderedStates.has(state),
-    // );
-    // unrenderedStates.forEach((state) => {
-    //   // rows.push(`${indent()}[*] --> ${state.name}`)
-    // });
-    // const state = definition.states[key];
-    // console.log("state", key, state);
-    // const ifactive = isActive ? ":::active" : "";
   }
 }
 
@@ -169,15 +147,6 @@ const MermaidInspector = memo(
     useEffect(() => {
       const next = diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id);
       if (next !== chartRef.current) {
-        // try {
-        //   // Log the exact chart string diff context
-        //   console.log('[MermaidInspector.chart change]', {
-        //     diagramType,
-        //     prevLen: chartRef.current?.length ?? 0,
-        //     nextLen: next.length,
-        //   });
-        //   console.log('--- prev chart ---\n' + (chartRef.current ?? '') + '\n--- next chart ---\n' + next);
-        // } catch {}
         chartRef.current = next;
         setChart(next);
       }
