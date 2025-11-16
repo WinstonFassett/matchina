@@ -203,12 +203,23 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
           return { handled: true, event: childEv, handledBy: child as AnyMachine };
         }
       } else if (child && (child as any).send) {
-        // Duck-typed child: delegate event and treat as handled if no error
+        // Duck-typed child: attempt to delegate the event. Only mark as handled
+        // if the child's state actually changes (or the send returns a truthy result).
+        // This preserves bubbling semantics so parent transitions (e.g. root 'close')
+        // still fire when the child has no matching transition.
         try {
-          (child as any).send(type, ...params);
-          return { handled: true, handledBy: child as AnyMachine };
+          const before = (child as AnyMachine).getState?.();
+          const beforeKey = before?.key;
+          const beforeDataRef = before?.data;
+          const sendResult = (child as any).send(type, ...params);
+          const after = (child as AnyMachine).getState?.();
+          const changed = after !== before || after?.key !== beforeKey || after?.data !== beforeDataRef;
+          if (changed || !!sendResult) {
+            return { handled: true, handledBy: child as AnyMachine };
+          }
+          // Not handled; allow bubbling to current machine.
         } catch {
-          // ignore and try at current level
+          // ignore errors and try at current level
         }
       }
 
