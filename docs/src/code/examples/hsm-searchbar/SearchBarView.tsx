@@ -169,6 +169,7 @@ const Selecting = ({
           key={item.id}
           {...item}
           isHighlighted={index === validIndex}
+          onClick={() => { select(index); }}
         />
       ))}
     </div>
@@ -176,8 +177,9 @@ const Selecting = ({
 };
 
 
-function ResultItem({ id, title, isHighlighted }: { id: string; title: string, isHighlighted?: boolean }) {
-  return <div key={id} className={`p-2 rounded cursor-pointer transition-colors ${
+function ResultItem({ id, title, isHighlighted, onClick }: { id: string; title: string, isHighlighted?: boolean, onClick?: () => void
+ }) {
+  return <div key={id} onClick={onClick} className={`p-2 rounded cursor-pointer transition-colors ${
     isHighlighted 
       ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700" 
       : "hover:bg-gray-100 dark:hover:bg-gray-700"
