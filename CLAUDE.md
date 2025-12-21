@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Navigation
+
+- **`AGENTS.md`** - Session workflow, beads usage, commit patterns
+- **`docs/DEVELOPMENT.md`** - Comprehensive development patterns, example structure, testing
+- **`docs/FEATURE-CHECKLIST.md`** - Step-by-step checklist for adding features
+- **`docs/AGENTS.md`** - Docs-specific patterns (Astro, MDX, examples)
+
 ## Project Overview
 
 Matchina is a TypeScript-first library for building type-safe state machines with powerful pattern matching. It's a lightweight, modular toolkit (3.42 kB full library gzipped) published to npm, emphasizing nano-sized primitives that work standalone or composably.
@@ -11,6 +18,8 @@ Matchina is a TypeScript-first library for building type-safe state machines wit
 - Nano-sized, opt-in primitives
 - Composable APIs that work together or standalone
 - Every state/transition is type-inferred with exhaustive pattern matching
+
+**Development Flow:** Core → Tests → Examples → Docs (see `docs/DEVELOPMENT.md`)
 
 ## Essential Commands
 
@@ -147,20 +156,49 @@ The library is built on **layered primitives** that compose together:
 **Build:** `npm run build:docs` or `npm --workspace docs run build`
 **Deployment:** GitHub Pages at https://winstonfassett.github.io/matchina/
 
-## Development Notes
+## Development Workflow
 
-**Type Safety:**
+### Adding Features (Quick Reference)
+
+See `docs/FEATURE-CHECKLIST.md` for comprehensive checklist. TL;DR:
+
+1. **Core** - Implement in `/src`, write tests in `/test`
+2. **Example** - Create realistic example in `docs/src/code/examples/`
+3. **Docs** - Create MDX page, update `astro.config.mjs` sidebar
+4. **Verify** - `npm test && npm run build`
+
+### Example Structure (Critical)
+
+See `docs/DEVELOPMENT.md` for details. Every example needs:
+
+```
+docs/src/code/examples/example-name/
+├── machine.ts         # Export createXyzMachine() function
+├── XyzView.tsx        # React component (takes machine prop)
+├── example.tsx        # For docs (with MachineExampleWithChart)
+└── index.tsx          # Clean export (no wrapper)
+```
+
+**CRITICAL:** Always export factory functions, never global instances.
+
+```typescript
+// ✅ Correct
+export const createToggleMachine = () => { ... };
+
+// ❌ Wrong
+export const machine = createMachine(...);
+```
+
+### Path Aliases
+
+- `matchina` → `/src/index.ts`
+- `matchina/react` → `/src/integrations/react`
+- `@code/*` → `docs/src/code/*` (in docs only)
+- `@components/*` → `docs/src/components/*` (in docs only)
+
+### Type Safety
+
 - Strict TypeScript mode enabled
 - Use type inference over explicit types where possible
 - Exhaustive pattern matching is enforced by design
-
-**Adding New Features:**
 - Keep modules small and focused (nano-sized philosophy)
-- New features should work standalone or compose with existing primitives
-- Add size-limit entry to `.size-limit.json` for new public APIs
-- Update exports in `package.json` if adding new integration points
-
-**Modular Imports:**
-- Users can import specific pieces: `import { matchbox } from 'matchina'`
-- Keep tree-shaking friendly (mark side effects in package.json)
-- Don't create circular dependencies between core modules

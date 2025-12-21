@@ -1,6 +1,6 @@
-# Agent Instructions
+# Agent Instructions for Matchina
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
 
 ## Quick Reference
 
@@ -9,32 +9,70 @@ bd ready              # Find available work
 bd show <id>          # View issue details
 bd update <id> --status in_progress  # Claim work
 bd close <id>         # Complete work
-bd sync               # Sync with git
+bd sync --flush-only  # Export to JSONL
 ```
 
-## Landing the Plane (Session Completion)
+### Finding Work
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+```bash
+# See what's ready to work on (with JSON for parsing)
+bd ready --json | jq '.[0]'
 
-**MANDATORY WORKFLOW:**
+# Get issue details (with JSON for parsing)
+bd show <issue-id> --json
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
+# List all open issues
+bd list --status=open
+```
+
+## Development Workflow
+
+See `docs/DEVELOPMENT.md` for comprehensive development patterns including:
+- Example structure and file organization
+- Path aliases and imports
+- Testing strategy
+- Documentation site workflow
+
+See `docs/FEATURE-CHECKLIST.md` for step-by-step feature addition checklist.
+
+## Session Completion
+
+**Before ending a session**, complete these steps:
+
+1. **Run quality gates** (if code changed):
+   ```bash
+   npm test           # Type check + tests
+   npm run build      # Verify builds
+   npm run lint       # Check style
+   ```
+
+2. **Update issue status**:
+   ```bash
+   bd close <id1> <id2> ...    # Close completed issues
+   bd update <id> --status in_progress  # Update WIP
+   ```
+
+3. **Export beads state**:
+   ```bash
+   bd sync --flush-only
+   ```
+
+4. **Commit changes**:
+   ```bash
+   git status
+   git add .
+   git commit -m "feat: description
+
+   🤖 Generated with [Claude Code](https://claude.ai/code)
+   via [Happy](https://happy.engineering)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   Co-Authored-By: Happy <yesreply@happy.engineering>"
+   ```
+
+5. **Push if on main or shared branch**:
    ```bash
    git pull --rebase
-   bd sync
    git push
-   git status  # MUST show "up to date with origin"
    ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
 
