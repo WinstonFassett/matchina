@@ -9,63 +9,54 @@ mermaid.initialize({
 });
 
 function toStateDiagram(config: any, _callbackName: string) {
-  // const currentStateKey = config.initial;
-  const transitions = config;
   const rows = [] as any[];
-  let indents = 0;
 
-  // at each level,
-  // render transitions, then composite states
-  const renderedStates = new Set();
-  addMachine(transitions);
+  function getStateId(stateName: string, parentPrefix: string = ""): string {
+    return parentPrefix ? `${parentPrefix}_${stateName}` : stateName;
+  }
+
+  function walk(cfg: any, parentPrefix: string = "", depth = 0) {
+    if (!cfg?.states) return;
+    const indent = "    ";
+    const stateKeys = Object.keys(cfg.states);
+
+    stateKeys.forEach((stateKey) => {
+      const state = cfg.states[stateKey];
+      const id = getStateId(stateKey, parentPrefix);
+
+      // Handle nested states (composite states with substates)
+      if (state?.states) {
+        // Render as a subgraph for nested states
+        rows.push(`${indent}subgraph ${id}["${stateKey}"]`);
+        walk(state, id, depth + 1);
+        rows.push(`${indent}end`);
+      }
+
+      // Transitions
+      if (state?.on) {
+        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+          if (!target) return;
+          const targetId: string | undefined =
+            typeof target === "string"
+              ? getStateId(target, parentPrefix)
+              : (target as any)?.target
+              ? getStateId((target as any).target, parentPrefix)
+              : undefined;
+          if (targetId) {
+            rows.push(`${indent}${id}-->|${stateKey}<br>${eventType}|${targetId}[${targetId}]`);
+          }
+        });
+      }
+    });
+  }
+
+  walk(config);
 
   const diagram = `
 graph LR
 ${rows.join("\n")}
 `;
-  // classDef active fill:aquamarine;
   return diagram;
-  function indent() {
-    return Array(indents * 4)
-      .fill(" ")
-      .join("");
-  }
-
-  function addMachine(config: any) {
-    const allStates = new Set();
-
-    indents += 1;
-
-    // determine if transition is local
-    // handle non-local transitions
-    // add end-thingy, then named transition from main state to container with new state, etc
-    const { states } = config;
-    const stateKeys = Object.keys(states);
-
-    stateKeys.forEach((stateKey, _index) => {
-      allStates.add(stateKey);
-      // rows.push(["    ", key, ifactive].join(""));
-      let renderedState = false;
-      const stateTransitions = states[stateKey]?.on;
-      if (stateTransitions) {
-        Object.entries(stateTransitions).forEach(([eventType, target]: [string, any]) => {
-          if (!target) return;
-          const targetId: string | undefined = typeof target === 'string' ? target : ((target as any)?.target as string | undefined);
-          if (targetId) {
-            rows.push(`    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetId}[${targetId}]`);
-            renderedStates.add(stateKey);
-            renderedStates.add(targetId);
-            renderedState = true;
-          }
-        });
-      } else {
-        rows.push(`${indent()}${stateKey} --> [*]`);
-      }
-      if (!renderedState) {
-      }
-      
-    });
-  }
 }
 
 // Generate a Mermaid stateDiagram-v2 string from a nested machine config
