@@ -51,95 +51,114 @@ function createResultsFetcher(query: string) {
   return fetcher;
 }
 
-// Define active machine declaratively with transitions
+// Define active machine schema for visualization
 const activeDef = defineMachine(activeStates, {
   Empty: {
-    typed: (value: string) => activeStates.TextEntry(value),
-    clear: () => activeStates.Empty(""),
+    typed: "TextEntry",
+    clear: "Empty",
   },
   TextEntry: {
-    typed: (value: string) => activeStates.TextEntry(value),
-    clear: () => activeStates.Empty(""),
-    // Submit allows optional query; fallback to current state's query for backward compatibility
-    submit: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query),
+    typed: "TextEntry",
+    clear: "Empty",
+    submit: "Query",
   },
   Query: {
-    typed: (value: string) => activeStates.TextEntry(value),
-    clear: () => activeStates.Empty(""),
-    // Refine back to TextEntry with explicit query
-    refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-    // Don't reset to Empty on submit, let the promise machine complete
-    // and transition to Selecting with results
-    submit: () => (ev) => {
-      const currentQuery = ev.from.data.query;
-      console.log('Submit with query:', currentQuery);
-      return activeStates.Query(currentQuery);
-    },
-    // Child promise machine completed; accept either ev or ev.data shape
-    "child.exit": (ev: any) => {
-      // Get the current state to access the query
-      const currentState = ev?.machine?.getState?.();
-      const currentQuery = currentState?.data?.query || "";
-
-      console.log('child.exit event received', JSON.stringify(ev, null, 2));
-      console.log('Current state query:', currentQuery);
-
-      // Extract data from the event structure based on propagateSubmachines format
-      const params = ev?.params || [];
-      const param0 = params[0] || {};
-      const data = param0.data || {};
-
-      console.log('Extracted data:', data);
-
-      // Get items from the resolved data
-      const items = data.items || [
-        { id: 'test-1', title: 'Test Result 1' },
-        { id: 'test-2', title: 'Test Result 2' },
-        { id: 'test-3', title: 'Test Result 3' },
-      ];
-
-      // Use query from data or fall back to current state query
-      const query = data.query || currentQuery;
-
-      console.log('Using query:', query, 'with items:', items);
-
-      return activeStates.Selecting({
-        query,
-        items,
-        highlightedIndex: -1
-      });
-    },
-    setError: (query: string, message: string) => activeStates.Error(query, message),
+    typed: "TextEntry",
+    clear: "Empty",
+    refine: "TextEntry",
+    submit: "Query",
+    "child.exit": "Selecting",
+    setError: "Error",
   },
   Selecting: {
-    typed: (value: string) => activeStates.TextEntry(value),
-    clear: () => activeStates.Empty(""),
-    // Refine from Selecting to TextEntry; accept optional query
-    refine: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
-    highlight: (index: number) => (ev) =>
-      activeStates.Selecting({
-        ...ev.from.data,
-        highlightedIndex: index,
-      }),
-    setError: (query: string, message: string) => activeStates.Error(query, message),
-    // Complete selection; accept optional query and fallback to current state's query
-    done: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+    typed: "TextEntry",
+    clear: "Empty",
+    refine: "TextEntry",
+    highlight: "Selecting",
+    setError: "Error",
+    done: "TextEntry",
   },
   Error: {
-    retry: (query: string = "") => activeStates.TextEntry(query),
-    clear: () => activeStates.Empty(""),
+    retry: "TextEntry",
+    clear: "Empty",
   },
 }, "Empty");
 
 function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
-  const active = activeDef.factory();
+  const commonTransitions = {
+    typed: (value: string) => activeStates.TextEntry(value),
+    clear: () => activeStates.Empty(""),
+  } as const;
+
+  const active = matchina(activeStates, {
+    Empty: commonTransitions,
+    TextEntry: {
+      ...commonTransitions,
+      submit: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query),
+    },
+    Query: {
+      ...commonTransitions,
+      refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
+      submit: () => (ev) => {
+        const currentQuery = ev.from.data.query;
+        console.log('Submit with query:', currentQuery);
+        return activeStates.Query(currentQuery);
+      },
+      "child.exit": (ev: any) => {
+        const currentState = ev?.machine?.getState?.();
+        const currentQuery = currentState?.data?.query || "";
+
+        console.log('child.exit event received', JSON.stringify(ev, null, 2));
+        console.log('Current state query:', currentQuery);
+
+        const params = ev?.params || [];
+        const param0 = params[0] || {};
+        const data = param0.data || {};
+
+        console.log('Extracted data:', data);
+
+        const items = data.items || [
+          { id: 'test-1', title: 'Test Result 1' },
+          { id: 'test-2', title: 'Test Result 2' },
+          { id: 'test-3', title: 'Test Result 3' },
+        ];
+
+        const query = data.query || currentQuery;
+
+        console.log('Using query:', query, 'with items:', items);
+
+        return activeStates.Selecting({
+          query,
+          items,
+          highlightedIndex: -1
+        });
+      },
+      setError: (query: string, message: string) => activeStates.Error(query, message),
+    },
+    Selecting: {
+      ...commonTransitions,
+      refine: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+      highlight: (index: number) => (ev) =>
+        activeStates.Selecting({
+          ...ev.from.data,
+          highlightedIndex: index,
+        }),
+      setError: (query: string, message: string) => activeStates.Error(query, message),
+      done: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+    },
+    Error: {
+      retry: (query: string = "") => activeStates.TextEntry(query),
+      clear: () => activeStates.Empty(""),
+    },
+  }, activeStates.Empty(""));
+
   setup(active)(
     effect(whenEventType("done", onDone))
   );
   return active;
 }
 
-// Attach .def for visualization
+// Attach .def for visualization (simple schema, not actual transitions)
 createActiveMachine.def = activeDef;
 
 export type ActiveMachine = ReturnType<typeof createActiveMachine>;
