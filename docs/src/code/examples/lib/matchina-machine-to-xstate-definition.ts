@@ -41,36 +41,66 @@ export function getXStateDefinition<
       });
     });
 
-    // Check for nested machine in the initial state
+    // Auto-discover nested machines from state factories with .machineFactory (from submachine helper)
+    Object.entries(machine.states).forEach(([stateKey, stateFactory]) => {
+      const machineFactory = (stateFactory as any)?.machineFactory;
+      if (!machineFactory?.def) {
+        return;  // Must have .def - no function calls!
+      }
+
+      try {
+        // Get definition from factory - this is the schema, no instantiation needed
+        const nestedDef = machineFactory.def;
+
+        // For building xstate definition, we need a machine-like object
+        // Create a pseudo-machine from the definition
+        const nestedMachine = {
+          states: nestedDef.states,
+          transitions: nestedDef.transitions,
+          initialKey: nestedDef.initial,
+          getState: () => ({ key: nestedDef.initial })  // Minimal stub for compatibility
+        };
+
+        if (nestedMachine && nestedDef.states) {
+          const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
+          const childStack = [...stack, { key: stateKey, fullKey: childFullKey }];
+          const childDefinition = buildDefinition(nestedMachine, childFullKey, childStack);
+
+          if (!definition.states[stateKey]) {
+            definition.states[stateKey] = { on: {} };
+          }
+          if (nestedMachine.initialKey !== undefined) {
+            definition.states[stateKey].initial = nestedMachine.initialKey;
+          }
+          definition.states[stateKey].states = childDefinition.states;
+          definition.states[stateKey].stack = childStack;
+        }
+      } catch (e) {
+        // Skip if nested machine inspection fails
+      }
+    });
+
+    // Fallback: check current state for nested machine (backward compatibility for non-submachine usage)
     try {
       const currentState = initialState;
-      if (currentState?.data?.machine) {
+      const currentKey = currentState?.key;
+
+      // Only process if not already handled by submachine auto-discovery
+      if (currentState?.data?.machine && !definition.states[currentKey]?.states) {
         const childMachine = currentState.data.machine;
-        if (
-          childMachine &&
-          typeof childMachine.getState === "function" &&
-          childMachine.transitions
-        ) {
-          const childFullKey = parentKey
-            ? `${parentKey}.${currentState.key}`
-            : currentState.key;
-          // console.log('child full key', childFullKey);
-          const childStack = [...stack, { key: currentState.key, fullKey: childFullKey }];
-          const childDefinition = buildDefinition(
-            childMachine,
-            childFullKey,
-            childStack
-          );
-          if (!definition.states[currentState.key]) {
-            definition.states[currentState.key] = { on: {} };
+        if (childMachine && typeof childMachine.getState === "function") {
+          const childFullKey = parentKey ? `${parentKey}.${currentKey}` : currentKey;
+          const childStack = [...stack, { key: currentKey, fullKey: childFullKey }];
+          const childDefinition = buildDefinition(childMachine, childFullKey, childStack);
+
+          if (!definition.states[currentKey]) {
+            definition.states[currentKey] = { on: {} };
           }
-          const hasDeclaredChildInitial =
-            (childMachine as any)?.initialKey !== undefined;
-          if (hasDeclaredChildInitial) {
-            definition.states[currentState.key].initial = (childMachine as any).initialKey;
+          if (childMachine.initialKey !== undefined) {
+            definition.states[currentKey].initial = childMachine.initialKey;
           }
-          definition.states[currentState.key].states = childDefinition.states;
-          definition.states[currentState.key].stack = childStack;
+          definition.states[currentKey].states = childDefinition.states;
+          definition.states[currentKey].stack = childStack;
         }
       }
     } catch (e) {

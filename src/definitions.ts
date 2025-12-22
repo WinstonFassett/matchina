@@ -24,11 +24,18 @@ export function defineMachine<
 >(states: S, transitions: T, initial: I) {
   // If states is already a factory, use it directly; otherwise normalize
   const factory = isStatesFactory(states) ? states : normalizeStates(states).factory;
-  return {
+  const def = {
     states: factory,
     transitions,
     initial,
   };
+
+  // Also return a factory function with .def attached for convenience
+  const createMachine = () => createMachineFrom(def as any);
+  (createMachine as any).def = def;
+
+  // Return definition object with factory attached
+  return Object.assign(def, { factory: createMachine });
 }
 
 // Convenience: create an instance directly from a definition  

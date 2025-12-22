@@ -3,7 +3,13 @@
 export function submachine<F extends () => any>(createChild: F): () => { machine: ReturnType<F> };
 export function submachine<F extends () => any>(createChild: F, opts: { id?: string }): () => { machine: ReturnType<F>; id?: string };
 export function submachine<F extends () => any>(createChild: F, opts?: { id?: string }) {
-  return () => ({ machine: createChild() as ReturnType<F>, ...(opts?.id ? { id: opts.id } : {}) });
+  const factory = () => ({ machine: createChild() as ReturnType<F>, ...(opts?.id ? { id: opts.id } : {}) });
+
+  // Attach factory for visualization discovery without calling it
+  // Visualizers can inspect createChild.definition or createChild.machine.definition
+  (factory as any).machineFactory = createChild;
+
+  return factory;
 }
 
 // Legacy options form retained for compatibility; supports id as well.
