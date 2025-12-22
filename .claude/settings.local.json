@@ -15,7 +15,8 @@
       "mcp__playwright__browser_press_key",
       "mcp__playwright__browser_close",
       "Bash(npx vitest run:*)",
-      "Bash(bd create:*)"
+      "Bash(bd create:*)",
+      "Bash(bd update:*)"
     ],
     "deny": [],
     "ask": []
