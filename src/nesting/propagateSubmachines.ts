@@ -1,4 +1,5 @@
 import type { FactoryMachine } from "../factory-machine";
+import { FactoryMachineEventImpl } from "../factory-machine-event";
 import { isFactoryMachine } from "../machine-brand";
 import { send as sendHook } from "../state-machine-hooks";
 import { AllEventsOf } from "./types";
@@ -362,9 +363,24 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
     if (type === 'child.change') {
       const payload = params[0] || {};
-      // Internal child-change: notify subscribers only; do not reprocess.
+      // Internal child-change: create a new change event to update lastChange for React
       if (payload && payload._internal) {
-        (root as any).notify?.({ type: 'child.change', params: [payload] });
+        // Get the current state
+        const currentState = (root as any).getState?.();
+        if (currentState) {
+          // Create a new change event representing a self-transition
+          // This updates the machine's lastChange so React's useSyncExternalStore detects the change
+          const newChangeEvent = new FactoryMachineEventImpl(
+            'child.change' as any,
+            currentState,
+            currentState,
+            [payload],
+            root as any
+          );
+          // Call transition to update lastChange and notify subscribers
+          // Note: transition() will call notify() through the lifecycle, so we don't call it separately
+          (root as any).transition?.(newChangeEvent);
+        }
         return;
       }
       const { type: childType, params: childParams } = payload;

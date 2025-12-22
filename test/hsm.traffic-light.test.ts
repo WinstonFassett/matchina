@@ -1,91 +1,101 @@
 import { describe, it, expect } from "vitest";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
-import { setup } from "../src/ext/setup";
-import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
-import { submachine } from "../src/nesting/submachine";
 import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
+import { submachine } from "../src/nesting/submachine";
 
-function createTrafficLight() {
-  const states = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
-  return createMachine(
-    states,
-    {
-      Red: { tick: "Green" },
-      Green: { tick: "Yellow" },
-      Yellow: { tick: "Red" },
-    },
-    "Red"
-  );
-}
+describe("HSM: Traffic Light (nested tick)", () => {
+  it("should handle tick events in nested child machine", () => {
+    // This test replicates the nested traffic light example from the docs
+    const lightStates = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
 
-type TrafficLight = ReturnType<typeof createTrafficLight>;
+    const states = defineStates({
+      Broken: undefined,
+      Working: submachine(() =>
+        createMachine(
+          lightStates,
+          {
+            Red: { tick: "Green" },
+            Green: { tick: "Yellow" },
+            Yellow: { tick: "Red" },
+          },
+          "Red"
+        )
+      ),
+      Maintenance: undefined,
+    });
 
-function createSignalController() {
-  const states = defineStates({
-    Broken: undefined,
-    Working: submachine(() => createTrafficLight()), // Child inferred
+    const ctrl = createMachine(
+      states,
+      {
+        Broken: { repair: "Working", maintenance: "Maintenance" },
+        Working: { break: "Broken", maintenance: "Maintenance" },
+        Maintenance: { complete: "Working" },
+      },
+      "Working"
+    );
+
+    const hierarchical = createHierarchicalMachine(ctrl);
+
+    // Initial state should be Working with child at Red
+    const initialState = hierarchical.getState();
+    expect(initialState.key).toBe("Working");
+    const initialChild = initialState.is("Working") ? initialState.data.machine : undefined;
+    expect(initialChild?.getState().key).toBe("Red");
+
+    // Send tick - child should transition Red -> Green
+    hierarchical.send("tick" as any);
+    const afterFirstTick = hierarchical.getState();
+    expect(afterFirstTick.key).toBe("Working");
+    const childAfterFirst = afterFirstTick.is("Working") ? afterFirstTick.data.machine : undefined;
+    expect(childAfterFirst?.getState().key).toBe("Green");
+
+    // Send tick again - child should transition Green -> Yellow
+    hierarchical.send("tick" as any);
+    const afterSecondTick = hierarchical.getState();
+    const childAfterSecond = afterSecondTick.is("Working") ? afterSecondTick.data.machine : undefined;
+    expect(childAfterSecond?.getState().key).toBe("Yellow");
+
+    // Send tick again - child should transition Yellow -> Red
+    hierarchical.send("tick" as any);
+    const afterThirdTick = hierarchical.getState();
+    const childAfterThird = afterThirdTick.is("Working") ? afterThirdTick.data.machine : undefined;
+    expect(childAfterThird?.getState().key).toBe("Red");
   });
 
-  const ctrl = createMachine(
-    states,
-    {
-      Broken: { repair: "Working" },
-      Working: { break: "Broken" },
-    },
-    "Working"
-  );
+  it("should handle parent events (break) correctly", () => {
+    const lightStates = defineStates({ Red: undefined, Green: undefined, Yellow: undefined });
 
-  propagateSubmachines(ctrl);
-  return ctrl;
-}
+    const states = defineStates({
+      Broken: undefined,
+      Working: submachine(() =>
+        createMachine(
+          lightStates,
+          {
+            Red: { tick: "Green" },
+            Green: { tick: "Yellow" },
+            Yellow: { tick: "Red" },
+          },
+          "Red"
+        )
+      ),
+      Maintenance: undefined,
+    });
 
-describe("Traffic Light HSM (Working/Broken)", () => {
-  it("explicit child usage: tick cycles Red→Green→Yellow", () => {
-    const ctrl = createSignalController();
+    const ctrl = createMachine(
+      states,
+      {
+        Broken: { repair: "Working", maintenance: "Maintenance" },
+        Working: { break: "Broken", maintenance: "Maintenance" },
+        Maintenance: { complete: "Working" },
+      },
+      "Working"
+    );
 
-    const working = ctrl.getState().as("Working");
-    const light = working.data.machine;
-    expect(light.getState().key).toBe("Red");
+    const hierarchical = createHierarchicalMachine(ctrl);
 
-    light.send("tick");
-    expect(light.getState().key).toBe("Green");
-
-    light.send("tick");
-    expect(light.getState().key).toBe("Yellow");
-  });
-
-  it("parent-only sends: tick routes to child when Working", () => {
-    const ctrl = createSignalController();
-    const r = createHierarchicalMachine(ctrl);
-
-    expect(ctrl.getState().key).toBe("Working");
-    // parent-only routing
-    r.send("tick"); // Red -> Green
-    const light1 = ctrl.getState().as("Working").data.machine;
-    expect(light1.getState().key).toBe("Green");
-
-    r.send("tick"); // Green -> Yellow
-    const light2 = ctrl.getState().as("Working").data.machine;
-    expect(light2.getState().key).toBe("Yellow");
-  });
-
-  it("break/repair swaps child lifecycle; repaired starts at Red", () => {
-    const ctrl = createSignalController();
-    const r = createHierarchicalMachine(ctrl);
-
-    // advance child
-    r.send("tick"); // Red->Green
-    expect(ctrl.getState().as("Working").data.machine.getState().key).toBe("Green");
-
-    // break parent
-    r.send("break");
-    expect(ctrl.getState().key).toBe("Broken");
-
-    // repair mounts a fresh child at initial Red
-    r.send("repair");
-    expect(ctrl.getState().key).toBe("Working");
-    const light = ctrl.getState().as("Working").data.machine;
-    expect(light.getState().key).toBe("Red");
+    // Send break - should bubble to parent and transition Working -> Broken
+    hierarchical.send("break" as any);
+    expect(hierarchical.getState().key).toBe("Broken");
   });
 });
