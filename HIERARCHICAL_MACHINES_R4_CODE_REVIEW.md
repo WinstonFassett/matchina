@@ -425,11 +425,16 @@ May contain useful content to extract:
 - Could visualization traverse on-demand instead of pre-computing?
 - Could this be simplified to just event routing without all the metadata?
 
-**Recommendation:** Consider refactoring to minimal viable version:
-1. Event routing (child-first, bubble up) - **core feature**
-2. Child.exit synthesis - **core feature**
-3. **Remove:** Stamping system (defer to visualization tools)
-4. **Remove:** `_internal` flags (simplify routing logic)
+**Maintainer feedback:**
+- Stamping (depth, fullKey, stack) is useful in UI
+- Open to lazy stamping vs eager stamping
+- Hierarchy should be externalizable (a la carte, onion layers)
+
+**Recommendation:** Consider refactoring:
+1. Event routing (child-first, bubble up) - **core feature** ✅
+2. Child.exit synthesis - **core feature** ✅
+3. **Keep but simplify:** Stamping - make it lazy (computed on access) or separate inspector API
+4. **Simplify:** Replace `_internal` flags with symbol or separate event type
 
 ### 2. Too Many APIs for Machine Definition
 
@@ -447,31 +452,26 @@ Users face:
 - `flattenMachineDefinition()` marked EXPERIMENTAL, not used in examples
 - "Inspectable transition format" `{to, handle}` not used anywhere
 
+**Findings:**
+- `defineMachine()` / `createMachineFrom()` used for traversable definitions (inspection/visualization)
+- `flattenMachineDefinition()` IS USED - see `hsm-nested-vs-flattened.mdx` example (maintainer: "flattening worked better")
+- "Inspectable transition format" `{to, handle}` not used anywhere - dead code
+
 **Recommendations:**
-1. **Remove or deprecate:** Inspectable transition format (dead code)
+1. **Remove:** Inspectable transition format (dead code)
 2. **Document clearly:** When to use `defineMachine()` vs `createMachine()`
-3. **Consider removing:** Flattening if not actually used
-4. **Simplify:** Visualization pattern (shouldn't require dual definitions)
+3. **Keep:** Flattening - it's used and useful
+4. **Simplify:** Make `submachine()` auto-attach `.def` (maintainer agrees)
 
-### 3. React Integration Gap
+### 3. React Integration - Actually Works Correctly ✅
 
-**Current:** Users manually subscribe to each nested machine:
-```typescript
-// In searchbar example:
-const fetcherMachine = state.is("Query") ? state.data.machine : undefined;
-useMachineMaybe(fetcherMachine); // Manual!
-```
+**Initial assessment was wrong.** React notifications DO work:
+- `hsm.react-change-detection.test.ts` confirms child transitions trigger parent re-renders
+- Child events create `child.change` self-transition on parent
+- Updates `lastChange`, notifies subscribers, React re-renders
+- Manual `useMachine(childMachine)` in searchbar is for accessing child state in UI, not for notifications
 
-**Expected:** `useMachine(parent)` auto-subscribes to entire hierarchy.
-
-**Why it matters:** The propagation system already routes all child events through root and notifies root subscribers. React integration should leverage this.
-
-**Recommendation:** Enhance `useMachine()` to auto-subscribe to hierarchy:
-```typescript
-// Proposed:
-useMachine(hierarchicalMachine); // Automatically re-renders on any child change
-// No need to manually subscribe to nested machines
-```
+**The propagation system correctly propagates changes up the tree.**
 
 ### 4. Examples Show Complexity, Not Simplicity
 
@@ -544,11 +544,17 @@ useMachine(hierarchicalMachine); // Automatically re-renders on any child change
 3. Remove flattening if not actually needed
 4. Consolidate similar test files
 
-**Questions for Maintainer:**
-1. Is the stamping system (depth, nested.fullKey, stack) required?
-2. Is flattening actually used/needed?
-3. Should visualization be separate from core runtime?
-4. What's the minimum viable hierarchical machine implementation?
+**Maintainer Answers:**
+1. ~~Is the stamping system required?~~ **YES** - useful in UI, but open to lazy computation
+2. ~~Is flattening used/needed?~~ **YES** - full example exists, works better than nesting sometimes
+3. ~~Should visualization be separate?~~ **YES** - hierarchy should be externalizable, a la carte
+4. ~~What's minimum viable impl?~~ **TBD** - need to identify what uses stamping and when
+
+**Open Questions:**
+- What actually uses stamping data? When is it accessed?
+- Should `createMachine()` auto-enable propagation when submachines detected?
+- What's the ideal "hello world" hierarchical example? (active substates + error state?)
+- Can searchbar be replaced with better Combobox example?
 
 ---
 
