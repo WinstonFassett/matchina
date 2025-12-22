@@ -64,7 +64,7 @@ export function getXStateDefinition<
         if (nestedMachine && nestedDef.states) {
           const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
           const childStack = [...stack, { key: stateKey, fullKey: childFullKey }];
-          const childDefinition = buildDefinition(nestedMachine, childFullKey, childStack);
+          const childDefinition = buildDefinition(nestedMachine as any, childFullKey, childStack);
 
           if (!definition.states[stateKey]) {
             definition.states[stateKey] = { on: {} };
