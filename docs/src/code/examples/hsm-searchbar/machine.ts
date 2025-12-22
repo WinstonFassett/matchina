@@ -1,4 +1,6 @@
 import { createPromiseMachine, defineStates, effect, matchina, setup, whenEventType } from "matchina";
+import { defineMachine } from "../../../../../src/definitions";
+import { submachine } from "../../../../../src/nesting/submachine";
 import { createHierarchicalMachine, propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 
 interface SelectionState {
@@ -49,115 +51,126 @@ function createResultsFetcher(query: string) {
   return fetcher;
 }
 
-function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
-  const commonTransitions = {
+// Define active machine declaratively with transitions
+const activeDef = defineMachine(activeStates, {
+  Empty: {
     typed: (value: string) => activeStates.TextEntry(value),
     clear: () => activeStates.Empty(""),
-  } as const;
+  },
+  TextEntry: {
+    typed: (value: string) => activeStates.TextEntry(value),
+    clear: () => activeStates.Empty(""),
+    // Submit allows optional query; fallback to current state's query for backward compatibility
+    submit: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query),
+  },
+  Query: {
+    typed: (value: string) => activeStates.TextEntry(value),
+    clear: () => activeStates.Empty(""),
+    // Refine back to TextEntry with explicit query
+    refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
+    // Don't reset to Empty on submit, let the promise machine complete
+    // and transition to Selecting with results
+    submit: () => (ev) => {
+      const currentQuery = ev.from.data.query;
+      console.log('Submit with query:', currentQuery);
+      return activeStates.Query(currentQuery);
+    },
+    // Child promise machine completed; accept either ev or ev.data shape
+    "child.exit": (ev: any) => {
+      // Get the current state to access the query
+      const currentState = ev?.machine?.getState?.();
+      const currentQuery = currentState?.data?.query || "";
 
-  const active = matchina(activeStates, {
-    Empty: commonTransitions,
-    TextEntry: {
-      ...commonTransitions,
-      // Submit allows optional query; fallback to current state's query for backward compatibility
-      submit: (query?: string) => (ev) => activeStates.Query(query ?? ev.from.data.query),
-    },
-    Query: {
-      ...commonTransitions,
-      // Refine back to TextEntry with explicit query
-      refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
-      // Don't reset to Empty on submit, let the promise machine complete
-      // and transition to Selecting with results
-      submit: () => (ev) => {
-        const currentQuery = ev.from.data.query;
-        console.log('Submit with query:', currentQuery);
-        return activeStates.Query(currentQuery);
-      },
-      // Child promise machine completed; accept either ev or ev.data shape
-      "child.exit": (ev: any) => {
-        // Get the current state to access the query
-        const currentState = ev?.machine?.getState?.();
-        const currentQuery = currentState?.data?.query || "";
-        
-        console.log('child.exit event received', JSON.stringify(ev, null, 2));
-        console.log('Current state query:', currentQuery);
-        
-        // Extract data from the event structure based on propagateSubmachines format
-        const params = ev?.params || [];
-        const param0 = params[0] || {};
-        const data = param0.data || {};
-        
-        console.log('Extracted data:', data);
-        
-        // Get items from the resolved data
-        const items = data.items || [
-          { id: 'test-1', title: 'Test Result 1' },
-          { id: 'test-2', title: 'Test Result 2' },
-          { id: 'test-3', title: 'Test Result 3' },
-        ];
-        
-        // Use query from data or fall back to current state query
-        const query = data.query || currentQuery;
-        
-        console.log('Using query:', query, 'with items:', items);
-        
-        return activeStates.Selecting({
-          query,
-          items,
-          highlightedIndex: -1
-        });
-      },
-      setError: (query: string, message: string) => activeStates.Error(query, message),
-    },
-    Selecting: {
-      ...commonTransitions,
-      // Refine from Selecting to TextEntry; accept optional query
-      refine: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
-      highlight: (index: number) => (ev) =>
-        activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: index,
-        }),
-      setError: (query: string, message: string) => activeStates.Error(query, message),
-      // Complete selection; accept optional query and fallback to current state's query
-      done: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
-    },
-    Error: { 
-      retry: (query: string = "") => activeStates.TextEntry(query),
-      clear: () => activeStates.Empty(""),
-    },
-  }, activeStates.Empty(""));
+      console.log('child.exit event received', JSON.stringify(ev, null, 2));
+      console.log('Current state query:', currentQuery);
 
+      // Extract data from the event structure based on propagateSubmachines format
+      const params = ev?.params || [];
+      const param0 = params[0] || {};
+      const data = param0.data || {};
+
+      console.log('Extracted data:', data);
+
+      // Get items from the resolved data
+      const items = data.items || [
+        { id: 'test-1', title: 'Test Result 1' },
+        { id: 'test-2', title: 'Test Result 2' },
+        { id: 'test-3', title: 'Test Result 3' },
+      ];
+
+      // Use query from data or fall back to current state query
+      const query = data.query || currentQuery;
+
+      console.log('Using query:', query, 'with items:', items);
+
+      return activeStates.Selecting({
+        query,
+        items,
+        highlightedIndex: -1
+      });
+    },
+    setError: (query: string, message: string) => activeStates.Error(query, message),
+  },
+  Selecting: {
+    typed: (value: string) => activeStates.TextEntry(value),
+    clear: () => activeStates.Empty(""),
+    // Refine from Selecting to TextEntry; accept optional query
+    refine: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+    highlight: (index: number) => (ev) =>
+      activeStates.Selecting({
+        ...ev.from.data,
+        highlightedIndex: index,
+      }),
+    setError: (query: string, message: string) => activeStates.Error(query, message),
+    // Complete selection; accept optional query and fallback to current state's query
+    done: (query?: string) => (ev) => activeStates.TextEntry(query ?? ev.from.data.query),
+  },
+  Error: {
+    retry: (query: string = "") => activeStates.TextEntry(query),
+    clear: () => activeStates.Empty(""),
+  },
+}, "Empty");
+
+function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
+  const active = activeDef.factory();
   setup(active)(
     effect(whenEventType("done", onDone))
   );
   return active;
 }
 
+// Attach .def for visualization
+createActiveMachine.def = activeDef;
+
 export type ActiveMachine = ReturnType<typeof createActiveMachine>;
+
+// Create wrapper with proper .def attachment for visualization
+function createActiveForApp() {
+  return createActiveMachine({
+    onDone: (ev: any) => console.log('Done event received', ev)
+  });
+}
+// Attach .def for visualization discovery
+createActiveForApp.def = activeDef;
+
+// Wrap active machine with submachine for visualization
+const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
 
 export const appStates = defineStates({
   Inactive: () => ({}),
-  Active: (machine: ActiveMachine) => ({ machine }),
+  Active: activeMachineFactory,
 });
 
 export function createSearchBarMachine() {
   let searchBar: any;
   let hierarchical: any;
-  
-  const activeMachine = createActiveMachine({
-    onDone: (ev: any) => console.log('Done event received', ev)
-  });
-  
-  searchBar = matchina({
-    ...appStates,
-    Active: () => appStates.Active(activeMachine),
-  }, {
-    Inactive: { 
+
+  searchBar = matchina(appStates, {
+    Inactive: {
       focus: "Active"
     },
-    Active: { 
-      blur: "Inactive", 
+    Active: {
+      blur: "Inactive",
       close: "Inactive",
     },
   }, appStates.Inactive());
@@ -165,9 +178,9 @@ export function createSearchBarMachine() {
   // No need for additional setup on activeMachine, the promise machine is executed immediately
 
   hierarchical = createHierarchicalMachine(searchBar);
-  
+
   // Add effect for done event on the hierarchical machine
   setup(hierarchical)(effect(whenEventType("done", () => hierarchical.close()) as any));
 
-  return Object.assign(hierarchical, { activeMachine });
+  return hierarchical;
 }
