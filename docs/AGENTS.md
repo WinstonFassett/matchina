@@ -1,49 +1,76 @@
-# Agent Guidelines for Matchina Docs
+# Agent Guidelines for Matchina Docs (Claude Code)
 
-## Commands
+**Philosophy:** Make things work. User manages dev server, git, commits. Focus on tests and UI.
 
-- **Dev**: `npm run dev` (Astro dev server)
-- **Build**: `npm run build` (check + build), `npm run check` (Astro check only)
-- **Preview**: `npm run preview` (preview built site)
-- **Deploy**: `npm run deploy` (GitHub Pages deployment)
+**References:** `DEVELOPMENT.md` (patterns), `FEATURE-CHECKLIST.md` (workflows)
 
-## Code Style
+## Commands (User Usually Runs)
 
-- **ESLint**: Extends Astro plugin + root config, unused vars allowed in `.astro` files
-- **TypeScript**: Astro strict config, React JSX, path aliases for imports
-- **Astro**: Use frontmatter for imports, `client:only="react"` for interactive React components
-- **MDX**: Frontmatter with `title` and `description`, import components with `@components/`
-- **React**: Standard React patterns, use Matchina library via path aliases
-- **Imports**: Use path aliases (`@components/*`, `@code/*`, `matchina/*`)
-- **Content**: Store in `src/content/docs/`, follow Starlight conventions
+```bash
+npm run dev             # Astro dev server at localhost:4321
+npm run build           # Build static site
+npm run deploy          # Deploy to GitHub Pages
+```
 
-## Project Structure
+## Critical Patterns (Must Follow)
 
-- `src/content/docs/` - MDX documentation pages with frontmatter
-- `src/components/` - Astro and React components for docs
-- `src/code/examples/` - Code examples imported into docs
-- `astro.config.mjs` - Starlight configuration with sidebar structure
+### Example File Structure
 
-## Example Patterns (CRITICAL - Always Follow)
+Every example in `src/code/examples/example-name/`:
 
-### File Structure
+1. **`machine.ts`** - Export `createXyzMachine()` function (NOT global instance)
+2. **`XyzView.tsx`** - React component accepting `machine` prop
+3. **`example.tsx`** - Uses `MachineExampleWithChart`, default export for docs
+4. **`index.tsx`** - Clean component without demo wrapper
+5. **Optional**: `types.ts`, `states.ts`, `hooks.ts`, `utils.ts`
 
-- `machine.ts` - Exports `createXyzMachine()` function (NOT global instance)
-- `XyzView.tsx` - React component that takes machine as prop
-- `hooks.ts` - Optional, usually not needed
-- `example.tsx` - Uses MachineExampleWithChart, creates machine instance
-- `index.tsx` - Clean component without demo wrapper
+### Path Aliases (from `tsconfig.json`)
 
-### Machine Creation Pattern
+```typescript
+import Example from "@code/examples/toggle/example";
+import machineCode from "@code/examples/toggle/machine.ts?raw";  // Note: ?raw
+import { CodeTabs } from "@components/CodeTabs.astro";
+import { useMachine } from "matchina/react";
+```
 
-- **ALWAYS** export `createXyzMachine()` function from machine.ts
-- **NEVER** export global machine instances
-- React components create machine with `useMemo(() => createXyzMachine(), [])`
-- Use `useMachine(machineInstance)` to track the instance
+### Adding New Example (4 Required Steps)
 
-### Astro Config Organization
+1. **Create files** in `src/code/examples/example-name/`
+2. **Create MDX** in `src/content/docs/examples/example-name.mdx`
+3. **Update sidebar** in `astro.config.mjs` (line ~236)
+4. **Verify** at `localhost:4321/matchina/examples/example-name`
 
-- **CRITICAL**: New examples MUST be added to `astro.config.mjs` sidebar
-- Examples are organized in sections (Basic, Async, Fetch, etc.)
-- Each example needs proper title and link in sidebar structure
-- **ALWAYS** update astro config when adding new examples
+### MDX Template
+
+```mdx
+---
+title: Example Name
+description: Brief description
+---
+
+import Example from "@code/examples/example-name/example";
+import machineCode from "@code/examples/example-name/machine.ts?raw";
+import viewCode from "@code/examples/example-name/ExampleView.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+Description text.
+
+<div className="not-content">
+  <Example client:only="react" />
+</div>
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "ExampleView.tsx", code: viewCode },
+  ]}
+/>
+```
+
+## Don'ts
+
+❌ Don't export global machine instances (use factory functions)
+❌ Don't forget `?raw` suffix for code imports
+❌ Don't skip updating `astro.config.mjs` sidebar
+❌ Don't use `client:load` (use `client:only="react"`)
+❌ Don't forget base path `/matchina/` in links
