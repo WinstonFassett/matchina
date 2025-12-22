@@ -1,14 +1,14 @@
 # Agent Guidelines for Matchina Docs (Claude Code)
 
-**Primary Reference:** See `DEVELOPMENT.md` for comprehensive patterns and `FEATURE-CHECKLIST.md` for step-by-step workflows.
+**Philosophy:** Make things work. User manages dev server, git, commits. Focus on tests and UI.
 
-## Quick Start
+**References:** `DEVELOPMENT.md` (patterns), `FEATURE-CHECKLIST.md` (workflows)
+
+## Commands (User Usually Runs)
 
 ```bash
-# From /docs directory
 npm run dev             # Astro dev server at localhost:4321
 npm run build           # Build static site
-npm run preview         # Preview built site
 npm run deploy          # Deploy to GitHub Pages
 ```
 

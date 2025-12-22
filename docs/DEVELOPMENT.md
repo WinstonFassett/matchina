@@ -1,38 +1,23 @@
-# Matchina Development Workflow
+# Matchina Development Patterns
 
-This guide explains the development patterns and workflows for the Matchina library, focusing on how to add features, create examples, and maintain documentation.
+**This is a reference guide, not prescriptive process.** Use what's relevant to your task. Focus on making things work.
 
-## Table of Contents
-
-1. [Development Flow](#development-flow)
-2. [Directory Structure](#directory-structure)
-3. [Adding Core Features](#adding-core-features)
-4. [Creating Examples](#creating-examples)
-5. [Path Aliases & Imports](#path-aliases--imports)
-6. [Testing Strategy](#testing-strategy)
-7. [Documentation Site](#documentation-site)
-
----
+**User manages:** git, branches, commits, staging, dev server
+**You focus on:** tests passing, UI working, code quality
 
 ## Development Flow
 
 ### Core → Tests → Examples → Docs
 
-Development in matchina follows a structured flow:
-
 ```
-1. Core Development (in /src)
-   ↓
-2. Unit Tests (in /test)
-   ↓
-3. Realistic Examples (in /docs/src/code/examples)
-   ↓
-4. Documentation (in /docs/src/content/docs)
+/src (implement) → /test (verify) → examples (demonstrate) → docs (explain)
 ```
 
-**Key Principle:** Beyond unit tests, we use realistic examples as much as possible. Examples serve dual purposes:
+**Key Principle:** Beyond unit tests, we use realistic examples. They serve dual purposes:
 - Living documentation with interactive visualizations
 - Integration tests for real-world usage patterns
+
+**Troubleshooting:** If example bugs might be in core, pivot to `/test` and write failing tests first.
 
 ---
 
@@ -563,63 +548,45 @@ export const createCheckoutMachine = () => {
 
 ---
 
-## Tips & Best Practices
+## Critical Patterns
 
 ### Do's
 
-✅ Export factory functions from `machine.ts`
+✅ Export factory functions from `machine.ts` (NO global instances!)
 ✅ Use `useMemo(() => createMachine(), [])` in React
-✅ Keep examples focused on one pattern
-✅ Update astro.config.mjs sidebar when adding examples
-✅ Use path aliases for imports
-✅ Write tests before examples
-✅ Make examples realistic and understandable
+✅ Write tests to verify behavior
+✅ Update `astro.config.mjs` sidebar for new examples
+✅ Use `?raw` suffix for code imports in MDX
 
 ### Don'ts
 
 ❌ Don't export global machine instances
-❌ Don't skip adding to astro.config.mjs
-❌ Don't forget `?raw` suffix for code display
-❌ Don't mix relative and alias paths inconsistently
-❌ Don't create examples without documentation pages
-❌ Don't skip unit tests
+❌ Don't skip adding examples to astro.config.mjs sidebar
+❌ Don't waste time on builds/typechecking unless asked
+❌ Don't skip tests
 
 ---
 
-## File Checklist Template
+## Troubleshooting
 
-When adding a new feature with example:
+**When bugs appear:**
+1. Is it in core or just the example?
+2. If core → write failing test in `/test`, fix in `/src`
+3. If example → fix directly in example code
+4. Evidence > assumptions
 
-```
-Core Implementation:
-[ ] /src/new-feature.ts
-[ ] /test/new-feature.test.ts
-[ ] .size-limit.json (if needed)
-[ ] package.json exports (if needed)
+**What matters:**
+- Tests pass (`npm run dev` watch mode)
+- UI works in browser
+- State machine behaves correctly
 
-Example:
-[ ] docs/src/code/examples/example-name/machine.ts
-[ ] docs/src/code/examples/example-name/ExampleView.tsx
-[ ] docs/src/code/examples/example-name/example.tsx
-[ ] docs/src/code/examples/example-name/index.tsx
-
-Documentation:
-[ ] docs/src/content/docs/examples/example-name.mdx
-[ ] docs/astro.config.mjs (sidebar entry)
-
-Validation:
-[ ] npm test (passes)
-[ ] npm run build (succeeds)
-[ ] Example renders in docs dev server
-[ ] Size limits not exceeded
-```
+**What matters less** (unless requested):
+- Builds (user runs when needed)
+- Typechecking (unless explicitly asked)
+- Linting (usually auto-fixed)
 
 ---
 
-## Questions?
+## Quick Reference
 
-For development questions or issues:
-- Check existing examples in `docs/src/code/examples/`
-- Review similar patterns (e.g., stopwatch variants)
-- Consult `CLAUDE.md` for project-specific guidance
-- See `AGENTS.md` for AI development context
+Check existing examples in `docs/src/code/examples/` for patterns. See `FEATURE-CHECKLIST.md` for step-by-step reference.

@@ -25,54 +25,32 @@ bd show <issue-id> --json
 bd list --status=open
 ```
 
-## Development Workflow
+## Development Resources
 
-See `docs/DEVELOPMENT.md` for comprehensive development patterns including:
-- Example structure and file organization
-- Path aliases and imports
-- Testing strategy
-- Documentation site workflow
+- `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
+- `docs/FEATURE-CHECKLIST.md` - Feature addition reference
+- `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
 
-See `docs/FEATURE-CHECKLIST.md` for step-by-step feature addition checklist.
+**Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
 
 ## Session Completion
 
-**Before ending a session**, complete these steps:
+When finishing work on an issue:
 
-1. **Run quality gates** (if code changed):
-   ```bash
-   npm test           # Type check + tests
-   npm run build      # Verify builds
-   npm run lint       # Check style
-   ```
+```bash
+# Update beads state
+bd close <id1> <id2> ...    # Close completed issues
+bd sync --flush-only         # Export to JSONL
+```
 
-2. **Update issue status**:
-   ```bash
-   bd close <id1> <id2> ...    # Close completed issues
-   bd update <id> --status in_progress  # Update WIP
-   ```
+**Note:** User manages git, staging, commits, and branches. Focus on making things work.
 
-3. **Export beads state**:
-   ```bash
-   bd sync --flush-only
-   ```
+## Troubleshooting Philosophy
 
-4. **Commit changes**:
-   ```bash
-   git status
-   git add .
-   git commit -m "feat: description
+**When bugs appear in examples:**
+1. Check if problem reproduces in core library
+2. If yes → pivot to `/test`, write failing test, fix in `/src`
+3. If no → fix in example code
 
-   🤖 Generated with [Claude Code](https://claude.ai/code)
-   via [Happy](https://happy.engineering)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   Co-Authored-By: Happy <yesreply@happy.engineering>"
-   ```
-
-5. **Push if on main or shared branch**:
-   ```bash
-   git pull --rebase
-   git push
-   ```
+Evidence > assumptions. Let tests guide the fix.
 

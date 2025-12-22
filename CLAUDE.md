@@ -23,38 +23,19 @@ Matchina is a TypeScript-first library for building type-safe state machines wit
 
 ## Essential Commands
 
-### Development
+### Development (What Matters)
 ```bash
-npm run dev              # Run Vitest in watch mode
-npm test                 # Run type checks + Vitest with coverage
-npm run test:types       # Run TypeScript type checking only
-npm run coverage         # Run Vitest with coverage report
+npm run dev              # Vitest watch mode - use this most of the time
+npm test                 # Run all tests - verify before finishing
+npx vitest run test/file.test.ts              # Run specific test
+npx vitest run test/file.test.ts -t "pattern" # Run matching tests
 ```
 
-### Building
+### Other Commands (User Usually Runs)
 ```bash
-npm run build            # Build library + docs (runs build:lib && build:docs)
-npm run build:lib        # Build library with unbuild + size-limit checks
-npm run build:docs       # Build documentation site (Astro-based)
-npm run test-build       # Validate types + docs integrity
-```
-
-### Linting & Formatting
-```bash
-npm run lint             # Check ESLint + Prettier
-npm run lint:fix         # Auto-fix ESLint + Prettier issues
-```
-
-### Testing Single Files
-```bash
-npx vitest run test/matchbox.test.ts           # Run specific test file
-npx vitest run test/matchbox.test.ts -t "pattern"  # Run tests matching pattern
-```
-
-### Release
-```bash
-npm run dry-run          # Full release validation without publishing
-npm run release          # Test → changelog → publish → push tags
+npm run build            # Build library + docs
+npm run lint:fix         # Auto-fix linting
+npm run release          # Full release process
 ```
 
 ## Architecture Overview
@@ -158,14 +139,16 @@ The library is built on **layered primitives** that compose together:
 
 ## Development Workflow
 
-### Adding Features (Quick Reference)
+### Adding Features
 
-See `docs/FEATURE-CHECKLIST.md` for comprehensive checklist. TL;DR:
+See `docs/FEATURE-CHECKLIST.md` for details. Flow:
 
-1. **Core** - Implement in `/src`, write tests in `/test`
-2. **Example** - Create realistic example in `docs/src/code/examples/`
-3. **Docs** - Create MDX page, update `astro.config.mjs` sidebar
-4. **Verify** - `npm test && npm run build`
+1. **Core** - `/src` → `/test` (use `npm run dev` for watch mode)
+2. **Example** - `docs/src/code/examples/` (if needed)
+3. **Docs** - MDX page + `astro.config.mjs` sidebar
+4. **Verify** - Tests pass, UI works
+
+**Focus on making things work.** User manages git/branches/commits.
 
 ### Example Structure (Critical)
 
