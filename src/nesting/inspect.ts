@@ -51,13 +51,13 @@ export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine
   const MAX_DEPTH = 100;
 
   while (current && guard++ < MAX_DEPTH) {
-    const state = current.getState();
+    const state: any = current.getState();
     if (!state) break;
 
     chain.push({ machine: current, state });
 
     // Look for child machine
-    const child = state.data?.machine;
+    const child: AnyMachine | undefined = state.data?.machine;
     if (!child || typeof child.getState !== 'function') break;
 
     current = child;
