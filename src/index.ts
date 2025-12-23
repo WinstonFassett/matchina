@@ -39,3 +39,4 @@ export type { HasMethod, MethodOf } from "./ext/methodware/method-utility-types"
 export * from "./definitions";
 export * from "./nesting/propagateSubmachines";
 export * from "./nesting/submachine";
+export * from "./nesting/inspect";
