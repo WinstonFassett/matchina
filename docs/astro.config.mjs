@@ -332,8 +332,8 @@ export default defineConfig({
                   link: "/examples/hsm-overview",
                 },
                {
-                label: "Search Bar (Hierarchical)",
-                link: "/examples/hsm-searchbar",
+                label: "Tag List Editor (Hierarchical)",
+                link: "/examples/hsm-combobox",
                },
                {
                 label: "Checkout Flow (Hierarchical)",

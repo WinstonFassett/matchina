@@ -1,14 +1,14 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { useMemo } from "react";
-import { SearchBarView } from "./SearchBarView";
-import { createSearchBarMachine } from "./machine";
+import { ComboboxView } from "./ComboboxView";
+import { createComboboxMachine } from "./machine";
 
-export default function SearchBarExample() {
-  const machine = useMemo(createSearchBarMachine, []);
+export default function ComboboxExample() {
+  const machine = useMemo(createComboboxMachine, []);
   return (
     <MachineExampleWithChart
       machine={machine as any}
-      AppView={SearchBarView}
+      AppView={ComboboxView}
       inspectorType="picker"
       interactive={true}
     />

@@ -1,0 +1,92 @@
+---
+title: Tag List Editor (Hierarchical)
+description: Inactive/Active with nested child states for Empty, Text Entry, Suggesting, and Selecting. Demonstrates tag management with autocomplete and keyboard navigation.
+---
+
+import ComboboxExample from "@code/examples/hsm-combobox/example";
+import machineCode from "@code/examples/hsm-combobox/machine.ts?raw";
+import viewCode from "@code/examples/hsm-combobox/ComboboxView.tsx?raw";
+import indexCode from "@code/examples/hsm-combobox/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A hierarchical Tag List Editor machine with an `Inactive → Active` parent flow. The `Active` state owns a nested child machine that models `Empty`, `TextEntry`, `Suggesting`, and `Selecting`. This example demonstrates context-based state sharing to avoid prop drilling.
+
+<div className="not-content">
+  <ComboboxExample client:only="react" />
+</div>
+
+## Features
+
+- **Tag Management**: Add and remove tags from a list
+- **Autocomplete**: Smart suggestions based on input
+- **Keyboard Navigation**: Arrow keys (↑↓) to navigate, Enter to select, Escape to close
+- **React Context**: Uses `useComboboxContext()` to avoid prop drilling between components
+- **Hierarchical States**: Clean separation between parent (focus management) and child (tag editing) concerns
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "ComboboxView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Architecture
+
+### Parent States
+- `Inactive` - Tag list is displayed, not editable
+- `Active` - Tag editor is focused and ready for input
+
+### Child States (inside Active)
+- `Empty` - No input, ready to type
+- `TextEntry` - User is typing, no suggestions yet
+- `Suggesting` - Filtered suggestions are displayed
+- `Selecting` - User is navigating suggestions with arrow keys
+
+### Events
+- `focus` / `blur` / `close` - Control parent state
+- `typed` - Update input and trigger suggestions
+- `clear` - Clear input
+- `addTag` - Add tag from input or selection
+- `removeTag` - Remove tag from list
+- `highlight` - Navigate suggestions with arrow keys
+- `navigate` - Enter selection mode from suggestions
+- `cancel` - Exit selection mode
+
+## React Context Pattern
+
+This example uses React Context to avoid passing the machine through multiple component layers:
+
+```tsx
+const ComboboxContext = createContext<ComboboxContextValue | null>(null);
+
+export function useComboboxContext() {
+  const context = useContext(ComboboxContext);
+  if (!context) {
+    throw new Error("useComboboxContext must be used within ComboboxProvider");
+  }
+  return context;
+}
+```
+
+Child components can access the machine directly:
+
+```tsx
+function Tag({ tag }: { tag: string }) {
+  const { machine } = useComboboxContext();
+  return (
+    <button onClick={() => machine.removeTag(tag)}>
+      {tag} ×
+    </button>
+  );
+}
+```
+
+## Notes
+
+- Uses `submachine` to embed the child machine into the `Active` state
+- Demonstrates child-first event routing for input events
+- Shows how to maintain state (selected tags) across parent state transitions
+- Autocomplete filters suggestions based on current input and already-selected tags

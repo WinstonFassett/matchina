@@ -17,9 +17,9 @@ Hierarchical state machines are experimental in Matchina. The APIs may change an
 
 <CardGrid>
   <LinkCard
-    title="Search Bar (Hierarchical)"
-    href="/matchina/examples/hsm-searchbar/"
-    description="Event propagation pattern with nested search states and async results"
+    title="Tag List Editor (Hierarchical)"
+    href="/matchina/examples/hsm-combobox/"
+    description="Event propagation pattern with tag management and autocomplete"
   />
   <LinkCard
     title="Checkout Flow (Hierarchical)"
@@ -34,31 +34,31 @@ Hierarchical state machines are experimental in Matchina. The APIs may change an
 
 The hierarchical machine examples demonstrate two distinct approaches:
 
-1. **Search Bar** (`hsm-searchbar`): Uses event propagation with `propagateSubmachines` for automatic routing
+1. **Tag List Editor** (`hsm-combobox`): Uses event propagation with `propagateSubmachines` for automatic routing
 2. **Checkout Flow** (`hsm-checkout`): Uses hierarchical wrapper with `createHierarchicalMachine` for direct child access
 
 ### Key Differences
 
-- **Search Bar vs Checkout**: Search Bar uses automatic event delegation while Checkout provides explicit child machine control
-- **Event Routing**: Search Bar routes events child-first automatically, Checkout exposes child APIs directly
-- **Child Management**: Search Bar handles child lifecycle automatically, Checkout gives parent full control over child state
+- **Tag List Editor vs Checkout**: Tag List Editor uses automatic event delegation while Checkout provides explicit child machine control
+- **Event Routing**: Tag List Editor routes events child-first automatically, Checkout exposes child APIs directly
+- **Child Management**: Tag List Editor handles child lifecycle automatically, Checkout gives parent full control over child state
 
 ### Key Features by Example
 
 | Example | Pattern | Child Access | Event Routing | Best For | Complexity |
 |---------|---------|-------------|---------------|----------|------------|
-| Search Bar | Event Propagation | Automatic | Child-first | Natural event flow | Lower |
+| Tag List Editor | Event Propagation | Automatic | Child-first | Natural event flow | Lower |
 | Checkout Flow | Hierarchical Wrapper | Direct API | Manual | Controlled workflows | Higher |
 
 ## Implementation Details
 
-### Search Bar (Event Propagation)
+### Tag List Editor (Event Propagation)
 
 - **Parent States**: `Inactive` → `Active`
-- **Child States**: `Empty` → `TextEntry` → `Query` → `Selecting` / `Error`
-- **Key Feature**: Events like `typed`, `clear`, `submit` automatically route to the appropriate child machine
-- **Child Completion**: Uses `child.exit` transitions to bubble up completion events
-- **Async Handling**: Integrates promise machines for search results
+- **Child States**: `Empty` → `TextEntry` → `Suggesting` → `Selecting`
+- **Key Feature**: Events like `typed`, `clear`, `addTag` automatically route to the appropriate child machine
+- **Child Completion**: Uses automatic event propagation for tag management
+- **React Context**: Demonstrates context-based state sharing to avoid prop drilling
 
 ### Checkout Flow (Hierarchical Wrapper)
 
@@ -70,7 +70,7 @@ The hierarchical machine examples demonstrate two distinct approaches:
 
 ## When to Use Each Pattern
 
-### Choose Event Propagation (Search Bar) When:
+### Choose Event Propagation (Tag List Editor) When:
 - Events naturally flow through hierarchy
 - Child machines are self-contained
 - You want automatic event delegation

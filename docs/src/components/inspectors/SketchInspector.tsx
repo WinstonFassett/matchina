@@ -12,7 +12,6 @@ interface SketchInspectorProps {
 
 function SketchInspector({ 
   machine, 
-  actions, 
   interactive = true,
   className = '' 
 }: SketchInspectorProps) {
