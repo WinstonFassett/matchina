@@ -558,17 +558,36 @@ Users face:
 
 ---
 
-## Review Status: COMPLETE
+## Review Status: COMPLETE + STAMPING REMOVED
 
 **Completed:**
 - ✅ Implementation files cataloged and reviewed
-- ✅ Core propagation system analyzed (409 lines)
+- ✅ Core propagation system analyzed (was 409 lines, now ~330 lines)
 - ✅ Test coverage reviewed (23 tests, 2,349 lines)
 - ✅ Examples reviewed (3/3)
 - ✅ Modified core files analyzed
-- ✅ Working docs cataloged (16 to delete)
+- ✅ Working docs cataloged (16 deleted ✅)
 - ✅ Unused code identified (devtools, inspectable transitions)
 - ✅ Recommendations written
+- ✅ **STAMPING REMOVED** - Propagation no longer mutates states
+- ✅ **inspect() utility added** - On-demand inspection without overhead
+- ✅ Tests updated (41 pass, 6 stamping-specific tests skipped)
 
-**Branch Status:** Ready for maintainer review and cleanup decisions.
+**Major Changes Made:**
+1. Removed state stamping system (depth, nested.fullKey, stack mutation)
+2. Created `src/nesting/inspect.ts` with utilities:
+   - `getFullKey(machine)` - compute hierarchical key
+   - `getDepth(machine, state)` - compute depth
+   - `getStack(machine)` - get state stack
+   - `inspect(machine)` - full snapshot
+3. Updated propagation to use `hookCurrentChain()` instead of `stampUsingCurrentChain()`
+4. Fixed 1 comprehensive test to use inspect utilities
+5. Skipped 6 tests that were specifically testing stamping behavior
+
+**Performance Win:**
+- No CPU overhead on every event (stamping was eager)
+- No state mutation (states stay pure)
+- Inspection is on-demand only
+
+**Branch Status:** Stamping removed, tests pass, ready for further review.
 
