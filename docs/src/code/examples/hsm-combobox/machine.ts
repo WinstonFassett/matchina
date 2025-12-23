@@ -1,4 +1,4 @@
-import { defineStates, matchina, setup, effect, whenEventType } from "matchina";
+import { defineStates, matchina } from "matchina";
 import { defineMachine } from "../../../../../src/definitions";
 import { submachine } from "../../../../../src/nesting/submachine";
 import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
@@ -391,8 +391,8 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
 }
 createActiveForApp.def = activeDef;
 
-// Wrap active machine with submachine for visualization
-const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
+// Wrap active machine with submachine for visualization (may be used for future visualization)
+// const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
 
 export const appStates = defineStates({
   Inactive: (selectedTags: string[] = []) => ({ selectedTags }),

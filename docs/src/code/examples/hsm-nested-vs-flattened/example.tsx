@@ -1,4 +1,3 @@
-import React from "react";
 import { NestedVsFlattenedView } from "./NestedVsFlattenedView";
 
 export default function NestedVsFlattenedDemo() {

@@ -11,14 +11,13 @@ function ControllerDemo({
   title, 
   machine, 
   isFlattened = false 
-}: { 
-  title: string; 
+}: {
+  title: string;
   machine: any;
   isFlattened?: boolean;
 }) {
   useMachine(machine);
-  
-  const state = machine.getState();
+
   const stateDisplay = getStateDisplay(machine);
   const availableTransitions = getAvailableTransitions(machine);
 

@@ -1,5 +1,5 @@
 import { createMachine, defineStates, effect, setup, withReset, createHierarchicalMachine } from "matchina";
-import { defineMachine, createMachineFrom } from "matchina";
+import { defineMachine } from "matchina";
 import { submachine } from "../../../../../src/nesting/submachine";
 
 // Hierarchical checkout: main flow contains a payment submachine

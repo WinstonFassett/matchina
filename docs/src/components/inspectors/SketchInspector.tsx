@@ -40,7 +40,7 @@ function SketchInspector({
   const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
   // Step 3: Prepare highlighting info - compute deepest active path by walking child chain
-  const currentStateKey = currentState?.key;
+  // const currentStateKey = currentState?.key;
   const fullPath = (() => {
     const parts: string[] = [];
     let cursor: any = machine;
@@ -54,7 +54,7 @@ function SketchInspector({
     return parts.join('.');
   })();
   // console.log('currentState', fullKey, currentState.fullKey, currentState)
-  const depth = currentState?.depth ?? 0;
+  // const depth = currentState?.depth ?? 0;
   
   // const deepestActiveState = getDeepestActiveState(machine);
   

@@ -1,15 +1,13 @@
-import { 
-  createMachine, 
-  defineStates, 
-  setup 
+import {
+  createMachine,
+  defineStates
 } from "matchina";
-import { 
-  defineMachine, 
-  defineSubmachine, 
-  flattenMachineDefinition, 
+import {
+  defineMachine,
+  defineSubmachine,
+  flattenMachineDefinition,
   createMachineFromFlat
 } from "../../../../../src/definitions";
-import { propagateSubmachines } from "../../../../../src/nesting/propagateSubmachines";
 import { submachine } from "../../../../../src/nesting/submachine";
 import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 

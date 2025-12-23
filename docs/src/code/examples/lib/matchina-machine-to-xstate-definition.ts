@@ -1,13 +1,14 @@
 import type { FactoryMachine, StateMatchboxFactory } from "matchina";
-import { getStateValues, resolveState } from "./state-utils";
+import { resolveState } from "./state-utils";
 
-function getChildMachine(state: any): FactoryMachine<any> | undefined {
-  return state?.data?.machine || state?.machine;
-}
+// May be needed for future xstate features
+// function getChildMachine(state: any): FactoryMachine<any> | undefined {
+//   return state?.data?.machine || state?.machine;
+// }
 
-function isStateFinal(state: any): boolean {
-  return !!state?.data?.final;
-}
+// function isStateFinal(state: any): boolean {
+//   return !!state?.data?.final;
+// }
 export function getXStateDefinition<
   F extends FactoryMachine<{
     states: StateMatchboxFactory<any>;
@@ -28,7 +29,7 @@ export function getXStateDefinition<
       states: {} as Record<string, any>,
     };
 
-    Object.entries(machine.states).forEach(([key, state]) => {
+    Object.entries(machine.states).forEach(([key, _state]) => {
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
       // console.log('state', key, {fullKey, parentKey});
       definition.states[key] = { key, fullKey, on: {} };
