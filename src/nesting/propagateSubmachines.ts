@@ -18,8 +18,6 @@ import { AllEventsOf } from "./types";
  *   synthesized `child.exit` based on a child's finality or absence.
  * - `child.*` event namespace: reserved events handled at the immediate parent
  *   level without re-descent (e.g., `child.exit`, `child.change`).
- * - Stamping: after handling, active states along the chain are stamped with
- *   `depth`, `nested.fullKey`, and `stack` for observability and debugging.
  * - Hooking: discovered descendants are hooked so any non-root `send` is routed
  *   back to the root as `child.change`, preserving the single event loop.
  *
@@ -102,12 +100,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         }
         if (parent) {
           (parent as any).send('child.exit');
-          stampUsingCurrentChain(true); // Notify on child.exit
+          hookCurrentChain(true); // Notify on child.exit
         }
       } else if (state && !type.startsWith('child.')) {
         // For non-final states and non-child events, update the hierarchy
-        // This ensures direct child sends update the parent's nested fullKey
-        stampUsingCurrentChain(true); // Notify on direct child sends
+        hookCurrentChain(true); // Notify on direct child sends
       }
       
       // Reserved child.* events are handled at the machine's own level
@@ -241,16 +238,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         const { target, type: innerType, params: innerParams, _internal } = params[0];
         if (target !== root) {
           // This is a notification from a child machine
-          // If it's an internal notification, we need to stamp and notify subscribers
+          // If it's an internal notification, we need to hook and notify subscribers
           if (_internal) {
-            stampUsingCurrentChain(false); // Don't notify again to avoid double notifications
+            hookCurrentChain(false); // Don't notify again to avoid double notifications
             return;
           }
           // Otherwise, don't handle
           return;
         }
       }
-      stampUsingCurrentChain(false); // Don't notify on reserved events
+      hookCurrentChain(false); // Don't notify on reserved events
       const ev = (root as any).resolveExit?.({ type, params, from });
       if (ev) (root as any).transition?.(ev);
       return ev;
@@ -276,10 +273,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         }
       }
     }
-    // Stamp the hierarchy with updated contextual information (e.g., `nested.fullKey`, `depth`).
-    // This is done without arguments because it dynamically discovers the current active chain
-    // from the root each time, ensuring the stamps are always based on the latest state.
-    stampUsingCurrentChain();
+    // Hook any newly discovered machines in the hierarchy
+    hookCurrentChain();
     
     // Emit a routed child change via root.send so observers can react through the normal loop.
     // Use an internal flag to avoid re-entering handleAtRoot and causing recursion.
@@ -299,62 +294,33 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   //   }
   // }
 
-  /** Stamp the active states with depth, nested info, and stack snapshot */
-  function stamp(statesChain: any[]) {
-    if (statesChain.length === 0) return;
-    const keys = statesChain.map((s) => s.key);
-    const fullKey = keys.join('.');
-    
-    // Create a nested object with the full hierarchical path
-    const nested = Object.freeze({ fullKey, stack: statesChain.slice(), machine: root });
-    
-    // Apply to each state in the chain
-    for (let i = 0; i < statesChain.length; i++) {
-      const st = statesChain[i];
-      try {
-        // Each state gets the same nested info but its own depth
-        (st as any).depth = i;
-        (st as any).nested = nested;
-        (st as any).stack = statesChain.slice(0, i + 1);
-      } catch {
-        // ignore frozen objects
-      }
-    }
-  }
-
   /**
    * Discover the current active chain by following child pointers starting at root,
-   * hooking along the way, and then stamp the chain.
-   * 
-   * This is called after any event handling to ensure the hierarchy is properly updated
-   * with the latest state information, including fullKey and depth.
-   * 
-   * @param {boolean} notify - Whether to force a notification after stamping (default: false)
+   * and hook any newly discovered machines.
+   *
+   * This is called after event handling to ensure all machines in the hierarchy are hooked.
+   *
+   * @param {boolean} notify - Whether to force a notification after hooking (default: false)
    */
-  function stampUsingCurrentChain(notify = false) {
-    const states: any[] = [];
+  function hookCurrentChain(notify = false) {
     let current: AnyMachine | undefined = root;
-    
-    // Single pass following active chain to build states for stamping and hook along the way
+
+    // Single pass following active chain to hook discovered machines
     while (current) {
       const s = current.getState?.();
       if (!s) break;
-      states.push(s);
       const child = getChildFromParentState(s);
       if (!child) break;
-      
+
       // Hook every discovered descendant immediately (works for duck-typed children too)
       hookMachine(child);
-      
+
       // Continue traversal for any child that exposes getState (duck-typed or branded)
       current = (child as AnyMachine);
     }
-    
-    // Apply stamps to the entire chain to ensure consistent state
-    stamp(states);
-    
+
     // Only notify if explicitly requested to avoid excessive notifications
-    if (notify && states.length > 0) {
+    if (notify) {
       (root as any).notify?.({ type: 'child.change', params: [{ _internal: true }] });
     }
   }
@@ -392,8 +358,8 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     return handleAtRoot(type, params);
   })(root as any);
 
-  // Initial wiring: stamp and hook current chain once
-  stampUsingCurrentChain(true); // Notify on initial wiring
+  // Initial wiring: hook current chain once
+  hookCurrentChain(true); // Notify on initial wiring
 
   return () => {
     unhookRoot();
