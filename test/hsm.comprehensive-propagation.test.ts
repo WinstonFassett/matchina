@@ -4,6 +4,7 @@ import { createMachine } from "../src/factory-machine";
 import { propagateSubmachines } from "../src/nesting/propagateSubmachines";
 import { submachine } from "../src/nesting/submachine";
 import { withSubscribe } from "../src/extras/with-subscribe";
+import { inspect, getFullKey, getDepth } from "../src/nesting/inspect";
 
 describe("comprehensive hierarchical propagation", () => {
   function createPayment() {
@@ -67,22 +68,20 @@ describe("comprehensive hierarchical propagation", () => {
     const checkout = root.getState().as("Checkout").data.machine;
     expect(checkout.getState().key).toBe("Cart");
 
-    // Verify initial stamping
-    expect(root.getState().depth).toBe(0);
-    expect(root.getState().nested.fullKey).toBe("Checkout.Cart");
-    expect(root.getState().nested.machine).toBe(root);
-    expect(checkout.getState().depth).toBe(1);
-    expect(checkout.getState().nested.fullKey).toBe("Checkout.Cart");
-    expect(checkout.getState().nested).toBe(root.getState().nested); // Same instance
+    // Verify initial inspection data
+    expect(getDepth(root, root.getState())).toBe(0);
+    expect(getFullKey(root)).toBe("Checkout.Cart");
+    expect(inspect(root).machine).toBe(root);
+    expect(getDepth(root, checkout.getState())).toBe(1);
+    expect(getFullKey(checkout)).toBe("Cart");
 
     // 1. TOP LEVEL SEND: root.send("proceed") -> Checkout.Shipping
     const beforeTopSend = rootCalls.mock.calls.length;
     (root as any).send("proceed");
     
     expect(checkout.getState().key).toBe("Shipping");
-    expect(root.getState().nested.fullKey).toBe("Checkout.Shipping");
-    expect(checkout.getState().nested.fullKey).toBe("Checkout.Shipping");
-    expect(checkout.getState().nested).toBe(root.getState().nested);
+    expect(getFullKey(root)).toBe("Checkout.Shipping");
+    expect(getFullKey(checkout)).toBe("Shipping");
     expect(rootCalls.mock.calls.length).toBe(beforeTopSend + 1);
 
     // 2. MIDDLE LEVEL SEND: checkout.send("proceed") -> Checkout.Payment.MethodEntry
@@ -93,16 +92,13 @@ describe("comprehensive hierarchical propagation", () => {
     const payment = checkout.getState().as("Payment").data.machine;
     expect(payment.getState().key).toBe("MethodEntry");
     
-    // Verify 3-level stamping
-    expect(root.getState().depth).toBe(0);
-    expect(checkout.getState().depth).toBe(1);
-    expect(payment.getState().depth).toBe(2);
-    expect(root.getState().nested.fullKey).toBe("Checkout.Payment.MethodEntry");
-    expect(checkout.getState().nested.fullKey).toBe("Checkout.Payment.MethodEntry");
-    expect(payment.getState().nested.fullKey).toBe("Checkout.Payment.MethodEntry");
-    // All share same nested instance
-    expect(checkout.getState().nested).toBe(root.getState().nested);
-    expect(payment.getState().nested).toBe(root.getState().nested);
+    // Verify 3-level inspection
+    expect(getDepth(root, root.getState())).toBe(0);
+    expect(getDepth(root, checkout.getState())).toBe(1);
+    expect(getDepth(root, payment.getState())).toBe(2);
+    expect(getFullKey(root)).toBe("Checkout.Payment.MethodEntry");
+    expect(getFullKey(checkout)).toBe("Payment.MethodEntry");
+    expect(getFullKey(payment)).toBe("MethodEntry");
     // Root subscriber called (middle send goes through root)
     expect(rootCalls.mock.calls.length).toBe(beforeMiddleSend + 1);
 
@@ -111,21 +107,18 @@ describe("comprehensive hierarchical propagation", () => {
     payment.send("authorize");
     
     expect(payment.getState().key).toBe("Authorizing");
-    expect(root.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
-    expect(checkout.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
-    expect(payment.getState().nested.fullKey).toBe("Checkout.Payment.Authorizing");
-    // All still share same nested instance
-    expect(checkout.getState().nested).toBe(root.getState().nested);
-    expect(payment.getState().nested).toBe(root.getState().nested);
+    expect(getFullKey(root)).toBe("Checkout.Payment.Authorizing");
+    expect(getFullKey(checkout)).toBe("Payment.Authorizing");
+    expect(getFullKey(payment)).toBe("Authorizing");
     // Root subscriber called (bottom send goes through root)
     expect(rootCalls.mock.calls.length).toBe(beforeBottomSend + 1);
 
     // 4. Verify stack contains all active states
-    const stack = root.getState().nested.stack;
-    expect(stack).toHaveLength(3);
-    expect(stack[0].key).toBe("Checkout");
-    expect(stack[1].key).toBe("Payment");
-    expect(stack[2].key).toBe("Authorizing");
+    const snapshot = inspect(root);
+    expect(snapshot.stack).toHaveLength(3);
+    expect(snapshot.stack[0].key).toBe("Checkout");
+    expect(snapshot.stack[1].key).toBe("Payment");
+    expect(snapshot.stack[2].key).toBe("Authorizing");
 
     // 5. Test child.exit propagation: payment.send("authSucceeded") -> final -> child.exit
     const beforeExit = rootCalls.mock.calls.length;
@@ -134,7 +127,7 @@ describe("comprehensive hierarchical propagation", () => {
     expect(payment.getState().key).toBe("Authorized");
     expect(payment.getState().data.final).toBe(true);
     expect(checkout.getState().key).toBe("Review"); // child.exit handled
-    expect(root.getState().nested.fullKey).toBe("Checkout.Review");
+    expect(getFullKey(root)).toBe("Checkout.Review");
     expect(rootCalls.mock.calls.length).toBe(beforeExit + 1);
 
     unsub();

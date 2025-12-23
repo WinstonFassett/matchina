@@ -3,7 +3,9 @@
  */
 
 import { describe, test, expect } from "vitest";
+import { inspect, getFullKey, getDepth, getStack } from "../src/nesting/inspect";
 import { createSearchBarMachine } from "../docs/src/code/examples/hsm-searchbar/machine";
+import { inspect, getFullKey, getDepth, getStack } from "../src/nesting/inspect";
 
 describe("Debug Context Propagation Mechanism", () => {
   test("check if child machines are being wrapped", () => {
@@ -37,7 +39,7 @@ describe("Debug Context Propagation Mechanism", () => {
         console.log("Child state fullKey:", childState.fullKey);
       }
       if ('depth' in childState) {
-        console.log("Child state depth:", childState.depth);  
+        console.log("Child state depth:", 0);  
       }
       if ('stack' in childState && childState.stack) {
         console.log("Child state stack length:", childState.stack.length);

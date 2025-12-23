@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { inspect, getFullKey, getDepth, getStack } from "../src/nesting/inspect";
 import { defineStates, createMachine } from "../src";
+import { inspect, getFullKey, getDepth, getStack } from "../src/nesting/inspect";
 import { createHierarchicalMachine } from "../src/nesting/propagateSubmachines";
+import { inspect, getFullKey, getDepth, getStack } from "../src/nesting/inspect";
 
 const MAX_DEPTH = 3;
 
@@ -44,24 +47,24 @@ describe("HSM: Infinite Depth Simulation", () => {
     const root = createHierarchicalMachine(createNestingMachine(0));
 
     expect(root.getState().key).toBe("Idle");
-    expect(root.getState().nested.fullKey).toBe("Idle");
+    expect(getFullKey(root)).toBe("Idle");
 
     // Go deeper
     root.send("PROCESS");
     expect(root.getState().key).toBe("Processing");
-    expect(root.getState().nested.fullKey).toBe("Processing.Idle");
+    expect(getFullKey(root)).toBe("Processing.Idle");
 
     // Go deeper again
     root.send("PROCESS");
-    expect(root.getState().nested.fullKey).toBe("Processing.Processing.Idle");
+    expect(getFullKey(root)).toBe("Processing.Processing.Idle");
 
     // Go to max depth
     root.send("PROCESS");
-    expect(root.getState().nested.fullKey).toBe("Processing.Processing.Processing.Idle");
+    expect(getFullKey(root)).toBe("Processing.Processing.Processing.Idle");
 
     // At max depth, the deepest machine is in 'Processing' but has no child.
     root.send("PROCESS");
-    expect(root.getState().nested.fullKey).toBe("Processing.Processing.Processing.Processing");
+    expect(getFullKey(root)).toBe("Processing.Processing.Processing.Processing");
   });
 
   it("should propagate 'child.exit' up the chain", () => {
@@ -73,7 +76,7 @@ describe("HSM: Infinite Depth Simulation", () => {
     root.send("PROCESS"); // level 3
     root.send("PROCESS"); // level 4 (max depth, no child)
 
-    expect(root.getState().nested.fullKey).toBe("Processing.Processing.Processing.Processing");
+    expect(getFullKey(root)).toBe("Processing.Processing.Processing.Processing");
 
     // Send FINISH to the deepest machine. It should transition to Done,
     // which is a final state, triggering a chain reaction of 'child.exit' events.
@@ -81,6 +84,6 @@ describe("HSM: Infinite Depth Simulation", () => {
 
     // The entire hierarchy should unwind to the root's Done state.
     expect(root.getState().key).toBe("Done");
-    expect(root.getState().nested.fullKey).toBe("Done");
+    expect(getFullKey(root)).toBe("Done");
   });
 });
