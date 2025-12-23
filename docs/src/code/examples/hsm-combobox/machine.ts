@@ -263,6 +263,10 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
         }
         return activeStates.TextEntry({ input: value, selectedTags });
       },
+      removeTag: (tag: string) => (ev) => {
+        const newTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
+        return activeStates.Empty(newTags);
+      },
     },
     TextEntry: {
       typed: (value: string) => (ev) => {
@@ -391,14 +395,12 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
 }
 createActiveForApp.def = activeDef;
 
-// Wrap active machine with submachine for visualization (may be used for future visualization)
-// const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
+// Use submachine exactly like checkout does
+const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
 
 export const appStates = defineStates({
   Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
-  Active: (data?: { selectedTags?: string[] }) => ({
-    machine: createActiveForApp(data)
-  }),
+  Active: activeMachineFactory,
 });
 
 export function createComboboxMachine() {
@@ -407,10 +409,7 @@ export function createComboboxMachine() {
 
   combobox = matchina(appStates, {
     Inactive: {
-      focus: (selectedTags?: string[]) => (ev) => {
-        const tags = selectedTags ?? ev.from.data.selectedTags ?? [];
-        return appStates.Active({ selectedTags: tags });
-      }
+      focus: "Active"
     },
     Active: {
       blur: () => (ev) => {
@@ -426,13 +425,10 @@ export function createComboboxMachine() {
         return appStates.Inactive(selectedTags);
       },
       removeTag: (tag: string) => (ev) => {
+        // Delegate to child machine
         const activeMachine = ev.from.data.machine;
-        const activeState = activeMachine?.getState();
-        const currentTags = activeState?.data?.selectedTags ?? [];
-        const newTags = currentTags.filter((t: string) => t !== tag);
-
-        // Recreate Active state with updated tags
-        return appStates.Active({ selectedTags: newTags });
+        activeMachine?.removeTag?.(tag);
+        return ev.from;
       },
     },
   }, appStates.Inactive([]));
