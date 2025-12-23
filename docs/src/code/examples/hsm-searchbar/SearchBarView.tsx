@@ -69,7 +69,6 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      console.log('submit', query)
       machine.submit(query);
     }
     if (e.key === "Escape") {
@@ -91,13 +90,11 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
 
     {state.match({
       Query: ({ machine: queryMachine }: {machine: any}) => {
-        console.log('Query machine state:', queryMachine?.getState());
         return (<div>
           Results status: {queryMachine?.getState()?.key || 'No machine'}
           {queryMachine?.getState()?.match({
             Pending: () => <div>Loading…</div>,
             Resolved: ({ data }: {data: any}) => {
-              console.log('Resolved data:', data);
               return <div>
                 {(data?.items || []).map((item: any) => <ResultItem key={item.id} {...item} />)}
               </div>;
@@ -107,16 +104,13 @@ function ActiveView({ machine, parentMachine }: { machine: ActiveMachine, parent
         </div>);
       },
       Selecting: ({ query, items, highlightedIndex }: {query: string, items: any[], highlightedIndex: number}) => {
-        console.log('Rendering Selecting with items:', items);
         return <Selecting 
           items={items || []} 
           highlightedIndex={highlightedIndex} 
           setHighlightedIndex={(highlightedIndex: number) => {
-            console.log("Set Highlighted Index", { highlightedIndex })
             machine.highlight(highlightedIndex)
           }}
           select={(index: number) => {
-            console.log("Select", { index })
             machine.done(query ?? "")
           }}
         />;

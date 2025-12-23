@@ -14,7 +14,6 @@ export const activeStates = defineStates({
   Empty: (query: string = "") => ({ query }),
   TextEntry: (query: string) => ({ query }),
   Query: (query: string) => {
-    console.log('Creating Query state with query:', query);
     return { query, machine: createResultsFetcher(query) };
   },
   Selecting: ({ query="", items=[], highlightedIndex=-1 }: Partial<SelectionState>) => ({
@@ -25,10 +24,8 @@ export const activeStates = defineStates({
 
 function createResultsFetcher(query: string) {
   if (!query?.length) return undefined;
-  console.log('creating fetcher for', query, typeof query);
   const fetcher = createPromiseMachine(async (q: string) => {
     await new Promise((r) => setTimeout(r, 250));
-    console.log("Fetching results for", q, typeof q)
     const trimmed = (q ?? "").trim();
     if (!trimmed.length) return { query: trimmed, items: [], final: true };
     if (trimmed.toLowerCase() === "err") throw new Error("Search failed (demo)");
@@ -38,7 +35,6 @@ function createResultsFetcher(query: string) {
       id: `${trimmed}-${i + 1}`, 
       title: `Result ${i + 1} for "${trimmed}"`
     }));
-    console.log('Generated items:', items);
     return {
       query: trimmed,
       items,
@@ -46,7 +42,6 @@ function createResultsFetcher(query: string) {
     };
   });
   // Execute the fetcher immediately like in the r2 branch
-  console.log('Executing fetcher with query:', query);
   fetcher.execute(query);
   return fetcher;
 }
@@ -101,21 +96,17 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
       refine: () => (ev) => activeStates.TextEntry(ev.from.data.query),
       submit: () => (ev) => {
         const currentQuery = ev.from.data.query;
-        console.log('Submit with query:', currentQuery);
         return activeStates.Query(currentQuery);
       },
       "child.exit": (ev: any) => {
         const currentState = ev?.machine?.getState?.();
         const currentQuery = currentState?.data?.query || "";
 
-        console.log('child.exit event received', JSON.stringify(ev, null, 2));
-        console.log('Current state query:', currentQuery);
 
         const params = ev?.params || [];
         const param0 = params[0] || {};
         const data = param0.data || {};
 
-        console.log('Extracted data:', data);
 
         const items = data.items || [
           { id: 'test-1', title: 'Test Result 1' },
@@ -125,7 +116,6 @@ function createActiveMachine({onDone}: {onDone: (ev: any) => void}) {
 
         const query = data.query || currentQuery;
 
-        console.log('Using query:', query, 'with items:', items);
 
         return activeStates.Selecting({
           query,
@@ -166,7 +156,6 @@ export type ActiveMachine = ReturnType<typeof createActiveMachine>;
 // Create wrapper with proper .def attachment for visualization
 function createActiveForApp() {
   return createActiveMachine({
-    onDone: (ev: any) => console.log('Done event received', ev)
   });
 }
 // Attach .def for visualization discovery
