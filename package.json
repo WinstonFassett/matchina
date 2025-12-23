@@ -61,7 +61,6 @@
     "test:types": "npm run type-check",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish": "npm publish --access public"
-    
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",
