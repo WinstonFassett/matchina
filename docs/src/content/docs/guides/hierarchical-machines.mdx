@@ -19,6 +19,29 @@ Hierarchical State Machines (HSMs) allow you to build complex state machines by 
 - **Reduced complexity** - Avoid unwieldy flat machines for complex workflows
 - **Natural modeling** - Match real-world hierarchical processes
 
+## When to Use Hierarchy
+
+:::tip[Core Principle]
+Use hierarchy only when a state temporarily takes control and must return control when finished. If states merely describe *what is true*, hierarchy is the wrong tool.
+:::
+
+**Hierarchy is about control ownership, not categorization:**
+- Parent states *own control* - they establish invariants and define what inputs are allowed
+- Child states cannot exist independently - exiting the parent annihilates all children
+- Use hierarchy when control is temporarily delegated (interruptions, exceptions, sub-processes)
+
+**Good examples (temporary delegation):**
+- **Search bar** - `Active` owns focus/keyboard, contains `TextEntry`/`Results` states that can't exist when closed
+- **Field validation** - `Editing` owns input, `Invalid` interrupts and resumes
+- **Order fulfillment** - `Picking` interrupted by `OutOfStock` → `Backordering`, then resumes
+
+**Bad examples (semantic grouping):**
+- **"Loading" nested under "Viewing"** when both can exist independently
+- **"Open" containing "Loading/Error/Success"** if these don't inherit behavior from Open
+- Using hierarchy as namespacing or for parallel concerns (analytics, UI chrome)
+
+**Gerund naming helps** - Good HSMs describe *what is being done* (Typing, Editing, Picking), not *what is true* (IsValid, HasShipped, Ready).
+
 ## Two Approaches
 
 Matchina provides two approaches to hierarchical state machines:
