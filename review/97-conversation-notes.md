@@ -365,32 +365,22 @@ const def = fromXState(xstateMachine);
 
 ---
 
-## Open Questions
-
-1. **Machine creation API**: Options object, builder pattern, or chainable extensions?
-
-2. **Visualizer packages**: Subpaths or separate npm packages?
-
-3. **Manifest format**: What's the minimal interface for viz?
-
-4. **Actions with params**: How to handle in viz?
-
-5. **TypeSlayer**: When to run analysis?
-
----
-
 ## Resolved Questions
 
+- ~~Machine creation API~~: `.extend()` pattern, tree-shakeable
 - ~~HSM packaging~~: Single `matchina/hsm`, tree-shaking handles the rest
 - ~~Definition format~~: Use "manifest" for viz, separate from "definition"
+- ~~Visualizers~~: Incubate in docs, externalize later
+
+## Open Questions (Future Sessions)
+
+1. **Manifest format**: What's the minimal interface for viz?
+2. **Actions with params**: Allow in viz, clicks no-op if params missing
+3. **Nested machine manifest**: How do flattened/propagated machines expose hierarchy?
 
 ---
 
-## Next Steps
+## Work Organization
 
-1. ~~Research XState definition format~~ ✓
-2. Design machine creation API (builder/extension pattern)
-3. Design `toManifest()` function for viz
-4. Run TypeSlayer on current types
-5. Prototype visualizer common interface (`InspectorProps`)
+See `98-work-organization.md` for full pre-merge vs post-merge breakdown.
 

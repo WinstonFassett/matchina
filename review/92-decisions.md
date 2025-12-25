@@ -221,47 +221,41 @@ This document proposes decisions for each strategic question identified in `91-q
 
 | Question | Status | Direction |
 |----------|--------|-----------|
-| Q1: HSM Story | **NEEDS ANALYSIS** | Lean flattening, need deep dive |
-| Q2: API Surface | **NEEDS ANALYSIS** | Layered/à la carte, need brainstorm |
+| Q1: HSM Story | **DECIDED** | Both approaches; flattening primary, propagation experimental |
+| Q2: API Surface | **DECIDED** | `.extend()` pattern replaces `matchina()` |
 | Q3: Type Safety | **DECIDED** | Maximize safety, no `any` in type defs |
-| Q4: Scope & Packaging | **NEEDS ANALYSIS** | Modular subpaths, need to decide contents |
+| Q4: Scope & Packaging | **DECIDED** | `matchina/hsm` (tree-shake), viz incubate in docs |
 | Q5: Documentation | **DECIDED** | Docs follow code, README = condensed docs |
 
 ---
 
-## Next Documents to Create
+## Documents Created
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `93-hsm-deep-dive.md` | Detailed HSM analysis, alternative approaches | Pending |
-| `94-api-brainstorm.md` | API from scratch, definitions vs instances | Pending |
-| `95-packaging.md` | Subpath analysis, what goes where | Pending |
+| `93-hsm-deep-dive.md` | Detailed HSM analysis, alternative approaches | ✓ Complete |
+| `94-api-brainstorm.md` | API from scratch, definitions vs instances | ✓ Complete |
+| `95-packaging.md` | Subpath analysis, what goes where | ✓ Complete |
+| `96-visualizers.md` | Inspection and interactive viz review | ✓ Complete |
+| `97-conversation-notes.md` | Ongoing discussion and decisions | ✓ Complete |
+| `98-work-organization.md` | Pre-merge vs post-merge task breakdown | ✓ Complete |
 
 ---
 
 ## Open Actions Summary
 
-### HSM (Decision 1)
-- [ ] Create `93-hsm-deep-dive.md` with detailed pros/cons
-- [ ] Brainstorm alternative hierarchy approaches
-- [ ] Research how other libs handle definitions + visualization
+See `98-work-organization.md` for full breakdown.
 
-### API (Decision 2)
-- [ ] Create `94-api-brainstorm.md` with fresh API exploration
-- [ ] Research other libs (XState, Zustand, Redux Toolkit) for patterns
-- [ ] Explore definitions vs instances separation
+### Pre-Merge (This Branch)
+- [ ] Implement `.extend()` on FactoryMachine
+- [ ] Refactor `matchina()` to use `.extend()` or deprecate
+- [ ] HSM packaging (`matchina/hsm`)
+- [ ] Mark propagation as experimental
+- [ ] Fix 9 broken doc links
+- [ ] Remove README duplicates
 
-### Type Safety (Decision 3)
-- [ ] Audit all type definition files for `any` usage
-- [ ] Create tickets to fix `any` in type definitions
-- [ ] Investigate typed `params` for transitions
-
-### Packaging (Decision 4)
-- [ ] Create `95-packaging.md` with subpath analysis
-- [ ] Review extras contents
-- [ ] Research peer deps pattern for schema integrations
-
-### Documentation (Decision 5)
-- [ ] Align README structure with docs site
-- [ ] Fix broken links (9 identified)
-- [ ] Remove duplicate sections in README
+### Post-Merge
+- [ ] TypeSlayer analysis (beads ticket with context)
+- [ ] Fix `any` in type definitions
+- [ ] Design viz manifest format
+- [ ] Externalize visualizers from docs
