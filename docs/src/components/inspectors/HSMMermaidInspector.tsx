@@ -64,30 +64,18 @@ const HSMMermaidInspector = memo(({
       Object.assign(collected, actions);
     }
     
-    // Traverse the entire hierarchy to collect all actions
-    const collectFromHierarchy = (machine: any, depth = 0) => {
-      if (depth > 10) return; // Prevent infinite recursion
-      
+    // Only collect from nested machine if it actually exists
+    if (nestedMachine) {
       try {
-        const machineActions = eventApi(machine);
-        Object.assign(collected, machineActions);
-        
-        // Check for nested machine
-        const state = machine.getState?.();
-        const nested = state?.data?.machine;
-        if (nested) {
-          collectFromHierarchy(nested, depth + 1);
-        }
+        const nestedActions = eventApi(nestedMachine);
+        Object.assign(collected, nestedActions);
       } catch (error) {
-        console.warn(`Failed to get actions from machine at depth ${depth}:`, error);
+        console.warn('Failed to get actions from nested machine:', error);
       }
-    };
-    
-    // Start with the main machine and traverse down
-    collectFromHierarchy(machine);
+    }
     
     return collected;
-  }, [actions, machine]);
+  }, [actions, nestedMachine]);
   
   // Debug: log a short hash of the config string whenever it changes
   useEffect(() => {
