@@ -244,3 +244,127 @@ These `as any` casts indicate places where the type system couldn't express the 
 - Deeply nested types cause poor DX
 - Hierarchy types are largely untyped (`any` throughout)
 - No branded types for `child.exit`, `final`, `machine` conventions
+
+---
+
+## Performance Analysis
+
+### TypeScript Diagnostics (Dec 2025)
+
+```
+Types:           246,848
+Instantiations:  1,185,404  (very high for 5.7K lines)
+Memory:          637MB
+Check time:      3.55s
+```
+
+### Trace Analysis (structuredTypeRelatedTo)
+
+From TypeScript trace, **66% of check time** is spent in type compatibility checking:
+
+| Operation | Total Time | Count | Avg |
+|-----------|------------|-------|-----|
+| structuredTypeRelatedTo | 6,624ms | 816 | 8.1ms |
+| findSourceFile | 3,973ms | 131 | 30ms |
+| checkExpression | 799ms | 184 | 4.3ms |
+| getVariancesWorker | 576ms | 30 | 19ms |
+
+### Priority Ranking
+
+| Priority | Types | Issue |
+|----------|-------|-------|
+| **P0** | `ExtractEventParams`, `ExtractParamTypes`, `FactoryMachineEvent` | Triple-nested mapped types, 4-level conditionals |
+| **P1** | `FlattenFactoryStateKeys`, `FlattenedFactoryStateSpecs`, `ChildOf` | Template literal explosion, 5+ level nesting |
+| **P2** | `StateEventTransitionSenders`, `TUnionToIntersection` | Double mapped types |
+
+---
+
+## Refactoring Plan
+
+### Phase 1: Critical Path (P0)
+
+**ExtractEventParams** - Simplify from triple-nested to single lookup:
+```typescript
+// Current: 3-level nested mapped type
+// Proposed: Direct lookup with precomputed event map
+export type ExtractEventParams<FC, T extends string> = 
+  T extends keyof EventParamMap<FC> ? EventParamMap<FC>[T] : never;
+```
+
+**ExtractParamTypes** - Reduce from 4-level to 2-level conditional:
+```typescript
+// Current: 4 conditional branches with multiple infers
+// Proposed: Simplified helper
+type GetTransitionParams<T, States> = 
+  T extends keyof States ? Parameters<States[T]>
+  : T extends (...args: infer A) => any ? A : [];
+```
+
+### Phase 2: Hierarchical Types (P1)
+
+**FlattenFactoryStateKeys** - Avoid unbounded `${string}`:
+```typescript
+// Current: `${Extract<keyof C, string>}${Delim}${string}` - infinite patterns
+// Proposed: Explicit union construction
+type FlattenFactoryStateKeys<F> = DirectStateKeys<F> | NestedStateKeys<F>;
+```
+
+### Phase 3: Type Safety (P2)
+
+Replace critical `any` usages:
+- `StateMatchbox.data: any` → `StateData<Specs, Tag>`
+- `TransitionEvent.params: any[]` → `EventParams<E>`
+- `KeyedStateFactory[key]: (...args: any[])` → `StateCreator<K>`
+
+### Expected Outcomes
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| Instantiations | 1.18M | 500K |
+| Memory | 637MB | 300MB |
+| Check time | 3.55s | 1.5s |
+
+---
+
+## Automated Tests
+
+### Type Correctness Tests
+
+**File:** `test/type-correctness.test.ts` (21 tests)
+
+Compile-time regression tests that fail if refactoring breaks types:
+- State key types (`getState().key` union)
+- State data types (typed `.data` access)
+- `send()` method types (correct params)
+- Transition types (structure validation)
+- Machine interface types (`states`, `transitions`)
+- Function transition types
+- Curried transition types
+- `match()` API types
+- Edge cases (undefined data, optional params)
+
+### Type Performance Tests
+
+**File:** `test/type-performance.test.ts` (23 tests)
+
+Verifies complex type patterns resolve correctly:
+- `ExtractEventParams` param extraction
+- `ExtractParamTypes` function params
+- `StateEventTransitionSenders` sender types
+- `FlattenFactoryStateKeys` flattening
+- `HasMachineProperty` detection
+- `ExtractMachineFromFactory` extraction
+- Performance regression (no deep instantiation)
+
+### Running Tests
+
+```bash
+# Type correctness (compile-time + runtime)
+npx vitest run test/type-correctness.test.ts
+
+# Type performance
+npx vitest run test/type-performance.test.ts
+
+# Full type check
+npx tsc --noEmit
+```
