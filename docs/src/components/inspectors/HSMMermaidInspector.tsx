@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo } from "react";
 import { useMachine, useMachineMaybe } from "matchina/react";
+import { eventApi } from "matchina";
 import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
 import MermaidInspector from "./MermaidInspector";
 
@@ -54,6 +55,40 @@ const HSMMermaidInspector = memo(({
     }
   }, [machine, currentChange, actualState?.key, nestedMachine, currentNestedState?.key]);
   
+  // Collect actions from all levels of the hierarchy
+  const allActions = useMemo(() => {
+    const collected: Record<string, () => void> = {};
+    
+    // Add actions from the main machine
+    if (actions) {
+      Object.assign(collected, actions);
+    }
+    
+    // Traverse the entire hierarchy to collect all actions
+    const collectFromHierarchy = (machine: any, depth = 0) => {
+      if (depth > 10) return; // Prevent infinite recursion
+      
+      try {
+        const machineActions = eventApi(machine);
+        Object.assign(collected, machineActions);
+        
+        // Check for nested machine
+        const state = machine.getState?.();
+        const nested = state?.data?.machine;
+        if (nested) {
+          collectFromHierarchy(nested, depth + 1);
+        }
+      } catch (error) {
+        console.warn(`Failed to get actions from machine at depth ${depth}:`, error);
+      }
+    };
+    
+    // Start with the main machine and traverse down
+    collectFromHierarchy(machine);
+    
+    return collected;
+  }, [actions, machine]);
+  
   // Debug: log a short hash of the config string whenever it changes
   useEffect(() => {
     // try {
@@ -69,7 +104,7 @@ const HSMMermaidInspector = memo(({
     <MermaidInspector
       config={xstateConfig}
       stateKey={hierarchicalStateKey}
-      actions={actions}
+      actions={allActions}
       interactive={interactive}
     />
   );

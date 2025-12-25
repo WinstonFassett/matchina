@@ -101,6 +101,12 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
   color: var(--sl-color-accent-high) !important;
 }
 
+.edge-ancestor {
+  background-color: var(--sl-color-gray-3) !important;
+  color: var(--sl-color-text) !important;
+  font-style: italic;
+}
+
 .edge-inactive {
   background-color: var(--sl-color-bg) !important;
   color: var(--sl-color-gray-3) !important;
@@ -110,6 +116,10 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 .edge-interactive {
   text-decoration: underline !important;
   cursor: pointer !important;
+}
+
+.edge-ancestor.edge-interactive:hover {
+  background-color: var(--sl-color-gray-4) !important;
 }
 
 @keyframes fadeInBg {
