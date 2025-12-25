@@ -7,6 +7,10 @@ import { AllEventsOf } from "./types";
 /**
  * Hierarchical propagation core
  *
+ * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`) 
+ * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
+ * loose composition of independent machine instances.
+ *
  * This file wires a root FactoryMachine so that events flow through a
  * child-first traversal, with explicit bubbling of child exits, and uniform
  * notification of parent observers when any descendant changes.
@@ -56,6 +60,10 @@ export type HierarchicalEvents<M> =
 /**
  * Wrap a machine with hierarchical propagation semantics.
  *
+ * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`) 
+ * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
+ * loose composition of independent machine instances.
+ *
  * Call this helper on a root machine to install propagation hooks and return a
  * typed facade.
  */
@@ -66,6 +74,10 @@ export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine
 
 /**
  * Attach hierarchical propagation to a root machine.
+ *
+ * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`) 
+ * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
+ * loose composition of independent machine instances.
  *
  * Returns a disposer that unhooks the root and any hooked descendants and
  * clears internal tracking structures.

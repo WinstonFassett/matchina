@@ -66,6 +66,7 @@ export {
 export { submachine, submachineOptions } from './nesting/submachine';
 
 // Escape hatch: Propagation (experimental)
+// @experimental - Prefer flattening for most use cases
 export {
   propagateSubmachines,
   createHierarchicalMachine,
