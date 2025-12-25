@@ -20,25 +20,25 @@
 
 Tasks that should be completed before merging `hierarchical-machines-with-viz-r5` to `main`.
 
-### Must Do
+### Must Do ✅ COMPLETE
 
-| # | Task | Description | Effort |
+| # | Task | Description | Status |
 |---|------|-------------|--------|
-| 1 | **HSM packaging** | Export flattening from `matchina/hsm`, mark propagation experimental | S |
-| 2 | **Mark propagation experimental** | Add `@experimental` JSDoc, update docs | S |
-| 3 | **Deprecate `matchina()`** | Add `@deprecated` JSDoc pointing to `createMachine().extend(withEventApi)` | S |
+| 1 | **HSM packaging** | Export flattening from `matchina/hsm`, mark propagation experimental | ✅ Done (matchina-fkw) |
+| 2 | **Mark propagation experimental** | Add `@experimental` JSDoc, update docs | ✅ Done (matchina-ayj) |
+| 3 | **Deprecate `matchina()`** | Add `@deprecated` JSDoc pointing to `createMachine().extend(withEventApi)` | ✅ Done (matchina-r1d) |
 
 ### Should Do
 
-| # | Task | Description | Effort |
+| # | Task | Description | Status |
 |---|------|-------------|--------|
-| 4 | **Audit new type definitions** | Check `definition-types.ts` and related for `any` usage (created in this branch) | S |
+| 4 | **Audit new type definitions** | Check `definition-types.ts` and related for `any` usage (created in this branch) | Open (matchina-qcq) |
 
 ### Could Do (If Time)
 
-| # | Task | Description | Effort |
+| # | Task | Description | Status |
 |---|------|-------------|--------|
-| 5 | **Fix doc links created in this branch** | Only fix links broken by changes in this branch | S |
+| 5 | **Fix doc links created in this branch** | Only fix links broken by changes in this branch | Open (matchina-2yn) |
 
 ---
 
