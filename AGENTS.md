@@ -54,3 +54,30 @@ bd sync --flush-only         # Export to JSONL
 
 Evidence > assumptions. Let tests guide the fix.
 
+## Quality Gates
+
+Do prefer to run tests when working in the core
+Rely on developer (preferred) or browser integration (when running unattended) for manually testing examples in the docs
+Beware verbose quality gates. Do not naively pipe all output to yourself. 
+Docs are notoriously verbose to run dev, build and check. 
+Best to pipe such things into files/buffers and then once done, read them in reverse, ie last 10-20 lines to start
+Developer usually does not want you to run quality gates EXCEPT right before shipping. Even committing skip linting. 
+Never destroy work. We have git. But do NOT do hard resets. 
+
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until committed.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
+5. **Clean up** - Remove any working docs, debug logging in code
+6. **Verify** - All changes committed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until tested and committed
