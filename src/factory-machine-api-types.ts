@@ -1,22 +1,18 @@
 import { FactoryMachineContext } from "./factory-machine-types";
 import { FlatMemberUnionToIntersection, Simplify } from "./utility-types";
 
+// Helper to extract params from a function (handles both curried and direct)
+type FunctionParams<T> = T extends (...args: infer A) => any ? A : never;
+
 // Utility type to extract parameter types from transition events
 export type ExtractParamTypes<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][StateKey],
-> = FC["transitions"][StateKey][EventKey] extends keyof FC["states"]
-  ? Parameters<FC["states"][FC["transitions"][StateKey][EventKey]]>
-  : FC["transitions"][StateKey][EventKey] extends (
-        ...args: infer A
-      ) => (...innerArgs: any[]) => infer _R
-    ? A
-    : FC["transitions"][StateKey][EventKey] extends (
-          ...args: infer A
-        ) => infer _R
-      ? A
-      : any[];
+  Transition = FC["transitions"][StateKey][EventKey],
+> = Transition extends keyof FC["states"]
+  ? Parameters<FC["states"][Transition]>
+  : FunctionParams<Transition>;
 
 // Utility type to map event types to their parameter types
 export type EventToParamTypes<FC extends FactoryMachineContext> = {
