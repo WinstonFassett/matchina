@@ -92,21 +92,25 @@ function SketchInspector({
                 // Handle different target formats - could be string or object with target property
                 const targetKey = typeof target === 'string' ? target : (target as any)?.target || String(target);
                 
+                // Check if this transition can be invoked from the current state
+                const canInvoke = isActive || isBranchActive;
+                
                 return (
                   <div key={event} className="transition-row">
                     <button 
-                      className={`transition-button ${isActive && interactive ? 'enabled' : 'disabled'}`}
+                      className={`transition-button ${canInvoke && interactive ? 'enabled' : 'disabled'} ${isActive ? 'current-state' : isBranchActive ? 'ancestor-state' : ''}`}
                       onClick={() => {
-                        console.log('click', event, isActive, interactive)
-                        if (interactive && isActive) {
+                        console.log('click', event, isActive, isBranchActive, interactive)
+                        if (interactive && canInvoke) {
                           console.log('send', machine, event)
                           machine.send(event);
                         }
                       }}
-                      disabled={!isActive || !interactive}
+                      disabled={!canInvoke || !interactive}
                       type="button"
                     >
                       {event}
+                      {!isActive && isBranchActive && <span className="ancestor-indicator"> ↑</span>}
                     </button>
                     <span className="transition-arrow"> → </span>
                     <span className="transition-target">{targetKey}</span>
