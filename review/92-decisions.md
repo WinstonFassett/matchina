@@ -1,6 +1,6 @@
 # Matchina: Decision Document (DRAFT)
 
-**Status**: Draft for review  
+**Status**: Draft for review — Updated with user feedback  
 **Author**: AI Assistant  
 **Reviewer**: Winston  
 
@@ -10,195 +10,258 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ## Decision 1: HSM Story
 
-### Proposed Decision
+### Status: NEEDS DEEPER ANALYSIS
 
-**Pick Propagation as the primary HSM approach. Deprecate Flattening.**
+**See `93-hsm-deep-dive.md` for detailed exploration.**
 
-### Rationale
+### User Feedback
 
-1. **Propagation is already in use**: Both HSM demos (`hsm-checkout`, `hsm-combobox`) use propagation
-2. **More flexible**: Supports dynamic child creation, which flattening cannot
-3. **Flattening has known type issues**: The `FlattenFactoryStateKeys` type uses unbounded template literals
-4. **Simpler mental model for users**: "Child machines are real machines" vs "everything is flat keys"
+- Devs want a way to compose machines — how is flexible
+- Lean towards **flattening** if we can visualize as hierarchy based on nested naming
+- Static is generally better for state machines
+- Propagation implementation complexity argues against it
+- Propagation's main benefit: stitching together looser confederation of things
+- Flattening worked almost immediately; propagation has been a PITA
+- Need to explore: are there scenarios requiring loose composition?
 
-### Implications
+### Revised Direction
 
-- Remove `flattenMachineDefinition`, `createMachineFromFlat` from public API
-- Keep `defineMachine`, `defineSubmachine` only if needed for visualization
-- Focus type safety efforts on propagation approach
-- Update `hsm-nested-vs-flattened` example to show only nested approach
+**Lean towards Flattening, but need deeper analysis first.**
 
-### Open Questions for Review
+| Approach | Pros | Cons |
+|----------|------|------|
+| Flattening | Static (good for FSM), worked quickly, simpler impl | Type inference challenges, visualization needs work |
+| Propagation | Loose composition, dynamic children | Complex impl (375 lines), has been problematic |
 
-- [ ] Should `defineMachine` be kept for visualization/tooling purposes?
-- [ ] Is there a use case for flattening that propagation can't serve?
+### Key Questions to Resolve
+
+1. Can flattened keys be visualized as hierarchy? (e.g., `Working.Red` renders as nested)
+2. What are the real-world use cases for loose composition?
+3. Can we improve flattening's type inference?
+4. Should both exist for different use cases, or pick one?
+
+### Action
+
+- [ ] Create `93-hsm-deep-dive.md` with detailed pros/cons analysis
+- [ ] Brainstorm alternative hierarchy approaches
+- [ ] Research how other libs handle definitions + visualization
 
 ---
 
 ## Decision 2: API Surface Strategy
 
-### Proposed Decision
+### Status: NEEDS DEEPER ANALYSIS
 
-**Layered approach: `matchina()` is the recommended entry point. Core APIs remain available for advanced use.**
+**See `94-api-brainstorm.md` for detailed exploration.**
 
-### Rationale
+### User Feedback
 
-1. **`matchina()` provides the best DX**: Event methods directly on machine (`machine.next()` vs `machine.send("next")`)
-2. **Core APIs needed for library authors**: `createMachine()` is lower-level but necessary
-3. **Hook registration**: Keep `setup()` as primary, document `onLifecycle()` as alternative for state-keyed config
+- Open to suggestions on API surface
+- Layering is the right idea: small core(s) with composable layers
+- Flexibility in hook registration is good — varies by dev preference
+  - `setup()` + functions is user's preference
+  - `transitionHook()` is new, liked
+  - `onLifecycle()` was "abomination" but XState users might like it
+- `matchina()` vs `createMachine()` confusion exists because didn't want to force API layer
+- Goal: à la carte and minimal footprint based on what's used
+- Not "one way" but "common way(s)"
+- Definitions exist mainly for runtime inspection and viz — simpler without them
+- Care about exposing definitions at runtime for visualizers
+- Need to research: how do libs with definitions + instances do it well?
 
-### Concrete Changes
+### Revised Direction
 
-| API | Status | Notes |
-|-----|--------|-------|
-| `matchina()` | **Primary** | Recommended for most users |
-| `createMachine()` | Keep | For advanced use, library authors |
-| `createMachineFrom()` | Deprecate | Rarely needed |
-| `createMachineFromFlat()` | Remove | Per Decision 1 |
-| `defineMachine()` | Keep (internal) | For visualization only |
-| `setup()` + hooks | **Primary** | `guard()`, `enter()`, etc. |
-| `transitionHook()` | Keep | Declarative alternative |
-| `onLifecycle()` | Keep | State-keyed alternative |
+**Layered, à la carte approach. Need to brainstorm API from scratch.**
 
-### Implications
+| Concern | Current State | Direction |
+|---------|---------------|-----------|
+| Machine creation | `matchina()` vs `createMachine()` confusing | Clarify roles, maybe rename |
+| Hook registration | 3 patterns exist | Keep flexibility, document preferences |
+| Definitions | Exist for viz, add complexity | Research other libs' approaches |
+| Bundle size | Want minimal footprint | À la carte imports |
 
-- README quick start uses `matchina()`
-- Docs clearly state "start with `matchina()`, use `createMachine()` for advanced cases"
-- Remove `createMachineFrom` from exports
+### Key Questions to Resolve
 
-### Open Questions for Review
+1. What would the API look like if designed from scratch?
+2. How do other libs handle definitions vs instances elegantly?
+3. Should `matchina()` and `createMachine()` be renamed for clarity?
+4. Which hook patterns to keep/consolidate?
 
-- [ ] Is `transitionHook()` worth keeping or does `onLifecycle()` cover its use cases?
-- [ ] Should `createMachine()` be documented at all for beginners?
+### Action
+
+- [ ] Create `94-api-brainstorm.md` with fresh API exploration
+- [ ] Research other libs (XState, Zustand, Redux Toolkit) for patterns
+- [ ] Explore definitions vs instances separation
 
 ---
 
 ## Decision 3: Type Safety Posture
 
-### Proposed Decision
+### Status: DECIDED (with caveats)
 
-**Typed core with documented escape hatches. Accept HSM type gaps for now.**
+### User Feedback
 
-### Rationale
+- Type safety is **ESSENTIAL**
+- Should generally not use `any` in type definitions
+- Flexible on `any` in implementations — those are nits
+- Prefer maximize type safety with pragmatic gaps
 
-1. **Core FSM should be fully typed**: This is the library's main value proposition
-2. **HSM type safety is hard**: Recursive types for arbitrary nesting are complex
-3. **Pragmatic approach**: Document where types are weak rather than over-engineer
+### Decision
 
-### Concrete Changes
+**Maximize type safety. No `any` in type definitions. Pragmatic gaps in implementations only.**
 
 | Area | Decision |
 |------|----------|
-| `StateMatchbox.data` | Keep `any` for now, document why |
-| `TransitionEvent.params` | Investigate typed params (may be possible) |
-| HSM child access | Accept `any` casts, provide typed helper if feasible |
-| Complex nested types | Simplify where possible, document limitations |
+| Type definitions | **No `any`** — find proper types or use `unknown` |
+| Implementations | `any` acceptable as pragmatic escape hatch |
+| `StateMatchbox.data` | Should be typed, not `any` — needs fix |
+| `TransitionEvent.params` | Should be typed — investigate |
+| HSM types | Maximize safety; document remaining gaps |
 
 ### Implications
 
-- Add "Type Safety" section to docs explaining known gaps
-- Don't block releases on perfect HSM types
-- Consider branded types for child machines in future
+- Audit type definitions for `any` usage
+- Replace `any` with proper types or `unknown`
+- Implementation `any` casts are acceptable
+- Document any remaining type gaps clearly
 
-### Open Questions for Review
+### Action
 
-- [ ] Is `data: any` acceptable long-term or should it be a priority to fix?
-- [ ] Should we invest in typed `params` for transitions?
+- [ ] Audit all type definition files for `any` usage
+- [ ] Create tickets to fix `any` in type definitions
+- [ ] Investigate typed `params` for transitions
 
 ---
 
-## Decision 4: Scope of "Nano-Sized"
+## Decision 4: Scope & Packaging
 
-### Proposed Decision
+### Status: NEEDS DEEPER ANALYSIS
 
-**Modular subpaths: `matchina` (core), `matchina/react`, `matchina/hsm`**
+**See `95-packaging.md` for detailed exploration.**
 
-### Rationale
+### User Feedback
 
-1. **HSM is experimental**: Shouldn't be in core bundle
-2. **React is optional**: Not everyone uses React
-3. **Tree-shaking friendly**: Users import what they need
-4. **Clear stability tiers**: Core is stable, HSM is experimental
+- `/react` makes sense as separate
+- `/hsm` maybe, not sure
+- Don't care about overall bundle size (except past 10k)
+- Care about size check for various combos being good
+- Extras deserves review but probably ok
+- Goal: avoid pulling in more dependencies than needed
+- Zod/Valibot: could be `matchina/schema` with peer deps, or separate packages
 
-### Concrete Structure
+### Revised Direction
 
-```
-matchina           → Core FSM, matchbox, lifecycle, extras
-matchina/react     → useMachine, useMachineMaybe
-matchina/hsm       → propagateSubmachines, createHierarchicalMachine, submachine
-matchina/zod       → Zod integration (existing)
-matchina/valibot   → Valibot integration (existing)
-```
+**Modular subpaths, but need to analyze what goes where.**
 
-### Implications
+| Subpath | Contents | Status |
+|---------|----------|--------|
+| `matchina` | Core FSM, matchbox, lifecycle, extras | Review extras |
+| `matchina/react` | useMachine, useMachineMaybe | Confirmed |
+| `matchina/hsm` | HSM APIs (TBD based on Decision 1) | Maybe |
+| `matchina/zod` | Zod integration | Keep or merge to /schema |
+| `matchina/valibot` | Valibot integration | Keep or merge to /schema |
 
-- Update `package.json` exports
-- HSM demos import from `matchina/hsm`
-- Core bundle target: < 2 kB
-- HSM can evolve independently
+### Key Questions to Resolve
 
-### Open Questions for Review
+1. Should Zod + Valibot be merged into `matchina/schema` with peer deps?
+2. What belongs in extras vs separate subpath?
+3. Should HSM be a subpath or just part of core?
 
-- [ ] Should `extras` (delay, when, emitter) be in core or separate?
-- [ ] What's the acceptable core bundle size?
+### Action
+
+- [ ] Create `95-packaging.md` with subpath analysis
+- [ ] Review extras contents
+- [ ] Research peer deps pattern for schema integrations
 
 ---
 
 ## Decision 5: Documentation Strategy
 
-### Proposed Decision
+### Status: DECIDED
 
-**Tiered documentation with stability markers. Docs site is primary, README is overview.**
+### User Feedback
 
-### Rationale
+- Doc strategy: **docs follow code**
+- README is essentially a single-page reduction of docs site — they should be aligned
 
-1. **Docs site has interactive examples**: Better learning experience
-2. **README should be concise**: Link to docs for details
-3. **Experimental features need clear marking**: Users should know what's stable
+### Decision
+
+**Docs follow code. README is single-page reduction of docs site.**
+
+| Principle | Implementation |
+|-----------|----------------|
+| Docs follow code | Update docs when code changes, not before |
+| README = condensed docs | README mirrors docs site structure, just shorter |
+| Alignment | README and docs site should not contradict |
 
 ### Concrete Changes
 
 | Content | Location | Notes |
 |---------|----------|-------|
-| Overview, install, quick example | README | < 200 lines |
-| Guides, API reference | Docs site | Primary learning path |
-| Experimental features | Docs site with :::caution | Clear warnings |
-| AI assistant guidance | CLAUDE.md, AGENTS.md | Keep separate |
-
-### Stability Tiers
-
-- **Stable**: Core FSM, matchbox, lifecycle, React integration
-- **Experimental**: HSM (both approaches until Decision 1 implemented)
-- **Internal**: Definition APIs for visualization
+| Overview, install, quick example | README | Condensed version of docs |
+| Full guides, API reference | Docs site | Primary learning path |
+| Experimental features | Both, with warnings | Clear :::caution markers |
 
 ### Implications
 
-- Trim README to essentials
-- Add stability badges to docs pages
-- Fix broken links before adding new content
+- README structure should mirror docs site sections
+- When docs change, README should be updated to match
+- Fix broken links (already identified)
+- Remove README duplicates (already identified)
 
-### Open Questions for Review
+### Action
 
-- [ ] Should experimental features be in main sidebar or separate section?
-- [ ] How to handle deprecation notices in docs?
-
----
-
-## Summary of Proposed Decisions
-
-| Question | Decision | Confidence |
-|----------|----------|------------|
-| Q1: HSM Story | Propagation primary, deprecate flattening | High |
-| Q2: API Surface | `matchina()` primary, layered approach | High |
-| Q3: Type Safety | Typed core, accept HSM gaps | Medium |
-| Q4: Scope | Modular subpaths | High |
-| Q5: Documentation | Tiered with stability markers | High |
+- [ ] Align README structure with docs site
+- [ ] Fix broken links (9 identified)
+- [ ] Remove duplicate sections in README
 
 ---
 
-## Next Steps (After Review)
+## Summary of Decisions
 
-1. Finalize decisions based on your feedback
-2. Create `93-plan.md` with implementation phases
-3. Create beads tickets from plan
-4. Execute in priority order
+| Question | Status | Direction |
+|----------|--------|-----------|
+| Q1: HSM Story | **NEEDS ANALYSIS** | Lean flattening, need deep dive |
+| Q2: API Surface | **NEEDS ANALYSIS** | Layered/à la carte, need brainstorm |
+| Q3: Type Safety | **DECIDED** | Maximize safety, no `any` in type defs |
+| Q4: Scope & Packaging | **NEEDS ANALYSIS** | Modular subpaths, need to decide contents |
+| Q5: Documentation | **DECIDED** | Docs follow code, README = condensed docs |
+
+---
+
+## Next Documents to Create
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `93-hsm-deep-dive.md` | Detailed HSM analysis, alternative approaches | Pending |
+| `94-api-brainstorm.md` | API from scratch, definitions vs instances | Pending |
+| `95-packaging.md` | Subpath analysis, what goes where | Pending |
+
+---
+
+## Open Actions Summary
+
+### HSM (Decision 1)
+- [ ] Create `93-hsm-deep-dive.md` with detailed pros/cons
+- [ ] Brainstorm alternative hierarchy approaches
+- [ ] Research how other libs handle definitions + visualization
+
+### API (Decision 2)
+- [ ] Create `94-api-brainstorm.md` with fresh API exploration
+- [ ] Research other libs (XState, Zustand, Redux Toolkit) for patterns
+- [ ] Explore definitions vs instances separation
+
+### Type Safety (Decision 3)
+- [ ] Audit all type definition files for `any` usage
+- [ ] Create tickets to fix `any` in type definitions
+- [ ] Investigate typed `params` for transitions
+
+### Packaging (Decision 4)
+- [ ] Create `95-packaging.md` with subpath analysis
+- [ ] Review extras contents
+- [ ] Research peer deps pattern for schema integrations
+
+### Documentation (Decision 5)
+- [ ] Align README structure with docs site
+- [ ] Fix broken links (9 identified)
+- [ ] Remove duplicate sections in README
