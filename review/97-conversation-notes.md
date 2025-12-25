@@ -52,38 +52,107 @@ Explore builder/extension pattern. Keep `createMachine()` as base, add composabl
 
 ---
 
-## Convenience APIs (Event Methods)
+## Replacing `matchina()` — Convenience API Approaches
 
-### The Tension
+**Goal**: Keep `createMachine()` as the base. Find better ways to add event API without a separate `matchina()` function.
+
+### Approach 1: Options Object
 
 ```typescript
-// Without convenience API
-machine.send("next");
-machine.send("submit", data);
-
-// With convenience API (matchina)
-machine.next();
-machine.submit(data);
+const machine = createMachine(states, transitions, "init", { 
+  api: true,           // adds .next(), .submit(), etc.
+  subscribe: true,     // adds .subscribe()
+});
 ```
 
-### User Concerns
+**Pros**: Single function, explicit options
+**Cons**: Options grow over time, type complexity
 
-- Convenience API adds type complexity
-- `withApi` attaches dependency to machine namespace
-- "I'm probably being too precious"
-- "I personally like convenience APIs most of the time"
+### Approach 2: Chainable `.extend()`
 
-### Options
+```typescript
+const machine = createMachine(states, transitions, "init")
+  .extend(withEventApi)
+  .extend(withSubscribe);
+```
 
-1. **Keep both**: `createMachine()` (bare) + `matchina()` (with API)
-2. **Export `withEventApi`**: Let users opt-in to convenience
-3. **Always include**: Just make it part of the machine
+**Pros**: Composable, tree-shakeable, clear what's added
+**Cons**: Verbose for common case
 
-### Current Thinking
+### Approach 3: Method on Result
 
-- Strong `send()` API is always there
-- Convenience API is optional via `matchina()` or `withEventApi()`
-- Export the ability to add API, don't force it
+```typescript
+const machine = createMachine(states, transitions, "init").withApi();
+
+// Or multiple:
+const machine = createMachine(states, transitions, "init")
+  .withApi()
+  .withSubscribe();
+```
+
+**Pros**: Discoverable via IDE, chainable
+**Cons**: Methods must be on base machine type
+
+### Approach 4: Preset/Recipe Functions
+
+```typescript
+// Export preset creators
+import { createMachineWithApi } from "matchina";
+
+const machine = createMachineWithApi(states, transitions, "init");
+
+// Or compose your own
+const createMyMachine = compose(createMachine, withEventApi, withSubscribe);
+```
+
+**Pros**: One import for common case
+**Cons**: More exports to maintain
+
+### Approach 5: Feature Objects
+
+```typescript
+import { createMachine, ApiFeature, SubscribeFeature } from "matchina";
+
+const machine = createMachine(states, transitions, "init", [
+  ApiFeature,
+  SubscribeFeature,
+]);
+```
+
+**Pros**: Explicit, extensible
+**Cons**: Array syntax less ergonomic
+
+### Recommendation
+
+**Approach 3 (method on result)** seems best:
+- `createMachine()` returns base machine
+- `.withApi()` adds event methods
+- Chainable for multiple features
+- IDE autocomplete shows available extensions
+
+```typescript
+// Common usage
+const machine = createMachine(states, transitions, "init").withApi();
+
+// Power user
+const machine = createMachine(states, transitions, "init");
+machine.send("next"); // still works
+
+// Multiple features
+const machine = createMachine(states, transitions, "init")
+  .withApi()
+  .withSubscribe()
+  .withReset();
+```
+
+### What This Replaces
+
+| Old | New |
+|-----|-----|
+| `matchina(states, transitions, init)` | `createMachine(states, transitions, init).withApi()` |
+| `createMachine(states, transitions, init)` | Same (unchanged) |
+
+**`matchina` as a function is deprecated/removed.**
 
 ---
 
