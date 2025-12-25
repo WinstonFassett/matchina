@@ -4,20 +4,51 @@ This document captures ongoing discussion points and decisions as they emerge.
 
 ---
 
-## API Naming
+## API Naming & Machine Creation
 
 ### Problem: `machine` as function name
 
 User feedback: "I don't like a function called `machine` because I tend to call the variable instance `machine`."
 
-**Verbs are good.** Current options:
+**Verbs are good.** 
 
-| Current | Issue | Alternative |
-|---------|-------|-------------|
-| `machine()` | Conflicts with variable naming | `createMachine()` (keep current) |
-| `matchina()` | Already a verb-ish name | Keep as convenience wrapper |
+### Problem: `matchina()` for creating machines
 
-**Direction**: Keep `createMachine()` as the core, `matchina()` as the convenience wrapper with event API.
+User feedback: "I don't love `matchina()` for creating machines."
+
+### Alternative Approaches
+
+**Option A: Options object**
+```typescript
+createMachine(states, transitions, init, { api: true })
+```
+
+**Option B: Builder pattern**
+```typescript
+buildMachine(states, transitions, init).extend(...)
+```
+
+**Option C: Chainable extensions**
+```typescript
+machine.extend(ApiFeature).extend(SubscribeFeature)
+```
+
+**Option D: Recipe/preset**
+```typescript
+createMachine.withApi(states, transitions, init)
+// or
+createMachine(states, transitions, init).withApi()
+```
+
+### User Preference
+
+- Want a way to easily create a machine with a specific recipe
+- Preference is usually to add API
+- Want flexibility for other extensions too
+
+### Direction
+
+Explore builder/extension pattern. Keep `createMachine()` as base, add composable extensions.
 
 ---
 
@@ -88,22 +119,17 @@ From `04-types.md`:
 
 User: "With HSM it is going to be both. Flattening is most useful, could be separate from propagate so both deps don't get pulled in."
 
-**New packaging idea**:
+### Updated Thinking
+
+User: "I would probably separate hsm flatten from propagate but maybe it's enough to just import one? Maybe we don't need like separate bundles. This is for consumption by an app bundler so size check of specific exports is what matters."
+
+**Conclusion**: `matchina/hsm` still makes sense. Tree-shaking handles the rest — if you only import flattening, propagation doesn't get bundled.
+
 ```
-matchina/hsm/flatten   → Flattening approach
-matchina/hsm/propagate → Propagation approach
+matchina/hsm → Both approaches, tree-shake what you don't use
 ```
 
-Or:
-```
-matchina/hsm           → Flattening (primary)
-matchina/hsm-propagate → Propagation (escape hatch)
-```
-
-This allows:
-- Users to choose approach
-- Tree-shaking to work properly
-- Both to coexist without forcing one
+No need for separate subpaths like `/hsm/flatten` and `/hsm/propagate`.
 
 ---
 
@@ -129,6 +155,44 @@ This allows:
 
 - Time travel visualization (log states, replay)
 - Better React Flow HSM support
+
+### What Visualizers Need
+
+User feedback on what to give a viz:
+
+| Input | Description |
+|-------|-------------|
+| **Manifest** | States, transitions, init, final — "what the machine is" |
+| **State** | Current state |
+| **Dispatch** | Send function (controller) |
+
+**Key insight**: "The thing we call a definition is more like a description/manifest of the machine. It does not say how to create one so much as what it is."
+
+### Actions with Parameters
+
+Unsolved problem: some actions take parameters.
+
+Options:
+1. Use schema to describe parameters
+2. Don't show actions that take parameters
+3. Detect actions that take parameters (requires introspection)
+
+### Visualizer Interface
+
+- Should NOT need full machines
+- Should NOT mandate React (though current viz is React-based)
+- Maybe part of inspection: `InspectorProps` or similar
+- "Definition" might be too much — more like **instrumentation** or **manifest**
+
+### Naming
+
+| Term | Meaning |
+|------|---------|
+| Definition | How to create a machine (states factory, transitions) |
+| Manifest | What a machine is (for viz/inspection) |
+| Instrumentation | Runtime hooks for viz |
+
+**Direction**: Separate "manifest" (static description for viz) from "definition" (creation config).
 
 ### Packaging
 
@@ -298,23 +362,30 @@ const def = fromXState(xstateMachine);
 
 ## Open Questions
 
-1. **Convenience API**: Export `withEventApi()` separately or keep bundled in `matchina()`?
+1. **Machine creation API**: Options object, builder pattern, or chainable extensions?
 
-2. **HSM packaging**: Single `/hsm` with both, or separate `/hsm` and `/hsm-propagate`?
+2. **Visualizer packages**: Subpaths or separate npm packages?
 
-3. **Visualizer packages**: Subpaths or separate npm packages?
+3. **Manifest format**: What's the minimal interface for viz?
 
-4. **Definition format**: Use XState-compatible format for visualizers?
+4. **Actions with params**: How to handle in viz?
 
 5. **TypeSlayer**: When to run analysis?
+
+---
+
+## Resolved Questions
+
+- ~~HSM packaging~~: Single `matchina/hsm`, tree-shaking handles the rest
+- ~~Definition format~~: Use "manifest" for viz, separate from "definition"
 
 ---
 
 ## Next Steps
 
 1. ~~Research XState definition format~~ ✓
-2. Run TypeSlayer on current types
-3. Design `toDefinition()` function for Matchina
-4. Decide on HSM packaging split
-5. Prototype visualizer common interface
+2. Design machine creation API (builder/extension pattern)
+3. Design `toManifest()` function for viz
+4. Run TypeSlayer on current types
+5. Prototype visualizer common interface (`InspectorProps`)
 
