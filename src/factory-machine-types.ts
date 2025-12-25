@@ -11,15 +11,16 @@ import { FlatMemberUnion } from "./utility-types";
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.
  * Iterates once over states, using conditional to match the target event.
+ * Uses `string &` constraint to prevent key type explosion.
  */
 export type ExtractEventParams<
   FC extends FactoryMachineContext<any>,
   T extends string,
 > = {
-  [K in keyof FC["transitions"]]: T extends keyof FC["transitions"][K]
+  [K in string & keyof FC["transitions"]]: T extends keyof FC["transitions"][K]
     ? ExtractParamTypes<FC, K, T>
     : never;
-}[keyof FC["transitions"]];
+}[string & keyof FC["transitions"]];
 
 export interface FactoryMachineContext<
   SF extends KeyedStateFactory = KeyedStateFactory,
@@ -119,12 +120,13 @@ export type FactoryMachineTransition<
 
 /**
  * Union of all possible transition events for a factory machine.
+ * Uses `string &` constraints to prevent string|number|symbol key explosion.
  */
 export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
-  [K in keyof FC["transitions"]]: {
-    [E in keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
-  }[keyof FC["transitions"][K]];
-}[keyof FC["transitions"]];
+  [K in string & keyof FC["transitions"]]: {
+    [E in string & keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
+  }[string & keyof FC["transitions"][K]];
+}[string & keyof FC["transitions"]];
 
 export type FactoryMachineTransitionEvent<
   FC extends FactoryMachineContext<any>,
