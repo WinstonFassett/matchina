@@ -17,6 +17,11 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./hsm": {
+      "types": "./dist/hsm.d.ts",
+      "import": "./dist/hsm.mjs",
+      "require": "./dist/hsm.js"
+    },
     "./react": {
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
