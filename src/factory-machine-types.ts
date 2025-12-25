@@ -10,17 +10,15 @@ import { FlatMemberUnion } from "./utility-types";
 
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.
- * This type properly handles required parameters and default parameters.
+ * Iterates once over states, using conditional to match the target event.
  */
 export type ExtractEventParams<
   FC extends FactoryMachineContext<any>,
   T extends string,
 > = {
-  [StateKey in keyof FC["transitions"]]: {
-    [EventKey in keyof FC["transitions"][StateKey] & string]: EventKey extends T
-      ? ExtractParamTypes<FC, StateKey, EventKey>
-      : never;
-  }[keyof FC["transitions"][StateKey] & string];
+  [K in keyof FC["transitions"]]: T extends keyof FC["transitions"][K]
+    ? ExtractParamTypes<FC, K, T>
+    : never;
 }[keyof FC["transitions"]];
 
 export interface FactoryMachineContext<
