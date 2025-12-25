@@ -177,15 +177,19 @@ bindEffects({ Notify: (data) => { ... } })
 
 ## Documentation Quality Issues
 
-### Broken Links (Potential)
+### Broken Links (Verified)
 
-| Link | Status |
-|------|--------|
-| `/matchina/lifecycle/` | Should be `/matchina/guides/lifecycle/` |
-| `/matchina/effects/` | Should be `/matchina/guides/effects/` |
-| `/matchina/promises/` | Should be `/matchina/guides/promises/` |
-| `/matchina/react/` | Should be `/matchina/guides/react/` |
-| `/matchina/matchbox/` | Should be `/matchina/guides/matchbox-factories/` |
+| File | Invalid Link | Issue |
+|------|--------------|-------|
+| `traffic-light-extended.mdx` | `/matchina/guides/nested-states` | **No file** - should be `/matchina/guides/hierarchical-machines` |
+| `traffic-light-extended.mdx` | `/matchina/guides/history` | **No file** - page doesn't exist |
+| `traffic-light.mdx` | `/matchina/guides/matchbox-typescript-inference` | **No file** - might mean `machine-inference` |
+| `fetcher-advanced.mdx` | `/matchina/guides/matchbox-typescript-inference` | **No file** - same as above |
+| `machines.mdx` | `/matchina/lifecycle/` | **Missing path** - should be `/matchina/guides/lifecycle/` |
+| `machines.mdx` | `/matchina/effects/` | **Missing path** - should be `/matchina/guides/effects/` |
+| `machines.mdx` | `/matchina/promises/` | **Missing path** - should be `/matchina/guides/promises/` |
+| `machines.mdx` | `/matchina/react/` | **Missing path** - should be `/matchina/guides/react/` |
+| `machines.mdx` | `/matchina/matchbox/` | **Missing path** - should be `/matchina/guides/matchbox-factories/` |
 
 ### Inconsistent Terminology
 
