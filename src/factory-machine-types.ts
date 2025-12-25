@@ -117,6 +117,9 @@ export type FactoryMachineTransition<
       }
     ) => FactoryKeyedState<SF> | null | undefined);
 
+/**
+ * Union of all possible transition events for a factory machine.
+ */
 export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
   [K in keyof FC["transitions"]]: {
     [E in keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
