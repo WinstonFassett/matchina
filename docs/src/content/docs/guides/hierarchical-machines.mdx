@@ -1,0 +1,135 @@
+---
+title: Hierarchical Machines
+description: Build complex nested state machines with flattening
+---
+
+:::caution[Experimental Feature]
+Hierarchical state machines are experimental in Matchina. The APIs may change and complex nested types may require explicit annotations.
+:::
+
+## What are Hierarchical Machines?
+
+Hierarchical State Machines (HSMs) allow you to build complex state machines by nesting child machines within parent states. Matchina's approach **flattens** nested definitions into a single-level machine with dot-notation keys.
+
+**Key benefits:**
+- **Modular definition** - Define nested structure, run as flat machine
+- **Simple runtime** - No nested machine instances to manage
+- **Familiar events** - Same `send()` API, states like `"Working.Red"`
+
+## When to Use Hierarchy
+
+:::tip[Core Principle]
+Use hierarchy only when a state temporarily takes control and must return control when finished. If states merely describe *what is true*, hierarchy is the wrong tool.
+:::
+
+**Good examples (temporary delegation):**
+- **Traffic light** - `Working` contains `Red`/`Green`/`Yellow` cycle
+- **Checkout flow** - `Payment` contains `MethodEntry`/`Authorizing`/`Authorized`
+- **Search bar** - `Active` owns focus, contains `TextEntry`/`Results`
+
+**Bad examples (semantic grouping):**
+- **"Loading" nested under "Viewing"** when both can exist independently
+- Using hierarchy as namespacing for unrelated concerns
+
+## Flattening Approach
+
+Define nested structure with `defineSubmachine`, then flatten to a single-level machine:
+
+```ts
+import { 
+  defineMachine, 
+  defineSubmachine, 
+  flattenMachineDefinition,
+  createMachineFromFlat,
+  defineStates 
+} from "matchina";
+
+// Define hierarchical structure
+const def = defineMachine(
+  defineStates({
+    Broken: undefined,
+    Working: defineSubmachine(
+      defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
+      {
+        Red: { tick: "Green" },
+        Green: { tick: "Yellow" },
+        Yellow: { tick: "Red" },
+      },
+      "Red"
+    ),
+    Maintenance: undefined,
+  }),
+  {
+    Broken: { repair: "Working", maintenance: "Maintenance" },
+    Working: { break: "Broken", maintenance: "Maintenance" },
+    Maintenance: { complete: "Working" },
+  },
+  "Working"
+);
+
+// Flatten and create machine
+const flat = flattenMachineDefinition(def);
+const machine = createMachineFromFlat(flat);
+
+// States are now: "Broken", "Working.Red", "Working.Green", "Working.Yellow", "Maintenance"
+machine.getState().key; // "Working.Red" (initial)
+machine.send("tick");   // -> "Working.Green"
+machine.send("break");  // -> "Broken"
+machine.send("repair"); // -> "Working.Red"
+```
+
+## How Flattening Works
+
+### State Keys
+Nested states become dot-notation keys:
+- `Working` with child `Red` → `"Working.Red"`
+- `Working` with child `Green` → `"Working.Green"`
+
+### Transitions
+- **Child transitions** are prefixed: `Red: { tick: "Green" }` → `"Working.Red": { tick: "Working.Green" }`
+- **Parent transitions** apply to all child leaves: `Working: { break: "Broken" }` → both `"Working.Red"` and `"Working.Green"` get `break: "Broken"`
+- **Initial states** cascade: transitioning to `"Working"` goes to `"Working.Red"` (the child's initial)
+
+### Event Collision
+When parent and child define the same event, **child wins** (first-seen policy):
+
+```ts
+const def = defineMachine(
+  {
+    Parent: defineSubmachine(
+      { Child: undefined },
+      { Child: { event: "Child" } }, // Child handles "event"
+      "Child"
+    )
+  },
+  { Parent: { event: "Parent" } }, // Parent also defines "event"
+  "Parent"
+);
+
+const flat = flattenMachineDefinition(def);
+// "Parent.Child" has { event: "Parent.Child" } - child transition wins
+```
+
+## API Reference
+
+### `defineMachine(states, transitions, initial)`
+Creates a machine definition object (not a running machine).
+
+### `defineSubmachine(states, transitions, initial)`
+Marks a state as containing a nested machine. Returns `{ machine: MachineDefinition }`.
+
+### `flattenMachineDefinition(def, options?)`
+Flattens nested definitions into single-level structure.
+- `options.delimiter` - Key separator (default: `"."`)
+
+### `createMachineFromFlat(flatDef)`
+Creates a running machine from a flattened definition.
+
+### `createMachineFrom(def)`
+Creates a running machine from a non-flattened definition (no nesting support).
+
+## Notes
+
+- Complex nested types may require explicit annotations
+- Flattening happens at definition time, not runtime
+- The flattened machine is a normal `FactoryMachine` with string keys
