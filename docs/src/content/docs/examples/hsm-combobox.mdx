@@ -1,0 +1,65 @@
+---
+title: Hierarchical Combobox
+description: An autocomplete tag editor demonstrating complex nested state management with keyboard navigation.
+---
+
+import Example from "@code/examples/hsm-combobox/example";
+import machineCode from "@code/examples/hsm-combobox/machine.ts?raw";
+import flatMachineCode from "@code/examples/hsm-combobox/machine-flat.ts?raw";
+import viewCode from "@code/examples/hsm-combobox/ComboboxView.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+This example demonstrates a sophisticated autocomplete tag editor with hierarchical state management. The main combobox has two states (Inactive/Active) and contains a nested active machine that handles the complex autocomplete logic.
+
+## Key Features
+
+- **Hierarchical Structure**: Parent combobox with nested active state machine
+- **Keyboard Navigation**: Arrow keys, Enter, Escape support
+- **Dynamic Filtering**: Real-time suggestions based .toLowerCase().includes。
+- ** .toLowerCase()与管理
+-.
+- ** 。
+-yez
+-azin
+-asd
+asd
+效果图
+asd
+ 。
+- **Flattened .toLowerCase() .toLowerCase() .
+-.
+- **.
+- ** .toLowerCase()也已经
+- .toLowerCase()
+ .toLowerCase。
+- .toLowerCase。
+- ** 。
+
+## State Structure
+
+The main combobox has:
+- **Inactive**: Click to activate
+- **Active**: Contains nested active machine with states:
+  - Empty: No input, no suggestions
+  - TextEntry: Typing but no matching suggestions
+  - Suggesting: Showing suggestions
+  - Selecting: Navigating suggestions with arrow keys
+
+## Hierarchical vs Flattened
+
+Toggle between implementations to compare:
+
+- **Hierarchical**: Clean separation, parent-child communication
+- **Flattened**: Single machine with composite states
+
+<div className="not-content">
+  <Example client:only="react" />
+</div>
+
+<CodeTabs
+  files={[
+    { name: "machine.ts (Hierarchical)", code: machineCode },
+    { name: "machine-flat.ts (Flattened)", code: flatMachineCode },
+    { name: "ComboboxView.tsx", code: viewCode },
+  ]}
+/>
