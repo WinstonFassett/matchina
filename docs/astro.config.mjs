@@ -1,5 +1,4 @@
 import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
@@ -384,7 +383,4 @@ export default defineConfig({
     }),
     react(),
   ],
-  vite: {
-    plugins: [tailwindcss()],
-  },
 });

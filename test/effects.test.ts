@@ -86,7 +86,7 @@ describe("bindEffects", () => {
 
     bindEffects(machine, (state) => (state.data as any)?.effects, {}, true);
     expect(() => machine.api.next()).toThrowErrorMatchingInlineSnapshot(
-      `"Match did not handle key: 'Notify'"`
+      `[Error: Match did not handle key: 'Notify']`
     );
   });
   it("_ should match all unmatched effects regardless of whether match is exhaustive", () => {
