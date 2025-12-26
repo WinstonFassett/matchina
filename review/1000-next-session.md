@@ -4,13 +4,38 @@
 
 You are continuing a systematic review of the Matchina TypeScript state machine library. The goal is to complete design work before creating implementation tickets.
 
-**Branch**: `hierarchical-machines-with-viz-r5` (HSM code review)
+**Branch**: `refactory-types-20251225` (type optimization work, branched from `hierarchical-machines-with-viz-r5`)
 
-**Session status**: ~50% through design phase. Discovery complete, some decisions made, but key design questions remain unresolved.
+**Session status**: Phase 1 type optimization complete. Design phase ~60% done.
 
 ---
 
 ## What's Been Done
+
+### Type Optimization (Dec 25, 2025)
+
+**Phase 1 (P0) Complete** — 10 commits, -3.9% instantiations:
+
+1. Simplified `ExtractEventParams` from double-nested to single-level mapped type
+2. Simplified `ExtractParamTypes` from 4-level to 2-level conditional
+3. Added `string &` constraints to all mapped types to prevent key explosion
+4. Simplified `FactoryMachineTransition` curried event type
+
+**Results**:
+- Full project: 1,559,777 → 1,499,286 instantiations (-3.9%)
+- Docs example: 144,149 instantiations (clean baseline, shows library types are efficient)
+- The 1.5M in full project comes from test files and Astro/node_modules
+
+**Deferred**:
+- Phase 2 (P1): `FlattenFactoryStateKeys` template literal explosion
+- Phase 3 (P2): Replacing `any` usages (intentional for ergonomics)
+
+See `review/04-types.md` for full details.
+
+### Docs Fixes (Dec 25, 2025)
+
+- Fixed README duplicate sections (Philosophy, What is Matchina, Installation)
+- Fixed 9 broken internal links in mdx files
 
 ### Review Documents (in `review/`)
 
@@ -20,7 +45,7 @@ You are continuing a systematic review of the Matchina TypeScript state machine 
 | `01-architecture.md` | Core abstractions, responsibility boundaries |
 | `02-api-surface.md` | All exports, redundancies, naming issues |
 | `03-hsm-semantics.md` | HSM behavior, edge cases, ambiguities |
-| `04-types.md` | Type architecture, complexity, `any` usage |
+| `04-types.md` | Type architecture, **updated with Phase 1 results** |
 | `05-docs.md` | Doc structure, drift, broken links (9 found) |
 | `06-demo.md` | Demo as validation artifact |
 | `90-synthesis.md` | Summary of findings, risk areas |
@@ -39,14 +64,22 @@ You are continuing a systematic review of the Matchina TypeScript state machine 
 |----------|------------|
 | HSM approach | Both; flattening primary, propagation experimental |
 | API: replace `matchina()` | Use `.extend()` pattern (tree-shakeable) |
-| Type safety | No `any` in type definitions |
+| Type safety | No `any` in type definitions (deferred for ergonomics) |
 | HSM packaging | Single `matchina/hsm`, tree-shaking handles rest |
 | Visualizers | Incubate in docs, externalize later |
 | Docs strategy | Docs follow code, README = condensed docs |
+| Type optimization | Phase 1 complete; P1/P2 deferred |
 
 ---
 
-## Unresolved Design Concerns
+## Remaining Work
+
+### bd ready tasks
+
+1. **matchina-1ve**: Add StoreMachine guide and interactive example (P2)
+2. **matchina-aj9**: Merge branch to main (blocked on user decision)
+
+### Unresolved Design Concerns
 
 These need design work before we can create implementation tickets:
 
@@ -89,19 +122,13 @@ These need design work before we can create implementation tickets:
 - What's the API difference from user perspective?
 - Should propagation be marked deprecated or just experimental?
 
-### 4. Type Efficiency
+### 4. Type Efficiency (Phase 2+)
 
-**Question**: How to improve type performance?
+**Completed**: Phase 1 (P0) — simplified mapped types, added `string &` constraints
 
-**Identified issues** (from `04-types.md`):
-- Complex template literal types in flattening
-- Recursive types for HSM
-- `any` in type definitions
-
-**Needs**:
-- Run TypeSlayer analysis
-- Identify specific bottlenecks
-- Design simpler alternatives
+**Deferred**:
+- P1: `FlattenFactoryStateKeys` template literal explosion (advanced feature, works at runtime)
+- P2: Replacing `any` usages (intentional for cross-state access patterns)
 
 ---
 
