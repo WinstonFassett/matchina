@@ -2,6 +2,7 @@ import react from "@astrojs/react";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
@@ -379,4 +380,7 @@ export default defineConfig({
     }),
     react(),
   ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });
