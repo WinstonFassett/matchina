@@ -102,6 +102,14 @@ export type FactoryMachineTransitions<SF extends KeyedStateFactory> = {
   };
 };
 
+// Simplified event type for curried transitions - avoids recursive FactoryMachineEvent reference
+type CurriedTransitionEvent<SF extends KeyedStateFactory, FromStateKey extends keyof SF, EventKey extends string> = {
+  type: EventKey;
+  from: FactoryKeyedState<SF, FromStateKey>;
+  params: any[];
+  machine: any;
+};
+
 export type FactoryMachineTransition<
   SF extends KeyedStateFactory,
   FromStateKey extends keyof SF = keyof SF,
@@ -110,12 +118,7 @@ export type FactoryMachineTransition<
   | keyof SF
   | ((...params: any[]) => FactoryKeyedState<SF>)
   | ((...params: any[]) => (
-      ev: ResolveEvent<
-        FactoryMachineEvent<{ states: SF; transitions: any }>
-      > & {
-        type: EventKey;
-        from: FactoryKeyedState<SF, FromStateKey>;
-      }
+      ev: CurriedTransitionEvent<SF, FromStateKey, EventKey>
     ) => FactoryKeyedState<SF> | null | undefined);
 
 /**
