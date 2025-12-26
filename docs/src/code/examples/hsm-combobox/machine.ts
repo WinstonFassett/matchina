@@ -129,6 +129,8 @@ const createHierarchicalActiveMachine = () => {
   const machine = createActiveMachine();
   return createHierarchicalMachine(machine);
 };
+// Copy .def from base machine for visualization
+(createHierarchicalActiveMachine as any).def = (createActiveMachine as any).def;
 
 // Create submachine factory
 const activeFactory = submachine(createHierarchicalActiveMachine, { id: "active" });

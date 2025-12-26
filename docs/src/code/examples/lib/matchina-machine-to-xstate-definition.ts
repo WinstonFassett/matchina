@@ -44,6 +44,10 @@ export function getXStateDefinition<
 
     Object.entries(machine.transitions).forEach(([fromKey, events]) => {
       Object.entries(events as object).forEach(([event, entry]) => {
+        // Skip function transitions - they can't be statically resolved
+        if (typeof entry === 'function') {
+          return;
+        }
         const resolved = resolveState(machine.states, fromKey, entry);
         definition.states[fromKey].on[event] = resolved.key;
       });
@@ -52,7 +56,6 @@ export function getXStateDefinition<
     // Auto-discover nested machines from state factories with .machineFactory (from submachine helper)
     Object.entries(machine.states).forEach(([stateKey, stateFactory]) => {
       const machineFactory = (stateFactory as any)?.machineFactory;
-      console.log('[getXStateDefinition] checking state', stateKey, 'machineFactory:', !!machineFactory, 'def:', !!machineFactory?.def);
       if (!machineFactory?.def) {
         return;  // Must have .def - no function calls!
       }
@@ -69,11 +72,38 @@ export function getXStateDefinition<
           initialKey: nestedDef.initial,
           getState: () => ({ key: nestedDef.initial })  // Minimal stub for compatibility
         };
+        // Override buildDefinition to skip function transitions for nested machines
+        const buildNestedDefinition = (machine: any, parentKey: string | undefined, stack: any) => {
+          const initialState = machine.getState();
+          const declaredInitial = (machine as any).initialKey ?? initialState.key;
+          const definition = {
+            initial: declaredInitial,
+            states: {} as Record<string, any>,
+          };
+
+          Object.entries(machine.states).forEach(([key, _state]) => {
+            const fullKey = parentKey ? `${parentKey}.${key}` : key;
+            definition.states[key] = { key, fullKey, on: {} };
+          });
+
+          Object.entries(machine.transitions).forEach(([fromKey, events]) => {
+            Object.entries(events as object).forEach(([event, entry]) => {
+              // Skip function transitions - they can't be statically resolved
+              if (typeof entry === 'function') {
+                return;
+              }
+              const resolved = resolveState(machine.states, fromKey, entry);
+              definition.states[fromKey].on[event] = resolved.key;
+            });
+          });
+
+          return definition;
+        };
 
         if (nestedMachine && nestedDef.states) {
           const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
           const childStack = [...stack, { key: stateKey, fullKey: childFullKey }];
-          const childDefinition = buildDefinition(nestedMachine as any, childFullKey, childStack);
+          const childDefinition = buildNestedDefinition(nestedMachine as any, childFullKey, childStack);
 
           if (!definition.states[stateKey]) {
             definition.states[stateKey] = { on: {} };
@@ -83,6 +113,18 @@ export function getXStateDefinition<
           }
           definition.states[stateKey].states = childDefinition.states;
           definition.states[stateKey].stack = childStack;
+
+          // Copy parent transitions to nested states for visualization
+          // This shows what events are available at the parent level
+          const parentTransitions = machine.transitions?.[stateKey] || {};
+          for (const [nestedKey, nestedConfig] of Object.entries(childDefinition.states) as [string, any][]) {
+            for (const [event, target] of Object.entries(parentTransitions)) {
+              // Only add string transitions that aren't already defined
+              if (typeof target === 'string' && !nestedConfig.on[event]) {
+                nestedConfig.on[event] = target;
+              }
+            }
+          }
         }
       } catch (e) {
         // Skip if nested machine inspection fails
