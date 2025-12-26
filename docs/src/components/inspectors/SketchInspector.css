@@ -126,28 +126,10 @@
   cursor: pointer;
 }
 
-.transition-button.enabled.ancestor-state {
-  color: var(--sl-color-gray-6);
-  border-color: var(--sl-color-gray-4);
-  background: var(--sl-color-gray-2);
-}
-
-.transition-button.enabled.ancestor-state:hover {
-  background: var(--sl-color-gray-4);
-  color: var(--sl-color-white);
-  border-color: var(--sl-color-gray-5);
-}
-
 .transition-button.enabled:hover {
   background: var(--sl-color-accent);
   color: var(--sl-color-white);
   border-color: var(--sl-color-accent);
-}
-
-.ancestor-indicator {
-  font-size: 10px;
-  opacity: 0.7;
-  margin-left: 4px;
 }
 
 .transition-name {

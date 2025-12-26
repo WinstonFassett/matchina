@@ -77,7 +77,6 @@ export function MachineExampleWithChart({
           
           <VisualizerDemo
             machine={machine}
-            actions={actions as any}
             title="State Machine Visualizers"
             description="Interactive state machine visualization with multiple view options."
             defaultVisualizer="sketch"

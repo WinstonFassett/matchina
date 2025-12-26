@@ -255,31 +255,16 @@ const MermaidInspector = memo(
         const type = meta?.type;
         const from = meta?.fromState;
         const action = type ? currentActions?.[type] : undefined;
-        
-        // Check if this is an action from the current state or an ancestor
-        // For nested states, fromState is just the leaf name (e.g., "MethodEntry")
-        // while currentKey might be the full path (e.g., "payment_MethodEntry")
-        const isCurrentStateAction = from === currentKey || 
-          (currentKey.includes('_') && from === currentKey.split('_').slice(-1)[0]);
-        
-        // Check if it's an ancestor action - from is an ancestor of currentKey
-        const isAncestorAction = !isCurrentStateAction && from && 
-          (currentKey === from || currentKey.startsWith(from + '_') || 
-           currentKey.endsWith('_' + from) || currentKey.includes('_' + from + '_'));
-        
-        const canInvoke = !!action && currentInteractive && (isCurrentStateAction || isAncestorAction);
+        const clickable = !!action && currentInteractive && from === currentKey;
 
-        p.classList.remove('edge-active', 'edge-inactive', 'edge-interactive', 'edge-ancestor');
-        if (isCurrentStateAction && action) {
+        p.classList.remove('edge-active', 'edge-inactive', 'edge-interactive');
+        if (from === currentKey && action) {
           p.classList.add('edge-active');
-          if (canInvoke) p.classList.add('edge-interactive');
-        } else if (isAncestorAction && action) {
-          p.classList.add('edge-ancestor');
-          if (canInvoke) p.classList.add('edge-interactive');
+          if (clickable) p.classList.add('edge-interactive');
         } else {
           p.classList.add('edge-inactive');
         }
-        p.onclick = canInvoke ? () => action?.() : null;
+        p.onclick = clickable ? () => action?.() : null;
       });
     }
 
