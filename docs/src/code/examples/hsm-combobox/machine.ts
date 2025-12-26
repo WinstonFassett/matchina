@@ -125,10 +125,86 @@ const createActiveMachine = () => createMachine(
   activeStates.Empty([])
 );
 
-// Wrap with hierarchical machine (traffic light pattern)
+// Wrap with hierarchical machine (traffic light pattern with .def for visualization)
 const createHierarchicalActiveMachine = () => {
   const machine = createActiveMachine();
   return createHierarchicalMachine(machine);
+};
+
+// Attach .def to the factory function for visualization discovery
+(createHierarchicalActiveMachine as any).def = {
+  states: activeStates,
+  transitions: {
+    Empty: {
+      typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
+      focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
+    },
+    TextEntry: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([])
+    },
+    Suggesting: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
+      arrowDown: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
+        highlightedIndex: 0 
+      })
+    },
+    Selecting: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
+      arrowUp: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
+        highlightedIndex: Math.max(0, ev.from.data.highlightedIndex - 1) 
+      }),
+      arrowDown: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
+        highlightedIndex: Math.min(ev.from.data.suggestions!.length - 1, ev.from.data.highlightedIndex + 1) 
+      }),
+      enter: () => (ev: any) => {
+        const selectedTag = ev.from.data.suggestions![ev.from.data.highlightedIndex];
+        return activeStates.TextEntry({ 
+          input: "", 
+          selectedTags: [...ev.from.data.selectedTags, selectedTag] 
+        });
+      }
+    }
+  },
+  initial: "Empty"
 };
 
 // Create submachine factory
