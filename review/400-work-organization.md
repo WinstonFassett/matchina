@@ -80,12 +80,12 @@ Tasks that depend on merged HSM or are independent:
    - Ensure tree-shaking works
 
 4. **Fix broken doc links**
-   - 9 links identified in `06-docs.md`
+   - 9 links identified in `105-docs.md`
 
 ### Post-Merge Tickets
 
 5. **TypeSlayer analysis**
-   - Context: Review findings from `05-types.md`, `15-conversation-notes.md`
+   - Context: Review findings from `104-types.md`, `304-conversation-notes.md`
    - Goal: Identify type bottlenecks, simplify complex mapped types
    - Independent session
 
