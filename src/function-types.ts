@@ -23,7 +23,6 @@ export type SetupFunc<T> = (target: T) => DisposeFunc;
 export type EffectFunc<E> = (ev: E) => void;
 
 /**
- * @interface
  * DisposableEffect is a type alias for functions that can be used as effects in a state machine.
  * It can be either an effect with teardown or a simple effect function.
  * This allows for flexibility in how effects are defined and used within the state machine lifecycle.
@@ -38,7 +37,7 @@ export type DisposableEffect<E> = EffectFunc<E> | SetupFunc<E>;
 export type MiddlewareFunc<E> = (event: E, next: (event: E) => void) => void;
 
 /**
- * @ignore
+ * @internal
  * Func is a generic function type: (...args) => result.
  */
 export type Func<A = any, R = any> = (...args: A[]) => R;

@@ -6,7 +6,6 @@ import { effect } from "../state-machine-hooks";
 import { Funcware } from "../function-types";
 
 /**
- * @interface
  * EffectMatchbox is a type representing an effect matchbox member.
  * Used to group and handle effect-related logic in matchbox factories.
  */
