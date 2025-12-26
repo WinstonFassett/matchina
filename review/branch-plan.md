@@ -305,16 +305,19 @@ graph TD
 1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
 2. `docs/hsm-propagation-examples` ✓
 
-### Phase 4: Flatten-based Examples (NEW - merge before propagation)
-1. `docs/hsm-flatten-examples` - Port examples using flatten approach (matchina-b96)
+### Phase 4: Flatten-based Examples ✓ IN PROGRESS
+1. `docs/hsm-flatten-examples` ✓ - Port examples using flatten approach (matchina-b96 closed)
 2. Update hierarchical-machines.mdx to lead with flatten (matchina-0vb)
 
 ### Phase 5: Remaining Work
 - Design manifest format (matchina-p4g) - lower priority
 - Create matchina/inspect subpath (matchina-3sj) - after merge
 - Externalize visualizers (matchina-9zh) - lower priority
-- Type improvements (matchina-hi7, matchina-ukb)
-- StoreMachine guide (matchina-1ve)
+
+### Open Beads (independent work)
+- **matchina-hi7** - FlattenFactoryStateKeys type optimization → `fix/types` from main
+- **matchina-ukb** - FactoryMachine type errors → `fix/types` from main  
+- **matchina-1ve** - StoreMachine guide → `docs/store-machine-guide` from dev
 
 ---
 
@@ -358,8 +361,9 @@ Propagation stack is TBD - may merge later or keep as experimental.
 
 ## Next Steps
 
-1. Create `docs/hsm-flatten-examples` branch from `feat/visualizers`
-2. Port HSM examples from feature/hsm-with-viz, adapt to use flatten approach
-3. Update hierarchical-machines.mdx to lead with flatten
-4. Merge flatten-based stack to dev, then main
-5. Propagation stack TBD
+1. ✓ `docs/hsm-flatten-examples` branch created and has flatten example work
+2. Complete open beads on appropriate branches:
+   - `fix/types` from main for matchina-hi7, matchina-ukb
+   - `docs/store-machine-guide` from dev for matchina-1ve
+3. Merge flatten-based stack to dev, then main
+4. Propagation stack TBD
