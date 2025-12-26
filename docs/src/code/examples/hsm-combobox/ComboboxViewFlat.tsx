@@ -53,7 +53,7 @@ function StateDisplay() {
           {parsed.full}
         </span>
       </div>
-      
+
       <InputSection />
       <SuggestionsList />
     </div>
@@ -65,20 +65,11 @@ function InputSection() {
   const state = machine.getState();
   const parsed = parseFlatStateKey(state.key);
 
-  console.log('Flattened InputSection:', { 
-    stateKey: state.key, 
-    parsed, 
-    data: state.data 
-  });
-
   if (parsed.full === "Inactive") {
     return (
       <button
         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-        onClick={() => {
-          console.log('Sending focus event');
-          machine.send('focus');
-        }}
+        onClick={() => machine.send('focus')}
       >
         Click to add tags
       </button>
@@ -106,7 +97,7 @@ function ActiveInput() {
     <div className="space-y-2">
       <input
         ref={inputRef}
-        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
         placeholder="Type to search tags... (Press ESC to close)"
         value={input}
         onChange={(e) => machine.send('typed', e.target.value)}
@@ -114,6 +105,7 @@ function ActiveInput() {
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             machine.send('escape');
+            e.preventDefault();
           } else if (e.key === 'ArrowDown') {
             machine.send('arrowDown');
             e.preventDefault();
@@ -160,41 +152,24 @@ function SuggestionsDisplay({
 
   return (
     <div className="border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg">
+      <div className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 border-b border-gray-200 dark:border-gray-700">
+        Use ↑↓ arrows to navigate, Enter to select, or click
+      </div>
       {suggestions.map((suggestion, index) => (
-        <div
+        <button
           key={suggestion}
-          className={`px-3 py-2 cursor-pointer transition-colors ${
+          onClick={() => {
+            // Use addTag event to directly add the clicked tag
+            machine.send('addTag', suggestion);
+          }}
+          className={`w-full text-left px-3 py-2 transition-colors ${
             index === highlightedIndex
               ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
               : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
           }`}
-          onClick={() => {
-            // For flattened machine, we need to send the enter event with the current state
-            machine.send('enter');
-          }}
-          onMouseEnter={() => {
-            if (highlightedIndex !== index) {
-              // Send arrow events to navigate to the specific index
-              const currentState = machine.getState();
-              if (currentState.data?.suggestions) {
-                // Calculate how many arrow down events needed to reach this index
-                const currentIndex = currentState.data.highlightedIndex || 0;
-                const diff = index - currentIndex;
-                if (diff > 0) {
-                  for (let i = 0; i < diff; i++) {
-                    machine.send('arrowDown');
-                  }
-                } else if (diff < 0) {
-                  for (let i = 0; i < Math.abs(diff); i++) {
-                    machine.send('arrowUp');
-                  }
-                }
-              }
-            }
-          }}
         >
           {suggestion}
-        </div>
+        </button>
       ))}
     </div>
   );

@@ -29,7 +29,8 @@
       "Bash(cat:*)",
       "Bash(wc:*)",
       "Bash(bd list:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(node --loader tsx:*)"
     ],
     "deny": [],
     "ask": []
