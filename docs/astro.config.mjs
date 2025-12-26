@@ -175,6 +175,10 @@ export default defineConfig({
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
+            {
+              label: "Hierarchical Machines",
+              link: "/guides/hierarchical-machines",
+            },
           ]
         },
         {
