@@ -552,8 +552,8 @@ npm install matchina
 For detailed documentation, examples, and API reference, visit:
 
 - [Getting Started](https://winstonfassett.github.io/matchina/guides/quickstart)
-- [Matchbox Tutorial](https://winstonfassett.github.io/matchina/guides/union-machines)
-- [Factory Machines](https://winstonfassett.github.io/matchina/guides/machines)
+- [Matchbox Factories](https://winstonfassett.github.io/matchina/guides/matchbox-factories)
+- [State Machines](https://winstonfassett.github.io/matchina/guides/machines)
 - [Promise Handling](https://winstonfassett.github.io/matchina/guides/promises)
 - [Lifecycle Hooks](https://winstonfassett.github.io/matchina/guides/lifecycle)
 - [React Integration](https://winstonfassett.github.io/matchina/guides/react)
