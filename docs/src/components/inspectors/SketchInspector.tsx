@@ -39,9 +39,16 @@ function SketchInspector({
   const nestedState = nestedMachine?.getState?.();
   const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
-  // Step 3: Prepare highlighting info - compute deepest active path by walking child chain
-  // const currentStateKey = currentState?.key;
+  // Step 3: Prepare highlighting info - compute deepest active path
+  // For flattened machines, the state key already contains the full path (e.g., "Working.Red")
+  // For nested machines, we walk the child chain
   const fullPath = (() => {
+    const stateKey = currentState?.key || '';
+    // If state key contains dots, it's already a flattened full path
+    if (stateKey.includes('.')) {
+      return stateKey;
+    }
+    // Otherwise, walk nested machines
     const parts: string[] = [];
     let cursor: any = machine;
     let guard = 0;

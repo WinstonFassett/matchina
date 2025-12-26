@@ -23,6 +23,12 @@ const HSMMermaidInspector = memo(({
   
   // Build hierarchical state key using new fullKey property or fallback
   const hierarchicalStateKey = useMemo(() => {
+    // For flattened machines, state key already contains dots (e.g., "Working.Red")
+    // Convert to underscore format for Mermaid node IDs
+    if (stateKey.includes('.')) {
+      return stateKey.replace(/\./g, '_');
+    }
+    
     if (actualState?.fullKey) {
       // Use the new fullKey property from hierarchical context
       return actualState.fullKey.replace(/\./g, '_');
