@@ -7,7 +7,7 @@ export type MatchCases<
   : AnyCases<Record, A>;
 
 export type Cases<Record, A> = {
-  [T in keyof Record]: (value: Record[T]) => A;
+  [T in string & keyof Record]: (value: Record[T]) => A;
 };
 type PartialCases<Record, A> = Partial<Cases<Record, A>> & {
   _: (variant: Record[keyof Record]) => A;
@@ -33,7 +33,7 @@ export type MatchInvocationCases<
   ? (InvocationCases<R, A> & { _?: never }) | PartialInvocationCases<R, A>
   : AnyInvocationCases<R, A>;
 type InvocationCases<R extends FuncRecord, A> = {
-  [T in keyof R]: (...params: Parameters<R[T]>) => A;
+  [T in string & keyof R]: (...params: Parameters<R[T]>) => A;
 };
 type PartialInvocationCases<R extends FuncRecord, A> = Partial<
   InvocationCases<R, A>
