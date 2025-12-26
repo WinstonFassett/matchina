@@ -82,10 +82,10 @@ const createActiveMachine = () => createMachine(
       },
       blur: () => activeStates.Empty([]),
       escape: () => activeStates.Empty([]),
-      arrowDown: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
+      arrowDown: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
         highlightedIndex: 0 
       })
     },
@@ -101,23 +101,23 @@ const createActiveMachine = () => createMachine(
       },
       blur: () => activeStates.Empty([]),
       escape: () => activeStates.Empty([]),
-      arrowUp: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
-        highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
+      arrowUp: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
+        highlightedIndex: Math.max(0, ev.from.data.highlightedIndex - 1) 
       }),
-      arrowDown: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
-        highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
+      arrowDown: () => (ev: any) => activeStates.Selecting({ 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags, 
+        suggestions: ev.from.data.suggestions || [], 
+        highlightedIndex: Math.min(ev.from.data.suggestions!.length - 1, ev.from.data.highlightedIndex + 1) 
       }),
-      enter: (state: any) => {
-        const selectedTag = state.suggestions![state.highlightedIndex];
+      enter: () => (ev: any) => {
+        const selectedTag = ev.from.data.suggestions![ev.from.data.highlightedIndex];
         return activeStates.TextEntry({ 
           input: "", 
-          selectedTags: [...state.selectedTags, selectedTag] 
+          selectedTags: [...ev.from.data.selectedTags, selectedTag] 
         });
       }
     }
@@ -149,7 +149,7 @@ export function createComboboxMachine() {
       blur: "Inactive",
       close: "Inactive"
     },
-  }, comboboxStates.Active());
+  }, comboboxStates.Inactive());
 
   return createHierarchicalMachine(combobox);
 }
