@@ -49,10 +49,10 @@ Priority order:
 | Doc | Purpose |
 |-----|---------|
 | `MERGE-READINESS.md` | Merge decision checklist |
-| `31-work-plan.md` | Full work breakdown |
+| `18-work-plan.md` | Full work breakdown |
 | `05-types.md` | Type optimization status |
-| `21-api-brainstorm.md` | `.extend()` design notes |
-| `23-visualizers.md` | Viz infrastructure review |
+| `12-api-brainstorm.md` | `.extend()` design notes |
+| `14-visualizers.md` | Viz infrastructure review |
 
 ---
 

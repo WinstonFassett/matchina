@@ -382,5 +382,5 @@ const def = fromXState(xstateMachine);
 
 ## Work Organization
 
-See `30-work-organization.md` for full pre-merge vs post-merge breakdown.
+See `17-work-organization.md` for full pre-merge vs post-merge breakdown.
 
