@@ -1,6 +1,6 @@
-# Branch Plan: Splitting hierarchical-machines-with-viz-r5
+# Branch Plan: Splitting feature/hsm-with-viz
 
-This document plans how to split the `hierarchical-machines-with-viz-r5` branch into atomic, independent feature/fix branches from `main`.
+This document plans how to split the `feature/hsm-with-viz` branch into atomic, independent feature/fix branches from `main`.
 
 ---
 
