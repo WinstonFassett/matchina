@@ -176,6 +176,13 @@ function flattenFromRaw(
               }
               return result;
             };
+            // Preserve metadata from original transition (e.g., _targets from t() helper)
+            if ((toLeaf as any)._targets) {
+              // Namespace the target state keys
+              (prefTo as any)._targets = (toLeaf as any)._targets.map((t: string) =>
+                `${key}${delimiter}${t}`
+              );
+            }
           }
           ensureFlatTransition(flatTransitions, prefFrom, ev, prefTo);
         }
@@ -222,6 +229,13 @@ function flattenFromRaw(
           }
           return result;
         };
+        // Preserve metadata from original transition
+        if ((target as any)._targets) {
+          // Namespace target state keys
+          (targetValue as any)._targets = (target as any)._targets.map((t: string) =>
+            childInitialLeaf[t] ?? t
+          );
+        }
       }
 
       for (const s of sourceLeaves) {

@@ -45,8 +45,14 @@ export function getXStateDefinition<
 
     Object.entries(machine.transitions).forEach(([fromKey, events]) => {
       Object.entries(events as object).forEach(([event, entry]) => {
-        // Skip function transitions - they can't be statically resolved
+        // Check for inspectable function transitions (created with t() helper)
         if (typeof entry === 'function') {
+          if ((entry as any)._targets) {
+            // Function has inspection metadata - show all possible targets
+            definition.states[fromKey].on[event] = (entry as any)._targets;
+            return;
+          }
+          // Skip uninspectable functions
           return;
         }
         const resolved = resolveState(machine.states, fromKey, entry);
@@ -288,6 +294,9 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
         for (const [event, target] of Object.entries(flattenedTransitions as any || {})) {
           if (typeof target === 'string') {
             stateConfig.on[event] = target;
+          } else if (typeof target === 'function' && (target as any)._targets) {
+            // Function with inspection metadata
+            stateConfig.on[event] = (target as any)._targets;
           }
         }
       }

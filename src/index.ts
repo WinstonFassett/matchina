@@ -39,3 +39,4 @@ export * from "./definition-types";
 
 export * from "./nesting";
 export * from "./is-machine";
+export * from "./transition-helper";

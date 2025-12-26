@@ -3,7 +3,8 @@ import {
   defineMachine,
   defineSubmachine,
   flattenMachineDefinition,
-  createMachineFromFlat
+  createMachineFromFlat,
+  t
 } from "matchina";
 
 // Available options for autocomplete
@@ -57,47 +58,66 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
     .slice(0, 5);
 }
 
+// Shared discovery function for typed transitions
+const discoverTyped = (f: any) => {
+  const mockEv = { from: { data: { selectedTags: [] } } };
+  return [
+    f("")(mockEv),        // Empty input → Empty
+    f("typ")(mockEv),     // Partial match → Suggesting
+    f("nomatch")(mockEv)  // No match → TextEntry
+  ];
+};
+
 // Define the active submachine (nested states when focused)
 const activeSubmachine = defineSubmachine(
   activeStates,
   {
     Empty: {
-      typed: (value: string) => (ev: any) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) return activeStates.Empty(selectedTags);
+      typed: t(
+        (value: string) => (ev: any) => {
+          const selectedTags = ev.from.data.selectedTags;
+          if (!value.trim()) return activeStates.Empty(selectedTags);
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      removeTag: (tag: string) => (ev: any) => {
-        const newTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
-        return activeStates.Empty(newTags);
-      },
+          const suggestions = getSuggestions(value, selectedTags);
+          if (suggestions.length > 0) {
+            return activeStates.Suggesting({
+              input: value,
+              selectedTags,
+              suggestions
+            });
+          }
+          return activeStates.TextEntry({ input: value, selectedTags });
+        },
+        discoverTyped
+      ),
+      removeTag: t(
+        (tag: string) => (ev: any) => {
+          const newTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
+          return activeStates.Empty(newTags);
+        },
+        () => [activeStates.Empty([])]  // Always returns Empty
+      ),
     },
     TextEntry: {
-      typed: (value: string) => (ev: any) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
+      typed: t(
+        (value: string) => (ev: any) => {
+          const selectedTags = ev.from.data.selectedTags;
+          if (!value.trim()) {
+            return activeStates.Empty(selectedTags);
+          }
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
+          const suggestions = getSuggestions(value, selectedTags);
+          if (suggestions.length > 0) {
+            return activeStates.Suggesting({
+              input: value,
+              selectedTags,
+              suggestions
+            });
+          }
+          return activeStates.TextEntry({ input: value, selectedTags });
+        },
+        discoverTyped
+      ),
       clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
       addTag: (tag?: string) => (ev: any) => {
         const input = ev.from.data.input.trim();
@@ -114,22 +134,25 @@ const activeSubmachine = defineSubmachine(
       },
     },
     Suggesting: {
-      typed: (value: string) => (ev: any) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
+      typed: t(
+        (value: string) => (ev: any) => {
+          const selectedTags = ev.from.data.selectedTags;
+          if (!value.trim()) {
+            return activeStates.Empty(selectedTags);
+          }
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
+          const suggestions = getSuggestions(value, selectedTags);
+          if (suggestions.length > 0) {
+            return activeStates.Suggesting({
+              input: value,
+              selectedTags,
+              suggestions
+            });
+          }
+          return activeStates.TextEntry({ input: value, selectedTags });
+        },
+        discoverTyped
+      ),
       clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
       arrowDown: () => (ev: any) => {
         return activeStates.Selecting({
@@ -152,22 +175,25 @@ const activeSubmachine = defineSubmachine(
       },
     },
     Selecting: {
-      typed: (value: string) => (ev: any) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
+      typed: t(
+        (value: string) => (ev: any) => {
+          const selectedTags = ev.from.data.selectedTags;
+          if (!value.trim()) {
+            return activeStates.Empty(selectedTags);
+          }
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
+          const suggestions = getSuggestions(value, selectedTags);
+          if (suggestions.length > 0) {
+            return activeStates.Suggesting({
+              input: value,
+              selectedTags,
+              suggestions
+            });
+          }
+          return activeStates.TextEntry({ input: value, selectedTags });
+        },
+        discoverTyped
+      ),
       clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
       arrowUp: () => (ev: any) => {
         const { suggestions = [], highlightedIndex = 0 } = ev.from.data;
