@@ -120,3 +120,94 @@ export function getXStateDefinition<
 
   return buildDefinition(machine, parentKey, []);
 }
+
+/**
+ * Build XState definition from preserved original hierarchical definition.
+ * Used when a flattened machine has _originalDef attached.
+ */
+function buildDefinitionFromOriginal(def: any, parentKey?: string) {
+  type StateStack = { key: string; fullKey: string }[];
+  
+  function buildFromDef(
+    states: any,
+    transitions: any,
+    initial: string,
+    parentKey: string | undefined,
+    stack: StateStack
+  ): any {
+    const definition = {
+      initial,
+      states: {} as Record<string, any>,
+    };
+
+    // Process each state
+    for (const [key, stateFactory] of Object.entries(states)) {
+      const fullKey = parentKey ? `${parentKey}.${key}` : key;
+      definition.states[key] = { key, fullKey, on: {} };
+      
+      // Check if this state has a nested machine (from defineSubmachine)
+      let nestedMachine: any = null;
+      try {
+        // Try to get the state value to check for nested machine
+        if (typeof stateFactory === 'function') {
+          const stateValue = (stateFactory as any)();
+          // defineSubmachine returns { machine: MachineDefinition }
+          // The machine definition has { states, transitions, initial }
+          const machineRef = stateValue?.machine || stateValue?.data?.machine;
+          if (machineRef && machineRef.states && machineRef.transitions) {
+            nestedMachine = machineRef;
+          }
+        }
+      } catch (e) {
+        // Ignore - not a submachine
+      }
+      
+      if (nestedMachine) {
+        // Recursively build nested definition
+        const childStack = [...stack, { key, fullKey }];
+        const childDef = buildFromDef(
+          nestedMachine.states,
+          nestedMachine.transitions,
+          nestedMachine.initial,
+          fullKey,
+          childStack
+        );
+        definition.states[key].initial = nestedMachine.initial;
+        definition.states[key].states = childDef.states;
+        definition.states[key].stack = childStack;
+      } else {
+        definition.states[key].stack = [...stack, { key, fullKey }];
+      }
+    }
+
+    // Process transitions - need to handle both parent and nested transitions
+    for (const [fromKey, events] of Object.entries(transitions || {})) {
+      if (!definition.states[fromKey]) continue;
+      for (const [event, target] of Object.entries(events as any || {})) {
+        if (typeof target === 'string') {
+          definition.states[fromKey].on[event] = target;
+        }
+      }
+    }
+    
+    // Also add transitions from nested states to their parent's on map
+    // This ensures parent-level transitions show up in the visualization
+    for (const [stateKey, stateConfig] of Object.entries(definition.states) as [string, any][]) {
+      if (stateConfig.states) {
+        // Copy parent transitions to nested states (they apply to all children)
+        const parentTransitions = transitions?.[stateKey] || {};
+        for (const [nestedKey, nestedConfig] of Object.entries(stateConfig.states) as [string, any][]) {
+          for (const [event, target] of Object.entries(parentTransitions)) {
+            if (typeof target === 'string' && !nestedConfig.on[event]) {
+              nestedConfig.on[event] = target;
+            }
+          }
+        }
+      }
+    }
+
+    return definition;
+  }
+
+  return buildFromDef(def.states, def.transitions, def.initial, parentKey, []);
+}
