@@ -7,6 +7,7 @@ import MermaidInspector from "./inspectors/MermaidInspector";
 import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
 import ReactFlowInspector from "./inspectors/ReactFlowInspector";
+import VisualizerDemo from "./HSMVisualizerDemo";
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -17,7 +18,7 @@ interface MachineExampleWithChartProps {
   >;
   showRawState?: boolean;
   title?: string;
-  inspectorType?: "mermaid" | "force-graph" | "react-flow" | "basic";
+  inspectorType?: "mermaid" | "force-graph" | "react-flow" | "basic" | "picker";
   interactive?: boolean;
 }
 
@@ -46,9 +47,47 @@ export function MachineExampleWithChart({
     <div className="machine-example">
       {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
 
-      <div className="flex flex-col md:flex-row gap-4 w-full">
-        {/* Mermaid diagram */}
-        <div className="flex-1">
+      {inspectorType === "picker" ? (
+        <div className="space-y-6">
+          {/* App View */}
+          <div>
+            {AppView ? (
+              <AppView machine={machine} />
+            ) : (
+              <div className="p-4 border rounded">
+                <p className="text-sm text-gray-500">Current State</p>
+                <div className="text-lg font-bold">{currentState.key}</div>
+                <div className="mt-2">
+                  {Object.keys(actions).map(
+                    (action) =>
+                      !action.startsWith("_") && (
+                        <button
+                          key={action}
+                          className="mr-2 mb-2 px-3 py-1 rounded bg-blue-500 text-white text-sm"
+                          onClick={() => machine.send(action)}
+                        >
+                          {action}
+                        </button>
+                      )
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <VisualizerDemo
+            machine={machine}
+            actions={actions as any}
+            title="State Machine Visualizers"
+            description="Interactive state machine visualization with multiple view options."
+            defaultVisualizer="sketch"
+            interactive={interactive}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          {/* Traditional single visualizer */}
+          <div className="flex-1">
           {inspectorType === "basic" && (
             <BasicInspector
               config={config}
@@ -85,10 +124,10 @@ export function MachineExampleWithChart({
               interactive={interactive}
             />
           )}
-        </div>
+          </div>
 
-        {/* App View */}
-        <div className="flex-1">
+          {/* App View */}
+          <div className="flex-1">
           {AppView ? (
             <AppView machine={machine} />
           ) : (
@@ -111,18 +150,19 @@ export function MachineExampleWithChart({
               </div>
             </div>
           )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Show raw state data if requested */}
       {showRawState && (
         <div className="mt-4">
           <details>
             <summary className="cursor-pointer text-sm">
-              Show State Data
+              Show State JSON
             </summary>
             <pre className="text-xs mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded">
-              {JSON.stringify(currentState.data, null, 2)}
+              {JSON.stringify(currentState, null, 2)}
             </pre>
           </details>
         </div>

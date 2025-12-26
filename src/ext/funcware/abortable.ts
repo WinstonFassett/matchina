@@ -1,4 +1,4 @@
-import { Func, Funcware } from "../../function-types";
+import type { Func, Funcware } from "../../function-types";
 import { AbortableEventHandler } from "../abortable-event-handler";
 
 /**
@@ -26,9 +26,9 @@ import { AbortableEventHandler } from "../abortable-event-handler";
  * ```
  */
 export const abortable =
-  <E>(handler: AbortableEventHandler<E>): Funcware<Func<E, any>> =>
-  (inner) =>
-  (ev) => {
+  <E>(handler: AbortableEventHandler<E>): Funcware<Func<[E], any>> =>
+  (inner: Func<[E], any>) =>
+  (ev: E) => {
     let aborted = false;
     handler(ev, () => {
       aborted = true;

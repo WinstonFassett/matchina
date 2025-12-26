@@ -6,6 +6,7 @@ export * from "./extras/effects";
 export * from "./extras/when";
 export * from "./extras/with-subscribe";
 export * from "./extras/with-reset";
+export * from "./extras/with-event-api";
 export * from "./extras/zen";
 export * from "./factory-machine";
 export * from "./factory-machine-event-api";
@@ -33,3 +34,10 @@ export * from "./function-types";
 // match-change
 export * from "./match-change";
 export * from "./match-filters";
+// Re-export method-utility types so everyone imports the same symbol
+export type { HasMethod, MethodOf } from "./ext/methodware/method-utility-types";
+// Hierarchical machine experimental APIs
+export * from "./definitions";
+export * from "./nesting/propagateSubmachines";
+export * from "./nesting/submachine";
+export * from "./nesting/inspect";

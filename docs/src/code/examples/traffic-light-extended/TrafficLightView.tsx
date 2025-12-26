@@ -43,26 +43,26 @@ export const ExtendedTrafficLightView = ({
 
   // Handle light countdown
   useIntervalEffect(
-    () => setTimeRemaining((prev) => Math.max(0, prev - 100)),
+    () => setTimeRemaining((prev: number) => Math.max(0, prev - 100)),
     currentState.data.duration > 0 ? 100 : null
   );
 
   // Handle walk countdown
   useIntervalEffect(
-    () => setWalkTimeRemaining((prev) => Math.max(0, prev - 100)),
+    () => setWalkTimeRemaining((prev: number) => Math.max(0, prev - 100)),
     walkTimeRemaining > 0 ? 100 : null
   );
 
   // Handle traffic light blinking
   useIntervalEffect(
-    () => setIsBlinking((prev) => !prev),
+    () => setIsBlinking((prev: boolean) => !prev),
     currentState.is("FlashingYellow") || currentState.is("FlashingRed")
       ? 500
       : null
   );
   useIntervalEffect(
     () => {
-      setWalkBlinking((prev) => !prev);
+      setWalkBlinking((prev: boolean) => !prev);
     },
     walkTimeRemaining > 0 ? 500 : null
   );

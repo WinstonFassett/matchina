@@ -171,7 +171,11 @@ export default defineConfig({
               label: "Promise Machines",
               link: "/guides/promises",
             },
-{
+            {
+              label: "Hierarchical Machines",
+              link: "/guides/hierarchical-machines",
+            },
+            {
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
@@ -321,6 +325,32 @@ export default defineConfig({
               ],
             },
             {
+              label: "Hierarchical",
+              items: [
+                {
+                  label: "Overview",
+                  link: "/examples/hsm-overview",
+                },
+               {
+                label: "Tag List Editor (Hierarchical)",
+                link: "/examples/hsm-combobox",
+               },
+               {
+                label: "Checkout Flow (Hierarchical)",
+                link: "/examples/hsm-checkout",
+              },
+              {
+                label: "Nested vs Flattened",
+                link: "/examples/hsm-nested-vs-flattened",
+              },
+                // Currently buggy. State lags input
+                // {
+                //   label: "Paren Checker",
+                //   link: "/examples/paren-checker",
+                // },
+              ],
+            },
+            {
               label: "Advanced",
               items: [
                 {
@@ -328,13 +358,14 @@ export default defineConfig({
                   link: "/examples/traffic-light-extended",
                 },
                 {
-                  label: "Authentication Flow",
+                  label: "Authentication with UI",
                   link: "/examples/auth-flow",
                 },
                 {
-                  label: "Checkout Flow",
+                  label: "Checkout with UI",
                   link: "/examples/checkout",
                 },
+
                 // Currently buggy. State lags input
                 // {
                 //   label: "Paren Checker",

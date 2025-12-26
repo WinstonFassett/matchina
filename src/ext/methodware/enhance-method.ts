@@ -4,7 +4,7 @@ import {
   enhanceFunction,
   isEnhancedFunction,
 } from "./enhance-function";
-import { MethodOf } from "./method-utility-types";
+import type { MethodOf } from "../../";
 
 const noop = () => {};
 

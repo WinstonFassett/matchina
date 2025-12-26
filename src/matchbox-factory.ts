@@ -60,13 +60,18 @@ export function matchboxFactory<
   const createObj: any = {};
   for (const tag in config) {
     const spec = (config as TaggedTypes)[tag];
-    createObj[tag] = (...args: any) => {
+    const wrapper = (...args: any) => {
       return matchbox<Config, any, TagProp>(
         tag,
         typeof spec === "function" ? spec(...args) : spec,
         tagProp
       );
     };
+    // Preserve properties from original spec (e.g., .machineFactory from submachine)
+    if (typeof spec === "function") {
+      Object.assign(wrapper, spec);
+    }
+    createObj[tag] = wrapper;
   }
   return createObj as R;
 }

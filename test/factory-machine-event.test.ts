@@ -31,7 +31,9 @@ const createMockMachine = (): StateMachine<any> => {
     enter: vi.fn(),
     notify: vi.fn(),
     after: vi.fn(),
-    // Add any additional required methods here
+    // Mock FactoryMachine properties
+    states: {},
+    transitions: {},
   } as unknown as StateMachine<any>; // Cast to avoid implementing all methods
 };
 
@@ -44,10 +46,11 @@ const createTestEvent = (
     type,
     { key: "from", data: {} },
     { key: "to", data: {} },
-    params
+    params,
+    createMockMachine() as any
   ) as any;
 
-  event.machine = createMockMachine();
+  event.machine = createMockMachine() as any;
   return event as any;
 };
 
