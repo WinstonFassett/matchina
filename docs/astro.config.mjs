@@ -164,6 +164,10 @@ export default defineConfig({
               link: "/guides/machines",
             },
             {
+              label: "Store Machines",
+              link: "/guides/store-machine",
+            },
+            {
               label: "Type Inference",
               link: "/guides/machine-inference",
             },            

@@ -317,8 +317,9 @@ graph TD
 
 ## Next Steps
 
-1. Create `dev` branch from `main`
-2. Port over the relevant `review/` planning docs into `dev`
-3. Create `bd` tickets for each branch
-4. Start with atomic branches (Phase 1)
-5. Work HSM stack after dependencies land
+1. ✓ `docs/hsm-flatten-examples` branch created and has flatten example work
+2. Complete open beads on appropriate branches:
+   - `fix/types` from main for matchina-hi7, matchina-ukb
+   - `docs/store-machine-guide` from dev for matchina-1ve
+3. Merge flatten-based stack to dev, then main
+4. Propagation stack TBD
