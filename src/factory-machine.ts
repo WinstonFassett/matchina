@@ -10,6 +10,7 @@ import { withLifecycle } from "./event-lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
+import { brandFactoryMachine } from "./machine-brand";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -102,6 +103,8 @@ export function createMachine<
       lastChange = ev;
     }
   ) as FactoryMachine<FC>;
+
+  brandFactoryMachine(machine);
 
   return machine;
 }
