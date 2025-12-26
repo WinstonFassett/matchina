@@ -3,6 +3,7 @@ import { eventApi } from "matchina";
 import { createFlatComboboxMachine } from "./machine-flat";
 import { createComboboxMachine } from "./machine";
 import { ComboboxView } from "./ComboboxView";
+import { ComboboxViewFlat } from "./ComboboxViewFlat";
 import { VisualizerDemo } from "@components/HSMVisualizerDemo";
 
 type Mode = "flat" | "nested";
@@ -47,7 +48,11 @@ export default function ComboboxExample() {
         </div>
       </div>
 
-      <ComboboxView machine={machine} mode={mode} />
+      {mode === "flat" ? (
+        <ComboboxViewFlat machine={machine} />
+      ) : (
+        <ComboboxView machine={machine} />
+      )}
       
       <VisualizerDemo
         key={mode} // Force re-mount of visualizer when mode changes
