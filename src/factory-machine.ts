@@ -116,6 +116,12 @@ export function createMachine<
   // Brand the instance for robust type guarding
   brandFactoryMachine(machine);
 
+  // Add extend method
+  (machine as any).extend = function<T extends object>(fn: (m: typeof machine) => T): typeof machine & T {
+    const extension = fn(this);
+    return Object.assign(this, extension);
+  };
+
   return machine;
 }
 

@@ -6,6 +6,7 @@ export * from "./extras/effects";
 export * from "./extras/when";
 export * from "./extras/with-subscribe";
 export * from "./extras/with-reset";
+export * from "./extras/with-event-api";
 export * from "./extras/zen";
 export * from "./factory-machine";
 export * from "./factory-machine-event-api";

@@ -60,6 +60,27 @@ export interface FactoryMachine<
    * This avoids over-narrowing via event unions that can drop some states from the type.
    */
   getState(): FactoryKeyedState<FC["states"]>;
+
+  /**
+   * Extend the machine with additional functionality.
+   * Returns a new type that combines the original machine with the extension.
+   * 
+   * @param fn - Extension function that receives the machine and returns additional properties/methods
+   * @returns The original machine combined with the extension
+   * 
+   * @example
+   * ```typescript
+   * const withEventApi = (machine) => ({
+   *   toggle: () => machine.send('toggle'),
+   *   reset: () => machine.send('reset')
+   * });
+   * 
+   * const enhanced = machine.extend(withEventApi);
+   * enhanced.toggle(); // Available via extension
+   * enhanced.send('toggle'); // Original method still works
+   * ```
+   */
+  extend<T extends object>(fn: (machine: this) => T): this & T;
 }
 
 // If param inference produces a non-array (e.g., never), normalize to [] so zero-arg events are callable.
