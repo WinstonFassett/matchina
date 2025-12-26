@@ -241,38 +241,34 @@ Files:
 
 ```mermaid
 graph TD
-    subgraph "Atomic (no deps)"
-        A1[chore/ai-setup]
-        A2[fix/docs-and-paths]
-        A3[docs/readme-improvements]
-        A4[fix/types]
-        A5[feat/react-use-machine-maybe]
-        A6[fix/ext-types]
-        A7[feat/send-hook]
-        A8[feat/machine-branding]
-        A9[docs/infrastructure]
-        A10[chore/deps]
+    subgraph "Phase 1: Atomic (merged)"
+        A2[fix/docs-and-paths ✓]
+        A3[docs/readme-improvements ✓]
+        A5[feat/react-use-machine-maybe ✓]
+        A9[docs/infrastructure ✓]
+        A10[chore/deps ✓]
     end
 
-    subgraph "HSM (definition-first)"
+    subgraph "Phase 2: HSM Flatten"
         B1[feat/hsm-definition-format]
         B2[feat/hsm-flatten]
+        B5[docs/hsm-flatten-guide]
+    end
+
+    subgraph "Phase 3: HSM Propagate (optional)"
+        A8[feat/machine-branding]
         B3[feat/hsm-inspect-core]
         B4[feat/visualizers]
-        B5[docs/hsm-flatten-guide]
         B6[feat/hsm-propagation]
         B7[docs/hsm-propagation-examples]
     end
 
-    A4 --> B1
     B1 --> B2
+    B2 --> B5
     B1 --> B3
     B3 --> B4
-    B1 --> B5
-    B2 --> B5
-    B1 --> B6
-    A7 --> B6
     A8 --> B6
+    B1 --> B6
     B6 --> B7
 ```
 
@@ -280,64 +276,24 @@ graph TD
 
 ## Recommended Merge Order
 
-### Phase 1: Atomic PRs (can merge in any order)
-1. `chore/ai-setup`
-2. `fix/docs-and-paths`
-3. `docs/readme-improvements`
-4. `fix/types`
-5. `feat/react-use-machine-maybe`
-6. `fix/ext-types`
-7. `feat/send-hook`
-8. `feat/machine-branding`
-9. `docs/infrastructure`
-10. `chore/deps`
+### Phase 1: Atomic PRs ✓ MERGED
+- `fix/docs-and-paths` ✓
+- `docs/readme-improvements` ✓
+- `feat/react-use-machine-maybe` ✓
+- `docs/infrastructure` ✓
+- `chore/deps` ✓
 
-### Phase 2: HSM Flatten ✓ COMPLETE
-1. `feat/hsm-definition-format` ✓
-2. `feat/hsm-flatten` ✓
-3. `docs/hsm-flatten-guide` ✓
+### Phase 2: HSM Flatten
+1. `feat/hsm-definition-format`
+2. `feat/hsm-flatten`
+3. `docs/hsm-flatten-guide`
 
-### Phase 3a: Inspection & Visualization ✓ COMPLETE
-1. `feat/hsm-inspect-core` ✓ (branches from docs/hsm-flatten-guide)
-2. `feat/visualizers` ✓ (branches from feat/hsm-inspect-core)
-
-### Phase 3b: Propagation ✓ COMPLETE (TBD if merging)
-1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
-2. `docs/hsm-propagation-examples` ✓
-
-### Phase 4: Flatten-based Examples ✓ IN PROGRESS
-1. `docs/hsm-flatten-examples` ✓ - Port examples using flatten approach (matchina-b96 closed)
-2. Update hierarchical-machines.mdx to lead with flatten (matchina-0vb)
-
-### Phase 5: Remaining Work
-- Design manifest format (matchina-p4g) - lower priority
-- Create matchina/inspect subpath (matchina-3sj) - after merge
-- Externalize visualizers (matchina-9zh) - lower priority
-
-### Open Beads (independent work)
-- **matchina-hi7** - FlattenFactoryStateKeys type optimization → `fix/types` from main
-- **matchina-ukb** - FactoryMachine type errors → `fix/types` from main  
-- **matchina-1ve** - StoreMachine guide → `docs/store-machine-guide` from dev
-
----
-
-## Current Branch Structure (2025-12-26)
-
-```
-dev
-└── feat/hsm-definition-format
-    └── feat/hsm-flatten
-        └── docs/hsm-flatten-guide
-            ├── feat/hsm-inspect-core
-            │   └── feat/visualizers
-            │       └── docs/hsm-flatten-examples (NEW - to be created)
-            │
-            └── feat/hsm-propagation (includes branding)
-                └── docs/hsm-propagation-examples
-```
-
-**Strategy:** Merge flatten-based stack first (through visualizers + flatten-examples).
-Propagation stack is TBD - may merge later or keep as experimental.
+### Phase 3: HSM Propagate (optional)
+1. `feat/machine-branding`
+2. `feat/hsm-inspect-core`
+3. `feat/visualizers`
+4. `feat/hsm-propagation`
+5. `docs/hsm-propagation-examples`
 
 ---
 

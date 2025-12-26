@@ -179,6 +179,10 @@ export default defineConfig({
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
+            {
+              label: "Hierarchical Machines",
+              link: "/guides/hierarchical-machines",
+            },
           ]
         },
         {
@@ -321,6 +325,15 @@ export default defineConfig({
                 {
                   label: "Advanced Fetcher",
                   link: "/examples/fetcher-advanced",
+                },
+              ],
+            },
+            {
+              label: "Hierarchical",
+              items: [
+                {
+                  label: "Flattened Traffic Light",
+                  link: "/examples/hsm-traffic-light-flat",
                 },
               ],
             },
