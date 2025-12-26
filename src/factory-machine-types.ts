@@ -58,7 +58,6 @@ export interface FactoryMachine<
 }
 
 /**
- * @interface
  * FactoryMachineTransitions defines the structure for transitions in a FactoryMachine.
  * Each state key maps to an object where each event type maps to a transition function or state key.
  * This allows for flexible and type-safe transitions between states.

@@ -178,7 +178,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
               position="bottom-right"
             />
             <Background
-              variant={"dots" as BackgroundVariant}
+              variant={BackgroundVariant.Dots}
               gap={20}
               size={1}
             />
