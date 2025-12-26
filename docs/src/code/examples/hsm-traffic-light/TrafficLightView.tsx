@@ -1,26 +1,49 @@
 import { useMachine } from "matchina/react";
-import { createTrafficLightMachine, parseStateKey } from "./machine";
+import { parseFlatStateKey } from "./machine-flat";
 
 interface TrafficLightViewProps {
-  machine: ReturnType<typeof createTrafficLightMachine>;
+  machine: any; // Using any to support both machine types for this unified view
+  mode: "flat" | "nested";
 }
 
-export function TrafficLightView({ machine }: TrafficLightViewProps) {
-  const change = useMachine(machine);
+export function TrafficLightView({ machine, mode }: TrafficLightViewProps) {
+  const change = useMachine(machine) as { to: { key: string; data?: any } };
   const state = change.to;
   const send = (event: string) => machine.send(event);
-  const { parent, child } = parseStateKey(state.key);
+
+  // Normalize state based on mode
+  let parent: string;
+  let child: string | null = null;
+
+  if (mode === "flat") {
+    const parsed = parseFlatStateKey(state.key);
+    parent = parsed.parent;
+    child = parsed.child;
+  } else {
+    // Nested/Propagating mode
+    parent = state.key;
+    // Check for nested machine in data
+    if (state.data && state.data.machine) {
+      const childState = state.data.machine.getState();
+      if (childState) {
+        child = childState.key;
+      }
+    }
+  }
 
   const isWorking = parent === "Working";
   const lightColor = child || "off";
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 space-y-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
       <div className="text-center">
+        <div className="text-sm text-gray-500 mb-2 font-mono">
+          Mode: {mode === "flat" ? "Flattened" : "Propagating"}
+        </div>
         <div className="text-sm text-gray-500 mb-2">Controller: {parent}</div>
         
         {/* Traffic Light Display */}
-        <div className="inline-block bg-gray-800 p-4 rounded-lg">
+        <div className="inline-block bg-gray-800 p-4 rounded-lg shadow-lg">
           <div className="space-y-2">
             <Light color="red" active={isWorking && lightColor === "Red"} />
             <Light color="yellow" active={isWorking && lightColor === "Yellow"} />
@@ -38,7 +61,7 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
         {isWorking && (
           <button
             onClick={() => send("tick")}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 active:scale-95 transition-transform"
           >
             Tick
           </button>
@@ -47,7 +70,7 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
         {parent === "Broken" && (
           <button
             onClick={() => send("repair")}
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 active:scale-95 transition-transform"
           >
             Repair
           </button>
@@ -56,7 +79,7 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
         {parent === "Maintenance" && (
           <button
             onClick={() => send("complete")}
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 active:scale-95 transition-transform"
           >
             Complete
           </button>
@@ -65,7 +88,7 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
         {(isWorking || parent === "Broken") && (
           <button
             onClick={() => send("maintenance")}
-            className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 active:scale-95 transition-transform"
           >
             Maintenance
           </button>
@@ -74,7 +97,7 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
         {isWorking && (
           <button
             onClick={() => send("break")}
-            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 active:scale-95 transition-transform"
           >
             Break
           </button>
@@ -82,8 +105,15 @@ export function TrafficLightView({ machine }: TrafficLightViewProps) {
       </div>
 
       {/* State Info */}
-      <div className="text-xs text-gray-400 text-center">
-        Full state key: <code>{state.key}</code>
+      <div className="text-xs text-gray-400 text-center font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded">
+        {mode === "flat" ? (
+          <>State Key: {state.key}</>
+        ) : (
+          <>
+            Root: {state.key}
+            {child && <span className="text-gray-500"> | Child: {child}</span>}
+          </>
+        )}
       </div>
     </div>
   );
@@ -105,5 +135,3 @@ function Light({ color, active }: { color: string; active: boolean }) {
     />
   );
 }
-
-export default TrafficLightView;

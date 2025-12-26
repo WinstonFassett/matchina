@@ -345,8 +345,16 @@ export default defineConfig({
               label: "Hierarchical",
               items: [
                 {
-                  label: "Flattened Traffic Light",
-                  link: "/examples/hsm-traffic-light-flat",
+                  label: "Hierarchical Traffic Light",
+                  link: "/examples/hsm-traffic-light",
+                },
+                {
+                  label: "Combobox",
+                  link: "/examples/hsm-combobox",
+                },
+                {
+                  label: "Checkout",
+                  link: "/examples/hsm-checkout",
                 },
               ],
             },

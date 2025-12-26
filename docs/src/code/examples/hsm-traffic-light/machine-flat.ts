@@ -6,15 +6,6 @@ import {
   createMachineFromFlat
 } from "matchina";
 
-/**
- * Traffic Light Controller using flattened hierarchical machine
- * 
- * Structure:
- * - Broken: light is broken
- * - Working: contains nested light cycle (Red -> Green -> Yellow -> Red)
- * - Maintenance: under maintenance
- */
-
 // Define the nested light cycle as a submachine
 const lightCycle = defineSubmachine(
   defineStates({ 
@@ -48,12 +39,12 @@ const controllerDef = defineMachine(
 // Flatten and create the machine
 const flatDef = flattenMachineDefinition(controllerDef);
 
-export function createTrafficLightMachine() {
+export function createFlatTrafficLight() {
   return createMachineFromFlat(flatDef);
 }
 
 // Helper to parse hierarchical state key
-export function parseStateKey(key: string) {
+export function parseFlatStateKey(key: string) {
   const parts = key.split(".");
   return {
     parent: parts[0],

@@ -1,0 +1,39 @@
+---
+title: Hierarchical Traffic Light
+description: Comparison of flattened vs propagating hierarchical state machines
+---
+
+import Example from "@code/examples/hsm-traffic-light/example";
+import flatMachineCode from "@code/examples/hsm-traffic-light/machine-flat.ts?raw";
+import propMachineCode from "@code/examples/hsm-traffic-light/machine-prop.ts?raw";
+import viewCode from "@code/examples/hsm-traffic-light/TrafficLightView.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+This example demonstrates two different approaches to Hierarchical State Machines (HSMs) in Matchina:
+
+1.  **Flattened (Recommended)**: The hierarchy is compiled away at definition time. The runtime sees a single flat machine with dot-notation keys (e.g., `"Working.Red"`). This is simpler, faster, and easier to serialize.
+2.  **Nested (Propagating)**: The hierarchy is preserved at runtime using separate machine instances. Events bubble up from child to parent, and parent transitions can cascade down. This is useful for dynamic composition or when independent machine lifecycles are required.
+
+<div className="not-content">
+  <Example client:only="react" />
+</div>
+
+## Comparison
+
+| Feature | Flattened (Flat) | Nested (Propagating) |
+| :--- | :--- | :--- |
+| **Runtime Structure** | Single Machine | Tree of Machines |
+| **State Key** | `"Parent.Child"` | `"Parent"` (Child hidden in data) |
+| **Event Handling** | O(1) Lookup | Recursive Bubble/Capture |
+| **Serialization** | Simple String | Complex (Recursive Data) |
+| **Use Case** | Static hierarchy (UI flows, wizards) | Dynamic composition, independent actors |
+
+## Code
+
+<CodeTabs
+  files={[
+    { name: "machine-flat.ts", code: flatMachineCode },
+    { name: "machine-prop.ts", code: propMachineCode },
+    { name: "TrafficLightView.tsx", code: viewCode },
+  ]}
+/>
