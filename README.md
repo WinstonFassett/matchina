@@ -17,16 +17,6 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **Composable APIs** that work together or standalone
 - Inspired by [suchipi/safety-match](https://github.com/suchipi/safety-match), [christianalfoni/timsy](https://github.com/christianalfoni/timsy), [pelotom/unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
 
-## Philosophy & Inspiration
-
-- **Nano-sized, opt-in primitives** for state machines and async logic.
-- Inspired by [Timsy](https://github.com/streamich/timsy), [XState](https://xstate.js.org/), and Andre Sitnik’s nano library style.
-- Each primitive is useful standalone or composable.
-
-## What is Matchina?
-
-A super lightweight, strongly-typed toolkit for building and extending state machines, factories, and async flows in TypeScript. Use only what you need.
-
 ## Features
 
 - **Type-Safe State Factories**:
@@ -670,12 +660,6 @@ The React integration provides:
 - **Type-safe event handlers** that match your machine's API
 - **Pattern matching for rendering** based on machine state
 - **Lifecycle hooks** for reacting to state changes
-
-## Installation
-
-```sh
-npm install matchina
-```
 
 ## Documentation
 
