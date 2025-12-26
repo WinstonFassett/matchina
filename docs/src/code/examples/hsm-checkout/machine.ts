@@ -1,4 +1,6 @@
-import { createMachine, defineStates, effect, setup, withReset, createHierarchicalMachine, defineMachine, submachine } from "matchina";
+import { createMachine, defineStates, effect, setup, withReset, createHierarchicalMachine } from "matchina";
+import { defineMachine } from "matchina";
+import { submachine } from "../../../../../src/nesting/submachine";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
@@ -31,12 +33,10 @@ const createPaymentBase = paymentDef.factory;
 // Wrapper to add reset capability
 function createPayment() {
   const m = createPaymentBase();
-  // Cast to any to avoid "argument of type 'any' is not assignable to parameter of type 'never'"
-  // This happens because of complex type inference with withReset + createHierarchicalMachine
-  return withReset(createHierarchicalMachine(m) as any, paymentStates.MethodEntry());
+  return withReset(createHierarchicalMachine(m), paymentStates.MethodEntry());
 }
-// Attach def for visualization
-createPayment.def = paymentDef;
+// Copy .def from base factory for visualization
+(createPayment as any).def = (createPaymentBase as any).def;
 
 const paymentFactory = submachine(createPayment, { id: "payment" });
 
@@ -50,10 +50,7 @@ const checkoutStates = defineStates({
 });
 
 export function createCheckoutMachine() {
-  let checkout: any;
-  let hierarchical: any;
-
-  checkout = createMachine(checkoutStates, {
+  const checkout = createMachine(checkoutStates, {
     Cart: { proceed: "Shipping" },
     Shipping: {
       back: "Cart",
@@ -75,11 +72,25 @@ export function createCheckoutMachine() {
       changePayment: "Payment",
     },
     Confirmation: { restart: "Cart" },
-  }, checkoutStates.Cart());
+  }, "Cart");
 
-  hierarchical = createHierarchicalMachine(checkout);
+  const hierarchical = createHierarchicalMachine(checkout);
+
+  // Get payment machine from state to wire up reset effect
+  const getPayment = () => {
+    const state = hierarchical.getState();
+    return state.is("Payment") ? state.data.machine : null;
+  };
+
+  setup(hierarchical)(
+    effect((ev: any) => {
+      if (ev.type === "restart") {
+        const payment = getPayment();
+        payment?.reset();
+        return true;
+      }
+    })
+  );
 
   return hierarchical;
 }
-
-export type Machine = ReturnType<typeof createCheckoutMachine>;

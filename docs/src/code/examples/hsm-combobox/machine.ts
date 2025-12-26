@@ -53,7 +53,7 @@ export const activeStates = defineStates({
 const activeDef = defineMachine(activeStates, {
   Empty: {
     typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
-    focus: activeStates.TextEntry({ input: "", selectedTags: [] })
+    focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
   },
   TextEntry: {
     typed: (input: string) => {
@@ -65,8 +65,8 @@ const activeDef = defineMachine(activeStates, {
         ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
         : activeStates.TextEntry({ input, selectedTags: [] });
     },
-    blur: activeStates.Empty({ selectedTags: [] }),
-    escape: activeStates.Empty({ selectedTags: [] })
+    blur: () => activeStates.Empty([]),
+    escape: () => activeStates.Empty([])
   },
   Suggesting: {
     typed: (input: string) => {
@@ -78,9 +78,9 @@ const activeDef = defineMachine(activeStates, {
         ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
         : activeStates.TextEntry({ input, selectedTags: [] });
     },
-    blur: activeStates.Empty({ selectedTags: [] }),
-    escape: activeStates.Empty({ selectedTags: [] }),
-    arrowDown: (state) => activeStates.Selecting({ 
+    blur: () => activeStates.Empty([]),
+    escape: () => activeStates.Empty([]),
+    arrowDown: (state: any) => activeStates.Selecting({ 
       input: state.input, 
       selectedTags: state.selectedTags, 
       suggestions: state.suggestions || [], 
@@ -97,21 +97,21 @@ const activeDef = defineMachine(activeStates, {
         ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
         : activeStates.TextEntry({ input, selectedTags: [] });
     },
-    blur: activeStates.Empty({ selectedTags: [] }),
-    escape: activeStates.Empty({ selectedTags: [] }),
-    arrowUp: (state) => activeStates.Selecting({ 
+    blur: () => activeStates.Empty([]),
+    escape: () => activeStates.Empty([]),
+    arrowUp: (state: any) => activeStates.Selecting({ 
       input: state.input, 
       selectedTags: state.selectedTags, 
       suggestions: state.suggestions || [], 
       highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
     }),
-    arrowDown: (state) => activeStates.Selecting({ 
+    arrowDown: (state: any) => activeStates.Selecting({ 
       input: state.input, 
       selectedTags: state.selectedTags, 
       suggestions: state.suggestions || [], 
       highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
     }),
-    enter: (state) => {
+    enter: (state: any) => {
       const selectedTag = state.suggestions![state.highlightedIndex];
       return activeStates.TextEntry({ 
         input: "", 
@@ -119,7 +119,7 @@ const activeDef = defineMachine(activeStates, {
       });
     }
   }
-}, activeStates.Empty({ selectedTags: [] }));
+}, "Empty");
 
 // Create the active machine factory
 const createActiveMachine = activeDef.factory;
@@ -145,14 +145,7 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      blur: () => (ev) => {
-        // Check if the active machine is in a final state
-        const childState = ev.data?.machine?.getState();
-        if (childState?.key === 'Empty') {
-          return "Inactive";
-        }
-        return "Active";
-      },
+      blur: "Inactive",
       close: "Inactive"
     },
   }, comboboxStates.Inactive());

@@ -52,6 +52,7 @@ export function getXStateDefinition<
     // Auto-discover nested machines from state factories with .machineFactory (from submachine helper)
     Object.entries(machine.states).forEach(([stateKey, stateFactory]) => {
       const machineFactory = (stateFactory as any)?.machineFactory;
+      console.log('[getXStateDefinition] checking state', stateKey, 'machineFactory:', !!machineFactory, 'def:', !!machineFactory?.def);
       if (!machineFactory?.def) {
         return;  // Must have .def - no function calls!
       }

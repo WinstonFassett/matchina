@@ -61,7 +61,7 @@ const activeMachineDef = defineSubmachine(
   {
     Empty: {
       typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
-      focus: activeStates.TextEntry({ input: "", selectedTags: [] })
+      focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
     },
     TextEntry: {
       typed: (input: string) => {
@@ -73,8 +73,8 @@ const activeMachineDef = defineSubmachine(
           ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
           : activeStates.TextEntry({ input, selectedTags: [] });
       },
-      blur: activeStates.Empty({ selectedTags: [] }),
-      escape: activeStates.Empty({ selectedTags: [] })
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([])
     },
     Suggesting: {
       typed: (input: string) => {
@@ -86,8 +86,8 @@ const activeMachineDef = defineSubmachine(
           ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
           : activeStates.TextEntry({ input, selectedTags: [] });
       },
-      blur: activeStates.Empty({ selectedTags: [] }),
-      escape: activeStates.Empty({ selectedTags: [] }),
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
       arrowDown: (state: any) => activeStates.Selecting({ 
         input: state.input, 
         selectedTags: state.selectedTags, 
@@ -105,8 +105,8 @@ const activeMachineDef = defineSubmachine(
           ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
           : activeStates.TextEntry({ input, selectedTags: [] });
       },
-      blur: activeStates.Empty({ selectedTags: [] }),
-      escape: activeStates.Empty({ selectedTags: [] }),
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
       arrowUp: (state: any) => activeStates.Selecting({ 
         input: state.input, 
         selectedTags: state.selectedTags, 
@@ -128,7 +128,7 @@ const activeMachineDef = defineSubmachine(
       }
     }
   },
-  activeStates.Empty({ selectedTags: [] })
+  "Empty"
 );
 
 // Define the combobox states with active submachine

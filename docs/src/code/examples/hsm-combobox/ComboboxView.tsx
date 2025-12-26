@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useMachine } from "matchina/react";
+import { eventApi } from "matchina";
 import { parseFlatStateKey } from "./machine-flat";
 
-// Context to share the active machine
+// Context to share the machine and active machine
 const ComboboxContext = React.createContext<{
   machine: any;
   activeMachine?: any;
-}>({ machine: null });
+  actions: any;
+}>({ machine: null, actions: null });
 
 function useComboboxContext() {
   return useContext(ComboboxContext);
@@ -44,7 +46,10 @@ export function ComboboxView({ machine, mode }: ComboboxViewProps) {
     }
   }
 
-  const contextValue = { machine, activeMachine };
+  // Create event APIs
+  const actions = eventApi(machine);
+
+  const contextValue = { machine, activeMachine, actions };
 
   return (
     <ComboboxContext.Provider value={contextValue}>
@@ -81,23 +86,34 @@ function InputSection() {
   const { machine } = useComboboxContext();
   const state = machine.getState();
 
-  return state.match({
-    Active: () => <ActiveInput />,
-    Inactive: () => (
+  // Handle both flat and nested modes
+  const stateKey = state.key;
+  if (stateKey.startsWith('Active') || stateKey === 'Active') {
+    return <ActiveInput />;
+  } else if (stateKey.startsWith('Inactive') || stateKey === 'Inactive') {
+    return (
       <button
         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
         onClick={() => (machine as any).focus?.() || (machine as any).send?.('focus')}
       >
         Click to add tags
       </button>
-    ),
-  }, null);
+    );
+  }
+
+  return null;
 }
 
 function ActiveInput() {
-  const { activeMachine } = useComboboxContext();
-  const state = activeMachine?.getState();
+  const { activeMachine, actions, machine } = useComboboxContext();
+  
+  // In flattened mode, get state from main machine, in nested mode from activeMachine
+  const state = activeMachine?.getState() || machine.getState();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Create event API for activeMachine when available (nested mode)
+  // In flattened mode, use the main machine's actions
+  const activeActions = activeMachine ? eventApi(activeMachine) : actions;
 
   // Autofocus when component mounts
   useEffect(() => {
@@ -117,29 +133,29 @@ function ActiveInput() {
         className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
         placeholder="Type to search tags... (Press ESC to close)"
         value={input}
-        onChange={(e) => activeMachine?.typed(e.target.value)}
+        onChange={(e) => activeActions?.typed?.(e.target.value)}
         onKeyDown={(e) => {
           switch (e.key) {
             case 'Escape':
-              activeMachine?.escape();
+              activeActions?.escape?.();
               break;
             case 'ArrowDown':
               e.preventDefault();
-              activeMachine?.arrowDown?.();
+              activeActions?.arrowDown?.();
               break;
             case 'ArrowUp':
               e.preventDefault();
-              activeMachine?.arrowUp?.();
+              activeActions?.arrowUp?.();
               break;
             case 'Enter':
               e.preventDefault();
-              activeMachine?.enter?.();
+              activeActions?.enter?.();
               break;
           }
         }}
         onBlur={() => {
           // Small delay to allow click events on suggestions
-          setTimeout(() => activeMachine?.blur?.(), 150);
+          setTimeout(() => activeActions?.blur?.(), 150);
         }}
       />
       <SuggestionsList />
@@ -148,8 +164,10 @@ function ActiveInput() {
 }
 
 function SuggestionsList() {
-  const { activeMachine } = useComboboxContext();
-  const state = activeMachine?.getState();
+  const { activeMachine, machine } = useComboboxContext();
+  
+  // In flattened mode, get state from main machine, in nested mode from activeMachine
+  const state = activeMachine?.getState() || machine.getState();
 
   if (!state) return null;
 
@@ -172,7 +190,9 @@ function SuggestionsDisplay({
   suggestions: string[];
   highlightedIndex: number;
 }) {
-  const { activeMachine } = useComboboxContext();
+  const { activeMachine, actions } = useComboboxContext();
+  // In flattened mode, use main machine actions, in nested mode use activeMachine actions
+  const activeActions = activeMachine ? eventApi(activeMachine) : actions;
 
   if (suggestions.length === 0) return null;
 
@@ -187,7 +207,7 @@ function SuggestionsDisplay({
               : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           }`}
           onClick={() => {
-            activeMachine?.enter?.();
+            activeActions?.enter?.();
           }}
           onMouseEnter={() => {
             // Update highlighted index on hover
@@ -204,14 +224,19 @@ function SuggestionsDisplay({
 }
 
 function SelectedTagsDisplay() {
-  const { activeMachine } = useComboboxContext();
-  const state = activeMachine?.getState();
+  const { activeMachine, machine } = useComboboxContext();
+  
+  // In flattened mode, get state from main machine, in nested mode from activeMachine
+  const state = activeMachine?.getState() || machine.getState();
 
   if (!state) return null;
 
   const { selectedTags = [] } = state.data || {};
+  
+  // Ensure selectedTags is an array
+  const tagsArray = Array.isArray(selectedTags) ? selectedTags : [];
 
-  if (selectedTags.length === 0) {
+  if (tagsArray.length === 0) {
     return (
       <div className="text-sm text-gray-500 dark:text-gray-400 italic">
         No tags selected
@@ -221,7 +246,7 @@ function SelectedTagsDisplay() {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {selectedTags.map((tag: string) => (
+      {tagsArray.map((tag: string) => (
         <span
           key={tag}
           className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
