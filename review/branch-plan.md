@@ -283,17 +283,48 @@ graph TD
 - `docs/infrastructure` ✓
 - `chore/deps` ✓
 
-### Phase 2: HSM Flatten
-1. `feat/hsm-definition-format`
-2. `feat/hsm-flatten`
-3. `docs/hsm-flatten-guide`
+### Phase 2: HSM Flatten ✓ COMPLETE
+1. `feat/hsm-definition-format` ✓
+2. `feat/hsm-flatten` ✓
+3. `docs/hsm-flatten-guide` ✓
 
-### Phase 3: HSM Propagate (optional)
-1. `feat/machine-branding`
-2. `feat/hsm-inspect-core`
-3. `feat/visualizers`
-4. `feat/hsm-propagation`
-5. `docs/hsm-propagation-examples`
+### Phase 3a: Inspection & Visualization (independent of propagation)
+1. `feat/hsm-inspect-core` ✓ (branches from docs/hsm-flatten-guide)
+2. `feat/visualizers` ✓ (branches from feat/hsm-inspect-core)
+
+### Phase 3b: Propagation (optional, parallel to 3a)
+1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
+2. `docs/hsm-propagation-examples` ✓
+
+### Phase 4: Remaining Work (unblocked)
+
+**Visualization track:**
+- Design manifest format (matchina-p4g)
+- Externalize visualizers (matchina-9zh)
+- Create matchina/inspect subpath (matchina-3sj)
+
+**Type improvements:**
+- FlattenFactoryStateKeys optimization (matchina-hi7)
+- Fix FactoryMachine type errors (matchina-ukb)
+
+**Docs:**
+- StoreMachine guide (matchina-1ve)
+
+---
+
+## Current Branch Structure (2025-12-26)
+
+```
+dev
+└── feat/hsm-definition-format
+    └── feat/hsm-flatten
+        └── docs/hsm-flatten-guide
+            ├── feat/hsm-inspect-core
+            │   └── feat/visualizers
+            │
+            └── feat/hsm-propagation (includes branding)
+                └── docs/hsm-propagation-examples
+```
 
 ---
 
@@ -317,8 +348,4 @@ graph TD
 
 ## Next Steps
 
-1. Create `dev` branch from `main`
-2. Port over the relevant `review/` planning docs into `dev`
-3. Create `bd` tickets for each branch
-4. Start with atomic branches (Phase 1)
-5. Work HSM stack after dependencies land
+All HSM branches complete. Ready for PR creation and merge.
