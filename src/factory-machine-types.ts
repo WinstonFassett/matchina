@@ -97,7 +97,7 @@ type NormalizeParams<P> = [P] extends [never]
  * @template TR - The transition record type that maps event types to transition functions or state keys
  */
 export type FactoryMachineTransitions<SF extends KeyedStateFactory> = {
-  [FromStateKey in keyof SF]?: {
+  [FromStateKey in string & keyof SF]?: {
     [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
   };
 };
