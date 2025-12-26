@@ -15,6 +15,13 @@ export function getXStateDefinition<
     transitions: any;
   }>,
 >(machine: F, parentKey?: string) {
+  // Check if machine has original hierarchical definition (from flattening)
+  const originalDef = (machine as any)._originalDef;
+  if (originalDef) {
+    return buildDefinitionFromOriginal(originalDef, parentKey);
+  }
+  
+  // Fall back to runtime introspection
   type StateStack = { key: string; fullKey: string }[];
 
   function buildDefinition(
