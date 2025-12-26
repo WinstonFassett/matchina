@@ -1,0 +1,71 @@
+---
+title: Flattened Traffic Light
+description: Hierarchical state machine using the flattened approach
+---
+
+import Example from "@code/examples/hsm-traffic-light-flat/example";
+import machineCode from "@code/examples/hsm-traffic-light-flat/machine.ts?raw";
+import viewCode from "@code/examples/hsm-traffic-light-flat/TrafficLightView.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A traffic light controller demonstrating **flattened hierarchical machines**. The controller has three modes (Broken, Working, Maintenance), and the Working mode contains a nested light cycle (Red → Green → Yellow → Red).
+
+## Key Concepts
+
+- **`defineSubmachine`** - Define a nested machine inline within a parent state
+- **`flattenMachineDefinition`** - Convert hierarchical definition to flat states with dot-notation keys
+- **`createMachineFromFlat`** - Create a machine from the flattened definition
+
+The flattened approach creates states like `Working.Red`, `Working.Green`, `Working.Yellow` instead of separate parent/child machine instances.
+
+<div className="not-content">
+  <Example client:only="react" />
+</div>
+
+## Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "TrafficLightView.tsx", code: viewCode },
+  ]}
+/>
+
+## How It Works
+
+1. **Define the child machine** using `defineSubmachine`:
+   ```ts
+   const lightCycle = defineSubmachine(
+     defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
+     { Red: { tick: "Green" }, Green: { tick: "Yellow" }, Yellow: { tick: "Red" } },
+     "Red"
+   );
+   ```
+
+2. **Use it as a state factory** in the parent:
+   ```ts
+   const controllerDef = defineMachine(
+     defineStates({
+       Broken: undefined,
+       Working: lightCycle,  // Nested machine here
+       Maintenance: undefined,
+     }),
+     { /* transitions */ },
+     "Working"
+   );
+   ```
+
+3. **Flatten and create**:
+   ```ts
+   const flatDef = flattenMachineDefinition(controllerDef);
+   const machine = createMachineFromFlat(flatDef);
+   ```
+
+The resulting machine has states: `Broken`, `Working.Red`, `Working.Green`, `Working.Yellow`, `Maintenance`.
+
+## Benefits of Flattening
+
+- **Single machine instance** - No parent/child coordination needed
+- **Simple state access** - Just check `state.key` (e.g., `"Working.Red"`)
+- **All transitions visible** - Both parent and child transitions work seamlessly
+- **Easy serialization** - State is just a string key

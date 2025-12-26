@@ -325,6 +325,15 @@ export default defineConfig({
               ],
             },
             {
+              label: "Hierarchical",
+              items: [
+                {
+                  label: "Flattened Traffic Light",
+                  link: "/examples/hsm-traffic-light-flat",
+                },
+              ],
+            },
+            {
               label: "Advanced",
               items: [
                 {
