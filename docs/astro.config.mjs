@@ -349,11 +349,11 @@ export default defineConfig({
                   link: "/examples/hsm-traffic-light",
                 },
                 {
-                  label: "Combobox",
+                  label: "Hierarchical Combobox",
                   link: "/examples/hsm-combobox",
                 },
                 {
-                  label: "Checkout",
+                  label: "Hierarchical Checkout",
                   link: "/examples/hsm-checkout",
                 },
               ],
