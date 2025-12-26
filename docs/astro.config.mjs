@@ -171,7 +171,7 @@ export default defineConfig({
               label: "Promise Machines",
               link: "/guides/promises",
             },
-{
+            {
               label: "Machine Enhancers",
               link: "/guides/machine-enhancers",
             },
@@ -180,7 +180,7 @@ export default defineConfig({
         {
           label: "Machine Setup",
           items: [
-{
+            {
               label: "Lifecycle",
               link: "/guides/lifecycle",
             },
