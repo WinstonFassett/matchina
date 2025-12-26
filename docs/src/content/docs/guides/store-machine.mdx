@@ -1,0 +1,192 @@
+---
+title: Store Machine
+description: Event-driven state management for single values with type-safe actions
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeTabs from "@components/CodeTabs.astro";
+import storeCode from "@code/examples/store-counter/store.ts?raw";
+import viewCode from "@code/examples/store-counter/StoreCounterView.tsx?raw";
+import Example from "@code/examples/store-counter/example";
+
+## What is a Store Machine?
+
+A **Store Machine** is a lightweight, event-driven store for managing a single value with type-safe actions. Unlike Factory Machines which manage discrete states with transitions, Store Machines manage a continuous value that can be updated through dispatched actions.
+
+**Use Store Machine when:**
+- You have a single value (object, number, array) that changes over time
+- You want Redux-like action dispatch semantics
+- You need lifecycle hooks for side effects
+- You want type-safe action parameters
+
+**Use Factory Machine when:**
+- You have distinct states (Idle, Loading, Success, Error)
+- State transitions follow specific rules
+- You need pattern matching on state
+
+## Creating a Store Machine
+
+```ts
+import { createStoreMachine } from "matchina";
+
+const counter = createStoreMachine(0, {
+  increment: (amt = 1) => (change) => change.from + amt,
+  decrement: (amt = 1) => (change) => change.from - amt,
+  set: (value: number) => value,
+  reset: () => 0,
+});
+```
+
+The first argument is the **initial value**, and the second is a record of **actions**.
+
+## Action Types
+
+Actions can return values in two ways:
+
+### Direct Return
+Return the new value directly:
+
+```ts
+set: (value: number) => value,
+reset: () => 0,
+```
+
+### Curried Return
+Return a function that receives the change context:
+
+```ts
+increment: (amt = 1) => (change) => change.from + amt,
+toggle: () => (change) => !change.from,
+```
+
+The `change` object contains:
+- `from` - The previous value
+- `to` - The next value (set after your function returns)
+- `type` - The action name
+- `params` - The parameters passed to dispatch
+
+## Dispatching Actions
+
+```ts
+counter.dispatch("increment");      // Uses default parameter
+counter.dispatch("increment", 5);   // Explicit parameter
+counter.dispatch("set", 42);        // Required parameter
+counter.dispatch("reset");          // No parameters
+```
+
+## Getting State
+
+```ts
+const value = counter.getState();     // Current value
+const change = counter.getChange();   // Last change event
+```
+
+## Interactive Example
+
+<div className="not-content">
+  <Example client:only="react" />
+</div>
+
+<CodeTabs
+  files={[
+    { name: "store.ts", code: storeCode },
+    { name: "StoreCounterView.tsx", code: viewCode },
+  ]}
+/>
+
+## Using with Immer
+
+For complex nested state, combine with [Immer](https://immerjs.github.io/immer/) for immutable updates:
+
+```ts
+import { produce } from "immer";
+import { createStoreMachine } from "matchina";
+
+const mutate = <T>(fn: (draft: T) => void) => 
+  (change: { from: T }) => produce(change.from, fn);
+
+type AppState = {
+  user: { name: string };
+  todos: { id: string; text: string; done: boolean }[];
+};
+
+const store = createStoreMachine<AppState>(initialState, {
+  setUserName: (name: string) => mutate(draft => {
+    draft.user.name = name;
+  }),
+  
+  addTodo: (text: string) => mutate(draft => {
+    draft.todos.push({ id: Date.now().toString(), text, done: false });
+  }),
+  
+  toggleTodo: (id: string) => mutate(draft => {
+    const todo = draft.todos.find(t => t.id === id);
+    if (todo) todo.done = !todo.done;
+  }),
+});
+```
+
+## Lifecycle Hooks
+
+Store Machines support the same lifecycle hooks as Factory Machines:
+
+```ts
+import { setup, effect, when } from "matchina";
+
+setup(store)(
+  effect(
+    when(
+      (ev) => ev.type === "addTodo",
+      (ev) => {
+        console.log(`Added todo: ${ev.params[0]}`);
+      }
+    )
+  ),
+  
+  effect((ev) => {
+    // Runs on every change
+    localStorage.setItem("state", JSON.stringify(ev.to));
+  })
+);
+```
+
+## React Integration
+
+```tsx
+import { useSyncExternalStore } from "react";
+
+function Counter({ store }) {
+  const count = useSyncExternalStore(
+    (callback) => {
+      const orig = store.notify;
+      store.notify = (ev) => { orig.call(store, ev); callback(); };
+      return () => { store.notify = orig; };
+    },
+    () => store.getState()
+  );
+  
+  return (
+    <div>
+      <span>{count}</span>
+      <button onClick={() => store.dispatch("increment")}>+</button>
+      <button onClick={() => store.dispatch("decrement")}>-</button>
+    </div>
+  );
+}
+```
+
+## Comparison: Store Machine vs Factory Machine
+
+| Feature | Store Machine | Factory Machine |
+|---------|--------------|-----------------|
+| State type | Single value | Discrete states |
+| API | `dispatch(action, ...params)` | `send(event, ...params)` |
+| State access | `getState()` returns value | `getState()` returns state object |
+| Pattern matching | N/A | `state.match({...})` |
+| Use case | App state, forms, counters | Workflows, async flows, UI modes |
+
+## Next Steps
+
+- [Lifecycle & Hooks](/matchina/guides/lifecycle/) - Add side effects to your store
+- [Effects](/matchina/guides/effects/) - Declarative effect management
+- [Factory Machines](/matchina/guides/machines/) - For discrete state management
