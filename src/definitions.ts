@@ -101,11 +101,18 @@ export function createMachineFromFlat<
 >(def: FlattenedMachineDefinition<SF, T>) {
   // The flattened definition should already have the fully-qualified leaf state
   // like "Working.Red" as the initial value
-  return createMachine(
+  const machine = createMachine(
     def.states as any, 
     def.transitions as any, 
     def.initial as any
   );
+  
+  // Attach original definition for visualization if available
+  if (def._originalDef) {
+    (machine as any)._originalDef = def._originalDef;
+  }
+  
+  return machine;
 }
 
 // Update isSubmachineMarker to check for machine property
@@ -298,10 +305,11 @@ export function flattenMachineDefinition<
   // Convert back to factory
   const flattenedFactory = defineStates(flattened.states);
   
-  // Return with properly typed structure
+  // Return with properly typed structure, preserving original for visualization
   return {
     states: flattenedFactory as FlattenedStateMatchboxFactory<SF>,
     transitions: flattened.transitions as unknown as FlattenedFactoryTransitions<SF, T>,
     initial: flattened.initial as FlattenFactoryStateKeys<SF>,
+    _originalDef: def,
   };
 }
