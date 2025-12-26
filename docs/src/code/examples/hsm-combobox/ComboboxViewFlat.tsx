@@ -20,6 +20,7 @@ export function useComboboxContext() {
 }
 
 function ComboboxProvider({ machine, children }: { machine: Machine; children: React.ReactNode }) {
+  useMachine(machine);
   return (
     <ComboboxContext.Provider value={{ machine }}>
       {children}
@@ -64,11 +65,20 @@ function InputSection() {
   const state = machine.getState();
   const parsed = parseFlatStateKey(state.key);
 
-  if (parsed.parent === "Inactive") {
+  console.log('Flattened InputSection:', { 
+    stateKey: state.key, 
+    parsed, 
+    data: state.data 
+  });
+
+  if (parsed.full === "Inactive") {
     return (
       <button
         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-        onClick={() => machine.send('focus')}
+        onClick={() => {
+          console.log('Sending focus event');
+          machine.send('focus');
+        }}
       >
         Click to add tags
       </button>

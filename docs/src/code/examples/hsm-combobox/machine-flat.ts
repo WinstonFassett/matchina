@@ -1,8 +1,5 @@
 import {
   defineStates,
-  defineMachine,
-  defineSubmachine,
-  flattenMachineDefinition,
   createMachineFromFlat
 } from "matchina";
 
@@ -27,22 +24,23 @@ interface TagEditorState {
   highlightedIndex?: number;
 }
 
-// Active child states for the tag editor
-const activeStates = defineStates({
-  Empty: (selectedTags: string[] = []) => ({
+// Define the flattened states directly
+const flatStates = defineStates({
+  Inactive: undefined,
+  "Active.Empty": (selectedTags: string[] = []) => ({
     input: "",
     selectedTags
   }),
-  TextEntry: ({ input = "", selectedTags = [] }: Partial<TagEditorState>) => ({
+  "Active.TextEntry": ({ input = "", selectedTags = [] }: Partial<TagEditorState>) => ({
     input,
     selectedTags
   }),
-  Suggesting: ({ input = "", selectedTags = [], suggestions = [] }: Partial<TagEditorState>) => ({
+  "Active.Suggesting": ({ input = "", selectedTags = [], suggestions = [] }: Partial<TagEditorState>) => ({
     input,
     selectedTags,
     suggestions
   }),
-  Selecting: ({
+  "Active.Selecting": ({
     input = "",
     selectedTags = [],
     suggestions = [],
@@ -55,111 +53,95 @@ const activeStates = defineStates({
   }),
 });
 
-// Define the active combobox machine as submachine
-const activeMachineDef = defineSubmachine(
-  activeStates,
-  {
-    Empty: {
-      typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
-      focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
+// Define the flattened transitions directly
+const flatTransitions = {
+  Inactive: {
+    focus: "Active.Empty"
+  },
+  "Active.Empty": {
+    typed: (input: string) => flatStates["Active.TextEntry"]({ input, selectedTags: [] }),
+    focus: () => flatStates["Active.TextEntry"]({ input: "", selectedTags: [] }),
+    blur: "Inactive",
+    close: "Inactive"
+  },
+  "Active.TextEntry": {
+    typed: (input: string) => {
+      const suggestions = input.length > 0 
+        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+        : [];
+      
+      return suggestions.length > 0 
+        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
     },
-    TextEntry: {
-      typed: (input: string) => {
-        const suggestions = input.length > 0 
-          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-          : [];
-        
-        return suggestions.length > 0 
-          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-          : activeStates.TextEntry({ input, selectedTags: [] });
-      },
-      blur: () => activeStates.Empty([]),
-      escape: () => activeStates.Empty([])
+    blur: "Inactive",
+    escape: "Inactive",
+    close: "Inactive"
+  },
+  "Active.Suggesting": {
+    typed: (input: string) => {
+      const suggestions = input.length > 0 
+        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+        : [];
+      
+      return suggestions.length > 0 
+        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
     },
-    Suggesting: {
-      typed: (input: string) => {
-        const suggestions = input.length > 0 
-          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-          : [];
-        
-        return suggestions.length > 0 
-          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-          : activeStates.TextEntry({ input, selectedTags: [] });
-      },
-      blur: () => activeStates.Empty([]),
-      escape: () => activeStates.Empty([]),
-      arrowDown: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
-        highlightedIndex: 0 
-      })
+    blur: "Inactive",
+    escape: "Inactive",
+    close: "Inactive",
+    arrowDown: () => flatStates["Active.Selecting"]({ 
+      input: "", 
+      selectedTags: [], 
+      suggestions: [], 
+      highlightedIndex: 0 
+    })
+  },
+  "Active.Selecting": {
+    typed: (input: string) => {
+      const suggestions = input.length > 0 
+        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+        : [];
+      
+      return suggestions.length > 0 
+        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
     },
-    Selecting: {
-      typed: (input: string) => {
-        const suggestions = input.length > 0 
-          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-          : [];
-        
-        return suggestions.length > 0 
-          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-          : activeStates.TextEntry({ input, selectedTags: [] });
-      },
-      blur: () => activeStates.Empty([]),
-      escape: () => activeStates.Empty([]),
-      arrowUp: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
-        highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
-      }),
-      arrowDown: (state: any) => activeStates.Selecting({ 
-        input: state.input, 
-        selectedTags: state.selectedTags, 
-        suggestions: state.suggestions || [], 
-        highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
-      }),
-      enter: (state: any) => {
-        const selectedTag = state.suggestions![state.highlightedIndex];
-        return activeStates.TextEntry({ 
-          input: "", 
-          selectedTags: [...state.selectedTags, selectedTag] 
-        });
-      }
+    blur: "Inactive",
+    escape: "Inactive",
+    close: "Inactive",
+    arrowUp: (state: any) => flatStates["Active.Selecting"]({ 
+      input: state.input, 
+      selectedTags: state.selectedTags, 
+      suggestions: state.suggestions || [], 
+      highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
+    }),
+    arrowDown: (state: any) => flatStates["Active.Selecting"]({ 
+      input: state.input, 
+      selectedTags: state.selectedTags, 
+      suggestions: state.suggestions || [], 
+      highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
+    }),
+    enter: (state: any) => {
+      const selectedTag = state.suggestions![state.highlightedIndex];
+      return flatStates["Active.TextEntry"]({ 
+        input: "", 
+        selectedTags: [...state.selectedTags, selectedTag] 
+      });
     }
-  },
-  "Empty"
-);
-
-// Define the combobox states with active submachine
-const comboboxStates = defineStates({
-  Inactive: undefined,
-  Active: activeMachineDef,
-});
-
-// Define the hierarchical machine
-const hierarchicalDef = defineMachine(
-  comboboxStates,
-  {
-    Inactive: {
-      focus: "Active"
-    },
-    Active: {
-      blur: "Inactive",
-      close: "Inactive"
-    },
-  },
-  "Inactive"
-);
-
-// Flatten and create the machine
-const flatDef = flattenMachineDefinition(hierarchicalDef);
+  }
+};
 
 export function createFlatComboboxMachine() {
-  return createMachineFromFlat(flatDef);
+  return createMachineFromFlat({
+    states: flatStates as any,
+    transitions: flatTransitions as any,
+    initial: "Inactive"
+  });
 }
 
-// Helper to parse hierarchical state key
+// Helper to parse flat state key
 export function parseFlatStateKey(key: string) {
   const parts = key.split(".");
   return {
