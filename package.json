@@ -31,6 +31,11 @@
       "types": "./dist/integrations/valibot.d.ts",
       "import": "./dist/integrations/valibot.mjs",
       "require": "./dist/integrations/valibot.js"
+    },
+    "./inspect": {
+      "types": "./dist/nesting/index.d.ts",
+      "import": "./dist/nesting/index.mjs",
+      "require": "./dist/nesting/index.js"
     }
   },
   "main": "./dist/index.js",
