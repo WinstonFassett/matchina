@@ -1,4 +1,4 @@
-import { defineStates, matchina, defineMachine, submachine, createHierarchicalMachine } from "matchina";
+import { defineStates, matchina, submachine, createHierarchicalMachine, createMachine } from "matchina";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
@@ -22,7 +22,7 @@ interface TagEditorState {
 }
 
 // Active child states for the tag editor
-export const activeStates = defineStates({
+const activeStates = defineStates({
   Empty: (selectedTags: string[] = []) => ({
     input: "",
     selectedTags
@@ -49,93 +49,92 @@ export const activeStates = defineStates({
   }),
 });
 
-// Define the active combobox machine
-const activeDef = defineMachine(activeStates, {
-  Empty: {
-    typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
-    focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
-  },
-  TextEntry: {
-    typed: (input: string) => {
-      const suggestions = input.length > 0 
-        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-        : [];
-      
-      return suggestions.length > 0 
-        ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-        : activeStates.TextEntry({ input, selectedTags: [] });
+// Create the active machine factory directly (traffic light pattern)
+const createActiveMachine = () => createMachine(
+  activeStates,
+  {
+    Empty: {
+      typed: (input: string) => activeStates.TextEntry({ input, selectedTags: [] }),
+      focus: () => activeStates.TextEntry({ input: "", selectedTags: [] })
     },
-    blur: () => activeStates.Empty([]),
-    escape: () => activeStates.Empty([])
-  },
-  Suggesting: {
-    typed: (input: string) => {
-      const suggestions = input.length > 0 
-        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-        : [];
-      
-      return suggestions.length > 0 
-        ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-        : activeStates.TextEntry({ input, selectedTags: [] });
+    TextEntry: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([])
     },
-    blur: () => activeStates.Empty([]),
-    escape: () => activeStates.Empty([]),
-    arrowDown: (state: any) => activeStates.Selecting({ 
-      input: state.input, 
-      selectedTags: state.selectedTags, 
-      suggestions: state.suggestions || [], 
-      highlightedIndex: 0 
-    })
-  },
-  Selecting: {
-    typed: (input: string) => {
-      const suggestions = input.length > 0 
-        ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
-        : [];
-      
-      return suggestions.length > 0 
-        ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
-        : activeStates.TextEntry({ input, selectedTags: [] });
+    Suggesting: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
+      arrowDown: (state: any) => activeStates.Selecting({ 
+        input: state.input, 
+        selectedTags: state.selectedTags, 
+        suggestions: state.suggestions || [], 
+        highlightedIndex: 0 
+      })
     },
-    blur: () => activeStates.Empty([]),
-    escape: () => activeStates.Empty([]),
-    arrowUp: (state: any) => activeStates.Selecting({ 
-      input: state.input, 
-      selectedTags: state.selectedTags, 
-      suggestions: state.suggestions || [], 
-      highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
-    }),
-    arrowDown: (state: any) => activeStates.Selecting({ 
-      input: state.input, 
-      selectedTags: state.selectedTags, 
-      suggestions: state.suggestions || [], 
-      highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
-    }),
-    enter: (state: any) => {
-      const selectedTag = state.suggestions![state.highlightedIndex];
-      return activeStates.TextEntry({ 
-        input: "", 
-        selectedTags: [...state.selectedTags, selectedTag] 
-      });
+    Selecting: {
+      typed: (input: string) => {
+        const suggestions = input.length > 0 
+          ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
+          : [];
+        
+        return suggestions.length > 0 
+          ? activeStates.Suggesting({ input, selectedTags: [], suggestions })
+          : activeStates.TextEntry({ input, selectedTags: [] });
+      },
+      blur: () => activeStates.Empty([]),
+      escape: () => activeStates.Empty([]),
+      arrowUp: (state: any) => activeStates.Selecting({ 
+        input: state.input, 
+        selectedTags: state.selectedTags, 
+        suggestions: state.suggestions || [], 
+        highlightedIndex: Math.max(0, state.highlightedIndex - 1) 
+      }),
+      arrowDown: (state: any) => activeStates.Selecting({ 
+        input: state.input, 
+        selectedTags: state.selectedTags, 
+        suggestions: state.suggestions || [], 
+        highlightedIndex: Math.min(state.suggestions!.length - 1, state.highlightedIndex + 1) 
+      }),
+      enter: (state: any) => {
+        const selectedTag = state.suggestions![state.highlightedIndex];
+        return activeStates.TextEntry({ 
+          input: "", 
+          selectedTags: [...state.selectedTags, selectedTag] 
+        });
+      }
     }
-  }
-}, "Empty");
+  },
+  activeStates.Empty([])
+);
 
-// Create the active machine factory
-const createActiveMachine = activeDef.factory;
-
-// Wrap with hierarchical machine
+// Wrap with hierarchical machine (traffic light pattern)
 const createHierarchicalActiveMachine = () => {
   const machine = createActiveMachine();
   return createHierarchicalMachine(machine);
 };
-// Copy .def from base machine for visualization
-(createHierarchicalActiveMachine as any).def = (createActiveMachine as any).def;
 
 // Create submachine factory
 const activeFactory = submachine(createHierarchicalActiveMachine, { id: "active" });
 
-// Main combobox states
+// Main combobox states (traffic light pattern - inline submachine)
 const comboboxStates = defineStates({
   Inactive: undefined,
   Active: activeFactory
@@ -150,7 +149,7 @@ export function createComboboxMachine() {
       blur: "Inactive",
       close: "Inactive"
     },
-  }, comboboxStates.Inactive());
+  }, comboboxStates.Active());
 
   return createHierarchicalMachine(combobox);
 }
