@@ -1,84 +1,125 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { useMachine } from "matchina/react";
-import { eventApi } from "matchina";
-import { parseFlatStateKey } from "./machine-flat";
+import { createMachine, type FactoryMachine } from "matchina";
+import type { ActiveMachine, createComboboxMachine } from "./machine";
 
-// Context to share the machine and active machine
-const ComboboxContext = React.createContext<{
-  machine: any;
-  activeMachine?: any;
-  actions: any;
-}>({ machine: null, actions: null });
+type Machine = ReturnType<typeof createComboboxMachine>;
 
-function useComboboxContext() {
-  return useContext(ComboboxContext);
+// Helper for optional machines
+const noopMachine = createMachine({}, {}, undefined as never);
+function useMachineMaybe(machine: FactoryMachine<any> | undefined) {
+  return useMachine(machine ?? noopMachine);
 }
 
-interface ComboboxViewProps {
-  machine: any;
-  mode: "flat" | "nested";
+// Context for the combobox machine to avoid prop drilling
+interface ComboboxContextValue {
+  machine: Machine;
+  activeMachine?: ActiveMachine;
 }
 
-export function ComboboxView({ machine, mode }: ComboboxViewProps) {
-  const change = useMachine(machine) as { to: { key: string; data?: any } };
-  const state = change.to;
-  const send = (event: string) => machine.send(event);
+const ComboboxContext = createContext<ComboboxContextValue | null>(null);
 
-  // Normalize state based on mode
-  let parent: string;
-  let child: string | null = null;
-  let activeMachine: any = null;
-
-  if (mode === "flat") {
-    const parsed = parseFlatStateKey(state.key);
-    parent = parsed.parent;
-    child = parsed.child;
-  } else {
-    // Nested/Propagating mode
-    parent = state.key;
-    // Check for nested machine in data
-    if (state.data && state.data.machine) {
-      activeMachine = state.data.machine;
-      const childState = activeMachine.getState();
-      if (childState) {
-        child = childState.key;
-      }
-    }
+export function useComboboxContext() {
+  const context = useContext(ComboboxContext);
+  if (!context) {
+    throw new Error("useComboboxContext must be used within ComboboxProvider");
   }
+  return context;
+}
 
-  // Create event APIs
-  const actions = eventApi(machine);
+function ComboboxProvider({ machine, children }: { machine: Machine; children: React.ReactNode }) {
+  useMachine(machine);
+  const state = machine.getState();
+  const activeMachine = state.is("Active") ? state.data.machine : undefined;
 
-  const contextValue = { machine, activeMachine, actions };
+  // Subscribe to active machine when it exists
+  useMachineMaybe(activeMachine);
 
   return (
-    <ComboboxContext.Provider value={contextValue}>
-      <div className="max-w-md mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tag List Editor</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Add Tags (Type to search, use arrow keys to navigate)
-            </label>
-            <InputSection />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Selected Tags
-            </label>
-            <SelectedTagsDisplay />
-          </div>
-
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">
-              {child ? `${parent}.${child}` : parent}
-            </span>
-          </div>
-        </div>
-      </div>
+    <ComboboxContext.Provider value={{ machine, activeMachine }}>
+      {children}
     </ComboboxContext.Provider>
+  );
+}
+
+export function ComboboxView({ machine }: { machine: Machine }) {
+  return (
+    <ComboboxProvider machine={machine}>
+      <div className="p-4 space-y-3 border rounded">
+        <h3 className="font-semibold">Tag List Editor</h3>
+        <StateDisplay />
+        <TagList />
+        <InputSection />
+      </div>
+    </ComboboxProvider>
+  );
+}
+
+function StateDisplay() {
+  const { machine } = useComboboxContext();
+
+  const getStates = (m: FactoryMachine<any>): string[] => {
+    const s = m.getState();
+    const states = [s.key];
+    const submachine = s.data?.machine;
+    if (submachine) {
+      states.push(...getStates(submachine));
+    }
+    return states;
+  };
+
+  const stateChain = getStates(machine).join(" / ");
+
+  return (
+    <div className="text-sm text-gray-600 font-medium">
+      State: <span className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-blue-800 dark:text-blue-200">{stateChain}</span>
+    </div>
+  );
+}
+
+function TagList() {
+  const { machine, activeMachine } = useComboboxContext();
+
+  const state = machine.getState();
+  const activeState = activeMachine?.getState();
+
+  // Get tags from either active or inactive state
+  const selectedTags: string[] = state.match({
+    Active: () => activeState?.data?.selectedTags ?? [],
+    Inactive: ({ selectedTags }: { selectedTags: string[] }) => selectedTags ?? [],
+  }, []);
+
+  if (selectedTags.length === 0) {
+    return (
+      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+        No tags selected. Click below to add tags.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {selectedTags.map((tag) => (
+        <Tag key={tag} tag={tag} />
+      ))}
+    </div>
+  );
+}
+
+function Tag({ tag }: { tag: string }) {
+  const { machine } = useComboboxContext();
+
+  return (
+    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-sm">
+      {tag}
+      <button
+        onClick={() => machine.removeTag(tag)}
+        className="hover:bg-blue-600 rounded-full p-0.5 transition-colors"
+        aria-label={`Remove ${tag}`}
+      >
+        ×
+      </button>
+    </span>
   );
 }
 
@@ -86,37 +127,24 @@ function InputSection() {
   const { machine } = useComboboxContext();
   const state = machine.getState();
 
-  // Handle both flat and nested modes
-  const stateKey = state.key;
-  if (stateKey.startsWith('Active') || stateKey === 'Active') {
-    return <ActiveInput />;
-  } else if (stateKey.startsWith('Inactive') || stateKey === 'Inactive') {
-    return (
+  return state.match({
+    Active: () => <ActiveInput />,
+    Inactive: () => (
       <button
         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-        onClick={() => (machine as any).focus?.() || (machine as any).send?.('focus')}
+        onClick={() => machine.focus()}
       >
         Click to add tags
       </button>
-    );
-  } else if (['Empty', 'TextEntry', 'Suggesting', 'Selecting'].includes(stateKey)) {
-    // Flattened submachine states - these are active child states of Active
-    return <ActiveInput />;
-  }
-
-  return null;
+    ),
+  }, null);
 }
 
 function ActiveInput() {
-  const { activeMachine, actions, machine } = useComboboxContext();
-  
-  // In flattened mode, get state from main machine, in nested mode from activeMachine
-  const state = activeMachine?.getState() || machine.getState();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { activeMachine } = useComboboxContext();
 
-  // Create event API for activeMachine when available (nested mode)
-  // In flattened mode, use the main machine's actions
-  const activeActions = activeMachine ? eventApi(activeMachine) : actions;
+  const state = activeMachine?.getState();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Autofocus when component mounts
   useEffect(() => {
@@ -127,84 +155,85 @@ function ActiveInput() {
 
   if (!state) return null;
 
-  // Handle both state object and raw data structures
-  let input = "";
-  if (typeof state.match === 'function') {
-    // State object - extract data from it
-    const { input: stateInput = "" } = state.data || {};
-    input = stateInput;
-  } else {
-    // Raw data - extract directly
-    const { input: stateInput = "" } = state as any;
-    input = stateInput;
-  }
+  const input = state.data.input ?? "";
 
   return (
     <div className="space-y-2">
-      <input
-        ref={inputRef}
-        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-        placeholder="Type to search tags... (Press ESC to close)"
-        value={input}
-        onChange={(e) => activeActions?.typed?.(e.target.value)}
-        onKeyDown={(e) => {
-          switch (e.key) {
-            case 'Escape':
-              activeActions?.escape?.();
-              break;
-            case 'ArrowDown':
-              e.preventDefault();
-              activeActions?.arrowDown?.();
-              break;
-            case 'ArrowUp':
-              e.preventDefault();
-              activeActions?.arrowUp?.();
-              break;
-            case 'Enter':
-              e.preventDefault();
-              activeActions?.enter?.();
-              break;
-          }
-        }}
-        onBlur={() => {
-          // Small delay to allow click events on suggestions
-          setTimeout(() => activeActions?.blur?.(), 150);
-        }}
-      />
+      <InputField inputRef={inputRef} value={input} />
       <SuggestionsList />
     </div>
   );
 }
 
+function InputField({ inputRef, value }: { inputRef: React.RefObject<HTMLInputElement | null>; value: string }) {
+  const { machine, activeMachine } = useComboboxContext();
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const state = activeMachine?.getState();
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (state?.is("Selecting")) {
+        activeMachine?.addTag();
+      } else if (state?.is("Suggesting")) {
+        activeMachine?.navigate();
+      } else if (value.trim()) {
+        activeMachine?.addTag(value.trim());
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      machine.close();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (state?.is("Suggesting")) {
+        activeMachine?.navigate();
+      } else if (state?.is("Selecting")) {
+        activeMachine?.highlight("down");
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (state?.is("Selecting")) {
+        activeMachine?.highlight("up");
+      }
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        ref={inputRef}
+        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+        placeholder="Type to search tags... (Press ESC to close)"
+        value={value}
+        onChange={(e) => activeMachine?.typed(e.target.value)}
+        onKeyDown={onKeyDown}
+      />
+      <button
+        className="px-3 py-1 rounded bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors"
+        onClick={() => activeMachine?.clear()}
+      >
+        Clear
+      </button>
+    </div>
+  );
+}
+
 function SuggestionsList() {
-  const { activeMachine, machine } = useComboboxContext();
-  
-  // In flattened mode, get state from main machine, in nested mode from activeMachine
-  const state = activeMachine?.getState() || machine.getState();
+  const { activeMachine } = useComboboxContext();
+  const state = activeMachine?.getState();
 
   if (!state) return null;
 
-  // In flattened mode, the state might be raw data instead of a state object
-  // Check if this has a match method (state object) or is raw data
-  if (typeof state.match === 'function') {
-    return state.match({
-      Empty: () => null,
-      TextEntry: () => null,
-      Suggesting: ({ suggestions }: { suggestions: string[] }) => (
-        <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />
-      ),
-      Selecting: ({ suggestions, highlightedIndex }: { suggestions: string[]; highlightedIndex: number }) => (
-        <SuggestionsDisplay suggestions={suggestions} highlightedIndex={highlightedIndex} />
-      ),
-    }, false);
-  } else {
-    // Raw data - check for suggestions directly
-    const { suggestions } = state as any;
-    if (suggestions && suggestions.length > 0) {
-      return <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />;
-    }
-    return null;
-  }
+  return state.match({
+    Empty: () => null,
+    TextEntry: () => null,
+    Suggesting: ({ suggestions }) => (
+      <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />
+    ),
+    Selecting: ({ suggestions, highlightedIndex }) => (
+      <SuggestionsDisplay suggestions={suggestions} highlightedIndex={highlightedIndex} />
+    ),
+  }, false);
 }
 
 function SuggestionsDisplay({
@@ -214,87 +243,27 @@ function SuggestionsDisplay({
   suggestions: string[];
   highlightedIndex: number;
 }) {
-  const { activeMachine, actions } = useComboboxContext();
-  // In flattened mode, use main machine actions, in nested mode use activeMachine actions
-  const activeActions = activeMachine ? eventApi(activeMachine) : actions;
+  const { activeMachine } = useComboboxContext();
 
   if (suggestions.length === 0) return null;
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded mt-1 bg-white dark:bg-gray-800 shadow-lg">
+    <div className="border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
+      <div className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 border-b border-gray-200 dark:border-gray-700">
+        Use ↑↓ arrows to navigate, Enter to select
+      </div>
       {suggestions.map((suggestion, index) => (
-        <div
+        <button
           key={suggestion}
-          className={`px-3 py-2 cursor-pointer text-sm ${
+          onClick={() => activeMachine?.addTag(suggestion)}
+          className={`w-full text-left px-3 py-2 transition-colors ${
             index === highlightedIndex
               ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700"
           }`}
-          onClick={() => {
-            activeActions?.enter?.();
-          }}
-          onMouseEnter={() => {
-            // Update highlighted index on hover
-            if (index !== highlightedIndex) {
-              // This would need to be handled differently in a real implementation
-            }
-          }}
         >
           {suggestion}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SelectedTagsDisplay() {
-  const { activeMachine, machine } = useComboboxContext();
-  
-  // In flattened mode, get state from main machine, in nested mode from activeMachine
-  const state = activeMachine?.getState() || machine.getState();
-
-  if (!state) return null;
-
-  // Handle both state object and raw data structures
-  let selectedTags = [];
-  if (typeof state.match === 'function') {
-    // State object - extract data from it
-    const { selectedTags: stateSelectedTags = [] } = state.data || {};
-    selectedTags = stateSelectedTags;
-  } else {
-    // Raw data - extract directly
-    const { selectedTags: stateSelectedTags = [] } = state as any;
-    selectedTags = stateSelectedTags;
-  }
-  
-  // Ensure selectedTags is an array
-  const tagsArray = Array.isArray(selectedTags) ? selectedTags : [];
-
-  if (tagsArray.length === 0) {
-    return (
-      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-        No tags selected
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {tagsArray.map((tag: string) => (
-        <span
-          key={tag}
-          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-        >
-          {tag}
-          <button
-            className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
-            onClick={() => {
-              // This would need to be implemented to remove tags
-            }}
-          >
-            ×
-          </button>
-        </span>
+        </button>
       ))}
     </div>
   );
