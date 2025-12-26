@@ -40,6 +40,6 @@
     "typedoc-plugin-markdown": "^4.7.1"
   },
   "devDependencies": {
-    "@shikijs/twoslash": "^3.8.1"
+    "@shikijs/twoslash": "^3.20.0"
   }
 }
