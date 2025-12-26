@@ -111,7 +111,7 @@ User mentioned seeing something about TypeScript type performance — **TypeSlay
 
 ### Type Review Findings to Address
 
-From `04-types.md`:
+From `05-types.md`:
 - Complex template literal types in flattening
 - Recursive types for HSM
 - `any` in type definitions (per Decision 3: should be fixed)
@@ -382,5 +382,5 @@ const def = fromXState(xstateMachine);
 
 ## Work Organization
 
-See `98-work-organization.md` for full pre-merge vs post-merge breakdown.
+See `30-work-organization.md` for full pre-merge vs post-merge breakdown.
 

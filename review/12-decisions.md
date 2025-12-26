@@ -12,7 +12,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Status: NEEDS DEEPER ANALYSIS
 
-**See `93-hsm-deep-dive.md` for detailed exploration.**
+**See `20-hsm-deep-dive.md` for detailed exploration.**
 
 ### User Feedback
 
@@ -42,7 +42,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Action
 
-- [ ] Create `93-hsm-deep-dive.md` with detailed pros/cons analysis
+- [ ] Create `20-hsm-deep-dive.md` with detailed pros/cons analysis
 - [ ] Brainstorm alternative hierarchy approaches
 - [ ] Research how other libs handle definitions + visualization
 
@@ -52,7 +52,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Status: NEEDS DEEPER ANALYSIS
 
-**See `94-api-brainstorm.md` for detailed exploration.**
+**See `21-api-brainstorm.md` for detailed exploration.**
 
 ### User Feedback
 
@@ -89,7 +89,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Action
 
-- [ ] Create `94-api-brainstorm.md` with fresh API exploration
+- [ ] Create `21-api-brainstorm.md` with fresh API exploration
 - [ ] Research other libs (XState, Zustand, Redux Toolkit) for patterns
 - [ ] Explore definitions vs instances separation
 
@@ -137,7 +137,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Status: NEEDS DEEPER ANALYSIS
 
-**See `95-packaging.md` for detailed exploration.**
+**See `22-packaging.md` for detailed exploration.**
 
 ### User Feedback
 
@@ -169,7 +169,7 @@ This document proposes decisions for each strategic question identified in `91-q
 
 ### Action
 
-- [ ] Create `95-packaging.md` with subpath analysis
+- [ ] Create `22-packaging.md` with subpath analysis
 - [ ] Review extras contents
 - [ ] Research peer deps pattern for schema integrations
 
@@ -233,18 +233,18 @@ This document proposes decisions for each strategic question identified in `91-q
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `93-hsm-deep-dive.md` | Detailed HSM analysis, alternative approaches | ✓ Complete |
-| `94-api-brainstorm.md` | API from scratch, definitions vs instances | ✓ Complete |
-| `95-packaging.md` | Subpath analysis, what goes where | ✓ Complete |
-| `96-visualizers.md` | Inspection and interactive viz review | ✓ Complete |
-| `97-conversation-notes.md` | Ongoing discussion and decisions | ✓ Complete |
-| `98-work-organization.md` | Pre-merge vs post-merge task breakdown | ✓ Complete |
+| `20-hsm-deep-dive.md` | Detailed HSM analysis, alternative approaches | ✓ Complete |
+| `21-api-brainstorm.md` | API from scratch, definitions vs instances | ✓ Complete |
+| `22-packaging.md` | Subpath analysis, what goes where | ✓ Complete |
+| `23-visualizers.md` | Inspection and interactive viz review | ✓ Complete |
+| `24-conversation-notes.md` | Ongoing discussion and decisions | ✓ Complete |
+| `30-work-organization.md` | Pre-merge vs post-merge task breakdown | ✓ Complete |
 
 ---
 
 ## Open Actions Summary
 
-See `98-work-organization.md` for full breakdown.
+See `30-work-organization.md` for full breakdown.
 
 ### Pre-Merge (This Branch)
 - [ ] Implement `.extend()` on FactoryMachine
