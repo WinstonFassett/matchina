@@ -99,6 +99,9 @@ function InputSection() {
         Click to add tags
       </button>
     );
+  } else if (['Empty', 'TextEntry', 'Suggesting', 'Selecting'].includes(stateKey)) {
+    // Flattened submachine states - these are active child states of Active
+    return <ActiveInput />;
   }
 
   return null;
@@ -124,7 +127,17 @@ function ActiveInput() {
 
   if (!state) return null;
 
-  const { input = "" } = state.data || {};
+  // Handle both state object and raw data structures
+  let input = "";
+  if (typeof state.match === 'function') {
+    // State object - extract data from it
+    const { input: stateInput = "" } = state.data || {};
+    input = stateInput;
+  } else {
+    // Raw data - extract directly
+    const { input: stateInput = "" } = state as any;
+    input = stateInput;
+  }
 
   return (
     <div className="space-y-2">
@@ -171,16 +184,27 @@ function SuggestionsList() {
 
   if (!state) return null;
 
-  return state.match({
-    Empty: () => null,
-    TextEntry: () => null,
-    Suggesting: ({ suggestions }: { suggestions: string[] }) => (
-      <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />
-    ),
-    Selecting: ({ suggestions, highlightedIndex }: { suggestions: string[]; highlightedIndex: number }) => (
-      <SuggestionsDisplay suggestions={suggestions} highlightedIndex={highlightedIndex} />
-    ),
-  }, false);
+  // In flattened mode, the state might be raw data instead of a state object
+  // Check if this has a match method (state object) or is raw data
+  if (typeof state.match === 'function') {
+    return state.match({
+      Empty: () => null,
+      TextEntry: () => null,
+      Suggesting: ({ suggestions }: { suggestions: string[] }) => (
+        <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />
+      ),
+      Selecting: ({ suggestions, highlightedIndex }: { suggestions: string[]; highlightedIndex: number }) => (
+        <SuggestionsDisplay suggestions={suggestions} highlightedIndex={highlightedIndex} />
+      ),
+    }, false);
+  } else {
+    // Raw data - check for suggestions directly
+    const { suggestions } = state as any;
+    if (suggestions && suggestions.length > 0) {
+      return <SuggestionsDisplay suggestions={suggestions} highlightedIndex={-1} />;
+    }
+    return null;
+  }
 }
 
 function SuggestionsDisplay({
@@ -231,7 +255,17 @@ function SelectedTagsDisplay() {
 
   if (!state) return null;
 
-  const { selectedTags = [] } = state.data || {};
+  // Handle both state object and raw data structures
+  let selectedTags = [];
+  if (typeof state.match === 'function') {
+    // State object - extract data from it
+    const { selectedTags: stateSelectedTags = [] } = state.data || {};
+    selectedTags = stateSelectedTags;
+  } else {
+    // Raw data - extract directly
+    const { selectedTags: stateSelectedTags = [] } = state as any;
+    selectedTags = stateSelectedTags;
+  }
   
   // Ensure selectedTags is an array
   const tagsArray = Array.isArray(selectedTags) ? selectedTags : [];

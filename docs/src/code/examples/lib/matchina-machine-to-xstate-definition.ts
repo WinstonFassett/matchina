@@ -18,10 +18,11 @@ export function getXStateDefinition<
   // Check if machine has original hierarchical definition (from flattening)
   const originalDef = (machine as any)._originalDef;
   if (originalDef) {
-    return buildDefinitionFromOriginal(originalDef, parentKey);
+    // For flattened machines, use original definition for structure but flattened transitions
+    return buildDefinitionFromFlattened(originalDef, machine, parentKey);
   }
   
-  // Fall back to runtime introspection
+  // Fall back to runtime introspection for non-flattened machines
   type StateStack = { key: string; fullKey: string }[];
 
   function buildDefinition(
@@ -261,4 +262,43 @@ function buildDefinitionFromOriginal(def: any, parentKey?: string) {
   }
 
   return buildFromDef(def.states, def.transitions, def.initial, parentKey, []);
+}
+
+/**
+ * Build XState definition for flattened machines using original structure
+ * but with actual flattened transitions from the machine.
+ */
+function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, parentKey?: string) {
+  // Get the flattened transitions from the actual machine
+  const flattenedTransitions = flattenedMachine.transitions;
+  
+  // Build the hierarchical structure from original definition
+  const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey);
+  
+  // Replace transitions with flattened ones
+  function updateTransitions(states: any, transitions: any, prefix = '') {
+    for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
+      const fullKey = prefix ? `${prefix}.${stateKey}` : stateKey;
+      
+      // Use flattened transitions if they exist, otherwise keep original
+      // Check both the full key (Active.TextEntry) and just the state key (TextEntry)
+      const flattenedTransitions = transitions[fullKey] || transitions[stateKey];
+      if (flattenedTransitions) {
+        stateConfig.on = {};
+        for (const [event, target] of Object.entries(flattenedTransitions as any || {})) {
+          if (typeof target === 'string') {
+            stateConfig.on[event] = target;
+          }
+        }
+      }
+      
+      // Recursively update nested states
+      if (stateConfig.states) {
+        updateTransitions(stateConfig.states, transitions, fullKey);
+      }
+    }
+  }
+  
+  updateTransitions(hierarchicalDef.states, flattenedTransitions);
+  return hierarchicalDef;
 }

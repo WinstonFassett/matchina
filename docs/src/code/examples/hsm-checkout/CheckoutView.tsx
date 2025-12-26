@@ -113,20 +113,35 @@ function PaymentSection() {
   const { machine, paymentMachine } = useCheckoutContext();
   const state = machine.getState();
 
-  return state.match({
-    Payment: () => <PaymentFlow />,
-    _: () => null,
-  }, false);
+  // Handle both flattened and nested modes
+  const stateKey = state.key;
+  if (stateKey.startsWith('Payment') || stateKey === 'Payment') {
+    return <PaymentFlow />;
+  }
+  
+  return null;
 }
 
 function PaymentFlow() {
-  const { paymentMachine } = useCheckoutContext();
-  const state = paymentMachine?.getState();
+  const { paymentMachine, machine } = useCheckoutContext();
+  
+  // In flattened mode, get payment state from main machine's data
+  // In nested mode, get it from paymentMachine
+  let state;
+  if (paymentMachine) {
+    // Nested mode
+    state = paymentMachine.getState();
+  } else {
+    // Flattened mode - get payment state from main machine's data
+    const mainState = machine.getState();
+    state = mainState.data; // The payment state is nested in the main state's data
+  }
 
   if (!state) return null;
   
   // Create payment actions dynamically when paymentMachine is available
-  const paymentActions = paymentMachine ? eventApi(paymentMachine) : null;
+  // In flattened mode, use the main machine's actions
+  const paymentActions = paymentMachine ? eventApi(paymentMachine) : eventApi(machine);
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
