@@ -36,3 +36,7 @@ export * from "./match-filters";
 
 export * from "./definitions";
 export * from "./definition-types";
+
+export * from "./nesting";
+export * from "./machine-brand";
+export * from "./is-machine";
