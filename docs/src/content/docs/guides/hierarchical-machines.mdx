@@ -128,8 +128,80 @@ Creates a running machine from a flattened definition.
 ### `createMachineFrom(def)`
 Creates a running machine from a non-flattened definition (no nesting support).
 
+## Alternative: Runtime Propagation
+
+:::caution[Experimental]
+Propagation is an escape hatch for scenarios requiring loose composition of independent machine instances. Prefer flattening for most use cases.
+:::
+
+For cases where you need actual nested machine instances (e.g., reusing existing machines, dynamic child creation), use `createHierarchicalMachine`:
+
+```ts
+import { 
+  createMachine, 
+  defineStates, 
+  submachine,
+  createHierarchicalMachine 
+} from "matchina";
+
+const lightStates = defineStates({ 
+  Red: undefined, 
+  Green: undefined, 
+  Yellow: undefined 
+});
+
+const states = defineStates({
+  Broken: undefined,
+  Working: submachine(() => 
+    createMachine(
+      lightStates,
+      {
+        Red: { tick: "Green" },
+        Green: { tick: "Yellow" },
+        Yellow: { tick: "Red" },
+      },
+      "Red"
+    )
+  ),
+  Maintenance: undefined,
+});
+
+const ctrl = createMachine(
+  states,
+  {
+    Broken: { repair: "Working", maintenance: "Maintenance" },
+    Working: { break: "Broken", maintenance: "Maintenance" },
+    Maintenance: { complete: "Working" },
+  },
+  "Working"
+);
+
+const machine = createHierarchicalMachine(ctrl);
+
+// Events route through hierarchy (child-first)
+machine.send("tick");  // Routes to child -> Green
+machine.send("break"); // Routes to parent -> Broken
+```
+
+### Key Differences from Flattening
+
+| Aspect | Flattening | Propagation |
+|--------|-----------|-------------|
+| **Runtime** | Single flat machine | Nested machine instances |
+| **State keys** | `"Working.Red"` | `"Working"` (child accessed via `.data.machine`) |
+| **Event routing** | Direct | Child-first traversal |
+| **Memory** | Lower | Higher (multiple instances) |
+| **Use case** | Most HSMs | Dynamic/reusable children |
+
+### Propagation API
+
+- **`submachine(factory)`** - Wrap a machine factory for embedding in state data
+- **`createHierarchicalMachine(machine)`** - Enable child-first event routing
+- **`propagateSubmachines(machine)`** - Lower-level hook installation
+
 ## Notes
 
 - Complex nested types may require explicit annotations
 - Flattening happens at definition time, not runtime
 - The flattened machine is a normal `FactoryMachine` with string keys
+- Propagation creates actual nested instances with child-first event routing
