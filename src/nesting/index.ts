@@ -1,3 +1,4 @@
+// Propagation and child-first routing
 export { submachine, submachineOptions } from "./submachine";
 export { 
   propagateSubmachines, 
@@ -13,3 +14,12 @@ export type {
   ActiveEvents 
 } from "./types";
 export { sendWhen } from "./types";
+
+// Inspection utilities
+export { 
+  inspect, 
+  getFullKey, 
+  getDepth, 
+  getStack, 
+  getActiveChain 
+} from "./inspect";

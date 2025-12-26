@@ -283,18 +283,18 @@ graph TD
 - `docs/infrastructure` ✓
 - `chore/deps` ✓
 
-### Phase 2: HSM Flatten ✓ COMPLETE
-1. `feat/hsm-definition-format` ✓
-2. `feat/hsm-flatten` ✓
-3. `docs/hsm-flatten-guide` ✓
+### Phase 2: HSM Flatten
+1. `feat/hsm-definition-format`
+2. `feat/hsm-flatten`
+3. `docs/hsm-flatten-guide`
 
 ### Phase 3a: Inspection & Visualization (independent of propagation)
-1. `feat/hsm-inspect-core` ✓ (branches from docs/hsm-flatten-guide)
-2. `feat/visualizers` ✓ (branches from feat/hsm-inspect-core)
+1. `feat/hsm-inspect-core`  (branches from docs/hsm-flatten-guide)
+2. `feat/visualizers`  (branches from feat/hsm-inspect-core)
 
 ### Phase 3b: Propagation (optional, parallel to 3a)
-1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
-2. `docs/hsm-propagation-examples` ✓
+1. `feat/hsm-propagation`  (branches from docs/hsm-flatten-guide, includes branding)
+2. `docs/hsm-propagation-examples` 
 
 ### Phase 4: Remaining Work (unblocked)
 

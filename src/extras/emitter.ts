@@ -7,7 +7,6 @@ import { EffectFunc, SetupFunc } from "../function-types";
  * Returned by {@link emitter}.
  *
  * @group Interfaces
- * @param listener - Function to call with each emitted value.
  * @returns Unsubscribe function to remove the listener.
  */
 export type SubscribeFunc<T> = SetupFunc<EffectFunc<T>>;

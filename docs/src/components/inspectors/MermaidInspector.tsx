@@ -1,144 +1,308 @@
 import mermaid from "mermaid";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mermaid from "../Mermaid";
+import mermaidInspectorCss from "./MermaidInspector.css?raw";
 
 mermaid.initialize({
-  // startOnLoad: true
   themeVariables: {},
-  themeCSS: `
-    .label text, span, p {
-      color: var(--sl-color-text);
-     }; 
-    .node rect {
-      fill: var(--sl-color-bg);
-      stroke: var(--sl-color-text);
-      rx: 10; ry: 10;
-      
-    }
-    .active rect {
-      animation: fadeInBg .8s ease forwards;
-    }
-    .flowchart-link {
-      stroke: var(--sl-color-text);
-    }
-    .active rect {
-      fill: var(--sl-color-text-accent);
-
-    }
-    .active span {
-      color: var(--sl-color-text-invert);
-      animation: fadeInText .8s ease forwards;
-    }
-    .marker {
-      fill: var(--sl-color-text);
-    }
-    @keyframes fadeInBg {
-      from {
-        fill-opacity: 0;
-      }
-      to {
-        fill-opacity: 1;
-      }
-    }
-    @keyframes fadeInText {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-    
-  `,
+  themeCSS: mermaidInspectorCss,
 });
 
 function toStateDiagram(config: any, _callbackName: string) {
-  // const currentStateKey = config.initial;
-  const transitions = config;
   const rows = [] as any[];
-  let indents = 0;
 
-  // at each level,
-  // render transitions, then composite states
-  const renderedStates = new Set();
-  addMachine(transitions);
+  function getStateId(stateName: string, parentPrefix: string = ""): string {
+    return parentPrefix ? `${parentPrefix}_${stateName}` : stateName;
+  }
+
+  function walk(cfg: any, parentPrefix: string = "", depth = 0) {
+    if (!cfg?.states) return;
+    const indent = "    ";
+    const stateKeys = Object.keys(cfg.states);
+
+    stateKeys.forEach((stateKey) => {
+      const state = cfg.states[stateKey];
+      const id = getStateId(stateKey, parentPrefix);
+
+      // Handle nested states (composite states with substates)
+      if (state?.states) {
+        // Render as a subgraph for nested states
+        rows.push(`${indent}subgraph ${id}["${stateKey}"]`);
+        walk(state, id, depth + 1);
+        rows.push(`${indent}end`);
+      }
+
+      // Transitions
+      if (state?.on) {
+        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+          if (!target) return;
+          const targetId: string | undefined =
+            typeof target === "string"
+              ? getStateId(target, parentPrefix)
+              : (target as any)?.target
+              ? getStateId((target as any).target, parentPrefix)
+              : undefined;
+          if (targetId) {
+            rows.push(`${indent}${id}-->|${stateKey}<br>${eventType}|${targetId}[${targetId}]`);
+          }
+        });
+      }
+    });
+  }
+
+  walk(config);
 
   const diagram = `
 graph LR
 ${rows.join("\n")}
 `;
-  // classDef active fill:aquamarine;
   return diagram;
-  function indent() {
-    return Array(indents * 4)
-      .fill(" ")
-      .join("");
+}
+
+// Generate a Mermaid stateDiagram-v2 string from a nested machine config
+// Labels include "fromState<br>eventType" to align with DOM normalization
+function toStateChart(config: any) {
+  const rows: string[] = [];
+
+  function getStateId(stateName: string, parentPrefix: string = ""): string {
+    return parentPrefix ? `${parentPrefix}_${stateName}` : stateName;
   }
 
-  function addMachine(config: any) {
-    const allStates = new Set();
+  function walk(cfg: any, parentPrefix: string = "", depth = 0) {
+    if (!cfg?.states) return;
+    const indent = "    ".repeat(depth);
+    const stateKeys = Object.keys(cfg.states);
 
-    indents += 1;
+    stateKeys.forEach((stateKey) => {
+      const state = cfg.states[stateKey];
+      const id = getStateId(stateKey, parentPrefix);
 
-    // determine if transition is local
-    // handle non-local transitions
-    // add end-thingy, then named transition from main state to container with new state, etc
-    const { states } = config;
-    const stateKeys = Object.keys(states);
+      // Nested state (composite)
+      if (state?.states) {
+        rows.push(`${indent}state ${id} {`);
+        walk(state, id, depth + 1);
+        if (state.initial) {
+          const nestedInitial = getStateId(state.initial, id);
+          // In stateDiagram-v2 the initial state inside a composite is [*] --> child
+          rows.push(`${indent}  [*] --> ${nestedInitial}`);
+        }
+        rows.push(`${indent}}`);
+      }
 
-    stateKeys.forEach((stateKey, _index) => {
-      allStates.add(stateKey);
-      // rows.push(["    ", key, ifactive].join(""));
-      let renderedState = false;
-      const stateTransitions = states[stateKey]?.on;
-      if (stateTransitions) {
-        Object.keys(stateTransitions).forEach((eventType) => {
-          const targetStateEntry = stateTransitions[eventType];
-          if (targetStateEntry) {
-            const targetStateKey = targetStateEntry;
-            rows.push(
-              `    ${stateKey}-->|${eventType ? `${stateKey}<br>${eventType}` : `${stateKey}<br>AUTO`}|${targetStateKey}[${targetStateKey}]`
-            );
-            // rows.push(`${indent()}${stateKey} --> ${state.key}: ${eventType}`);
-            renderedStates.add(stateKey);
-            renderedStates.add(targetStateKey);
-            renderedState = true;
+      // Transitions
+      if (state?.on) {
+        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+          if (!target) return;
+          const targetId: string | undefined =
+            typeof target === "string"
+              ? getStateId(target, parentPrefix)
+              : (target as any)?.target
+              ? getStateId((target as any).target, parentPrefix)
+              : undefined;
+          if (targetId) {
+            rows.push(`${indent}${id} --> ${targetId}: ${stateKey}<br>${eventType}`);
           }
         });
-      } else {
-        rows.push(`${indent()}${stateKey} --> [*]`);
-        // need something here so the state appears?
-        // end node
       }
-      if (!renderedState) {
-      }
-      // if composite
-      // if (state.states) {
-      //   compositeStates.push(state)
-      // }
-      // rows.push(["   ", "click", key, callbackName].join(" "));
     });
-    // compositeStates.forEach(state => {
-    //   rows.push(`${indent()}state ${state.name} {`)
-    //   addMachine(state.states)
-
-    //   rows.push(`${indent()}}`)
-    // })
-    // const unrenderedStates = Object.keys(config).filter(
-    //   (state) => !renderedStates.has(state),
-    // );
-    // unrenderedStates.forEach((state) => {
-    //   // rows.push(`${indent()}[*] --> ${state.name}`)
-    // });
-    // const state = definition.states[key];
-    // console.log("state", key, state);
-    // const ifactive = isActive ? ":::active" : "";
   }
+
+  walk(config);
+  return `stateDiagram-v2\n${rows.join("\n")}`;
 }
 
 let lastId = 0;
 
 const MermaidInspector = memo(
+  ({
+    config,
+    stateKey,
+    actions,
+    interactive = true,
+    diagramType: diagramTypeProp,
+  }: {
+    config: any;
+    stateKey: string;
+    actions?: Record<string, any>;
+    interactive?: boolean;
+    diagramType?: 'flowchart' | 'statechart';
+  }) => {
+    const [id] = useState((lastId++).toString());
+    const diagramType = diagramTypeProp ?? 'statechart';
+    // Generate chart string and only update when it actually changes
+    const initialChart = useMemo(() => (
+      diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id)
+    ), []);
+    const chartRef = useRef<string>(initialChart);
+    const [chart, setChart] = useState<string>(initialChart);
+    useEffect(() => {
+      const next = diagramType === 'statechart' ? toStateChart(config) : toStateDiagram(config, id);
+      if (next !== chartRef.current) {
+        chartRef.current = next;
+        setChart(next);
+      }
+    }, [diagramType, config]);
+    const debouncedStateKey = useDebouncedValue(stateKey, 60);
+
+    // Cache the rendered container for DOM manipulation without re-rendering the SVG
+    const containerRef = useRef<HTMLElement | null>(null);
+
+    // Refs to hold latest values for use from onRender (which can be called before
+    // React effects that update state run). This ensures the highlight function
+    // always uses the most recent values when invoked directly from onRender.
+    const debouncedStateKeyRef = useRef(debouncedStateKey);
+    const actionsRef = useRef(actions);
+    const interactiveRef = useRef(interactive);
+    const diagramTypeRef = useRef(diagramType);
+
+    useEffect(() => {
+      debouncedStateKeyRef.current = debouncedStateKey;
+    }, [debouncedStateKey]);
+    useEffect(() => {
+      actionsRef.current = actions;
+    }, [actions]);
+    useEffect(() => {
+      interactiveRef.current = interactive;
+    }, [interactive]);
+    useEffect(() => {
+      diagramTypeRef.current = diagramType;
+    }, [diagramType]);
+
+    // One-time setup after render: normalize edge labels and cache metadata
+    const onRender = useCallback((el: HTMLElement) => {
+      containerRef.current = el;
+      setTimeout(() => {
+        el.querySelectorAll("span.edgeLabel").forEach((span) => {
+          const p = span.querySelector("p");
+          if (!p) return;
+          const lines = Array.from(p.childNodes)
+            .map((node) =>
+              node.nodeType === Node.ELEMENT_NODE &&
+              (node as HTMLElement).tagName === "BR"
+                ? "\n"
+                : node.textContent
+            )
+            .join("")
+            .split("\n");
+          const [fromState, type] = lines;
+          (p as any)._edge = { fromState, type };
+          p.innerHTML = type; // Only show the event type
+        });
+        // Ensure the active state is highlighted immediately after Mermaid
+        // finishes rendering and we normalized the DOM. This fixes the case
+        // (observed in Astro on first render) where the highlight effect
+        // ran before the container existed.
+        applyHighlights(el);
+      }, 1);
+    }, []);
+
+    // Update active node highlighting and edge interactivity on state changes
+    // Extracted highlighting function so it can be invoked both from the
+    // render-time callback (when the SVG first appears) and from a React
+    // effect that runs on updates.
+    function applyHighlights(rootEl?: HTMLElement | null) {
+      const root = rootEl ?? containerRef.current;
+      if (!root) return;
+
+      const currentKey = debouncedStateKeyRef.current;
+      const currentActions = actionsRef.current;
+      const currentInteractive = interactiveRef.current;
+      const currentDiagramType = diagramTypeRef.current;
+
+      // Clear previous highlights for both modes
+      root
+        .querySelectorAll(
+          ".state-highlight, .state-container-highlight, g.node.active, g.state.active, g.stateGroup.active, .active-container"
+        )
+        .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
+
+      if (currentDiagramType === 'statechart') {
+        const activeSel = `[id*="state-${currentKey}-"]`;
+        const activeEl = root.querySelector(activeSel) as Element | null;
+        if (activeEl) activeEl.classList.add('state-highlight');
+
+        if (currentKey.includes('_')) {
+          const parentKey = currentKey.split('_')[0];
+          const parentSel = `[id*="state-${parentKey}-"]`;
+          const parentEl = root.querySelector(parentSel) as Element | null;
+          if (parentEl && parentEl !== activeEl) parentEl.classList.add('state-container-highlight');
+        }
+      } else {
+        let activated = false;
+        try {
+          const byId = root.querySelector(`g#${CSS.escape(currentKey)}`) as SVGGElement | null;
+          if (byId) {
+            byId.classList.add("active");
+            activated = true;
+          }
+        } catch {}
+        if (!activated) {
+          const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
+            .find((g) => g.textContent?.trim() === currentKey);
+          if (candidate) candidate.classList.add("active");
+        }
+        if (currentKey.includes('_')) {
+          const parentKey = currentKey.split('_')[0];
+          const parentNode = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
+            .find((g) => g.textContent?.trim() === parentKey);
+          if (parentNode) parentNode.classList.add('active-container');
+        }
+      }
+
+      // Edge labels: class-based styling and click binding when available
+      root.querySelectorAll<HTMLParagraphElement>("span.edgeLabel > p").forEach((p) => {
+        const meta = (p as any)._edge as { fromState?: string; type?: string } | undefined;
+        const type = meta?.type;
+        const from = meta?.fromState;
+        const action = type ? currentActions?.[type] : undefined;
+        
+        // Check if this is an action from the current state or an ancestor
+        // For nested states, fromState is just the leaf name (e.g., "MethodEntry")
+        // while currentKey might be the full path (e.g., "payment_MethodEntry")
+        const isCurrentStateAction = from === currentKey || 
+          (currentKey.includes('_') && from === currentKey.split('_').slice(-1)[0]);
+        
+        // Check if it's an ancestor action - from is an ancestor of currentKey
+        const isAncestorAction = !isCurrentStateAction && from && 
+          (currentKey === from || currentKey.startsWith(from + '_') || 
+           currentKey.endsWith('_' + from) || currentKey.includes('_' + from + '_'));
+        
+        const canInvoke = !!action && currentInteractive && (isCurrentStateAction || isAncestorAction);
+
+        p.classList.remove('edge-active', 'edge-inactive', 'edge-interactive', 'edge-ancestor');
+        if (isCurrentStateAction && action) {
+          p.classList.add('edge-active');
+          if (canInvoke) p.classList.add('edge-interactive');
+        } else if (isAncestorAction && action) {
+          p.classList.add('edge-ancestor');
+          if (canInvoke) p.classList.add('edge-interactive');
+        } else {
+          p.classList.add('edge-inactive');
+        }
+        p.onclick = canInvoke ? () => action?.() : null;
+      });
+    }
+
+    useEffect(() => {
+      // Re-apply highlights on updates (state changes, actions, etc.)
+      applyHighlights();
+    }, [debouncedStateKey, actions, interactive, diagramType]);
+    if (!chart) return <div>NO CHART!!!</div>;
+
+    return (
+      <div className="container">
+        <Mermaid content={chart} onRender={onRender} />
+        {/* <pre>{chart}</pre> */}
+        {/* <pre>{JSON.stringify(machine, null, 2)}</pre> */}
+        {/*<pre>{JSON.stringify(definition, null, 2)}</pre>*/}
+      </div>
+    );
+  }
+);
+export { MermaidInspector };
+
+// Optional helper with UI to switch diagram types (default to statechart)
+export const MermaidInspectorWithSettings = memo(
   ({
     config,
     stateKey,
@@ -150,70 +314,45 @@ const MermaidInspector = memo(
     actions?: Record<string, any>;
     interactive?: boolean;
   }) => {
-    const [id] = useState((lastId++).toString());
-    const { states } = config;
-    const chart = useMemo(() => toStateDiagram(config, id), [states]);
-    const debouncedStateKey = useDebouncedValue(stateKey, 60);
-    const onRender = useCallback(
-      (el: HTMLElement) => {
-        console.log("onRender", el);
-        setTimeout(() => {
-          el.querySelectorAll("span.edgeLabel").forEach((span) => {
-            // Find the <p> inside the span
-            const p = span.querySelector("p");
-            if (!p) return;
-            // Get the text, split on line breaks
-            const lines = Array.from(p.childNodes)
-              .map((node) =>
-                node.nodeType === Node.ELEMENT_NODE &&
-                (node as HTMLElement).tagName === "BR"
-                  ? "\n"
-                  : node.textContent
-              )
-              .join("")
-              .split("\n");
-            const [state, type] = lines;
-            const action = actions?.[type];
-            p.innerHTML = type; // Show only the event type
-            const clickable = action && interactive;
-            p.onclick = clickable ? () => action() : null;
-            if (action && state === debouncedStateKey) {
-              p.style.backgroundColor = "var(--sl-color-gray-5)";
-              p.style.color = "var(--sl-color-accent-high)";
-              if (clickable) {
-                p.style.textDecoration = "underline";
-                p.style.cursor = action ? "pointer" : "default";
-              }
-            } else {
-              p.style.backgroundColor = "var(--sl-color-bg)";
-              // p.style.backgroundColor = "transparent";
-              p.style.color = "var(--sl-color-gray-3)";
-              // p.style.textDecoration = "none";
-            }
-          });
-        }, 1);
-      },
-      [debouncedStateKey]
-    );
-    if (!chart) return <div>NO CHART!!!</div>;
-
+    const [diagramType, setDiagramType] = useState<'flowchart' | 'statechart'>('statechart');
     return (
-      <div className="container">
-        <Mermaid
-          content={`${chart}
-    ${debouncedStateKey}:::active
-`}
-          onRender={onRender}
+      <div>
+        <div style={{
+          marginBottom: '12px',
+          padding: '8px',
+          backgroundColor: 'var(--sl-color-gray-6)',
+          borderRadius: '6px',
+          display: 'flex',
+          gap: '8px',
+          alignItems: 'center'
+        }}>
+          <label style={{ fontSize: '14px', fontWeight: 500 }}>Diagram Type:</label>
+          <select
+            value={diagramType}
+            onChange={(e) => setDiagramType(e.target.value as 'flowchart' | 'statechart')}
+            style={{
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid var(--sl-color-gray-4)',
+              backgroundColor: 'var(--sl-color-bg)',
+              color: 'var(--sl-color-text)'
+            }}
+          >
+            <option value="statechart">State Chart</option>
+            <option value="flowchart">Flowchart</option>
+          </select>
+        </div>
+        <MermaidInspector
+          config={config}
+          stateKey={stateKey}
+          actions={actions}
+          interactive={interactive}
+          diagramType={diagramType}
         />
-        {/* <pre>{chart}</pre> */}
-        {/* <pre>{JSON.stringify(machine, null, 2)}</pre> */}
-        {/*<pre>{JSON.stringify(definition, null, 2)}</pre>*/}
       </div>
     );
   }
 );
-
-export default MermaidInspector;
 
 export function useDebouncedValue<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -228,3 +367,5 @@ export function useDebouncedValue<T>(value: T, delay?: number): T {
 
   return debouncedValue;
 }
+
+export default MermaidInspectorWithSettings;

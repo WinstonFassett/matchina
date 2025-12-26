@@ -49,11 +49,24 @@ export default defineConfig({
               "@parameters",
               "@typeParameters",
               "@source",
+              "@template",
+              "@param",
+              "@returns",
+              "@group",
+              "@property",
+              "@throws",
+              "@type",
+              "@function",
+              "@internal",
+            ],
+            modifierTags: [
+              "@interface",
             ],
             // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
             excludeInternal: true,
             categorizeByGroup: false,
+            logLevel: "Error",
             groupOrder: [
               "Interfaces",
               "Functions",
@@ -325,6 +338,15 @@ export default defineConfig({
                 {
                   label: "Advanced Fetcher",
                   link: "/examples/fetcher-advanced",
+                },
+              ],
+            },
+            {
+              label: "Hierarchical",
+              items: [
+                {
+                  label: "Flattened Traffic Light",
+                  link: "/examples/hsm-traffic-light-flat",
                 },
               ],
             },

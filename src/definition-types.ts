@@ -107,6 +107,8 @@ export type FlattenedMachineDefinition<
   states: FlattenedStateMatchboxFactory<SF>;
   transitions: FlattenedFactoryTransitions<SF, T>;
   initial: FlattenFactoryStateKeys<SF>;
+  /** Original hierarchical definition, preserved for visualization */
+  _originalDef?: MachineDefinition<SF, T, any>;
 };
 
 export type FlattenOptions = {
