@@ -1,4 +1,4 @@
-import { effect, setup, transitionHooks, whenState } from "matchina";
+import { setup, transitionHooks, whenState } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState } from "react";
 import { tickEffect } from "../lib/tick-effect";
