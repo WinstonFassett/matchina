@@ -3,10 +3,11 @@ import { MatchCases } from "../match-case-types";
 import { matchboxFactory } from "../matchbox-factory";
 import { TaggedTypes, MatchboxMember } from "../matchbox-factory-types";
 import { effect } from "../state-machine-hooks";
+import { Funcware } from "../function-types";
 
 /**
  * @interface
- * Type representing an effect matchbox member.
+ * EffectMatchbox is a type representing an effect matchbox member.
  * Used to group and handle effect-related logic in matchbox factories.
  */
 export type EffectMatchbox = MatchboxMember<any, any, "effect">;
@@ -28,6 +29,7 @@ export function defineEffects<EffectsConfig extends TaggedTypes>(
 ) {
   return matchboxFactory(config, "effect");
 }
+
 
 /**
  * Handles an array of effect matchboxes by matching them against provided cases.

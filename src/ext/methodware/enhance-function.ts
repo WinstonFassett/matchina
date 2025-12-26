@@ -52,12 +52,9 @@ export interface FuncEnhancer<F extends Func> {
  *
  * Type parameters `T` and `K` are usually inferred automatically and rarely need to be specified.
  *
- * @template T - The target object type
- * @template K - The key of the method to enhance
- * @param target - The object containing the method to enhance
- * @param methodName - The name of the method to enhance
- * @param extend - Funcware (enhancer) that receives the original method and params
- * @returns A disposer function that restores the previous method when called
+ * @template F - The function type to enhance
+ * @param original - The original function to enhance
+ * @returns An enhanced function with additional methods for managing enhancers
  *
  * This function is useful for dynamically extending or wrapping methods on objects,
  * such as adding logging, instrumentation, or custom behavior. It is commonly used in middleware,

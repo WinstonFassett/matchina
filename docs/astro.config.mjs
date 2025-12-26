@@ -55,6 +55,11 @@ export default defineConfig({
               "@group",
               "@property",
               "@throws",
+              "@type",
+              "@function",
+            ],
+            modifierTags: [
+              "@interface",
             ],
             // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
