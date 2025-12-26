@@ -49,15 +49,17 @@
     "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
     "dev": "vitest dev",
+    "dev:docs": "npm --workspace docs run dev",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "npm run  test && changelogen --release && npm publish && git push --follow-tags",
-    "test": "bun test:types && vitest run --coverage",
+    "test": "vitest run --coverage",
+    "test:all": "npm run test:types && npm run test",
     "test:types": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish": "npm publish --access public"
-    
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",
