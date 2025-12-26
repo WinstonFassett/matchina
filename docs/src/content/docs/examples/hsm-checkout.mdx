@@ -1,0 +1,32 @@
+---
+title: Checkout (Hierarchical)
+description: Multi-step checkout with a nested payment submachine
+---
+
+import CheckoutExample from "@code/examples/hsm-checkout/example";
+import machineCode from "@code/examples/hsm-checkout/machine.ts?raw";
+import viewCode from "@code/examples/hsm-checkout/CheckoutView.tsx?raw";
+import indexCode from "@code/examples/hsm-checkout/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+A hierarchical checkout that separates the high-level checkout flow from a nested payment submachine.
+
+<div className="not-content">
+  <CheckoutExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "CheckoutView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Notes
+
+- Parent machine: `Cart → Shipping → Payment → Review → Confirmation`.
+- Child payment machine: `MethodEntry → Authorizing → AuthChallenge → Authorized → AuthorizationError`.
+- The UI sends payment events to the child (`machine.payment.api.*`) and gates progression until authorization.

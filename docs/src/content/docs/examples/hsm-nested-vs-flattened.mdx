@@ -1,0 +1,32 @@
+---
+title: Nested vs Flattened (Hierarchical)
+description: "Comparison demo: a nested child machine inside a parent vs a flattened single-level machine that models the same behavior."
+---
+
+import NestedVsFlattenedExample from "@code/examples/hsm-nested-vs-flattened/example";
+import machineCode from "@code/examples/hsm-nested-vs-flattened/machine.ts?raw";
+import viewCode from "@code/examples/hsm-nested-vs-flattened/NestedVsFlattenedView.tsx?raw";
+import indexCode from "@code/examples/hsm-nested-vs-flattened/index.tsx?raw";
+import CodeTabs from "@components/CodeTabs.astro";
+
+This example compares two approaches for modeling the same UI flow: a hierarchical machine that embeds a child machine (nested) and a single flattened machine that models the same states at one level.
+
+<div className="not-content">
+  <NestedVsFlattenedExample client:only="react" />
+</div>
+
+## Source Code
+
+<CodeTabs
+  files={[
+    { name: "machine.ts", code: machineCode },
+    { name: "NestedVsFlattenedView.tsx", code: viewCode },
+    { name: "index.tsx", code: indexCode },
+  ]}
+/>
+
+## Notes
+
+- Shows a nested submachine embedded in a parent state vs a flattened equivalent.
+- Useful to compare event routing, clarity, and reuse between hierarchical and flat designs.
+- Demonstrates how `submachine` can keep parent machines small and let child machines own domain-specific behaviors.

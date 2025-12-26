@@ -185,7 +185,137 @@ const message = adder.getState().match({
   Resolved: (result) => `Result: ${result}`,
   Rejected: (error) => `Error: ${error.message}`,
 });
+
+## Hierarchical Machines (experimental)
+
+Build nested state machines with child machines embedded in parent states. Two main patterns:
+
+### Pattern 1: Hierarchical Wrapper with Child Access
+
+Create a parent machine with child machines, accessed via exposed properties:
+
+```ts
+import { 
+  createMachine, 
+  defineStates, 
+  createHierarchicalMachine,
+  withReset
+} from "matchina";
+
+// Define child payment machine
+const paymentStates = defineStates({
+  MethodEntry: undefined,
+  Authorizing: undefined,
+  Authorized: () => ({ final: true }),
+});
+
+function createPayment() {
+  const m = createMachine(paymentStates, {
+    MethodEntry: { authorize: "Authorizing" },
+    Authorizing: { authSucceeded: "Authorized" },
+    Authorized: {},
+  }, "MethodEntry");
+  
+  return withReset(createHierarchicalMachine(m), paymentStates.MethodEntry());
+}
+
+// Define parent checkout machine  
+const checkoutStates = defineStates({
+  Cart: undefined,
+  Shipping: undefined,
+  Payment: (machine: ReturnType<typeof createPayment>) => ({ machine }),
+  Review: undefined,
+});
+
+export function createCheckoutMachine() {
+  const payment = createPayment();
+
+  const checkout = createMachine({
+    ...checkoutStates,
+    Payment: () => checkoutStates.Payment(payment),
+  }, {
+    Cart: { proceed: "Shipping" },
+    Shipping: { proceed: "Payment" },
+    Payment: { 
+      "child.exit": "Review"  // When payment completes, go to review
+    },
+    Review: { 
+      changePayment: () => { 
+        payment.reset(); 
+        return checkoutStates.Payment(payment); 
+      }
+    },
+  }, "Cart");
+
+  const hierarchical = createHierarchicalMachine(checkout);
+  return Object.assign(hierarchical, { payment });
+}
+
+// Usage with child access
+const machine = createCheckoutMachine();
+machine.proceed(); // Parent transition
+machine.payment.authorize(); // Child machine access
 ```
+
+### Pattern 2: Event Propagation
+
+Route events through a nested hierarchy automatically:
+
+```ts
+import { matchina, defineStates, setup } from "matchina";
+import { propagateSubmachines } from "matchina";
+
+const activeStates = defineStates({
+  Empty: (query: string = "") => ({ query }),
+  TextEntry: (query: string) => ({ query }),
+  Results: (items: any[]) => ({ items }),
+});
+
+function createActiveMachine() {
+  const active = matchina(activeStates, {
+    Empty: { 
+      typed: (value: string) => activeStates.TextEntry(value) 
+    },
+    TextEntry: { 
+      clear: "Empty",
+      submit: () => activeStates.Results([])
+    },
+    Results: { 
+      clear: "Empty" 
+    },
+  }, activeStates.Empty());
+
+  // Setup event propagation for nested machines
+  setup(active)(propagateSubmachines(active));
+  return active;
+}
+
+const appStates = defineStates({
+  Inactive: undefined,
+  Active: (machine: ReturnType<typeof createActiveMachine>) => ({ machine }),
+});
+
+// Parent delegates events to child automatically
+const app = matchina(appStates, {
+  Inactive: { 
+    focus: () => appStates.Active(createActiveMachine()) 
+  },
+  Active: { 
+    close: "Inactive" 
+  },
+}, appStates.Inactive());
+```
+
+### Key Features
+
+- **Child-first event routing**: Events route to deepest child first
+- **`child.exit` transitions**: Parent reacts when child reaches final state
+- **Type-safe child access**: Access child machines via exposed properties
+- **Automatic propagation**: Events flow through the hierarchy automatically
+
+Notes:
+- Hierarchical APIs are experimental; complex nested types may require explicit annotations
+- Event routing is deterministic: child machines handle events before parent retargeting
 
 ## Core Concepts
 
@@ -552,12 +682,13 @@ npm install matchina
 For detailed documentation, examples, and API reference, visit:
 
 - [Getting Started](https://winstonfassett.github.io/matchina/guides/quickstart)
-- [Matchbox Tutorial](https://winstonfassett.github.io/matchina/guides/union-machines)
-- [Factory Machines](https://winstonfassett.github.io/matchina/guides/machines)
+- [Matchbox Factories](https://winstonfassett.github.io/matchina/guides/matchbox-factories)
+- [State Machines](https://winstonfassett.github.io/matchina/guides/machines)
 - [Promise Handling](https://winstonfassett.github.io/matchina/guides/promises)
 - [Lifecycle Hooks](https://winstonfassett.github.io/matchina/guides/lifecycle)
 - [React Integration](https://winstonfassett.github.io/matchina/guides/react)
-- [Full Examples](https://winstonfassett.github.io/matchina/examples)
+- [Hierarchical Machines](https://winstonfassett.github.io/matchina/guides/hierarchical-machines)
+- [Hierarchical Examples](https://winstonfassett.github.io/matchina/examples/hsm-overview)
 
 ## Integrations
 

@@ -1,7 +1,5 @@
 import { eventApi, createMachine, defineStates, matchina } from "matchina";
-// For development, use relative path
-import { defineZodStates } from "../../../../src/integrations/zod";
-// In production, this would be: import { defineZodStates } from "matchina/zod";
+import { defineZodStates } from "matchina/zod";
 import { z } from "zod";
 
 // Example Zod schemas for states
@@ -66,12 +64,11 @@ m2.error("An error occurred"); // valid
 // m2.error(); // invalid -- error required
 
 // BEFORE: Verbose way to create state factories with Zod validation
-const states2 = defineStates({
-  Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
-  Loading: (data: z.infer<typeof LoadingSchema>) => LoadingSchema.parse(data),
-  Error: (data: z.infer<typeof ErrorSchema>) => ErrorSchema.parse(data),
-} as const);
-
+// const states2 = defineStates({
+//   Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
+//   Loading: (data: z.infer<typeof LoadingSchema>) => LoadingSchema.parse(data),
+//   Error: (data: z.infer<typeof ErrorSchema>) => ErrorSchema.parse(data),
+// } as const);
 // This will now show a type error for the misspelled property
 // const loading2 = states2.Loading({ proffffgress: 4 });
 
@@ -103,7 +100,7 @@ const machine2 = matchina(
       retry: "Idle",
     },
   },
-  states2.Idle()
+  states3.Idle()
 );
 
 // These now properly type-check:

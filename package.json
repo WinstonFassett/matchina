@@ -49,18 +49,23 @@
     "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
     "dev": "vitest dev",
+    "dev:docs": "npm --workspace docs run dev",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
     "release": "npm run  test && changelogen --release && npm publish && git push --follow-tags",
-    "test": "bun test:types && vitest run --coverage",
-    "test:types": "tsc --noEmit --skipLibCheck",
+    "test": "vitest run --coverage",
+    "test:all": "npm run test:types && npm run test",
+    "type-check": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "test:types": "npm run type-check",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish": "npm publish --access public"
-    
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^10.0.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^20.8.2",
     "@types/react": "^18.2.31",
     "@vitest/coverage-v8": "^0.34.6",
@@ -70,9 +75,9 @@
     "prettier": "^3.6.2",
     "size-limit": "^10.0.1",
     "unbuild": "^2.0.0",
+    "valibot": "^1.1.0",
     "vitest": "^0.34.6",
-    "zod": "^3.22.4",
-    "valibot": "^1.1.0"
+    "zod": "^3.22.4"
   },
   "dependencies": {
     "@astrojs/ts-plugin": "^1.10.4"

@@ -7,17 +7,20 @@ export class FactoryMachineEventImpl<E extends FactoryMachineEvent<any>> {
   public from: E["from"];
   public to: E["to"];
   public params: E["params"];
+  public machine: E["machine"];
 
   constructor(
     type: E["type"],
     from: E["from"],
     to: E["to"],
-    params: E["params"]
+    params: E["params"],
+    machine: E["machine"]
   ) {
     this.type = type;
     this.from = from;
     this.to = to;
     this.params = params;
+    this.machine = machine;
   }
 
   match<

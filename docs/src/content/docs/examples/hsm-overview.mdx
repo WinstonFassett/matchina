@@ -1,0 +1,93 @@
+---
+title: Hierarchical Machines Examples Overview
+description: Complex nested state machines with child machines embedded in parent states
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+# Hierarchical Machine Examples
+
+The hierarchical machine examples demonstrate how to build complex nested state machines by embedding child machines within parent states. These examples showcase the two main approaches to hierarchical state machines and their real-world applications.
+
+:::caution[Experimental Feature]
+Hierarchical state machines are experimental in Matchina. The APIs may change and complex nested types may require explicit annotations.
+:::
+
+## Overview of Examples
+
+<CardGrid>
+  <LinkCard
+    title="Tag List Editor (Hierarchical)"
+    href="/matchina/examples/hsm-combobox/"
+    description="Event propagation pattern with tag management and autocomplete"
+  />
+  <LinkCard
+    title="Checkout Flow (Hierarchical)"
+    href="/matchina/examples/hsm-checkout/"
+    description="Hierarchical wrapper pattern with direct child machine access"
+  />
+</CardGrid>
+
+## Comparison of Approaches
+
+### Event Propagation vs. Hierarchical Wrapper
+
+The hierarchical machine examples demonstrate two distinct approaches:
+
+1. **Tag List Editor** (`hsm-combobox`): Uses event propagation with `propagateSubmachines` for automatic routing
+2. **Checkout Flow** (`hsm-checkout`): Uses hierarchical wrapper with `createHierarchicalMachine` for direct child access
+
+### Key Differences
+
+- **Tag List Editor vs Checkout**: Tag List Editor uses automatic event delegation while Checkout provides explicit child machine control
+- **Event Routing**: Tag List Editor routes events child-first automatically, Checkout exposes child APIs directly
+- **Child Management**: Tag List Editor handles child lifecycle automatically, Checkout gives parent full control over child state
+
+### Key Features by Example
+
+| Example | Pattern | Child Access | Event Routing | Best For | Complexity |
+|---------|---------|-------------|---------------|----------|------------|
+| Tag List Editor | Event Propagation | Automatic | Child-first | Natural event flow | Lower |
+| Checkout Flow | Hierarchical Wrapper | Direct API | Manual | Controlled workflows | Higher |
+
+## Implementation Details
+
+### Tag List Editor (Event Propagation)
+
+- **Parent States**: `Inactive` → `Active`
+- **Child States**: `Empty` → `TextEntry` → `Suggesting` → `Selecting`
+- **Key Feature**: Events like `typed`, `clear`, `addTag` automatically route to the appropriate child machine
+- **Child Completion**: Uses automatic event propagation for tag management
+- **React Context**: Demonstrates context-based state sharing to avoid prop drilling
+
+### Checkout Flow (Hierarchical Wrapper)
+
+- **Parent States**: `Cart` → `Shipping` → `Payment` → `Review` → `Confirmation`
+- **Child States**: `MethodEntry` → `Authorizing` → `Authorized` / `AuthorizationError`
+- **Key Feature**: Direct child machine access via `machine.payment.authorize()`
+- **Child Completion**: Parent reacts to child completion via `child.exit` transitions
+- **State Management**: Parent controls child lifecycle with reset and state preservation
+
+## When to Use Each Pattern
+
+### Choose Event Propagation (Tag List Editor) When:
+- Events naturally flow through hierarchy
+- Child machines are self-contained
+- You want automatic event delegation
+- Simpler parent-child coordination
+
+### Choose Hierarchical Wrapper (Checkout) When:
+- Parent needs direct control over children
+- Complex child state management required
+- Multiple entry points to child machines
+- Type-safe child API access needed
+
+## Related Concepts
+
+For conceptual background on hierarchical machines, see the [Hierarchical Machines Guide](/matchina/guides/hierarchical-machines/).
+
+## API Reference
+
+- [`createHierarchicalMachine`](/matchina/reference/functions/createhierarchicalmachine/) - Create hierarchical wrapper
+- [`propagateSubmachines`](/matchina/reference/functions/propagatesubmachines/) - Enable event propagation
+- [`HierarchicalMachine`](/matchina/reference/type-aliases/hierarchicalmachine/) - Enhanced machine type

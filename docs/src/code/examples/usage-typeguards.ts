@@ -120,7 +120,7 @@ lastChange.match(
 );
 
 if (lastChange.to.is("Pending")) {
-  const [a, b, t] = lastChange.to.data.params;
+  const [a, b, t] = (lastChange.to as any).data.params;
   console.log("Pending state with params:", a, b, t);
 }
 
