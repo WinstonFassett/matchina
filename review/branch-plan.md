@@ -292,16 +292,49 @@ graph TD
 9. `docs/infrastructure`
 10. `chore/deps`
 
-### Phase 2: HSM (definition-first)
-1. `feat/hsm-definition-format` (after fix/types)
-2. `feat/hsm-flatten`
-3. `docs/hsm-flatten-guide`
-4. `feat/hsm-inspect-core`
-5. `feat/visualizers`
+### Phase 2: HSM Flatten ✓ COMPLETE
+1. `feat/hsm-definition-format` ✓
+2. `feat/hsm-flatten` ✓
+3. `docs/hsm-flatten-guide` ✓
 
-### Phase 3: Optional (if we keep propagation)
-1. `feat/hsm-propagation` (after definition-format, branding, send-hook)
-2. `docs/hsm-propagation-examples`
+### Phase 3a: Inspection & Visualization ✓ COMPLETE
+1. `feat/hsm-inspect-core` ✓ (branches from docs/hsm-flatten-guide)
+2. `feat/visualizers` ✓ (branches from feat/hsm-inspect-core)
+
+### Phase 3b: Propagation ✓ COMPLETE (TBD if merging)
+1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
+2. `docs/hsm-propagation-examples` ✓
+
+### Phase 4: Flatten-based Examples (NEW - merge before propagation)
+1. `docs/hsm-flatten-examples` - Port examples using flatten approach (matchina-b96)
+2. Update hierarchical-machines.mdx to lead with flatten (matchina-0vb)
+
+### Phase 5: Remaining Work
+- Design manifest format (matchina-p4g) - lower priority
+- Create matchina/inspect subpath (matchina-3sj) - after merge
+- Externalize visualizers (matchina-9zh) - lower priority
+- Type improvements (matchina-hi7, matchina-ukb)
+- StoreMachine guide (matchina-1ve)
+
+---
+
+## Current Branch Structure (2025-12-26)
+
+```
+dev
+└── feat/hsm-definition-format
+    └── feat/hsm-flatten
+        └── docs/hsm-flatten-guide
+            ├── feat/hsm-inspect-core
+            │   └── feat/visualizers
+            │       └── docs/hsm-flatten-examples (NEW - to be created)
+            │
+            └── feat/hsm-propagation (includes branding)
+                └── docs/hsm-propagation-examples
+```
+
+**Strategy:** Merge flatten-based stack first (through visualizers + flatten-examples).
+Propagation stack is TBD - may merge later or keep as experimental.
 
 ---
 
@@ -325,8 +358,8 @@ graph TD
 
 ## Next Steps
 
-1. Create `dev` branch from `main`
-2. Port over the relevant `review/` planning docs into `dev`
-3. Create `bd` tickets for each branch
-4. Start with atomic branches (Phase 1)
-5. Work HSM stack after dependencies land
+1. Create `docs/hsm-flatten-examples` branch from `feat/visualizers`
+2. Port HSM examples from feature/hsm-with-viz, adapt to use flatten approach
+3. Update hierarchical-machines.mdx to lead with flatten
+4. Merge flatten-based stack to dev, then main
+5. Propagation stack TBD
