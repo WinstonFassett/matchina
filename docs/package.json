@@ -23,7 +23,7 @@
     "@tailwindcss/vite": "^4.0.7",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "astro": "^5.6.1",
+    "astro": "^5.15.9",
     "astro-remote": "^0.3.4",
     "elkjs": "^0.10.0",
     "force-graph": "^1.50.1",
