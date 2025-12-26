@@ -129,7 +129,7 @@ export function createFlatComboboxMachine() {
     initial: "Inactive"
   });
   
-  // Store original hierarchical definition for visualization - match the actual hierarchical structure
+  // Store original hierarchical definition for visualization (visualizer looks for _originalDef)
   (machine as any)._originalDef = {
     states: {
       Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
