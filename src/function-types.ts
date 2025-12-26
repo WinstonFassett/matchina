@@ -37,7 +37,6 @@ export type DisposableEffect<E> = EffectFunc<E> | SetupFunc<E>;
 export type MiddlewareFunc<E> = (event: E, next: (event: E) => void) => void;
 
 /**
- * @internal
  * Func is a generic function type: (...args) => result.
  */
 export type Func<A = any, R = any> = (...args: A[]) => R;

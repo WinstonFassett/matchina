@@ -57,6 +57,7 @@ export default defineConfig({
               "@throws",
               "@type",
               "@function",
+              "@internal",
             ],
             modifierTags: [
               "@interface",
