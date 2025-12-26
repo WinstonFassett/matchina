@@ -53,7 +53,7 @@ export interface MatchboxApi<
   as: <K extends keyof F>(key: K) => Matchbox<TagProp, F, K>;
   match: <A, Exhaustive extends boolean = true>(
     cases: {
-      [K in string & keyof F]: (data: ReturnType<F[K]>) => A;
+      [K in keyof F]: (data: ReturnType<F[K]>) => A;
     },
     exhaustive?: Exhaustive
   ) => A;
@@ -90,19 +90,18 @@ export type MatchboxMember<
  * - If _ is present, all tag cases become optional (exhaustiveness is satisfied)
  * - If _ is not present and exhaustive is true, all tags are required
  */
-// Uses `string &` constraint to prevent key type explosion
 export type MatchCases<DataSpecs, A, Exhaustive extends boolean = true> =
   // If _ is present, all tags are optional (exhaustiveness is satisfied)
   | (Partial<{
-      [K in string & keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+      [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
     }> & { _?: (...args: any[]) => A })
   // Otherwise, if exhaustive, all tags are required
   | (Exhaustive extends true
       ? {
-          [K in string & keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+          [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
         }
       : Partial<{
-          [K in string & keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
+          [K in keyof DataSpecs]: (data: MatchboxData<DataSpecs>[K]) => A;
         }>);
 /**
  * MatchboxMemberApi provides type-safe methods for working with a Matchbox member:
@@ -149,7 +148,7 @@ export type TaggedTypes<T = any> = {
  * Usage: InferMatchboxOutput<typeof factory>
  */
 export type InferMatchboxOutput<T extends MatchboxFactory<any, any>> = {
-  [K in string & keyof T]: T[K] extends (...args: any[]) => infer M
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M
     ? M extends { data: infer D }
       ? D
       : never
@@ -162,7 +161,7 @@ export type InferMatchboxOutput<T extends MatchboxFactory<any, any>> = {
  * Result: { Foo: (x: number) => { data: { value: number }, tag: 'Foo', ...api }; ... }
  */
 export type InferMatchboxInstances<T extends MatchboxFactory<any, any>> = {
-  [K in string & keyof T]: T[K] extends (...args: any[]) => infer M
+  [K in keyof T]: T[K] extends (...args: any[]) => infer M
     ? (...args: Parameters<T[K]>) => M
     : never;
 };
@@ -185,7 +184,7 @@ export type SimplifiedMatchbox<T extends { data: any; tag: string }> = {
 export type SimplifiedMatchboxFactory<
   T extends Record<string, (...args: any[]) => any>,
 > = {
-  [K in string & keyof T]: (
+  [K in keyof T]: (
     ...args: Parameters<T[K]>
   ) => SimplifiedMatchbox<ReturnType<T[K]>>;
 };

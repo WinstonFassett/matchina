@@ -7,10 +7,9 @@ export type MemberReturnType<
   K extends keyof F,
 > = ReturnType<F[K]>;
 
-// Uses `string &` constraint to prevent key type explosion
 export type FlatMemberUnion<T> = {
-  [StateKey in string & keyof T]: T[StateKey];
-}[string & keyof T];
+  [StateKey in keyof T]: T[StateKey];
+}[keyof T];
 
 export type TUnionToIntersection<T> = (
   T extends any ? (x: T) => any : never

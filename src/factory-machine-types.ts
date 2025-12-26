@@ -10,17 +10,18 @@ import { FlatMemberUnion } from "./utility-types";
 
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.
- * Iterates once over states, using conditional to match the target event.
- * Uses `string &` constraint to prevent key type explosion.
+ * This type properly handles required parameters and default parameters.
  */
 export type ExtractEventParams<
   FC extends FactoryMachineContext<any>,
   T extends string,
 > = {
-  [K in string & keyof FC["transitions"]]: T extends keyof FC["transitions"][K]
-    ? ExtractParamTypes<FC, K, T>
-    : never;
-}[string & keyof FC["transitions"]];
+  [StateKey in keyof FC["transitions"]]: {
+    [EventKey in keyof FC["transitions"][StateKey] & string]: EventKey extends T
+      ? ExtractParamTypes<FC, StateKey, EventKey>
+      : never;
+  }[keyof FC["transitions"][StateKey] & string];
+}[keyof FC["transitions"]];
 
 export interface FactoryMachineContext<
   SF extends KeyedStateFactory = KeyedStateFactory,
@@ -60,27 +61,6 @@ export interface FactoryMachine<
    * This avoids over-narrowing via event unions that can drop some states from the type.
    */
   getState(): FactoryKeyedState<FC["states"]>;
-
-  /**
-   * Extend the machine with additional functionality.
-   * Returns a new type that combines the original machine with the extension.
-   * 
-   * @param fn - Extension function that receives the machine and returns additional properties/methods
-   * @returns The original machine combined with the extension
-   * 
-   * @example
-   * ```typescript
-   * const withEventApi = (machine) => ({
-   *   toggle: () => machine.send('toggle'),
-   *   reset: () => machine.send('reset')
-   * });
-   * 
-   * const enhanced = machine.extend(withEventApi);
-   * enhanced.toggle(); // Available via extension
-   * enhanced.send('toggle'); // Original method still works
-   * ```
-   */
-  extend<T extends object>(fn: (machine: this) => T): this & T;
 }
 
 // If param inference produces a non-array (e.g., never), normalize to [] so zero-arg events are callable.
@@ -118,17 +98,9 @@ type NormalizeParams<P> = [P] extends [never]
  * @template TR - The transition record type that maps event types to transition functions or state keys
  */
 export type FactoryMachineTransitions<SF extends KeyedStateFactory> = {
-  [FromStateKey in string & keyof SF]?: {
+  [FromStateKey in keyof SF]?: {
     [EventKey in string]?: FactoryMachineTransition<SF, FromStateKey, EventKey>;
   };
-};
-
-// Simplified event type for curried transitions - avoids recursive FactoryMachineEvent reference
-type CurriedTransitionEvent<SF extends KeyedStateFactory, FromStateKey extends keyof SF, EventKey extends string> = {
-  type: EventKey;
-  from: FactoryKeyedState<SF, FromStateKey>;
-  params: any[];
-  machine: any;
 };
 
 export type FactoryMachineTransition<
@@ -139,34 +111,35 @@ export type FactoryMachineTransition<
   | keyof SF
   | ((...params: any[]) => FactoryKeyedState<SF>)
   | ((...params: any[]) => (
-      ev: CurriedTransitionEvent<SF, FromStateKey, EventKey>
+      ev: ResolveEvent<
+        FactoryMachineEvent<{ states: SF; transitions: any }>
+      > & {
+        type: EventKey;
+        from: FactoryKeyedState<SF, FromStateKey>;
+      }
     ) => FactoryKeyedState<SF> | null | undefined);
 
-/**
- * Union of all possible transition events for a factory machine.
- * Uses `string &` constraints to prevent string|number|symbol key explosion.
- */
 export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
-  [K in string & keyof FC["transitions"]]: {
-    [E in string & keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
-  }[string & keyof FC["transitions"][K]];
-}[string & keyof FC["transitions"]];
+  [K in keyof FC["transitions"]]: {
+    [E in keyof FC["transitions"][K]]: FactoryMachineTransitionEvent<FC, K, E>;
+  }[keyof FC["transitions"][K]];
+}[keyof FC["transitions"]];
 
 export type FactoryMachineTransitionEvent<
   FC extends FactoryMachineContext<any>,
-  FromKey extends string & keyof FC["transitions"] = string & keyof FC["transitions"],
+  FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
   EventKey extends
-    string & keyof FC["transitions"][FromKey] = string & keyof FC["transitions"][FromKey],
+    keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
   ToKey extends
     FC["transitions"][FromKey][EventKey] = FC["transitions"][FromKey][EventKey],
 > = TransitionEvent<FactoryKeyedState<FC["states"]>> &
   FactoryMachineEventApi<FC> & {
     from: FactoryKeyedState<
       FC["states"],
-      FromKey extends string & keyof FC["states"] ? FromKey : any
+      FromKey extends keyof FC["states"] ? FromKey : any
     >;
     type: EventKey;
-  } & (ToKey extends string & keyof FC["states"]
+  } & (ToKey extends keyof FC["states"]
     ? {
         to: FactoryKeyedState<FC["states"], ToKey>;
       }
