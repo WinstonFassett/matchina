@@ -292,16 +292,52 @@ graph TD
 9. `docs/infrastructure`
 10. `chore/deps`
 
-### Phase 2: HSM (definition-first)
-1. `feat/hsm-definition-format` (after fix/types)
-2. `feat/hsm-flatten`
-3. `docs/hsm-flatten-guide`
-4. `feat/hsm-inspect-core`
-5. `feat/visualizers`
+### Phase 2: HSM Flatten ✓ COMPLETE
+1. `feat/hsm-definition-format` ✓
+2. `feat/hsm-flatten` ✓
+3. `docs/hsm-flatten-guide` ✓
 
-### Phase 3: Optional (if we keep propagation)
-1. `feat/hsm-propagation` (after definition-format, branding, send-hook)
-2. `docs/hsm-propagation-examples`
+### Phase 3a: Inspection & Visualization ✓ COMPLETE
+1. `feat/hsm-inspect-core` ✓ (branches from docs/hsm-flatten-guide)
+2. `feat/visualizers` ✓ (branches from feat/hsm-inspect-core)
+
+### Phase 3b: Propagation ✓ COMPLETE (TBD if merging)
+1. `feat/hsm-propagation` ✓ (branches from docs/hsm-flatten-guide, includes branding)
+2. `docs/hsm-propagation-examples` ✓
+
+### Phase 4: Flatten-based Examples ✓ IN PROGRESS
+1. `docs/hsm-flatten-examples` ✓ - Port examples using flatten approach (matchina-b96 closed)
+2. Update hierarchical-machines.mdx to lead with flatten (matchina-0vb)
+
+### Phase 5: Remaining Work
+- Design manifest format (matchina-p4g) - lower priority
+- Create matchina/inspect subpath (matchina-3sj) - after merge
+- Externalize visualizers (matchina-9zh) - lower priority
+
+### Open Beads (independent work)
+- **matchina-hi7** - FlattenFactoryStateKeys type optimization → `fix/types` from main
+- **matchina-ukb** - FactoryMachine type errors → `fix/types` from main  
+- **matchina-1ve** - StoreMachine guide → `docs/store-machine-guide` from dev
+
+---
+
+## Current Branch Structure (2025-12-26)
+
+```
+dev
+└── feat/hsm-definition-format
+    └── feat/hsm-flatten
+        └── docs/hsm-flatten-guide
+            ├── feat/hsm-inspect-core
+            │   └── feat/visualizers
+            │       └── docs/hsm-flatten-examples (NEW - to be created)
+            │
+            └── feat/hsm-propagation (includes branding)
+                └── docs/hsm-propagation-examples
+```
+
+**Strategy:** Merge flatten-based stack first (through visualizers + flatten-examples).
+Propagation stack is TBD - may merge later or keep as experimental.
 
 ---
 
@@ -325,8 +361,9 @@ graph TD
 
 ## Next Steps
 
-1. Create `dev` branch from `main`
-2. Port over the relevant `review/` planning docs into `dev`
-3. Create `bd` tickets for each branch
-4. Start with atomic branches (Phase 1)
-5. Work HSM stack after dependencies land
+1. ✓ `docs/hsm-flatten-examples` branch created and has flatten example work
+2. Complete open beads on appropriate branches:
+   - `fix/types` from main for matchina-hi7, matchina-ukb
+   - `docs/store-machine-guide` from dev for matchina-1ve
+3. Merge flatten-based stack to dev, then main
+4. Propagation stack TBD
