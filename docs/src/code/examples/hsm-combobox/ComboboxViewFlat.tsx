@@ -117,6 +117,12 @@ function ActiveInput() {
           } else if (e.key === 'ArrowDown') {
             machine.send('arrowDown');
             e.preventDefault();
+          } else if (e.key === 'ArrowUp') {
+            machine.send('arrowUp');
+            e.preventDefault();
+          } else if (e.key === 'Enter') {
+            machine.send('enter');
+            e.preventDefault();
           }
         }}
       />

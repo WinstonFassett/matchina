@@ -30,89 +30,93 @@ const flatTransitions = {
     focus: () => flatStates["Active.Empty"]()
   },
   "Active.Empty": {
-    typed: (input: string) => {
+    typed: (input: string) => (ev: any) => {
+      const selectedTags = ev.from.data.selectedTags || [];
       const suggestions = input.length > 0 
         ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
         : [];
       
       return suggestions.length > 0 
-        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
-        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
+        ? flatStates["Active.Suggesting"]({ input, selectedTags, suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags });
     },
     blur: () => flatStates["Inactive"](),
     close: () => flatStates["Inactive"]()
   },
   "Active.TextEntry": {
-    typed: (input: string) => {
+    typed: (input: string) => (ev: any) => {
+      const selectedTags = ev.from.data.selectedTags || [];
       const suggestions = input.length > 0 
         ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
         : [];
       
       return suggestions.length > 0 
-        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
-        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
+        ? flatStates["Active.Suggesting"]({ input, selectedTags, suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags });
     },
     blur: () => flatStates["Inactive"](),
     escape: () => flatStates["Inactive"](),
     close: () => flatStates["Inactive"]()
   },
   "Active.Suggesting": {
-    typed: (input: string) => {
+    typed: (input: string) => (ev: any) => {
+      const selectedTags = ev.from.data.selectedTags || [];
       const suggestions = input.length > 0 
         ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
         : [];
       
       return suggestions.length > 0 
-        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
-        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
+        ? flatStates["Active.Suggesting"]({ input, selectedTags, suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags });
     },
     blur: () => flatStates["Inactive"](),
     escape: () => flatStates["Inactive"](),
     close: () => flatStates["Inactive"](),
     arrowDown: () => (ev: any) => flatStates["Active.Selecting"]({ 
-      input: ev.from.input, 
-      selectedTags: ev.from.selectedTags, 
-      suggestions: ev.from.suggestions, 
+      input: ev.from.data.input, 
+      selectedTags: ev.from.data.selectedTags, 
+      suggestions: ev.from.data.suggestions, 
       highlightedIndex: 0 
     })
   },
   "Active.Selecting": {
-    typed: (input: string) => {
+    typed: (input: string) => (ev: any) => {
+      const selectedTags = ev.from.data.selectedTags || [];
       const suggestions = input.length > 0 
         ? AVAILABLE_TAGS.filter(tag => tag.toLowerCase().includes(input.toLowerCase()))
         : [];
       
       return suggestions.length > 0 
-        ? flatStates["Active.Suggesting"]({ input, selectedTags: [], suggestions })
-        : flatStates["Active.TextEntry"]({ input, selectedTags: [] });
+        ? flatStates["Active.Suggesting"]({ input, selectedTags, suggestions })
+        : flatStates["Active.TextEntry"]({ input, selectedTags });
     },
     blur: () => flatStates["Inactive"](),
     escape: () => flatStates["Inactive"](),
     close: () => flatStates["Inactive"](),
     arrowUp: () => (ev: any) => flatStates["Active.Selecting"]({ 
-      input: ev.from.input, 
-      selectedTags: ev.from.selectedTags, 
-      suggestions: ev.from.suggestions, 
-      highlightedIndex: Math.max(0, (ev.from.highlightedIndex || 0) - 1) 
+      input: ev.from.data.input, 
+      selectedTags: ev.from.data.selectedTags, 
+      suggestions: ev.from.data.suggestions, 
+      highlightedIndex: Math.max(0, (ev.from.data.highlightedIndex || 0) - 1) 
     }),
     arrowDown: () => (ev: any) => flatStates["Active.Selecting"]({ 
-      input: ev.from.input, 
-      selectedTags: ev.from.selectedTags, 
-      suggestions: ev.from.suggestions, 
-      highlightedIndex: Math.min((ev.from.suggestions || []).length - 1, (ev.from.highlightedIndex || 0) + 1) 
+      input: ev.from.data.input, 
+      selectedTags: ev.from.data.selectedTags, 
+      suggestions: ev.from.data.suggestions, 
+      highlightedIndex: Math.min((ev.from.data.suggestions || []).length - 1, (ev.from.data.highlightedIndex || 0) + 1) 
     }),
     enter: () => (ev: any) => {
-      const suggestions = ev.from.suggestions || [];
-      const selectedTag = suggestions[ev.from.highlightedIndex || 0];
+      const suggestions = ev.from.data.suggestions || [];
+      const selectedTag = suggestions[ev.from.data.highlightedIndex || 0];
       if (selectedTag) {
         return flatStates["Active.TextEntry"]({ 
           input: "", 
-          selectedTags: [...(ev.from.selectedTags || []), selectedTag] 
+          selectedTags: [...(ev.from.data.selectedTags || []), selectedTag] 
         });
       }
       return flatStates["Active.TextEntry"]({ 
-        input: ev.from.input, 
-        selectedTags: ev.from.selectedTags 
+        input: ev.from.data.input, 
+        selectedTags: ev.from.data.selectedTags 
       });
     }
   }
@@ -125,15 +129,20 @@ export function createFlatComboboxMachine() {
     initial: "Inactive"
   });
   
-  // Store original hierarchical definition for visualization
+  // Store original hierarchical definition for visualization - match the actual hierarchical structure
   (machine as any)._originalDef = {
     states: {
-      Inactive: undefined,
+      Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
       Active: {
-        Empty: undefined,
-        TextEntry: undefined,
-        Suggesting: undefined,
-        Selecting: undefined
+        Empty: (selectedTags: string[] = []) => ({ input: "", selectedTags }),
+        TextEntry: ({ input = "", selectedTags = [] }: { input: string; selectedTags: string[] }) => ({ input, selectedTags }),
+        Suggesting: ({ input = "", selectedTags = [], suggestions = [] }: { input: string; selectedTags: string[]; suggestions: string[] }) => ({ input, selectedTags, suggestions }),
+        Selecting: ({ input = "", selectedTags = [], suggestions = [], highlightedIndex = 0 }: { 
+          input: string; 
+          selectedTags: string[]; 
+          suggestions: string[]; 
+          highlightedIndex: number 
+        }) => ({ input, selectedTags, suggestions, highlightedIndex })
       }
     },
     transitions: {
@@ -141,10 +150,41 @@ export function createFlatComboboxMachine() {
       Active: { 
         blur: "Inactive",
         close: "Inactive",
-        Empty: { typed: "TextEntry", focus: "TextEntry", blur: "Inactive", close: "Inactive" },
-        TextEntry: { typed: "TextEntry", blur: "Inactive", escape: "Inactive", close: "Inactive" },
-        Suggesting: { typed: "Suggesting", blur: "Inactive", escape: "Inactive", close: "Inactive", arrowDown: "Selecting" },
-        Selecting: { typed: "Suggesting", blur: "Inactive", escape: "Inactive", close: "Inactive", arrowUp: "Selecting", arrowDown: "Selecting", enter: "TextEntry" }
+        removeTag: (tag: string) => (ev: any) => ev.from,
+        Empty: { 
+          typed: "TextEntry", 
+          removeTag: (tag: string) => (ev: any) => ev.from
+        },
+        TextEntry: { 
+          typed: "TextEntry", 
+          blur: "Inactive", 
+          escape: "Inactive", 
+          close: "Inactive",
+          clear: "Empty",
+          addTag: "Empty"
+        },
+        Suggesting: { 
+          typed: "Suggesting", 
+          blur: "Inactive", 
+          escape: "Inactive", 
+          close: "Inactive", 
+          arrowDown: "Selecting",
+          highlight: "Selecting",
+          addTag: "Empty",
+          cancel: "TextEntry"
+        },
+        Selecting: { 
+          typed: "Suggesting", 
+          blur: "Inactive", 
+          escape: "Inactive", 
+          close: "Inactive", 
+          arrowUp: "Selecting", 
+          arrowDown: "Selecting", 
+          enter: "TextEntry",
+          highlight: "Selecting",
+          addTag: "Empty",
+          cancel: "TextEntry"
+        }
       }
     },
     initial: "Inactive"
@@ -153,12 +193,11 @@ export function createFlatComboboxMachine() {
   return machine;
 }
 
-// Helper to parse flat state key
 export function parseFlatStateKey(key: string) {
-  const parts = key.split(".");
+  const parts = key.split('.');
   return {
-    parent: parts[0],
-    child: parts[1] || null,
     full: key,
+    parent: parts[0],
+    child: parts[1]
   };
 }
