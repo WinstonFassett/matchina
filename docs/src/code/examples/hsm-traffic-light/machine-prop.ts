@@ -1,41 +1,44 @@
 import {
   defineStates,
-  defineMachine,
   submachine,
   createHierarchicalMachine,
-  createMachine
+  matchina
 } from "matchina";
 
 // 1. Define the Child Machine (Light Cycle)
 // We need a factory for the child machine so it can be instantiated freshly
-const createLightCycle = () => createMachine(
-  defineStates({ 
-    Red: undefined, 
-    Green: undefined, 
-    Yellow: undefined 
-  }),
+const lightCycleStates = defineStates({
+  Red: () => ({}),
+  Green: () => ({}),
+  Yellow: () => ({})
+});
+
+const createLightCycle = () => matchina(
+  lightCycleStates,
   {
     Red: { tick: "Green" },
     Green: { tick: "Yellow" },
     Yellow: { tick: "Red" },
   },
-  "Red"
+  lightCycleStates.Red()
 );
 
 // 2. Define the Parent Machine (Controller)
 // We use `submachine` to embed the child machine factory
-const createController = () => createMachine(
-  defineStates({
-    Broken: undefined,
-    Working: submachine(createLightCycle),
-    Maintenance: undefined,
-  }),
+const controllerStates = defineStates({
+  Broken: () => ({}),
+  Working: submachine(createLightCycle),
+  Maintenance: () => ({}),
+});
+
+const createController = () => matchina(
+  controllerStates,
   {
     Broken: { repair: "Working", maintenance: "Maintenance" },
     Working: { break: "Broken", maintenance: "Maintenance" },
     Maintenance: { complete: "Working" },
   },
-  "Working"
+  controllerStates.Working()
 );
 
 // 3. Create the Hierarchical Machine

@@ -1,5 +1,5 @@
 import { FactoryMachine } from "./factory-machine-types";
-import { FactoryMachineApi, addEventApi } from "./factory-machine-api-types";
+import type { FactoryMachineApi, addEventApi as AddEventApiType } from "./factory-machine-api-types";
 
 /**
  * Creates an API object for a FactoryMachine instance, providing event sender functions for each transition.
@@ -46,16 +46,16 @@ export function eventApi<
  *
  * @template M - Type of FactoryMachine
  * @param {M} target - The machine instance to enhance
- * @returns {addEventApi<M>} The enhanced machine with an api property
+ * @returns {AddEventApiType<M>} The enhanced machine with an api property
  */
 export function addEventApi<M extends FactoryMachine<any>>(
   target: M
-): addEventApi<M> {
-  const enhanced = target as addEventApi<M>;
+): AddEventApiType<M> {
+  const enhanced = target as AddEventApiType<M>;
   if (enhanced.api) {
     return enhanced;
   }
   return Object.assign(target, {
     api: eventApi<M>(enhanced),
-  }) as addEventApi<M>;
+  }) as AddEventApiType<M>;
 }

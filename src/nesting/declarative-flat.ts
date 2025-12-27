@@ -343,5 +343,6 @@ export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfi
   const initialKey = resolveInitialChild(config.initial, config.states);
 
   // Create flat machine using existing API
-  return createFlatMachine(states as any, flatTransitions as any, initialKey as any);
+  // Type inference is intentionally lost here due to dynamic nature of declarative API
+  return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }

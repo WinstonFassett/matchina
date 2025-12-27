@@ -7,6 +7,7 @@
 
 import type { FactoryMachine } from "../factory-machine";
 import type { MachineShape, StateNode } from "./shape-types";
+import { getTargets } from "../transition-helper";
 
 /**
  * Build shape from flattened machine
@@ -43,7 +44,40 @@ export function buildFlattenedShape(
     const trans = new Map<string, string>();
     for (const [eventKey, target] of Object.entries(stateTransitions)) {
       if (typeof target === "string") {
+        // Simple string transition
         trans.set(String(eventKey), target);
+      } else if (typeof target === "function") {
+        // Check for t() helper metadata first
+        const targets = getTargets(target);
+        if (targets && targets.length > 0) {
+          // Has metadata from t() helper - use all discovered targets
+          for (const t of targets) {
+            trans.set(String(eventKey), t);
+          }
+        } else {
+          // Try automatic discovery for simple transitions
+          try {
+            // Call with dummy params
+            const dummyParams = Array(target.length).fill(undefined);
+            const result = target(...dummyParams);
+
+            // Check if result is a state (simple form) or event handler (curried form)
+            if (result && typeof result === 'object' && 'key' in result) {
+              // Simple form: (params) => state
+              trans.set(String(eventKey), result.key);
+            } else if (typeof result === 'function') {
+              // Curried form: (params) => (ev) => state
+              const dummyEvent = { from: { data: {} }, to: { data: {} } };
+              const state = result(dummyEvent);
+              if (state && typeof state === 'object' && 'key' in state) {
+                trans.set(String(eventKey), state.key);
+              }
+            }
+          } catch (e) {
+            // Can't auto-discover - transition won't show in visualization
+            // Use t() helper for complex branching logic
+          }
+        }
       }
     }
     transitionMap.set(stateStr, trans);
