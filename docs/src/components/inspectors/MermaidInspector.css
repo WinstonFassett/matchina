@@ -47,8 +47,24 @@
 }
 
 /* Edge labels with better contrast */
-.edgeLabel text { fill: var(--sl-color-text); }
+.edgeLabel text { 
+  fill: var(--sl-color-text) !important; 
+}
 .edgeLabel rect {
-  fill: var(--sl-color-bg);
-  stroke: var(--sl-color-gray-4);
+  fill: var(--sl-color-bg) !important;
+  stroke: var(--sl-color-gray-4) !important;
+}
+
+/* Dark mode edge label fixes */
+@media (prefers-color-scheme: dark) {
+  .edgeLabel rect {
+    fill: var(--sl-color-gray-2) !important;
+    stroke: var(--sl-color-gray-5) !important;
+  }
+}
+
+/* Fix edge visibility */
+.transition,
+.flowchart-link {
+  stroke: var(--sl-color-text) !important;
 }

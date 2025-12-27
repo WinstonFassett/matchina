@@ -1,15 +1,7 @@
-.node rect {
-  fill: transparent;
-}
+/* Minimal base styles - let MermaidInspector.css handle theme-specific styling */
 
-.node text {
-  fill: currentColor;
-}
-
-.edgeLabel {
-  background-color: transparent;
-}
-
-.nodeLabel p {
-  color: inherit !important;
+/* Override hardcoded cluster label colors that get injected later */
+#mermaid-1 .cluster-label {
+  fill: var(--sl-color-text-invert) !important;
+  color: var(--sl-color-text-invert) !important;
 }
