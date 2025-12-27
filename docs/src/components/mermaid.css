@@ -16,6 +16,13 @@
   background: transparent !important;
 }
 
+/* Flowchart clusters - transparent in dark mode */
+html[data-theme="dark"] #mermaid-1 .cluster rect {
+  fill: transparent !important;
+  stroke: var(--sl-color-gray-6) !important;
+  stroke-width: 2px !important;
+}
+
 /* Dark mode edge label fixes */
 html[data-theme="dark"] #mermaid-1 .edgeLabel p,
 html[data-theme="dark"] #mermaid-1 .edgeLabel span
