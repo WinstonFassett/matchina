@@ -47,7 +47,8 @@ const states = defineStates({
 });
 
 export function createFlatComboboxMachine() {
-  const transitions = {
+  // Use createFlatMachine which maintains REAL hierarchy with parent fallback
+  const baseMachine = createFlatMachine(states, {
     Inactive: {
       activate: t(
         () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
@@ -109,10 +110,7 @@ export function createFlatComboboxMachine() {
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
     },
-  };
-
-  // Use createFlatMachine which maintains REAL hierarchy with parent fallback
-  const baseMachine = createFlatMachine(states as any, transitions as any, "Inactive");
+  }, "Inactive");
 
   // Add effect to Active.Typing state that auto-transitions
   setup(baseMachine)(

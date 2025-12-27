@@ -343,6 +343,5 @@ export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfi
   const initialKey = resolveInitialChild(config.initial, config.states);
 
   // Create flat machine using existing API
-  // @ts-ignore - Type inference limitation with dynamic flattening
-  return createFlatMachine(states, flatTransitions, initialKey);
+  return createFlatMachine(states as any, flatTransitions as any, initialKey as any);
 }
