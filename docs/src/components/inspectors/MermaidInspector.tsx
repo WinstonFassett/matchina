@@ -95,7 +95,7 @@ function toStateChart(config: any) {
           if (!target) return;
           const targetId: string | undefined =
             typeof target === "string"
-              ? getStateId(target, parentPrefix)
+              ? target.includes('.') ? target.replace(/\./g, '_') : getStateId(target, parentPrefix)  // Fix flattened state targets
               : (target as any)?.target
               ? getStateId((target as any).target, parentPrefix)
               : undefined;

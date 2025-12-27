@@ -29,7 +29,7 @@ export function buildFlattenedShape(
     const stateStr = String(stateKey);
     const isFinal = Object.keys(stateTransitions).length === 0;
     const parts = stateStr.split(".");
-    const parentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+    const parentKey = undefined; // For flattened machines, treat all as root states
 
     states.set(stateStr, {
       key: parts[parts.length - 1],
@@ -88,23 +88,9 @@ export function buildFlattenedShape(
     }
   }
 
-  // Create synthetic parent states that don't have direct transitions
-  for (const parentKey of parentStates) {
-    if (!states.has(parentKey)) {
-      const parts = parentKey.split(".");
-      const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
-      
-      states.set(parentKey, {
-        key: parts[parts.length - 1],
-        fullKey: parentKey,
-        isFinal: false, // parent states are never final
-        isCompound: true, // parent states contain children
-      });
-      
-      hierarchy.set(parentKey, grandParentKey);
-      transitionMap.set(parentKey, new Map()); // parent has no direct transitions
-    }
-  }
+  // For flattened machines, don't create synthetic parent states
+  // The dot notation is just for organization, not actual hierarchy
+  // This prevents duplicate root states in Mermaid visualization
 
   return {
     states,
