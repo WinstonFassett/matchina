@@ -1,23 +1,36 @@
-# Unified Machine Structure Interface Design
+# Unified Machine Structure Interface Design (REVISED)
+
+## Core Insight
+
+Shapes are **mostly static**, compiled at definition-time. Only nested machines can have dynamic shape changes when their hierarchy mutates (submachines are swapped/added).
+
+This means:
+- Don't compute shapes on-demand via getters
+- Build shapes once, cache them
+- For nested machines, listen for hierarchy changes and recompile
+- Use existing subscription patterns (store machines) to notify visualization
 
 ## Goal
-Design a unified interface that describes the **shape/structure** of ANY state machine (simple, nested, flattened) for visualization and introspection.
+
+Design a unified way to expose machine structure as a **static shape store** that works for all machine types (simple, nested, flattened).
 
 This is NOT about:
 - Templates or definitions (we have those)
 - Validation schemas (not what we need)
 - Creation or instantiation
+- Runtime introspection (compute on every query)
 
 This IS about:
+- **Static structure** compiled at definition time
+- **Observable changes** (for nested machines only)
 - **How to visualize** the machine
 - **How to navigate** its structure
-- **How to understand** what's in it
-- **What the shape looks like** (hence "manifest", "info", "map", "shape")
+- **What the shape looks like** (manifest/sourcemap/parts-list)
 
 **Scope**: Works for:
-1. Simple machines (flat state structure)
-2. Nested machines (with submachines)
-3. Flattened machines (lossy representation requiring external metadata)
+1. Simple machines (flat state structure, no shape needed)
+2. Nested machines (shape can change when hierarchy mutates)
+3. Flattened machines (static shape locked at creation)
 4. Future machine types
 
 ---
@@ -257,235 +270,258 @@ Option C (Hybrid) seems best because:
 
 ---
 
-## SECTION 6: The Machine Shape Interface (Lines 251-300)
+## SECTION 6: Shape Store Pattern (Static Data + Observable Changes)
 
-What should every state machine expose so visualization can understand its shape?
+### The Shape Interface
 
 ```typescript
 /**
- * MachineShape - Describes the structure of any state machine
+ * MachineShape - Static description of machine structure
  * 
- * This is NOT a template or definition (we have those).
- * This IS the shape/structure/map of the machine - how to visualize it and navigate it.
+ * This is NOT a definition (you can't create machines with this).
+ * This IS a parts-list/sourcemap/manifest of the machine's structure.
  * 
- * Visualization consumes this interface. Doesn't care about internal representation.
+ * Computed once at definition-time and cached.
+ * Visualization reads this to understand how to render the machine.
  */
 interface MachineShape {
-  // STRUCTURAL INFORMATION (for visualization)
-  readonly structure: {
-    readonly root: StateNode;  // state tree (may be flat or hierarchical)
-    readonly lookup: ReadonlyMap<string, StateInfo>;  // fast lookup by full key
-    readonly initialKey: string;  // full key of starting state
-  };
+  // Static structural data (compiled at definition time)
+  readonly states: ReadonlyMap<string, StateNode>;        // all states by fullKey
+  readonly transitions: ReadonlyMap<string, ReadonlyMap<string, string>>;  // [from][event] = to
+  readonly hierarchy: ReadonlyMap<string, string | undefined>;  // [state] = parent (or undefined)
+  readonly initialKey: string;
   
-  // TRANSITION INFORMATION (for understanding flow)
-  readonly transitions: {
-    // Get all transitions FROM a state (including any that apply via parent)
-    from(stateKey: string): TransitionMap;
-    
-    // Check if state can receive event
-    canReceive(stateKey: string, eventType: string): boolean;
-    
-    // Resolve where event goes (following this machine's rules)
-    resolve(stateKey: string, eventType: string): string | undefined;
-  };
-  
-  // HIERARCHY INFORMATION (for understanding relationships)
-  readonly hierarchy: {
-    parent(stateKey: string): string | undefined;
-    isLeaf(stateKey: string): boolean;
-    isFinal(stateKey: string): boolean;
-    isCompound(stateKey: string): boolean;  // contains other machine(s)
-    children(parentKey: string): string[];
-  };
-  
-  // OPTIONAL: Type info for debugging/reporting (NOT required for visualization)
-  // If this machine is a hierarchical state machine (nested or flattened), report which
-  readonly hsmType?: 'nested' | 'flattened';
-  
-  // DYNAMIC (for keeping visualization in sync with runtime changes)
-  readonly onStateChange?: (newState: string) => void;  // notify when machine changes
+  // Optional metadata about HSM representation (for debugging/tooling)
+  readonly type?: 'nested' | 'flattened';
 }
 
 interface StateNode {
-  readonly key: string;  // short name ("Authorized")
-  readonly fullKey: string;  // full path ("Payment.Authorized")
+  readonly key: string;          // short name ("Authorized")
+  readonly fullKey: string;      // full path ("Payment.Authorized")
   readonly isFinal: boolean;
-  readonly isCompound: boolean;
-  readonly initial?: string;  // for compound states
-  readonly states?: ReadonlyMap<string, StateNode>;
-}
-
-interface StateInfo {
-  readonly key: string;
-  readonly fullKey: string;
-  readonly parent?: string;
-  readonly isFinal: boolean;
-  readonly isCompound: boolean;
-  readonly data?: any;  // custom state metadata
-}
-
-interface TransitionMap {
-  readonly [event: string]: string | ((params: any) => string);
+  readonly isCompound: boolean;  // contains submachine
+  readonly initial?: string;     // initial child state (if compound)
 }
 ```
 
-### How Each Machine Type Implements This
+### The Shape Controller (Observable Store)
+
+Machines expose an optional `shape` property that is a store machine:
+
+```typescript
+interface ShapeController {
+  // Get current compiled shape
+  getState(): MachineShape;
+  
+  // Listen for shape changes (nested machines only)
+  subscribe(callback: (shape: MachineShape) => void): () => void;
+  
+  // Standard store machine API (notify, send, etc.)
+}
+
+// On FactoryMachine:
+interface FactoryMachine<T> {
+  // ... existing API ...
+  
+  // Optional: machines that have hierarchical structure expose a shape store
+  readonly shape?: ShapeController;
+}
+```
+
+### How Each Machine Type Uses This
 
 **Simple Machine**:
-- `structure`: All states are leaves, no hierarchy
-- `transitions.from()`: Direct lookup in state's transition map
-- `transitions.resolve()`: Straightforward target resolution
-- `hierarchy`: Parent is always undefined, no compound states
-- `hsmType`: undefined (not a hierarchical state machine)
-- `onStateChange`: Can be a direct hook
+- No `shape` property (flat machines don't need it)
+- Visualization directly reads state keys from `machine.transitions`
 
 **Nested Machine (with submachines)**:
-- `structure`: Built by recursively walking machines
-- `transitions.from()`: Collect from current machine + check parent machine
-- `transitions.resolve()`: Event bubbles up through machine chain
-- `hierarchy`: Derive from machine nesting (submachines are compound)
-- `hsmType`: "nested" (this IS an HSM, hierarchical variant)
-- `onStateChange`: Walk chain of machines to notify
+- Has `machine.shape` = ShapeController
+- Shape is built at initial `propagateSubmachines()` setup (all submachines discovered)
+- On `child.change` event (hierarchy mutation), shape store transitions with new compiled shape
+- Visualization subscribes to shape changes and recompiles tree
 
 **Flattened Machine**:
-- `structure`: Built from `_originalDef` + flattened state keys
-- `transitions.from()`: Look up both the state AND its parent in flat map
-- `transitions.resolve()`: Use fallback hook logic
-- `hierarchy`: Pre-compute from state keys and original def
-- `hsmType`: "flattened" (this IS an HSM, flattened variant)
-- `onStateChange`: Direct hook to machine
+- Has `machine.shape` = ShapeController
+- Shape is static (built from `_originalDef` at creation, never changes)
+- No dynamic transitions (shape is locked)
+- Visualization subscribes but receives no updates
 
-**Key insight**: `hsmType` is optional because simple machines don't have it. Visualization doesn't need it (just describes what it sees). But if present, it tells you how the HSM is represented internally.
+### Visualization Usage Pattern
+
+```typescript
+// Get shape if it exists
+const shape = machine.shape?.getState();
+
+// Subscribe to changes (nested machines will emit updates)
+const unsubscribe = machine.shape?.subscribe((newShape) => {
+  // Recompile visualization tree
+  rebuildTree(newShape);
+});
+
+// For current state, use existing mechanism:
+const currentState = machine.getState();
+```
 
 ---
 
-## SECTION 7: Implementation Approach (Lines 301-350)
+## SECTION 7: Implementation Approach
 
-### Phase 1: Extract Current Information
-Create helpers to build `MachineShape` from each machine type without changing machines.
-
-```typescript
-// For simple machines (most of them):
-export function getSimpleShape(
-  machine: FactoryMachine<any>
-): MachineShape {
-  return {
-    structure: {
-      root: buildSimpleTree(machine),
-      lookup: buildSimpleLookup(machine),
-      initialKey: machine.initialKey
-    },
-    transitions: {
-      from: (key) => machine.transitions[key] || {},
-      canReceive: (key, event) => key in machine.transitions && event in machine.transitions[key],
-      resolve: (key, event) => machine.transitions[key]?.[event]
-    },
-    hierarchy: { /* all return undefined for simple */ }
-    // hsmType is undefined (simple machines aren't HSMs)
-  };
-}
-
-// For nested machines (with submachines):
-export function getNestedShape(
-  machine: FactoryMachine<any>
-): MachineShape {
-  return {
-    structure: buildStructureFromNested(machine),
-    transitions: {
-      from: (key) => /* walk machine chain */,
-      canReceive: (key, event) => /* check current + parent */,
-      resolve: (key, event) => /* follow bubbling */
-    },
-    hierarchy: { /* derive from nesting */ },
-    hsmType: 'nested'
-  };
-}
-
-// For flattened machines (special case):
-export function getFlattenedShape(
-  machine: FactoryMachine<any>
-): MachineShape {
-  const originalShape = (machine as any)._originalDef;  // shape metadata, not a definition
-  return {
-    structure: buildStructureFromFlattened(originalShape, machine.transitions),
-    transitions: {
-      from: (key) => /* flat + parent lookup */,
-      canReceive: (key, event) => /* flat + fallback */,
-      resolve: (key, event) => /* flat + fallback */
-    },
-    hierarchy: { /* pre-computed */ },
-    hsmType: 'flattened'
-  };
-}
-```
-
-### Phase 2: Unify Visualization
-Change visualization to:
-1. Detect machine type
-2. Get appropriate `MachineShape`
-3. Use that interface (not the machine)
-4. Build visualization from unified shape
+### Phase 1: Create Shape Builders
+Build shape data structures once at definition-time, cache them.
 
 ```typescript
-export function getXStateDefinition(machine: FactoryMachine<any>) {
-  // Detect type and get shape
-  const shape = detectMachineType(machine) === 'flattened'
-    ? getFlattenedShape(machine)
-    : detectMachineType(machine) === 'nested'
-    ? getNestedShape(machine)
-    : getSimpleShape(machine);
+// Build shape from flattened machine (static, precomputed)
+function buildFlattenedShape(
+  machine: FactoryMachine<any>
+): MachineShape {
+  const originalDef = (machine as any)._originalDef;  // already has shape
+  return {
+    states: compileStatesToMap(machine.transitions, originalDef.hierarchy),
+    transitions: compileTransitions(machine.transitions, originalDef.hierarchy),
+    hierarchy: originalDef.hierarchy,  // pre-computed
+    initialKey: machine.initialKey,
+    type: 'flattened'
+  };
+}
+
+// Build shape from nested machines (computed at propagation time)
+function buildNestedShape(root: FactoryMachine<any>): MachineShape {
+  const discovered = new Set<FactoryMachine<any>>();
+  const states = new Map<string, StateNode>();
+  const transitions = new Map<string, Map<string, string>>();
+  const hierarchy = new Map<string, string | undefined>();
   
-  // Build visualization from shape (NOT from machine)
-  return buildVisualizationFromShape(shape);
+  function walk(machine: FactoryMachine<any>, parentKey?: string) {
+    if (discovered.has(machine)) return;
+    discovered.add(machine);
+    
+    // Process machine's states
+    for (const [stateKey, stateTransitions] of Object.entries(machine.transitions)) {
+      const fullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
+      states.set(fullKey, {
+        key: stateKey,
+        fullKey,
+        isFinal: Object.keys(stateTransitions).length === 0,
+        isCompound: false  // check if state.data.machine exists
+      });
+      hierarchy.set(fullKey, parentKey);
+      transitions.set(fullKey, new Map(Object.entries(stateTransitions)));
+    }
+    
+    // Discover submachines
+    const currentState = machine.getState();
+    if (currentState?.data?.machine) {
+      const child = currentState.data.machine;
+      walk(child, currentState.key);
+    }
+  }
+  
+  walk(root);
+  
+  return {
+    states,
+    transitions,
+    hierarchy,
+    initialKey: root.initialKey,
+    type: 'nested'
+  };
 }
 ```
 
-### Phase 3: Consider Attaching to Machine
-If we find this protocol useful, consider making it:
-- A public method: `machine.getShape()` or `machine.getStructure()`
-- A hook: machines can register to provide this
-- Or both (method delegates to hook)
+### Phase 2: Create Shape Store Machine
+Machines expose a `shape` property that is a store machine:
 
-This would separate concerns: visualization code only talks to shape protocol, not machines directly.
+```typescript
+// Create shape store for flattened machines (static)
+function createStaticShapeStore(
+  machine: FactoryMachine<any>
+): ShapeController {
+  const shape = buildFlattenedShape(machine);
+  return createStoreMachine(shape);  // standard store, never changes
+}
 
-Note: Could potentially replace `_originalDef` attachment with a `getShape()` method, making the intent clearer and the API more explicit.
+// Create shape store for nested machines (dynamic)
+function createDynamicShapeStore(
+  root: FactoryMachine<any>
+): ShapeController {
+  const shapeStore = createStoreMachine(buildNestedShape(root));
+  
+  // Hook into child.change events to recompute shape
+  const unsubscribe = (root as any).subscribe?.((event: any) => {
+    if (event.type === 'child.change') {
+      const newShape = buildNestedShape(root);
+      shapeStore.transition?.(newShape);  // update store
+    }
+  });
+  
+  return shapeStore;
+}
+```
 
-### Phase 4: Improve Implementations
-Once we see the unified protocol, it might suggest improvements:
-- Could the flattening process be clearer?
-- Could parent fallback be simpler?
-- Could we eliminate the need for `_originalDef` attachment?
+### Phase 3: Attach Shape to Machines
+Modify machine creation to add optional `shape` property:
+
+```typescript
+// In createMachineFromFlat():
+if (isHierarchical) {
+  machine.shape = createStaticShapeStore(machine);
+}
+
+// In propagateSubmachines():
+root.shape = createDynamicShapeStore(root);
+```
+
+### Phase 4: Update Visualization
+Visualization subscribes to shape changes:
+
+```typescript
+export function useMachineShape(machine: FactoryMachine<any>) {
+  const [shape, setShape] = useState(machine.shape?.getState());
+  
+  useEffect(() => {
+    const unsubscribe = machine.shape?.subscribe(setShape);
+    return unsubscribe;
+  }, [machine]);
+  
+  return shape;
+}
+
+// In SketchInspector:
+const shape = useMachineShape(machine);
+if (shape) {
+  // Render tree from shape.states and shape.hierarchy
+}
+```
 
 ---
 
 ## SECTION 8: Open Questions
 
-1. **Should inspection be a public API?**
-   - Or internal implementation detail?
-   - If public, does it get versioned?
+1. **Should the shape property be strongly-typed as a specific store machine type?**
+   - Option A: `shape: StoreMachine<MachineShape>`
+   - Option B: `shape: ShapeController` (interface with minimal contract)
+   - Option C: Generic `shape: StateMachine<MachineShape>` (any subscription-based store)
 
-2. **Should machines actively push state changes?**
-   - Current: Visualization polls `machine.getState()`
-   - Alternative: Machines notify inspection system
-   - This would keep visualizers in sync automatically
+2. **For nested machines, when exactly do we recompute?**
+   - On every `child.change`? (might be frequent)
+   - Debounced? (might miss updates)
+   - Only when shape-relevant changes occur?
 
-3. **What about HSM features we don't yet have?**
-   - Entry/exit actions
-   - Guards/conditions
-   - History states
-   - Parallel regions
-   
-   Should protocol account for these?
+3. **What about dynamic submachine changes at runtime?**
+   - If you swap `state.data.machine` to a different machine, shape updates automatically
+   - If you add a new submachine to a state, shape updates automatically
+   - Current `propagateSubmachines` already tracks this via `hookCurrentChain`
 
-4. **Could this inform flattening algorithm?**
-   - Current: `flattenMachineDefinition()` produces flat def
-   - Alternative: Could produce inspection info directly?
-   - Would that be cleaner?
+4. **Should simple machines ever have a shape?**
+   - Current: No shape property (not hierarchical)
+   - Alternative: Optional shape with flat-list structure for consistency?
+   - Downside: adds complexity for no benefit
 
-5. **What about visualization hooks?**
-   - Could visualizers register interest in state changes via hook?
-   - Would that be cleaner than polling?
+5. **Could shape expose a tree structure directly?**
+   - Current: Just maps + hierarchy info (visualization must reconstruct tree)
+   - Alternative: Precompute StateNode tree at definition time?
+   - Benefit: Faster visualization, cleaner rendering
+   - Cost: More memory, more state to maintain
 
 ---
 

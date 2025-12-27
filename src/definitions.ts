@@ -7,7 +7,6 @@ import type { KeysWithZeroRequiredArgs } from "./utility-types";
 import { createMachine } from "./factory-machine";
 import type {
   MachineDefinition,
-  FlattenedMachineDefinition,
   FlattenOptions,
   FlatBuild,
   FlattenedStateMatchboxFactory,
@@ -16,6 +15,8 @@ import type {
 } from "./definition-types";
 import { withParentTransitionFallback } from "./nesting/parent-transition-fallback";
 import { withFlattenedChildExit } from "./nesting/flattened-child-exit";
+import { createStaticShapeStore } from "./nesting/shape-store";
+import { buildFlattenedShape } from "./nesting/shape-builders";
 
 export function defineMachine<
   S extends Record<string, any> | StateMatchboxFactory<any>,
@@ -100,19 +101,17 @@ function normalizeStates<
 export function createMachineFromFlat<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>
->(def: FlattenedMachineDefinition<SF, T>) {
-  // The flattened definition should already have the fully-qualified leaf state
-  // like "Working.Red" as the initial value
+>(flattened: {
+  states: FlattenedStateMatchboxFactory<SF>;
+  transitions: FlattenedFactoryTransitions<SF, T>;
+  initial: FlattenFactoryStateKeys<SF>;
+}) {
+  // The flattened structure has fully-qualified leaf state keys like "Working.Red"
   const machine = createMachine(
-    def.states as any, 
-    def.transitions as any, 
-    def.initial as any
+    flattened.states as any, 
+    flattened.transitions as any, 
+    flattened.initial as any
   );
-  
-  // Attach original definition for visualization if available
-  if (def._originalDef) {
-    (machine as any)._originalDef = def._originalDef;
-  }
   
   // Apply parent transition fallback for flattened machines
   // This allows child states to inherit parent transitions
@@ -120,8 +119,11 @@ export function createMachineFromFlat<
   
   // Apply automatic child.exit triggering for flattened machines
   // When a final child state is reached, automatically send child.exit event
-  // This enables the same behavior as nested machines where child exits bubble up
   withFlattenedChildExit(machine);
+  
+  // Attach static shape store for visualization and introspection
+  // Flattened machines have immutable structure (locked at creation)
+  (machine as any).shape = createStaticShapeStore(machine);
   
   return machine;
 }
@@ -299,10 +301,15 @@ function extractRawFromFactory(factory: StateMatchboxFactory<any>): Record<strin
   return raw;
 }
 
-// Flattens nested definitions into fully-qualified leaf state keys and a single event namespace.
-// 
-// ⚠️  EXPERIMENTAL: This API has known limitations with type inference.
-// Submachine references may require explicit typing. See FlatteningDefinitions.md for details.
+/**
+ * Flatten a hierarchical machine definition
+ * 
+ * Converts nested submachines into dot-delimited state keys (e.g., "Parent.Child")
+ * and flattens transitions. Returns a simple object with flattened structure.
+ * 
+ * ⚠️  EXPERIMENTAL: This API has known limitations with type inference.
+ * Submachine references may require explicit typing.
+ */
 export function flattenMachineDefinition<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>,
@@ -310,14 +317,13 @@ export function flattenMachineDefinition<
 >(
   def: MachineDefinition<SF, T, I>,
   opts?: FlattenOptions
-): FlattenedMachineDefinition<SF, T> {
+) {
   // Extract raw structure from factory
   const rawStates = extractRawFromFactory(def.states);
   
   // Use existing flattening logic with defaults for missing options
   const options = {
     delimiter: opts?.delimiter || ".",
-    // and implemented in ensureFlatTransition (first-seen wins).
    } as Required<FlattenOptions>;
   
   const flattened = flattenFromRaw(
@@ -330,11 +336,10 @@ export function flattenMachineDefinition<
   // Convert back to factory
   const flattenedFactory = defineStates(flattened.states);
   
-  // Return with properly typed structure, preserving original for visualization
+  // Return flattened structure (ready to pass to createMachineFromFlat)
   return {
     states: flattenedFactory as FlattenedStateMatchboxFactory<SF>,
     transitions: flattened.transitions as unknown as FlattenedFactoryTransitions<SF, T>,
     initial: flattened.initial as FlattenFactoryStateKeys<SF>,
-    _originalDef: def,
   };
 }

@@ -69,7 +69,6 @@ export function matchboxFactory<
     };
     // Preserve .machineFactory from submachine() for visualization discovery
     if ((spec as any)?.machineFactory) {
-      console.log(`[matchbox-factory] Preserving .machineFactory for tag ${tag}`);
       (factory as any).machineFactory = (spec as any).machineFactory;
     }
     createObj[tag] = factory;

@@ -99,17 +99,7 @@ export type FlattenedTransitions<E extends string = string, To = any> = {
   };
 };
 
-// Flattened machine definition
-export type FlattenedMachineDefinition<
-  SF extends StateMatchboxFactory<any>,
-  T extends FactoryMachineTransitions<SF>
-> = {
-  states: FlattenedStateMatchboxFactory<SF>;
-  transitions: FlattenedFactoryTransitions<SF, T>;
-  initial: FlattenFactoryStateKeys<SF>;
-  /** Original hierarchical definition, preserved for visualization */
-  _originalDef?: MachineDefinition<SF, T, any>;
-};
+
 
 export type FlattenOptions = {
   delimiter?: string;

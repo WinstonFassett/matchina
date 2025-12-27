@@ -106,9 +106,7 @@ function SketchInspector({
                     <button 
                       className={`transition-button ${canInvoke && interactive ? 'enabled' : 'disabled'} ${isActive ? 'current-state' : isBranchActive ? 'ancestor-state' : ''}`}
                       onClick={() => {
-                        console.log('click', event, isActive, isBranchActive, interactive)
                         if (interactive && canInvoke) {
-                          console.log('send', machine, event)
                           machine.send(event);
                         }
                       }}

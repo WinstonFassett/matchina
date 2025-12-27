@@ -45,14 +45,14 @@ export function getXStateDefinition<
     transitions: any;
   }>,
 >(machine: F, parentKey?: string) {
-  // Check if machine has original hierarchical definition (from flattening)
-  const originalDef = (machine as any)._originalDef;
-  if (originalDef) {
-    // For flattened machines, use original definition for structure but flattened transitions
-    return buildDefinitionFromFlattened(originalDef, machine, parentKey);
+  // Check if machine has a shape store (for hierarchical machines)
+  const shape = (machine as any).shape;
+  if (shape) {
+    // For machines with shape (flattened or nested), use shape for structure
+    return buildDefinitionFromShape(shape.getState(), machine, parentKey);
   }
   
-  // Fall back to runtime introspection for non-flattened machines
+  // Fall back to runtime introspection for simple flat machines and nested machines without shape yet
   type StateStack = { key: string; fullKey: string }[];
 
   function buildDefinition(
@@ -93,7 +93,6 @@ export function getXStateDefinition<
     // Auto-discover nested machines from state factories with .machineFactory (from submachine helper)
     Object.entries(machine.states).forEach(([stateKey, stateFactory]) => {
       const machineFactory = (stateFactory as any)?.machineFactory;
-      console.log(`[getXStateDefinition] ${stateKey}: machineFactory=${!!machineFactory}, def=${!!machineFactory?.def}`);
       if (!machineFactory?.def) {
         return;  // Must have .def - no function calls!
       }
@@ -210,139 +209,72 @@ export function getXStateDefinition<
 }
 
 /**
- * Build XState definition from preserved original hierarchical definition.
- * Used when a flattened machine has _originalDef attached.
+ * Build XState-compatible definition from a MachineShape
+ * Works for both flattened and nested machines
  */
-function buildDefinitionFromOriginal(def: any, parentKey?: string, copyParentTransitions: boolean = true) {
-  type StateStack = { key: string; fullKey: string }[];
-  
-  function buildFromDef(
-    states: any,
-    transitions: any,
-    initial: string,
-    parentKey: string | undefined,
-    stack: StateStack
-  ): any {
-    const definition = {
-      initial,
-      states: {} as Record<string, any>,
+function buildDefinitionFromShape(shape: any, machine: any, parentKey?: string) {
+  type XStateNode = {
+    key: string;
+    fullKey: string;
+    on: Record<string, string>;
+    states?: Record<string, XStateNode>;
+    initial?: string;
+  };
+
+  // Build tree recursively using hierarchy information from shape
+  function buildNode(fullKey: string): XStateNode {
+    const node = shape.states.get(fullKey);
+    if (!node) {
+      throw new Error(`State not found in shape: ${fullKey}`);
+    }
+
+    const state: XStateNode = {
+      key: node.key,
+      fullKey,
+      on: {}
     };
 
-    // Process each state
-    for (const [key, stateFactory] of Object.entries(states)) {
-      const fullKey = parentKey ? `${parentKey}.${key}` : key;
-      definition.states[key] = { key, fullKey, on: {} };
-      
-      // Check if this state has a nested machine (from defineSubmachine)
-      let nestedMachine: any = null;
-      try {
-        // Try to get the state value to check for nested machine
-        if (typeof stateFactory === 'function') {
-          const stateValue = (stateFactory as any)();
-          // defineSubmachine returns { machine: MachineDefinition }
-          // The machine definition has { states, transitions, initial }
-          const machineRef = stateValue?.machine || stateValue?.data?.machine;
-          if (machineRef && machineRef.states && machineRef.transitions) {
-            nestedMachine = machineRef;
-          }
-        }
-      } catch (e) {
-        // Ignore - not a submachine
-      }
-      
-      if (nestedMachine) {
-        // Recursively build nested definition
-        const childStack = [...stack, { key, fullKey }];
-        const childDef = buildFromDef(
-          nestedMachine.states,
-          nestedMachine.transitions,
-          nestedMachine.initial,
-          fullKey,
-          childStack
-        );
-        definition.states[key].initial = nestedMachine.initial;
-        definition.states[key].states = childDef.states;
-        definition.states[key].stack = childStack;
-      } else {
-        definition.states[key].stack = [...stack, { key, fullKey }];
+    // Get transitions from this state
+    const trans = shape.transitions.get(fullKey);
+    if (trans) {
+      for (const [event, target] of trans) {
+        state.on[event] = target;
       }
     }
 
-    // Process transitions - need to handle both parent and nested transitions
-    for (const [fromKey, events] of Object.entries(transitions || {})) {
-      if (!definition.states[fromKey]) continue;
-      for (const [event, target] of Object.entries(events as any || {})) {
-        if (typeof target === 'string') {
-          definition.states[fromKey].on[event] = target;
-        }
-      }
-    }
-    
-    // For nested machines: copy parent transitions to child states (they apply via event bubbling)
-    // For flattened machines: skip this (parent transitions are separate by design)
-    if (copyParentTransitions) {
-      for (const [stateKey, stateConfig] of Object.entries(definition.states) as [string, any][]) {
-        if (stateConfig.states) {
-          // Copy parent transitions to nested states (they apply to all children)
-          const parentTransitions = transitions?.[stateKey] || {};
-          for (const [nestedKey, nestedConfig] of Object.entries(stateConfig.states) as [string, any][]) {
-            for (const [event, target] of Object.entries(parentTransitions)) {
-              if (typeof target === 'string' && !nestedConfig.on[event]) {
-                nestedConfig.on[event] = target;
-              }
-            }
-          }
-        }
+    // Find all direct children
+    const children: string[] = [];
+    for (const [stateFullKey, parentFullKey] of shape.hierarchy.entries()) {
+      if (parentFullKey === fullKey) {
+        children.push(stateFullKey);
       }
     }
 
-    return definition;
+    // If has children, build nested states
+    if (children.length > 0) {
+      state.states = {};
+      for (const childFullKey of children) {
+        const childNode = buildNode(childFullKey);
+        state.states[childNode.key] = childNode;
+      }
+      // Set initial to first child (simplified - could be enhanced to find actual initial)
+      state.initial = children[0]?.split('.').pop();
+    }
+
+    return state;
   }
 
-  return buildFromDef(def.states, def.transitions, def.initial, parentKey, []);
-}
-
-/**
- * Build XState definition for flattened machines using original structure
- * but with actual flattened transitions from the machine.
- */
-function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, parentKey?: string) {
-  // Get the flattened transitions from the actual machine
-  const flattenedTransitions = flattenedMachine.transitions;
-  
-  // Build the hierarchical structure from original definition
-  // For flattened machines, don't copy parent transitions to children
-  // (they are separate by design and accessed via parent fallback hook at runtime)
-  const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey, false);
-  
-  // Replace transitions with flattened ones
-  function updateTransitions(states: any, transitions: any, prefix = '') {
-    for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
-      const fullKey = prefix ? `${prefix}.${stateKey}` : stateKey;
-      
-      // Use flattened transitions if they exist, otherwise keep original
-      // Check both the full key (Active.TextEntry) and just the state key (TextEntry)
-      const flattenedTransitions = transitions[fullKey] || transitions[stateKey];
-      if (flattenedTransitions) {
-        stateConfig.on = {};
-        for (const [event, target] of Object.entries(flattenedTransitions)) {
-          // Handle different target formats
-          if (typeof target === 'string') {
-            stateConfig.on[event] = target;
-          } else if (target && typeof target === 'object') {
-            stateConfig.on[event] = target;
-          }
-        }
-      }
-      
-      // Recursively update nested states
-      if (stateConfig.states) {
-        updateTransitions(stateConfig.states, transitions, fullKey);
-      }
+  // Build all root-level states
+  const rootStates: Record<string, XStateNode> = {};
+  for (const [fullKey, parentFullKey] of shape.hierarchy.entries()) {
+    if (parentFullKey === undefined) {
+      const node = buildNode(fullKey);
+      rootStates[node.key] = node;
     }
   }
-  
-  updateTransitions(hierarchicalDef.states, flattenedTransitions);
-  // Keep dots in fullKey for consistency - convert to underscores only in MermaidInspector
-  return hierarchicalDef;
+
+  return {
+    initial: shape.initialKey,
+    states: rootStates
+  };
 }

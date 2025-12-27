@@ -141,7 +141,9 @@ describe("Machine Definitions", () => {
       expect(flat.transitions["Idle"]).toHaveProperty("start", "Running.Slow");
       expect(flat.transitions["Running.Fast"]).toHaveProperty("slow", "Running.Slow");
       expect(flat.transitions["Running.Slow"]).toHaveProperty("fast", "Running.Fast");
-      expect(flat.transitions["Running.Slow"]).toHaveProperty("stop", "Idle");
+      // Parent transitions are applied via withParentTransitionFallback hook at runtime,
+      // not copied to child state transition maps (this is the new architecture)
+      expect(flat.transitions["Running"]).toHaveProperty("stop", "Idle");
       
       // Initial state should be preserved
       expect(flat.initial).toBe("Idle");

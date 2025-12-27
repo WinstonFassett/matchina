@@ -31,3 +31,10 @@ export {
   getStack, 
   getActiveChain 
 } from "./inspect";
+
+// Shape types and utilities
+export type { 
+  MachineShape, 
+  StateNode, 
+  ShapeController 
+} from "./shape-types";
