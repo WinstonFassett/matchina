@@ -43,7 +43,7 @@ const states = defineStates({
 export function createFlatComboboxMachine() {
   const baseMachine = matchina(states, {
     Inactive: {
-      activate: () => states["Active.Empty"]([]),
+      activate: () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
     },
 
     "Active.Empty": {
