@@ -110,11 +110,11 @@ function Tag({ tag }: { tag: string }) {
   const { machine } = useComboboxContext();
 
   return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-sm">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-xs">
       {tag}
       <button
         onClick={() => machine.removeTag(tag)}
-        className="hover:bg-blue-600 rounded-full p-0.5 transition-colors"
+        className="hover:bg-blue-600 dark:hover:bg-blue-700 rounded-full p-0.5 transition-colors"
         aria-label={`Remove ${tag}`}
       >
         ×
@@ -220,9 +220,10 @@ function InputField({ inputRef, value }: { inputRef: React.RefObject<HTMLInputEl
 
 function SuggestionsList() {
   const { activeMachine } = useComboboxContext();
-  const state = activeMachine?.getState();
 
-  if (!state) return null;
+  if (!activeMachine) return null;
+
+  const state = activeMachine.getState();
 
   return state.match({
     Empty: () => null,

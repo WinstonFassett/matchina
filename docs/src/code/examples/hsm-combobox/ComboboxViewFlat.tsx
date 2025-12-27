@@ -104,14 +104,14 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
         </div>
 
         {/* Tags input */}
-        <div className="flex flex-wrap gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-900 min-h-[100px]">
+        <div className="flex flex-wrap items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
           {/* Selected tags */}
           {(currentData.selectedTags || []).map((tag: string) => (
-            <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-sm">
+            <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium">
               {tag}
               <button
                 onClick={() => handleTagRemove(tag)}
-                className="hover:bg-blue-600 rounded-full p-0.5 transition-colors"
+                className="inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
                 aria-label={`Remove ${tag}`}
               >
                 ×
@@ -119,8 +119,8 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             </span>
           ))}
 
-          {/* Input */}
-          <div className="flex-1 min-w-[200px] relative">
+          {/* Input with suggestions */}
+          <div className="relative flex-1 min-w-[120px]">
             <input
               ref={inputRef}
               type="text"
@@ -130,12 +130,12 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder="Type to add tags..."
-              className="w-full px-2 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100"
+              className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
 
             {/* Suggestions dropdown */}
             {parsed.child === "Suggesting" && currentData.suggestions?.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
+              <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
                 {currentData.suggestions.map((suggestion: string, index: number) => (
                   <button
                     key={suggestion}
