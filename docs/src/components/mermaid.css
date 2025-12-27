@@ -16,10 +16,18 @@
   background: transparent !important;
 }
 
-/* Flowchart clusters - transparent in dark mode */
-html[data-theme="dark"] #mermaid-1 .cluster rect {
+/* Flowchart clusters - transparent in both modes */
+html[data-theme="dark"] #mermaid-1 .cluster rect,
+html[data-theme="dark"] #mermaid-1 .cluster rect[style*="fill"] {
   fill: transparent !important;
   stroke: var(--sl-color-gray-6) !important;
+  stroke-width: 2px !important;
+}
+
+#mermaid-1 .cluster rect,
+#mermaid-1 .cluster rect[style*="fill"] {
+  fill: transparent !important;
+  stroke: var(--sl-color-gray-4) !important;
   stroke-width: 2px !important;
 }
 

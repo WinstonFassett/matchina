@@ -1,10 +1,6 @@
 /* Simple Mermaid theme CSS - this gets injected via themeCSS, not as a stylesheet */
 
-/* Fix node styling - readable text and backgrounds */
-.node rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
-}
+/* Fix node styling - only text, let nodes keep natural colors */
 .node text {
   fill: var(--sl-color-text);
 }
@@ -80,18 +76,7 @@ html[data-theme="dark"] .edgeLabel p {
   border: 2px solid red !important;
 }
 
-/* Fix flowchart cluster/group styling - proper contrast */
-.cluster rect,
-.subgraph rect {
-  fill: var(--sl-color-gray-1) !important;
-  stroke: var(--sl-color-gray-4) !important;
-  stroke-width: 2px !important;
-}
-.cluster text,
-.subgraph text {
-  fill: var(--sl-color-text) !important;
-  font-weight: bold !important;
-}
+/* Flowchart cluster styling removed - handled in mermaid.css */
 
 /* Dark mode flowchart cluster fixes - MOVED TO mermaid.css */
 
