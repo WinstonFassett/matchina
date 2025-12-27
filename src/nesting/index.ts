@@ -1,6 +1,14 @@
 // Propagation and child-first routing
 export { submachine, submachineOptions } from "./submachine";
 export { 
+  withParentTransitionFallback,
+  type ParentTransitionFallbackOptions 
+} from "./parent-transition-fallback";
+export { 
+  withFlattenedChildExit,
+  type FlattenedChildExitOptions 
+} from "./flattened-child-exit";
+export { 
   propagateSubmachines, 
   createHierarchicalMachine,
   type HierarchicalMachine,
