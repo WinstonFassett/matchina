@@ -1,209 +1,282 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import { createFlatComboboxMachine, parseFlatStateKey } from "./machine-flat";
+import { parseFlatStateKey } from "./machine-flat";
 
-type Machine = ReturnType<typeof createFlatComboboxMachine>;
+const ComboboxContext = React.createContext<{
+  machine: any;
+  actions: any;
+}>({ machine: null, actions: null });
 
-// Context for the flattened combobox machine
-interface ComboboxContextValue {
-  machine: Machine;
+function useComboboxContext() {
+  return useContext(ComboboxContext);
 }
 
-const ComboboxContext = createContext<ComboboxContextValue | null>(null);
-
-export function useComboboxContext() {
-  const context = useContext(ComboboxContext);
-  if (!context) {
-    throw new Error("useComboboxContext must be used within ComboboxProvider");
-  }
-  return context;
+interface ComboboxViewFlatProps {
+  machine: any;
 }
 
-function ComboboxProvider({ machine, children }: { machine: Machine; children: React.ReactNode }) {
-  useMachine(machine);
-  return (
-    <ComboboxContext.Provider value={{ machine }}>
-      {children}
-    </ComboboxContext.Provider>
-  );
-}
-
-export function ComboboxViewFlat({ machine }: { machine: Machine }) {
-  return (
-    <ComboboxProvider machine={machine}>
-      <div className="p-4 space-y-3 border rounded">
-        <h3 className="font-semibold">Tag List Editor (Flattened)</h3>
-        <StateDisplay />
-        <SelectedTagsDisplay />
-      </div>
-    </ComboboxProvider>
-  );
-}
-
-function StateDisplay() {
-  const { machine } = useComboboxContext();
-  const state = machine.getState();
-
+export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
+  const change = useMachine(machine) as { to: { key: string; data?: any } };
+  const state = change.to;
   const parsed = parseFlatStateKey(state.key);
 
-  return (
-    <div className="space-y-2">
-      <div className="text-sm text-gray-600 dark:text-gray-400">
-        State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-          {parsed.full}
-        </span>
-      </div>
+  const actions = eventApi(machine);
 
-      <InputSection />
-      <SuggestionsList />
-    </div>
-  );
-}
-
-function InputSection() {
-  const { machine } = useComboboxContext();
-  const state = machine.getState();
-  const parsed = parseFlatStateKey(state.key);
-
-  if (parsed.full === "Inactive") {
-    return (
-      <button
-        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-        onClick={() => machine.send('focus')}
-      >
-        Click to add tags
-      </button>
-    );
-  }
-
-  return <ActiveInput />;
-}
-
-function ActiveInput() {
-  const { machine } = useComboboxContext();
-  const state = machine.getState();
+  const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Autofocus when component mounts
+  // Sync input value with machine state
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (state.data?.input !== undefined) {
+      setInputValue(state.data.input);
     }
-  }, []);
+  }, [state]);
 
-  const input = state.data?.input || "";
+  // Get current data
+  const currentData = state.data || { input: "", selectedTags: [], suggestions: [], highlightedIndex: 0 };
 
-  return (
-    <div className="space-y-2">
-      <input
-        ref={inputRef}
-        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-        placeholder="Type to search tags... (Press ESC to close)"
-        value={input}
-        onChange={(e) => {
-          console.log('[ComboboxFlat] Typing:', e.target.value, 'Current state:', state.key);
-          machine.send('typed', e.target.value);
-          console.log('[ComboboxFlat] After send:', machine.getState().key);
-        }}
-        onBlur={() => machine.send('blur')}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            machine.send('escape');
-            e.preventDefault();
-          } else if (e.key === 'ArrowDown') {
-            machine.send('arrowDown');
-            e.preventDefault();
-          } else if (e.key === 'ArrowUp') {
-            machine.send('arrowUp');
-            e.preventDefault();
-          } else if (e.key === 'Enter') {
-            machine.send('enter');
-            e.preventDefault();
-          }
-        }}
-      />
-    </div>
-  );
-}
+  // Event handlers
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    actions.typed?.(value);
+  };
 
-function SuggestionsList() {
-  const { machine } = useComboboxContext();
-  const state = machine.getState();
-  const parsed = parseFlatStateKey(state.key);
+  const handleFocus = () => {
+    actions.focus?.();
+  };
 
-  // Only show suggestions in Suggesting or Selecting states
-  if (parsed.child !== "Suggesting" && parsed.child !== "Selecting") {
-    return null;
-  }
+  const handleBlur = () => {
+    actions.blur?.();
+  };
 
-  const { suggestions = [], highlightedIndex = -1 } = state.data || {};
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (parsed.parent !== 'Active') return;
 
-  if (suggestions.length === 0) {
-    return null;
-  }
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault();
+        actions.escape?.();
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        if (parsed.child === 'Suggesting') {
+          actions.navigate?.();
+        } else if (parsed.child === 'Selecting') {
+          actions.highlight?.('down');
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (parsed.child === 'Selecting') {
+          actions.highlight?.('up');
+        }
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (parsed.child === 'Selecting' || parsed.child === 'Suggesting') {
+          actions.addTag?.();
+        }
+        break;
+    }
+  };
 
-  return <SuggestionsDisplay suggestions={suggestions} highlightedIndex={highlightedIndex} />;
-}
+  const handleSuggestionClick = (suggestion: string) => {
+    actions.addTag?.(suggestion);
+  };
 
-function SuggestionsDisplay({
-  suggestions,
-  highlightedIndex,
-}: {
-  suggestions: string[];
-  highlightedIndex: number;
-}) {
-  const { machine } = useComboboxContext();
+  const handleTagRemove = (tag: string) => {
+    actions.removeTag?.(tag);
+  };
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg">
-      <div className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 border-b border-gray-200 dark:border-gray-700">
-        Use ↑↓ arrows to navigate, Enter to select, or click
+    <ComboboxContext.Provider value={{ machine, actions }}>
+      <div className="combobox-demo">
+        <div className="state-info">
+          <div className="state-path">
+            {parsed.full}
+          </div>
+          <div className="state-data">
+            Selected: {currentData.selectedTags?.join(", ") || "None"}
+          </div>
+        </div>
+
+        <div className="combobox-container">
+          {/* Selected tags */}
+          <div className="selected-tags">
+            {(currentData.selectedTags || []).map((tag: string) => (
+              <span key={tag} className="tag">
+                {tag}
+                <button onClick={() => handleTagRemove(tag)} className="remove-tag">
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+
+          {/* Input field */}
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={parsed.parent === "Inactive" ? "Click to focus..." : "Type to search..."}
+            className="combobox-input"
+            disabled={parsed.parent === "Inactive"}
+          />
+
+          {/* Suggestions dropdown */}
+          {(parsed.child === "Suggesting" || parsed.child === "Selecting") &&
+           currentData.suggestions?.length > 0 && (
+            <div className="suggestions">
+              {currentData.suggestions.map((suggestion: string, index: number) => (
+                <div
+                  key={suggestion}
+                  className={`suggestion ${index === currentData.highlightedIndex ? "highlighted" : ""}`}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="controls">
+          {parsed.parent === "Inactive" ? (
+            <button onClick={handleFocus}>Focus Combobox</button>
+          ) : (
+            <button onClick={handleBlur}>Blur (Go Inactive)</button>
+          )}
+        </div>
       </div>
-      {suggestions.map((suggestion, index) => (
-        <button
-          key={suggestion}
-          onClick={() => {
-            // Use addTag event to directly add the clicked tag
-            machine.send('addTag', suggestion);
-          }}
-          className={`w-full text-left px-3 py-2 transition-colors ${
-            index === highlightedIndex
-              ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-          }`}
-        >
-          {suggestion}
-        </button>
-      ))}
-    </div>
-  );
-}
 
-function SelectedTagsDisplay() {
-  const { machine } = useComboboxContext();
-  const state = machine.getState();
-  const { selectedTags = [] } = state.data || {};
+      <style jsx>{`
+        .combobox-demo {
+          padding: 20px;
+          font-family: system-ui;
+        }
 
-  if (selectedTags.length === 0) {
-    return null;
-  }
+        .state-info {
+          margin-bottom: 20px;
+          padding: 10px;
+          background: #f5f5f5;
+          border-radius: 4px;
+        }
 
-  return (
-    <div className="flex flex-wrap gap-2">
-      {selectedTags.map((tag: string) => (
-        <span
-          key={tag}
-          className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 rounded text-sm"
-        >
-          {tag}
-          <button
-            className="ml-1 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
-            onClick={() => machine.send('removeTag', tag)}
-          >
-            ×
-          </button>
-        </span>
-      ))}
-    </div>
+        .state-path {
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+
+        .state-data {
+          font-size: 0.9em;
+          color: #666;
+        }
+
+        .combobox-container {
+          position: relative;
+          margin-bottom: 20px;
+        }
+
+        .selected-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          margin-bottom: 10px;
+        }
+
+        .tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 8px;
+          background: #e1e5e9;
+          border-radius: 4px;
+          font-size: 0.9em;
+        }
+
+        .remove-tag {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1.2em;
+          line-height: 1;
+          padding: 0;
+          color: #666;
+        }
+
+        .remove-tag:hover {
+          color: #333;
+        }
+
+        .combobox-input {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 1em;
+        }
+
+        .combobox-input:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .combobox-input:disabled {
+          background: #f8f9fa;
+          cursor: not-allowed;
+        }
+
+        .suggestions {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          border: 1px solid #ccc;
+          border-top: none;
+          background: white;
+          max-height: 200px;
+          overflow-y: auto;
+          z-index: 1000;
+        }
+
+        .suggestion {
+          padding: 8px 12px;
+          cursor: pointer;
+          border-bottom: 1px solid #eee;
+        }
+
+        .suggestion:last-child {
+          border-bottom: none;
+        }
+
+        .suggestion:hover,
+        .suggestion.highlighted {
+          background: #f0f0f0;
+        }
+
+        .controls {
+          display: flex;
+          gap: 10px;
+        }
+
+        .controls button {
+          padding: 8px 16px;
+          border: 1px solid #ccc;
+          background: white;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .controls button:hover {
+          background: #f0f0f0;
+        }
+      `}</style>
+    </ComboboxContext.Provider>
   );
 }

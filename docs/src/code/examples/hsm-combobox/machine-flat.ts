@@ -1,277 +1,114 @@
-import {
-  defineStates,
-  defineMachine,
-  defineSubmachine,
-  flattenMachineDefinition,
-  createMachineFromFlat,
-  t
-} from "matchina";
+import { defineStates, matchina } from "matchina";
 
-// Available options for autocomplete
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
   "node", "deno", "bun", "python", "rust",
-  "go", "java", "kotlin", "swift", "dart"
 ];
-
-// Active child states (same as hierarchical version)
-const activeStates = defineStates({
-  Empty: (selectedTags: string[] = []) => ({
-    input: "",
-    selectedTags
-  }),
-  TextEntry: ({ input = "", selectedTags = [] }: { input: string; selectedTags: string[] }) => ({
-    input,
-    selectedTags
-  }),
-  Suggesting: ({ input = "", selectedTags = [], suggestions = [] }: {
-    input: string;
-    selectedTags: string[];
-    suggestions: string[]
-  }) => ({
-    input,
-    selectedTags,
-    suggestions
-  }),
-  Selecting: ({ input = "", selectedTags = [], suggestions = [], highlightedIndex = 0 }: {
-    input: string;
-    selectedTags: string[];
-    suggestions: string[];
-    highlightedIndex: number
-  }) => ({
-    input,
-    selectedTags,
-    suggestions,
-    highlightedIndex
-  }),
-});
 
 function getSuggestions(input: string, selectedTags: string[]): string[] {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return [];
-
   return AVAILABLE_TAGS
-    .filter(tag =>
-      tag.toLowerCase().includes(trimmed) &&
-      !selectedTags.includes(tag)
-    )
+    .filter(tag => tag.toLowerCase().includes(trimmed) && !selectedTags.includes(tag))
     .slice(0, 5);
 }
 
-// Shared discovery function for typed transitions
-const discoverTyped = (f: any) => {
-  const mockEv = { from: { data: { selectedTags: [] } } };
-  return [
-    f("")(mockEv),        // Empty input → Empty
-    f("typ")(mockEv),     // Partial match → Suggesting
-    f("nomatch")(mockEv)  // No match → TextEntry
-  ];
-};
-
-// Define the active submachine (nested states when focused)
-const activeSubmachine = defineSubmachine(
-  activeStates,
-  {
-    Empty: {
-      typed: t(
-        (value: string) => (ev: any) => {
-          const selectedTags = ev.from.data.selectedTags;
-          if (!value.trim()) return activeStates.Empty(selectedTags);
-
-          const suggestions = getSuggestions(value, selectedTags);
-          if (suggestions.length > 0) {
-            return activeStates.Suggesting({
-              input: value,
-              selectedTags,
-              suggestions
-            });
-          }
-          return activeStates.TextEntry({ input: value, selectedTags });
-        },
-        discoverTyped
-      ),
-      removeTag: t(
-        (tag: string) => (ev: any) => {
-          const newTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
-          return activeStates.Empty(newTags);
-        },
-        () => [activeStates.Empty([])]  // Always returns Empty
-      ),
-    },
-    TextEntry: {
-      typed: t(
-        (value: string) => (ev: any) => {
-          const selectedTags = ev.from.data.selectedTags;
-          if (!value.trim()) {
-            return activeStates.Empty(selectedTags);
-          }
-
-          const suggestions = getSuggestions(value, selectedTags);
-          if (suggestions.length > 0) {
-            return activeStates.Suggesting({
-              input: value,
-              selectedTags,
-              suggestions
-            });
-          }
-          return activeStates.TextEntry({ input: value, selectedTags });
-        },
-        discoverTyped
-      ),
-      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
-      addTag: (tag?: string) => (ev: any) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
-
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
-      },
-    },
-    Suggesting: {
-      typed: t(
-        (value: string) => (ev: any) => {
-          const selectedTags = ev.from.data.selectedTags;
-          if (!value.trim()) {
-            return activeStates.Empty(selectedTags);
-          }
-
-          const suggestions = getSuggestions(value, selectedTags);
-          if (suggestions.length > 0) {
-            return activeStates.Suggesting({
-              input: value,
-              selectedTags,
-              suggestions
-            });
-          }
-          return activeStates.TextEntry({ input: value, selectedTags });
-        },
-        discoverTyped
-      ),
-      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
-      arrowDown: () => (ev: any) => {
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: 0
-        });
-      },
-      addTag: (tag?: string) => (ev: any) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
-
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
-      },
-    },
-    Selecting: {
-      typed: t(
-        (value: string) => (ev: any) => {
-          const selectedTags = ev.from.data.selectedTags;
-          if (!value.trim()) {
-            return activeStates.Empty(selectedTags);
-          }
-
-          const suggestions = getSuggestions(value, selectedTags);
-          if (suggestions.length > 0) {
-            return activeStates.Suggesting({
-              input: value,
-              selectedTags,
-              suggestions
-            });
-          }
-          return activeStates.TextEntry({ input: value, selectedTags });
-        },
-        discoverTyped
-      ),
-      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
-      arrowUp: () => (ev: any) => {
-        const { suggestions = [], highlightedIndex = 0 } = ev.from.data;
-        const newIndex = Math.max(0, highlightedIndex - 1);
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: newIndex
-        });
-      },
-      arrowDown: () => (ev: any) => {
-        const { suggestions = [], highlightedIndex = 0 } = ev.from.data;
-        const maxIndex = suggestions.length - 1;
-        const newIndex = Math.min(maxIndex, highlightedIndex + 1);
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: newIndex
-        });
-      },
-      enter: () => (ev: any) => {
-        const { suggestions = [], highlightedIndex = 0, selectedTags } = ev.from.data;
-        const tagToAdd = suggestions[highlightedIndex];
-        if (!tagToAdd) return ev.from;
-
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
-      },
-      cancel: () => (ev: any) => activeStates.TextEntry({
-        input: ev.from.data.input,
-        selectedTags: ev.from.data.selectedTags
-      }),
-    },
-  },
-  "Empty"
-);
-
-// Top-level states factory
-const topStates = defineStates({
+// Flat state keys with dot notation
+const states = defineStates({
   Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
-  Active: activeSubmachine,
+
+  "Active.Empty": (selectedTags: string[] = []) => ({
+    input: "",
+    selectedTags,
+  }),
+
+  "Active.Editing": (input: string, selectedTags: string[]) => ({
+    input,
+    selectedTags,
+  }),
+
+  "Active.Suggesting": (input: string, selectedTags: string[], suggestions: string[]) => ({
+    input,
+    selectedTags,
+    suggestions,
+  }),
+
+  "Active.Selecting": (input: string, selectedTags: string[], suggestions: string[], highlightedIndex: number) => ({
+    input,
+    selectedTags,
+    suggestions,
+    highlightedIndex,
+  }),
 });
 
-// Define the top-level combobox machine
-const comboboxDef = defineMachine(
-  topStates,
-  {
-    Inactive: {
-      focus: () => activeStates.Empty([])
-    },
-    Active: {
-      blur: () => (ev: any) => {
-        const selectedTags = ev.from.data?.selectedTags ?? [];
-        return topStates.Inactive(selectedTags);
-      },
-      escape: () => (ev: any) => {
-        const selectedTags = ev.from.data?.selectedTags ?? [];
-        return topStates.Inactive(selectedTags);
-      },
-      close: () => (ev: any) => {
-        const selectedTags = ev.from.data?.selectedTags ?? [];
-        return topStates.Inactive(selectedTags);
-      },
-    },
-  },
-  "Inactive"
-);
-
-// Flatten and create the machine
-const flatDef = flattenMachineDefinition(comboboxDef);
-
 export function createFlatComboboxMachine() {
-  return createMachineFromFlat(flatDef);
+  return matchina(states, {
+    Inactive: {
+      activate: () => states["Active.Empty"]([]),
+    },
+
+    "Active.Empty": {
+      startEditing: (value: string, selectedTags: string[]) =>
+        states["Active.Editing"](value, selectedTags),
+      removeTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"](selectedTags.filter(t => t !== tag)),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
+    },
+
+    "Active.Editing": {
+      updateInput: (value: string, selectedTags: string[]) =>
+        states["Active.Editing"](value, selectedTags),
+      showSuggestions: (input: string, selectedTags: string[]) => {
+        const suggestions = getSuggestions(input, selectedTags);
+        return states["Active.Suggesting"](input, selectedTags, suggestions);
+      },
+      clearInput: (selectedTags: string[]) =>
+        states["Active.Empty"](selectedTags),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
+    },
+
+    "Active.Suggesting": {
+      updateInput: (value: string, selectedTags: string[]) =>
+        states["Active.Editing"](value, selectedTags),
+      refreshSuggestions: (input: string, selectedTags: string[]) => {
+        const suggestions = getSuggestions(input, selectedTags);
+        return states["Active.Suggesting"](input, selectedTags, suggestions);
+      },
+      startNavigating: (input: string, selectedTags: string[], suggestions: string[]) =>
+        states["Active.Selecting"](input, selectedTags, suggestions, 0),
+      hideSuggestions: (input: string, selectedTags: string[]) =>
+        states["Active.Editing"](input, selectedTags),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
+    },
+
+    "Active.Selecting": {
+      highlightNext: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
+        const nextIndex = Math.min(suggestions.length - 1, currentIndex + 1);
+        return states["Active.Selecting"](input, selectedTags, suggestions, nextIndex);
+      },
+      highlightPrev: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
+        const prevIndex = Math.max(0, currentIndex - 1);
+        return states["Active.Selecting"](input, selectedTags, suggestions, prevIndex);
+      },
+      selectHighlighted: (suggestions: string[], highlightedIndex: number, selectedTags: string[]) => {
+        const tag = suggestions[highlightedIndex];
+        return states["Active.Empty"]([...selectedTags, tag]);
+      },
+      cancelNavigation: (input: string, selectedTags: string[]) =>
+        states["Active.Editing"](input, selectedTags),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
+    },
+  }, states.Inactive([]));
 }
 
-// Helper to parse hierarchical state key
 export function parseFlatStateKey(key: string) {
   const parts = key.split(".");
   return {

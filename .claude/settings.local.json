@@ -30,7 +30,8 @@
       "Bash(wc:*)",
       "Bash(bd list:*)",
       "Bash(git mv:*)",
-      "Bash(node --loader tsx:*)"
+      "Bash(node --loader tsx:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []
