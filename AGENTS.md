@@ -34,6 +34,17 @@ bd list --status=open
 
 **Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
 
+
+## Commands (User Usually Runs)
+
+```bash
+npm run build:lib           # Build core root library without docs
+npm run test                # Run tests in root library
+npm run dev:docs            # Run docs dev server. USER DOES THIS NOT AGENT
+npm run build:docs          # Build docs -- SLOW AND VERBOSE
+npm run dev                 # n/a here. do not try
+```
+
 ## Session Completion
 
 When finishing work on an issue:
