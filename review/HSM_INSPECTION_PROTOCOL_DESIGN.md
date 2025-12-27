@@ -1,43 +1,62 @@
-# Unified HSM Inspection Protocol Design
+# Unified Machine Structure Interface Design
 
 ## Goal
-Design a unified, implementation-agnostic inspection mechanism that works for both flattened and nested HSMs. This will:
-1. Allow visualization to work mostly independently of implementation model
-2. Create a canonical way to describe any HSM
-3. Inform and possibly improve the underlying implementations
-4. Support both static and dynamic inspection
+Design a unified interface that describes the **shape/structure** of ANY state machine (simple, nested, flattened) for visualization and introspection.
+
+This is NOT about:
+- Templates or definitions (we have those)
+- Validation schemas (not what we need)
+- Creation or instantiation
+
+This IS about:
+- **How to visualize** the machine
+- **How to navigate** its structure
+- **How to understand** what's in it
+- **What the shape looks like** (hence "manifest", "info", "map", "shape")
+
+**Scope**: Works for:
+1. Simple machines (flat state structure)
+2. Nested machines (with submachines)
+3. Flattened machines (lossy representation requiring external metadata)
+4. Future machine types
 
 ---
 
 ## SECTION 1: Current State Analysis (Lines 1-50)
 
-### Flattened HSMs
-- **Structure**: State keys are dot-separated (`Payment.Authorized`)
-- **Transitions**: Stored in flat map where parent and child keys are separate
-  - `transitions['Payment']` = parent transitions
-  - `transitions['Payment.Authorized']` = child transitions (empty for final states)
-- **Hierarchy**: Preserved in `_originalDef` (static definition)
-- **Parent Access**: Via `withParentTransitionFallback` hook (runtime intercept)
-- **Child Exit**: Via `withFlattenedChildExit` hook (auto-trigger when final)
+### Simple Machines
+- **Structure**: Flat list of states, no nesting
+- **Transitions**: Direct state-to-state mappings
+- **Visualization**: Straightforward - list states, draw arrows
+- **Example**: Toggle (off <-> on)
 
-### Nested HSMs
-- **Structure**: State hierarchy is object-based
-  - Machine contains top-level states
-  - Some states contain submachines
-  - Walking requires following `state.data.machine` references
-- **Transitions**: Each level (parent/child machine) has own transition map
-- **Hierarchy**: Implicit in object structure (no separate definition needed)
+### Nested Machines (with submachines)
+- **Structure**: States can contain other machines
+  - Top-level machine has states
+  - Some states contain submachines via `defineSubmachine`
+  - Walking requires following `state.data.machine` references at runtime
+- **Transitions**: Each level (parent/submachine) has own transition map
+- **Hierarchy**: Implicit in object nesting (no separate metadata needed)
 - **Parent Access**: Via natural event bubbling through the machine chain
-- **Child Exit**: Via `propagateSubmachines` hook (bubbles exits automatically)
+- **Visualization**: Walk machines recursively to build tree
+
+### Flattened Machines (special representation of nested)
+- **Structure**: Single flat machine, states are dot-separated (`Payment.Authorized`)
+- **Transitions**: Stored in flat map, parent and child keys separate
+  - `transitions['Payment']` = parent transitions
+  - `transitions['Payment.Authorized']` = child transitions
+- **Hierarchy**: LOST in flattening, preserved in `_originalDef` metadata
+- **Parent Access**: Via `withParentTransitionFallback` hook (runtime intercept)
+- **Visualization**: Needs external metadata to reconstruct hierarchy
 
 ### Key Differences
-| Aspect | Flattened | Nested |
-|--------|-----------|--------|
-| Hierarchy representation | String keys with dots | Object nesting + machine refs |
-| Visualization data | Needs `_originalDef` attachment | Derives from runtime walking |
-| Transition lookup | Direct map access | Follow submachine chain |
-| Parent access | Explicit fallback hook | Implicit event bubbling |
-| Initial state of child | Explicit in flattening | Via submachine.initialKey |
+| Aspect | Simple | Nested | Flattened |
+|--------|--------|--------|-----------|
+| Hierarchy | None (flat) | Object nesting | Lost (needs metadata) |
+| Visualization data | From machine directly | Walk machines | Needs `_originalDef` |
+| Transition lookup | Direct map access | Follow chain | Direct map + parent |
+| Parent access | N/A | Event bubbles | Fallback hook |
+| Metadata needed | None | None (factory has def) | Yes (original def) |
 
 ---
 
@@ -238,50 +257,50 @@ Option C (Hybrid) seems best because:
 
 ---
 
-## SECTION 6: The Protocol / Interface (Lines 251-300)
+## SECTION 6: The Machine Shape Interface (Lines 251-300)
 
-What should every HSM (flat or nested) expose for inspection?
+What should every state machine expose so visualization can understand its shape?
 
 ```typescript
 /**
- * HSMInspectionInfo - Unified protocol for inspecting any HSM
- * Both flattened and nested machines implement this
+ * MachineShape - Unified interface describing any machine's structure
+ * Simple, nested, and flattened machines all implement this
  */
-interface HSMInspectionInfo {
+interface MachineShape {
   // IDENTITY
-  readonly type: 'flat' | 'nested';
+  readonly machineType: 'simple' | 'nested' | 'flattened';  // what kind of machine is this
   readonly version: string;  // for future compatibility
   
-  // STATIC STRUCTURE (buildable at definition time)
+  // STRUCTURAL INFORMATION (for visualization)
   readonly structure: {
-    readonly root: StateNode;  // tree for hierarchical visualization
-    readonly lookup: ReadonlyMap<string, StateInfo>;  // fast state lookup by fullKey
-    readonly initialKey: string;  // full key of initial state
+    readonly root: StateNode;  // state tree (may be flat or hierarchical)
+    readonly lookup: ReadonlyMap<string, StateInfo>;  // fast lookup by full key
+    readonly initialKey: string;  // full key of starting state
   };
   
-  // TRANSITIONS (how to get from state to state)
+  // TRANSITION INFORMATION (for understanding flow)
   readonly transitions: {
-    // Get all transitions FROM a state (including parent fallthrough)
+    // Get all transitions FROM a state (including any that apply via parent)
     from(stateKey: string): TransitionMap;
     
     // Check if state can receive event
     canReceive(stateKey: string, eventType: string): boolean;
     
-    // Resolve where event goes (following rules of the model)
+    // Resolve where event goes (following model's rules)
     resolve(stateKey: string, eventType: string): string | undefined;
   };
   
-  // HIERARCHY (relationships)
+  // HIERARCHY INFORMATION (for understanding relationships)
   readonly hierarchy: {
     parent(stateKey: string): string | undefined;
     isLeaf(stateKey: string): boolean;
     isFinal(stateKey: string): boolean;
-    isCompound(stateKey: string): boolean;
+    isCompound(stateKey: string): boolean;  // contains other machine(s)
     children(parentKey: string): string[];
   };
   
-  // DYNAMIC (for runtime-aware visualization)
-  onStateChange?: (newState: string) => void;  // hook for viz to stay in sync
+  // DYNAMIC (for keeping visualization in sync)
+  onStateChange?: (newState: string) => void;  // notify when machine changes
 }
 
 interface StateNode {
@@ -307,77 +326,112 @@ interface TransitionMap {
 }
 ```
 
-### How Both Models Implement This
+### How Each Machine Type Implements This
+
+**Simple**:
+- `machineType`: "simple"
+- `structure`: All states are leaves, no hierarchy
+- `transitions.from()`: Direct lookup in state's transition map
+- `transitions.resolve()`: Straightforward target resolution
+- `hierarchy`: Parent is always undefined, no compound states
+- `onStateChange`: Can be a direct hook to the machine
+
+**Nested**:
+- `machineType`: "nested"
+- `structure`: Built by recursively walking machines
+- `transitions.from()`: Collect from current machine + check parent machine
+- `transitions.resolve()`: Event bubbles up through machine chain
+- `hierarchy`: Derive from machine nesting (submachines are compound)
+- `onStateChange`: Walk chain of machines to notify
 
 **Flattened**:
-- `type`: "flat"
+- `machineType`: "flattened"
 - `structure`: Built from `_originalDef` + flattened state keys
 - `transitions.from()`: Look up both the state AND its parent in flat map
 - `transitions.resolve()`: Use fallback hook logic
 - `hierarchy`: Pre-compute from state keys and original def
-
-**Nested**:
-- `type`: "nested"
-- `structure`: Built by tree walking machines
-- `transitions.from()`: Collect from current machine + parent chain
-- `transitions.resolve()`: Use natural bubbling
-- `hierarchy`: Derive from nested structure
+- `onStateChange`: Direct hook to machine
 
 ---
 
 ## SECTION 7: Implementation Approach (Lines 301-350)
 
 ### Phase 1: Extract Current Information
-Create helpers to build `HSMInspectionInfo` from both models without changing machines.
+Create helpers to build `MachineShape` from each machine type without changing machines.
 
 ```typescript
-// For flattened:
-export function getFlattenedInspectionInfo(
+// For simple machines (most of them):
+export function getSimpleShape(
   machine: FactoryMachine<any>
-): HSMInspectionInfo {
-  const originalDef = (machine as any)._originalDef;
+): MachineShape {
   return {
-    type: 'flat',
-    structure: buildStructureFromFlattened(originalDef, machine.transitions),
-    transitions: {
-      from: (key) => /* flat lookup logic */,
-      canReceive: (key, event) => /* ... */,
-      resolve: (key, event) => /* ... */
+    machineType: 'simple',
+    structure: {
+      root: buildSimpleTree(machine),
+      lookup: buildSimpleLookup(machine),
+      initialKey: machine.initialKey
     },
-    hierarchy: { /* ... */ }
+    transitions: {
+      from: (key) => machine.transitions[key] || {},
+      canReceive: (key, event) => key in machine.transitions && event in machine.transitions[key],
+      resolve: (key, event) => machine.transitions[key]?.[event]
+    },
+    hierarchy: { /* all return undefined for simple */ }
   };
 }
 
-// For nested:
-export function getNestedInspectionInfo(
+// For nested machines (with submachines):
+export function getNestedShape(
   machine: FactoryMachine<any>
-): HSMInspectionInfo {
+): MachineShape {
   return {
-    type: 'nested',
+    machineType: 'nested',
     structure: buildStructureFromNested(machine),
     transitions: {
-      from: (key) => /* nested walking logic */,
-      // ...
+      from: (key) => /* walk machine chain */,
+      canReceive: (key, event) => /* check current + parent */,
+      resolve: (key, event) => /* follow bubbling */
     },
-    hierarchy: { /* ... */ }
+    hierarchy: { /* derive from nesting */ }
+  };
+}
+
+// For flattened machines (special case):
+export function getFlattenedShape(
+  machine: FactoryMachine<any>
+): MachineShape {
+  const originalDef = (machine as any)._originalDef;
+  return {
+    machineType: 'flattened',
+    structure: buildStructureFromFlattened(originalDef, machine.transitions),
+    transitions: {
+      from: (key) => /* flat + parent lookup */,
+      canReceive: (key, event) => /* flat + fallback */,
+      resolve: (key, event) => /* flat + fallback */
+    },
+    hierarchy: { /* pre-computed */ }
   };
 }
 ```
 
 ### Phase 2: Unify Visualization
-Change `getXStateDefinition` to:
+Change visualization to:
 1. Detect machine type
-2. Get appropriate `HSMInspectionInfo`
-3. Use that (not the machine directly)
-4. Build visualization from unified protocol
+2. Get appropriate `MachineShape`
+3. Use that interface (not the machine)
+4. Build visualization from unified shape
 
 ```typescript
 export function getXStateDefinition(machine: FactoryMachine<any>) {
-  const info = machine.type === 'flat' 
-    ? getFlattenedInspectionInfo(machine)
-    : getNestedInspectionInfo(machine);
+  // Detect type and get shape
+  const shape = detectMachineType(machine) === 'flattened'
+    ? getFlattenedShape(machine)
+    : detectMachineType(machine) === 'nested'
+    ? getNestedShape(machine)
+    : getSimpleShape(machine);
   
-  return buildVisualizationFromInfo(info);
+  // Build visualization from shape (NOT from machine)
+  return buildVisualizationFromShape(shape);
 }
 ```
 
