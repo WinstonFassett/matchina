@@ -7,21 +7,13 @@ import { createHierarchicalMachine } from "../../../../../src/nesting/propagateS
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
   "node", "deno", "bun", "python", "rust",
-  "go", "java", "kotlin", "swift", "dart"
 ];
 
-interface SelectingState {
+interface SuggestingState {
   input: string;
+  selectedTags: string[];
   suggestions: string[];
   highlightedIndex: number;
-  selectedTags: string[];
-}
-
-interface TagEditorState {
-  input: string;
-  selectedTags: string[];
-  suggestions?: string[];
-  highlightedIndex?: number;
 }
 
 // Active child states for the tag editor
@@ -30,21 +22,11 @@ export const activeStates = defineStates({
     input: "",
     selectedTags
   }),
-  TextEntry: ({ input = "", selectedTags = [] }: Partial<TagEditorState>) => ({
+  TextEntry: (input: string, selectedTags: string[]) => ({
     input,
     selectedTags
   }),
-  Suggesting: ({ input = "", selectedTags = [], suggestions = [] }: Partial<TagEditorState>) => ({
-    input,
-    selectedTags,
-    suggestions
-  }),
-  Selecting: ({
-    input = "",
-    selectedTags = [],
-    suggestions = [],
-    highlightedIndex = 0
-  }: Partial<SelectingState>) => ({
+  Suggesting: (input: string, selectedTags: string[], suggestions: string[], highlightedIndex: number = 0) => ({
     input,
     selectedTags,
     suggestions,
@@ -72,328 +54,74 @@ const activeDef = defineMachine(activeStates, {
   TextEntry: {
     typed: "TextEntry",
     clear: "Empty",
-    suggest: "Suggesting",
     addTag: "Empty",
   },
   Suggesting: {
     typed: "TextEntry",
     clear: "Empty",
-    navigate: "Selecting",
+    highlightNext: "Suggesting",
+    highlightPrev: "Suggesting",
+    selectHighlighted: "Empty",
     addTag: "Empty",
-  },
-  Selecting: {
-    typed: "TextEntry",
-    clear: "Empty",
-    highlight: "Selecting",
-    addTag: "Empty",
-    cancel: "TextEntry",
   },
 }, "Empty");
 
-function createActiveMachine({ onTagsChange }: { onTagsChange?: (tags: string[]) => void }) {
-  const active = matchina(activeStates, {
-    Empty: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) return activeStates.Empty(selectedTags);
+// Shared typed handler - computes next state based on input
+const handleTyped = (value: string) => (ev: any) => {
+  const { selectedTags } = ev.from.data;
+  if (!value.trim()) return activeStates.Empty(selectedTags);
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-    },
-    TextEntry: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
+  const suggestions = getSuggestions(value, selectedTags);
+  return suggestions.length > 0
+    ? activeStates.Suggesting(value, selectedTags, suggestions, 0)
+    : activeStates.TextEntry(value, selectedTags);
+};
 
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      addTag: (tag?: string) => (ev) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
+// Shared addTag handler
+const handleAddTag = (tag?: string) => (ev: any) => {
+  const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
+  const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
+  if (!tagToAdd || selectedTags.includes(tagToAdd)) {
+    return activeStates.Empty(selectedTags);
+  }
+  return activeStates.Empty([...selectedTags, tagToAdd]);
+};
 
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        onTagsChange?.(newTags);
-        return activeStates.Empty(newTags);
-      },
-    },
-    Suggesting: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      navigate: () => (ev) => {
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: 0
-        });
-      },
-      addTag: (tag?: string) => (ev) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
-
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        onTagsChange?.(newTags);
-        return activeStates.Empty(newTags);
-      },
-    },
-    Selecting: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      highlight: (direction: "up" | "down") => (ev) => {
-        const { suggestions = [], highlightedIndex = 0 } = ev.from.data;
-        const maxIndex = suggestions.length - 1;
-        let newIndex = highlightedIndex;
-
-        if (direction === "down") {
-          newIndex = Math.min(maxIndex, highlightedIndex + 1);
-        } else {
-          newIndex = Math.max(0, highlightedIndex - 1);
-        }
-
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: newIndex
-        });
-      },
-      addTag: (tag?: string) => (ev) => {
-        const { suggestions = [], highlightedIndex = 0, selectedTags } = ev.from.data;
-        const tagToAdd = tag || suggestions[highlightedIndex];
-        if (!tagToAdd) return ev.from;
-
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        onTagsChange?.(newTags);
-        return activeStates.Empty(newTags);
-      },
-      cancel: () => (ev) => activeStates.TextEntry({
-        input: ev.from.data.input,
-        selectedTags: ev.from.data.selectedTags
-      }),
-    },
-  }, activeStates.Empty([]));
-
-  return active;
-}
-
-// Attach .def for visualization
-createActiveMachine.def = activeDef;
-
-export type ActiveMachine = ReturnType<typeof createActiveMachine>;
-
-// Create wrapper for app
 function createActiveForApp(data?: { selectedTags?: string[] }) {
   const tags = data?.selectedTags ?? [];
-  const initialState = activeStates.Empty(tags);
 
-  const active = matchina(activeStates, {
+  return matchina(activeStates, {
     Empty: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) return activeStates.Empty(selectedTags);
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      removeTag: (tag: string) => (ev) => {
-        const newTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
-        return activeStates.Empty(newTags);
-      },
+      typed: handleTyped,
+      removeTag: (tag: string) => (ev) => 
+        activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
     },
     TextEntry: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
+      typed: handleTyped,
       clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      addTag: (tag?: string) => (ev) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
-
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
-      },
+      addTag: handleAddTag,
     },
     Suggesting: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
+      typed: handleTyped,
       clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      navigate: () => (ev) => {
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: 0
-        });
+      highlightNext: () => (ev) => {
+        const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
+        const next = Math.min(suggestions.length - 1, highlightedIndex + 1);
+        return activeStates.Suggesting(input, selectedTags, suggestions, next);
       },
-      addTag: (tag?: string) => (ev) => {
-        const input = ev.from.data.input.trim();
-        const tagToAdd = tag || input;
-        if (!tagToAdd) return ev.from;
-
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
+      highlightPrev: () => (ev) => {
+        const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
+        const prev = Math.max(0, highlightedIndex - 1);
+        return activeStates.Suggesting(input, selectedTags, suggestions, prev);
       },
+      selectHighlighted: handleAddTag,
+      addTag: handleAddTag,
     },
-    Selecting: {
-      typed: (value: string) => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (!value.trim()) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const suggestions = getSuggestions(value, selectedTags);
-        if (suggestions.length > 0) {
-          return activeStates.Suggesting({
-            input: value,
-            selectedTags,
-            suggestions
-          });
-        }
-        return activeStates.TextEntry({ input: value, selectedTags });
-      },
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      highlight: (direction: "up" | "down") => (ev) => {
-        const { suggestions = [], highlightedIndex = 0 } = ev.from.data;
-        const maxIndex = suggestions.length - 1;
-        let newIndex = highlightedIndex;
-
-        if (direction === "down") {
-          newIndex = Math.min(maxIndex, highlightedIndex + 1);
-        } else {
-          newIndex = Math.max(0, highlightedIndex - 1);
-        }
-
-        return activeStates.Selecting({
-          ...ev.from.data,
-          highlightedIndex: newIndex
-        });
-      },
-      addTag: (tag?: string) => (ev) => {
-        const { suggestions = [], highlightedIndex = 0, selectedTags } = ev.from.data;
-        const tagToAdd = tag || suggestions[highlightedIndex];
-        if (!tagToAdd) return ev.from;
-
-        if (selectedTags.includes(tagToAdd)) {
-          return activeStates.Empty(selectedTags);
-        }
-
-        const newTags = [...selectedTags, tagToAdd];
-        return activeStates.Empty(newTags);
-      },
-      cancel: () => (ev) => activeStates.TextEntry({
-        input: ev.from.data.input,
-        selectedTags: ev.from.data.selectedTags
-      }),
-    },
-  }, initialState);
-
-  return active;
+  }, activeStates.Empty(tags));
 }
 createActiveForApp.def = activeDef;
+
+export type ActiveMachine = ReturnType<typeof createActiveForApp>;
 
 // Use submachine exactly like checkout does
 const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
