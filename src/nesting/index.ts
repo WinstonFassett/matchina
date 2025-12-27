@@ -1,3 +1,9 @@
+// Flattened machine creation (primary API for flat hierarchies)
+export { 
+  createFlatMachine
+} from "./flat-machine";
+
+// Hierarchical machine creation (primary API for nested machines)
 // Propagation and child-first routing
 export { submachine, submachineOptions } from "./submachine";
 export { 
@@ -38,3 +44,7 @@ export type {
   StateNode, 
   ShapeController 
 } from "./shape-types";
+export {
+  createStaticShapeStore,
+  createLazyShapeStore
+} from "./shape-store";

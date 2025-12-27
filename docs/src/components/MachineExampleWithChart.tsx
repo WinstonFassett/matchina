@@ -2,7 +2,7 @@ import type { FactoryMachine } from "matchina";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, type ComponentType } from "react";
-import { getXStateDefinition } from "../code/examples/lib/matchina-machine-to-xstate-definition";
+import { buildVisualizerTree } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import MermaidInspector from "./inspectors/MermaidInspector";
 import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
@@ -37,7 +37,7 @@ export function MachineExampleWithChart({
   useMachine(machine);
   const currentState = machine.getState();
   // Get the XState definition for the Mermaid diagram
-  const config = useMemo(() => getXStateDefinition(machine), [machine]);
+  const config = useMemo(() => buildVisualizerTree(machine), [machine]);
   machine;
   // Create an API for the actions
   const actions = useMemo(() => eventApi(machine), [machine]);

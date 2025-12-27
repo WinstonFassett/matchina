@@ -34,9 +34,6 @@ export * from "./function-types";
 export * from "./match-change";
 export * from "./match-filters";
 
-export * from "./definitions";
-export * from "./definition-types";
-
 export * from "./nesting";
 export * from "./is-machine";
 export * from "./transition-helper";

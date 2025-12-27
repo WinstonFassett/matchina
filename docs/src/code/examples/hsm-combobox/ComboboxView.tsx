@@ -5,7 +5,9 @@ import type { createComboboxMachine } from "./machine";
 
 type Machine = ReturnType<typeof createComboboxMachine>;
 
-const noopMachine = createMachine({}, {}, undefined as never);
+// Create a dummy state factory for the noop machine
+const dummyStates = { Noop: () => ({}) };
+const noopMachine = createMachine(dummyStates, {}, "Noop");
 function useMachineMaybe(machine: FactoryMachine<any> | undefined) {
   return useMachine(machine ?? noopMachine);
 }

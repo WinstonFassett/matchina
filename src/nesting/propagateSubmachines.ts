@@ -2,6 +2,7 @@ import type { FactoryMachine } from "../factory-machine";
 import { FactoryMachineEventImpl } from "../factory-machine-event";
 import { isFactoryMachine } from "../machine-brand";
 import { send as sendHook } from "../state-machine-hooks";
+import { createLazyShapeStore } from "./shape-store";
 import { AllEventsOf } from "./types";
 
 /**
@@ -58,17 +59,22 @@ export type HierarchicalEvents<M> =
   | string;
 
 /**
- * Wrap a machine with hierarchical propagation semantics.
+ * Wrap a machine with hierarchical propagation semantics and attach shape metadata.
  *
  * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`) 
  * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
  * loose composition of independent machine instances.
  *
- * Call this helper on a root machine to install propagation hooks and return a
- * typed facade.
+ * Call this helper on a root machine to install propagation hooks, attach shape metadata
+ * for visualization, and return a typed facade.
  */
 export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M) {
   propagateSubmachines(machine);
+  
+  // Attach lazy shape store for visualization
+  // Shape is computed on first access and cached
+  (machine as any).shape = createLazyShapeStore(machine);
+  
   return machine as any as HierarchicalMachine<M>;
 }
 

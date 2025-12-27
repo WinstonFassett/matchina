@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo } from "react";
 import { useMachine, useMachineMaybe } from "matchina/react";
 import { eventApi } from "matchina";
-import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
+import { buildVisualizerTree } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
 import MermaidInspector from "./MermaidInspector";
 
 const HSMMermaidInspector = memo(({
@@ -46,7 +46,7 @@ const HSMMermaidInspector = memo(({
   const currentNestedState = nestedMachine?.getState?.();
   const xstateConfig = useMemo(() => {
     try {
-      return getXStateDefinition(machine);
+      return buildVisualizerTree(machine);
     } catch (error) {
       console.error('Failed to convert machine to XState format:', error);
       // Fallback to simple structure if conversion fails

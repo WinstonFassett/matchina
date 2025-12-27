@@ -1,4 +1,4 @@
-import { defineStates, matchina, setup, enter, whenState } from "matchina";
+import { defineStates, matchina, setup, enter, whenState, createFlatMachine } from "matchina";
 
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
@@ -41,7 +41,7 @@ const states = defineStates({
 });
 
 export function createFlatComboboxMachine() {
-  const baseMachine = matchina(states, {
+  const transitions = {
     Inactive: {
       activate: () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
     },
@@ -99,7 +99,10 @@ export function createFlatComboboxMachine() {
       deactivate: (selectedTags: string[]) =>
         states.Inactive(selectedTags),
     },
-  }, states.Inactive([]));
+  };
+
+  // Use createFlatMachine to automatically attach shape metadata
+  const baseMachine = createFlatMachine(states as any, transitions as any, "Inactive");
 
   // Add effect to Active.Typing state that auto-transitions
   setup(baseMachine)(

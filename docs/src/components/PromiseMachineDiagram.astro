@@ -1,10 +1,10 @@
 ---
 import StateMachineMermaidDiagram from "@components/inspectors/MermaidInspector";
-import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xstate-definition";
+import { buildVisualizerTree } from "@code/examples/lib/matchina-machine-to-xstate-definition";
 import { eventApi, createPromiseMachine, delay, type FactoryMachine } from "matchina";
 
 const machine = createPromiseMachine(async (_message: string) => await delay(1000))
-const config = getXStateDefinition(machine as FactoryMachine<any>)
+const config = buildVisualizerTree(machine as FactoryMachine<any>)
 const actions = eventApi(machine)
 ---
 

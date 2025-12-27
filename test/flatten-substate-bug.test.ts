@@ -1,75 +1,68 @@
 import { describe, it, expect } from 'vitest';
-import { defineStates, defineMachine, defineSubmachine, flattenMachineDefinition, createMachineFromFlat } from 'matchina';
+import { defineStates, createFlatMachine } from 'matchina';
 
 describe('Flattened HSM Payment State Bug', () => {
-  // Reproduce the exact structure from the checkout example
-  const paymentStates = defineStates({
-    MethodEntry: undefined,
-    Authorizing: undefined,
-    AuthChallenge: undefined,
-    AuthorizationError: undefined,
-    Authorized: () => ({ final: true }),
+  // Flat state keys with dot notation
+  const states = defineStates({
+    Cart: () => ({}),
+    Shipping: () => ({}),
+    ShippingPaid: () => ({}),
+
+    // Flattened payment substates
+    "Payment.MethodEntry": () => ({}),
+    "Payment.Authorizing": () => ({}),
+    "Payment.AuthChallenge": () => ({}),
+    "Payment.AuthorizationError": () => ({}),
+    "Payment.Authorized": () => ({ final: true }),
+
+    Review: () => ({}),
+    Confirmation: () => ({}),
   });
 
-  const paymentMachineDef = defineSubmachine(
-    paymentStates,
-    {
-      MethodEntry: { authorize: "Authorizing" },
-      Authorizing: {
-        authRequired: "AuthChallenge",
-        authSucceeded: "Authorized",
-        authFailed: "AuthorizationError"
-      },
-      AuthChallenge: {
-        authSucceeded: "Authorized",
-        authFailed: "AuthorizationError"
-      },
-      AuthorizationError: { retry: "MethodEntry" },
-      Authorized: {},
+  const transitions = {
+    Cart: { proceed: "Shipping" },
+    Shipping: {
+      back: "Cart",
+      proceed: "Payment.MethodEntry"
     },
-    "MethodEntry"
-  );
-
-  const checkoutStates = defineStates({
-    Cart: undefined,
-    Shipping: undefined,
-    ShippingPaid: undefined,
-    Payment: paymentMachineDef,
-    Review: undefined,
-    Confirmation: undefined,
-  });
-
-  const hierarchicalDef = defineMachine(
-    checkoutStates,
-    {
-      Cart: { proceed: "Shipping" },
-      Shipping: {
-        back: "Cart",
-        proceed: "Payment"
-      },
-      Payment: {
-        back: "Shipping",
-        exit: "Shipping",
-        "child.exit": "Review"
-      },
-      Review: {
-        back: "ShippingPaid",
-        changePayment: "Payment",
-        submitOrder: "Confirmation",
-      },
-      ShippingPaid: {
-        back: "Cart",
-        proceed: "Review",
-        changePayment: "Payment",
-      },
-      Confirmation: { restart: "Cart" },
+    "Payment.MethodEntry": {
+      authorize: "Payment.Authorizing",
+      back: "Shipping"
     },
-    "Cart"
-  );
+    "Payment.Authorizing": {
+      authRequired: "Payment.AuthChallenge",
+      authSucceeded: "Payment.Authorized",
+      authFailed: "Payment.AuthorizationError",
+      back: "Shipping"
+    },
+    "Payment.AuthChallenge": {
+      authSucceeded: "Payment.Authorized",
+      authFailed: "Payment.AuthorizationError",
+      back: "Shipping"
+    },
+    "Payment.AuthorizationError": {
+      retry: "Payment.MethodEntry",
+      back: "Shipping"
+    },
+    "Payment.Authorized": {
+      proceed: "Review",
+      back: "Shipping"
+    },
+    Review: {
+      back: "ShippingPaid",
+      changePayment: "Payment.MethodEntry",
+      submitOrder: "Confirmation",
+    },
+    ShippingPaid: {
+      back: "Cart",
+      proceed: "Review",
+      changePayment: "Payment.MethodEntry",
+    },
+    Confirmation: { restart: "Cart" },
+  };
 
   it('should properly namespace substate keys in flattened machine', () => {
-    const flatDef = flattenMachineDefinition(hierarchicalDef);
-    const machine = createMachineFromFlat(flatDef);
+    const machine = createFlatMachine(states as any, transitions as any, "Cart");
 
     // Navigate to payment substate
     machine.send('proceed'); // Cart -> Shipping
@@ -80,47 +73,12 @@ describe('Flattened HSM Payment State Bug', () => {
     // The state key should be properly namespaced
     expect(state.key).toBe('Payment.MethodEntry');
     
-    // The state data should contain the MatchboxImpl for the substate
+    // The state data should be defined
     expect(state.data).toBeDefined();
-    expect(typeof state.data).toBe('object');
-    
-    // The embedded MatchboxImpl should have the expected interface
-    const paymentSubstate = state.data as any;
-    expect(typeof paymentSubstate.getTag).toBe('function');
-    expect(typeof paymentSubstate.is).toBe('function');
-    expect(typeof paymentSubstate.match).toBe('function');
-    
-    // The substate should be MethodEntry (without namespace)
-    expect(paymentSubstate.getTag()).toBe('MethodEntry');
-    expect(paymentSubstate.is('MethodEntry')).toBe(true);
-  });
-
-  it('should allow proper state matching on flattened substates', () => {
-    const flatDef = flattenMachineDefinition(hierarchicalDef);
-    const machine = createMachineFromFlat(flatDef);
-
-    // Navigate to payment substate
-    machine.send('proceed'); // Cart -> Shipping
-    machine.send('proceed'); // Shipping -> Payment.MethodEntry
-
-    const state = machine.getState();
-    const paymentSubstate = state.data as any;
-
-    // Test that the substate's match method works correctly
-    const result = paymentSubstate.match({
-      MethodEntry: () => 'method-entry',
-      Authorizing: () => 'authorizing',
-      AuthChallenge: () => 'auth-challenge',
-      AuthorizationError: () => 'auth-error',
-      Authorized: () => 'authorized',
-    });
-
-    expect(result).toBe('method-entry');
   });
 
   it('should handle transitions within flattened substates', () => {
-    const flatDef = flattenMachineDefinition(hierarchicalDef);
-    const machine = createMachineFromFlat(flatDef);
+    const machine = createFlatMachine(states as any, transitions as any, "Cart");
 
     // Navigate to payment substate
     machine.send('proceed'); // Cart -> Shipping
@@ -131,11 +89,19 @@ describe('Flattened HSM Payment State Bug', () => {
 
     const state = machine.getState();
     
-    // Should still be in Payment but now in Authorizing substate
+    // Should now be in Payment.Authorizing
     expect(state.key).toBe('Payment.Authorizing');
+  });
+
+  it('should have shape metadata for visualization', () => {
+    const machine = createFlatMachine(states as any, transitions as any, "Cart");
     
-    const paymentSubstate = state.data as any;
-    expect(paymentSubstate.getTag()).toBe('Authorizing');
-    expect(paymentSubstate.is('Authorizing')).toBe(true);
+    // Shape should be attached
+    expect((machine as any).shape).toBeDefined();
+    
+    const shape = (machine as any).shape.getState();
+    expect(shape).toBeDefined();
+    expect(shape.states).toBeDefined();
+    expect(shape.hierarchy).toBeDefined();
   });
 });

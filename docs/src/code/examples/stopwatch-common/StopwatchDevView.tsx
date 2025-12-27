@@ -1,13 +1,13 @@
 import MermaidInspector from "@components/inspectors/MermaidInspector";
 import { eventApi } from "matchina";
 import { useMemo } from "react";
-import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
+import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
 import type { Stopwatch } from "./types";
 import { StopwatchView } from "./StopwatchView";
 
 export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
   const config = useMemo(
-    () => getXStateDefinition(stopwatch as any),
+    () => buildVisualizerTree(stopwatch as any),
     [stopwatch]
   );
   const actions = useMemo(
@@ -27,7 +27,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
       </div>
       <pre className="text-xs flex-1">
         {JSON.stringify(stopwatch.getState().data, null, 2)}
-        {/* {JSON.stringify(getXStateDefinition(stopwatch), null, 2)} */}
+        {/* {JSON.stringify(buildVisualizerTree(stopwatch), null, 2)} */}
       </pre>
     </div>
   );
