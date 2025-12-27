@@ -6,38 +6,9 @@ description: A complex checkout flow with nested payment submachine demonstratin
 import Example from "@code/examples/hsm-checkout/example";
 import machineCode from "@code/examples/hsm-checkout/machine.ts?raw";
 import flatMachineCode from "@code/examples/hsm-checkout/machine-flat.ts?raw";
-import viewCode from "@code/examples/hsm-checkout/CheckoutView.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
-This example demonstrates a realistic e-commerce checkout flow with a hierarchical state machine structure. The main checkout flow contains a nested payment submachine that handles the complex authorization process.
-
-## Key Features
-
-- **Hierarchical Structure**: Main checkout states with nested payment submachine
-- **Parent-Child Communication**: Parent can send events to child and vice versa
-- **Flattened Alternative**: Same logic flattened into a single machine for comparison
-- **Realistic UI**: Multi-step checkout with progress indicators and contextual actions
-
-## State Structure
-
-The checkout machine has these main states:
-- **Cart**: Shopping cart view
-- **Shipping**: Shipping information entry
-- **Payment**: Contains nested payment submachine with states:
-  - MethodEntry: Payment method selection
-  - Authorizing: Processing payment
-  - AuthChallenge: Additional verification required
-  - AuthorizationError: Payment failed
-  - Authorized: Payment successful
-- **Review**: Order confirmation
-- **Confirmation**: Order complete
-
-## Hierarchical vs Flattened
-
-Toggle between the two implementations to see how the same logic can be expressed:
-
-- **Hierarchical**: Clean separation of concerns, parent-child communication
-- **Flattened**: Single machine with composite state names (e.g., "Payment.Authorizing")
+E-commerce checkout flow with nested payment submachine. Toggle below to compare flattened vs nested HSM implementations.
 
 <div className="not-content">
   <Example client:only="react" />
@@ -47,6 +18,5 @@ Toggle between the two implementations to see how the same logic can be expresse
   files={[
     { name: "machine.ts (Hierarchical)", code: machineCode },
     { name: "machine-flat.ts (Flattened)", code: flatMachineCode },
-    { name: "CheckoutView.tsx", code: viewCode },
   ]}
 />

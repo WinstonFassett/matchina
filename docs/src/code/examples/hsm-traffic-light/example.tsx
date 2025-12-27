@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { eventApi } from "matchina";
 import { createFlatTrafficLight } from "./machine-flat";
 import { createPropagatingTrafficLight } from "./machine-prop";
-import { TrafficLightView } from "./TrafficLightView";
+import { TrafficLightViewFlat } from "./TrafficLightViewFlat";
+import { TrafficLightViewNested } from "./TrafficLightViewNested";
 import { VisualizerDemo } from "@components/HSMVisualizerDemo";
 
 type Mode = "flat" | "nested";
@@ -47,7 +48,11 @@ export default function TrafficLightComparisonExample() {
         </div>
       </div>
 
-      <TrafficLightView machine={machine} mode={mode} />
+      {mode === "flat" ? (
+        <TrafficLightViewFlat machine={machine} />
+      ) : (
+        <TrafficLightViewNested machine={machine} />
+      )}
       
       <VisualizerDemo
         key={mode} // Force re-mount of visualizer when mode changes

@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { eventApi } from "matchina";
 import { createFlatCheckoutMachine } from "./machine-flat";
 import { createCheckoutMachine } from "./machine";
-import { CheckoutView } from "./CheckoutView";
+import { CheckoutViewFlat } from "./CheckoutViewFlat";
+import { CheckoutViewNested } from "./CheckoutViewNested";
 import { VisualizerDemo } from "@components/HSMVisualizerDemo";
 
 type Mode = "flat" | "nested";
@@ -47,7 +48,11 @@ export default function HSMCheckoutIndex() {
         </div>
       </div>
 
-      <CheckoutView machine={machine} mode={mode} />
+      {mode === "flat" ? (
+        <CheckoutViewFlat machine={machine} />
+      ) : (
+        <CheckoutViewNested machine={machine} />
+      )}
       
       <VisualizerDemo
         key={mode} // Force re-mount of visualizer when mode changes

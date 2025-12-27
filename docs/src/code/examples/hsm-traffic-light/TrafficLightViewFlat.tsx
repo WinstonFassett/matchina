@@ -1,35 +1,18 @@
 import { useMachine } from "matchina/react";
 import { parseFlatStateKey } from "./machine-flat";
 
-interface TrafficLightViewProps {
-  machine: any; // Using any to support both machine types for this unified view
-  mode: "flat" | "nested";
+interface TrafficLightViewFlatProps {
+  machine: any;
 }
 
-export function TrafficLightView({ machine, mode }: TrafficLightViewProps) {
+export function TrafficLightViewFlat({ machine }: TrafficLightViewFlatProps) {
   const change = useMachine(machine) as { to: { key: string; data?: any } };
   const state = change.to;
   const send = (event: string) => machine.send(event);
 
-  // Normalize state based on mode
-  let parent: string;
-  let child: string | null = null;
-
-  if (mode === "flat") {
-    const parsed = parseFlatStateKey(state.key);
-    parent = parsed.parent;
-    child = parsed.child;
-  } else {
-    // Nested/Propagating mode
-    parent = state.key;
-    // Check for nested machine in data
-    if (state.data && state.data.machine) {
-      const childState = state.data.machine.getState();
-      if (childState) {
-        child = childState.key;
-      }
-    }
-  }
+  const parsed = parseFlatStateKey(state.key);
+  const parent = parsed.parent;
+  const child = parsed.child;
 
   const isWorking = parent === "Working";
   const lightColor = child || "off";
@@ -37,11 +20,8 @@ export function TrafficLightView({ machine, mode }: TrafficLightViewProps) {
   return (
     <div className="p-4 space-y-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50">
       <div className="text-center">
-        <div className="text-sm text-gray-500 mb-2 font-mono">
-          Mode: {mode === "flat" ? "Flattened" : "Propagating"}
-        </div>
         <div className="text-sm text-gray-500 mb-2">Controller: {parent}</div>
-        
+
         {/* Traffic Light Display */}
         <div className="inline-block bg-gray-800 p-4 rounded-lg shadow-lg">
           <div className="space-y-2">
@@ -66,7 +46,7 @@ export function TrafficLightView({ machine, mode }: TrafficLightViewProps) {
             Tick
           </button>
         )}
-        
+
         {parent === "Broken" && (
           <button
             onClick={() => send("repair")}
@@ -106,14 +86,7 @@ export function TrafficLightView({ machine, mode }: TrafficLightViewProps) {
 
       {/* State Info */}
       <div className="text-xs text-gray-400 text-center font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded">
-        {mode === "flat" ? (
-          <>State Key: {state.key}</>
-        ) : (
-          <>
-            Root: {state.key}
-            {child && <span className="text-gray-500"> | Child: {child}</span>}
-          </>
-        )}
+        State Key: {state.key}
       </div>
     </div>
   );
