@@ -177,21 +177,21 @@
 }
 
 .transition-button.enabled.ancestor-state {
-  color: var(--sl-color-gray-6);
-  border-color: var(--sl-color-gray-4);
-  background: var(--sl-color-gray-1);
+  color: var(--sl-color-text);
+  border-color: transparent;
+  background: rgba(248, 250, 252, 0.5);
 }
 
 /* Dark mode specific adjustments for ancestor-state buttons */
 @media (prefers-color-scheme: dark) {
   .transition-button.enabled.ancestor-state {
-    background: var(--sl-color-gray-3);
+    background: rgba(248, 250, 252, 0.5);
   }
 }
 
 .transition-button.enabled.ancestor-state:hover {
   background: var(--sl-color-gray-4);
-  color: var(--sl-color-white);
+  color: var(--sl-color-gray-7);
   border-color: var(--sl-color-gray-5);
 }
 
