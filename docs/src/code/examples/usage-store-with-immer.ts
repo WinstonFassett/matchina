@@ -4,7 +4,7 @@ import {
   addStoreApi,
   createStoreMachine,
   storeApi,
-} from "../../../../src/store-machine";
+} from "matchina";
 
 // #region lib
 

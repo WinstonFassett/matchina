@@ -1,6 +1,6 @@
 import { eventApi, createMachine, defineStates, matchina } from "matchina";
 // For development, use relative path
-import { defineZodStates } from "../../../../src/integrations/zod";
+import { defineZodStates } from "matchina/zod";
 // In production, this would be: import { defineZodStates } from "matchina/zod";
 import { z } from "zod";
 

@@ -1,6 +1,6 @@
 import { defineStates, matchina } from "matchina";
 // For development, use relative path
-import { defineValibotStates } from "../../../../src/integrations/valibot";
+import { defineValibotStates } from "matchina/valibot";
 // In production, this would be: import { defineValibotStates } from "matchina/valibot";
 import * as v from "valibot";
 

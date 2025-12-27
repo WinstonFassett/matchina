@@ -1,5 +1,4 @@
-import { defineStates } from "matchina";
-import { createFlatMachine } from "../../../../../src/nesting/flat-machine";
+import { defineStates, createFlatMachine } from "matchina";
 
 // Flat state keys with dot notation representing checkout with payment substates
 const states = defineStates({
@@ -67,7 +66,8 @@ const transitions = {
 };
 
 export function createFlatCheckoutMachine() {
-  return createFlatMachine(states as any, transitions as any, "Cart");
+  // @ts-ignore - Type inference limitation with flat machines
+  return createFlatMachine(states, transitions, "Cart");
 }
 
 // Helper to parse hierarchical state key

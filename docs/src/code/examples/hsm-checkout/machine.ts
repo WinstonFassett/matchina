@@ -1,6 +1,4 @@
-import { createMachine, defineStates, effect, setup, withReset, matchina } from "matchina";
-import { submachine } from "../../../../../src/nesting/submachine";
-import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
+import { createMachine, defineStates, effect, setup, withReset, matchina, submachine, createHierarchicalMachine } from "matchina";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
