@@ -16,3 +16,4 @@ bun.lockb
 review/screenshots/
 test-results/
 .astro/
+playwright-report/
