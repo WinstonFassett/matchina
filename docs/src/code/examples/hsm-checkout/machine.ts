@@ -1,52 +1,45 @@
-import { createMachine, defineStates, effect, setup, withReset, createHierarchicalMachine } from "matchina";
-import { defineMachine } from "matchina";
+import { createMachine, defineStates, effect, setup, withReset, matchina } from "matchina";
 import { submachine } from "../../../../../src/nesting/submachine";
+import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
-  MethodEntry: undefined,
-  Authorizing: undefined,
-  AuthChallenge: undefined,
-  AuthorizationError: undefined,
+  MethodEntry: () => ({}),
+  Authorizing: () => ({}),
+  AuthChallenge: () => ({}),
+  AuthorizationError: () => ({}),
   Authorized: () => ({ final: true }),
 });
 
-// Define payment machine declaratively
-const paymentDef = defineMachine(paymentStates, {
-  MethodEntry: { authorize: "Authorizing" },
-  Authorizing: {
-    authRequired: "AuthChallenge",
-    authSucceeded: "Authorized",
-    authFailed: "AuthorizationError"
-  },
-  AuthChallenge: {
-    authSucceeded: "Authorized",
-    authFailed: "AuthorizationError"
-  },
-  AuthorizationError: { retry: "MethodEntry" },
-  Authorized: {},
-}, "MethodEntry");
-
-// Factory with .def attached (from defineMachine)
-const createPaymentBase = paymentDef.factory;
-
-// Wrapper to add reset capability
+// Create payment machine factory
 function createPayment() {
-  const m = createPaymentBase();
+  const m = matchina(paymentStates, {
+    MethodEntry: { authorize: "Authorizing" },
+    Authorizing: {
+      authRequired: "AuthChallenge",
+      authSucceeded: "Authorized",
+      authFailed: "AuthorizationError"
+    },
+    AuthChallenge: {
+      authSucceeded: "Authorized",
+      authFailed: "AuthorizationError"
+    },
+    AuthorizationError: { retry: "MethodEntry" },
+    Authorized: {},
+  }, paymentStates.MethodEntry());
+
   return withReset(createHierarchicalMachine(m), paymentStates.MethodEntry());
 }
-// Copy .def from base factory for visualization
-(createPayment as any).def = (createPaymentBase as any).def;
 
 const paymentFactory = submachine(createPayment, { id: "payment" });
 
 const checkoutStates = defineStates({
-  Cart: undefined,
-  Shipping: undefined,
-  ShippingPaid: undefined,
+  Cart: () => ({}),
+  Shipping: () => ({}),
+  ShippingPaid: () => ({}),
   Payment: paymentFactory,
-  Review: undefined,
-  Confirmation: undefined,
+  Review: () => ({}),
+  Confirmation: () => ({}),
 });
 
 export function createCheckoutMachine() {

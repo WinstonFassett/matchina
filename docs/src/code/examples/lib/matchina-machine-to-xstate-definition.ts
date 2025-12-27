@@ -104,36 +104,42 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
   // Auto-discover nested machines from submachine markers
   Object.entries(machine.states ?? {}).forEach(([stateKey, stateFactory]) => {
     const machineFactory = (stateFactory as any)?.machineFactory;
-    if (!machineFactory?.def) {
+    if (!machineFactory) {
       return;
     }
 
     try {
-      const nestedDef = machineFactory.def;
+      // Create an instance to get the child machine
+      // machineFactory() returns { machine: childMachine } for submachines
+      const result = machineFactory();
+      const childMachine = result.machine || result;
       const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
 
-      // Create pseudo-machine from definition
-      const nestedMachine = {
-        states: nestedDef.states,
-        transitions: nestedDef.transitions,
-        initialKey: nestedDef.initial,
-        getState: () => ({ key: nestedDef.initial }),
-      };
+      // Try to get shape first (preferred for flat machines)
+      const shape = (childMachine as any).shape?.getState();
+      let childDefinition;
 
-      const childDefinition = buildVisualizerTreeFromHierarchy(
-        nestedMachine,
-        childFullKey
-      );
+      if (shape) {
+        // Use shape-based visualization
+        childDefinition = buildVisualizerTreeFromShape(shape, childFullKey);
+      } else {
+        // Fallback to hierarchy-based visualization
+        childDefinition = buildVisualizerTreeFromHierarchy(
+          childMachine,
+          childFullKey
+        );
+      }
 
       if (!definition.states[stateKey]) {
         definition.states[stateKey] = { on: {} };
       }
-      if (nestedMachine.initialKey !== undefined) {
-        definition.states[stateKey].initial = nestedMachine.initialKey;
+      if (childMachine.initialKey !== undefined) {
+        definition.states[stateKey].initial = childMachine.initialKey;
       }
       definition.states[stateKey].states = childDefinition.states;
     } catch (e) {
       // Skip if nested machine inspection fails
+      console.error('Failed to inspect nested machine:', e);
     }
   });
 

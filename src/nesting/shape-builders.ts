@@ -96,49 +96,60 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
   const initialState = machine.getState();
   const initialKey = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
 
-  // Recursively walk machine hierarchy
+  // Recursively walk all states in machine hierarchy
   function walkMachine(m: any, parentFullKey?: string): void {
-    const state = m.getState?.();
-    if (!state) return;
+    // Iterate over ALL states in the machine, not just the current one
+    const machineStates = m.states || {};
+    const machineTransitions = m.transitions || {};
 
-    const currentKey = state.key;
-    const fullKey = parentFullKey ? `${parentFullKey}.${currentKey}` : currentKey;
+    for (const [stateKey, stateFactory] of Object.entries(machineStates)) {
+      const fullKey = parentFullKey ? `${parentFullKey}.${stateKey}` : stateKey;
 
-    // Prevent infinite loops in circular hierarchies
-    if (visited.has(fullKey)) return;
-    visited.add(fullKey);
+      // Prevent infinite loops
+      if (visited.has(fullKey)) continue;
+      visited.add(fullKey);
 
-    // Add current state to shape
-    states.set(fullKey, {
-      key: currentKey,
-      fullKey,
-      isFinal: false, // Set properly based on machine finality
-      isCompound: false, // Will be true if has children
-    });
-    hierarchy.set(fullKey, parentFullKey);
+      // Add state to shape
+      const stateTransitions = machineTransitions[stateKey] || {};
+      const isFinal = Object.keys(stateTransitions).length === 0;
 
-    // Collect transitions from this level
-    const trans = new Map<string, string>();
-    if (m.transitions) {
-      for (const [event, target] of Object.entries(m.transitions[currentKey] ?? {})) {
+      states.set(fullKey, {
+        key: stateKey,
+        fullKey,
+        isFinal,
+        isCompound: false, // Will be updated if has children
+      });
+      hierarchy.set(fullKey, parentFullKey);
+
+      // Collect transitions
+      const trans = new Map<string, string>();
+      for (const [event, target] of Object.entries(stateTransitions)) {
         if (typeof target === 'string') {
           trans.set(event, target);
         }
       }
-    }
-    transitionMap.set(fullKey, trans);
+      transitionMap.set(fullKey, trans);
 
-    // Check for submachine in current state's data
-    const submachine = state?.data?.machine;
-    if (submachine && typeof submachine.getState === 'function') {
-      // Mark current state as compound
-      const stateNode = states.get(fullKey);
-      if (stateNode) {
-        states.set(fullKey, { ...stateNode, isCompound: true });
+      // Check if state has a submachine
+      const machineFactory = (stateFactory as any)?.machineFactory;
+      if (machineFactory) {
+        try {
+          // Create instance to inspect
+          const result = machineFactory();
+          const childMachine = result.machine || result;
+
+          // Mark current state as compound
+          const stateNode = states.get(fullKey);
+          if (stateNode) {
+            states.set(fullKey, { ...stateNode, isCompound: true });
+          }
+
+          // Recursively walk child machine
+          walkMachine(childMachine, fullKey);
+        } catch (e) {
+          // Skip if child machine fails to instantiate
+        }
       }
-
-      // Recursively walk child machine
-      walkMachine(submachine, fullKey);
     }
   }
 

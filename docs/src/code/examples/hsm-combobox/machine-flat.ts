@@ -15,7 +15,7 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 
 // Flat state keys with dot notation
 const states = defineStates({
-  Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
+  Inactive: (selectedTags?: string[]) => ({ selectedTags: selectedTags ?? [] }),
 
   "Active.Empty": (selectedTags: string[] = []) => ({
     input: "",

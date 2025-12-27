@@ -1,84 +1,73 @@
-import {
-  defineStates,
-  defineMachine,
-  defineSubmachine,
-  flattenMachineDefinition,
-  createMachineFromFlat
-} from "matchina";
+import { defineStates } from "matchina";
+import { createFlatMachine } from "../../../../../src/nesting/flat-machine";
 
-// Hierarchical checkout: main flow contains a payment submachine
-const paymentStates = defineStates({
-  MethodEntry: undefined,
-  Authorizing: undefined,
-  AuthChallenge: undefined,
-  AuthorizationError: undefined,
-  Authorized: () => ({ final: true }),
+// Flat state keys with dot notation representing checkout with payment substates
+const states = defineStates({
+  Cart: () => ({}),
+  Shipping: () => ({}),
+  ShippingPaid: () => ({}),
+
+  // Flattened payment substates
+  "Payment.MethodEntry": () => ({}),
+  "Payment.Authorizing": () => ({}),
+  "Payment.AuthChallenge": () => ({}),
+  "Payment.AuthorizationError": () => ({}),
+  "Payment.Authorized": () => ({ final: true }),
+
+  Review: () => ({}),
+  Confirmation: () => ({}),
 });
 
-// Define payment machine as submachine
-const paymentMachineDef = defineSubmachine(
-  paymentStates,
-  {
-    MethodEntry: { authorize: "Authorizing" },
-    Authorizing: {
-      authRequired: "AuthChallenge",
-      authSucceeded: "Authorized",
-      authFailed: "AuthorizationError"
-    },
-    AuthChallenge: {
-      authSucceeded: "Authorized",
-      authFailed: "AuthorizationError"
-    },
-    AuthorizationError: { retry: "MethodEntry" },
-    Authorized: {},
+const transitions = {
+  Cart: { proceed: "Shipping" },
+  Shipping: {
+    back: "Cart",
+    proceed: "Payment.MethodEntry"
   },
-  "MethodEntry"
-);
-
-// Define the checkout states with payment submachine
-const checkoutStates = defineStates({
-  Cart: undefined,
-  Shipping: undefined,
-  ShippingPaid: undefined,
-  Payment: paymentMachineDef,
-  Review: undefined,
-  Confirmation: undefined,
-});
-
-// Define the hierarchical machine
-const hierarchicalDef = defineMachine(
-  checkoutStates,
-  {
-    Cart: { proceed: "Shipping" },
-    Shipping: {
-      back: "Cart",
-      proceed: "Payment"
-    },
-    Payment: {
-      back: "Shipping",
-      exit: "Shipping",
-      "child.exit": "Review"
-    },
-    Review: {
-      back: "ShippingPaid",
-      changePayment: "Payment",
-      submitOrder: "Confirmation",
-    },
-    ShippingPaid: {
-      back: "Cart",
-      proceed: "Review",
-      changePayment: "Payment",
-    },
-    Confirmation: { restart: "Cart" },
+  // Parent Payment state - synthetic parent for all Payment.* states
+  Payment: {
+    back: "Shipping",
+    exit: "Shipping",
+    "child.exit": "Review"
   },
-  "Cart"
-);
-
-// Flatten and create the machine
-const flatDef = flattenMachineDefinition(hierarchicalDef);
+  "Payment.MethodEntry": {
+    authorize: "Payment.Authorizing",
+    back: "Shipping"
+  },
+  "Payment.Authorizing": {
+    authRequired: "Payment.AuthChallenge",
+    authSucceeded: "Payment.Authorized",
+    authFailed: "Payment.AuthorizationError",
+    back: "Shipping"
+  },
+  "Payment.AuthChallenge": {
+    authSucceeded: "Payment.Authorized",
+    authFailed: "Payment.AuthorizationError",
+    back: "Shipping"
+  },
+  "Payment.AuthorizationError": {
+    retry: "Payment.MethodEntry",
+    back: "Shipping"
+  },
+  "Payment.Authorized": {
+    // Final state - no transitions
+    // child.exit is automatically triggered by withFlattenedChildExit
+  },
+  Review: {
+    back: "ShippingPaid",
+    changePayment: "Payment.MethodEntry",
+    submitOrder: "Confirmation",
+  },
+  ShippingPaid: {
+    back: "Cart",
+    proceed: "Review",
+    changePayment: "Payment.MethodEntry",
+  },
+  Confirmation: { restart: "Cart" },
+};
 
 export function createFlatCheckoutMachine() {
-  return createMachineFromFlat(flatDef);
+  return createFlatMachine(states as any, transitions as any, "Cart");
 }
 
 // Helper to parse hierarchical state key

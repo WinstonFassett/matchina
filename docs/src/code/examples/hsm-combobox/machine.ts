@@ -1,5 +1,4 @@
 import { defineStates, matchina } from "matchina";
-import { defineMachine } from "../../../../../src/definitions";
 import { submachine } from "../../../../../src/nesting/submachine";
 import { createHierarchicalMachine } from "../../../../../src/nesting/propagateSubmachines";
 
@@ -45,26 +44,6 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
     )
     .slice(0, 5);
 }
-
-// Define active machine schema for visualization
-const activeDef = defineMachine(activeStates, {
-  Empty: {
-    typed: "TextEntry",
-  },
-  TextEntry: {
-    typed: "TextEntry",
-    clear: "Empty",
-    addTag: "Empty",
-  },
-  Suggesting: {
-    typed: "TextEntry",
-    clear: "Empty",
-    highlightNext: "Suggesting",
-    highlightPrev: "Suggesting",
-    selectHighlighted: "Empty",
-    addTag: "Empty",
-  },
-}, "Empty");
 
 // Shared typed handler - computes next state based on input
 const handleTyped = (value: string) => (ev: any) => {
@@ -119,7 +98,6 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     },
   }, activeStates.Empty(tags));
 }
-createActiveForApp.def = activeDef;
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;
 
