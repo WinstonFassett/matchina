@@ -106,7 +106,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
           />
 
           {activeState?.is("Suggesting") && activeState.data.suggestions?.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
+            <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-20">
               {activeState.data.suggestions.map((suggestion: string, index: number) => (
                 <button
                   key={suggestion}
