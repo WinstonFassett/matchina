@@ -151,7 +151,7 @@
 .transition-button.enabled {
   color: var(--sl-color-text);
   border-color: var(--sl-color-accent);
-  background: var(--sl-color-gray-2);
+  background: none;
   cursor: pointer;
   font-weight: 500;
 }
@@ -160,20 +160,20 @@
 .state-item.active .transition-button.enabled {
   color: rgba(255, 255, 255, 0.8);
   border-color: var(--sl-color-accent);
-  background: #6b7280;
+  background: rgba(139, 92, 246, 0.2);
 }
 
 /* Dark mode specific adjustments */
 @media (prefers-color-scheme: dark) {
   .state-item.active .transition-button.enabled {
-    background: #4b5563;
+    background: rgba(139, 92, 246, 0.3);
   }
 }
 
 .state-item.active .transition-button.enabled:hover {
-  background: var(--sl-color-text-invert);
-  opacity: 0.3;
-  border-color: var(--sl-color-text-invert);
+  background: rgba(139, 92, 246, 0.8);
+  opacity: 1;
+  border-color: var(--sl-color-accent);
 }
 
 .transition-button.enabled.ancestor-state {
@@ -196,9 +196,17 @@
 }
 
 .transition-button.enabled:hover {
-  background: var(--sl-color-gray-3);
-  color: var(--sl-color-text);
+  background: var(--sl-color-accent);
+  color: var(--sl-color-text-invert);
   border-color: var(--sl-color-accent);
+}
+
+/* Dark mode specific hover adjustments */
+@media (prefers-color-scheme: dark) {
+  .transition-button.enabled:hover {
+    background: var(--sl-color-accent-high);
+    color: var(--sl-color-text-invert);
+  }
 }
 
 .ancestor-indicator {
