@@ -39,21 +39,24 @@ html[data-theme="dark"] .node circle.state-start {
   fill: var(--sl-color-text);
 }
 
-/* Fix state diagram groups/clusters - use theme colors */
+/* Fix state diagram groups/clusters - transparent on both themes */
 .statediagram-cluster rect,
-.statediagram-cluster.statediagram-cluster .inner {
-  fill: var(--sl-color-bg);
-  stroke: var(--sl-color-text);
+.statediagram-cluster.statediagram-cluster .inner rect,
+.statediagram-cluster .inner rect,
+#mermaid-1 .statediagram-cluster rect,
+#mermaid-1 .statediagram-cluster .inner rect {
+  fill: transparent !important;
+  background: transparent !important;
 }
 
-/* Dark mode fix for clusters */
-html[data-theme="dark"] .statediagram-cluster rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
-}
-html[data-theme="dark"] .statediagram-cluster .inner rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
+/* Dark mode - keep transparent */
+html[data-theme="dark"] .statediagram-cluster rect,
+html[data-theme="dark"] .statediagram-cluster .inner rect,
+html[data-theme="dark"] .statediagram-cluster.statediagram-cluster .inner rect,
+html[data-theme="dark"] #mermaid-1 .statediagram-cluster rect,
+html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
+  fill: transparent !important;
+  background: transparent !important;
 }
 
 /* Edge labels with better contrast */
@@ -76,6 +79,21 @@ html[data-theme="dark"] .edgeLabel rect {
 html[data-theme="dark"] .edgeLabel p {
   border: 2px solid red !important;
 }
+
+/* Fix flowchart cluster/group styling - proper contrast */
+.cluster rect,
+.subgraph rect {
+  fill: var(--sl-color-gray-1) !important;
+  stroke: var(--sl-color-gray-4) !important;
+  stroke-width: 2px !important;
+}
+.cluster text,
+.subgraph text {
+  fill: var(--sl-color-text) !important;
+  font-weight: bold !important;
+}
+
+/* Dark mode flowchart cluster fixes - MOVED TO mermaid.css */
 
 /* Fix edge visibility */
 .transition,

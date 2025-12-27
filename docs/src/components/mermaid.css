@@ -9,11 +9,14 @@
   color: var(--sl-color-text-invert) !important;
 }
 
-/* Dark mode edge label fixes */
-/* html[data-theme="dark"] #mermaid-1 .edgeLabel p {
-  border: 2px solid red !important;
-} */
+/* Force state diagram clusters to be transparent */
+#mermaid-1 .statediagram-cluster rect,
+#mermaid-1 .statediagram-cluster .inner rect {
+  fill: transparent !important;
+  background: transparent !important;
+}
 
+/* Dark mode edge label fixes */
 html[data-theme="dark"] #mermaid-1 .edgeLabel p,
 html[data-theme="dark"] #mermaid-1 .edgeLabel span
 {
