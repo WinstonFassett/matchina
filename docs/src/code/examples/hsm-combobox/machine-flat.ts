@@ -1,4 +1,4 @@
-import { defineStates, setup, enter, whenState, createFlatMachine, t } from "matchina";
+import { defineStates, createFlatMachine, t } from "matchina";
 
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
@@ -52,7 +52,6 @@ export function createFlatComboboxMachine() {
     Inactive: {
       activate: t(
         () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
-        (f) => [states["Active.Empty"]([])]
       ),
     },
 

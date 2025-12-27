@@ -6,12 +6,6 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
-interface SuggestingState {
-  input: string;
-  selectedTags: string[];
-  suggestions: string[];
-  highlightedIndex: number;
-}
 
 // Active child states for the tag editor
 export const activeStates = defineStates({

@@ -58,22 +58,22 @@ m2.error("An error occurred"); // valid
 // m2.error(); // invalid -- error required
 
 // BEFORE: Verbose way to create state factories with Zod validation
-const states2 = defineStates({
-  Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
-  Loading: (data: z.infer<typeof LoadingSchema>) => LoadingSchema.parse(data),
-  Error: (data: z.infer<typeof ErrorSchema>) => ErrorSchema.parse(data),
-} as const);
+// const states2 = defineStates({
+//   Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
+//   Loading: (data: z.infer<typeof LoadingSchema>) => LoadingSchema.parse(data),
+//   Error: (data: z.infer<typeof ErrorSchema>) => ErrorSchema.parse(data),
+// } as const);
 
 // This will now show a type error for the misspelled property
 // const loading2 = states2.Loading({ proffffgress: 4 });
 
 // AFTER: Using the new defineZodStates helper
 
-const states3 = defineZodStates({
-  Idle: IdleSchema,
-  Loading: LoadingSchema,
-  Error: ErrorSchema,
-});
+// const states3 = defineZodStates({
+//   Idle: IdleSchema,
+//   Loading: LoadingSchema,
+//   Error: ErrorSchema,
+// });
 
 // Now we get the same type checking but with much cleaner code
 // This will show a type error for the misspelled property

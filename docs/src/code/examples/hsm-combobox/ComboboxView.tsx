@@ -44,7 +44,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!activeState) return;
 
-    const { suggestions = [], highlightedIndex = 0 } = activeState.data;
+    const { suggestions = [] } = activeState.data;
 
     switch (e.key) {
       case "Escape":

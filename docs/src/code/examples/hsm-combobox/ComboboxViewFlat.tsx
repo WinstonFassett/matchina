@@ -8,9 +8,6 @@ const ComboboxContext = React.createContext<{
   actions: any;
 }>({ machine: null, actions: null });
 
-function useComboboxContext() {
-  return useContext(ComboboxContext);
-}
 
 interface ComboboxViewFlatProps {
   machine: any;

@@ -48,7 +48,7 @@ export function buildVisualizerTree<
   const shape = (machine as any).shape?.getState();
   if (shape) {
     // Use shape when available (preferred path)
-    return buildVisualizerTreeFromShape(shape, parentKey);
+    return buildVisualizerTreeFromShape(shape);
   }
 
   // Fallback to runtime introspection for hierarchical machines
@@ -121,7 +121,7 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
 
       if (shape) {
         // Use shape-based visualization
-        childDefinition = buildVisualizerTreeFromShape(shape, childFullKey);
+        childDefinition = buildVisualizerTreeFromShape(shape);
       } else {
         // Fallback to hierarchy-based visualization
         childDefinition = buildVisualizerTreeFromHierarchy(
@@ -179,7 +179,7 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
  * Build XState-compatible tree from a MachineShape.
  * This converts static shape metadata into a renderable tree structure.
  */
-function buildVisualizerTreeFromShape(shape: any, parentKey?: string) {
+function buildVisualizerTreeFromShape(shape: any) {
   type XStateNode = {
     key: string;
     fullKey: string;

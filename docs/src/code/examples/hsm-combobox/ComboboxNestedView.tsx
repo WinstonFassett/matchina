@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { useMachine } from "matchina/react";
+import React, { useEffect, useRef, useState } from "react";
 import { eventApi } from "matchina";
-import { createComboboxMachine } from "./machine";
+import { useMachine } from "matchina/react";
+import type { createComboboxMachine } from "./machine";
 
 // Context to share the machine and active machine
 const ComboboxContext = React.createContext<{
@@ -10,9 +10,6 @@ const ComboboxContext = React.createContext<{
   actions: any;
 }>({ machine: null, actions: null });
 
-function useComboboxContext() {
-  return useContext(ComboboxContext);
-}
 
 interface ComboboxNestedViewProps {
   machine: any;
@@ -21,7 +18,6 @@ interface ComboboxNestedViewProps {
 export function ComboboxNestedView({ machine }: ComboboxNestedViewProps) {
   const change = useMachine(machine) as { to: { key: string; data?: any } };
   const state = change.to;
-  const send = (event: string) => machine.send(event);
 
   // For nested mode, we expect to find the active machine in state.data
   let parent: string;
