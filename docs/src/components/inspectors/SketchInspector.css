@@ -65,14 +65,41 @@
   border-width: 2px;
 }
 
-/* Nested state boxes inside active ancestor */
-.state-item.active-ancestor .state-item {
-  background: var(--sl-color-bg);
+/* Nested state boxes inside active ancestor - but don't override active nested states */
+.state-item.active-ancestor .state-item:not(.active) {
+  background: transparent;
   border-color: var(--sl-color-gray-4);
 }
 
-.state-item.active-ancestor .state-item:hover {
+.state-item.active-ancestor .state-item:not(.active):hover {
   background: var(--sl-color-gray-6);
+}
+
+/* Active nested state should always be fully highlighted, even inside active ancestor */
+.state-item.active-ancestor .state-item.active {
+  background: #166534;
+  border-color: #15803d;
+  color: #fff;
+  border-width: 2px;
+}
+
+/* Multi-level nesting transparency for better visual hierarchy */
+.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active) {
+  background: transparent;
+  border-color: var(--sl-color-gray-3);
+}
+
+.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active):hover {
+  background: var(--sl-color-gray-6);
+}
+
+/* Deep nested active states should still be prominent */
+.state-item.active-ancestor .state-item.active-ancestor .state-item.active {
+  background: #166534;
+  border-color: #15803d;
+  color: #fff;
+  border-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* State content - no styling, just content container */

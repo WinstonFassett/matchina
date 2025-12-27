@@ -1,6 +1,36 @@
 import type { FactoryMachine, StateMatchboxFactory } from "matchina";
 import { resolveState } from "./state-utils";
 
+/**
+ * Get the current active state path for both hierarchical and flattened machines.
+ * Returns dot-joined path (e.g., "Active.Empty" or "Payment.MethodEntry").
+ */
+export function getActiveStatePath(machine: FactoryMachine<any>): string {
+  try {
+    const currentState = machine.getState();
+    const stateKey = currentState?.key || '';
+    
+    // For flattened machines, state key already contains the full path
+    if (stateKey.includes('.')) {
+      return stateKey;
+    }
+    
+    // For hierarchical machines, walk the nested machine chain
+    const parts: string[] = [];
+    let cursor: any = machine;
+    let guard = 0;
+    while (cursor && guard++ < 25) {
+      const state = cursor.getState?.();
+      if (!state) break;
+      parts.push(state.key);
+      cursor = state?.data?.machine;
+    }
+    return parts.length ? parts.join('.') : 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
+}
+
 // May be needed for future xstate features
 // function getChildMachine(state: any): FactoryMachine<any> | undefined {
 //   return state?.data?.machine || state?.machine;
@@ -281,22 +311,6 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
   // Build the hierarchical structure from original definition
   const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey);
   
-  // For flattened machines, we need to ensure fullKey uses underscores to match
-  // the Mermaid diagram generation format (getStateId converts dots to underscores)
-  function normalizeFullKeys(states: any, delimiter = '.') {
-    for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
-      if (stateConfig.fullKey) {
-        // Convert dots to underscores for flattened machine compatibility
-        stateConfig.fullKey = stateConfig.fullKey.replace(/\./g, '_');
-      }
-      
-      // Recursively normalize nested states
-      if (stateConfig.states) {
-        normalizeFullKeys(stateConfig.states, delimiter);
-      }
-    }
-  }
-  
   // Replace transitions with flattened ones
   function updateTransitions(states: any, transitions: any, prefix = '') {
     for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
@@ -307,12 +321,12 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
       const flattenedTransitions = transitions[fullKey] || transitions[stateKey];
       if (flattenedTransitions) {
         stateConfig.on = {};
-        for (const [event, target] of Object.entries(flattenedTransitions as any || {})) {
+        for (const [event, target] of Object.entries(flattenedTransitions)) {
+          // Handle different target formats
           if (typeof target === 'string') {
             stateConfig.on[event] = target;
-          } else if (typeof target === 'function' && (target as any)._targets) {
-            // Function with inspection metadata
-            stateConfig.on[event] = (target as any)._targets;
+          } else if (target && typeof target === 'object') {
+            stateConfig.on[event] = target;
           }
         }
       }
@@ -325,6 +339,6 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
   }
   
   updateTransitions(hierarchicalDef.states, flattenedTransitions);
-  normalizeFullKeys(hierarchicalDef.states);
+  // Keep dots in fullKey for consistency - convert to underscores only in MermaidInspector
   return hierarchicalDef;
 }

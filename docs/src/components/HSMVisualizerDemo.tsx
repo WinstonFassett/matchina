@@ -3,23 +3,7 @@ import HSMMermaidInspector from './inspectors/HSMMermaidInspector';
 import SketchInspector from './inspectors/SketchInspector';
 import ReactFlowInspector from './inspectors/ReactFlowInspector';
 import { useMachine } from 'matchina/react';
-
-function getFullStatePath(machine: any): string {
-  try {
-    const parts: string[] = [];
-    let cursor: any = machine;
-    let guard = 0;
-    while (cursor && guard++ < 25) {
-      const s = cursor.getState?.();
-      if (!s) break;
-      parts.push(s.key);
-      cursor = s?.data?.machine;
-    }
-    return parts.length ? parts.join('.') : 'Unknown';
-  } catch {
-    return 'Unknown';
-  }
-}
+import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 
 type VisualizerType = 'mermaid' | 'sketch' | 'reactflow';
 
@@ -142,7 +126,7 @@ export function VisualizerDemo({
             {visualizers.find(v => v.key === activeVisualizer)?.label}
           </span>
           <span className="text-xs ml-2">
-            Current state: <strong>{getFullStatePath(machine)}</strong>
+            Current state: <strong>{getActiveStatePath(machine)}</strong>
           </span>
         </div>
         
