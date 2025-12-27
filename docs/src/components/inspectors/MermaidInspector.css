@@ -76,7 +76,7 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 
 /* DOM manipulation classes for state charts */
 .state-highlight rect {
-  fill: var(--sl-color-text-accent) !important;
+  fill: var(--sl-color-accent) !important;
   stroke: var(--sl-color-accent-high) !important;
   stroke-width: 2px !important;
   animation: fadeInBg .8s ease forwards;
@@ -90,7 +90,7 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 .state-container-highlight rect {
   stroke: var(--sl-color-accent-high) !important;
   stroke-width: 2px !important;
-  fill: var(--sl-color-text-accent) !important;
+  fill: var(--sl-color-accent-high) !important;
   fill-opacity: 0.15 !important;
   animation: fadeInBg .8s ease forwards;
 }
@@ -98,7 +98,8 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 /* Edge label styling classes */
 .edge-active {
   background-color: var(--sl-color-gray-5) !important;
-  color: var(--sl-color-accent-high) !important;
+  color: var(--sl-color-accent) !important;
+  font-weight: 500 !important;
 }
 
 .edge-ancestor {
@@ -109,17 +110,59 @@ g.node.active span, g.state.active span, g.stateGroup.active span { color: var(-
 
 .edge-inactive {
   background-color: var(--sl-color-bg) !important;
-  color: var(--sl-color-gray-3) !important;
+  color: var(--sl-color-gray-4) !important;
   cursor: default !important;
+  opacity: 0.7 !important;
 }
 
 .edge-interactive {
   text-decoration: underline !important;
   cursor: pointer !important;
+  position: relative;
+  z-index: 10 !important;
 }
 
 .edge-ancestor.edge-interactive:hover {
   background-color: var(--sl-color-gray-4) !important;
+  color: var(--sl-color-accent) !important;
+}
+
+.edge-active.edge-interactive:hover {
+  background-color: var(--sl-color-accent-high) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+/* Dark mode improvements for inactive tabs and nested states */
+@media (prefers-color-scheme: dark) {
+  .edge-inactive {
+    background-color: var(--sl-color-gray-2) !important;
+    color: var(--sl-color-gray-5) !important;
+  }
+  
+  .state-container-highlight rect {
+    fill-opacity: 0.25 !important;
+  }
+  
+  .cluster rect {
+    opacity: 0.2;
+  }
+}
+
+/* Improved input border contrast */
+.mermaid-container input,
+.mermaid-container select,
+.mermaid-container textarea {
+  border: 2px solid var(--sl-color-gray-4) !important;
+  background-color: var(--sl-color-bg) !important;
+  color: var(--sl-color-text) !important;
+}
+
+.mermaid-container input:focus,
+.mermaid-container select:focus,
+.mermaid-container textarea:focus {
+  border-color: var(--sl-color-accent) !important;
+  outline: 2px solid var(--sl-color-accent-high) !important;
+  outline-offset: 1px !important;
 }
 
 @keyframes fadeInBg {
