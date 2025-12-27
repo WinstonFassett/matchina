@@ -3,5 +3,8 @@
 /* Override hardcoded cluster label colors that get injected later */
 #mermaid-1 .cluster-label {
   fill: var(--sl-color-text-invert) !important;
+}
+
+#mermaid-1 .cluster-label .nodeLabel {
   color: var(--sl-color-text-invert) !important;
 }
