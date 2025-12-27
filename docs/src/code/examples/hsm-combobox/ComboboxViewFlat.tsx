@@ -39,54 +39,64 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   // Event handlers
   const handleInputChange = (value: string) => {
     setInputValue(value);
-    actions.typed?.(value);
+    const tags = currentData.selectedTags || [];
+    actions.typed?.(value, tags);
   };
 
   const handleFocus = () => {
-    actions.focus?.();
+    actions.activate?.();
   };
 
   const handleBlur = () => {
-    actions.blur?.();
+    const tags = currentData.selectedTags || [];
+    actions.deactivate?.(tags);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (parsed.parent !== 'Active') return;
 
+    const { input = '', selectedTags = [], suggestions = [], highlightedIndex = 0 } = currentData;
+
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        actions.escape?.();
+        actions.deactivate?.(selectedTags);
         break;
       case "ArrowDown":
         e.preventDefault();
         if (parsed.child === 'Suggesting') {
-          actions.navigate?.();
+          actions.navigate?.(input, selectedTags, suggestions);
         } else if (parsed.child === 'Selecting') {
-          actions.highlight?.('down');
+          actions.highlightNext?.(input, selectedTags, suggestions, highlightedIndex);
         }
         break;
       case "ArrowUp":
         e.preventDefault();
         if (parsed.child === 'Selecting') {
-          actions.highlight?.('up');
+          actions.highlightPrev?.(input, selectedTags, suggestions, highlightedIndex);
         }
         break;
       case "Enter":
         e.preventDefault();
-        if (parsed.child === 'Selecting' || parsed.child === 'Suggesting') {
-          actions.addTag?.();
+        if (parsed.child === 'Selecting') {
+          actions.selectHighlighted?.(suggestions, highlightedIndex, selectedTags);
+        } else if (parsed.child === 'Suggesting' || parsed.child === 'TextEntry') {
+          if (input.trim()) {
+            actions.addTag?.(input.trim(), selectedTags);
+          }
         }
         break;
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    actions.addTag?.(suggestion);
+    const tags = currentData.selectedTags || [];
+    actions.addTag?.(suggestion, tags);
   };
 
   const handleTagRemove = (tag: string) => {
-    actions.removeTag?.(tag);
+    const tags = currentData.selectedTags || [];
+    actions.removeTag?.(tag, tags);
   };
 
   return (
@@ -154,7 +164,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .combobox-demo {
           padding: 20px;
           font-family: system-ui;
