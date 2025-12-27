@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import './SketchInspector.css';
 import { useMachine } from "matchina/react";
-import { getXStateDefinition } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
+import { buildVisualizerTree } from "../../code/examples/lib/matchina-machine-to-xstate-definition";
 
 interface SketchInspectorProps {
   machine: any;
@@ -34,10 +34,10 @@ function SketchInspector({
   useMachine(deepestMachine || machine);
   const currentState = machine.getState();
   // console.log("currentState", currentState)
-  // Step 2: Get the definition (recalculate when own state or nested machine state changes)
+  // Step 2: Get the visualization tree (recalculate when own state or nested machine state changes)
   const nestedMachine = currentState?.data?.machine;
   const nestedState = nestedMachine?.getState?.();
-  const config = useMemo(() => getXStateDefinition(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
+  const config = useMemo(() => buildVisualizerTree(machine), [machine, currentState.key, nestedMachine, nestedState?.key]);
   
   // Step 3: Prepare highlighting info - compute deepest active path
   // For flattened machines, the state key already contains the full path (e.g., "Working.Red")

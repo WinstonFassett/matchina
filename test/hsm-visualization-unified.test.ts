@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getActiveStatePath, getXStateDefinition } from '../docs/src/code/examples/lib/matchina-machine-to-xstate-definition';
+import { getActiveStatePath, buildVisualizerTree } from '../docs/src/code/examples/lib/matchina-machine-to-xstate-definition';
 import { createCheckoutMachine } from '../docs/src/code/examples/hsm-checkout/machine';
 import { createFlatCheckoutMachine } from '../docs/src/code/examples/hsm-checkout/machine-flat';
 import { createComboboxMachine } from '../docs/src/code/examples/hsm-combobox/machine';
@@ -70,10 +70,10 @@ describe('Unified HSM Visualization', () => {
     });
   });
 
-  describe('getXStateDefinition consistency', () => {
+  describe('buildVisualizerTree consistency', () => {
     it('should return consistent structure for hierarchical checkout machine', () => {
       const machine = createCheckoutMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
       // Should have hierarchical structure
       expect(definition.states).toBeDefined();
@@ -88,7 +88,7 @@ describe('Unified HSM Visualization', () => {
 
     it('should return consistent structure for flattened checkout machine', () => {
       const machine = createFlatCheckoutMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
       // Should have hierarchical structure (built from original definition)
       expect(definition.states).toBeDefined();
@@ -103,7 +103,7 @@ describe('Unified HSM Visualization', () => {
 
     it('should return consistent structure for hierarchical combobox machine', () => {
       const machine = createComboboxMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
       // Should have hierarchical structure
       expect(definition.states).toBeDefined();
@@ -118,25 +118,24 @@ describe('Unified HSM Visualization', () => {
 
     it('should return consistent structure for flattened combobox machine', () => {
       const machine = createFlatComboboxMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
-      // Flattened machines don't have _originalDef, so they use runtime introspection
+      // Flattened machines now have auto-attached shapes
       expect(definition.states).toBeDefined();
-      
-      // Should have flattened states with dots in keys
-      expect(definition.states['Active.Empty']).toBeDefined();
-      expect(definition.states['Active.Suggesting']).toBeDefined();
+      expect(definition.states.Active).toBeDefined();
+      expect(definition.states.Active.states).toBeDefined();
+      expect(definition.states.Active.states.Empty).toBeDefined();
       
       // All states should have fullKey with dots
-      expect(definition.states['Active.Empty'].fullKey).toBe('Active.Empty');
-      expect(definition.states['Active.Suggesting'].fullKey).toBe('Active.Suggesting');
+      expect(definition.states.Active.fullKey).toBe('Active');
+      expect(definition.states.Active.states.Empty.fullKey).toBe('Active.Empty');
     });
   });
 
   describe('State matching consistency', () => {
     it('should match active states correctly for hierarchical machines', () => {
       const machine = createCheckoutMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
       // Navigate to Payment
       (machine as any).send('proceed'); // Cart -> Shipping
@@ -151,7 +150,7 @@ describe('Unified HSM Visualization', () => {
 
     it('should match active states correctly for flattened machines', () => {
       const machine = createFlatCheckoutMachine();
-      const definition = getXStateDefinition(machine);
+      const definition = buildVisualizerTree(machine);
       
       // Navigate to Payment
       (machine as any).send('proceed'); // Cart -> Shipping

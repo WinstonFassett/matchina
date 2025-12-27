@@ -11,6 +11,7 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 import { brandFactoryMachine } from "./machine-brand";
+import { createStaticShapeStore } from "./nesting/shape-store";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -76,10 +77,14 @@ export function createMachine<
     []
   ) as E;
 
+  // Determine the initial key - either from the init parameter or from the initial state
+  const initialKey = typeof init === "string" ? init : init.key;
+
   const machine = withLifecycle(
     {
       states,
       transitions,
+      initialKey, // Store for shape building and introspection
       getChange: () => lastChange,
       getState: () => lastChange.to,
       send(type, ...params) {
@@ -105,6 +110,24 @@ export function createMachine<
   ) as FactoryMachine<FC>;
 
   brandFactoryMachine(machine);
+
+  // Auto-attach shapes for machines with flat state keys (containing dots)
+  // This enables visualization for machines created with matchina() directly
+  const stateKeys = Object.keys(states);
+  const hasFlatKeys = stateKeys.some(key => key.includes('.'));
+  if (hasFlatKeys) {
+    try {
+      const shapeStore = createStaticShapeStore(machine);
+      Object.defineProperty(machine, 'shape', {
+        value: shapeStore,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    } catch (e) {
+      console.error('[createMachine] Failed to attach shape:', e);
+    }
+  }
 
   return machine;
 }
