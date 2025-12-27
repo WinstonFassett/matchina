@@ -177,6 +177,7 @@ const MermaidInspector = memo(
 
     // One-time setup after render: normalize edge labels and cache metadata
     const onRender = useCallback((el: HTMLElement) => {
+      if (!el) return; // Add null check
       containerRef.current = el;
       setTimeout(() => {
         el.querySelectorAll("span.edgeLabel").forEach((span) => {
