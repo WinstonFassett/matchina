@@ -108,6 +108,13 @@ function toStateChart(config: any) {
   }
 
   walk(config);
+  
+  // Add root initial state if it exists
+  if (config.initial) {
+    const rootInitial = getStateId(config.initial);
+    rows.unshift(`[*] --> ${rootInitial}`);
+  }
+  
   return `stateDiagram-v2\n${rows.join("\n")}`;
 }
 

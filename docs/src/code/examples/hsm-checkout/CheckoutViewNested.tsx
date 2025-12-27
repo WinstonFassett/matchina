@@ -106,7 +106,7 @@ function PaymentSection() {
   const state = paymentMachine?.getState();
 
   // Handle nested mode
-  const stateKey = state.key;
+  const stateKey = state?.key;
   if (stateKey === 'Payment') {
     return <PaymentFlow />;
   }

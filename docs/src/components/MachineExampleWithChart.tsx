@@ -1,8 +1,8 @@
 import type { FactoryMachine } from "matchina";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import { useMemo, type ComponentType } from "react";
-import { buildVisualizerTree } from "../code/examples/lib/matchina-machine-to-xstate-definition";
+import { useMemo, useState, type ComponentType } from "react";
+import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import MermaidInspector from "./inspectors/MermaidInspector";
 import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
@@ -36,53 +36,110 @@ export function MachineExampleWithChart({
 }: MachineExampleWithChartProps) {
   useMachine(machine);
   const currentState = machine.getState();
+  // Get the full active state path for nested machines
+  const activeStatePath = getActiveStatePath(machine);
   // Get the XState definition for the Mermaid diagram
   const config = useMemo(() => buildVisualizerTree(machine), [machine]);
-  machine;
   // Create an API for the actions
   const actions = useMemo(() => eventApi(machine), [machine]);
   const lastChange = machine.getChange();
+  
+  // Local state for inspector type and diagram type
+  const [currentInspectorType, setCurrentInspectorType] = useState<"mermaid" | "force-graph" | "react-flow" | "basic">(inspectorType);
+  const [diagramType, setDiagramType] = useState<'flowchart' | 'statechart'>('statechart');
+  const [isInteractive, setIsInteractive] = useState(interactive);
+  
   return (
     <div className="machine-example">
-      {title && <h3 className="text-lg font-medium mb-2">{title}</h3>}
+      {/* Title */}
+      {title && <h3 className="text-lg font-medium mb-3">{title}</h3>}
+      
+      {/* Compact controls header */}
+      <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
+        {/* Visualization type dropdown */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">View:</label>
+          <select
+            value={currentInspectorType}
+            onChange={(e) => setCurrentInspectorType(e.target.value as typeof currentInspectorType)}
+            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="force-graph">Force Graph</option>
+            <option value="react-flow">React Flow</option>
+            <option value="mermaid">State Chart</option>
+            <option value="basic">Basic</option>
+          </select>
+        </div>
+        
+        {/* Diagram type dropdown for Mermaid */}
+        {currentInspectorType === "mermaid" && (
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</label>
+            <select
+              value={diagramType}
+              onChange={(e) => setDiagramType(e.target.value as typeof diagramType)}
+              className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="statechart">State Chart</option>
+              <option value="flowchart">Flowchart</option>
+            </select>
+          </div>
+        )}
+        
+        {/* Interactive toggle */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Interactive:</label>
+          <button
+            onClick={() => setIsInteractive(!isInteractive)}
+            className={`px-3 py-1 text-sm rounded-md transition-colors ${
+              isInteractive 
+                ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                : 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500'
+            }`}
+          >
+            {isInteractive ? 'On' : 'Off'}
+          </button>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 w-full">
         {/* Mermaid diagram */}
         <div className="flex-1">
-          {inspectorType === "basic" && (
+          {currentInspectorType === "basic" && (
             <BasicInspector
               config={config}
-              stateKey={currentState.key}
+              stateKey={activeStatePath}
               actions={actions as any}
             />
           )}
-          {inspectorType === "mermaid" && (
+          {currentInspectorType === "mermaid" && (
             <MermaidInspector
               config={config}
-              stateKey={currentState.key}
+              stateKey={activeStatePath}
               actions={actions as any}
-              interactive={interactive}
+              interactive={isInteractive}
+              diagramType={diagramType}
             />
           )}
-          {inspectorType === "force-graph" && (
+          {currentInspectorType === "force-graph" && (
             <StateForceGraph
-              value={currentState.key}
+              value={activeStatePath}
               lastEvent={lastChange?.type}
               prevState={lastChange.from?.key}
               definition={config}
               dispatch={({ type }) => machine.send(type)}
-              interactive={interactive}
+              interactive={isInteractive}
             />
           )}
-          {inspectorType === "react-flow" && (
+          {currentInspectorType === "react-flow" && (
             <ReactFlowInspector
-              value={currentState.key}
+              value={activeStatePath}
               lastEvent={lastChange?.type}
               prevState={lastChange.from?.key}
               mode={currentState.data}
               definition={config}
               dispatch={({ type }) => machine.send(type)}
-              interactive={interactive}
+              interactive={isInteractive}
             />
           )}
         </div>
@@ -94,7 +151,7 @@ export function MachineExampleWithChart({
           ) : (
             <div className="p-4 border rounded">
               <p className="text-sm text-gray-500">Current State</p>
-              <div className="text-lg font-bold">{currentState.key}</div>
+              <div className="text-lg font-bold">{activeStatePath}</div>
               <div className="mt-2">
                 {Object.keys(actions).map(
                   (action) =>
