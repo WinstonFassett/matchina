@@ -2,6 +2,33 @@
 
 This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
 
+## ⚠️ CRITICAL: Type Inference Principles
+
+**Matchina's entire purpose is type-safe state machines with full type inference. NEVER break this with casts or workarounds.**
+
+### Cardinal Rules
+
+1. **NEVER declare transitions as a variable** - Always pass transitions inline as a direct argument to `createMachine`/`createFlatMachine`
+   ```typescript
+   // ❌ WRONG - Breaks type inference
+   const transitions = { ... };
+   const machine = createMachine(states, transitions, "Initial");
+
+   // ✅ CORRECT - Preserves type inference
+   const machine = createMachine(states, {
+     Initial: { event: "Next" },
+     Next: { ...}
+   }, "Initial");
+   ```
+
+2. **NEVER use `as any` or `@ts-ignore` in machine creation** - This destroys the type safety that is the library's core value
+
+3. **NEVER work around type errors with casts** - Fix the root cause in the type signatures instead
+
+4. **States should also be inline or const-declared** - For best type inference, pass states directly or declare with `const states = defineStates({...})`
+
+If you encounter type errors, the solution is to fix the type definitions, NOT to cast them away.
+
 ## Quick Reference
 
 ```bash
