@@ -9,7 +9,8 @@
  * - Attaches static shape for visualization
  */
 
-import type { FactoryMachineTransitions, KeysWithZeroRequiredArgs } from "../factory-machine-types";
+import type { FactoryMachineTransitions } from "../factory-machine-types";
+import type { KeysWithZeroRequiredArgs } from "../utility-types";
 import type { StateMatchboxFactory } from "../state-types";
 import { createMachine } from "../factory-machine";
 import { withParentTransitionFallback } from "./parent-transition-fallback";

@@ -68,7 +68,7 @@ export function createMachine<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ): FactoryMachine<FC> {
-  const initialState = typeof init === "string" ? states[init]({}) : init;
+  const initialState = typeof init === "string" ? states[init]() : init;
 
   let lastChange: E = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],

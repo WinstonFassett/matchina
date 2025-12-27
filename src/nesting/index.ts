@@ -1,7 +1,14 @@
 // Flattened machine creation (primary API for flat hierarchies)
-export { 
+export {
   createFlatMachine
 } from "./flat-machine";
+export {
+  createDeclarativeFlatMachine
+} from "./declarative-flat";
+export type {
+  DeclarativeFlatMachineConfig,
+  DeclarativeStateConfig
+} from "./declarative-flat";
 
 // Hierarchical machine creation (primary API for nested machines)
 // Propagation and child-first routing
