@@ -281,6 +281,22 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
   // Build the hierarchical structure from original definition
   const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey);
   
+  // For flattened machines, we need to ensure fullKey uses underscores to match
+  // the Mermaid diagram generation format (getStateId converts dots to underscores)
+  function normalizeFullKeys(states: any, delimiter = '.') {
+    for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
+      if (stateConfig.fullKey) {
+        // Convert dots to underscores for flattened machine compatibility
+        stateConfig.fullKey = stateConfig.fullKey.replace(/\./g, '_');
+      }
+      
+      // Recursively normalize nested states
+      if (stateConfig.states) {
+        normalizeFullKeys(stateConfig.states, delimiter);
+      }
+    }
+  }
+  
   // Replace transitions with flattened ones
   function updateTransitions(states: any, transitions: any, prefix = '') {
     for (const [stateKey, stateConfig] of Object.entries(states) as [string, any][]) {
@@ -309,5 +325,6 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
   }
   
   updateTransitions(hierarchicalDef.states, flattenedTransitions);
+  normalizeFullKeys(hierarchicalDef.states);
   return hierarchicalDef;
 }
