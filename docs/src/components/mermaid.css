@@ -1,12 +1,12 @@
 /* Minimal base styles - let MermaidInspector.css handle theme-specific styling */
 
-/* Override hardcoded cluster label colors that get injected later */
+/* Override hardcoded cluster label colors */
 #mermaid-1 .cluster-label {
-  fill: var(--sl-color-text-invert) !important;
+  fill: var(--sl-color-text) !important;
 }
 
 #mermaid-1 .cluster-label .nodeLabel {
-  color: var(--sl-color-text-invert) !important;
+  color: var(--sl-color-text) !important;
 }
 
 /* Force state diagram clusters to be transparent */
