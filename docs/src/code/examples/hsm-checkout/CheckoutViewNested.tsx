@@ -105,9 +105,8 @@ function PaymentSection() {
   const { paymentMachine } = useCheckoutContext();
   const state = paymentMachine?.getState();
 
-  // Handle nested mode
-  const stateKey = state?.key;
-  if (stateKey === 'Payment') {
+  // Show payment flow if payment machine exists and has any state
+  if (paymentMachine && state) {
     return <PaymentFlow />;
   }
   

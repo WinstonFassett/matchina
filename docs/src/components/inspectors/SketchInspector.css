@@ -60,7 +60,7 @@
 }
 
 .state-item.active-ancestor {
-  background: var(--sl-color-accent-high);
+  background: rgba(139, 92, 246, 0.15);
   border-color: var(--sl-color-accent);
   border-width: 2px;
 }
@@ -73,14 +73,6 @@
 
 .state-item.active-ancestor .state-item:not(.active):hover {
   background: var(--sl-color-gray-6);
-}
-
-/* Active nested state should always be fully highlighted, even inside active ancestor */
-.state-item.active-ancestor .state-item.active {
-  background: var(--sl-color-accent);
-  border-color: var(--sl-color-accent-high);
-  color: var(--sl-color-text-invert);
-  border-width: 2px;
 }
 
 /* Multi-level nesting transparency for better visual hierarchy */
@@ -113,12 +105,12 @@
 }
 
 .state-item.active .state-name {
-  color: var(--sl-color-text-invert);
+  color: white;
 }
 
 .state-badge {
   font-size: 11px;
-  background: var(--sl-color-accent-high);
+  background: var(--sl-color-gray-2);
   color: var(--sl-color-accent);
   padding: 2px 6px;
   border-radius: 3px;
@@ -157,18 +149,25 @@
 }
 
 .transition-button.enabled {
-  color: var(--sl-color-accent);
-  border-color: var(--sl-color-accent-high);
-  background: var(--sl-color-accent-high);
+  color: var(--sl-color-text);
+  border-color: var(--sl-color-accent);
+  background: var(--sl-color-gray-2);
   cursor: pointer;
+  font-weight: 500;
 }
 
-/* Transition buttons inside active state need inverted colors */
+/* Transition buttons inside active state need proper contrast */
 .state-item.active .transition-button.enabled {
-  color: var(--sl-color-text-invert);
-  border-color: var(--sl-color-text-invert);
-  background: var(--sl-color-text-invert);
-  opacity: 0.15;
+  color: rgba(255, 255, 255, 0.8);
+  border-color: var(--sl-color-accent);
+  background: #6b7280;
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+  .state-item.active .transition-button.enabled {
+    background: #4b5563;
+  }
 }
 
 .state-item.active .transition-button.enabled:hover {
@@ -180,7 +179,7 @@
 .transition-button.enabled.ancestor-state {
   color: var(--sl-color-gray-6);
   border-color: var(--sl-color-gray-4);
-  background: var(--sl-color-gray-2);
+  background: var(--sl-color-gray-1);
 }
 
 .transition-button.enabled.ancestor-state:hover {
@@ -190,8 +189,8 @@
 }
 
 .transition-button.enabled:hover {
-  background: var(--sl-color-accent);
-  color: var(--sl-color-text-invert);
+  background: var(--sl-color-gray-3);
+  color: var(--sl-color-text);
   border-color: var(--sl-color-accent);
 }
 
@@ -213,7 +212,7 @@
 }
 
 .state-item.active .transition-arrow {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .transition-target {
