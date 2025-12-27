@@ -18,7 +18,7 @@ import { buildFlattenedShape } from "./shape-builders";
 export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeController {
   const shape = buildFlattenedShape(
     machine.transitions as Record<string, Record<string, any>>,
-    machine.initialKey as string
+    (machine as any).initialKey as string
   );
   const subscribers = new Set<(shape: MachineShape) => void>();
 
