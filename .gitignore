@@ -1,5 +1,6 @@
 ignore/
 dev/
+.playwright-mcp/
 
 node_modules
 coverage
