@@ -14,6 +14,8 @@ import type {
   FlattenedFactoryTransitions,
   FlattenFactoryStateKeys,
 } from "./definition-types";
+import { withParentTransitionFallback } from "./nesting/parent-transition-fallback";
+import { withFlattenedChildExit } from "./nesting/flattened-child-exit";
 
 export function defineMachine<
   S extends Record<string, any> | StateMatchboxFactory<any>,
@@ -111,6 +113,15 @@ export function createMachineFromFlat<
   if (def._originalDef) {
     (machine as any)._originalDef = def._originalDef;
   }
+  
+  // Apply parent transition fallback for flattened machines
+  // This allows child states to inherit parent transitions
+  withParentTransitionFallback(machine);
+  
+  // Apply automatic child.exit triggering for flattened machines
+  // When a final child state is reached, automatically send child.exit event
+  // This enables the same behavior as nested machines where child exits bubble up
+  withFlattenedChildExit(machine);
   
   return machine;
 }

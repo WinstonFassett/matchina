@@ -18,6 +18,7 @@ describe('Flattened child exit behavior', () => {
 
   it('should automatically trigger child.exit when reaching final child state', async () => {
     const baseMachine = createFlatCheckoutMachine();
+    // Apply auto-exit (parent fallback is now automatic in createMachineFromFlat)
     const machine = withFlattenedChildExit(baseMachine);
     
     // Navigate to Payment.Authorized (final child state)
@@ -41,6 +42,7 @@ describe('Flattened child exit behavior', () => {
   });
 
   it('should handle manual child.exit from final child state', () => {
+    // Parent fallback is now automatic in createMachineFromFlat
     const machine = createFlatCheckoutMachine();
     
     // Navigate to Payment.Authorized
@@ -51,7 +53,7 @@ describe('Flattened child exit behavior', () => {
     
     expect(machine.getState().key).toBe('Payment.Authorized');
     
-    // Manual child.exit should work (this will fail with current implementation)
+    // Manual child.exit should work with parent fallback
     machine.send('child.exit');
     
     // This should transition to Review

@@ -213,7 +213,7 @@ export function getXStateDefinition<
  * Build XState definition from preserved original hierarchical definition.
  * Used when a flattened machine has _originalDef attached.
  */
-function buildDefinitionFromOriginal(def: any, parentKey?: string) {
+function buildDefinitionFromOriginal(def: any, parentKey?: string, copyParentTransitions: boolean = true) {
   type StateStack = { key: string; fullKey: string }[];
   
   function buildFromDef(
@@ -278,16 +278,18 @@ function buildDefinitionFromOriginal(def: any, parentKey?: string) {
       }
     }
     
-    // Also add transitions from nested states to their parent's on map
-    // This ensures parent-level transitions show up in the visualization
-    for (const [stateKey, stateConfig] of Object.entries(definition.states) as [string, any][]) {
-      if (stateConfig.states) {
-        // Copy parent transitions to nested states (they apply to all children)
-        const parentTransitions = transitions?.[stateKey] || {};
-        for (const [nestedKey, nestedConfig] of Object.entries(stateConfig.states) as [string, any][]) {
-          for (const [event, target] of Object.entries(parentTransitions)) {
-            if (typeof target === 'string' && !nestedConfig.on[event]) {
-              nestedConfig.on[event] = target;
+    // For nested machines: copy parent transitions to child states (they apply via event bubbling)
+    // For flattened machines: skip this (parent transitions are separate by design)
+    if (copyParentTransitions) {
+      for (const [stateKey, stateConfig] of Object.entries(definition.states) as [string, any][]) {
+        if (stateConfig.states) {
+          // Copy parent transitions to nested states (they apply to all children)
+          const parentTransitions = transitions?.[stateKey] || {};
+          for (const [nestedKey, nestedConfig] of Object.entries(stateConfig.states) as [string, any][]) {
+            for (const [event, target] of Object.entries(parentTransitions)) {
+              if (typeof target === 'string' && !nestedConfig.on[event]) {
+                nestedConfig.on[event] = target;
+              }
             }
           }
         }
@@ -309,7 +311,9 @@ function buildDefinitionFromFlattened(originalDef: any, flattenedMachine: any, p
   const flattenedTransitions = flattenedMachine.transitions;
   
   // Build the hierarchical structure from original definition
-  const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey);
+  // For flattened machines, don't copy parent transitions to children
+  // (they are separate by design and accessed via parent fallback hook at runtime)
+  const hierarchicalDef = buildDefinitionFromOriginal(originalDef, parentKey, false);
   
   // Replace transitions with flattened ones
   function updateTransitions(states: any, transitions: any, prefix = '') {
