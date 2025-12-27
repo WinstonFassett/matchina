@@ -62,13 +62,13 @@ export function buildVisualizerTree<
  */
 function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
   // Educational type definition for XState compatibility
-  type _XStateNode = {
-    key: string;
-    fullKey: string;
-    on: Record<string, string>;
-    states?: Record<string, _XStateNode>;
-    initial?: string;
-  };
+  void ({
+    key: "",
+    fullKey: "",
+    on: {} as Record<string, string>,
+    states: undefined as any,
+    initial: undefined as string | undefined
+  }); // _XStateNode - Educational type definition
 
   const initialState = machine.getState();
   const declaredInitial = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';

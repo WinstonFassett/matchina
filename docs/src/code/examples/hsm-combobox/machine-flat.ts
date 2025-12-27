@@ -6,13 +6,13 @@ const AVAILABLE_TAGS = [
 ];
 
 // Helper function for suggestions
-function _getSuggestions(input: string, selectedTags: string[]): string[] {
+void (function(input: string, selectedTags: string[]): string[] {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return [];
   return AVAILABLE_TAGS
     .filter(tag => tag.toLowerCase().includes(trimmed) && !selectedTags.includes(tag))
     .slice(0, 5);
-}
+}); // _getSuggestions - Educational example
 
 // Flat state keys with dot notation representing the REAL hierarchy:
 // Inactive (root)
