@@ -65,6 +65,16 @@
   border-width: 2px;
 }
 
+/* Nested state boxes inside active ancestor */
+.state-item.active-ancestor .state-item {
+  background: var(--sl-color-bg);
+  border-color: var(--sl-color-gray-4);
+}
+
+.state-item.active-ancestor .state-item:hover {
+  background: var(--sl-color-gray-6);
+}
+
 /* State content - no styling, just content container */
 
 /* State name and badge on same line */
@@ -180,4 +190,16 @@
   padding: 2px 4px;
   border-radius: 2px;
   font-family: 'SF Mono', Monaco, monospace;
+}
+
+/* Full path label in active state */
+.state-fullKey {
+  font-size: 11px;
+  color: var(--sl-color-white);
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.fullKey-label {
+  font-weight: 500;
 }

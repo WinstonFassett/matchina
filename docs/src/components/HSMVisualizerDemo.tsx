@@ -119,7 +119,7 @@ export function VisualizerDemo({
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeVisualizer === key
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
                 title={desc}
               >
@@ -136,8 +136,8 @@ export function VisualizerDemo({
         </div>
       )}
 
-      <div className="visualizer-container border border-neutral-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-2 border-b border-neutral-200">
+      <div className="visualizer-container border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+        <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-gray-900">
           <span className="text-sm font-medium">
             {visualizers.find(v => v.key === activeVisualizer)?.label}
           </span>
