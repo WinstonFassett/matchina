@@ -182,6 +182,13 @@
   background: var(--sl-color-gray-1);
 }
 
+/* Dark mode specific adjustments for ancestor-state buttons */
+@media (prefers-color-scheme: dark) {
+  .transition-button.enabled.ancestor-state {
+    background: var(--sl-color-gray-3);
+  }
+}
+
 .transition-button.enabled.ancestor-state:hover {
   background: var(--sl-color-gray-4);
   color: var(--sl-color-white);
