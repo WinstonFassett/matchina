@@ -32,13 +32,7 @@ const states = defineStates({
     selectedTags,
   }),
 
-  "Active.Suggesting": (input: string, selectedTags: string[], suggestions: string[]) => ({
-    input,
-    selectedTags,
-    suggestions,
-  }),
-
-  "Active.Selecting": (input: string, selectedTags: string[], suggestions: string[], highlightedIndex: number) => ({
+  "Active.Suggesting": (input: string, selectedTags: string[], suggestions: string[], highlightedIndex: number = 0) => ({
     input,
     selectedTags,
     suggestions,
@@ -65,7 +59,7 @@ export function createFlatComboboxMachine() {
       toEmpty: (selectedTags: string[]) =>
         states["Active.Empty"](selectedTags),
       toSuggesting: (input: string, selectedTags: string[], suggestions: string[]) =>
-        states["Active.Suggesting"](input, selectedTags, suggestions),
+        states["Active.Suggesting"](input, selectedTags, suggestions, 0),
       toTextEntry: (input: string, selectedTags: string[]) =>
         states["Active.TextEntry"](input, selectedTags),
     },
@@ -86,26 +80,13 @@ export function createFlatComboboxMachine() {
         states["Active.Typing"](value, selectedTags),
       clear: (selectedTags: string[]) =>
         states["Active.Empty"](selectedTags),
-      navigate: (input: string, selectedTags: string[], suggestions: string[]) =>
-        states["Active.Selecting"](input, selectedTags, suggestions, 0),
-      addTag: (tag: string, selectedTags: string[]) =>
-        states["Active.Empty"]([...selectedTags, tag]),
-      deactivate: (selectedTags: string[]) =>
-        states.Inactive(selectedTags),
-    },
-
-    "Active.Selecting": {
-      typed: (value: string, selectedTags: string[]) =>
-        states["Active.Typing"](value, selectedTags),
-      clear: (selectedTags: string[]) =>
-        states["Active.Empty"](selectedTags),
       highlightNext: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
         const nextIndex = Math.min(suggestions.length - 1, currentIndex + 1);
-        return states["Active.Selecting"](input, selectedTags, suggestions, nextIndex);
+        return states["Active.Suggesting"](input, selectedTags, suggestions, nextIndex);
       },
       highlightPrev: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
         const prevIndex = Math.max(0, currentIndex - 1);
-        return states["Active.Selecting"](input, selectedTags, suggestions, prevIndex);
+        return states["Active.Suggesting"](input, selectedTags, suggestions, prevIndex);
       },
       selectHighlighted: (suggestions: string[], highlightedIndex: number, selectedTags: string[]) => {
         const tag = suggestions[highlightedIndex];
@@ -113,6 +94,8 @@ export function createFlatComboboxMachine() {
       },
       cancel: (input: string, selectedTags: string[]) =>
         states["Active.TextEntry"](input, selectedTags),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
       deactivate: (selectedTags: string[]) =>
         states.Inactive(selectedTags),
     },

@@ -65,25 +65,21 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
       case "ArrowDown":
         e.preventDefault();
         if (parsed.child === 'Suggesting') {
-          actions.navigate?.(input, selectedTags, suggestions);
-        } else if (parsed.child === 'Selecting') {
           actions.highlightNext?.(input, selectedTags, suggestions, highlightedIndex);
         }
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (parsed.child === 'Selecting') {
+        if (parsed.child === 'Suggesting') {
           actions.highlightPrev?.(input, selectedTags, suggestions, highlightedIndex);
         }
         break;
       case "Enter":
         e.preventDefault();
-        if (parsed.child === 'Selecting') {
+        if (parsed.child === 'Suggesting' && suggestions.length > 0) {
           actions.selectHighlighted?.(suggestions, highlightedIndex, selectedTags);
-        } else if (parsed.child === 'Suggesting' || parsed.child === 'TextEntry') {
-          if (input.trim()) {
-            actions.addTag?.(input.trim(), selectedTags);
-          }
+        } else if (input.trim()) {
+          actions.addTag?.(input.trim(), selectedTags);
         }
         break;
     }
@@ -138,8 +134,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             />
 
             {/* Suggestions dropdown */}
-            {(parsed.child === "Suggesting" || parsed.child === "Selecting") &&
-             currentData.suggestions?.length > 0 && (
+            {parsed.child === "Suggesting" && currentData.suggestions?.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
                 {currentData.suggestions.map((suggestion: string, index: number) => (
                   <button
