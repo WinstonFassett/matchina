@@ -13,3 +13,5 @@ types
 *.conf
 *.env*
 bun.lockb
+review/screenshots/
+test-results/
