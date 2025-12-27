@@ -101,192 +101,64 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
 
   return (
     <ComboboxContext.Provider value={{ machine, actions }}>
-      <div className="combobox-demo">
-        <div className="state-info">
-          <div className="state-path">
-            {parsed.full}
-          </div>
-          <div className="state-data">
-            Selected: {currentData.selectedTags?.join(", ") || "None"}
-          </div>
+      <div className="space-y-3">
+        {/* State display */}
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{parsed.full}</span>
         </div>
 
-        <div className="combobox-container">
+        {/* Tags input */}
+        <div className="flex flex-wrap gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-900 min-h-[100px]">
           {/* Selected tags */}
-          <div className="selected-tags">
-            {(currentData.selectedTags || []).map((tag: string) => (
-              <span key={tag} className="tag">
-                {tag}
-                <button onClick={() => handleTagRemove(tag)} className="remove-tag">
-                  ×
-                </button>
-              </span>
-            ))}
+          {(currentData.selectedTags || []).map((tag: string) => (
+            <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500 text-white text-sm">
+              {tag}
+              <button
+                onClick={() => handleTagRemove(tag)}
+                className="hover:bg-blue-600 rounded-full p-0.5 transition-colors"
+                aria-label={`Remove ${tag}`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+
+          {/* Input */}
+          <div className="flex-1 min-w-[200px] relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder="Type to add tags..."
+              className="w-full px-2 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100"
+            />
+
+            {/* Suggestions dropdown */}
+            {(parsed.child === "Suggesting" || parsed.child === "Selecting") &&
+             currentData.suggestions?.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
+                {currentData.suggestions.map((suggestion: string, index: number) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className={`w-full text-left px-3 py-2 transition-colors ${
+                      index === currentData.highlightedIndex
+                        ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    }`}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Input field */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={parsed.parent === "Inactive" ? "Click to focus..." : "Type to search..."}
-            className="combobox-input"
-            disabled={parsed.parent === "Inactive"}
-          />
-
-          {/* Suggestions dropdown */}
-          {(parsed.child === "Suggesting" || parsed.child === "Selecting") &&
-           currentData.suggestions?.length > 0 && (
-            <div className="suggestions">
-              {currentData.suggestions.map((suggestion: string, index: number) => (
-                <div
-                  key={suggestion}
-                  className={`suggestion ${index === currentData.highlightedIndex ? "highlighted" : ""}`}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
-                  {suggestion}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="controls">
-          {parsed.parent === "Inactive" ? (
-            <button onClick={handleFocus}>Focus Combobox</button>
-          ) : (
-            <button onClick={handleBlur}>Blur (Go Inactive)</button>
-          )}
         </div>
       </div>
-
-      <style>{`
-        .combobox-demo {
-          padding: 20px;
-          font-family: system-ui;
-        }
-
-        .state-info {
-          margin-bottom: 20px;
-          padding: 10px;
-          background: #f5f5f5;
-          border-radius: 4px;
-        }
-
-        .state-path {
-          font-weight: bold;
-          margin-bottom: 5px;
-        }
-
-        .state-data {
-          font-size: 0.9em;
-          color: #666;
-        }
-
-        .combobox-container {
-          position: relative;
-          margin-bottom: 20px;
-        }
-
-        .selected-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-          margin-bottom: 10px;
-        }
-
-        .tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding: 4px 8px;
-          background: #e1e5e9;
-          border-radius: 4px;
-          font-size: 0.9em;
-        }
-
-        .remove-tag {
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 1.2em;
-          line-height: 1;
-          padding: 0;
-          color: #666;
-        }
-
-        .remove-tag:hover {
-          color: #333;
-        }
-
-        .combobox-input {
-          width: 100%;
-          padding: 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-size: 1em;
-        }
-
-        .combobox-input:focus {
-          outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-
-        .combobox-input:disabled {
-          background: #f8f9fa;
-          cursor: not-allowed;
-        }
-
-        .suggestions {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          border: 1px solid #ccc;
-          border-top: none;
-          background: white;
-          max-height: 200px;
-          overflow-y: auto;
-          z-index: 1000;
-        }
-
-        .suggestion {
-          padding: 8px 12px;
-          cursor: pointer;
-          border-bottom: 1px solid #eee;
-        }
-
-        .suggestion:last-child {
-          border-bottom: none;
-        }
-
-        .suggestion:hover,
-        .suggestion.highlighted {
-          background: #f0f0f0;
-        }
-
-        .controls {
-          display: flex;
-          gap: 10px;
-        }
-
-        .controls button {
-          padding: 8px 16px;
-          border: 1px solid #ccc;
-          background: white;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-
-        .controls button:hover {
-          background: #f0f0f0;
-        }
-      `}</style>
     </ComboboxContext.Provider>
   );
 }
