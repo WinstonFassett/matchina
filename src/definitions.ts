@@ -238,9 +238,9 @@ function flattenFromRaw(
         }
       }
 
-      for (const s of sourceLeaves) {
-        ensureFlatTransition(flatTransitions, s, ev, targetValue);
-      }
+      // Parent transitions should only be available at the parent level, not copied to children
+      // This ensures flattened machines maintain proper separation of concerns
+      ensureFlatTransition(flatTransitions, fromKey, ev, targetValue);
     }
   }
 
