@@ -3,22 +3,23 @@ import React, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import "./mermaid.css";
 // Initialize Mermaid
 
-const useMermaid = (id: string, content: string): string | null => {
+const useMermaid = (id: string, content: string): { svg: string | null; error: string | null } => {
   const [svg, setSvg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
-    // Debug: track when Mermaid.render runs and whether content changes
-    // try {
-    //   let x = 0; for (let i = 0; i < content.length; i++) x = ((x << 5) - x) + content.charCodeAt(i) | 0;
-    //   const hash = (x >>> 0).toString(16);
-    //   // Keep log ultra-short to avoid console spam
-    //   // console.log('[Mermaid.render]', id, hash, content.length);
-    // } catch {}
+    setSvg(null);
+    setError(null);
 
     mermaid.render(id, content).then((svgraph) => {
       if (!isCancelled) {
         setSvg(svgraph.svg);
+      }
+    }).catch((err) => {
+      if (!isCancelled) {
+        console.error('[Mermaid] Render error:', err);
+        setError(err?.message || String(err));
       }
     });
 
@@ -26,7 +27,7 @@ const useMermaid = (id: string, content: string): string | null => {
       isCancelled = true;
     };
   }, [id, content]);
-  return svg;
+  return { svg, error };
 };
 
 let lastId = 0;
@@ -40,12 +41,18 @@ export const Mermaid = React.memo(
   }) => {
     const id = useMemo(() => `mermaid-${++lastId}`, []);
     const elRef = useRef<HTMLDivElement>(null);
-    const svg = useMermaid(id, content);
+    const { svg, error } = useMermaid(id, content);
     useEffect(() => {
       if (svg && onRender) {
         onRender?.(elRef.current!);
       }
     }, [svg]);
+    if (error) return (
+      <div className="mermaid-error" style={{ padding: '1rem', color: 'var(--sl-color-red)', fontSize: '0.875rem' }}>
+        <strong>Mermaid Error:</strong>
+        <pre style={{ whiteSpace: 'pre-wrap', marginTop: '0.5rem' }}>{error}</pre>
+      </div>
+    );
     if (!svg) return <div>Loading...</div>;
     return (
       <div className="mermaid-container">

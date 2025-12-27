@@ -118,7 +118,7 @@ export function VisualizerDemo({
                 onClick={() => setActiveVisualizer(key as VisualizerType)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeVisualizer === key
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
                 title={desc}

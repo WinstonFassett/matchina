@@ -31,7 +31,12 @@
       "Bash(bd list:*)",
       "Bash(git mv:*)",
       "Bash(node --loader tsx:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_run_code",
+      "mcp__playwright__browser_select_option",
+      "Bash(npx astro check)"
     ],
     "deny": [],
     "ask": []

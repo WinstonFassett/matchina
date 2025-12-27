@@ -54,14 +54,14 @@
 }
 
 .state-item.active {
-  background: var(--sl-color-accent);
-  border-color: var(--sl-color-accent);
-  color: var(--sl-color-white);
+  background: #166534;
+  border-color: #15803d;
+  color: #fff;
 }
 
 .state-item.active-ancestor {
-  background: var(--sl-color-accent-low);
-  border-color: var(--sl-color-accent);
+  background: rgba(22, 101, 52, 0.15);
+  border-color: #166534;
   border-width: 2px;
 }
 
@@ -85,14 +85,14 @@
   margin-bottom: 8px;
 }
 
-.state-content.active .state-name {
-  color: var(--sl-color-white);
+.state-item.active .state-name {
+  color: #fff;
 }
 
 .state-badge {
   font-size: 11px;
-  background: var(--sl-color-accent-low);
-  color: var(--sl-color-accent-high);
+  background: rgba(22, 101, 52, 0.15);
+  color: #166534;
   padding: 2px 6px;
   border-radius: 3px;
   margin-left: 8px;
@@ -100,8 +100,8 @@
 }
 
 .state-content.active .state-badge {
-  background: var(--sl-color-white);
-  color: var(--sl-color-accent);
+  background: #fff;
+  color: #166534;
 }
 
 /* Transitions listed vertically */
@@ -130,10 +130,22 @@
 }
 
 .transition-button.enabled {
-  color: var(--sl-color-accent);
-  border-color: var(--sl-color-accent-low);
-  background: var(--sl-color-accent-low);
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.3);
+  background: rgba(22, 101, 52, 0.1);
   cursor: pointer;
+}
+
+/* Transition buttons inside active state need inverted colors */
+.state-item.active .transition-button.enabled {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.state-item.active .transition-button.enabled:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
 .transition-button.enabled.ancestor-state {
@@ -149,9 +161,9 @@
 }
 
 .transition-button.enabled:hover {
-  background: var(--sl-color-accent);
-  color: var(--sl-color-white);
-  border-color: var(--sl-color-accent);
+  background: #166534;
+  color: #fff;
+  border-color: #166534;
 }
 
 .ancestor-indicator {
@@ -171,8 +183,16 @@
   margin: 0 4px;
 }
 
+.state-item.active .transition-arrow {
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .transition-target {
   font-size: 13px;
+}
+
+.state-item.active .transition-target {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Metadata */
