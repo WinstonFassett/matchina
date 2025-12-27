@@ -94,24 +94,24 @@ export function ComboboxNestedView({ machine }: ComboboxNestedViewProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        activeActions.escape();
+        activeActions?.escape();
         break;
       case "ArrowDown":
         e.preventDefault();
         if (suggestions.length > 0) {
-          activeActions.arrowDown();
+          activeActions?.arrowDown();
         }
         break;
       case "ArrowUp":
         e.preventDefault();
         if (currentData.highlightedIndex > 0) {
-          activeActions.arrowUp();
+          activeActions?.arrowUp();
         }
         break;
       case "Enter":
         e.preventDefault();
         if (suggestions.length > 0 && currentData.highlightedIndex < suggestions.length) {
-          activeActions.enter();
+          activeActions?.enter();
         }
         break;
     }
@@ -204,7 +204,7 @@ export function ComboboxNestedView({ machine }: ComboboxNestedViewProps) {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .combobox-demo {
           padding: 20px;
           font-family: system-ui;

@@ -292,7 +292,7 @@ function CheckoutControls() {
             Start New Order
           </button>
         ),
-      }, null)}
+      }, false)}
     </div>
   );
 }

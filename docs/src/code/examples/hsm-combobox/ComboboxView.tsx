@@ -6,7 +6,7 @@ import type { createComboboxMachine } from "./machine";
 type Machine = ReturnType<typeof createComboboxMachine>;
 
 // Create a dummy state factory for the noop machine
-const dummyStates = { Noop: () => ({}) };
+const dummyStates = { Noop: () => ({ key: 'Noop' }) };
 const noopMachine = createMachine(dummyStates, {}, "Noop");
 function useMachineMaybe(machine: FactoryMachine<any> | undefined) {
   return useMachine(machine ?? noopMachine);
@@ -38,7 +38,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
 
   const selectedTags: string[] = state.match({
     Active: () => activeState?.data?.selectedTags ?? [],
-    Inactive: ({ selectedTags }) => selectedTags ?? [],
+    Inactive: ({ selectedTags }: { selectedTags: string[] }) => selectedTags ?? [],
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

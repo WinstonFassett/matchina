@@ -11,12 +11,10 @@ type Mode = "flat" | "nested";
 export default function CheckoutExample() {
   const [mode, setMode] = useState<Mode>("flat");
   
-  // Re-create machine when mode changes
-  const machine = useMemo(() => {
-    return mode === "flat" 
-      ? createFlatCheckoutMachine() 
-      : createCheckoutMachine();
-  }, [mode]);
+  // Create separate machines for each mode
+  const flatMachine = useMemo(() => createFlatCheckoutMachine(), []);
+  const nestedMachine = useMemo(() => createCheckoutMachine(), []);
+  const machine = mode === "flat" ? flatMachine : nestedMachine;
 
   const actions = useMemo(() => eventApi(machine), [machine]);
 
@@ -49,9 +47,9 @@ export default function CheckoutExample() {
       </div>
 
       {mode === "flat" ? (
-        <CheckoutViewFlat machine={machine} />
+        <CheckoutViewFlat machine={flatMachine as any} />
       ) : (
-        <CheckoutViewNested machine={machine} />
+        <CheckoutViewNested machine={nestedMachine as any} />
       )}
       
       <VisualizerDemo

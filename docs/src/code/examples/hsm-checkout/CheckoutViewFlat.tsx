@@ -1,12 +1,11 @@
 import React, { useContext } from "react";
 import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
-import type { FactoryMachine } from "matchina";
 import { parseFlatStateKey, createFlatCheckoutMachine } from "./machine-flat";
 
 // Context to share the payment machine and event APIs
 const CheckoutContext = React.createContext<{
-  machine: FactoryMachine<ReturnType<typeof createFlatCheckoutMachine>>;
+  machine: ReturnType<typeof createFlatCheckoutMachine>;
   actions: any;
 }>({ machine: null as any, actions: null as any });
 
@@ -15,7 +14,7 @@ function useCheckoutContext() {
 }
 
 interface CheckoutViewFlatProps {
-  machine: FactoryMachine<ReturnType<typeof createFlatCheckoutMachine>>;
+  machine: ReturnType<typeof createFlatCheckoutMachine>;
 }
 
 export function CheckoutViewFlat({ machine }: CheckoutViewFlatProps) {

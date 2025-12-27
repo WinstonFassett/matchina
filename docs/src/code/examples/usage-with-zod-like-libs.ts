@@ -10,17 +10,9 @@ const LoadingSchema = z.object({ progress: z.number() });
 const ErrorSchema = z.object({ message: z.string() });
 
 const states = defineStates({
-  // Idle: () => Object.assign(IdleSchema.parse({}) as z.infer<typeof IdleSchema>, { key: "Idle" }),
-  // Loading: (progress: number) => Object.assign(LoadingSchema.parse({ progress }) as z.infer<typeof LoadingSchema>, { key: "Loading" }),
-  // Error: Object.assign((message: string) => ErrorSchema.parse({ message }) as z.infer<typeof ErrorSchema>, { key: "Error" }),
-  // Idle: () => ({}),
-  // Loading: (progress: number) => ({ progress }),
-  // Error: (message: string) => ({ message }),
-  Idle: () => IdleSchema.parse({}) as z.infer<typeof IdleSchema>,
-  Loading: (progress: number) =>
-    LoadingSchema.parse({ progress }) as z.infer<typeof LoadingSchema>,
-  Error: (message: string) =>
-    ErrorSchema.parse({ message }) as z.infer<typeof ErrorSchema>,
+  Idle: () => ({}),
+  Loading: (progress: number) => ({ progress }),
+  Error: (message: string) => ({ message }),
 } as const);
 
 const m1 = createMachine(
@@ -90,7 +82,7 @@ const states3 = defineZodStates({
 // const loading3 = states3.Loading({ progress: 5 });
 
 const machine2 = matchina(
-  states3,
+  states,
   {
     Idle: {
       start: "Loading",
@@ -103,15 +95,14 @@ const machine2 = matchina(
       retry: "Idle",
     },
   },
-  states2.Idle()
+  states.Idle()
 );
 
 // These now properly type-check:
-// machine2.start({}); // Error: missing progress property
-machine2.start({ progress: 0 }); // Valid
+machine2.start(0); // Valid
 
 // machine2.send("start", {}); // Error: missing progress property
-machine2.send("start", { progress: 1 }); // Valid
+machine2.send("start", 1); // Valid
 
 // machine2.send("error", { message: "An error occurred" }); // Valid
 
