@@ -1,4 +1,4 @@
-import { defineStates, matchina, setup, enter, whenState, createFlatMachine } from "matchina";
+import { defineStates, setup, enter, whenState, createFlatMachine, t } from "matchina";
 
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
@@ -13,9 +13,15 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
     .slice(0, 5);
 }
 
-// Flat state keys with dot notation
+// Flat state keys with dot notation representing the REAL hierarchy:
+// Inactive (root)
+// Active (parent)
+//   ├── Active.Empty (child)
+//   ├── Active.Typing (child)
+//   ├── Active.TextEntry (child)
+//   └── Active.Suggesting (child)
 const states = defineStates({
-  Inactive: (selectedTags?: string[]) => ({ selectedTags: selectedTags ?? [] }),
+  Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
 
   "Active.Empty": (selectedTags: string[] = []) => ({
     input: "",
@@ -43,7 +49,15 @@ const states = defineStates({
 export function createFlatComboboxMachine() {
   const transitions = {
     Inactive: {
-      activate: () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
+      activate: t(
+        () => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? []),
+        (f) => [states["Active.Empty"]([])]
+      ),
+    },
+
+    // Synthetic parent state for Active.* children
+    Active: {
+      deactivate: (selectedTags: string[]) => states.Inactive(selectedTags),
     },
 
     "Active.Empty": {
@@ -51,8 +65,8 @@ export function createFlatComboboxMachine() {
         states["Active.Typing"](value, selectedTags),
       removeTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"](selectedTags.filter(t => t !== tag)),
-      deactivate: (selectedTags: string[]) =>
-        states.Inactive(selectedTags),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
     },
 
     "Active.Typing": {
@@ -71,8 +85,6 @@ export function createFlatComboboxMachine() {
         states["Active.Empty"](selectedTags),
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
-      deactivate: (selectedTags: string[]) =>
-        states.Inactive(selectedTags),
     },
 
     "Active.Suggesting": {
@@ -96,12 +108,10 @@ export function createFlatComboboxMachine() {
         states["Active.TextEntry"](input, selectedTags),
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
-      deactivate: (selectedTags: string[]) =>
-        states.Inactive(selectedTags),
     },
   };
 
-  // Use createFlatMachine to automatically attach shape metadata
+  // Use createFlatMachine which maintains REAL hierarchy with parent fallback
   const baseMachine = createFlatMachine(states as any, transitions as any, "Inactive");
 
   // Add effect to Active.Typing state that auto-transitions

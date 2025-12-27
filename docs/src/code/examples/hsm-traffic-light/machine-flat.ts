@@ -1,46 +1,55 @@
-import {
-  defineStates,
-  defineMachine,
-  defineSubmachine,
-  flattenMachineDefinition,
-  createMachineFromFlat
-} from "matchina";
-
-// Define the nested light cycle as a submachine
-const lightCycle = defineSubmachine(
-  defineStates({ 
-    Red: undefined, 
-    Green: undefined, 
-    Yellow: undefined 
-  }),
-  {
-    Red: { tick: "Green" },
-    Green: { tick: "Yellow" },
-    Yellow: { tick: "Red" },
-  },
-  "Red"
-);
-
-// Define the controller with Working state containing the light cycle
-const controllerDef = defineMachine(
-  defineStates({
-    Broken: undefined,
-    Working: lightCycle,
-    Maintenance: undefined,
-  }),
-  {
-    Broken: { repair: "Working", maintenance: "Maintenance" },
-    Working: { break: "Broken", maintenance: "Maintenance" },
-    Maintenance: { complete: "Working" },
-  },
-  "Working"
-);
-
-// Flatten and create the machine
-const flatDef = flattenMachineDefinition(controllerDef);
+import { createDeclarativeFlatMachine } from "matchina";
 
 export function createFlatTrafficLight() {
-  return createMachineFromFlat(flatDef);
+  return createDeclarativeFlatMachine({
+    initial: 'Working',
+    states: {
+      Broken: {
+        data: () => ({}),
+        on: {
+          repair: 'Working',
+          maintenance: 'Maintenance'
+        }
+      },
+
+      // Working is a hierarchical state with light cycle substates
+      Working: {
+        initial: 'Red',
+        states: {
+          Red: {
+            data: () => ({}),
+            on: {
+              tick: 'Green'
+            }
+          },
+          Green: {
+            data: () => ({}),
+            on: {
+              tick: 'Yellow'
+            }
+          },
+          Yellow: {
+            data: () => ({}),
+            on: {
+              tick: 'Red'
+            }
+          }
+        },
+        // Parent-level transitions apply to all child states
+        on: {
+          break: '^Broken',
+          maintenance: '^Maintenance'
+        }
+      },
+
+      Maintenance: {
+        data: () => ({}),
+        on: {
+          complete: 'Working'
+        }
+      }
+    }
+  });
 }
 
 // Helper to parse hierarchical state key
