@@ -44,7 +44,10 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   };
 
   const handleFocus = () => {
+    // The flat machine uses 'activate' not 'focus'
     actions.activate?.();
+    // Also focus the input after activation
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   const handleBlur = () => {
@@ -135,7 +138,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
 
             {/* Suggestions dropdown */}
             {parsed.child === "Suggesting" && currentData.suggestions?.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
+              <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-20">
                 {currentData.suggestions.map((suggestion: string, index: number) => (
                   <button
                     key={suggestion}
