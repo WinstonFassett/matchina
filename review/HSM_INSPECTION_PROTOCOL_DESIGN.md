@@ -45,9 +45,9 @@ This IS about:
 - **Transitions**: Stored in flat map, parent and child keys separate
   - `transitions['Payment']` = parent transitions
   - `transitions['Payment.Authorized']` = child transitions
-- **Hierarchy**: LOST in flattening, preserved in `_originalDef` metadata
+- **Hierarchy**: LOST in flattening, preserved in `_originalDef` shape metadata
 - **Parent Access**: Via `withParentTransitionFallback` hook (runtime intercept)
-- **Visualization**: Needs external metadata to reconstruct hierarchy
+- **Visualization**: Needs external shape metadata to reconstruct hierarchy
 
 ### Key Differences
 | Aspect | Simple | Nested | Flattened |
@@ -263,14 +263,14 @@ What should every state machine expose so visualization can understand its shape
 
 ```typescript
 /**
- * MachineShape - Unified interface describing any machine's structure
- * Simple, nested, and flattened machines all implement this
+ * MachineShape - Describes the structure of any state machine
+ * 
+ * This is NOT a template or definition (we have those).
+ * This IS the shape/structure/map of the machine - how to visualize it and navigate it.
+ * 
+ * Visualization consumes this interface. Doesn't care about internal representation.
  */
 interface MachineShape {
-  // IDENTITY
-  readonly machineType: 'simple' | 'nested' | 'flattened';  // what kind of machine is this
-  readonly version: string;  // for future compatibility
-  
   // STRUCTURAL INFORMATION (for visualization)
   readonly structure: {
     readonly root: StateNode;  // state tree (may be flat or hierarchical)
@@ -286,7 +286,7 @@ interface MachineShape {
     // Check if state can receive event
     canReceive(stateKey: string, eventType: string): boolean;
     
-    // Resolve where event goes (following model's rules)
+    // Resolve where event goes (following this machine's rules)
     resolve(stateKey: string, eventType: string): string | undefined;
   };
   
@@ -299,8 +299,12 @@ interface MachineShape {
     children(parentKey: string): string[];
   };
   
-  // DYNAMIC (for keeping visualization in sync)
-  onStateChange?: (newState: string) => void;  // notify when machine changes
+  // OPTIONAL: Type info for debugging/reporting (NOT required for visualization)
+  // If this machine is a hierarchical state machine (nested or flattened), report which
+  readonly hsmType?: 'nested' | 'flattened';
+  
+  // DYNAMIC (for keeping visualization in sync with runtime changes)
+  readonly onStateChange?: (newState: string) => void;  // notify when machine changes
 }
 
 interface StateNode {
@@ -328,29 +332,31 @@ interface TransitionMap {
 
 ### How Each Machine Type Implements This
 
-**Simple**:
-- `machineType`: "simple"
+**Simple Machine**:
 - `structure`: All states are leaves, no hierarchy
 - `transitions.from()`: Direct lookup in state's transition map
 - `transitions.resolve()`: Straightforward target resolution
 - `hierarchy`: Parent is always undefined, no compound states
-- `onStateChange`: Can be a direct hook to the machine
+- `hsmType`: undefined (not a hierarchical state machine)
+- `onStateChange`: Can be a direct hook
 
-**Nested**:
-- `machineType`: "nested"
+**Nested Machine (with submachines)**:
 - `structure`: Built by recursively walking machines
 - `transitions.from()`: Collect from current machine + check parent machine
 - `transitions.resolve()`: Event bubbles up through machine chain
 - `hierarchy`: Derive from machine nesting (submachines are compound)
+- `hsmType`: "nested" (this IS an HSM, hierarchical variant)
 - `onStateChange`: Walk chain of machines to notify
 
-**Flattened**:
-- `machineType`: "flattened"
+**Flattened Machine**:
 - `structure`: Built from `_originalDef` + flattened state keys
 - `transitions.from()`: Look up both the state AND its parent in flat map
 - `transitions.resolve()`: Use fallback hook logic
 - `hierarchy`: Pre-compute from state keys and original def
+- `hsmType`: "flattened" (this IS an HSM, flattened variant)
 - `onStateChange`: Direct hook to machine
+
+**Key insight**: `hsmType` is optional because simple machines don't have it. Visualization doesn't need it (just describes what it sees). But if present, it tells you how the HSM is represented internally.
 
 ---
 
@@ -365,7 +371,6 @@ export function getSimpleShape(
   machine: FactoryMachine<any>
 ): MachineShape {
   return {
-    machineType: 'simple',
     structure: {
       root: buildSimpleTree(machine),
       lookup: buildSimpleLookup(machine),
@@ -377,6 +382,7 @@ export function getSimpleShape(
       resolve: (key, event) => machine.transitions[key]?.[event]
     },
     hierarchy: { /* all return undefined for simple */ }
+    // hsmType is undefined (simple machines aren't HSMs)
   };
 }
 
@@ -385,14 +391,14 @@ export function getNestedShape(
   machine: FactoryMachine<any>
 ): MachineShape {
   return {
-    machineType: 'nested',
     structure: buildStructureFromNested(machine),
     transitions: {
       from: (key) => /* walk machine chain */,
       canReceive: (key, event) => /* check current + parent */,
       resolve: (key, event) => /* follow bubbling */
     },
-    hierarchy: { /* derive from nesting */ }
+    hierarchy: { /* derive from nesting */ },
+    hsmType: 'nested'
   };
 }
 
@@ -400,16 +406,16 @@ export function getNestedShape(
 export function getFlattenedShape(
   machine: FactoryMachine<any>
 ): MachineShape {
-  const originalDef = (machine as any)._originalDef;
+  const originalShape = (machine as any)._originalDef;  // shape metadata, not a definition
   return {
-    machineType: 'flattened',
-    structure: buildStructureFromFlattened(originalDef, machine.transitions),
+    structure: buildStructureFromFlattened(originalShape, machine.transitions),
     transitions: {
       from: (key) => /* flat + parent lookup */,
       canReceive: (key, event) => /* flat + fallback */,
       resolve: (key, event) => /* flat + fallback */
     },
-    hierarchy: { /* pre-computed */ }
+    hierarchy: { /* pre-computed */ },
+    hsmType: 'flattened'
   };
 }
 ```
@@ -437,11 +443,13 @@ export function getXStateDefinition(machine: FactoryMachine<any>) {
 
 ### Phase 3: Consider Attaching to Machine
 If we find this protocol useful, consider making it:
-- A public method: `machine.getInspectionInfo()`
+- A public method: `machine.getShape()` or `machine.getStructure()`
 - A hook: machines can register to provide this
 - Or both (method delegates to hook)
 
-This would separate concerns: visualization code only talks to inspection protocol, not machines directly.
+This would separate concerns: visualization code only talks to shape protocol, not machines directly.
+
+Note: Could potentially replace `_originalDef` attachment with a `getShape()` method, making the intent clearer and the API more explicit.
 
 ### Phase 4: Improve Implementations
 Once we see the unified protocol, it might suggest improvements:
@@ -498,7 +506,7 @@ This is used to:
 **Insight**: Nested machines already have a form of inspection protocol via the factory pattern.
 
 ### Pattern 2: `_originalDef` (Flattened)
-Flattened machines attach the original hierarchical definition:
+Flattened machines attach the original hierarchical shape:
 ```typescript
 // In createMachineFromFlat (line 113-114):
 if (def._originalDef) {
@@ -507,17 +515,17 @@ if (def._originalDef) {
 ```
 
 This is used to:
-- Preserve hierarchy for visualization
-- Provide structure that flattening loses
+- Preserve hierarchical shape for visualization
+- Restore structure that flattening loses
 
-**Insight**: Flattened machines need external metadata because flattening is lossy.
+**Insight**: Flattened machines need external shape metadata because flattening is lossy.
 
 ### Unifying These Patterns
-Both patterns are trying to solve the same problem: "give visualization the schema without requiring runtime introspection."
+Both patterns are solving the same problem: "give visualization the shape/structure it needs without requiring runtime introspection."
 
 Could we:
 1. Make both use the same pattern?
-2. Have all machines expose a `.definition` or `.schema` property?
+2. Have all machines expose a `.shape` or `.structure` property?
 3. Use hooks so visualization never directly accesses machines?
 
 ---
