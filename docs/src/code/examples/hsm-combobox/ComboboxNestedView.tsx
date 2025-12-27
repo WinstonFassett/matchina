@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import type { createComboboxMachine } from "./machine";
 
 // Context to share the machine and active machine
 const ComboboxContext = React.createContext<{

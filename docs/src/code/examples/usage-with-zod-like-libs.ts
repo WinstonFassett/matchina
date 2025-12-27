@@ -5,9 +5,9 @@ import { defineZodStates } from "matchina/zod";
 import { z } from "zod";
 
 // Example Zod schemas for states
-const IdleSchema = z.object({});
-const LoadingSchema = z.object({ progress: z.number() });
-const ErrorSchema = z.object({ message: z.string() });
+const _IdleSchema = z.object({});
+const _LoadingSchema = z.object({ progress: z.number() });
+const _ErrorSchema = z.object({ message: z.string() });
 
 const states = defineStates({
   Idle: () => ({}),

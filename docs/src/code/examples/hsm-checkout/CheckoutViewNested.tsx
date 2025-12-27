@@ -102,8 +102,8 @@ function CheckoutSteps({ currentStep }: { currentStep: string }) {
 }
 
 function PaymentSection() {
-  const { actions, machine, paymentMachine } = useCheckoutContext();
-  const state = machine.getState();
+  const { paymentMachine } = useCheckoutContext();
+  const state = paymentMachine?.getState();
 
   // Handle nested mode
   const stateKey = state.key;
@@ -115,7 +115,7 @@ function PaymentSection() {
 }
 
 function PaymentFlow() {
-  const { actions, machine, paymentMachine } = useCheckoutContext();
+  const { paymentMachine } = useCheckoutContext();
   
   // In nested mode, get payment state from paymentMachine
   const state = paymentMachine?.getState();

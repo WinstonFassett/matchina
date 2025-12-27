@@ -5,7 +5,8 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
-function getSuggestions(input: string, selectedTags: string[]): string[] {
+// Helper function for suggestions
+function _getSuggestions(input: string, selectedTags: string[]): string[] {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return [];
   return AVAILABLE_TAGS

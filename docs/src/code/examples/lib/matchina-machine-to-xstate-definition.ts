@@ -61,11 +61,12 @@ export function buildVisualizerTree<
  * This is a fallback - prefer shapes when available.
  */
 function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
-  type XStateNode = {
+  // Educational type definition for XState compatibility
+  type _XStateNode = {
     key: string;
     fullKey: string;
     on: Record<string, string>;
-    states?: Record<string, XStateNode>;
+    states?: Record<string, _XStateNode>;
     initial?: string;
   };
 
