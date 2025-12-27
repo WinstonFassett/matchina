@@ -16,11 +16,9 @@
 }
 
 /* Dark mode fixes for start states */
-@media (prefers-color-scheme: dark) {
-  .node circle.state-start {
-    fill: var(--sl-color-text);
-    stroke: var(--sl-color-text);
-  }
+html[data-theme="dark"] .node circle.state-start {
+  fill: var(--sl-color-text);
+  stroke: var(--sl-color-text);
 }
 
 /* Fix state nodes */
@@ -49,15 +47,13 @@
 }
 
 /* Dark mode fix for clusters */
-@media (prefers-color-scheme: dark) {
-  .statediagram-cluster rect {
-    fill: var(--sl-color-gray-2);
-    stroke: var(--sl-color-gray-5);
-  }
-  .statediagram-cluster .inner rect {
-    fill: var(--sl-color-gray-2);
-    stroke: var(--sl-color-gray-5);
-  }
+html[data-theme="dark"] .statediagram-cluster rect {
+  fill: var(--sl-color-gray-2);
+  stroke: var(--sl-color-gray-5);
+}
+html[data-theme="dark"] .statediagram-cluster .inner rect {
+  fill: var(--sl-color-gray-2);
+  stroke: var(--sl-color-gray-5);
 }
 
 /* Edge labels with better contrast */
@@ -68,13 +64,17 @@
   fill: var(--sl-color-bg) !important;
   stroke: var(--sl-color-gray-4) !important;
 }
+.edgeLabel p {
+  border: none !important;
+}
 
 /* Dark mode edge label fixes */
-@media (prefers-color-scheme: dark) {
-  .edgeLabel rect {
-    fill: var(--sl-color-gray-2) !important;
-    stroke: var(--sl-color-gray-5) !important;
-  }
+html[data-theme="dark"] .edgeLabel rect {
+  fill: var(--sl-color-gray-2) !important;
+  stroke: var(--sl-color-gray-5) !important;
+}
+html[data-theme="dark"] .edgeLabel p {
+  border: 2px solid red !important;
 }
 
 /* Fix edge visibility */
