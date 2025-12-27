@@ -1,4 +1,4 @@
-import { defineStates, createFlatMachine, t } from "matchina";
+import { defineStates, createFlatMachine, t, setup, effect } from "matchina";
 
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
@@ -6,13 +6,13 @@ const AVAILABLE_TAGS = [
 ];
 
 // Helper function for suggestions
-void (function(input: string, selectedTags: string[]): string[] {
+function getSuggestions(input: string, selectedTags: string[]): string[] {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return [];
   return AVAILABLE_TAGS
     .filter(tag => tag.toLowerCase().includes(trimmed) && !selectedTags.includes(tag))
     .slice(0, 5);
-}); // _getSuggestions - Educational example
+}
 
 // Flat state keys with dot notation representing the REAL hierarchy:
 // Inactive (root)
@@ -63,15 +63,21 @@ export function createFlatComboboxMachine() {
         states["Active.Empty"](selectedTags.filter(t => t !== tag)),
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.Typing": {
       toEmpty: (selectedTags: string[]) =>
         states["Active.Empty"](selectedTags),
-      toSuggesting: (input: string, selectedTags: string[], suggestions: string[]) =>
-        states["Active.Suggesting"](input, selectedTags, suggestions, 0),
+      toSuggesting: (input: string, selectedTags: string[]) => {
+        const suggestions = getSuggestions(input, selectedTags);
+        return states["Active.Suggesting"](input, selectedTags, suggestions, 0);
+      },
       toTextEntry: (input: string, selectedTags: string[]) =>
         states["Active.TextEntry"](input, selectedTags),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.TextEntry": {
@@ -81,6 +87,8 @@ export function createFlatComboboxMachine() {
         states["Active.Empty"](selectedTags),
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.Suggesting": {
@@ -104,11 +112,33 @@ export function createFlatComboboxMachine() {
         states["Active.TextEntry"](input, selectedTags),
       addTag: (tag: string, selectedTags: string[]) =>
         states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
   }, states.Inactive([]));
 
-  // Note: Auto-transition effect removed due to type issues
-  // In a real implementation, this would be handled differently
+  // Add auto-transition effect for suggestions
+  setup(baseMachine)(
+    effect((ev) => {
+      // Auto-transition to suggesting when typing and there are suggestions
+      if (ev.to.key.startsWith('Active.Typing')) {
+        const data = ev.to.data as any;
+        const { input, selectedTags } = data;
+        const suggestions = getSuggestions(input, selectedTags);
+        if (suggestions.length > 0) {
+          // Trigger transition to suggesting state
+          setTimeout(() => {
+            baseMachine.send("toSuggesting", input, selectedTags);
+          }, 0);
+        } else {
+          // Auto-transition to text entry when no suggestions
+          setTimeout(() => {
+            baseMachine.send("toTextEntry", input, selectedTags);
+          }, 0);
+        }
+      }
+    })
+  );
 
   return baseMachine;
 }
