@@ -93,51 +93,38 @@ export function ComboboxView({ machine }: { machine: Machine }) {
         ))}
 
         <div className="relative flex-1 min-w-[120px]">
-          {state.match({
-            Inactive: () => (
-              <button
-                onClick={() => actions.focus?.()}
-                className="w-full text-left px-1 py-1 text-gray-400 dark:text-gray-500"
-              >
-                Click to add tags...
-              </button>
-            ),
-            Active: () => (
-              <>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={activeState?.data?.input ?? ""}
-                  onChange={(e) => activeActions?.typed?.(e.target.value)}
-                  onBlur={() => actions.blur?.()}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type to add tags..."
-                  className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                />
+          <input
+            ref={inputRef}
+            type="text"
+            value={activeState?.data?.input ?? ""}
+            onChange={(e) => activeActions?.typed?.(e.target.value)}
+            onFocus={() => actions.focus?.()}
+            onBlur={() => actions.close?.()}
+            onKeyDown={handleKeyDown}
+            placeholder="Type to add tags..."
+            className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+          />
 
-                {activeState?.is("Suggesting") && activeState.data.suggestions?.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
-                    {activeState.data.suggestions.map((suggestion: string, index: number) => (
-                      <button
-                        key={suggestion}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          activeActions?.addTag?.(suggestion);
-                        }}
-                        className={`w-full text-left px-3 py-2 transition-colors ${
-                          index === activeState.data.highlightedIndex
-                            ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        }`}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            ),
-          }, null)}
+          {activeState?.is("Suggesting") && activeState.data.suggestions?.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-10">
+              {activeState.data.suggestions.map((suggestion: string, index: number) => (
+                <button
+                  key={suggestion}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    activeActions?.addTag?.(suggestion);
+                  }}
+                  className={`w-full text-left px-3 py-2 transition-colors ${
+                    index === activeState.data.highlightedIndex
+                      ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  }`}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
