@@ -9,6 +9,20 @@
   fill: var(--sl-color-text);
 }
 
+/* Fix start state circles for dark theme */
+.node circle.state-start {
+  fill: var(--sl-color-text);
+  stroke: var(--sl-color-text);
+}
+
+/* Dark mode fixes for start states */
+@media (prefers-color-scheme: dark) {
+  .node circle.state-start {
+    fill: var(--sl-color-text);
+    stroke: var(--sl-color-text);
+  }
+}
+
 /* Fix state nodes */
 .state rect {
   fill: var(--sl-color-gray-2);
