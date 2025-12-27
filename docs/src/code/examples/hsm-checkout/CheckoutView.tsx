@@ -132,9 +132,17 @@ function PaymentFlow() {
     // Nested mode
     state = paymentMachine.getState();
   } else {
-    // Flattened mode - get payment state from main machine's data
+    // Flattened mode - the main machine state IS the payment state
+    // The payment substate is embedded in the main state's data as a MatchboxImpl
     const mainState = machine.getState();
-    state = mainState.data; // The payment state is nested in the main state's data
+    if (mainState.data && typeof mainState.data === 'object' && 'getTag' in mainState.data) {
+      // Extract the actual payment state from the MatchboxImpl
+      // The MatchboxImpl has getTag(), match(), is(), etc. methods
+      state = mainState.data;
+    } else {
+      // Fallback: use the main state directly
+      state = mainState;
+    }
   }
 
   if (!state) return null;
@@ -242,6 +250,88 @@ function CheckoutControls() {
             </button>
           </>
         ),
+        // Handle flattened payment states
+        "Payment.MethodEntry": () => (
+          <>
+            <button
+              onClick={() => actions?.back?.()}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Shipping
+            </button>
+            <button
+              onClick={() => actions?.exit?.()}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              Exit Payment
+            </button>
+          </>
+        ),
+        "Payment.Authorizing": () => (
+          <>
+            <button
+              onClick={() => actions?.back?.()}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Shipping
+            </button>
+            <button
+              onClick={() => actions?.exit?.()}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              Exit Payment
+            </button>
+          </>
+        ),
+        "Payment.AuthChallenge": () => (
+          <>
+            <button
+              onClick={() => actions?.back?.()}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Shipping
+            </button>
+            <button
+              onClick={() => actions?.exit?.()}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              Exit Payment
+            </button>
+          </>
+        ),
+        "Payment.AuthorizationError": () => (
+          <>
+            <button
+              onClick={() => actions?.back?.()}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Shipping
+            </button>
+            <button
+              onClick={() => actions?.exit?.()}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              Exit Payment
+            </button>
+          </>
+        ),
+        "Payment.Authorized": () => (
+          <>
+            <button
+              onClick={() => actions?.back?.()}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Shipping
+            </button>
+            <button
+              onClick={() => actions?.exit?.()}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              Exit Payment
+            </button>
+          </>
+        ),
+        // Keep the original Payment case for nested mode
         Payment: () => (
           <>
             <button
