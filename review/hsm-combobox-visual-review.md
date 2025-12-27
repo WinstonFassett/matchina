@@ -1,48 +1,48 @@
 # HSM Combobox Visual Review
 
 **Date:** 2024-12-26  
-**Scope:** Mode tabs, combobox widget, visualizer tabs, sketch/mermaid visualizers  
-**Themes:** Light and Dark mode  
+**Branch:** `visual-review-20251226`  
 **Test:** `test/e2e/hsm-combobox-visual-review.spec.ts`
 
 ---
 
 ## Summary
 
-The HSM Combobox example has functional issues (Mermaid syntax error) and styling inconsistencies from mixing Starlight theme with hardcoded Tailwind colors. The sketch visualizer works well but needs theme-aware styling.
+Automated Playwright tests captured 68 screenshots covering mode tabs, widget states, visualizer tabs, and visualizer content through all machine states in light/dark themes with flat/nested modes.
 
 ### Critical Issues
 
 | Issue | Severity | Category |
 |-------|----------|----------|
-| Mermaid visualizer fails with syntax error | 🔴 High | Functional |
-| Inactive visualizer tabs are white in dark mode | 🟡 Medium | Theme |
-| Hardcoded colors don't respect Starlight tokens | 🟡 Medium | Theme |
-| Low contrast on input borders (both modes) | 🟡 Medium | Accessibility |
+| Mermaid visualizer fails - shows "Loading..." | 🔴 High | Functional |
+| Visualizer tabs: inactive tab stays white in dark mode | 🟡 Medium | Theme |
+| Sketch visualizer: nested states use white backgrounds in dark mode | 🟡 Medium | Theme |
+| Widget: low contrast input borders both modes | 🟡 Medium | Accessibility |
+| Dropdown overlaps visualizer heading (z-index) | 🟡 Medium | Layout |
 
 ---
 
-## Screenshots Matrix
+## Screenshot Coverage
 
-### Light Mode
+### State Walkthrough (sketch visualizer)
+Each combination of theme × mode walks through 8 states:
+1. Inactive
+2. Active.Empty (focused)
+3. Active.TextEntry (typing non-match)
+4. Active.Suggesting (typing match)
+5. Navigation highlight (arrow down)
+6. Tag selected
+7. Two tags added
+8. Deactivated with tags
 
-| Flat + Sketch | Flat + Mermaid |
-|---------------|----------------|
-| ![](screenshots/hsm-combobox/light-flat-sketch.png) | ![](screenshots/hsm-combobox/light-flat-mermaid.png) |
-
-| Nested + Sketch | Nested + Mermaid |
-|-----------------|------------------|
-| ![](screenshots/hsm-combobox/light-nested-sketch.png) | ![](screenshots/hsm-combobox/light-nested-mermaid.png) |
-
-### Dark Mode
-
-| Flat + Sketch | Flat + Mermaid |
-|---------------|----------------|
-| ![](screenshots/hsm-combobox/dark-flat-sketch.png) | ![](screenshots/hsm-combobox/dark-flat-mermaid.png) |
-
-| Nested + Sketch | Nested + Mermaid |
-|-----------------|------------------|
-| ![](screenshots/hsm-combobox/dark-nested-sketch.png) | ![](screenshots/hsm-combobox/dark-nested-mermaid.png) |
+### Files Generated
+```
+sketch-{light,dark}-{flat,nested}-{1-8}-*.png   # 32 files
+mermaid-{light,dark}-{flat,nested}-{1-3}-*.png  # 12 files  
+mode-toggle-{light,dark}-{flat,nested}.png      # 4 files
+viz-tabs-{light,dark}-{sketch,mermaid}.png      # 4 files
+widget-{light,dark}-{state}.png                 # 8 files
+```
 
 ---
 
@@ -50,133 +50,110 @@ The HSM Combobox example has functional issues (Mermaid syntax error) and stylin
 
 ### 1. Mermaid Visualizer - BROKEN
 
-**Status:** Non-functional in all configurations
+All mermaid screenshots show "Loading..." with no diagram rendered.
 
-![Mermaid Error](screenshots/hsm-combobox/light-flat-mermaid.png)
+![Mermaid Loading](screenshots/hsm-combobox/mermaid-light-flat-1-inactive.png)
 
-The Mermaid visualizer shows "Loading..." and throws:
-```
-Syntax error in text mermaid version 11.12.2
-```
-
-**Root cause:** The generated Mermaid diagram definition has syntax incompatible with current Mermaid version.
+**Status:** Non-functional across all configurations.
 
 ---
 
-### 2. Mode Toggle Tabs (Flattened/Nested)
+### 2. Sketch Visualizer - Generally Works
 
-![Light Flat](screenshots/hsm-combobox/light-flat-sketch.png)
+#### Light Mode ✅
+- State highlighting works correctly (purple background on active state)
+- Nested structure displays properly in nested mode
+- Transitions visible as clickable buttons within states
 
-**Issues:**
-- Center-aligned while content is left-aligned (visual rhythm break)
-- Uses hardcoded `bg-gray-100 dark:bg-gray-800` instead of Starlight tokens
-- Active state blue (`text-blue-600`) doesn't match Starlight accent
+![Light Flat Suggesting](screenshots/hsm-combobox/sketch-light-flat-4-suggesting.png)
 
-**Fix:** Use Starlight's `--sl-color-*` CSS variables.
+#### Dark Mode Issues
 
----
+![Dark Nested Suggesting](screenshots/hsm-combobox/sketch-dark-nested-4-suggesting.png)
 
-### 3. Visualizer Tabs (Sketch/Mermaid)
-
-**Light mode:** Works reasonably well
-**Dark mode:** Major issue
-
-![Dark Mode Tab Issue](screenshots/hsm-combobox/dark-flat-sketch.png)
-
-The inactive "Mermaid Diagram" button stays **white with black text** in dark mode - creates jarring "glare" effect.
-
-**Code culprit:** Hardcoded in `HSMVisualizerDemo.tsx`:
-```tsx
-'bg-gray-100 text-gray-700 hover:bg-gray-200'  // No dark: variants
-```
+**Problems:**
+- Nested child states use **white backgrounds** - doesn't adapt to dark mode
+- Low contrast on transition buttons inside active state (dark text on dark background)
+- "path: Active.Suggesting" text is redundant clutter
 
 ---
 
-### 4. Sketch Visualizer
+### 3. UI-Visualizer Interplay ✅
 
-#### Light Mode
-![Light Sketch Detail](screenshots/hsm-combobox/light-flat-sketch-visualizer-only.png)
-
-- ✅ Clear state hierarchy
-- ✅ Active state highlighting (blue/purple)
-- ⚠️ Transition labels crowded near boundaries
-- ⚠️ Blue active state is more saturated than Starlight accent
-
-#### Dark Mode  
-![Dark Sketch Detail](screenshots/hsm-combobox/dark-flat-sketch-visualizer-only.png)
-
-- ✅ Active state visible with blue highlight
-- ⚠️ Nested state boxes use **white backgrounds** - doesn't adapt to dark mode
-- ⚠️ State container boundaries hard to distinguish (dark-on-dark)
+State synchronization works correctly:
+- Widget state changes immediately reflect in visualizer
+- Current state label updates correctly
+- Hierarchical path shows in nested mode (`Active.Suggesting`)
 
 ---
 
-### 5. Combobox Widget
+### 4. Widget Styling Issues
 
 **Both modes:**
-- Input border too faint (potential WCAG contrast issue)
-- "State: Inactive" label lacks visual connection to input
+- Input border too faint
+- State label disconnected from input
 
-**Dark mode specific:**
-- Input background nearly identical to page background
-- Placeholder text dim but readable
-
----
-
-### 6. Nested vs Flat Comparison
-
-![Nested Light](screenshots/hsm-combobox/light-nested-sketch.png)
-
-**Documentation mismatch:** The "State Structure" section mentions a `Selecting` state, but neither the code nor visualizer shows it. States shown are:
-- Empty
-- TextEntry  
-- Suggesting
+**Dark mode:**
+- Suggestions dropdown overlaps visualizer heading (z-index issue)
 
 ---
 
-## Recommendations
+### 5. Visualizer Tabs
 
-### Quick Wins
-1. **Fix Mermaid syntax** - Debug the diagram generation
-2. **Add dark variants to visualizer tabs:**
-   ```tsx
-   'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-   ```
-3. **Increase input border contrast**
+**Issue:** Inactive tab stays white in dark mode
 
-### Theme Alignment (Longer term)
-Replace hardcoded Tailwind colors with Starlight CSS variables:
+**Current code** (`HSMVisualizerDemo.tsx`):
+```tsx
+'bg-gray-100 text-gray-700 hover:bg-gray-200'  // Missing dark: variants
+```
+
+**Fix:**
+```tsx
+'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+```
+
+---
+
+## Design Recommendations
+
+### Use Starlight Theme Tokens
+Replace hardcoded Tailwind colors with CSS variables:
 
 ```css
-/* Instead of */
-bg-blue-600 text-white
-
-/* Use */
-background: var(--sl-color-accent);
-color: var(--sl-color-accent-high);
+/* Starlight provides these */
+--sl-color-accent
+--sl-color-bg
+--sl-color-text
+--sl-color-gray-1 through --sl-color-gray-6
 ```
 
-Key Starlight tokens:
-- `--sl-color-accent` / `--sl-color-accent-high`
-- `--sl-color-bg` / `--sl-color-bg-nav`
-- `--sl-color-text` / `--sl-color-text-accent`
-- `--sl-color-gray-*` (1-6 scale)
+### Headless UI Combobox Pattern
+Reference the Headless UI Combobox for accessible, theme-aware patterns:
+- Use `data-*` attributes for state styling
+- Consistent focus/hover/selected states
+- Proper ARIA attributes
 
 ---
 
-## Test Automation
-
-The Playwright test can be re-run anytime:
+## Running Tests
 
 ```bash
+# Run all visual tests
 npx playwright test test/e2e/hsm-combobox-visual-review.spec.ts
+
+# View report
+npx playwright show-report
 ```
 
-Screenshots are saved to `review/screenshots/hsm-combobox/`.
+Screenshots saved to `review/screenshots/hsm-combobox/`.
 
-### Test Coverage
-- ✅ Light/Dark mode toggle
-- ✅ Flattened/Nested machine modes
-- ✅ Sketch/Mermaid visualizer tabs
-- ✅ Full page + visualizer-only screenshots
-- ✅ Interaction states (focus, typing)
+---
+
+## Next Steps
+
+1. Fix Mermaid syntax error
+2. Add dark mode variants to visualizer tabs
+3. Add dark mode support to sketch nested state boxes
+4. Fix z-index on suggestions dropdown
+5. Improve input border contrast
+6. Consider migrating to Starlight CSS variables
