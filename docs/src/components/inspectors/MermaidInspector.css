@@ -115,7 +115,7 @@ html[data-theme="dark"] .edgeLabel rect {
 }
 
 html[data-theme="dark"] .edgeLabel text {
-  fill: var(--sl-color-text) !important;
+  fill: #ccc !important;
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
@@ -142,9 +142,12 @@ html[data-theme="dark"] .edgeLabel text {
 
 .edge-inactive {
   background-color: var(--sl-color-bg) !important;
-  color: var(--sl-color-gray-4) !important;
   cursor: default !important;
   opacity: 0.7 !important;
+}
+
+html[data-theme="dark"] .edge-inactive {
+  color: #ccc !important;
 }
 
 .edge-interactive {
