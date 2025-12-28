@@ -135,6 +135,127 @@ describe('propagateSubmachines - REAL TESTS', () => {
 
   // TODO: Fix duck-typed machine test - needs investigation
 
+  it('should handle child.change events with payload', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { activate: () => parentStates.Active() },
+      Active: { deactivate: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send child.change event with payload
+    parentMachine.send('child.change', { type: 'start', params: [] });
+    
+    // Should have routed to child
+    expect(childMachine.getState().key).toBe('Active');
+    
+    disposer();
+  });
+
+  it('should handle child.* events', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.start': () => parentStates.Active() },
+      Active: { deactivate: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send child.* event
+    parentMachine.send('child.start');
+    
+    // Should have handled at parent level
+    expect(parentMachine.getState().key).toBe('Active');
+    
+    disposer();
+  });
+
+  it('should handle child state changes with notification', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { activate: () => parentStates.Active() },
+      Active: { deactivate: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that causes child state change
+    parentMachine.send('start');
+    
+    // Should have notified hierarchy of change
+    expect(childMachine.getState().key).toBe('Active');
+    expect(parentMachine.getState().key).toBe('Idle');
+    
+    disposer();
+  });
+
+  it('should return null when no event can be handled', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: {}, // No transitions
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: {}, // No transitions
+      Active: { deactivate: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that no one can handle
+    const result = parentMachine.send('unknown');
+    
+    // Should return null (no transition occurred)
+    expect(result).toBe(null);
+    expect(childMachine.getState().key).toBe('Idle');
+    expect(parentMachine.getState().key).toBe('Idle');
+    
+    disposer();
+  });
+
   it('DEBUG: show what handleAtRoot is doing', () => {
     const childStates = defineStates({
       Idle: () => ({ key: 'Child.Idle' }),
