@@ -1,6 +1,6 @@
 # Branch Plan - V2 HSM Epic
 
-**Epic:** matchina-18 | **Branch:** `feat/hsm-dual-mode-with-viz-and-examples` | **Review:** matchina-20
+**Epic:** [matchina-18: HSM Epic](http://localhost:3000/#/board?issue=matchina-18) | **Branch:** [feat/hsm-dual-mode-with-viz-and-examples](https://github.com/WinstonFassett/matchina/tree/feat/hsm-dual-mode-with-viz-and-examples) | **Review:** [matchina-20: HSM Epic Review](http://localhost:3000/#/board?issue=matchina-20)
 
 ---
 
@@ -8,13 +8,27 @@
 
 Branch planning for V2 HSM release. Focus: **Interactive documentation** - full-stack e2e validation of library + examples + docs.
 
-**Audience:** Senior engineers, AI agents. Assumes expertise.
+**Audience:** Repo owners, agents. Principal-level, fully hands-on. No hand-holding. True conflicts must be hashed out.
 
-**Usage:**
-- Reference for branch naming, dependencies, work streams
-- Update as work evolves, delete when tickets created
-- Code quality at dev discretion unless explicitly stated
-- No work below branch grain
+---
+
+## Instructions
+
+**Method:**
+- Add actual live branches to diagram when created
+- Remove branches from diagram when closed/merged
+- Update work streams as work evolves
+- Delete this doc when work is fully ticketed
+
+**Links:**
+- Board links use `bd` issue IDs (accessible via CLI: `bd show matchina-XX`)
+- Run `bdui` for web interface at `http://localhost:3000`
+- Branch links point to GitHub
+- Details in [matchina-20: HSM Epic Review](http://localhost:3000/#/board?issue=matchina-20)
+
+**TODO:**
+- [ ] Create ticket: Setup git-town for stacked branches
+- [ ] Create ticket: Open questions (low priority)
 
 ---
 
@@ -56,12 +70,10 @@ graph BT
 ### `feat/viz/*`
 **Deps:** None
 **Focus:** Interactive visualizers for docs
-**Details:** See matchina-20
 
 ### `feat/ui/*`
 **Deps:** examples, viz
 **Focus:** Interactive patterns, polish
-**Details:** See matchina-20
 
 ### `test/e2e/*`
 **Deps:** ui
@@ -73,17 +85,8 @@ graph BT
 
 ### `refactor/*`
 **Deps:** None
-**As needed:** matchina-12, 13, 14, 15
-**API naming TBD**
+**Focus:** API naming, file organization
 
 ---
 
-## Open Questions
-
-- API naming for declarative flat machines
-- Git-town for stacked branches
-- Merge strategy
-
----
-
-*Delete when ticketed. Review: matchina-20*
+*Delete when ticketed.*
