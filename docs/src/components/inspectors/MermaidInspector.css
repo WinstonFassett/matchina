@@ -25,7 +25,23 @@ html[data-theme="dark"] .node circle.state-start {
   ry: 10;
 }
 
-/* Dark mode: transparent state nodes */
+/* State diagram default nodes - dark mode */
+html[data-theme="dark"] .state-diagram-v2 g.state-node path,
+html[data-theme="dark"] g[class*="state"] path:not([class*="active"]) {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* State rect styling */
+.state rect {
+  fill: var(--sl-color-gray-2);
+  stroke: var(--sl-color-gray-5);
+  rx: 10;
+  ry: 10;
+}
+
+/* Dark mode: transparent state rects */
 html[data-theme="dark"] .state rect {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
@@ -45,6 +61,12 @@ html[data-theme="dark"] .state rect {
 
 /* Dark mode: transparent flowchart nodes */
 html[data-theme="dark"] .node rect {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+}
+
+/* Dark mode: default flowchart paths transparent */
+html[data-theme="dark"] g.node path {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
 }
@@ -145,8 +167,9 @@ html[data-theme="dark"] .edge-inactive {
 }
 
 /* State highlight styling */
-/* Dark mode: transparent/black fill */
-html[data-theme="dark"] .state-highlight path {
+/* Dark mode: transparent/black fill - override inline styles */
+html[data-theme="dark"] .state-highlight path,
+html[data-theme="dark"] .state-highlight path[style] {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
   stroke-width: 2px !important;
@@ -174,8 +197,9 @@ html:not([data-theme="dark"]) .state-highlight p {
 }
 
 /* Flowchart active node */
-/* Dark mode: transparent/black fill */
-html[data-theme="dark"] .node.active path {
+/* Dark mode: transparent/black fill - override inline styles */
+html[data-theme="dark"] .node.active path,
+html[data-theme="dark"] .node.active path[style] {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
   stroke-width: 2px !important;
