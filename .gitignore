@@ -17,3 +17,6 @@ review/screenshots/
 test-results/
 .astro/
 playwright-report/
+
+# Beads archive - local storage for completed issues
+.beads/archive/
