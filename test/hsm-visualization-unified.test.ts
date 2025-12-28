@@ -54,13 +54,13 @@ describe('Unified HSM Visualization', () => {
 
     it('should return dot-joined path for flattened combobox machine', () => {
       const machine = createFlatComboboxMachine();
-      
+
       // Initial state should be 'Inactive'
       const path = getActiveStatePath(machine);
       expect(path).toBe('Inactive');
-      
+
       // Activate with empty selected tags
-      machine.send('activate'); // Inactive -> Active.Empty
+      machine.send('focus'); // Inactive -> Active.Empty
       
       // Type with proper parameters
       machine.send('typed', 'react', []); // Active.Empty -> Active.Typing
