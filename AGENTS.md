@@ -61,6 +61,14 @@ bd close <id>         # Complete work
 bd sync --flush-only  # Export to JSONL
 ```
 
+**CRITICAL: ALWAYS CHECK GIT STATUS BEFORE/AFTER WORK**
+```bash
+git status           # MUST check before starting work
+git status           # MUST check after completing work
+git add .            # Stage changes
+git commit -m "..."  # Commit work before moving to next ticket
+```
+
 ### Finding Work (Task-Oriented)
 
 ```bash
@@ -158,7 +166,7 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
    - Preferred for React component testing
    - Not set up yet - track as potential improvement
 
-**Bottom line:** Work is not complete without tests. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
+**Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
 
 ## Development Resources
 
@@ -167,7 +175,7 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
 - `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
 - `review/` - Living review and planning workspace
 
-**Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer).
+**Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer), AND git status is clean.
 
 
 ## Commands
@@ -286,10 +294,11 @@ npm test            # Can flood context if tests have logging
 4. **Update issue status** - Close finished work, update in-progress items
 5. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
 6. **Clean up** - Remove any working docs, debug logging in code
-7. **Verify** - All changes committed
+7. **CHECK GIT STATUS AGAIN** - CRITICAL: Verify all changes are committed
 8. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
 - Work is NOT complete until tested and committed
 - **ALWAYS check `git status` before closing tickets** - never complete work without knowing what will be committed
+- **NEVER leave uncommitted changes when moving to next ticket**
 - If you have uncommitted changes when closing a ticket, you MUST commit them first
