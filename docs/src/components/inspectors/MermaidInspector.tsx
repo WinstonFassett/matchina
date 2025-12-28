@@ -8,6 +8,13 @@ mermaid.initialize({
     // Dark mode state diagram nodes use transparent fill with light purple border
     primaryColor: 'transparent',
     primaryBorderColor: '#a78bfa',
+    // Active state highlighting - try different mermaid variables
+    stateBkgColor: 'rgb(147, 112, 219)',
+    stateLabelBkgColor: 'rgb(147, 112, 219)',
+    stateBorder_color: '#a78bfa',
+    altStateBkgColor: 'rgb(147, 112, 219)',
+    activeColor: 'rgb(147, 112, 219)',
+    hoverColor: 'rgb(147, 112, 219)',
   },
   themeCSS: mermaidInspectorCss,
 });
