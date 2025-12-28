@@ -31,25 +31,32 @@ If you encounter type errors, the solution is to fix the type definitions, NOT t
 
 ## Quick Reference
 
+**Focus: Get next SINGLE work item or list all open work.**
+
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
+bd ready              # Show issues ready to work (no blockers)
+bd list --status=open # List all open issues
+bd show <id>          # View specific issue details
+bd update <id> --status=in_progress  # Claim work
 bd close <id>         # Complete work
 bd sync --flush-only  # Export to JSONL
 ```
 
-### Finding Work
+### Finding Work (Task-Oriented)
 
 ```bash
-# See what's ready to work on (with JSON for parsing)
-bd ready --json | jq '.[0]'
+# Get next available work item
+bd ready
 
-# Get issue details (with JSON for parsing)
-bd show <issue-id> --json
-
-# List all open issues
+# See everything open
 bd list --status=open
+
+# View specific issue with dependencies
+bd show <issue-id>
+
+# JSON output for parsing (if needed)
+bd ready --json | jq '.[0]'
+bd show <issue-id> --json
 ```
 
 ## Beads Ticket Organization
@@ -69,18 +76,16 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 
 ### Branch Planning Reference
 
-- **Beads ticket**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
-  - Catchall for branch organization context
-  - Contains work stream dependency graph
-  - Living document updated as branches are created/merged
+**System of record**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
+- Catchall for branch organization context
+- Contains work stream dependency graph
+- Living document updated as branches are created/merged
+- **Use `bd show matchina-19` for current branch planning context**
 
-- **Filesystem doc**: `review/BRANCH_PLAN.md`
-  - May not exist at all times
-  - Source of truth when present
-  - Synced to matchina-19 description
-  - Deleted when work is fully ticketed
-
-**Finding orientation**: Use `bd show matchina-19` or check `review/BRANCH_PLAN.md` for current branch planning context.
+**Filesystem artifact**: `review/BRANCH_PLAN.md`
+- Historical artifact, may not exist
+- Used as draft area before syncing to bd
+- Beads ticket is source of truth, not this file
 
 ### Labeling Strategy
 
@@ -89,7 +94,13 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 - `review` - Cross-cutting review findings
 - `doc` - Reference documentation
 
-**Dependencies**: Long-running tickets typically depend on work epics. Work tickets depend on each other based on implementation order.
+### Dependency Pattern
+
+**Work items usually link to organizing areas** (epics, plans) but this is NOT a blocker:
+- Can create work tickets independently and groom dependencies iteratively
+- Long-running tickets (plan/review) typically depend on work epics
+- Work tickets depend on each other based on implementation order
+- Don't block on perfect organization—refine as you go
 
 ## Development Resources
 
