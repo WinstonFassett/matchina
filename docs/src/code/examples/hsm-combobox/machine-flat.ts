@@ -61,9 +61,15 @@ export function createFlatComboboxMachine() {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Empty"](selectedTags);
       }),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.Typing": {
+      toEmpty: (selectedTags: string[]) =>
+        states["Active.Empty"](selectedTags),
       // Direct transitions instead of auto-effects
       toSuggesting: (input: string, selectedTags: string[]) => {
         const suggestions = getSuggestions(input, selectedTags);
@@ -75,6 +81,8 @@ export function createFlatComboboxMachine() {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Typing"](ev.from.data.input, selectedTags);
       }),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.TextEntry": {
@@ -86,6 +94,10 @@ export function createFlatComboboxMachine() {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.TextEntry"](ev.from.data.input, selectedTags);
       }),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
 
     "Active.Suggesting": {
@@ -93,6 +105,14 @@ export function createFlatComboboxMachine() {
         states["Active.Typing"](value, selectedTags),
       clear: (selectedTags: string[]) =>
         states["Active.Empty"](selectedTags),
+      highlightNext: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
+        const nextIndex = Math.min(suggestions.length - 1, currentIndex + 1);
+        return states["Active.Suggesting"](input, selectedTags, suggestions, nextIndex);
+      },
+      highlightPrev: (input: string, selectedTags: string[], suggestions: string[], currentIndex: number) => {
+        const prevIndex = Math.max(0, currentIndex - 1);
+        return states["Active.Suggesting"](input, selectedTags, suggestions, prevIndex);
+      },
       selectHighlighted: (suggestions: string[], highlightedIndex: number, selectedTags: string[]) => {
         const tag = suggestions[highlightedIndex];
         return states["Active.Empty"]([...selectedTags, tag]);
@@ -101,6 +121,12 @@ export function createFlatComboboxMachine() {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Suggesting"](ev.from.data.input, selectedTags, ev.from.data.suggestions, ev.from.data.highlightedIndex);
       }),
+      cancel: (input: string, selectedTags: string[]) =>
+        states["Active.TextEntry"](input, selectedTags),
+      addTag: (tag: string, selectedTags: string[]) =>
+        states["Active.Empty"]([...selectedTags, tag]),
+      deactivate: (selectedTags: string[]) =>
+        states.Inactive(selectedTags),
     },
   }, states.Inactive([]));
 

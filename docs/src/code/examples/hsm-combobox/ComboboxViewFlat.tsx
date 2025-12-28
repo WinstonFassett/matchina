@@ -41,8 +41,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   };
 
   const handleFocus = () => {
-    // The flat machine uses 'activate' not 'focus'
-    actions.activate?.();
+    actions.focus?.();
     // Also focus the input after activation
     setTimeout(() => inputRef.current?.focus(), 0);
   };
