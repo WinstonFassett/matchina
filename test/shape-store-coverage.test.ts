@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 import { createStaticShapeStore, createLazyShapeStore } from '../src/nesting/shape-store';
-import { createFlatMachine, createHierarchicalMachine } from '../src/nesting';
+import { createFlatMachine, makeHierarchicalMachine } from '../src/nesting';
 
 describe('shape-store coverage', () => {
   describe('createStaticShapeStore', () => {

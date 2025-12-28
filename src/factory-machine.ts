@@ -87,7 +87,7 @@ export function createMachine<
       initialKey, // Store for shape building and introspection
       getChange: () => lastChange,
       getState: () => lastChange.to,
-      send(type, ...params) {
+      send(type: E["type"], ...params: any[]) {
         const resolved = machine.resolveExit({
           type,
           params,
@@ -97,13 +97,13 @@ export function createMachine<
           machine.transition(resolved);
         }
       },
-      resolveExit: (ev) => {
+      resolveExit: (ev: ResolveEvent<E>) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params) as E
           : undefined;
       },
-    } as Partial<FactoryMachine<FC>>,
+    } as unknown as Partial<FactoryMachine<FC>>,
     (ev: E) => {
       lastChange = ev;
     }

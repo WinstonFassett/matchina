@@ -1,9 +1,9 @@
 import {
   defineStates,
-  submachine,
-  makeHierarchicalMachine,
+  createMachine,
   matchina
 } from "matchina";
+import { submachine, makeHierarchicalMachine } from "matchina/nesting";
 
 // 1. Define the Child Machine (Light Cycle)
 // We need a factory for the child machine so it can be instantiated freshly

@@ -73,7 +73,7 @@ export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeControl
     notify(data: any): void {
       // On hierarchy change, invalidate cache and notify
       cachedShape = null;
-      for (const callback of subscribers) {
+      for (const callback of Array.from(subscribers)) {
         callback(buildShape());
       }
     },

@@ -89,7 +89,7 @@ export function buildFlattenedShape(
   }
 
   // Create synthetic parent states that don't have direct transitions
-  for (const parentKey of parentStates) {
+  for (const parentKey of Array.from(parentStates)) {
     if (!states.has(parentKey)) {
       const parts = parentKey.split(".");
       const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;

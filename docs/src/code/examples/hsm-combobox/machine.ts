@@ -1,4 +1,5 @@
-import { defineStates, matchina, submachine, makeHierarchicalMachine } from "matchina";
+import { defineStates, matchina } from "matchina";
+import { submachine, makeHierarchicalMachine } from "matchina/nesting";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
