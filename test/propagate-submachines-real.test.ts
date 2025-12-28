@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 import { propagateSubmachines } from '../src/nesting/propagateSubmachines';
+import { setup } from '../src/ext/setup';
+import { resolveExit } from '../src/state-machine-hooks';
+import { createCheckoutMachine } from '../docs/src/code/examples/hsm-checkout/machine';
 
 describe('propagateSubmachines - REAL TESTS', () => {
   it('should route events to deepest active child first', () => {
@@ -256,15 +259,23 @@ describe('propagateSubmachines - REAL TESTS', () => {
     disposer();
   });
 
-  it('should handle child exit events and final states', () => {
+  it('should handle complex exit bubbling with resolveExit hooks', () => {
     const childStates = defineStates({
       Active: () => ({ key: 'Child.Active' }),
-      Done: () => ({ key: 'Child.Done' }), // Final state (no transitions)
+      Done: () => ({ key: 'Child.Done' }),
     });
     const childMachine = createMachine(childStates, {
       Active: { complete: () => childStates.Done() },
       Done: {}, // Final state
     }, 'Active');
+
+    // Add resolveExit hook to child
+    setup(childMachine)(resolveExit((ev, next) => {
+      if (ev.type === 'complete') {
+        return next(ev); // Let normal resolution proceed
+      }
+      return next(ev);
+    }));
 
     const parentStates = defineStates({
       Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
@@ -277,12 +288,52 @@ describe('propagateSubmachines - REAL TESTS', () => {
 
     const disposer = propagateSubmachines(parentMachine);
     
-    // Send event that moves child to final state
+    // Send event that triggers resolveExit path
     parentMachine.send('complete');
     
-    // Should trigger child.exit bubble and move parent
+    // Should have gone through resolveExit and transition
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
+
+  it('should handle multiple levels of nesting', () => {
+    const grandchildStates = defineStates({
+      Idle: () => ({ key: 'Grandchild.Idle' }),
+      Active: () => ({ key: 'Grandchild.Active' }),
+    });
+    const grandchildMachine = createMachine(grandchildStates, {
+      Idle: { start: () => grandchildStates.Active() },
+      Active: { stop: () => grandchildStates.Idle() },
+    }, 'Idle');
+
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle', machine: grandchildMachine }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { activate: () => childStates.Active() },
+      Active: { deactivate: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { activate: () => parentStates.Active() },
+      Active: { deactivate: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Should route to deepest child
+    parentMachine.send('start');
+    
+    expect(grandchildMachine.getState().key).toBe('Active');
+    expect(childMachine.getState().key).toBe('Idle');
+    expect(parentMachine.getState().key).toBe('Idle');
     
     disposer();
   });
