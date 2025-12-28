@@ -33,16 +33,20 @@ describe('shape-builders', () => {
       expect(shape.hierarchy.get('Parent')).toBeUndefined();
     });
 
-    it('should create synthetic parent states', () => {
+    it('should not create synthetic parent states', () => {
       const shape = buildFlattenedShape({
         'Parent.Child1': { NEXT: 'Parent.Child2' },
         'Parent.Child2': { BACK: 'Parent.Child1' },
       }, 'Parent.Child1');
 
-      // Should create Parent state even though it has no direct transitions
-      expect(shape.states.has('Parent')).toBe(true);
-      expect(shape.states.get('Parent')?.isCompound).toBe(true);
-      expect(shape.transitions.get('Parent')?.size).toBe(0);
+      // Should NOT create Parent state - only actual states
+      expect(shape.states.has('Parent')).toBe(false);
+      expect(shape.states.has('Parent.Child1')).toBe(true);
+      expect(shape.states.has('Parent.Child2')).toBe(true);
+      
+      // But hierarchy should still exist for visualization
+      expect(shape.hierarchy.get('Parent.Child1')).toBe('Parent');
+      expect(shape.hierarchy.get('Parent.Child2')).toBe('Parent');
     });
 
     it('should identify final states correctly', () => {
