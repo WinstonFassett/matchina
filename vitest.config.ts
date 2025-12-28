@@ -15,10 +15,10 @@ export default defineConfig({
         'src/state-machine.ts',
         'src/promise-machine.ts',
         'src/is-machine.ts',
-        'src/nesting/index.ts',
-        'src/nesting/inspect.ts',
-        'src/nesting/submachine.ts',
-        'src/nesting/types.ts',
+        'src/hsm/index.ts',
+        'src/hsm/inspect.ts',
+        'src/hsm/submachine.ts',
+        'src/hsm/types.ts',
         'docs/**',
         '**/node_modules/**'
       ]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createHierarchicalMachine } from '../src/nesting/declarative-flat';
+import { createHierarchicalMachine } from '../src/hsm/declarative-flat';
 
 describe('createHierarchicalMachine', () => {
   it('should create a simple flat machine from declarative config', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
-import { propagateSubmachines } from '../src/nesting/propagateSubmachines';
+import { propagateSubmachines } from '../src/hsm/propagateSubmachines';
 import { setup } from '../src/ext/setup';
 import { resolveExit } from '../src/state-machine-hooks';
 import { createCheckoutMachine } from '../docs/src/code/examples/hsm-checkout/machine';

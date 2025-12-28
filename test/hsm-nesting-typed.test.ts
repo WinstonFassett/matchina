@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { defineStates } from '../src/define-states';
-import { createFlatMachine } from '../src/nesting/flat-machine';
-import { withParentTransitionFallback } from '../src/nesting/parent-transition-fallback';
-import { createMachine } from '../src/factory-machine';
-import { propagateSubmachines } from '../src/nesting/propagateSubmachines';
+import { createFlatMachine } from '../src/hsm/flat-machine';
+import { withParentTransitionFallback } from '../src/hsm/parent-transition-fallback';
+import { createMachine, defineStates } from '../src';
+import { propagateSubmachines } from '../src/hsm/propagateSubmachines';
 
 describe('HSM Nesting APIs - Proper Typing', () => {
   describe('withParentTransitionFallback', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildFlattenedShape, buildHierarchicalShape } from '../src/nesting/shape-builders';
+import { buildFlattenedShape, buildHierarchicalShape } from '../src/hsm/shape-builders';
 import { defineStates } from '../src/define-states';
 import { createMachine } from '../src/factory-machine';
 
