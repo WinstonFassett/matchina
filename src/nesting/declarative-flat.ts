@@ -365,6 +365,3 @@ export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Users requiring type safety should use createFlatMachine() with defineStates() directly
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }
-
-// Backward compatibility alias
-export const createDeclarativeFlatMachine = describeHSM;

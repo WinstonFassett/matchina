@@ -78,9 +78,6 @@ export function makeHierarchicalMachine<M extends FactoryMachine<any>>(machine: 
   return machine as any as HierarchicalMachine<M>;
 }
 
-// Backward compatibility alias
-export const createHierarchicalMachine = makeHierarchicalMachine;
-
 /**
  * Attach hierarchical propagation to a root machine.
  *
