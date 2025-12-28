@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import { parseFlatStateKey } from "./machine-flat";
+import { parseFlatStateKey } from "matchina/nesting";
+import { createFlatComboboxMachine } from "./machine-flat";
 
 const ComboboxContext = React.createContext<{
   machine: any;

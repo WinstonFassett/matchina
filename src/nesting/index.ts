@@ -9,6 +9,7 @@ export type {
   DeclarativeFlatMachineConfig,
   DeclarativeStateConfig
 } from "./declarative-flat";
+export { parseFlatStateKey } from "./flat-state-utils";
 
 // Hierarchical machine creation (primary API for nested machines)
 // Propagation and child-first routing

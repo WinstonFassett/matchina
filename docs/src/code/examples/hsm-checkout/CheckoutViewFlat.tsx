@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
 import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
-import { parseFlatStateKey, createFlatCheckoutMachine } from "./machine-flat";
+import { parseFlatStateKey } from "matchina/nesting";
+import { createFlatCheckoutMachine } from "./machine-flat";
 
 // Type the machine and its actions
 type CheckoutMachine = ReturnType<typeof createFlatCheckoutMachine>;

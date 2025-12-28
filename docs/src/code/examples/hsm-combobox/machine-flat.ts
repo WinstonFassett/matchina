@@ -155,12 +155,3 @@ export function createFlatComboboxMachine() {
 
   return baseMachine;
 }
-
-export function parseFlatStateKey(key: string) {
-  const parts = key.split(".");
-  return {
-    parent: parts[0],
-    child: parts[1] || null,
-    full: key,
-  };
-}

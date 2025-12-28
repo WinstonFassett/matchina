@@ -1,5 +1,7 @@
+import React from "react";
 import { useMachine } from "matchina/react";
-import { parseFlatStateKey } from "./machine-flat";
+import { parseFlatStateKey } from "matchina/nesting";
+import { createFlatTrafficLight } from "./machine-flat";
 
 interface TrafficLightViewFlatProps {
   machine: any;

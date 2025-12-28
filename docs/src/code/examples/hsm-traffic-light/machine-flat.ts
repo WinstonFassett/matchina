@@ -51,13 +51,3 @@ export function createFlatTrafficLight() {
     }
   });
 }
-
-// Helper to parse hierarchical state key
-export function parseFlatStateKey(key: string) {
-  const parts = key.split(".");
-  return {
-    parent: parts[0],
-    child: parts[1] || null,
-    full: key,
-  };
-}
