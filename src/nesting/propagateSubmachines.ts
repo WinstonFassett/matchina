@@ -196,19 +196,19 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    * Returns whether the event was handled and by which machine.
    */
   function attemptTransitionAtLevel(
-    m: AnyMachine, 
-    type: string, 
-    params: any[], 
-    state: any
+   m: AnyMachine, 
+   type: string, 
+   params: any[], 
+   state: any
   ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
-    // Try current machine
-    const ev = (m as any).resolveExit?.({ type, params, from: state });
-    if (ev) {
-      (m as any).transition?.(ev);
-      return { handled: true, event: ev, handledBy: m };
-    }
+   // Try current machine
+   const ev = (m as any).resolveExit?.({ type, params, from: state });
+   if (ev) {
+     (m as any).transition?.(ev);
+     return { handled: true, event: ev, handledBy: m };
+   }
 
-    return { handled: false };
+   return { handled: false };
   }
 
   /**

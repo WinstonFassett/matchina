@@ -46,7 +46,9 @@
       "Bash(gh pr create:*)",
       "Bash(gh pr view:*)",
       "Bash(find:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(open coverage/index.html)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
