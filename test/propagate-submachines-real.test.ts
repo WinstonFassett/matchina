@@ -256,6 +256,37 @@ describe('propagateSubmachines - REAL TESTS', () => {
     disposer();
   });
 
+  it('should handle child exit events and final states', () => {
+    const childStates = defineStates({
+      Active: () => ({ key: 'Child.Active' }),
+      Done: () => ({ key: 'Child.Done' }), // Final state (no transitions)
+    });
+    const childMachine = createMachine(childStates, {
+      Active: { complete: () => childStates.Done() },
+      Done: {}, // Final state
+    }, 'Active');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that moves child to final state
+    parentMachine.send('complete');
+    
+    // Should trigger child.exit bubble and move parent
+    expect(childMachine.getState().key).toBe('Done');
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
+
   it('DEBUG: show what handleAtRoot is doing', () => {
     const childStates = defineStates({
       Idle: () => ({ key: 'Child.Idle' }),
