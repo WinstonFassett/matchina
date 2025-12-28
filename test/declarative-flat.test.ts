@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createDeclarativeFlatMachine } from '../src/nesting/declarative-flat';
+import { describeHSM } from '../src/nesting/declarative-flat';
 
-describe('createDeclarativeFlatMachine', () => {
+describe('describeHSM', () => {
   it('should create a simple flat machine from declarative config', () => {
-    const machine = createDeclarativeFlatMachine({
+    const machine = describeHSM({
       initial: 'Idle',
       states: {
         Idle: {
@@ -29,7 +29,7 @@ describe('createDeclarativeFlatMachine', () => {
   });
 
   it('should handle hierarchical states with auto-flattening', () => {
-    const machine = createDeclarativeFlatMachine({
+    const machine = describeHSM({
       initial: 'Cart',
       states: {
         Cart: {
@@ -87,7 +87,7 @@ describe('createDeclarativeFlatMachine', () => {
   });
 
   it('should support parameterized state constructors', () => {
-    const machine = createDeclarativeFlatMachine({
+    const machine = describeHSM({
       initial: 'Inactive',
       states: {
         Inactive: {
@@ -124,7 +124,7 @@ describe('createDeclarativeFlatMachine', () => {
   });
 
   it('should handle parent transitions with child.exit', async () => {
-    const machine = createDeclarativeFlatMachine({
+    const machine = describeHSM({
       initial: 'First',
       states: {
         First: {
