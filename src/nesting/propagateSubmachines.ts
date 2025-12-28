@@ -267,24 +267,26 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   }
 
   /**
-   * Handle reserved child.* events at the immediate parent.
-   */
+    * Handle reserved child.* events at the immediate parent.
+    * Child.change events are routed through here - if target !== root, they're internal notifications.
+    */
   function handleReservedEvents(type: string, params: any[]): any {
-    const from = (root as any).getState();
+    // Handle child.change events - only process if targeting root
     if (type === 'child.change') {
-      const { target, type: innerType, params: innerParams, _internal } = params[0];
+      const { target, _internal } = params[0];
       if (target !== root) {
-        // This is a notification from a child machine
-        // If it's an internal notification, we need to hook and notify subscribers
+        // Internal notification from a child - hook chain but don't re-enter event loop
         if (_internal) {
-          hookCurrentChain(false); // Don't notify again to avoid double notifications
-          return;
+          hookCurrentChain(false);
         }
-        // Otherwise, don't handle
+        // Don't handle non-root target child.change events
         return;
       }
     }
-    hookCurrentChain(false); // Don't notify on reserved events
+    
+    // For all other reserved events and root-targeted child.change, try to handle at root
+    hookCurrentChain(false);
+    const from = (root as any).getState();
     const ev = (root as any).resolveExit?.({ type, params, from });
     if (ev) (root as any).transition?.(ev);
     return ev;
