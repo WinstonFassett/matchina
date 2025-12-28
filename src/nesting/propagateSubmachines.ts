@@ -68,7 +68,7 @@ export type HierarchicalEvents<M> =
  * Call this helper on a root machine to install propagation hooks, attach shape metadata
  * for visualization, and return a typed facade.
  */
-export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine: M) {
+export function makeHierarchicalMachine<M extends FactoryMachine<any>>(machine: M) {
   propagateSubmachines(machine);
   
   // Attach lazy shape store for visualization
@@ -77,6 +77,9 @@ export function createHierarchicalMachine<M extends FactoryMachine<any>>(machine
   
   return machine as any as HierarchicalMachine<M>;
 }
+
+// Backward compatibility alias
+export const createHierarchicalMachine = makeHierarchicalMachine;
 
 /**
  * Attach hierarchical propagation to a root machine.

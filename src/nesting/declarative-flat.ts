@@ -26,7 +26,7 @@
  *
  * **New API (declarative, DRY):**
  * ```typescript
- * createDeclarativeFlatMachine({
+ * describeHSM({
  *   initial: 'Payment',
  *   states: {
  *     Payment: {
@@ -145,8 +145,8 @@ import { createFlatMachine } from "./flat-machine";
  * State configuration in declarative format
  */
 export interface DeclarativeStateConfig<TData = any, TParams extends any[] = any[]> {
-  /** State data constructor function or undefined for empty state */
-  data?: undefined | ((...params: TParams) => TData);
+  /** State data constructor function - if omitted, state has empty data */
+  data?: ((...params: TParams) => TData);
 
   /** Initial child state (for parent states) */
   initial?: string;
@@ -189,7 +189,7 @@ function flattenStates(
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
     // Add the state itself if it has data constructor or no child states
-    if (config.data !== undefined || !config.states) {
+    if (config.data || !config.states) {
       flattened[fullKey] = {
         data: config.data || (() => ({})),
         final: config.final
@@ -322,7 +322,7 @@ function resolveInitialChild(
  * - Generates synthetic parent states automatically
  * - DRY and elegant
  */
-export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfig) {
+export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 
@@ -365,3 +365,6 @@ export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfi
   // Users requiring type safety should use createFlatMachine() with defineStates() directly
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }
+
+// Backward compatibility alias
+export const createDeclarativeFlatMachine = describeHSM;
