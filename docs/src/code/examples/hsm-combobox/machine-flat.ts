@@ -135,7 +135,7 @@ export function createFlatComboboxMachine() {
     effect((ev) => {
       // Auto-transition to suggesting when typing and there are suggestions
       if (ev && ev.to && ev.to.key && ev.to.key.startsWith('Active.Typing')) {
-        const data = ev.to.data as any;
+        const data = ev.to.data as { input: string; selectedTags: string[] };
         const { input, selectedTags } = data;
         const suggestions = getSuggestions(input, selectedTags);
         if (suggestions.length > 0) {

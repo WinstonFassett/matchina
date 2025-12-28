@@ -28,12 +28,12 @@ const createLocalStoragePersistence = <T extends object>(options: {
   key: string;
   getSlice?: (state: T) => any;
   setState?: (state: T, saved: any) => void;
-  shouldPersist?: (ev: any) => boolean;
+  shouldPersist?: (ev: { type: string; to: { state: T } }) => boolean;
 }) => {
   const {
     key,
-    getSlice = (state: any) => state,
-    setState = (state: any, saved: any) => Object.assign(state, saved),
+    getSlice = (state: T) => state,
+    setState = (state: T, saved: any) => Object.assign(state, saved),
     shouldPersist = () => true,
   } = options;
 
