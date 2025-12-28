@@ -77,6 +77,25 @@ describe('shape-store coverage', () => {
       unsubscribe1();
       unsubscribe2();
     });
+
+    it('should return same shape instance on multiple calls', () => {
+      const states = defineStates({
+        State1: () => ({ key: 'State1' }),
+        State2: () => ({ key: 'State2' }),
+      });
+      const machine = createMachine(states, {
+        State1: { next: () => states.State2() },
+        State2: { back: () => states.State1() },
+      }, 'State1');
+
+      const shapeStore = createStaticShapeStore(machine);
+      
+      const shape1 = shapeStore.getState();
+      const shape2 = shapeStore.getState();
+      
+      // Static store should return same instance
+      expect(shape1).toBe(shape2);
+    });
   });
 
   describe('createLazyShapeStore', () => {
@@ -176,6 +195,69 @@ describe('shape-store coverage', () => {
       
       unsubscribe1();
       unsubscribe2();
+    });
+
+    it('should handle empty subscriber list during notify', () => {
+      const states = defineStates({
+        Idle: () => ({ key: 'Idle' }),
+        Active: () => ({ key: 'Active' }),
+      });
+      const machine = createMachine(states, {
+        Idle: { start: () => states.Active() },
+        Active: { stop: () => states.Idle() },
+      }, 'Idle');
+
+      const shapeStore = createLazyShapeStore(machine);
+      
+      // Notify with no subscribers should not throw
+      expect(() => {
+        shapeStore.notify('no subscribers');
+      }).not.toThrow();
+      
+      // Should still invalidate cache
+      const shape1 = shapeStore.getState();
+      shapeStore.notify('invalidate');
+      const shape2 = shapeStore.getState();
+      
+      // Should rebuild (different instances)
+      expect(shape1).not.toBe(shape2);
+    });
+
+    it('should handle subscriber removal during notification', () => {
+      const states = defineStates({
+        Idle: () => ({ key: 'Idle' }),
+        Active: () => ({ key: 'Active' }),
+      });
+      const machine = createMachine(states, {
+        Idle: { start: () => states.Active() },
+        Active: { stop: () => states.Idle() },
+      }, 'Idle');
+
+      const shapeStore = createLazyShapeStore(machine);
+      const callback1 = vi.fn();
+      const callback2 = vi.fn();
+      
+      const unsubscribe1 = shapeStore.subscribe(callback1);
+      const unsubscribe2 = shapeStore.subscribe(callback2);
+      
+      // callback2 unsubscribes during notification
+      callback2.mockImplementation(() => {
+        unsubscribe2();
+      });
+      
+      shapeStore.notify('test');
+      
+      expect(callback1).toHaveBeenCalled();
+      expect(callback2).toHaveBeenCalled();
+      
+      // Further notifications should only call callback1
+      callback1.mockClear();
+      callback2.mockClear();
+      
+      shapeStore.notify('second test');
+      
+      expect(callback1).toHaveBeenCalledTimes(1);
+      expect(callback2).not.toHaveBeenCalled();
     });
   });
 });
