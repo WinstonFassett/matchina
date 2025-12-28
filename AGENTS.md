@@ -86,6 +86,13 @@ bd ready --json | jq '.[0]'
 bd show <issue-id> --json
 ```
 
+**CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
+- **NEVER ask user for priority decisions** 
+- Work tickets in dependency order first, then by priority
+- Use `bd ready` output order - it's already sorted correctly
+- If multiple items are ready, start with the first one listed
+- Dependencies should be set up in beads, not guessed
+
 ## Beads Ticket Organization
 
 ### Methodology
