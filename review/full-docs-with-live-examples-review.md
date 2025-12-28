@@ -1,81 +1,83 @@
-# Machina Library Review & Action Items
+# ~~Machina Library Review & Action Items~~
 
-## Overview
+## ~~Overview~~
 
-Review of the Machina state machine library covering HSM (Hierarchical State Machine) examples, visualizers, code quality, and documentation. Key themes: simplifying machine definitions, improving visualizer UX, establishing guidelines, and cleaning up type safety issues.
+~~Review of the Machina state machine library covering HSM (Hierarchical State Machine) examples, visualizers, code quality, and documentation. Key themes: simplifying machine definitions, improving visualizer UX, establishing guidelines, and cleaning up type safety issues.~~
 
----
-
-## Bugs / Problems
-
-### Visualizer Issues
-- **Flattened HSM traffic light diagram** has extra state `working.red` when nested version has `working_red`
-- **Bold edge labels in Mermaid** cause label clipping
-- **React Flow visualizer** has good UI but poor layout
-- **Zoomable visualizers** don't auto-fit content on load
-- **Forcecraft visualization** spreads nodes too far; light mode colors need contrast work
-- **Interactive button in tutorial picker** appears non-functional
-- **Visualizer picker UI** is overdone
-
-### Code Issues
-- `shape-store.ts` should use `storeMachine` instead of custom subscribe callback
-- Payment actions cast to `any` — typing should work without casting
-- `ev` cast to `any` in checkout machine
-- Declarative flat module has concerning casts that may lose strong typing
-- `parseFlatStateKey` dependency in traffic light view is undesirable
-- Empty closures should use `undefined` instead of `() => {}`
-- Dynamic event APIs created inline in views (should be on machines)
-- Optional chaining on API methods (`actions?.focus`) suggests typing issues
-
-### UI/UX Issues
-- Checkout wizard steps overflow in docs (too narrow)
-- Rock-scissors-paper requires too much vertical mouse movement
-- Advanced fetcher demo diagram too small due to panel count
-- No way to simulate payment auth success/failure in checkout UI (stuck in "authorizing")
-- Combo box missing tag deletion (X button and backspace)
+~~**STATUS: COMPLETED - Key findings moved to tickets**~~
 
 ---
 
-## Features
+## ~~Bugs / Problems~~
 
-### High Priority
-- Add tag deletion to combo box (click X, backspace key)
-- Add payment simulation controls (approve/deny/challenge) to checkout UI
-- Show available actions as reusable component
-- Support `setup()` pattern for machine configuration and effects
+### ~~Visualizer Issues~~
+~~- ~~Flattened HSM traffic light diagram** has extra state `working.red` when nested version has `working_red`~~ → **matchina-21**
+~~- ~~Bold edge labels in Mermaid** cause label clipping~~ → **matchina-21**
+~~- ~~React Flow visualizer** has good UI but poor layout~~ → **matchina-21**
+~~- ~~Zoomable visualizers** don't auto-fit content on load~~ → **matchina-21**
+~~- ~~Forcecraft visualization** spreads nodes too far; light mode colors need contrast work~~ → **matchina-21**
+~~- ~~Interactive button in tutorial picker** appears non-functional~~ → **matchina-21**
+~~- ~~Visualizer picker UI** is overdone~~ → **matchina-21**
 
-### Visualizer Enhancements
-- Partially transparent backgrounds for group nodes
-- Transitions on entering/exiting states
-- Clickable transitions in Mermaid (even when not visually buttons)
-- Better visual distinction between UI area and visualizer area
-- Flatten Mermaid options to top-level in picker
+### ~~Code Issues~~
+~~- ~~shape-store.ts should use `storeMachine` instead of custom subscribe callback~~ → **matchina-22**
+~~- ~~Payment actions cast to `any` — typing should work without casting~~ → **matchina-22**
+~~- ~~`ev` cast to `any` in checkout machine~~ → **matchina-22**
+~~- ~~Declarative flat module has concerning casts that may lose strong typing~~ → **matchina-22**
+~~- ~~parseFlatStateKey dependency in traffic light view is undesirable~~ → **matchina-22**
+~~- ~~Empty closures should use `undefined` instead of `() => {}`~~ → **matchina-22**
+~~- ~~Dynamic event APIs created inline in views (should be on machines)~~ → **matchina-22**
+~~- ~~Optional chaining on API methods (`actions?.focus`) suggests typing issues~~ → **matchina-22**
 
-### API/DX Improvements
-- Rename `createDeclarativeFlatMachine` → `describeHSM` or similar
-- Rename `createHierarchicalMachine` → `makeHierarchical` 
-- Don't require `data: undefined` in hierarchical structure declarations
-- Allow string transition names / exit state names directly
-- Support stores for shared context (simplifies parameter threading)
-- Consider `machine.create().setup()` chaining pattern
+### ~~UI/UX Issues~~
+~~- ~~Checkout wizard steps overflow in docs (too narrow)~~ → **matchina-23**
+~~- ~~Rock-scissors-paper requires too much vertical mouse movement~~ → **matchina-23**
+~~- ~~Advanced fetcher demo diagram too small due to panel count~~ → **matchina-23**
+~~- ~~No way to simulate payment auth success/failure in checkout UI (stuck in "authorizing")~~ → **matchina-23**
+~~- ~~Combo box missing tag deletion (X button and backspace)~~ → **matchina-23**
 
 ---
 
-## Ideas / Research
+## ~~Features~~
 
-### Architecture Questions
-- Intermediate representation for HSM → flat conversion?
-- Store vs. state for context: tradeoffs around history tracking
-- Can parent transition fallback cascade instead of explicit ancestor traversal?
-- Type preservation during flattening — verify we're not losing types
-- What does the `^` symbol mean in `has:break` and `has:maintenance`?
+### ~~High Priority~~
+~~- ~~Add tag deletion to combo box (click X, backspace key)~~ → **matchina-24**
+~~- ~~Add payment simulation controls (approve/deny/challenge) to checkout UI~~ → **matchina-24**
+~~- ~~Show available actions as reusable component~~ → **matchina-24**
+~~- ~~Support `setup()` pattern for machine configuration and effects~~ → **matchina-24**
 
-### Potential Simplifications
-- Inline submachines when only used once (lightCycleStage, controllerStates, lifeCycleMachine)
-- Use `match` in light UI instead of conditionals (need to think through HSM case)
-- Move selected tags, suggestions, highlighted index to store in combo box
-- Custom `resolve` hook for `handleTyped` transition selection
-- Effect-based highlighting instead of state
+### ~~Visualizer Enhancements~~
+~~- Partially transparent backgrounds for group nodes~~ → **matchina-21**
+~~- Transitions on entering/exiting states~~ → **matchina-21**
+~~- Clickable transitions in Mermaid (even when not visually buttons)~~ → **matchina-21**
+~~- Better visual distinction between UI area and visualizer area~~ → **matchina-21**
+~~- Flatten Mermaid options to top-level in picker~~ → **matchina-21**
+
+### ~~API/DX Improvements~~
+~~- ~~Rename `createDeclarativeFlatMachine` → `describeHSM` or similar~~ → **matchina-24**
+~~- ~~Rename `createHierarchicalMachine` → `makeHierarchical`~~ → **matchina-24**
+~~- ~~Don't require `data: undefined` in hierarchical structure declarations~~ → **matchina-24**
+~~- ~~Allow string transition names / exit state names directly~~ → **matchina-24**
+~~- ~~Support stores for shared context (simplifies parameter threading)~~ → **matchina-24**
+~~- ~~Consider `machine.create().setup()` chaining pattern~~ → **matchina-24**
+
+---
+
+## ~~Ideas / Research~~
+
+### ~~Architecture Questions~~
+~~- ~~Intermediate representation for HSM → flat conversion?~~ → **Documented in shape-store.ts**
+~~- ~~Store vs. state for context: tradeoffs around history tracking~~ → **Documented in examples**
+~~- ~~Can parent transition fallback cascade instead of explicit ancestor traversal?~~ → **matchina-13 (investigated - implementation issues)**
+~~- ~~Type preservation during flattening — verify we're not losing types~~ → **matchina-15 (Cardinal Rule fixes)**
+~~- ~~What does the `^` symbol mean in `has:break` and `has:maintenance`?~~ → **Documented**
+
+### ~~Potential Simplifications~~
+~~- ~~Inline submachines when only used once (lightCycleStage, controllerStates, lifeCycleMachine)~~ → **Examples updated**
+~~- ~~Use `match` in light UI instead of conditionals (need to think through HSM case)~~ → **Examples use match patterns**
+~~- ~~Move selected tags, suggestions, highlighted index to store in combo box~~ → **matchina-24**
+~~- ~~Custom `resolve` hook for `handleTyped` transition selection~~ → **Documented**
+~~- ~~Effect-based highlighting instead of state~~ → **Examples use effects**
 
 ### Code Organization
 - Review file structure and naming conventions

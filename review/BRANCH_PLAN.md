@@ -4,28 +4,28 @@
 
 ```mermaid
 graph BT
-    CURRENT[epic/hsm]
+   CURRENT[epic/hsm]
 
-    VIZ[feat/viz/*]
-    UI[feat/ui/*]
-    DOCS[feat/docs/*]
-    EXAMPLES[feat/examples/*]
-    REFACTOR[refactor/*]
-    E2E[test/e2e/*]
+   VIZ[feat/viz/*]
+   UI[feat/ui/*]
+   DOCS[feat/docs/*]
+   EXAMPLES[feat/examples/*]
+   REFACTOR[refactor/*]
+   E2E[test/e2e/*]
 
-    REFACTOR --> CURRENT
-    DOCS --> CURRENT
-    E2E --> CURRENT
+   REFACTOR --> CURRENT
+   DOCS --> CURRENT
+   E2E --> CURRENT
 
-    EXAMPLES --> UI
-    VIZ --> UI
-    UI --> CURRENT
+   EXAMPLES --> UI
+   VIZ --> UI
+   UI --> CURRENT
 
-    classDef current fill:#ffd43b,stroke:#fab005,color:#000
-    classDef stream fill:#4dabf7,stroke:#1971c2,color:#fff
+   classDef current fill:#ffd43b,stroke:#fab005,color:#000
+   classDef stream fill:#4dabf7,stroke:#1971c2,color:#fff
 
-    class CURRENT current
-    class VIZ,UI,DOCS,EXAMPLES,REFACTOR,E2E stream
+   class CURRENT current
+   class VIZ,UI,DOCS,EXAMPLES,REFACTOR,E2E stream
 ```
 
 ---
@@ -41,6 +41,8 @@ graph BT
 - Branch: [feat/hsm-dual-mode-with-viz-and-examples](https://github.com/WinstonFassett/matchina/tree/feat/hsm-dual-mode-with-viz-and-examples)
 - Review: [matchina-20: HSM Epic Review](http://localhost:3000/#/board?issue=matchina-20)
 
+**STATUS:** All P2 coverage investigations completed. Ready to focus on P1 HSM Epic work.
+
 ---
 
 ## Instructions
@@ -55,6 +57,11 @@ graph BT
 - Board links use `bd` issue IDs (accessible via CLI: `bd show matchina-XX`)
 - Run `bdui` for web interface at `http://localhost:3000`
 - Branch links point to GitHub
+
+**COMPLETED:**
+- [x] All P2 coverage investigations completed
+- [x] Cardinal Rule violations fixed
+- [x] Review findings moved to tickets (matchina-21, 22, 23, 24)
 
 **TODO:**
 - [ ] Create ticket: Setup git-town for stacked branches
@@ -72,6 +79,7 @@ graph BT
 ### `feat/viz/*`
 **Deps:** None
 **Focus:** Interactive visualizers for docs
+**Status:** Issues identified in matchina-21
 
 ### `feat/ui/*`
 **Deps:** examples, viz
