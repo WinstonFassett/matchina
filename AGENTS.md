@@ -53,7 +53,7 @@ This is a major version development - no need to maintain legacy APIs or depreca
 **Focus: Get next SINGLE work item or list all open work.**
 
 ```bash
-bd ready              # Show issues ready to work (no blockers)
+bd ready              # Show issues ready to work (includes in-progress)
 bd list --status=open # List all open issues
 bd show <id>          # View specific issue details
 bd update <id> --status=in_progress  # Claim work
@@ -64,7 +64,7 @@ bd sync --flush-only  # Export to JSONL
 ### Finding Work (Task-Oriented)
 
 ```bash
-# Get next available work item
+# Get next available work item (includes in-progress)
 bd ready
 
 # See everything open
