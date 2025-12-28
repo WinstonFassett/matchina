@@ -3,7 +3,6 @@ import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
 import { parseFlatStateKey } from "matchina/nesting";
 import { createFlatCheckoutMachine } from "./machine-flat";
-import { CommonActions } from "./AvailableActions";
 
 // Type the machine and its actions
 type CheckoutMachine = ReturnType<typeof createFlatCheckoutMachine>;

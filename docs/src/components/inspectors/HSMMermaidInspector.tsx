@@ -34,7 +34,7 @@ const HSMMermaidInspector = memo(({
       return actualState.fullKey.replace(/\./g, '_');
     }
     
-    // Fallback to manual building for backward compatibility  
+    // Fallback to manual building for nested machines  
     if (nestedMachine) {
       const nestedState = nestedMachine.getState();
       return nestedState?.key ? `${stateKey}_${nestedState.key}` : stateKey;

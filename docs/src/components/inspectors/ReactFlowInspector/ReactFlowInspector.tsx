@@ -57,7 +57,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   // lastEvent,
   prevState: previousState,
   dispatch,
-  interactive = true, // Default to true for backward compatibility
+  interactive = true,
 }) => {
   // const [previousState, setPreviousState] = useState<string | null>(null);
   // const [lastTriggeredEvent, setLastTriggeredEvent] = useState<

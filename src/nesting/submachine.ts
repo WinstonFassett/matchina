@@ -12,7 +12,6 @@ export function submachine<F extends () => any>(createChild: F, opts?: { id?: st
   return factory;
 }
 
-// Legacy options form retained for compatibility; supports id as well.
 export function submachineOptions<F extends () => any>(opts: { create: F; id?: string }) {
   return () => ({ machine: opts.create() as ReturnType<F>, ...(opts.id ? { id: opts.id } : {}) });
 }

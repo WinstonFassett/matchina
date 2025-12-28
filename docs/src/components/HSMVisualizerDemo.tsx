@@ -148,4 +148,3 @@ export function VisualizerDemo({
 }
 
 export default VisualizerDemo;
-export { VisualizerDemo as HSMVisualizerDemo }; // Legacy export
