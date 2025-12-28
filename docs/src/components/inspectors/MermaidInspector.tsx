@@ -4,7 +4,11 @@ import Mermaid from "../Mermaid";
 import mermaidInspectorCss from "./MermaidInspector.css?raw";
 
 mermaid.initialize({
-  themeVariables: {},
+  themeVariables: {
+    // Dark mode state diagram nodes use transparent fill with light purple border
+    primaryColor: 'transparent',
+    primaryBorderColor: '#a78bfa',
+  },
   themeCSS: mermaidInspectorCss,
 });
 
