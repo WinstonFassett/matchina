@@ -69,28 +69,30 @@ function CheckoutSteps({ currentStep }: { currentStep: string }) {
   const currentIndex = steps.findIndex(step => step.key === currentStep);
 
   return (
-    <div className="flex items-center justify-between">
-      {steps.map((step, index) => (
-        <div key={step.key} className="flex items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              index <= currentIndex
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
-            }`}
-          >
-            {index + 1}
-          </div>
-          <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">{step.label}</span>
-          {index < steps.length - 1 && (
+    <div className="flex items-center justify-between overflow-x-auto pb-2">
+      <div className="flex items-center min-w-max">
+        {steps.map((step, index) => (
+          <div key={step.key} className="flex items-center shrink-0">
             <div
-              className={`w-12 h-0.5 mx-2 ${
-                index < currentIndex ? "bg-blue-500" : "bg-gray-200 dark:bg-gray-700"
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                index <= currentIndex
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
               }`}
-            />
-          )}
-        </div>
-      ))}
+            >
+              {index + 1}
+            </div>
+            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{step.label}</span>
+            {index < steps.length - 1 && (
+              <div
+                className={`w-12 h-0.5 mx-2 shrink-0 ${
+                  index < currentIndex ? "bg-blue-500" : "bg-gray-200 dark:bg-gray-700"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -102,9 +102,9 @@ export function MachineExampleWithChart({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 w-full">
+      <div className={`flex flex-col md:flex-row gap-4 w-full ${currentInspectorType === "mermaid" ? "lg:flex-row-reverse" : ""}`}>
         {/* Mermaid diagram */}
-        <div className="flex-1">
+        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-2" : ""}`}>
           {currentInspectorType === "basic" && (
             <BasicInspector
               config={config}
@@ -145,7 +145,7 @@ export function MachineExampleWithChart({
         </div>
 
         {/* App View */}
-        <div className="flex-1">
+        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-1" : ""}`}>
           {AppView ? (
             <AppView machine={machine} />
           ) : (
