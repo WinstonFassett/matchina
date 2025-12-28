@@ -297,11 +297,29 @@ function resolveInitialChild(
 /**
  * Create a flattened machine from declarative hierarchical config
  *
- * This is the elegant, DRY API for defining flattened HSMs:
- * - Define hierarchy ONCE
+ * ⚠️ **TYPE SAFETY LIMITATION**: This API trades type inference for ergonomics.
+ * State keys and transitions are determined at runtime, so TypeScript cannot
+ * provide exhaustive type checking or autocomplete for state/event names.
+ *
+ * **For type-safe code**, use `createFlatMachine()` with `defineStates()` instead:
+ * ```typescript
+ * const states = defineStates({
+ *   'Payment.MethodEntry': () => ({}),
+ *   'Payment.Authorized': () => ({})
+ * });
+ * const machine = createFlatMachine(states, transitions, initial);
+ * // ✅ Full type inference for states and events
+ * ```
+ *
+ * **Use this API when**:
+ * - Prototyping or less type-critical code
+ * - DRY hierarchy definition is more important than type safety
+ * - State structure is simple and unlikely to change
+ *
+ * Benefits:
+ * - Define hierarchy ONCE (no repetitive dot-notation)
  * - Auto-flattens to dot-notation internally
  * - Generates synthetic parent states automatically
- * - Type inference works (transitions inline with creation)
  * - DRY and elegant
  */
 export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfig) {
@@ -343,6 +361,7 @@ export function createDeclarativeFlatMachine(config: DeclarativeFlatMachineConfi
   const initialKey = resolveInitialChild(config.initial, config.states);
 
   // Create flat machine using existing API
-  // Type inference is intentionally lost here due to dynamic nature of declarative API
+  // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
+  // Users requiring type safety should use createFlatMachine() with defineStates() directly
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }
