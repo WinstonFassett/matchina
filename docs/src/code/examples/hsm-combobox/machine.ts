@@ -1,5 +1,5 @@
 import { defineStates, matchina } from "matchina";
-import { submachine, makeHierarchicalMachine } from "matchina/nesting";
+import { submachine, createHierarchicalPropagation } from "matchina/nesting";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
@@ -103,10 +103,7 @@ export const appStates = defineStates({
 });
 
 export function createComboboxMachine() {
-  let combobox: any;
-  let hierarchical: any;
-
-  combobox = matchina(appStates, {
+  const combobox = matchina(appStates, {
     Inactive: {
       focus: "Active"
     },
@@ -132,7 +129,7 @@ export function createComboboxMachine() {
     },
   }, appStates.Inactive([]));
 
-  hierarchical = makeHierarchicalMachine(combobox);
+  const hierarchical = createHierarchicalPropagation(combobox);
 
   return hierarchical;
 }

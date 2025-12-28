@@ -3,7 +3,7 @@ export {
   createFlatMachine
 } from "./flat-machine";
 export {
-  describeHSM
+  createHierarchicalMachine
 } from "./declarative-flat";
 export type {
   DeclarativeFlatMachineConfig,
@@ -24,7 +24,7 @@ export {
 } from "./flattened-child-exit";
 export { 
   propagateSubmachines, 
-  makeHierarchicalMachine,
+  createHierarchicalPropagation,
   type HierarchicalMachine,
   type HierarchicalEvents 
 } from "./propagateSubmachines";

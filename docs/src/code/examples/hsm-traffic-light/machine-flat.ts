@@ -1,11 +1,10 @@
-import { describeHSM } from "matchina";
+import { createHierarchicalMachine } from "matchina";
 
 export function createFlatTrafficLight() {
-  return describeHSM({
+  return createHierarchicalMachine({
     initial: 'Working',
     states: {
       Broken: {
-        data: undefined,
         on: {
           repair: 'Working',
           maintenance: 'Maintenance'
@@ -17,19 +16,16 @@ export function createFlatTrafficLight() {
         initial: 'Red',
         states: {
           Red: {
-            data: undefined,
             on: {
               tick: 'Green'
             }
           },
           Green: {
-            data: undefined,
             on: {
               tick: 'Yellow'
             }
           },
           Yellow: {
-            data: undefined,
             on: {
               tick: 'Red'
             }
@@ -43,7 +39,6 @@ export function createFlatTrafficLight() {
       },
 
       Maintenance: {
-        data: undefined,
         on: {
           complete: 'Working'
         }

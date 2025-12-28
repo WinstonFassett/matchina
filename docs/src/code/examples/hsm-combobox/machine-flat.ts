@@ -51,13 +51,13 @@ export function createFlatComboboxMachine() {
   // Use createFlatMachine which maintains REAL hierarchy with parent fallback
   const baseMachine = createFlatMachine(states, {
     Inactive: {
-      focus: t(() => (ev: any) => states["Active.Empty"](ev.from.data.selectedTags ?? [])),
+      focus: t(() => (ev) => states["Active.Empty"](ev.from.data.selectedTags ?? [])),
     },
 
     "Active.Empty": {
       typed: (value: string, selectedTags: string[]) =>
         states["Active.Typing"](value, selectedTags),
-      removeTag: t((tag: string) => (ev: any) => {
+      removeTag: t((tag: string) => (ev) => {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Empty"](selectedTags);
       }),
@@ -77,7 +77,7 @@ export function createFlatComboboxMachine() {
       },
       toTextEntry: (input: string, selectedTags: string[]) =>
         states["Active.TextEntry"](input, selectedTags),
-      removeTag: t((tag: string) => (ev: any) => {
+      removeTag: t((tag: string) => (ev) => {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Typing"](ev.from.data.input, selectedTags);
       }),
@@ -90,7 +90,7 @@ export function createFlatComboboxMachine() {
         states["Active.Typing"](value, selectedTags),
       clear: (selectedTags: string[]) =>
         states["Active.Empty"](selectedTags),
-      removeTag: t((tag: string) => (ev: any) => {
+      removeTag: t((tag: string) => (ev) => {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.TextEntry"](ev.from.data.input, selectedTags);
       }),
@@ -117,7 +117,7 @@ export function createFlatComboboxMachine() {
         const tag = suggestions[highlightedIndex];
         return states["Active.Empty"]([...selectedTags, tag]);
       },
-      removeTag: t((tag: string) => (ev: any) => {
+      removeTag: t((tag: string) => (ev) => {
         const selectedTags = ev.from.data.selectedTags.filter((t: string) => t !== tag);
         return states["Active.Suggesting"](ev.from.data.input, selectedTags, ev.from.data.suggestions, ev.from.data.highlightedIndex);
       }),

@@ -322,7 +322,7 @@ function resolveInitialChild(
  * - Generates synthetic parent states automatically
  * - DRY and elegant
  */
-export function describeHSM(config: DeclarativeFlatMachineConfig) {
+export function createHierarchicalMachine(config: DeclarativeFlatMachineConfig) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 
