@@ -3,7 +3,7 @@ import {
   createMachine,
   matchina
 } from "matchina";
-import { submachine, createHierarchicalPropagation } from "matchina/nesting";
+import { submachine, createHierarchicalPropagation } from "matchina/hsm";
 
 // 1. Define the Child Machine (Light Cycle)
 // We need a factory for the child machine so it can be instantiated freshly

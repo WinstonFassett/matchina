@@ -1,5 +1,5 @@
 import { defineStates, matchina } from "matchina";
-import { submachine, createHierarchicalPropagation } from "matchina/nesting";
+import { submachine, createHierarchicalPropagation } from "matchina/hsm";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
