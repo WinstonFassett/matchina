@@ -145,8 +145,8 @@ import { createFlatMachine } from "./flat-machine";
  * State configuration in declarative format
  */
 export interface DeclarativeStateConfig<TData = any, TParams extends any[] = any[]> {
-  /** State data constructor function */
-  data?: (...params: TParams) => TData;
+  /** State data constructor function or undefined for empty state */
+  data?: undefined | ((...params: TParams) => TData);
 
   /** Initial child state (for parent states) */
   initial?: string;
@@ -188,8 +188,8 @@ function flattenStates(
   for (const [key, config] of Object.entries(states)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
-    // Add the state itself if it has data constructor
-    if (config.data || !config.states) {
+    // Add the state itself if it has data constructor or no child states
+    if (config.data !== undefined || !config.states) {
       flattened[fullKey] = {
         data: config.data || (() => ({})),
         final: config.final

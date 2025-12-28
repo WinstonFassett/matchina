@@ -2,11 +2,11 @@ import { createMachine, defineStates, effect, setup, withReset, matchina, submac
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
-  MethodEntry: () => ({}),
-  Authorizing: () => ({}),
-  AuthChallenge: () => ({}),
-  AuthorizationError: () => ({}),
-  Authorized: () => ({ final: true }),
+  MethodEntry: undefined,
+  Authorizing: undefined,
+  AuthChallenge: undefined,
+  AuthorizationError: undefined,
+  Authorized: { final: true },
 });
 
 // Create payment machine factory

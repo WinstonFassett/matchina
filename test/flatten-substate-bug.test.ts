@@ -4,19 +4,19 @@ import { defineStates, createFlatMachine } from 'matchina';
 describe('Flattened HSM Payment State Bug', () => {
   // Flat state keys with dot notation
   const states = defineStates({
-    Cart: () => ({}),
-    Shipping: () => ({}),
-    ShippingPaid: () => ({}),
+    Cart: undefined,
+    Shipping: undefined,
+    ShippingPaid: undefined,
 
     // Flattened payment substates
-    "Payment.MethodEntry": () => ({}),
-    "Payment.Authorizing": () => ({}),
-    "Payment.AuthChallenge": () => ({}),
-    "Payment.AuthorizationError": () => ({}),
-    "Payment.Authorized": () => ({ final: true }),
+    "Payment.MethodEntry": undefined,
+    "Payment.Authorizing": undefined,
+    "Payment.AuthChallenge": undefined,
+    "Payment.AuthorizationError": undefined,
+    "Payment.Authorized": { final: true },
 
-    Review: () => ({}),
-    Confirmation: () => ({}),
+    Review: undefined,
+    Confirmation: undefined,
   });
 
   const transitions = {
@@ -65,8 +65,8 @@ describe('Flattened HSM Payment State Bug', () => {
     const machine = createFlatMachine(states as any, transitions as any, "Cart");
 
     // Navigate to payment substate
-    machine.send('proceed'); // Cart -> Shipping
-    machine.send('proceed'); // Shipping -> Payment.MethodEntry
+    (machine as any).send('proceed'); // Cart -> Shipping
+    (machine as any).send('proceed'); // Shipping -> Payment.MethodEntry
 
     const state = machine.getState();
     
@@ -81,11 +81,11 @@ describe('Flattened HSM Payment State Bug', () => {
     const machine = createFlatMachine(states as any, transitions as any, "Cart");
 
     // Navigate to payment substate
-    machine.send('proceed'); // Cart -> Shipping
-    machine.send('proceed'); // Shipping -> Payment.MethodEntry
+    (machine as any).send('proceed'); // Cart -> Shipping
+    (machine as any).send('proceed'); // Shipping -> Payment.MethodEntry
 
     // Transition within the payment substate
-    machine.send('authorize'); // MethodEntry -> Authorizing
+    (machine as any).send('authorize'); // MethodEntry -> Authorizing
 
     const state = machine.getState();
     

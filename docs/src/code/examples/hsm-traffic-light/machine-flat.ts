@@ -5,7 +5,7 @@ export function createFlatTrafficLight() {
     initial: 'Working',
     states: {
       Broken: {
-        data: () => ({}),
+        data: undefined,
         on: {
           repair: 'Working',
           maintenance: 'Maintenance'
@@ -17,19 +17,19 @@ export function createFlatTrafficLight() {
         initial: 'Red',
         states: {
           Red: {
-            data: () => ({}),
+            data: undefined,
             on: {
               tick: 'Green'
             }
           },
           Green: {
-            data: () => ({}),
+            data: undefined,
             on: {
               tick: 'Yellow'
             }
           },
           Yellow: {
-            data: () => ({}),
+            data: undefined,
             on: {
               tick: 'Red'
             }
@@ -43,7 +43,7 @@ export function createFlatTrafficLight() {
       },
 
       Maintenance: {
-        data: () => ({}),
+        data: undefined,
         on: {
           complete: 'Working'
         }

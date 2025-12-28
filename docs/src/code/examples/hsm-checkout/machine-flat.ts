@@ -2,19 +2,19 @@ import { defineStates, createFlatMachine } from "matchina";
 
 // Flat state keys with dot notation representing checkout with payment substates
 const states = defineStates({
-  Cart: () => ({}),
-  Shipping: () => ({}),
-  ShippingPaid: () => ({}),
+  Cart: undefined,
+  Shipping: undefined,
+  ShippingPaid: undefined,
 
   // Flattened payment substates
-  "Payment.MethodEntry": () => ({}),
-  "Payment.Authorizing": () => ({}),
-  "Payment.AuthChallenge": () => ({}),
-  "Payment.AuthorizationError": () => ({}),
-  "Payment.Authorized": () => ({ final: true }),
+  "Payment.MethodEntry": undefined,
+  "Payment.Authorizing": undefined,
+  "Payment.AuthChallenge": undefined,
+  "Payment.AuthorizationError": undefined,
+  "Payment.Authorized": { final: true },
 
-  Review: () => ({}),
-  Confirmation: () => ({}),
+  Review: undefined,
+  Confirmation: undefined,
 });
 
 export function createFlatCheckoutMachine() {
