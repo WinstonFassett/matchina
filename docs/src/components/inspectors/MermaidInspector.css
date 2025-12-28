@@ -72,9 +72,6 @@ html[data-theme="dark"] .edgeLabel rect {
   fill: var(--sl-color-gray-2) !important;
   stroke: var(--sl-color-gray-5) !important;
 }
-html[data-theme="dark"] .edgeLabel p {
-  border: 2px solid red !important;
-}
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
 
@@ -94,9 +91,9 @@ html[data-theme="dark"] .edgeLabel p {
 }
 
 .edge-ancestor {
-  background-color: var(--sl-color-gray-3) !important;
-  color: var(--sl-color-text) !important;
-  font-style: italic;
+  background-color: var(--sl-color-gray-4) !important;
+  color: var(--sl-color-accent-high) !important;
+  font-weight: 400 !important;
 }
 
 .edge-inactive {
@@ -114,8 +111,8 @@ html[data-theme="dark"] .edgeLabel p {
 }
 
 .edge-ancestor.edge-interactive:hover {
-  background-color: var(--sl-color-gray-4) !important;
-  color: var(--sl-color-accent) !important;
+  background-color: var(--sl-color-accent-high) !important;
+  color: var(--sl-color-text-invert) !important;
 }
 
 .edge-active.edge-interactive:hover {
