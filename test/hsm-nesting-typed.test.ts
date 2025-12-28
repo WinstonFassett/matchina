@@ -13,16 +13,14 @@ describe('HSM Nesting APIs - Proper Typing', () => {
         Green: () => ({ key: 'Green' }),
       });
 
-      const transitions = {
+      const machine = createMachine(states, {
         Red: {
           next: () => states.Green(),
         },
         Green: {
           next: () => states.Red(),
         },
-      };
-
-      const machine = createMachine(states, transitions, 'Red');
+      }, 'Red');
       withParentTransitionFallback(machine);
 
       expect(machine.getState().key).toBe('Red');
@@ -38,16 +36,14 @@ describe('HSM Nesting APIs - Proper Typing', () => {
         Active: () => ({ key: 'Active' }),
       });
 
-      const transitions = {
+      const machine = createFlatMachine(states, {
         Idle: {
           start: () => states.Active(),
         },
         Active: {
           stop: () => states.Idle(),
         },
-      };
-
-      const machine = createFlatMachine(states, transitions, 'Idle');
+      }, 'Idle');
 
       expect(machine.getState().key).toBe('Idle');
       expect(machine.shape).toBeDefined();
@@ -62,11 +58,9 @@ describe('HSM Nesting APIs - Proper Typing', () => {
         Idle: () => ({ key: 'Idle' }),
       });
 
-      const transitions = {
+      const machine = createMachine(states, {
         Idle: {},
-      };
-
-      const machine = createMachine(states, transitions, 'Idle');
+      }, 'Idle');
       const disposer = propagateSubmachines(machine);
 
       expect(disposer).toBeTypeOf('function');

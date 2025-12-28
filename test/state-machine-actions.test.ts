@@ -1,57 +1,66 @@
 import { describe, it, expect } from "vitest";
+import { createMachine } from "xstate";
 import { getAvailableActions } from "../src/state-machine-actions";
 
 describe("getAvailableActions", () => {
   it("should return available actions for the current state", () => {
     // Define a simple state machine transitions object
-    const transitions = {
+    const states = {
+      IDLE: {},
+      RUNNING: {},
+      PAUSED: {},
+    };
+
+    const machine = createMachine(states, {
       IDLE: {
         START: "RUNNING",
         RESET: "IDLE",
       },
       RUNNING: {
         PAUSE: "PAUSED",
-        STOP: "STOPPED",
+        STOP: "IDLE",
       },
       PAUSED: {
         RESUME: "RUNNING",
-        STOP: "STOPPED",
+        STOP: "IDLE",
       },
-      STOPPED: {
-        RESET: "IDLE",
-      },
-    };
+    }, "IDLE");
 
     // Test IDLE state
-    expect(getAvailableActions(transitions, "IDLE")).toEqual([
+    expect(getAvailableActions(machine.transitions, "IDLE")).toEqual([
       "START",
       "RESET",
     ]);
 
     // Test RUNNING state
-    expect(getAvailableActions(transitions, "RUNNING")).toEqual([
+    expect(getAvailableActions(machine.transitions, "RUNNING")).toEqual([
       "PAUSE",
       "STOP",
     ]);
 
     // Test PAUSED state
-    expect(getAvailableActions(transitions, "PAUSED")).toEqual([
+    expect(getAvailableActions(machine.transitions, "PAUSED")).toEqual([
       "RESUME",
       "STOP",
     ]);
 
     // Test STOPPED state
-    expect(getAvailableActions(transitions, "STOPPED")).toEqual(["RESET"]);
+    expect(getAvailableActions(machine.transitions, "STOPPED")).toEqual(["RESET"]);
   });
 
   it("should return an empty array for unknown states", () => {
-    const transitions = {
+    const states = {
+      IDLE: {},
+      RUNNING: {},
+    };
+
+    const machine = createMachine(states, {
       IDLE: {
         START: "RUNNING",
       },
-    };
+    }, "IDLE");
 
-    expect(getAvailableActions(transitions, "UNKNOWN_STATE")).toEqual([]);
+    expect(getAvailableActions(machine.transitions, "UNKNOWN_STATE")).toEqual([]);
   });
 
   it("should work with empty transitions", () => {

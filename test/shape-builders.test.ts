@@ -6,12 +6,10 @@ import { createMachine } from '../src/factory-machine';
 describe('shape-builders', () => {
   describe('buildFlattenedShape', () => {
     it('should build shape from simple flattened transitions', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'State1': { NEXT: 'State2' },
         'State2': { NEXT: 'State1' },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'State1');
+      }, 'State1');
 
       expect(shape.type).toBe('flattened');
       expect(shape.initialKey).toBe('State1');
@@ -22,13 +20,11 @@ describe('shape-builders', () => {
     });
 
     it('should handle hierarchical state keys', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'Parent.Child1': { NEXT: 'Parent.Child2' },
         'Parent.Child2': { BACK: 'Parent.Child1' },
         'Parent': { RESET: 'Parent.Child1' },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'Parent.Child1');
+      }, 'Parent.Child1');
 
       expect(shape.states.size).toBe(3);
       expect(shape.states.get('Parent.Child1')?.isCompound).toBe(true);
@@ -38,12 +34,10 @@ describe('shape-builders', () => {
     });
 
     it('should create synthetic parent states', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'Parent.Child1': { NEXT: 'Parent.Child2' },
         'Parent.Child2': { BACK: 'Parent.Child1' },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'Parent.Child1');
+      }, 'Parent.Child1');
 
       // Should create Parent state even though it has no direct transitions
       expect(shape.states.has('Parent')).toBe(true);
@@ -52,13 +46,11 @@ describe('shape-builders', () => {
     });
 
     it('should identify final states correctly', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'Active': { PAUSE: 'Paused', COMPLETE: 'Done' },
         'Paused': { RESUME: 'Active' },
         'Done': {}, // Final state
-      };
-
-      const shape = buildFlattenedShape(transitions, 'Active');
+      }, 'Active');
 
       expect(shape.states.get('Done')?.isFinal).toBe(true);
       expect(shape.states.get('Active')?.isFinal).toBe(false);
@@ -71,13 +63,11 @@ describe('shape-builders', () => {
         'State2': () => ({ key: 'State2', data: { value: 2 } }),
       });
 
-      const transitions = {
+      const shape = buildFlattenedShape({
         'State1': { 
           NEXT: () => states['State2']() // Simple function
         },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'State1');
+      }, 'State1');
 
       expect(shape.transitions.get('State1')?.get('NEXT')).toBe('State2');
     });
@@ -88,39 +78,33 @@ describe('shape-builders', () => {
         'State2': () => ({ key: 'State2', data: { value: 2 } }),
       });
 
-      const transitions = {
+      const shape = buildFlattenedShape({
         'State1': { 
           NEXT: (param: string) => (ev: any) => states['State2']() // Curried function
         },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'State1');
+      }, 'State1');
 
       expect(shape.transitions.get('State1')?.get('NEXT')).toBe('State2');
     });
 
     it('should handle function transitions that throw errors', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'State1': { 
           NEXT: () => { throw new Error('Discovery failed'); }
         },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'State1');
+      }, 'State1');
 
       // Should handle error gracefully and not add transition
       expect(shape.transitions.get('State1')?.has('NEXT')).toBe(false);
     });
 
     it('should handle complex nested hierarchies', () => {
-      const transitions = {
+      const shape = buildFlattenedShape({
         'A.B.C.D': { UP: 'A.B.C' },
         'A.B.C': { DOWN: 'A.B.C.D', UP: 'A.B' },
         'A.B': { UP: 'A' },
         'A': { RESET: 'A.B.C.D' },
-      };
-
-      const shape = buildFlattenedShape(transitions, 'A.B.C.D');
+      }, 'A.B.C.D');
 
       expect(shape.states.size).toBe(4);
       expect(shape.hierarchy.get('A.B.C.D')).toBe('A.B.C');
@@ -130,9 +114,7 @@ describe('shape-builders', () => {
     });
 
     it('should handle empty transitions', () => {
-      const transitions = {};
-
-      const shape = buildFlattenedShape(transitions, 'State1');
+      const shape = buildFlattenedShape({}, 'State1');
 
       expect(shape.states.size).toBe(0);
       expect(shape.transitions.size).toBe(0);
