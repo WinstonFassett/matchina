@@ -39,7 +39,9 @@
       "Bash(npx astro check)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nrefactor: remove definition semantics, use shape metadata for visualization\n\nRemove all defineMachine/defineSubmachine usage from codebase and replace\nwith shape-based visualization approach.\n\nChanges:\n- Remove defineMachine imports from all examples\n- Update buildHierarchicalShape to discover all states, not just current\n- Fix visualization to discover submachines via machineFactory property\n- Add synthetic parent states for flattened machines \\(Payment state\\)\n- Fix state constructors to return {} instead of undefined\n\nTest results: 130/130 unit tests passing\n\nGenerated with [Claude Code]\\(https://claude.com/claude-code\\)\nvia [Happy]\\(https://happy.engineering\\)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nCo-Authored-By: Happy <yesreply@happy.engineering>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "mcp__playwright__browser_snapshot",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []

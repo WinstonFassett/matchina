@@ -58,18 +58,20 @@ g[class*="state"] p {
   fill: var(--sl-color-bg) !important;
 }
 
-/* Flowchart node styling */
+/* Flowchart node styling - match state chart style */
 .node rect {
-  fill: var(--sl-color-gray-2) !important;
-  stroke: var(--sl-color-gray-5) !important;
-  rx: 10;
-  ry: 10;
-}
-
-/* Dark mode: transparent flowchart nodes */
-html[data-theme="dark"] .node rect {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+  rx: 5;
+  ry: 5;
+}
+
+/* Flowchart text styling */
+.node text,
+.node p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
 }
 
 
