@@ -43,16 +43,24 @@ export function buildFlattenedShape(
     // Convert transitions to Map
     const trans = new Map<string, string>();
     for (const [eventKey, target] of Object.entries(stateTransitions)) {
+      let finalTarget = target;
       if (typeof target === "string") {
-        // Simple string transition
-        trans.set(String(eventKey), target);
+        // For flattened machines, convert namespaced targets to leaf state names
+        if (target.includes('.')) {
+          finalTarget = target.split('.').pop() || target;
+        }
+        trans.set(String(eventKey), finalTarget);
       } else if (typeof target === "function") {
         // Check for t() helper metadata first
         const targets = getTargets(target);
         if (targets && targets.length > 0) {
           // Has metadata from t() helper - use all discovered targets
           for (const t of targets) {
-            trans.set(String(eventKey), t);
+            let finalTarget = t;
+            if (t.includes('.')) {
+              finalTarget = t.split('.').pop() || t;
+            }
+            trans.set(String(eventKey), finalTarget);
           }
         } else {
           // Try automatic discovery for simple transitions
@@ -64,13 +72,21 @@ export function buildFlattenedShape(
             // Check if result is a state (simple form) or event handler (curried form)
             if (result && typeof result === 'object' && 'key' in result) {
               // Simple form: (params) => state
-              trans.set(String(eventKey), result.key);
+              let finalTarget = result.key;
+              if (finalTarget.includes('.')) {
+                finalTarget = finalTarget.split('.').pop() || finalTarget;
+              }
+              trans.set(String(eventKey), finalTarget);
             } else if (typeof result === 'function') {
               // Curried form: (params) => (ev) => state
               const dummyEvent = { from: { data: {} }, to: { data: {} } };
               const state = result(dummyEvent);
               if (state && typeof state === 'object' && 'key' in state) {
-                trans.set(String(eventKey), state.key);
+                let finalTarget = state.key;
+                if (finalTarget.includes('.')) {
+                  finalTarget = finalTarget.split('.').pop() || finalTarget;
+                }
+                trans.set(String(eventKey), finalTarget);
               }
             }
           } catch (e) {
@@ -88,23 +104,18 @@ export function buildFlattenedShape(
     }
   }
 
-  // Create synthetic parent states that don't have direct transitions
-  for (const parentKey of Array.from(parentStates)) {
-    if (!states.has(parentKey)) {
+  // Create hierarchy entries for parent states (but don't create synthetic state nodes)
+  // This allows the visualization to build the proper tree structure
+  for (const parentKey of parentStates) {
+    if (!hierarchy.has(parentKey)) {
       const parts = parentKey.split(".");
       const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
-
-      states.set(parentKey, {
-        key: parts[parts.length - 1],
-        fullKey: parentKey,
-        isFinal: false, // parent states are never final
-        isCompound: true, // parent states contain children
-      });
-
       hierarchy.set(parentKey, grandParentKey);
-      transitionMap.set(parentKey, new Map()); // parent has no direct transitions
     }
   }
+
+  // Don't create synthetic parent states - let the hierarchy data represent the actual structure
+  // Parent states will be represented by their children in the hierarchy, not as separate nodes
 
   return {
     states,
