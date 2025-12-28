@@ -165,20 +165,30 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
 **Agents can run:**
 ```bash
 npm run dev              # Vitest watch mode (for testing)
-npm test                 # Run all tests
-npm run build:lib        # Build core library (common, relatively fast)
+npm test                 # Run all tests with coverage (if everything passes)
+npm run build            # Build core library only (fast, preferred)
 ```
 
 **User runs (agents assume running):**
 ```bash
 npm --workspace docs run dev    # Astro dev server at localhost:4321
 npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
+npm run build:all              # Build core library + docs (when full build needed)
+npm run dev:all                # Run both core dev server and docs dev server
+npm run release                # Release process (user only)
+npm run publish                # Publish to npm (user only)
+npm run dry-run                # Dry run release (user only)
 ```
 
 **Key points:**
 - Agents do NOT run dev servers - assume they're running
-- Building docs is slow - prefer live testing in dev server
-- build:lib is fine for agents to run when needed
+- **NEVER run `npm run build:docs` as agent** - extremely slow and verbose
+- **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
+- **NEVER run `npm run release`, `npm run publish`, or `npm run dry-run` as agent** - user only
+- **Prefer `npm run build` (core only) over `npm run build:all`** - much faster
+- Use `build:lib` explicitly if you need to be clear about core-only build
+- **`npm run build` now only builds the core library** - docs build moved to `build:all`
+- **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
 - **When running builds**: Limit output ingestion (see Quality Gates section)
 
 ## Session Completion
@@ -207,8 +217,10 @@ Evidence > assumptions. Let tests guide the fix.
 **When to run:**
 - Tests: Always when working in core (`npm run dev` for watch mode)
 - Manual browser testing: For interactive UX (or use puppeteer via dev server)
-- build:lib: When needed to verify library builds correctly
+- build: When needed to verify library builds correctly
 - build:docs: Rarely - user runs when needed (prefer live dev server testing)
+- build:all: Rarely - only when full build of library + docs is required
+- test-build: When type checking both core and docs (verbose, use sparingly)
 - Linting: Only right before shipping (skip during development)
 
 **Verbose output handling (CRITICAL):**

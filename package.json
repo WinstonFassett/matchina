@@ -49,11 +49,13 @@
     "docs"
   ],
   "scripts": {
-    "build": "npm run build:lib && npm run build:docs",
+    "build": "npm run build:lib",
     "build:lib": "unbuild && size-limit",
     "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
+    "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
+    "dev:all": "npm run dev && npm --workspace docs run dev",
     "dev:docs": "npm --workspace docs run dev",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
