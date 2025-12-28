@@ -7,7 +7,7 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
-import type { ShapeController } from "./nesting/shape-types";
+import type { ShapeController } from "./hsm/shape-types";
 
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.

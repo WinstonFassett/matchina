@@ -34,6 +34,6 @@ export * from "./function-types";
 export * from "./match-change";
 export * from "./match-filters";
 
-export * from "./nesting";
+export * from "./hsm";
 export * from "./is-machine";
 export * from "./transition-helper";

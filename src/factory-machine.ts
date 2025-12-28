@@ -11,7 +11,7 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 import { brandFactoryMachine } from "./machine-brand";
-import { createStaticShapeStore } from "./nesting/shape-store";
+import { createStaticShapeStore } from "./hsm/shape-store";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
