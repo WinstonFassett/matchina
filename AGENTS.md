@@ -52,6 +52,45 @@ bd show <issue-id> --json
 bd list --status=open
 ```
 
+## Beads Ticket Organization
+
+### Methodology
+
+This project uses a **two-tier ticket structure** for managing complex, multi-branch work:
+
+**Long-running ancestor tickets** - Persist across branches for continuity:
+- **Context/Plan tickets** (label: `plan`, type: `epic`) - Branch organization, work stream mapping
+- **Review tickets** (label: `review`, type: `task`) - Detailed findings, cross-cutting concerns
+- **Documentation tickets** (label: `doc`) - Persistent reference material
+
+**Shorter-lived work tickets** - Scoped to specific implementations:
+- **Epics** (type: `epic`, optional label: `v2` for breaking changes) - Major feature areas
+- **Features/Tasks/Bugs** (type: `feature|task|bug`) - Concrete work items
+
+### Branch Planning Reference
+
+- **Beads ticket**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
+  - Catchall for branch organization context
+  - Contains work stream dependency graph
+  - Living document updated as branches are created/merged
+
+- **Filesystem doc**: `review/BRANCH_PLAN.md`
+  - May not exist at all times
+  - Source of truth when present
+  - Synced to matchina-19 description
+  - Deleted when work is fully ticketed
+
+**Finding orientation**: Use `bd show matchina-19` or check `review/BRANCH_PLAN.md` for current branch planning context.
+
+### Labeling Strategy
+
+- `v2` - Breaking release work (HSM is primary driver)
+- `plan` - Branch/work stream planning
+- `review` - Cross-cutting review findings
+- `doc` - Reference documentation
+
+**Dependencies**: Long-running tickets typically depend on work epics. Work tickets depend on each other based on implementation order.
+
 ## Development Resources
 
 - `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
