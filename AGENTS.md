@@ -2,6 +2,15 @@
 
 This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
 
+## Agent Documentation Map
+
+**All agent guidance documents:**
+- **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, dev servers
+- **`CLAUDE.md`** - Project overview, architecture, build system
+- **`docs/DEVELOPMENT.md`** - Development patterns, example structure, path aliases
+- **`docs/FEATURE-CHECKLIST.md`** - Feature development reference
+- **`docs/AGENTS.md`** - Docs-specific patterns (Astro, MDX)
+
 ## ⚠️ CRITICAL: Type Inference Principles
 
 **Matchina's entire purpose is type-safe state machines with full type inference. NEVER break this with casts or workarounds.**
@@ -102,6 +111,45 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 - Work tickets depend on each other based on implementation order
 - Don't block on perfect organization—refine as you go
 
+## Development Servers
+
+**CRITICAL: Do NOT run dev servers from agents.**
+
+- **ASSUME dev server is already running** - Developer pilots both agent and dev server
+- Don't check if running, don't try to start
+- If puppeteer/browser tests fail due to server not running:
+  - Inform user that dev server needs to be running
+  - Do NOT attempt to start it yourself
+
+**User runs:**
+```bash
+npm run dev              # Vitest watch (core library)
+npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
+```
+
+## Testing Requirements
+
+**All bugs and features REQUIRE testing for completion:**
+
+1. **Unit tests (preferred)** - `/test` with Vitest
+   - If comprehensive unit tests exist, manual testing may not be required
+   - Test both type inference and runtime behavior
+
+2. **Interactive UX (requires manual or automated browser testing)**
+   - User must test manually in browser, OR
+   - Use puppeteer for automated screenshot/interaction review
+
+3. **Puppeteer setup (review/e2e, not test/e2e)**
+   - Available for screenshot-based review
+   - Started with specific examples, can be expanded
+   - Located in `review/` for visual review, not formal e2e tests
+
+4. **React Testing Library (future)**
+   - Preferred for React component testing
+   - Not set up yet - track as potential improvement
+
+**Bottom line:** Work is not complete without tests. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
+
 ## Development Resources
 
 - `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
@@ -109,18 +157,28 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 - `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
 - `review/` - Living review and planning workspace
 
-**Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
+**Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer).
 
 
-## Commands (User Usually Runs)
+## Commands
 
+**Agents can run:**
 ```bash
-npm run build:lib           # Build core root library without docs
-npm run test                # Run tests in root library
-npm run dev:docs            # Run docs dev server. USER DOES THIS NOT AGENT
-npm run build:docs          # Build docs -- SLOW AND VERBOSE
-npm run dev                 # n/a here. do not try
+npm run dev              # Vitest watch mode (for testing)
+npm test                 # Run all tests
+npm run build:lib        # Build core library (common, relatively fast)
 ```
+
+**User runs (agents assume running):**
+```bash
+npm --workspace docs run dev    # Astro dev server at localhost:4321
+npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
+```
+
+**Key points:**
+- Agents do NOT run dev servers - assume they're running
+- Building docs is slow - prefer live testing in dev server
+- build:lib is fine for agents to run when needed
 
 ## Session Completion
 
@@ -145,13 +203,21 @@ Evidence > assumptions. Let tests guide the fix.
 
 ## Quality Gates
 
-Do prefer to run tests when working in the core
-Rely on developer (preferred) or browser integration (when running unattended) for manually testing examples in the docs
-Beware verbose quality gates. Do not naively pipe all output to yourself. 
-Docs are notoriously verbose to run dev, build and check. 
-Best to pipe such things into files/buffers and then once done, read them in reverse, ie last 10-20 lines to start
-Developer usually does not want you to run quality gates EXCEPT right before shipping. Even committing skip linting.
-Never destroy work. We have git. But do NOT do hard resets. 
+**When to run:**
+- Tests: Always when working in core (`npm run dev` for watch mode)
+- Manual browser testing: For interactive UX (or use puppeteer via dev server)
+- build:lib: When needed to verify library builds correctly
+- build:docs: Rarely - user runs when needed (prefer live dev server testing)
+- Linting: Only right before shipping (skip during development)
+
+**Verbose output handling:**
+- Docs commands (dev, build, check) are notoriously verbose
+- Pipe to files/buffers, read in reverse (last 10-20 lines first)
+- Don't naively pipe all output to yourself
+
+**Safety:**
+- Never destroy work (we have git)
+- Do NOT do hard resets 
 
 
 ## Landing the Plane (Session Completion)

@@ -4,13 +4,17 @@
 
 **References:** `DEVELOPMENT.md` (patterns), `FEATURE-CHECKLIST.md` (workflows)
 
-## Commands (User Usually Runs)
+## Commands (User Runs, Not Agent)
+
+**CRITICAL: Do NOT run dev server from agents. ASSUME it's already running.**
 
 ```bash
-npm run dev             # Astro dev server at localhost:4321
+npm run dev             # Astro dev server at localhost:4321 (USER RUNS)
 npm run build           # Build static site
 npm run deploy          # Deploy to GitHub Pages
 ```
+
+If puppeteer/browser tests fail because server isn't running, inform user - don't try to start it.
 
 ## Critical Patterns (Must Follow)
 

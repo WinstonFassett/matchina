@@ -447,9 +447,11 @@ npm run test-build      # Validate types + docs
 
 ### Development
 
+**USER runs dev server. Agents assume it's running.**
+
 ```bash
 cd docs
-npm run dev             # Astro dev server at localhost:4321
+npm run dev             # Astro dev server at localhost:4321 (USER RUNS)
 npm run build           # Build static site
 npm run preview         # Preview built site
 ```
