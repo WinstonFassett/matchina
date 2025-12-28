@@ -120,15 +120,17 @@ describe('Unified HSM Visualization', () => {
       const machine = createFlatComboboxMachine();
       const definition = buildVisualizerTree(machine);
       
-      // Flattened machines now have auto-attached shapes
+      // Flattened machines have direct dot-notation states, no synthetic parents
       expect(definition.states).toBeDefined();
-      expect(definition.states.Active).toBeDefined();
-      expect(definition.states.Active.states).toBeDefined();
-      expect(definition.states.Active.states.Empty).toBeDefined();
+      expect(definition.states['Active.Empty']).toBeDefined();
+      expect(definition.states['Active.Typing']).toBeDefined();
+      expect(definition.states['Active.TextEntry']).toBeDefined();
+      expect(definition.states['Active.Suggesting']).toBeDefined();
+      expect(definition.states.Inactive).toBeDefined();
       
       // All states should have fullKey with dots
-      expect(definition.states.Active.fullKey).toBe('Active');
-      expect(definition.states.Active.states.Empty.fullKey).toBe('Active.Empty');
+      expect(definition.states['Active.Empty'].fullKey).toBe('Active.Empty');
+      expect(definition.states.Inactive.fullKey).toBe('Inactive');
     });
   });
 
