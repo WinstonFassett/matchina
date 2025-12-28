@@ -359,15 +359,8 @@ describe('propagateSubmachines - REAL TESTS', () => {
 
     const disposer = propagateSubmachines(parentMachine);
     
-    console.log('Before send - child:', childMachine.getState().key);
-    console.log('Before send - parent:', parentMachine.getState().key);
-    
     // This should route to child first
     const result = parentMachine.send('start');
-    
-    console.log('After send - child:', childMachine.getState().key);
-    console.log('After send - parent:', parentMachine.getState().key);
-    console.log('Send result:', result);
     
     // For now just check that something happened
     expect(childMachine.getState().key).toBeDefined();
