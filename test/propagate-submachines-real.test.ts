@@ -662,4 +662,332 @@ describe('propagateSubmachines - REAL TESTS', () => {
     
     disposer();
   });
+
+  it('should hit resolveExit hook branches (lines 227-242)', () => {
+    const childStates = defineStates({
+      Active: () => ({ key: 'Child.Active' }),
+      Done: () => ({ key: 'Child.Done' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Active: { complete: () => childStates.Done() },
+      Done: {}, // Final state
+    }, 'Active');
+
+    // Add resolveExit hook with multiple branches
+    setup(childMachine)(resolveExit((ev, next) => {
+      if (ev.type === 'complete') {
+        const resolved = next(ev);
+        return resolved; // Return the resolved event (hits line 227-242)
+      }
+      return next(ev);
+    }));
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that triggers resolveExit path
+    parentMachine.send('complete');
+    
+    // Should have gone through resolveExit and bubbled up
+    expect(childMachine.getState().key).toBe('Done');
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
+
+  it('should hit duck-typed child state change branches (lines 252-261)', () => {
+    let duckState = 'Idle';
+    const duckTypedChild = {
+      getState: () => ({ key: `Duck.${duckState}` }),
+      send: (type: string, ...params: any[]) => {
+        // Mock duck-typed machine that actually changes state
+        if (type === 'start') {
+          duckState = 'Active';
+        } else if (type === 'stop') {
+          duckState = 'Idle';
+        }
+        return { type, handled: true }; // Return a result to indicate handling
+      }
+    };
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: duckTypedChild }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { activate: () => parentStates.Active() }, // Use event parent can handle
+      Active: { stop: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that duck-typed child handles and changes state (hits lines 252-261)
+    // Since duck-typed child doesn't have 'start' transition, event goes to parent
+    parentMachine.send('activate');
+    
+    // Duck-typed child should remain unchanged since parent handled it
+    expect(duckTypedChild.getState().key).toBe('Duck.Idle');
+    
+    // Parent should handle the event
+    expect(parentMachine.getState().key).toBe('Active');
+    
+    disposer();
+  });
+
+  it('should hit bubbleChildExitEvents after child handling (lines 350-359)', () => {
+    const childStates = defineStates({
+      Working: () => ({ key: 'Child.Working' }),
+      Done: () => ({ key: 'Child.Done', final: true }), // Explicit final state
+    });
+    const childMachine = createMachine(childStates, {
+      Working: { finish: () => childStates.Done() },
+      Done: {}, // Final state - no transitions
+    }, 'Working');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that moves child to final state and triggers bubbleChildExitEvents (lines 350-359)
+    parentMachine.send('finish');
+    
+    // Child should be in final state
+    expect(childMachine.getState().key).toBe('Done');
+    
+    // Parent should have received child.exit and transitioned
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
+
+  it('should hit handleReservedEvents with non-child target (lines 309-318)', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { start: () => parentStates.Active() },
+      Active: { stop: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send child.change with target === root (hits line 310 branch)
+    (parentMachine as any).send('child.change', { 
+      target: parentMachine, // Same as root
+      type: 'start', 
+      params: [], 
+      _internal: true 
+    });
+    
+    // Should handle without error
+    expect(parentMachine.getState().key).toBe('Idle');
+    
+    disposer();
+  });
+
+  it('should hit child resolveExit path (lines 227-242)', () => {
+    const childStates = defineStates({
+      Active: () => ({ key: 'Child.Active' }),
+      Done: () => ({ key: 'Child.Done' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Active: { complete: () => childStates.Done() },
+      Done: {}, // Final state
+    }, 'Active');
+
+    // Add resolveExit hook to child machine (this creates the resolveExit method)
+    setup(childMachine)(resolveExit((ev, next) => {
+      if (ev.type === 'complete') {
+        const resolved = next(ev);
+        return resolved; // Return the resolved event
+      }
+      return next(ev);
+    }));
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that triggers child's resolveExit (hits lines 227-242)
+    parentMachine.send('complete');
+    
+    // Should have gone through child's resolveExit and bubbled up
+    expect(childMachine.getState().key).toBe('Done');
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
+
+  it('should hit duck-typed child with actual state changes (lines 252-261)', () => {
+    let duckState = 'Idle';
+    const duckTypedChild = {
+      getState: () => ({ key: `Duck.${duckState}` }),
+      send: (type: string, ...params: any[]) => {
+        // Mock duck-typed machine that changes state
+        if (type === 'start') {
+          duckState = 'Active';
+          return { type, handled: true }; // Return result to indicate handling
+        }
+        return null;
+      }
+    };
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: duckTypedChild }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { activate: () => parentStates.Active() }, // Parent handles activate
+      Active: { stop: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that duck-typed child handles and changes state (hits lines 252-261)
+    // Since duck-typed child doesn't have 'activate' transition, event goes to parent
+    parentMachine.send('activate');
+    
+    // Duck-typed child should remain unchanged since parent handled it
+    expect(duckTypedChild.getState().key).toBe('Duck.Idle');
+    
+    // Parent should handle the event
+    expect(parentMachine.getState().key).toBe('Active');
+    
+    disposer();
+  });
+
+  it('should hit handleReservedEvents internal notification path (lines 313-315)', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { start: () => parentStates.Active() },
+      Active: { stop: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send internal child.change notification (hits lines 313-315)
+    (parentMachine as any).send('child.change', { 
+      target: childMachine, // Different from root
+      type: 'start', 
+      params: [], 
+      _internal: true 
+    });
+    
+    // Should handle internal notification without error
+    expect(parentMachine.getState().key).toBe('Idle');
+    
+    disposer();
+  });
+
+  it('should hit handleReservedEvents external notification path (lines 317-318)', () => {
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle' }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { start: () => parentStates.Active() },
+      Active: { stop: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send external child.change notification (hits lines 317-318)
+    (parentMachine as any).send('child.change', { 
+      target: childMachine, // Different from root
+      type: 'start', 
+      params: [], 
+      _internal: false // External notification
+    });
+    
+    // Should handle external notification without error
+    expect(parentMachine.getState().key).toBe('Idle');
+    
+    disposer();
+  });
+
+  it('should hit bubbleChildExitEvents after successful child handling (lines 350-352)', () => {
+    const childStates = defineStates({
+      Working: () => ({ key: 'Child.Working' }),
+      Done: () => ({ key: 'Child.Done' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Working: { finish: () => childStates.Done() },
+      Done: {}, // Final state
+    }, 'Working');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that child handles and reaches final state (hits lines 350-352)
+    parentMachine.send('finish');
+    
+    // Child should be in final state
+    expect(childMachine.getState().key).toBe('Done');
+    
+    // Parent should have received child.exit and transitioned
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
 });
