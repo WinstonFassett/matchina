@@ -71,6 +71,14 @@ git commit -m "..."  # Commit work before moving to next ticket
 
 ### Finding Work (Task-Oriented)
 
+**CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
+- **NEVER ask user for priority decisions** 
+- Work tickets in dependency order first, then by priority
+- Use `bd ready` output order - it's already sorted correctly
+- If multiple items are ready, start with the first one listed
+- Dependencies should be set up in beads, not guessed
+- **If dependency order is unclear, create a ticket to determine order** or find existing context/plan epic to organize
+
 ```bash
 # Get next available work item (includes in-progress)
 bd ready
@@ -85,13 +93,6 @@ bd show <issue-id>
 bd ready --json | jq '.[0]'
 bd show <issue-id> --json
 ```
-
-**CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
-- **NEVER ask user for priority decisions** 
-- Work tickets in dependency order first, then by priority
-- Use `bd ready` output order - it's already sorted correctly
-- If multiple items are ready, start with the first one listed
-- Dependencies should be set up in beads, not guessed
 
 ## Beads Ticket Organization
 
