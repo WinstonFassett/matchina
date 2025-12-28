@@ -1,7 +1,7 @@
-import { createDeclarativeFlatMachine } from "matchina";
+import { describeHSM } from "matchina";
 
 export function createFlatTrafficLight() {
-  return createDeclarativeFlatMachine({
+  return describeHSM({
     initial: 'Working',
     states: {
       Broken: {

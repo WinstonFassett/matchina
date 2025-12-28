@@ -38,3 +38,23 @@ html[data-theme="dark"] .edgeLabel span
   background-color: #333 !important;
   color: white !important;
 }
+
+/* Fix bold edge label clipping */
+.edgeLabel p, .edgeLabel span {
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+}
+
+/* Ensure edge labels don't get clipped */
+.edgeLabel {
+  overflow: visible !important;
+}
+
+/* Light mode edge label background */
+.edgeLabel p, .edgeLabel span {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #333 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}

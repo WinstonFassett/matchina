@@ -36,6 +36,11 @@
       "types": "./dist/nesting/index.d.ts",
       "import": "./dist/nesting/index.mjs",
       "require": "./dist/nesting/index.js"
+    },
+    "./nesting": {
+      "types": "./dist/nesting/index.d.ts",
+      "import": "./dist/nesting/index.mjs",
+      "require": "./dist/nesting/index.js"
     }
   },
   "main": "./dist/index.js",

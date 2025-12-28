@@ -1,7 +1,7 @@
 import {
   defineStates,
   submachine,
-  createHierarchicalMachine,
+  makeHierarchicalMachine,
   matchina
 } from "matchina";
 
@@ -45,5 +45,5 @@ const createController = () => matchina(
 // This wraps the controller with propagation logic
 export function createPropagatingTrafficLight() {
   const root = createController();
-  return createHierarchicalMachine(root);
+  return makeHierarchicalMachine(root);
 }

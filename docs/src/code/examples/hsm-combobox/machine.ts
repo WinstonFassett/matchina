@@ -1,4 +1,4 @@
-import { defineStates, matchina, submachine, createHierarchicalMachine } from "matchina";
+import { defineStates, matchina, submachine, makeHierarchicalMachine } from "matchina";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
@@ -131,7 +131,7 @@ export function createComboboxMachine() {
     },
   }, appStates.Inactive([]));
 
-  hierarchical = createHierarchicalMachine(combobox);
+  hierarchical = makeHierarchicalMachine(combobox);
 
   return hierarchical;
 }

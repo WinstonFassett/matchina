@@ -1,4 +1,4 @@
-import { createMachine, defineStates, effect, setup, withReset, matchina, submachine, createHierarchicalMachine } from "matchina";
+import { createMachine, defineStates, effect, setup, withReset, matchina, submachine, makeHierarchicalMachine } from "matchina";
 
 // Hierarchical checkout: main flow contains a payment submachine
 export const paymentStates = defineStates({
@@ -26,7 +26,7 @@ function createPayment() {
     Authorized: {},
   }, paymentStates.MethodEntry());
 
-  return withReset(createHierarchicalMachine(m), paymentStates.MethodEntry());
+  return withReset(makeHierarchicalMachine(m), paymentStates.MethodEntry());
 }
 
 const paymentFactory = submachine(createPayment, { id: "payment" });
@@ -65,7 +65,7 @@ export function createCheckoutMachine() {
     Confirmation: { restart: "Cart" },
   }, "Cart");
 
-  const hierarchical = createHierarchicalMachine(checkout);
+  const hierarchical = makeHierarchicalMachine(checkout);
 
   // Get payment machine from state to wire up reset effect
   const getPayment = () => {

@@ -14,7 +14,7 @@
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: flex-start;
   max-width: 100%;
 }
@@ -23,14 +23,14 @@
 
 /* Nested states wrap efficiently */
 .nested-states {
-  margin: 8px 0 0 16px;
+  margin: 6px 0 0 12px;
   padding: 0;
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   align-items: flex-start;
-  max-width: calc(100% - 16px);
+  max-width: calc(100% - 12px);
 }
 
 /* State item boxes */
@@ -41,7 +41,7 @@
   background: var(--sl-color-bg);
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
-  padding: 12px;
+  padding: 8px;
   position: relative;
   box-sizing: border-box;
   word-wrap: break-word;
@@ -116,11 +116,13 @@
   border-radius: 3px;
   margin-left: 8px;
   font-weight: normal;
+  border: 1px solid var(--sl-color-gray-4);
 }
 
 .state-content.active .state-badge {
   background: var(--sl-color-text-invert);
   color: var(--sl-color-accent);
+  border-color: var(--sl-color-accent);
 }
 
 /* Transitions listed vertically */
