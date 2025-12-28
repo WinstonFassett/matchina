@@ -45,11 +45,11 @@ import {
 
 // Define states with dot-notation for hierarchy
 const states = defineStates({
-  Broken: () => ({}),
-  "Working.Red": () => ({}),
-  "Working.Green": () => ({}),
-  "Working.Yellow": () => ({}),
-  Maintenance: () => ({}),
+  Broken: undefined,
+  "Working.Red": undefined,
+  "Working.Green": undefined,
+  "Working.Yellow": undefined,
+  Maintenance: undefined,
 });
 
 // Define transitions (parent transitions apply to all children)
@@ -146,7 +146,7 @@ When parent and child define the same event, **child wins** (first-seen policy):
 
 ```ts
 const states = defineStates({
-  "Parent.Child": () => ({})
+  "Parent.Child": undefined
 });
 
 const transitions = {
