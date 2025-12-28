@@ -39,7 +39,7 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 }
 
 // Shared typed handler - computes next state based on input
-const handleTyped = (value: string) => (ev: any) => {
+const handleTyped = (value: string) => (ev: { from: { data: { selectedTags: string[] } } }) => {
   const { selectedTags } = ev.from.data;
   if (!value.trim()) return activeStates.Empty(selectedTags);
 
@@ -50,7 +50,16 @@ const handleTyped = (value: string) => (ev: any) => {
 };
 
 // Shared addTag handler
-const handleAddTag = (tag?: string) => (ev: any) => {
+const handleAddTag = (tag?: string) => (ev: { 
+  from: { 
+    data: { 
+      input: string; 
+      selectedTags: string[]; 
+      suggestions?: string[]; 
+      highlightedIndex?: number; 
+    } 
+  } 
+}) => {
   const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
   const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
   if (!tagToAdd || selectedTags.includes(tagToAdd)) {
@@ -65,9 +74,9 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
   return matchina(activeStates, {
     Empty: {
       typed: handleTyped,
-      removeTag: (tag: string) => (ev) => 
+      removeTag: (tag: string) => (ev: any) => 
         activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
-      backspace: () => (ev) => {
+      backspace: () => (ev: any) => {
         const selectedTags = ev.from.data.selectedTags;
         if (selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -77,9 +86,9 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     },
     TextEntry: {
       typed: handleTyped,
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
+      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
       addTag: handleAddTag,
-      backspace: () => (ev) => {
+      backspace: () => (ev: any) => {
         const { input, selectedTags } = ev.from.data;
         if (input.length === 0 && selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -89,20 +98,20 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     },
     Suggesting: {
       typed: handleTyped,
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
-      highlightNext: () => (ev) => {
+      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
+      highlightNext: () => (ev: any) => {
         const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
         const next = Math.min(suggestions.length - 1, highlightedIndex + 1);
         return activeStates.Suggesting(input, selectedTags, suggestions, next);
       },
-      highlightPrev: () => (ev) => {
+      highlightPrev: () => (ev: any) => {
         const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
         const prev = Math.max(0, highlightedIndex - 1);
         return activeStates.Suggesting(input, selectedTags, suggestions, prev);
       },
       selectHighlighted: handleAddTag,
       addTag: handleAddTag,
-      backspace: () => (ev) => {
+      backspace: () => (ev: any) => {
         const { input, selectedTags } = ev.from.data;
         if (input.length === 0 && selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -129,19 +138,19 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      blur: () => (ev) => {
+      blur: () => (ev: any) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      close: () => (ev) => {
+      close: () => (ev: any) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      removeTag: (tag: string) => (ev) => {
+      removeTag: (tag: string) => (ev: any) => {
         // Delegate to child machine
         const activeMachine = ev.from.data.machine;
         activeMachine?.removeTag?.(tag);
