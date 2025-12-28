@@ -17,12 +17,12 @@ html[data-theme="dark"] .node circle.state-start {
   stroke: var(--sl-color-text);
 }
 
-/* Fix state nodes */
-.state rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
-  rx: 10;
-  ry: 10;
+/* State diagram default nodes - transparent background */
+.state-diagram-v2 g.state-node path,
+g[class*="state"] path:not([class*="active"]) {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
 }
 
 /* State diagram default nodes - dark mode */
@@ -33,22 +33,18 @@ html[data-theme="dark"] g[class*="state"] path:not([class*="active"]) {
   stroke-width: 2px !important;
 }
 
-/* State rect styling */
-.state rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
-  rx: 10;
-  ry: 10;
-}
-
-/* Dark mode: transparent state rects */
-html[data-theme="dark"] .state rect {
-  fill: transparent !important;
-  stroke: var(--sl-color-accent-high) !important;
-}
-
-.state text {
-  fill: var(--sl-color-text);
+/* State text styling */
+.state text,
+.state-diagram-v2 text,
+g[class*="state"] text,
+.state span,
+.state-diagram-v2 span,
+g[class*="state"] span,
+.state p,
+.state-diagram-v2 p,
+g[class*="state"] p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
 }
 
 /* Flowchart node styling */
@@ -61,12 +57,6 @@ html[data-theme="dark"] .state rect {
 
 /* Dark mode: transparent flowchart nodes */
 html[data-theme="dark"] .node rect {
-  fill: transparent !important;
-  stroke: var(--sl-color-accent-high) !important;
-}
-
-/* Dark mode: default flowchart paths transparent */
-html[data-theme="dark"] g.node path {
   fill: transparent !important;
   stroke: var(--sl-color-accent-high) !important;
 }
