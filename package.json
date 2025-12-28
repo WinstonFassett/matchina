@@ -33,14 +33,14 @@
       "require": "./dist/integrations/valibot.js"
     },
     "./inspect": {
-      "types": "./dist/nesting/index.d.ts",
-      "import": "./dist/nesting/index.mjs",
-      "require": "./dist/nesting/index.js"
+      "types": "./dist/hsm/index.d.ts",
+      "import": "./dist/hsm/index.mjs",
+      "require": "./dist/hsm/index.js"
     },
-    "./nesting": {
-      "types": "./dist/nesting/index.d.ts",
-      "import": "./dist/nesting/index.mjs",
-      "require": "./dist/nesting/index.js"
+    "./hsm": {
+      "types": "./dist/hsm/index.d.ts",
+      "import": "./dist/hsm/index.mjs",
+      "require": "./dist/hsm/index.js"
     }
   },
   "main": "./dist/index.js",
