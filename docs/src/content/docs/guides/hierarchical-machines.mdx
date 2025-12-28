@@ -197,13 +197,13 @@ import {
 } from "matchina";
 
 const lightStates = defineStates({ 
-  Red: () => ({}), 
-  Green: () => ({}), 
-  Yellow: () => ({}),
+  Red: undefined, 
+  Green: undefined, 
+  Yellow: undefined,
 });
 
 const states = defineStates({
-  Broken: () => ({}),
+  Broken: undefined,
   Working: submachine(() => 
     matchina(
       lightStates,
@@ -212,10 +212,10 @@ const states = defineStates({
         Green: { tick: "Yellow" },
         Yellow: { tick: "Red" },
       },
-      lightStates.Red()
+      "Red"
     )
   ),
-  Maintenance: () => ({}),
+  Maintenance: undefined,
 });
 
 const ctrl = matchina(
@@ -225,7 +225,7 @@ const ctrl = matchina(
     Working: { break: "Broken", maintenance: "Maintenance" },
     Maintenance: { complete: "Working" },
   },
-  states.Working()
+  "Working"
 );
 
 const machine = createHierarchicalMachine(ctrl);
