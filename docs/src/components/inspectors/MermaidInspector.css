@@ -85,3 +85,68 @@ html[data-theme="dark"] .edgeLabel p {
 .flowchart-link {
   stroke: var(--sl-color-text) !important;
 }
+
+/* Edge label styling classes for interactivity */
+.edge-active {
+  background-color: var(--sl-color-gray-5) !important;
+  color: var(--sl-color-accent-high) !important;
+  font-weight: 600 !important;
+}
+
+.edge-ancestor {
+  background-color: var(--sl-color-gray-3) !important;
+  color: var(--sl-color-text) !important;
+  font-style: italic;
+}
+
+.edge-inactive {
+  background-color: var(--sl-color-bg) !important;
+  color: var(--sl-color-gray-4) !important;
+  cursor: default !important;
+  opacity: 0.7 !important;
+}
+
+.edge-interactive {
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 10 !important;
+}
+
+.edge-ancestor.edge-interactive:hover {
+  background-color: var(--sl-color-gray-4) !important;
+  color: var(--sl-color-accent) !important;
+}
+
+.edge-active.edge-interactive:hover {
+  background-color: var(--sl-color-accent) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+/* Dark mode improvements for edge labels */
+html[data-theme="dark"] .edge-inactive {
+  background-color: var(--sl-color-gray-2) !important;
+  color: var(--sl-color-gray-5) !important;
+}
+
+/* State highlight styling */
+.state-highlight rect {
+  fill: var(--sl-color-accent) !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+.state-highlight span {
+  color: var(--sl-color-text-invert) !important;
+}
+
+.state-container-highlight rect {
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+  fill: var(--sl-color-accent-high) !important;
+  fill-opacity: 0.15 !important;
+}
+
+html[data-theme="dark"] .state-container-highlight rect {
+  fill-opacity: 0.25 !important;
+}

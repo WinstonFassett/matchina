@@ -66,43 +66,43 @@ interface InlineSvgProps {
   svg: string;
 }
 const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
-  const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const viewBoxMatch = svg?.match(
-      /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/
-    );
-    if (viewBoxMatch && viewBoxMatch[1]) {
-      const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);
-      setDimensions({ width, height });
-    }
-  }, [svg]);
+   const [_dimensions, setDimensions] = useState({ width: 0, height: 0 });
+ 
+   useEffect(() => {
+     const viewBoxMatch = svg?.match(
+       /viewBox="(-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+\s+-?\d*\.?\d+)"/
+     );
+     if (viewBoxMatch && viewBoxMatch[1]) {
+       const [, , width, height] = viewBoxMatch[1].split(/\s+/).map(Number);
+       setDimensions({ width, height });
+     }
+   }, [svg]);
 
-  useEffect(() => {
-    // Override cluster styles after SVG is rendered
-    if (containerRef.current) {
-      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-      const clusterRects = containerRef.current.querySelectorAll('.cluster rect, .subgraph rect');
-      
-      clusterRects.forEach((rect) => {
-        const element = rect as SVGRectElement;
-        if (isDarkMode) {
-          element.style.fill = '#000000';
-          element.style.stroke = 'var(--sl-color-gray-5)';
-          element.style.strokeWidth = '2px';
-        } else {
-          element.style.fill = 'var(--sl-color-gray-1)';
-          element.style.stroke = 'var(--sl-color-gray-4)';
-          element.style.strokeWidth = '2px';
-        }
-      });
-    }
-  }, [svg]);
+   useEffect(() => {
+     // Override cluster styles after SVG is rendered
+     const container = (ref as any)?.current;
+     if (container) {
+       const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+       const clusterRects = container.querySelectorAll('.cluster rect, .subgraph rect');
+       
+       clusterRects.forEach((rect) => {
+         const element = rect as SVGRectElement;
+         if (isDarkMode) {
+           element.style.fill = '#000000';
+           element.style.stroke = 'var(--sl-color-gray-5)';
+           element.style.strokeWidth = '2px';
+         } else {
+           element.style.fill = 'var(--sl-color-gray-1)';
+           element.style.stroke = 'var(--sl-color-gray-4)';
+           element.style.strokeWidth = '2px';
+         }
+       });
+     }
+   }, [svg, ref]);
 
-  return (
-    <div
-      ref={containerRef}
+   return (
+     <div
+       ref={ref}
       style={
         {
           // minHeight: `${dimensions.height}px`,
