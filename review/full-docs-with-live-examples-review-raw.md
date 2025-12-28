@@ -74,19 +74,19 @@ it is useful to have line counts on the example code tabs
 
 ## Code Review on HSM Examples
 
-okay I'm going to code review the HSM examples
+### HSM Examples - Code Quality
 
-starting with the traffic light
-
-create declarative flat machine is a weird name it's more like describe HSN
-
-yeah I'm back to like sort of wanting an intermediate representation
-
-I don't know if the hierarchical nested approach needs this ability to have this declarative structure although it could be useful also
-
-semantically it's more like I want to create a flat machine based on an HSM declaration or structure declaration or shape
-
-I guess it probably makes sense to take a step back and talk about the types and any changes to types involved in this pull request
+#### Traffic Light (docs/src/code/examples/hsm-traffic-light/)
+- `createDeclarativeFlatMachine` - weird name, more like `describeHSM` → **TICKETED: matchina-9mu**
+- Hierarchical structure should not require `data: undefined` - use schema/default pattern
+- `parseFlatStateKey` utility - nice
+- Machine definition is clean and DRY overall
+- Nested version: remove empty closures (use `undefined`), inline light cycle states/controller states
+- `createHierarchicalMachine` - weird name, more like `makeHierarchical`, could be a hook/effect → **TICKETED: matchina-wxi**
+- View has dependency on `parseFlatStateKey` - don't like
+- Light UI conditionals should use `.match()`
+- Button layout issues - too much movement, should be driven by available actions
+- Flattened HSM diagram shows weird extra state (working.red vs working_red) → **TICKETED: matchina-n19** in this pull request
 
 this hierarchical structure should not require declaring a data property just to set it to undefined
 
@@ -170,6 +170,22 @@ I'll probably want to revisit how that's done at some point but okay that was th
 
 those are the machine definitions now let's look at their views
 
+### Combo Box (docs/src/code/examples/hsm-combo-box/)
+- Missing tag deletion (X button, backspace) → **TICKETED: matchina-vqf**
+- Verbose - selected tags, suggestions, highlighted index should be in store
+- Passing ID of 'active' - unclear why
+- `handleTyped` - picking transition, could use custom resolve hook
+- Externalize available tags list
+- State history divergence - argument for using store vs state for storage
+- Transition helper usage unclear when only using first arg
+- Typed could be lifted to active transition
+- Effect filtering by key prefix (starts with 'typing')
+- View has `dummyStateFactory`, lots of variables, not clean
+- Creating event API on the fly - machines should create their own APIs
+- Optional action references (`actions.focus?`) - weird, should just pass references
+- State checks in handlers unnecessary - machine should ignore invalid transitions
+- Flat version 20 lines longer, has to parse state, inline event API
+
 ---
 
 ## Views of Combo Box Machines
@@ -237,6 +253,43 @@ or also we need a way to simulate approving or denying or requiring authorizatio
 okay so we have check out steps payment section and check out controls the steps are defined using an index it feels like those could get out of sync with the defined States Maybe maybe not
 
 it looks pretty clean
+
+---
+
+## Payment### Checkout (docs/src/code/examples/hsm-checkout/)
+- Wizard UI overflows in docs (too narrow), needs narrower layout
+- Redundant transitions (payment states have `back` to shipping, payment also has `back`/`exit`)
+- Nested machine is lovely - simple string transitions, could inline checkout states
+- `getPaymentFromState` for reset effect - casting `ev` to `any` is bad (strong typing available) → **TICKETED: matchina-oke**
+- Payment flow stuck in `authorizing` - needs simulation controls for approve/deny/challenge → **TICKETED: matchina-ya6**
+- No way to get out of authorizing in UI - need available actions shown
+- `state.match` usage is good
+- Payment actions cast to `any` - typing should work
+- Optional action casting weird - should be tight reference
+
+would be nice to have like a reusable available actions and I think I have that just not seeing it get used in here
+
+but at least it's using state.match which is pretty cool like false for whether to be exhaustive need to look at that can I still could check out view flat
+
+uses context does some of the same stuff for the API has a provider has the same structure check out steps very similar
+
+curious where it's mapping the like states to the step indexes
+
+payment section which is basically using contacts and conditional which seems I don't know not worth it but I guess I suppose I get it
+
+extracting nested payment and payment State stuff seems to be a little cumbersome
+
+it's doing that Dynamic event API again
+
+it is nice to see it matching
+
+I don't like seeing payment actions cast to any that's very weird payment actions typing should work
+
+okay looking at checkout controls it's using match here which is nice
+
+but I do not like this weird ass casting of actions and optional like it doesn't know whether the API method's going to get there all that could be completely tightened up to just be passing references to actions that will get called that even needing the arrow functions I don't think
+
+the buttons are a little noisy everywhere due to TW, but overall this is actually pretty tight just need to show it better
 
 ---
 
