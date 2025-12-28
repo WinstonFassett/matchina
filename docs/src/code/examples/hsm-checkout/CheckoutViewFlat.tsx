@@ -3,6 +3,7 @@ import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
 import { parseFlatStateKey } from "matchina/nesting";
 import { createFlatCheckoutMachine } from "./machine-flat";
+import { CommonActions } from "./AvailableActions";
 
 // Type the machine and its actions
 type CheckoutMachine = ReturnType<typeof createFlatCheckoutMachine>;
@@ -44,7 +45,7 @@ export function CheckoutViewFlat({ machine }: CheckoutViewFlatProps) {
         <div className="space-y-6">
           <CheckoutSteps currentStep={parent} />
           <PaymentSection />
-          <CheckoutControls />
+          <CommonActions machine={machine} />
 
           <div className="text-xs text-gray-500 dark:text-gray-400">
             State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">
@@ -191,6 +192,46 @@ function PaymentFlow() {
           ),
         }, null)}
       </div>
+
+      {/* Payment Simulation Controls */}
+      <PaymentSimulationControls paymentActions={paymentActions} />
+    </div>
+  );
+}
+
+function PaymentSimulationControls({ paymentActions }: { paymentActions: CheckoutActions }) {
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+      <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Simulation</h5>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => paymentActions.authorize?.()}
+          className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Start Authorization
+        </button>
+        <button
+          onClick={() => paymentActions.authSucceeded?.()}
+          className="px-3 py-1.5 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Approve (Success)
+        </button>
+        <button
+          onClick={() => paymentActions.authFailed?.()}
+          className="px-3 py-1.5 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Deny (Challenge)
+        </button>
+        <button
+          onClick={() => paymentActions.retry?.()}
+          className="px-3 py-1.5 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+        >
+          Force Error
+        </button>
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        Use these controls to simulate different payment outcomes
+      </p>
     </div>
   );
 }

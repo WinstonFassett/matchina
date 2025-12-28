@@ -62,6 +62,14 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
         e.preventDefault();
         actions.deactivate?.(selectedTags);
         break;
+      case "Backspace":
+        // If input is empty and there are tags, remove the last tag
+        if (!input.trim() && selectedTags.length > 0) {
+          e.preventDefault();
+          const lastTag = selectedTags[selectedTags.length - 1];
+          actions.removeTag?.(lastTag, selectedTags);
+        }
+        break;
       case "ArrowDown":
         e.preventDefault();
         if (parsed.child === 'Suggesting') {
