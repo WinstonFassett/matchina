@@ -38,6 +38,16 @@ This project uses **bd** (beads) for issue tracking. For development patterns, s
 
 If you encounter type errors, the solution is to fix the type definitions, NOT to cast them away.
 
+## Backward Compatibility
+
+**DO NOT worry about backward compatibility unless explicitly instructed.**
+
+This is a major version development - no need to maintain legacy APIs or deprecated functions.
+
+- Remove deprecated code instead of keeping it for compatibility
+- Use new API names without aliasing old ones
+- Do not add "legacy" or "deprecated" comments unless specifically required
+- Focus on clean, current API design
 ## Quick Reference
 
 **Focus: Get next SINGLE work item or list all open work.**

@@ -206,12 +206,6 @@ function PaymentSimulationControls({ paymentActions }: { paymentActions: Checkou
       <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Simulation</h5>
       <div className="grid grid-cols-2 gap-2">
         <button
-          onClick={() => paymentActions.authorize?.()}
-          className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Start Authorization
-        </button>
-        <button
           onClick={() => paymentActions.authSucceeded?.()}
           className="px-3 py-1.5 text-xs bg-green-500 text-white rounded hover:bg-green-600"
         >
@@ -227,11 +221,22 @@ function PaymentSimulationControls({ paymentActions }: { paymentActions: Checkou
           onClick={() => paymentActions.retry?.()}
           className="px-3 py-1.5 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
         >
-          Force Error
+          Retry Failed
+        </button>
+        <button
+          onClick={() => {
+            // Simulate a network error by setting an invalid state
+            console.log('Simulating payment network error...');
+            // This would typically trigger an AuthorizationError state in a real implementation
+            paymentActions.retry?.();
+          }}
+          className="px-3 py-1.5 text-xs bg-orange-500 text-white rounded hover:bg-orange-600"
+        >
+          Network Error
         </button>
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-        Use these controls to simulate different payment outcomes
+        Simulate payment outcomes: approve, deny, retry failed attempts, or network errors
       </p>
     </div>
   );
