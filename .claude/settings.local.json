@@ -41,7 +41,9 @@
       "Bash(git commit:*)",
       "Bash(npx playwright test:*)",
       "mcp__playwright__browser_snapshot",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

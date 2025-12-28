@@ -3,7 +3,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import MermaidInspector from "./inspectors/MermaidInspector";
+import { MermaidInspector } from "./inspectors/MermaidInspector";
 import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
 import ReactFlowInspector from "./inspectors/ReactFlowInspector";

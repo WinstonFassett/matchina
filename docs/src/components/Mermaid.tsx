@@ -85,7 +85,7 @@ const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
        const clusterRects = container.querySelectorAll('.cluster rect, .subgraph rect');
        
-       clusterRects.forEach((rect) => {
+       clusterRects.forEach((rect: SVGRectElement) => {
          const element = rect as SVGRectElement;
          if (isDarkMode) {
            element.style.fill = '#000000';
