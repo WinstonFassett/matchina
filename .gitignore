@@ -12,6 +12,7 @@ types
 *.log*
 *.conf
 *.env*
+*-output.txt
 bun.lockb
 review/screenshots/
 test-results/
