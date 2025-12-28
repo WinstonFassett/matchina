@@ -67,11 +67,25 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
       typed: handleTyped,
       removeTag: (tag: string) => (ev) => 
         activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
+      backspace: () => (ev) => {
+        const selectedTags = ev.from.data.selectedTags;
+        if (selectedTags.length > 0) {
+          return activeStates.Empty(selectedTags.slice(0, -1));
+        }
+        return ev.from;
+      },
     },
     TextEntry: {
       typed: handleTyped,
       clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
       addTag: handleAddTag,
+      backspace: () => (ev) => {
+        const { input, selectedTags } = ev.from.data;
+        if (input.length === 0 && selectedTags.length > 0) {
+          return activeStates.Empty(selectedTags.slice(0, -1));
+        }
+        return ev.from;
+      },
     },
     Suggesting: {
       typed: handleTyped,
@@ -88,6 +102,13 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
       },
       selectHighlighted: handleAddTag,
       addTag: handleAddTag,
+      backspace: () => (ev) => {
+        const { input, selectedTags } = ev.from.data;
+        if (input.length === 0 && selectedTags.length > 0) {
+          return activeStates.Empty(selectedTags.slice(0, -1));
+        }
+        return ev.from;
+      },
     },
   }, activeStates.Empty(tags));
 }
