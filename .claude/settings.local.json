@@ -43,7 +43,10 @@
       "mcp__playwright__browser_snapshot",
       "Bash(lsof:*)",
       "Bash(git rev-parse:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(find:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

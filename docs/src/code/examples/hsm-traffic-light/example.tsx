@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { eventApi } from "matchina";
 import { createFlatTrafficLight } from "./machine-flat";
-import { createPropagatingTrafficLight } from "./machine-prop";
+import { createPropagatingTrafficLight } from "./machine";
 import { TrafficLightViewFlat } from "./TrafficLightViewFlat";
 import { TrafficLightViewNested } from "./TrafficLightViewNested";
 import { VisualizerDemo } from "@components/HSMVisualizerDemo";
