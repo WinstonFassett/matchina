@@ -374,4 +374,44 @@ describe('propagateSubmachines - REAL TESTS', () => {
     
     disposer();
   });
+
+  it('should handle child machines with resolveExit hooks', () => {
+    const childStates = defineStates({
+      Active: () => ({ key: 'Child.Active' }),
+      Done: () => ({ key: 'Child.Done' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Active: { complete: () => childStates.Done() },
+      Done: {}, // Final state
+    }, 'Active');
+
+    // Add resolveExit hook that returns an event (this hits lines 227-242)
+    setup(childMachine)(resolveExit((ev, next) => {
+      if (ev.type === 'complete') {
+        const resolved = next(ev);
+        return resolved; // Return the resolved event
+      }
+      return next(ev);
+    }));
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Completed: () => ({ key: 'Parent.Completed' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { 'child.exit': () => parentStates.Completed() },
+      Completed: { reset: () => parentStates.Idle() },
+    }, 'Idle');
+
+    const disposer = propagateSubmachines(parentMachine);
+    
+    // Send event that triggers resolveExit path
+    parentMachine.send('complete');
+    
+    // Should have gone through resolveExit and transition
+    expect(childMachine.getState().key).toBe('Done');
+    expect(parentMachine.getState().key).toBe('Completed');
+    
+    disposer();
+  });
 });
