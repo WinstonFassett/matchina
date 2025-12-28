@@ -1,28 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { createMachine } from "xstate";
+import { defineStates } from "../src/define-states";
+import { createMachine } from "../src/factory-machine";
 import { getAvailableActions } from "../src/state-machine-actions";
 
 describe("getAvailableActions", () => {
   it("should return available actions for the current state", () => {
-    // Define a simple state machine transitions object
-    const states = {
-      IDLE: {},
-      RUNNING: {},
-      PAUSED: {},
-    };
+    const states = defineStates({
+      IDLE: () => ({ key: "IDLE" }),
+      RUNNING: () => ({ key: "RUNNING" }),
+      PAUSED: () => ({ key: "PAUSED" }),
+    });
 
     const machine = createMachine(states, {
       IDLE: {
-        START: "RUNNING",
-        RESET: "IDLE",
+        START: () => states.RUNNING(),
+        RESET: () => states.IDLE(),
       },
       RUNNING: {
-        PAUSE: "PAUSED",
-        STOP: "IDLE",
+        PAUSE: () => states.PAUSED(),
+        STOP: () => states.IDLE(),
       },
       PAUSED: {
-        RESUME: "RUNNING",
-        STOP: "IDLE",
+        RESUME: () => states.RUNNING(),
+        STOP: () => states.IDLE(),
       },
     }, "IDLE");
 
@@ -43,20 +43,17 @@ describe("getAvailableActions", () => {
       "RESUME",
       "STOP",
     ]);
-
-    // Test STOPPED state
-    expect(getAvailableActions(machine.transitions, "STOPPED")).toEqual(["RESET"]);
   });
 
   it("should return an empty array for unknown states", () => {
-    const states = {
-      IDLE: {},
-      RUNNING: {},
-    };
+    const states = defineStates({
+      IDLE: () => ({ key: "IDLE" }),
+      RUNNING: () => ({ key: "RUNNING" }),
+    });
 
     const machine = createMachine(states, {
       IDLE: {
-        START: "RUNNING",
+        START: () => states.RUNNING(),
       },
     }, "IDLE");
 
