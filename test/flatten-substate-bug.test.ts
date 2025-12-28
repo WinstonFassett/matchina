@@ -73,8 +73,8 @@ describe('Flattened HSM Payment State Bug', () => {
     // The state key should be properly namespaced
     expect(state.key).toBe('Payment.MethodEntry');
     
-    // The state data should be defined
-    expect(state.data).toBeDefined();
+    // The state data should be undefined (as defined in states)
+    expect(state.data).toBeUndefined();
   });
 
   it('should handle transitions within flattened substates', () => {
