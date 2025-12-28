@@ -212,26 +212,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   }
 
   /**
-    * Handle child machine events and automatic child.exit triggering.
-    * Note: This function's child.resolveExit path (lines 225-242) is unreachable
-    * because attemptTransitionAtLevel is called on the child before this function
-    * has a chance to run. Kept for reference but synthesize child.exit logic below
-    * is the only reachable code path.
-    */
-  function handleChildMachine(
-    child: AnyMachine, 
-    parent: AnyMachine, 
-    parentState: any, 
-    type: string, 
-    params: any[]
-  ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
-    // Note: child.resolveExit is already handled by attemptTransitionAtLevel
-    // This function only exists to synthesize child.exit bubbling when needed
-    
-    return { handled: false };
-  }
-
-  /**
    * Handle duck-typed child machines (those with .send method).
    */
   function handleDuckTypedChild(child: any, type: string, params: any[]): boolean {
@@ -330,14 +310,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       // Try child machine handling first
       if (i < machinesChain.length - 1) {
         const child = getChildFromParentState(state);
-        if (child && isFactoryMachine(child)) {
-          const childResult = handleChildMachine(child, machine, state, type, params);
-          if (childResult.handled) {
-            bubbleChildExitEvents(machinesChain);
-            notifyHierarchyOfChange(childResult, type, params);
-            return childResult.event ?? null;
-          }
-        } else if (child && (child as any).send) {
+        if (child && (child as any).send) {
           const duckHandled = handleDuckTypedChild(child, type, params);
           if (duckHandled) {
             bubbleChildExitEvents(machinesChain);
