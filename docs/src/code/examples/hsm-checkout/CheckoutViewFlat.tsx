@@ -12,10 +12,14 @@ type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
 const CheckoutContext = React.createContext<{
   machine: CheckoutMachine;
   actions: CheckoutActions;
-}>({} as any);
+} | null>(null);
 
 function useCheckoutContext() {
-  return useContext(CheckoutContext);
+  const context = useContext(CheckoutContext);
+  if (!context) {
+    throw new Error('useCheckoutContext must be used within CheckoutContext.Provider');
+  }
+  return context;
 }
 
 interface CheckoutViewFlatProps {
@@ -128,7 +132,7 @@ function PaymentFlow({ parsed }: { parsed: { parent: string; child: string | nul
   if (!paymentState) return null;
   
   // Use the main machine's actions for flattened mode
-  const paymentActions = eventApi(machine);
+  const paymentActions = eventApi(machine) as CheckoutActions;
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">

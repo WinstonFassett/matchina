@@ -74,7 +74,7 @@
  * ## Example: Checkout Flow
  *
  * ```typescript
- * const machine = createDeclarativeFlatMachine({
+ * const machine = describeHSM({
  *   initial: 'Cart',
  *   states: {
  *     Cart: {
@@ -322,7 +322,7 @@ function resolveInitialChild(
  * - Generates synthetic parent states automatically
  * - DRY and elegant
  */
-export function createHierarchicalMachine(config: DeclarativeFlatMachineConfig) {
+export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 

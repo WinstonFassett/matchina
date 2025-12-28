@@ -13,10 +13,14 @@ const CheckoutContext = React.createContext<{
   machine: CheckoutMachine;
   paymentMachine?: FactoryMachine<any>;
   actions: CheckoutActions;
-}>({} as any);
+} | null>(null);
 
 function useCheckoutContext() {
-  return useContext(CheckoutContext);
+  const context = useContext(CheckoutContext);
+  if (!context) {
+    throw new Error('useCheckoutContext must be used within CheckoutContext.Provider');
+  }
+  return context;
 }
 
 interface CheckoutViewNestedProps {

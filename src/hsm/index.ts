@@ -3,7 +3,8 @@ export {
   createFlatMachine
 } from "./flat-machine";
 export {
-  createHierarchicalMachine
+  describeHSM,
+  describeHSM as createHierarchicalMachine
 } from "./declarative-flat";
 export type {
   DeclarativeFlatMachineConfig,

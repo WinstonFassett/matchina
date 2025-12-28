@@ -280,13 +280,16 @@ npm test            # Can flood context if tests have logging
 
 **MANDATORY WORKFLOW:**
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
-5. **Clean up** - Remove any working docs, debug logging in code
-6. **Verify** - All changes committed
-7. **Hand off** - Provide context for next session
+1. **CHECK GIT STATUS** - CRITICAL: Before completing any work, ALWAYS check `git status` to see what files are modified
+2. **File issues for remaining work** - Create issues for anything that needs follow-up
+3. **Run quality gates** (if code changed) - Tests, linters, builds
+4. **Update issue status** - Close finished work, update in-progress items
+5. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
+6. **Clean up** - Remove any working docs, debug logging in code
+7. **Verify** - All changes committed
+8. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
 - Work is NOT complete until tested and committed
+- **ALWAYS check `git status` before closing tickets** - never complete work without knowing what will be committed
+- If you have uncommitted changes when closing a ticket, you MUST commit them first

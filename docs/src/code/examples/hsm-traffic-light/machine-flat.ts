@@ -1,7 +1,7 @@
-import { createHierarchicalMachine } from "matchina";
+import { describeHSM } from "matchina";
 
 export function createFlatTrafficLight() {
-  return createHierarchicalMachine({
+  return describeHSM({
     initial: 'Working',
     states: {
       Broken: {

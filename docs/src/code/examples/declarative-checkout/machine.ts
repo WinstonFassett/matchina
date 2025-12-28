@@ -1,7 +1,7 @@
 /**
  * Declarative Checkout Machine Example
  *
- * This example demonstrates the new createDeclarativeFlatMachine API
+ * This example demonstrates the new describeHSM API
  * which provides an elegant, DRY way to define hierarchical state machines
  * that are flattened internally.
  *
@@ -13,10 +13,10 @@
  * - DRY and elegant
  */
 
-import { createDeclarativeFlatMachine } from "matchina";
+import { describeHSM } from "matchina";
 
 export function createDeclarativeCheckoutMachine() {
-  return createDeclarativeFlatMachine({
+  return describeHSM({
     initial: 'Cart',
     states: {
       // Simple states at root level

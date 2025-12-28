@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createHierarchicalMachine } from '../src/hsm/declarative-flat';
+import { describeHSM } from '../src/hsm/declarative-flat';
 
-describe('createHierarchicalMachine', () => {
+describe('describeHSM', () => {
   it('should create a simple flat machine from declarative config', () => {
-    const machine = createHierarchicalMachine({
+    const machine = describeHSM({
       initial: 'Idle',
       states: {
         Idle: {
@@ -29,7 +29,7 @@ describe('createHierarchicalMachine', () => {
   });
 
   it('should handle hierarchical states with auto-flattening', () => {
-    const machine = createHierarchicalMachine({
+    const machine = describeHSM({
       initial: 'Cart',
       states: {
         Cart: {
@@ -87,7 +87,7 @@ describe('createHierarchicalMachine', () => {
   });
 
   it('should support parameterized state constructors', () => {
-    const machine = createHierarchicalMachine({
+    const machine = describeHSM({
       initial: 'Inactive',
       states: {
         Inactive: {
@@ -124,7 +124,7 @@ describe('createHierarchicalMachine', () => {
   });
 
   it('should handle parent transitions with child.exit', async () => {
-    const machine = createHierarchicalMachine({
+    const machine = describeHSM({
       initial: 'First',
       states: {
         First: {
