@@ -3,10 +3,14 @@ import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
 import { parseFlatStateKey, createFlatCheckoutMachine } from "./machine-flat";
 
+// Type the machine and its actions
+type CheckoutMachine = ReturnType<typeof createFlatCheckoutMachine>;
+type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
+
 // Context to share the payment machine and event APIs
 const CheckoutContext = React.createContext<{
-  machine: ReturnType<typeof createFlatCheckoutMachine>;
-  actions: any;
+  machine: CheckoutMachine;
+  actions: CheckoutActions;
 }>({ machine: null as any, actions: null as any });
 
 function useCheckoutContext() {
@@ -14,7 +18,7 @@ function useCheckoutContext() {
 }
 
 interface CheckoutViewFlatProps {
-  machine: ReturnType<typeof createFlatCheckoutMachine>;
+  machine: CheckoutMachine;
 }
 
 export function CheckoutViewFlat({ machine }: CheckoutViewFlatProps) {
@@ -151,13 +155,13 @@ function PaymentFlow() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Additional authentication required</p>
               <div className="space-x-2">
                 <button
-                  onClick={() => (paymentActions as any).authSucceeded?.()}
+                  onClick={() => paymentActions.authSucceeded?.()}
                   className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                 >
                   Approve
                 </button>
                 <button
-                  onClick={() => (paymentActions as any).authFailed?.()}
+                  onClick={() => paymentActions.authFailed?.()}
                   className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                 >
                   Deny
@@ -169,11 +173,11 @@ function PaymentFlow() {
             <div>
               <p className="text-sm text-red-600 dark:text-red-400 mb-2">Authorization failed</p>
               <button
-                onClick={() => (paymentActions as any).retry?.()}
-                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Retry
-              </button>
+                  onClick={() => paymentActions.retry?.()}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Retry
+                </button>
             </div>
           ),
           "Payment.Authorized": () => (
@@ -200,7 +204,7 @@ function CheckoutControls() {
       {state.match({
         Cart: () => (
           <button
-            onClick={() => (actions as any).proceed?.()}
+            onClick={() => actions.proceed?.()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Proceed to Shipping
@@ -209,13 +213,13 @@ function CheckoutControls() {
         Shipping: () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Cart
             </button>
             <button
-              onClick={() => (actions as any).proceed?.()}
+              onClick={() => actions.proceed?.()}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Proceed to Payment
@@ -226,13 +230,13 @@ function CheckoutControls() {
         "Payment.MethodEntry": () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).exit?.()}
+              onClick={() => actions.exit?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Exit Payment
@@ -242,13 +246,13 @@ function CheckoutControls() {
         "Payment.Authorizing": () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).exit?.()}
+              onClick={() => actions.exit?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Exit Payment
@@ -258,13 +262,13 @@ function CheckoutControls() {
         "Payment.AuthChallenge": () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).exit?.()}
+              onClick={() => actions.exit?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Exit Payment
@@ -274,13 +278,13 @@ function CheckoutControls() {
         "Payment.AuthorizationError": () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).exit?.()}
+              onClick={() => actions.exit?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Exit Payment
@@ -290,13 +294,13 @@ function CheckoutControls() {
         "Payment.Authorized": () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).exit?.()}
+              onClick={() => actions.exit?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Exit Payment
@@ -306,19 +310,19 @@ function CheckoutControls() {
         Review: () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Shipping
             </button>
             <button
-              onClick={() => (actions as any).changePayment?.()}
+              onClick={() => actions.changePayment?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Change Payment
             </button>
             <button
-              onClick={() => (actions as any).submitOrder?.()}
+              onClick={() => actions.submitOrder?.()}
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
               Submit Order
@@ -328,19 +332,19 @@ function CheckoutControls() {
         ShippingPaid: () => (
           <>
             <button
-              onClick={() => (actions as any).back?.()}
+              onClick={() => actions.back?.()}
               className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               Back to Cart
             </button>
             <button
-              onClick={() => (actions as any).proceed?.()}
+              onClick={() => actions.proceed?.()}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               Proceed to Review
             </button>
             <button
-              onClick={() => (actions as any).changePayment?.()}
+              onClick={() => actions.changePayment?.()}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               Change Payment
@@ -349,7 +353,7 @@ function CheckoutControls() {
         ),
         Confirmation: () => (
           <button
-            onClick={() => (actions as any).restart?.()}
+            onClick={() => actions.restart?.()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Start New Order
