@@ -21,19 +21,24 @@ html[data-theme="dark"] .node circle.state-start {
 .state rect {
   fill: var(--sl-color-gray-2);
   stroke: var(--sl-color-gray-5);
+  rx: 10;
+  ry: 10;
 }
 .state text {
   fill: var(--sl-color-text);
 }
 
-/* State diagram specific - use Mermaid's actual classes */
-.statediagram-state rect {
-  fill: var(--sl-color-gray-2);
-  stroke: var(--sl-color-gray-5);
+/* Flowchart node styling */
+.node rect {
+  fill: var(--sl-color-gray-2) !important;
+  stroke: var(--sl-color-gray-5) !important;
+  rx: 10;
+  ry: 10;
 }
-.statediagram-state text {
-  fill: var(--sl-color-text);
-}
+
+
+
+
 
 /* Fix state diagram groups/clusters - transparent on both themes */
 .statediagram-cluster rect,
@@ -127,14 +132,28 @@ html[data-theme="dark"] .edge-inactive {
 }
 
 /* State highlight styling */
-.state-highlight rect {
-  fill: var(--sl-color-accent) !important;
-  stroke: var(--sl-color-accent-high) !important;
+.state-highlight path {
+  fill: rgb(147, 112, 219) !important;
+  stroke: rgb(147, 112, 219) !important;
   stroke-width: 2px !important;
 }
 
-.state-highlight span {
-  color: var(--sl-color-text-invert) !important;
+.state-highlight text,
+.state-highlight p {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Flowchart active node */
+.node.active path {
+  fill: rgb(147, 112, 219) !important;
+  stroke: rgb(147, 112, 219) !important;
+}
+
+.node.active text,
+.node.active p {
+  fill: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .state-container-highlight rect {
