@@ -48,7 +48,10 @@
       "Bash(find:*)",
       "Bash(git push:*)",
       "Bash(open coverage/index.html)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(bd label add:*)",
+      "Bash(bd dep remove:*)",
+      "Bash(bd blocked:*)"
     ],
     "deny": [],
     "ask": []
