@@ -179,6 +179,7 @@ npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when nee
 - Agents do NOT run dev servers - assume they're running
 - Building docs is slow - prefer live testing in dev server
 - build:lib is fine for agents to run when needed
+- **When running builds**: Limit output ingestion (see Quality Gates section)
 
 ## Session Completion
 
@@ -210,10 +211,31 @@ Evidence > assumptions. Let tests guide the fix.
 - build:docs: Rarely - user runs when needed (prefer live dev server testing)
 - Linting: Only right before shipping (skip during development)
 
-**Verbose output handling:**
-- Docs commands (dev, build, check) are notoriously verbose
-- Pipe to files/buffers, read in reverse (last 10-20 lines first)
-- Don't naively pipe all output to yourself
+**Verbose output handling (CRITICAL):**
+
+**DO NOT naively ingest full output from builds, dev servers, or other verbose processes.**
+
+- **Tests**: Usually condensed, safe to read full output
+- **Builds/dev servers/checks**: Notoriously verbose (often >2 pages)
+  - Pipe to files/buffers first
+  - Read in reverse: last 10-20 lines first
+  - Only read more if needed for debugging
+- **When output expected to be >2 pages**: ALWAYS limit what you see
+  - Use `tail`, pipe to file and read selectively
+  - Many things you just need last 10-20 lines for success/failure
+
+**Examples:**
+```bash
+# ✅ Good - limit output
+npm run build:lib 2>&1 | tail -20
+
+# ✅ Good - file then selective read
+npm run build:docs > /tmp/build.log 2>&1
+# Then read last 20 lines of /tmp/build.log
+
+# ❌ Bad - don't do this
+npm run build:docs  # Floods context with verbose output
+```
 
 **Safety:**
 - Never destroy work (we have git)
