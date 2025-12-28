@@ -24,6 +24,13 @@ html[data-theme="dark"] .node circle.state-start {
   rx: 10;
   ry: 10;
 }
+
+/* Dark mode: transparent state nodes */
+html[data-theme="dark"] .state rect {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+}
+
 .state text {
   fill: var(--sl-color-text);
 }
@@ -34,6 +41,12 @@ html[data-theme="dark"] .node circle.state-start {
   stroke: var(--sl-color-gray-5) !important;
   rx: 10;
   ry: 10;
+}
+
+/* Dark mode: transparent flowchart nodes */
+html[data-theme="dark"] .node rect {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
 }
 
 
