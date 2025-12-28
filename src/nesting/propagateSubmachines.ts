@@ -178,119 +178,127 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    *    context (like depth and the full state key).
    */
   /**
-   * Handle an event against the current active chain starting at the root.
-   * - Descend to deepest active child and attempt handling there first.
-   * - After a transition, bubble potential `child.exit` to each ancestor.
-   * - Stamp the active chain for introspection.
-   * - Emit `child.change` via root.send so subscribers are notified in-order.
+   * Descend to the deepest active child machine in the hierarchy.
+   * Returns the chain of machines and states visited.
    */
-  function handleAtRoot(type: string, params: any[]): any {
+  function descendToDeepestActive(root: AnyMachine): { machinesChain: AnyMachine[]; statesChain: any[] } {
     const machinesChain: AnyMachine[] = [];
     const statesChain: any[] = [];
 
-    function descend(m: AnyMachine): { handled: boolean; event?: any; handledBy?: AnyMachine } {
+    function descend(m: AnyMachine): void {
       machinesChain.push(m);
       const state = m.getState();
       if (state) statesChain.push(state);
 
       const child = getChildFromParentState(state);
-      // Try deepest first
       if (child && isFactoryMachine(child)) {
-        const deep = descend(child);
-        if (deep.handled) return deep;
-
-        // Try child itself
-        const childEv = (child as any).resolveExit?.({ type, params, from: (child as any).getState() });
-        if (childEv) {
-          (child as any).transition?.(childEv);
-          // If child reached final or lost its machine, synthesize child.exit at parent (m)
-          const childState = (child as any).getState?.();
-          if (!childState || isChildFinal(child, childState)) {
-            const parentEv = (m as any).resolveExit?.({
-              type: 'child.exit',
-              params: [{ id: state?.data?.id ?? state?.id, state: childState?.key, data: childState?.data }],
-              from: state,
-            });
-            if (parentEv) {
-              (m as any).transition?.(parentEv);
-              return { handled: true, event: parentEv, handledBy: m };
-            }
-          }
-          return { handled: true, event: childEv, handledBy: child as AnyMachine };
-        }
-      } else if (child && (child as any).send) {
-        // Duck-typed child: attempt to delegate the event. Only mark as handled
-        // if the child's state actually changes (or the send returns a truthy result).
-        // This preserves bubbling semantics so parent transitions (e.g. root 'close')
-        // still fire when the child has no matching transition.
-        try {
-          const before = (child as AnyMachine).getState?.();
-          const beforeKey = before?.key;
-          const beforeDataRef = before?.data;
-          const sendResult = (child as any).send(type, ...params);
-          const after = (child as AnyMachine).getState?.();
-          const changed = after !== before || after?.key !== beforeKey || after?.data !== beforeDataRef;
-          if (changed || !!sendResult) {
-            return { handled: true, handledBy: child as AnyMachine };
-          }
-          // Not handled; allow bubbling to current machine.
-        } catch {
-          // ignore errors and try at current level
-        }
-      }
-
-      // Try current machine
-      const ev = (m as any).resolveExit?.({ type, params, from: state });
-      if (ev) {
-        (m as any).transition?.(ev);
-        return { handled: true, event: ev, handledBy: m };
-      }
-
-      return { handled: false };
-    }
-
-    // Reserved child.* events: handle at immediate parent (root here) without descent
-    if (type.startsWith('child.')) {
-      const from = (root as any).getState();
-      if (type === 'child.change') {
-        const { target, type: innerType, params: innerParams, _internal } = params[0];
-        if (target !== root) {
-          // This is a notification from a child machine
-          // If it's an internal notification, we need to hook and notify subscribers
-          if (_internal) {
-            hookCurrentChain(false); // Don't notify again to avoid double notifications
-            return;
-          }
-          // Otherwise, don't handle
-          return;
-        }
-      }
-      hookCurrentChain(false); // Don't notify on reserved events
-      const ev = (root as any).resolveExit?.({ type, params, from });
-      if (ev) (root as any).transition?.(ev);
-      return ev;
-    }
-
-    const result = descend(root as AnyMachine);
-    // After deepest handling, bubble child.exit upward along the visited chain
-    if (result.handled) {
-      for (let i = machinesChain.length - 2; i >= 0; i--) {
-        const parent = machinesChain[i] as any;
-        const parentState = parent.getState?.();
-        if (!parentState) continue;
-        const child = getChildFromParentState(parentState) as any;
-        if (!child) continue;
-        const childState = child.getState?.();
-        if (!childState || isChildFinal(child, childState)) {
-          const exitEv = parent.resolveExit?.({
-            type: 'child.exit',
-            params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
-            from: parentState,
-          });
-          if (exitEv) parent.transition?.(exitEv);
-        }
+        descend(child);
       }
     }
+
+    descend(root);
+    return { machinesChain, statesChain };
+  }
+
+  /**
+   * Attempt to handle an event at a specific machine level.
+   * Returns whether the event was handled and by which machine.
+   */
+  function attemptTransitionAtLevel(
+    m: AnyMachine, 
+    type: string, 
+    params: any[], 
+    state: any
+  ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
+    // Try current machine
+    const ev = (m as any).resolveExit?.({ type, params, from: state });
+    if (ev) {
+      (m as any).transition?.(ev);
+      return { handled: true, event: ev, handledBy: m };
+    }
+
+    return { handled: false };
+  }
+
+  /**
+   * Handle child machine events and automatic child.exit triggering.
+   */
+  function handleChildMachine(
+    child: AnyMachine, 
+    parent: AnyMachine, 
+    parentState: any, 
+    type: string, 
+    params: any[]
+  ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
+    // Try child's own event handling
+    const childEv = (child as any).resolveExit?.({ type, params, from: (child as any).getState() });
+    if (childEv) {
+      (child as any).transition?.(childEv);
+      
+      // If child reached final or lost its machine, synthesize child.exit at parent
+      const childState = (child as any).getState?.();
+      if (!childState || isChildFinal(child, childState)) {
+        const parentEv = (parent as any).resolveExit?.({
+          type: 'child.exit',
+          params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
+          from: parentState,
+        });
+        if (parentEv) {
+          (parent as any).transition?.(parentEv);
+          return { handled: true, event: parentEv, handledBy: parent };
+        }
+      }
+      return { handled: true, event: childEv, handledBy: child as AnyMachine };
+    }
+
+    return { handled: false };
+  }
+
+  /**
+   * Handle duck-typed child machines (those with .send method).
+   */
+  function handleDuckTypedChild(child: any, type: string, params: any[]): boolean {
+    try {
+      const before = (child as AnyMachine).getState?.();
+      const beforeKey = before?.key;
+      const beforeDataRef = before?.data;
+      const sendResult = (child as any).send(type, ...params);
+      const after = (child as AnyMachine).getState?.();
+      const changed = after !== before || after?.key !== beforeKey || after?.data !== beforeDataRef;
+      return changed || !!sendResult;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Bubble child.exit events up the hierarchy after transitions.
+   */
+  function bubbleChildExitEvents(machinesChain: AnyMachine[]): void {
+    for (let i = machinesChain.length - 2; i >= 0; i--) {
+      const parent = machinesChain[i] as any;
+      const parentState = parent.getState?.();
+      if (!parentState) continue;
+      
+      const child = getChildFromParentState(parentState) as any;
+      if (!child) continue;
+      
+      const childState = child.getState?.();
+      if (!childState || isChildFinal(child, childState)) {
+        const exitEv = parent.resolveExit?.({
+          type: 'child.exit',
+          params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
+          from: parentState,
+        });
+        if (exitEv) parent.transition?.(exitEv);
+      }
+    }
+  }
+
+  /**
+   * Notify hierarchy of changes and hook newly discovered machines.
+   */
+  function notifyHierarchyOfChange(result: { handled: boolean; handledBy?: AnyMachine }, type: string, params: any[]): void {
     // Hook any newly discovered machines in the hierarchy
     hookCurrentChain();
     
@@ -299,7 +307,79 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     if (result.handled && !String(type).startsWith('child.')) {
       (root as any).send?.('child.change', { target: result.handledBy, type, params, _internal: true });
     }
-    return result.event ?? null;
+  }
+
+  /**
+   * Handle reserved child.* events at the immediate parent.
+   */
+  function handleReservedEvents(type: string, params: any[]): any {
+    const from = (root as any).getState();
+    if (type === 'child.change') {
+      const { target, type: innerType, params: innerParams, _internal } = params[0];
+      if (target !== root) {
+        // This is a notification from a child machine
+        // If it's an internal notification, we need to hook and notify subscribers
+        if (_internal) {
+          hookCurrentChain(false); // Don't notify again to avoid double notifications
+          return;
+        }
+        // Otherwise, don't handle
+        return;
+      }
+    }
+    hookCurrentChain(false); // Don't notify on reserved events
+    const ev = (root as any).resolveExit?.({ type, params, from });
+    if (ev) (root as any).transition?.(ev);
+    return ev;
+  }
+
+  /**
+   * Main event handling logic with child-first routing.
+   * Descends to deepest active child and attempts handling there first.
+   */
+  function handleAtRoot(type: string, params: any[]): any {
+    // Reserved child.* events: handle at immediate parent (root here) without descent
+    if (type.startsWith('child.')) {
+      return handleReservedEvents(type, params);
+    }
+
+    const { machinesChain, statesChain } = descendToDeepestActive(root as AnyMachine);
+
+    // Try handling at each level from deepest to shallowest
+    for (let i = machinesChain.length - 1; i >= 0; i--) {
+      const machine = machinesChain[i];
+      const state = statesChain[i];
+      
+      // Try child machine handling first
+      if (i < machinesChain.length - 1) {
+        const child = getChildFromParentState(state);
+        if (child && isFactoryMachine(child)) {
+          const childResult = handleChildMachine(child, machine, state, type, params);
+          if (childResult.handled) {
+            bubbleChildExitEvents(machinesChain);
+            notifyHierarchyOfChange(childResult, type, params);
+            return childResult.event ?? null;
+          }
+        } else if (child && (child as any).send) {
+          const duckHandled = handleDuckTypedChild(child, type, params);
+          if (duckHandled) {
+            bubbleChildExitEvents(machinesChain);
+            notifyHierarchyOfChange({ handled: true, handledBy: child }, type, params);
+            return null;
+          }
+        }
+      }
+      
+      // Try current machine level
+      const result = attemptTransitionAtLevel(machine, type, params, state);
+      if (result.handled) {
+        bubbleChildExitEvents(machinesChain);
+        notifyHierarchyOfChange(result, type, params);
+        return result.event ?? null;
+      }
+    }
+
+    return null;
   }
 
   // This function is not currently used, but can aid debugging or explicit wiring
