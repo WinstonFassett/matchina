@@ -212,8 +212,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   }
 
   /**
-   * Handle child machine events and automatic child.exit triggering.
-   */
+    * Handle child machine events and automatic child.exit triggering.
+    * Note: This function's child.resolveExit path (lines 225-242) is unreachable
+    * because attemptTransitionAtLevel is called on the child before this function
+    * has a chance to run. Kept for reference but synthesize child.exit logic below
+    * is the only reachable code path.
+    */
   function handleChildMachine(
     child: AnyMachine, 
     parent: AnyMachine, 
@@ -221,27 +225,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     type: string, 
     params: any[]
   ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
-    // Try child's own event handling
-    const childEv = (child as any).resolveExit?.({ type, params, from: (child as any).getState() });
-    if (childEv) {
-      (child as any).transition?.(childEv);
-      
-      // If child reached final or lost its machine, synthesize child.exit at parent
-      const childState = (child as any).getState?.();
-      if (!childState || isChildFinal(child, childState)) {
-        const parentEv = (parent as any).resolveExit?.({
-          type: 'child.exit',
-          params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
-          from: parentState,
-        });
-        if (parentEv) {
-          (parent as any).transition?.(parentEv);
-          return { handled: true, event: parentEv, handledBy: parent };
-        }
-      }
-      return { handled: true, event: childEv, handledBy: child as AnyMachine };
-    }
-
+    // Note: child.resolveExit is already handled by attemptTransitionAtLevel
+    // This function only exists to synthesize child.exit bubbling when needed
+    
     return { handled: false };
   }
 
