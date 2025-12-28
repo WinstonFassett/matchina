@@ -213,28 +213,39 @@ Evidence > assumptions. Let tests guide the fix.
 
 **Verbose output handling (CRITICAL):**
 
-**DO NOT naively ingest full output from builds, dev servers, or other verbose processes.**
+**DO NOT naively ingest full output from builds, dev servers, tests, or other verbose processes.**
 
-- **Tests**: Usually condensed, safe to read full output
+**General rule: When output expected to be >2 pages, ALWAYS limit what you see.**
+
+- **Tests**: Can be verbose with logging
+  - Run specific tests when possible: `npx vitest run test/file.test.ts -t "pattern"`
+  - For full test runs, consider piping and reading selectively
+  - Watch mode usually manageable, but full runs with coverage can be verbose
+
 - **Builds/dev servers/checks**: Notoriously verbose (often >2 pages)
   - Pipe to files/buffers first
   - Read in reverse: last 10-20 lines first
   - Only read more if needed for debugging
-- **When output expected to be >2 pages**: ALWAYS limit what you see
-  - Use `tail`, pipe to file and read selectively
-  - Many things you just need last 10-20 lines for success/failure
+
+**Strategy: Pipe to file, read last 10-20 lines for success/failure, investigate more only if needed.**
 
 **Examples:**
 ```bash
+# ✅ Good - run specific test
+npx vitest run test/matchbox.test.ts -t "should create"
+
 # ✅ Good - limit output
 npm run build:lib 2>&1 | tail -20
+npm test 2>&1 | tail -30  # Tests may need more lines
 
 # ✅ Good - file then selective read
 npm run build:docs > /tmp/build.log 2>&1
-# Then read last 20 lines of /tmp/build.log
+npm test > /tmp/test.log 2>&1
+# Then read last 20-30 lines of logs
 
 # ❌ Bad - don't do this
 npm run build:docs  # Floods context with verbose output
+npm test            # Can flood context if tests have logging
 ```
 
 **Safety:**
