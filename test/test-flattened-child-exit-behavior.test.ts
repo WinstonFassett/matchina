@@ -20,23 +20,23 @@ describe('Flattened child exit behavior', () => {
     const baseMachine = createFlatCheckoutMachine();
     // Apply auto-exit (parent fallback is now automatic in createMachineFromFlat)
     const machine = withFlattenedChildExit(baseMachine);
-    
+
     // Navigate to Payment.Authorized (final child state)
     machine.send('proceed'); // Cart -> Shipping
     expect(machine.getState().key).toBe('Shipping');
-    
+
     machine.send('proceed'); // Shipping -> Payment.MethodEntry
     expect(machine.getState().key).toBe('Payment.MethodEntry');
-    
+
     machine.send('authorize'); // Payment.MethodEntry -> Payment.Authorizing
     expect(machine.getState().key).toBe('Payment.Authorizing');
-    
+
     machine.send('authSucceeded'); // Payment.Authorizing -> Payment.Authorized
     expect(machine.getState().key).toBe('Payment.Authorized');
-    
-    // Wait for async child.exit trigger
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
+
+    // Wait for microtask to process child.exit
+    await Promise.resolve();
+
     // Should automatically transition to Review via child.exit
     expect(machine.getState().key).toBe('Review');
   });
