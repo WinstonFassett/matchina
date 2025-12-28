@@ -945,5 +945,50 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(machine.getState().key).toBe('Review');
   });
 
+  it('3-level hierarchy: event routes through all levels', () => {
+    const grandchildStates = defineStates({
+      Idle: () => ({ key: 'Grandchild.Idle' }),
+      Active: () => ({ key: 'Grandchild.Active' }),
+    });
+    const grandchildMachine = createMachine(grandchildStates, {
+      Idle: { activate: () => grandchildStates.Active() },
+      Active: { deactivate: () => grandchildStates.Idle() },
+    }, 'Idle');
+
+    const childStates = defineStates({
+      Idle: () => ({ key: 'Child.Idle', machine: grandchildMachine }),
+      Active: () => ({ key: 'Child.Active' }),
+    });
+    const childMachine = createMachine(childStates, {
+      Idle: { start: () => childStates.Active() },
+      Active: { stop: () => childStates.Idle() },
+    }, 'Idle');
+
+    const parentStates = defineStates({
+      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
+      Active: () => ({ key: 'Parent.Active' }),
+    });
+    const parentMachine = createMachine(parentStates, {
+      Idle: { begin: () => parentStates.Active() },
+      Active: { end: () => parentStates.Idle() },
+    }, 'Idle');
+
+    createHierarchicalMachine(parentMachine);
+
+    // Send event that grandchild handles (routed down)
+    parentMachine.send('activate');
+    expect(grandchildMachine.getState().key).toBe('Active');
+    expect(childMachine.getState().key).toBe('Idle');
+    expect(parentMachine.getState().key).toBe('Idle');
+
+    // Send event that child handles
+    parentMachine.send('start');
+    expect(childMachine.getState().key).toBe('Active');
+    expect(parentMachine.getState().key).toBe('Idle');
+
+    // Send event that parent handles
+    parentMachine.send('begin');
+    expect(parentMachine.getState().key).toBe('Active');
+  });
 
 });
