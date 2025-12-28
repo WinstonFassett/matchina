@@ -1,6 +1,4 @@
-import React from "react";
 import { useMachine } from "matchina/react";
-import { createFlatTrafficLight } from "./machine-flat";
 
 interface TrafficLightViewFlatProps {
   machine: any;

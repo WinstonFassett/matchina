@@ -1,6 +1,5 @@
 import {
   defineStates,
-  createMachine,
   matchina
 } from "matchina";
 import { submachine, createHierarchicalPropagation } from "matchina/hsm";

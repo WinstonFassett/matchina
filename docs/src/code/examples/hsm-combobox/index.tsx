@@ -12,12 +12,14 @@ export default function HSMComboboxIndex() {
   const [mode, setMode] = useState<Mode>("flat");
   
   // Re-create machine when mode changes
-  const machine = useMemo(() => {
-    return mode === "flat" 
-      ? createFlatComboboxMachine() 
-      : createComboboxMachine();
+  const { flatMachine, hierarchicalMachine } = useMemo(() => {
+    return {
+      flatMachine: createFlatComboboxMachine(),
+      hierarchicalMachine: createComboboxMachine()
+    };
   }, [mode]);
 
+  const machine = mode === "flat" ? flatMachine : hierarchicalMachine;
   const actions = useMemo(() => eventApi(machine), [machine]);
 
   return (
@@ -49,9 +51,9 @@ export default function HSMComboboxIndex() {
       </div>
 
       {mode === "flat" ? (
-        <ComboboxViewFlat machine={machine} />
+        <ComboboxViewFlat machine={flatMachine} />
       ) : (
-        <ComboboxView machine={machine} />
+        <ComboboxView machine={hierarchicalMachine} />
       )}
       
       <VisualizerDemo
