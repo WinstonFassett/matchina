@@ -3,7 +3,7 @@ import { createMachine } from '../src/factory-machine';
 import { defineStates } from '../src/define-states';
 import { setup } from '../src/ext/setup';
 import { resolveExit } from '../src/state-machine-hooks';
-import { propagateSubmachines } from '../src/nesting/propagateSubmachines';
+import { createHierarchicalMachine } from '../src/nesting/propagateSubmachines';
 import { eventApi } from '../src/factory-machine-event-api';
 import { createCheckoutMachine } from '../docs/src/code/examples/hsm-checkout/machine';
 
@@ -27,7 +27,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // This should route to child first
     parentMachine.send('start');
@@ -35,7 +35,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Active');
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should bubble up to parent when child cannot handle', () => {
@@ -55,7 +54,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Child can't handle 'activate', so it bubbles to parent
     parentMachine.send('activate');
@@ -63,7 +62,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(parentMachine.getState().key).toBe('Active');
     expect(childMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should bubble child.exit when child reaches final state', () => {
@@ -85,7 +83,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: {},
     }, 'Waiting');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Move child to final state
     parentMachine.send('complete');
@@ -94,7 +92,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should handle multiple levels of nesting', () => {
@@ -125,7 +122,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Should route to deepest child
     parentMachine.send('start');
@@ -134,7 +131,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Idle');
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should handle child.change events with payload', () => {
@@ -156,7 +152,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send child.change event with payload
     parentMachine.send('child.change', { type: 'start', params: [] });
@@ -164,7 +160,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Should have routed to child
     expect(childMachine.getState().key).toBe('Active');
     
-    disposer();
   });
 
   it('should handle child.* events', () => {
@@ -186,7 +181,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send child.* event
     parentMachine.send('child.start');
@@ -194,7 +189,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Should have handled at parent level
     expect(parentMachine.getState().key).toBe('Active');
     
-    disposer();
   });
 
   it('should handle child state changes with notification', () => {
@@ -216,7 +210,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that causes child state change
     parentMachine.send('start');
@@ -225,7 +219,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Active');
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should return null when no event can be handled', () => {
@@ -245,7 +238,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that no one can handle
     const result = parentMachine.send('unknown');
@@ -255,7 +248,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Idle');
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should handle complex exit bubbling with resolveExit hooks', () => {
@@ -285,7 +277,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that triggers resolveExit path
     parentMachine.send('complete');
@@ -294,7 +286,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should handle multiple levels of nesting', () => {
@@ -325,7 +316,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Should route to deepest child
     parentMachine.send('start');
@@ -334,7 +325,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Idle');
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('DEBUG: show what handleAtRoot is doing', () => {
@@ -356,7 +346,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     console.log('Before send - child:', childMachine.getState().key);
     console.log('Before send - parent:', parentMachine.getState().key);
@@ -371,7 +361,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // For now just check that something happened
     expect(childMachine.getState().key).toBeDefined();
     
-    disposer();
   });
 
   it('should handle child machines with resolveExit hooks', () => {
@@ -402,7 +391,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event to child that triggers resolveExit path and bubbling
     parentMachine.send('complete');
@@ -411,7 +400,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should force trigger bubbleChildExitEvents with final state', () => {
@@ -434,7 +422,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that moves child to final state (this should trigger bubbleChildExitEvents)
     parentMachine.send('finish');
@@ -445,7 +433,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should have received child.exit and transitioned
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should test direct child event routing', () => {
@@ -467,7 +454,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send start event - should route to child first
     parentMachine.send('start');
@@ -483,7 +470,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Idle');
     expect(parentMachine.getState().key).toBe('Idle'); // Parent unchanged
     
-    disposer();
   });
 
   it('should test parent fallback when child cannot handle', () => {
@@ -505,7 +491,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() }, // Parent handles stop
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send activate event - child can't handle, should bubble to parent
     parentMachine.send('activate');
@@ -525,7 +511,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should handle it and go back to Idle
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should trigger internal child.change notifications naturally (lines 313-315)', () => {
@@ -547,7 +532,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that child handles - this should trigger internal child.change (lines 313-315)
     parentMachine.send('start');
@@ -557,7 +542,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should remain unchanged since child handled it
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should handle external child.change notifications (lines 315-318)', () => {
@@ -579,7 +563,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send external child.change notification (hits line 315-318)
     // This will actually trigger the event since it's external
@@ -594,7 +578,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Active');
     expect(parentMachine.getState().key).toBe('Idle'); // Parent unchanged
     
-    disposer();
   });
 
   it('should trigger bubbleChildExitEvents after successful child handling (lines 350-359)', () => {
@@ -616,7 +599,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that moves child to final state and triggers bubbleChildExitEvents
     parentMachine.send('finish');
@@ -627,7 +610,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should have received child.exit and transitioned
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should handle duck-typed child machines (lines 354-359)', () => {
@@ -648,7 +630,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event to duck-typed child (hits handleDuckTypedChild lines 354-359)
     parentMachine.send('start');
@@ -656,7 +638,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should handle the event since duck-typed child doesn't return a result
     expect(parentMachine.getState().key).toBe('Active');
     
-    disposer();
   });
 
   it('should hit resolveExit hook branches (lines 227-242)', () => {
@@ -687,7 +668,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that triggers resolveExit path
     parentMachine.send('complete');
@@ -696,7 +677,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should hit duck-typed child state change branches (lines 252-261)', () => {
@@ -723,7 +703,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that duck-typed child handles and changes state (hits lines 252-261)
     // Since duck-typed child doesn't have 'start' transition, event goes to parent
@@ -735,7 +715,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should handle the event
     expect(parentMachine.getState().key).toBe('Active');
     
-    disposer();
   });
 
   it('should hit bubbleChildExitEvents after child handling (lines 350-359)', () => {
@@ -757,7 +736,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that moves child to final state and triggers bubbleChildExitEvents (lines 350-359)
     parentMachine.send('finish');
@@ -768,7 +747,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should have received child.exit and transitioned
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should hit handleReservedEvents with non-child target (lines 309-318)', () => {
@@ -790,7 +768,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send child.change with target === root (hits line 310 branch)
     (parentMachine as any).send('child.change', { 
@@ -803,7 +781,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Should handle without error
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should hit child resolveExit path (lines 227-242)', () => {
@@ -834,7 +811,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Completed: { reset: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that triggers child's resolveExit (hits lines 227-242)
     parentMachine.send('complete');
@@ -843,7 +820,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     expect(childMachine.getState().key).toBe('Done');
     expect(parentMachine.getState().key).toBe('Completed');
     
-    disposer();
   });
 
   it('should hit duck-typed child with actual state changes (lines 252-261)', () => {
@@ -869,7 +845,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send event that duck-typed child handles and changes state (hits lines 252-261)
     // Since duck-typed child doesn't have 'activate' transition, event goes to parent
@@ -881,7 +857,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Parent should handle the event
     expect(parentMachine.getState().key).toBe('Active');
     
-    disposer();
   });
 
   it('should hit handleReservedEvents internal notification path (lines 313-315)', () => {
@@ -903,7 +878,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
     
     // Send internal child.change notification (hits lines 313-315)
     (parentMachine as any).send('child.change', { 
@@ -916,7 +891,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Should handle internal notification without error
     expect(parentMachine.getState().key).toBe('Idle');
     
-    disposer();
   });
 
   it('should hit handleReservedEvents external notification path (lines 317-318)', () => {
@@ -938,7 +912,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: { stop: () => parentStates.Idle() },
     }, 'Idle');
 
-    const disposer = propagateSubmachines(parentMachine);
+    const disposer = createHierarchicalMachine(parentMachine);
 
     // Send external child.change notification (hits lines 317-318)
     (parentMachine as any).send('child.change', {
@@ -951,7 +925,6 @@ describe('propagateSubmachines - REAL TESTS', () => {
     // Should handle external notification without error
     expect(parentMachine.getState().key).toBe('Idle');
 
-    disposer();
   });
 
   it('REAL CHECKOUT: child.exit triggers parent transition', () => {
