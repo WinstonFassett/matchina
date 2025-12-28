@@ -1,5 +1,5 @@
 import { defineStates, matchina } from "matchina";
-import { submachine, createHierarchicalPropagation } from "matchina/hsm";
+import { submachine, makeHierarchical } from "matchina/hsm";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
@@ -150,7 +150,7 @@ export function createComboboxMachine() {
     },
   }, appStates.Inactive([]));
 
-  const hierarchical = createHierarchicalPropagation(combobox);
+  const hierarchical = makeHierarchical(combobox);
 
   return hierarchical;
 }

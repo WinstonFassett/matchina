@@ -34,7 +34,7 @@ const active = matchina(activeStates, {
   }
 }, activeStates.Empty([]));
 
-const machine = createHierarchicalMachine(
+const machine = describeHSM(
   matchina(topStates, {
     Inactive: { focus: "Active" },  // STRING - can inspect
     Active: { blur: () => (ev) => topStates.Inactive(ev.from.data.tags) }  // FUNCTION
