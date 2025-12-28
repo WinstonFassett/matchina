@@ -528,7 +528,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     disposer();
   });
 
-  it('should handle internal child.change notifications (lines 309-318)', () => {
+  it('should trigger internal child.change notifications naturally (lines 313-315)', () => {
     const childStates = defineStates({
       Idle: () => ({ key: 'Child.Idle' }),
       Active: () => ({ key: 'Child.Active' }),
@@ -543,22 +543,18 @@ describe('propagateSubmachines - REAL TESTS', () => {
       Active: () => ({ key: 'Parent.Active' }),
     });
     const parentMachine = createMachine(parentStates, {
-      Idle: { start: () => parentStates.Active() },
-      Active: { stop: () => parentStates.Idle() },
+      Idle: { activate: () => parentStates.Active() }, // Parent handles different event
+      Active: { deactivate: () => parentStates.Idle() },
     }, 'Idle');
 
     const disposer = propagateSubmachines(parentMachine);
     
-    // Send internal child.change notification with target !== root (hits line 310)
-    (parentMachine as any).send('child.change', { 
-      target: childMachine, // Different from root
-      type: 'start', 
-      params: [], 
-      _internal: true 
-    });
+    // Send event that child handles - this should trigger internal child.change (lines 313-315)
+    parentMachine.send('start');
     
-    // Should handle internal notification without error
-    expect(childMachine.getState().key).toBe('Idle');
+    // Child should handle the event
+    expect(childMachine.getState().key).toBe('Active');
+    // Parent should remain unchanged since child handled it
     expect(parentMachine.getState().key).toBe('Idle');
     
     disposer();
@@ -943,51 +939,38 @@ describe('propagateSubmachines - REAL TESTS', () => {
     }, 'Idle');
 
     const disposer = propagateSubmachines(parentMachine);
-    
+
     // Send external child.change notification (hits lines 317-318)
-    (parentMachine as any).send('child.change', { 
+    (parentMachine as any).send('child.change', {
       target: childMachine, // Different from root
-      type: 'start', 
-      params: [], 
+      type: 'start',
+      params: [],
       _internal: false // External notification
     });
-    
+
     // Should handle external notification without error
     expect(parentMachine.getState().key).toBe('Idle');
-    
+
     disposer();
   });
 
-  it('should hit bubbleChildExitEvents after successful child handling (lines 350-352)', () => {
-    const childStates = defineStates({
-      Working: () => ({ key: 'Child.Working' }),
-      Done: () => ({ key: 'Child.Done' }),
-    });
-    const childMachine = createMachine(childStates, {
-      Working: { finish: () => childStates.Done() },
-      Done: {}, // Final state
-    }, 'Working');
+  it('REAL CHECKOUT: child.exit triggers parent transition', () => {
+    const machine = createCheckoutMachine();
 
-    const parentStates = defineStates({
-      Idle: () => ({ key: 'Parent.Idle', machine: childMachine }),
-      Completed: () => ({ key: 'Parent.Completed' }),
-    });
-    const parentMachine = createMachine(parentStates, {
-      Idle: { 'child.exit': () => parentStates.Completed() },
-      Completed: { reset: () => parentStates.Idle() },
-    }, 'Idle');
+    // Navigate to Payment state
+    machine.send('proceed'); // Cart -> Shipping
+    machine.send('proceed'); // Shipping -> Payment
 
-    const disposer = propagateSubmachines(parentMachine);
-    
-    // Send event that child handles and reaches final state (hits lines 350-352)
-    parentMachine.send('finish');
-    
-    // Child should be in final state
-    expect(childMachine.getState().key).toBe('Done');
-    
-    // Parent should have received child.exit and transitioned
-    expect(parentMachine.getState().key).toBe('Completed');
-    
-    disposer();
+    expect(machine.getState().key).toBe('Payment');
+
+    // Complete payment flow - this should trigger child.exit
+    const payment = (machine.getState().data as any).machine;
+    payment.send('authorize'); // MethodEntry -> Authorizing
+    payment.send('authSucceeded'); // Authorizing -> Authorized (final)
+
+    // Parent should have received child.exit and moved to Review
+    expect(machine.getState().key).toBe('Review');
   });
+
+
 });
