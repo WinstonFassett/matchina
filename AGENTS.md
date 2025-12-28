@@ -186,7 +186,6 @@ npm run dry-run                # Dry run release (user only)
 - **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
 - **NEVER run `npm run release`, `npm run publish`, or `npm run dry-run` as agent** - user only
 - **Prefer `npm run build` (core only) over `npm run build:all`** - much faster
-- Use `build:lib` explicitly if you need to be clear about core-only build
 - **`npm run build` now only builds the core library** - docs build moved to `build:all`
 - **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
 - **When running builds**: Limit output ingestion (see Quality Gates section)
