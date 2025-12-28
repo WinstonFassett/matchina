@@ -191,6 +191,48 @@ function PaymentFlow() {
           ),
         }, null)}
       </div>
+
+      {/* Payment Simulation Controls - only show when authorizing */}
+      {state.key === 'Authorizing' && paymentActions && (
+        <PaymentSimulationControls paymentActions={paymentActions} />
+      )}
+    </div>
+  );
+}
+
+function PaymentSimulationControls({ paymentActions }: { paymentActions: any }) {
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+      <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Simulation</h5>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => paymentActions.authorize?.()}
+          className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Start Authorization
+        </button>
+        <button
+          onClick={() => paymentActions.authSucceeded?.()}
+          className="px-3 py-1.5 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Approve (Success)
+        </button>
+        <button
+          onClick={() => paymentActions.authFailed?.()}
+          className="px-3 py-1.5 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Deny (Challenge)
+        </button>
+        <button
+          onClick={() => paymentActions.retry?.()}
+          className="px-3 py-1.5 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+        >
+          Force Error
+        </button>
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        Use these controls to simulate different payment outcomes
+      </p>
     </div>
   );
 }

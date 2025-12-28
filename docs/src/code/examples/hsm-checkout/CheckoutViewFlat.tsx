@@ -44,8 +44,8 @@ export function CheckoutViewFlat({ machine }: CheckoutViewFlatProps) {
         
         <div className="space-y-6">
           <CheckoutSteps currentStep={parent} />
-          <PaymentSection />
-          <CommonActions machine={machine} />
+          <PaymentSection parsed={parsed} />
+          <CheckoutControls />
 
           <div className="text-xs text-gray-500 dark:text-gray-400">
             State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">
@@ -96,20 +96,20 @@ function CheckoutSteps({ currentStep }: { currentStep: string }) {
   );
 }
 
-function PaymentSection() {
+function PaymentSection({ parsed }: { parsed: { parent: string; child: string | null } }) {
   const { machine } = useCheckoutContext();
   const state = machine.getState();
 
   // Handle flattened payment states
   const stateKey = state.key;
   if (stateKey.startsWith('Payment.')) {
-    return <PaymentFlow />;
+    return <PaymentFlow parsed={parsed} />;
   }
   
   return null;
 }
 
-function PaymentFlow() {
+function PaymentFlow({ parsed }: { parsed: { parent: string; child: string | null } }) {
   const { machine } = useCheckoutContext();
   
   // In flattened mode, the payment state is embedded in the main state's data
@@ -193,8 +193,10 @@ function PaymentFlow() {
         }, null)}
       </div>
 
-      {/* Payment Simulation Controls */}
-      <PaymentSimulationControls paymentActions={paymentActions} />
+      {/* Payment Simulation Controls - only show when authorizing */}
+      {parsed.child === 'Authorizing' && (
+        <PaymentSimulationControls paymentActions={paymentActions} />
+      )}
     </div>
   );
 }
