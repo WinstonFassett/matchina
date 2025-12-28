@@ -47,9 +47,9 @@ export default function HSMCheckoutIndex() {
       </div>
 
       {mode === "flat" ? (
-        <CheckoutViewFlat machine={flatMachine as any} />
+        <CheckoutViewFlat machine={flatMachine} />
       ) : (
-        <CheckoutViewNested machine={nestedMachine as any} />
+        <CheckoutViewNested machine={nestedMachine} />
       )}
       
       <VisualizerDemo

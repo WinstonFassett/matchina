@@ -74,7 +74,7 @@ export function createCheckoutMachine() {
   };
 
   setup(hierarchical)(
-    effect((ev: any) => {
+    effect((ev) => {
       if (ev.type === "restart") {
         const payment = getPayment();
         payment?.reset();

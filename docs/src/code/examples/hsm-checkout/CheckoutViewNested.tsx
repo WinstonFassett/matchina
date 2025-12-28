@@ -4,12 +4,16 @@ import { eventApi } from "matchina";
 import type { FactoryMachine } from "matchina";
 import { createCheckoutMachine } from "./machine";
 
+// Type the machine and its actions  
+type CheckoutMachine = FactoryMachine<ReturnType<typeof createCheckoutMachine>>;
+type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
+
 // Context to share the payment machine and event APIs
 const CheckoutContext = React.createContext<{
-  machine: FactoryMachine<ReturnType<typeof createCheckoutMachine>>;
+  machine: CheckoutMachine;
   paymentMachine?: FactoryMachine<any>;
-  actions: any;
-}>({ machine: null as any, actions: null as any });
+  actions: CheckoutActions;
+}>({} as any);
 
 function useCheckoutContext() {
   return useContext(CheckoutContext);

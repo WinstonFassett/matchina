@@ -12,7 +12,7 @@ type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
 const CheckoutContext = React.createContext<{
   machine: CheckoutMachine;
   actions: CheckoutActions;
-}>({ machine: null as any, actions: null as any });
+}>({} as any);
 
 function useCheckoutContext() {
   return useContext(CheckoutContext);
@@ -138,7 +138,7 @@ function PaymentFlow() {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Select payment method</p>
               <button
-                onClick={() => (paymentActions as any).authorize?.()}
+                onClick={() => paymentActions.authorize?.()}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Authorize Payment

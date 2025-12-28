@@ -100,8 +100,8 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             type="text"
             value={activeState?.data?.input ?? ""}
             onChange={(e) => activeActions?.typed?.(e.target.value)}
-            onFocus={() => actions.focus?.()}
-            onBlur={() => actions.close?.()}
+            onFocus={() => actions.focus()}
+            onBlur={() => actions.close()}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"

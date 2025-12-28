@@ -1,6 +1,5 @@
 import React from "react";
 import { useMachine } from "matchina/react";
-import { parseFlatStateKey } from "matchina/nesting";
 import { createFlatTrafficLight } from "./machine-flat";
 
 interface TrafficLightViewFlatProps {
@@ -12,9 +11,17 @@ export function TrafficLightViewFlat({ machine }: TrafficLightViewFlatProps) {
   const state = change.to;
   const send = (event: string) => machine.send(event);
 
-  const parsed = parseFlatStateKey(state.key);
-  const parent = parsed.parent;
-  const child = parsed.child;
+  // Use pattern matching instead of parseFlatStateKey
+  const stateInfo = state.key.split('.').reduce((acc, part, index, parts) => {
+    if (index === 0) {
+      acc.parent = part;
+      acc.child = parts.length > 1 ? parts[1] : undefined;
+    }
+    return acc;
+  }, { parent: '', child: undefined as string | undefined });
+
+  const parent = stateInfo.parent;
+  const child = stateInfo.child;
 
   const isWorking = parent === "Working";
   const lightColor = child || "off";
