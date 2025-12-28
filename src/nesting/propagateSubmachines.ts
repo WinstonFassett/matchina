@@ -142,15 +142,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     (m as any).hierarchical = true;
   }
 
-  // Disconnects a machine from the propagation system.
-  // 🧑‍💻: WARNING: NOT USED
-  // function unhookMachine(m: AnyMachine) {
-  //   if ((m as any).__propagateUnhook) {
-  //     (m as any).__propagateUnhook();
-  //     delete (m as any).__propagateUnhook;
-  //   }
-  // }
-
   // Determine if a child's current state is final
   // if marked as such or has no transitions
   function isChildFinal(child: any, childState: any): boolean {
@@ -381,16 +372,6 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
 
     return null;
   }
-
-  // This function is not currently used, but can aid debugging or explicit wiring
-  // of machines discovered through means other than active-chain traversal.
-  // function hookDiscovered(machines: AnyMachine[]) {
-  //   for (const m of machines) {
-  //     const s = m.getState();
-  //     const child = getChildFromParentState(s);
-  //     if (child) hookMachine(child);
-  //   }
-  // }
 
   /**
    * Discover the current active chain by following child pointers starting at root,
