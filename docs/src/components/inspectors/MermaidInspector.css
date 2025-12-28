@@ -101,7 +101,7 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
   fill: var(--sl-color-text) !important; 
 }
 .edgeLabel rect {
-  fill: var(--sl-color-bg) !important;
+  fill: var(--sl-color-gray-2) !important;
   stroke: var(--sl-color-gray-4) !important;
 }
 .edgeLabel p {
@@ -110,8 +110,12 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
 
 /* Dark mode edge label fixes */
 html[data-theme="dark"] .edgeLabel rect {
-  fill: var(--sl-color-gray-2) !important;
+  fill: var(--sl-color-gray-1) !important;
   stroke: var(--sl-color-gray-5) !important;
+}
+
+html[data-theme="dark"] .edgeLabel text {
+  fill: var(--sl-color-text) !important;
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
@@ -132,7 +136,6 @@ html[data-theme="dark"] .edgeLabel rect {
 }
 
 .edge-ancestor {
-  background-color: var(--sl-color-gray-4) !important;
   color: var(--sl-color-accent-high) !important;
   font-weight: 400 !important;
 }
