@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
+import { useMachine } from "../integrations/react";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
 import { buildShapeTree } from "../inspect/build-visualizer-tree";
@@ -112,6 +113,14 @@ export default function ForceGraphInspector({
   const ref = useRef<HTMLDivElement>(null);
   const graphInstance = useRef<any>(null);
 
+  // Copy the exact working pattern from SketchInspector
+  useMachine(definition);
+  const currentState = definition.getState();
+  
+  console.log('ForceGraph: Machine type:', definition.shape ? 'HSM' : 'Legacy');
+  console.log('ForceGraph: Current state:', currentState?.key);
+  console.log('ForceGraph: Has notify:', typeof definition.notify);
+  
   const diagram: Diagram = useMemo(() => {
     // Handle both HSM machines (with shape) and legacy factory machines
     if (definition.shape?.getState) {
@@ -205,38 +214,45 @@ export default function ForceGraphInspector({
     }
   }, [definition]);
   
-  // Handle value tracking for both HSM and legacy machines
+  // Handle value tracking using the working pattern from SketchInspector
   const currentValue = useMemo(() => {
+    console.log('ForceGraph: useMemo triggered, currentState:', currentState?.key, currentState?.fullKey);
+    
     if (definition.shape?.getState) {
-      // HSM Machine - get current state from shape
-      const shape = definition.shape.getState();
-      const currentChange = definition.getChange?.();
-      
-      // For HSM machines, try to get the active state from the change or shape
-      if (currentChange?.to) {
-        // Handle different formats of 'to' property
-        return typeof currentChange.to === 'string' 
-          ? currentChange.to 
-          : currentChange.to.key || currentChange.to.fullKey || valueFromProp;
-      }
-      
-      // Fallback: try to find initial state or use provided value
-      return shape?.initialKey || valueFromProp;
+      // HSM Machine - use current state from machine
+      const result = currentState?.key || currentState?.fullKey || valueFromProp;
+      console.log('ForceGraph: HSM result:', result);
+      return result;
     } else {
       // Legacy Factory Machine - get current state from machine
-      const currentState = definition.getState?.();
-      return currentState?.key || valueFromProp;
+      const result = currentState?.key || valueFromProp;
+      console.log('ForceGraph: Legacy result:', result);
+      return result;
     }
-  }, [definition, valueFromProp]);
+  }, [currentState, valueFromProp]);
   
   const valueRef = useRef(currentValue);
   valueRef.current = currentValue;
   
   // Update ForceGraph when state changes
   useEffect(() => {
+    console.log('ForceGraph: useEffect triggered, currentValue:', currentValue);
+    // Update the ref that node highlighting uses
+    valueRef.current = currentValue;
+    
     if (graphInstance.current) {
-      // Force a re-render to update node highlighting
-      graphInstance.current.refresh();
+      console.log('ForceGraph: Calling graphData refresh');
+      // Force a proper canvas redraw by resetting the graph data
+      graphInstance.current.graphData(graphInstance.current.graphData());
+      // Force canvas redraw by triggering resize
+      setTimeout(() => {
+        if (graphInstance.current) {
+          graphInstance.current.width();
+          graphInstance.current.height();
+        }
+      }, 10);
+    } else {
+      console.log('ForceGraph: No graph instance yet');
     }
   }, [currentValue]);
   
@@ -244,17 +260,38 @@ export default function ForceGraphInspector({
   useEffect(() => {
     let mounted = true;
     let Graph: any;
+    let resizeObserver: ResizeObserver;
+    
     import("force-graph").then((module) => {
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
       
-      // Get container dimensions
-      const width = ref.current.offsetWidth || 800;
-      const height = ref.current.offsetHeight || 600;
+      const updateDimensions = () => {
+        if (!ref.current || !Graph) return;
+        
+        // Get the ACTUAL rendered dimensions from the container's CSS layout
+        const containerWidth = ref.current.offsetWidth || 400;
+        const containerHeight = ref.current.offsetHeight || 300;
+        
+        console.log('ForceGraph: Honoring container CSS dimensions:', containerWidth, 'x', containerHeight);
+        
+        // ForceGraph should match its container, not override layout
+        Graph.height(containerHeight)
+          .width(containerWidth);
+      };
       
-      Graph.height(height)
-        .width(width)
+      // Initial dimensions
+      updateDimensions();
+      
+      // Watch for container resize
+      resizeObserver = new ResizeObserver(() => {
+        updateDimensions();
+      });
+      
+      resizeObserver.observe(ref.current);
+      
+      Graph
         .linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
@@ -447,9 +484,9 @@ export default function ForceGraphInspector({
             );
           }
           
-          // Transition links - existing logic
+          // Transition links - highlight active transitions
           if (
-            value === link.source.name &&
+            value === link.source &&  // Use full key for flattened HSMs
             canFire(definition, value, link.name)
           ) {
             return getCssVar(
@@ -475,14 +512,23 @@ export default function ForceGraphInspector({
         .linkHoverPrecision(10)
         .onLinkClick(({ name }: { name: string }) => {
           if (interactive) {
+            console.log('ForceGraph: Link clicked:', name);
             dispatch({ type: name });
           }
         })
         .onNodeClick((node: any) => {
           if (interactive) {
-            // For node clicks, we could show available transitions or trigger a default action
-            // For now, let's log the node click for debugging
-            console.log('Node clicked:', node.id, node.name);
+            console.log('ForceGraph: Node clicked:', node.id);
+            // Find available transitions from this node and trigger the first one
+            const shape = definition.shape?.getState();
+            if (shape?.transitions.has(node.id)) {
+              const transitions = shape.transitions.get(node.id);
+              if (transitions && transitions.size > 0) {
+                const firstEvent = transitions.keys().next().value;
+                console.log('ForceGraph: Dispatching event:', firstEvent);
+                dispatch({ type: firstEvent });
+              }
+            }
           }
         });
       // Increase node spacing and collision radius
@@ -545,6 +591,15 @@ export default function ForceGraphInspector({
         });
       Graph.graphData(diagram);
       
+      // Constrain canvas to respect container layout
+      const canvas = ref.current.querySelector('canvas');
+      if (canvas) {
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        canvas.style.width = 'auto';
+        canvas.style.height = 'auto';
+      }
+      
       // Fit view to show all nodes properly
       setTimeout(() => {
         Graph.zoomToFit(400, 50); // 400ms animation, 50px padding
@@ -552,6 +607,9 @@ export default function ForceGraphInspector({
     });
     return () => {
       mounted = false;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (graphInstance.current) {
         graphInstance.current.stopAnimation();
         graphInstance.current = null;
@@ -586,5 +644,5 @@ export default function ForceGraphInspector({
     }
   }, [lastEvent, prevState, diagram]);
 
-  return <div ref={ref} style={{ width: '100%', height: '100%' }}>{/* ForceGraph will render here */}</div>;
+  return <div ref={ref} className="w-full h-full overflow-hidden max-w-full">{/* ForceGraph will render here */}</div>;
 }

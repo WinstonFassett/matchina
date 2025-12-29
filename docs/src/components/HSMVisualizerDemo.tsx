@@ -91,6 +91,11 @@ export function VisualizerDemo({
     { 
       key: 'forcegraph', 
       label: 'Force Graph',
+      description: 'Physics-based force-directed graph visualization'
+    },
+    { 
+      key: 'forcegraph', 
+      label: 'Force Graph',
       description: 'Force-directed graph visualization'
     }
   ] as const, []);

@@ -23,7 +23,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 
 import CustomEdge from "./CustomEdge";
-import CustomNode from "./CustomNode";
+import CustomNodeComponent from "./CustomNode";
 import LayoutPanel from "./LayoutPanel";
 import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
 import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
@@ -54,7 +54,7 @@ interface ReactFlowInspectorProps {
 }
 
 const nodeTypes: NodeTypes = {
-  custom: CustomNode as any, // Type assertion to avoid complex generic issues
+  custom: CustomNodeComponent as any, // Type assertion to avoid complex generic issues
 };
 
 const edgeTypes: EdgeTypes = {
@@ -130,6 +130,30 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
       }, 50); // Small delay to ensure nodes are properly positioned
     }
   }, [isLayoutComplete]);
+
+  // Smooth zoom to active state when it changes
+  useEffect(() => {
+    if (!reactFlowInstanceRef.current || !isInitialized || !value) return;
+
+    const activeNode = nodes.find((node) => node.id === value);
+    if (!activeNode) return;
+
+    // Smooth pan/zoom to the active node with a little padding
+    reactFlowInstanceRef.current.fitBounds(
+      {
+        x: activeNode.position.x,
+        y: activeNode.position.y,
+        width: activeNode.width || 120,
+        height: activeNode.height || 80,
+      },
+      {
+        padding: 0.4,
+        duration: 500, // Smooth 500ms animation
+        minZoom: 0.5,
+        maxZoom: 2,
+      }
+    );
+  }, [value, nodes, isInitialized]);
 
   const { edges, onEdgesChange, updateEdges } = useStateMachineEdges(
     initialEdges,
@@ -233,7 +257,14 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
                 if (e.target === e.currentTarget) setShowLayoutDialog(false);
               }}
             >
-              <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
+              <div className="mt-16 mr-4 max-w-[300px] overflow-auto relative">
+                <button
+                  onClick={() => setShowLayoutDialog(false)}
+                  className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                  title="Close"
+                >
+                  ✕
+                </button>
                 <LayoutPanel
                   options={layoutOptions}
                   onOptionsChange={handleLayoutChange}

@@ -74,22 +74,17 @@ Replace both `MachineExampleWithChart` and `VisualizerDemo` with one component.
   defaultViz="auto"  // or explicit: "reactflow" | "forcegraph" | "mermaid" | "sketch"
 
   // Picker configuration
-  availableViz={["reactflow", "forcegraph", "mermaid", "sketch"]}  // default: all
+  availableViz={["reactflow", "forcegraph", "mermaid-statechart", "mermaid-flowchart", "sketch"]}  // default: all
   showPicker={true}  // default: true if availableViz.length > 1
-  pickerStyle="buttons"  // or "dropdown"
 
   // Layout configuration
   layout="split"  // "split" | "stacked" | "auto"
   vizPosition="left"  // "left" | "right" | "top" | "bottom"
   minVizHeight={400}  // responsive: uses vh on mobile, px on desktop
 
-  // Interactivity
+  // Interactivity (prop for wrapper, not UI toggle)
   interactive={true}  // allow clicking transitions in viz
   showRawState={false}  // debug panel
-
-  // Mermaid-specific
-  mermaidDiagramType="statechart"  // "statechart" | "flowchart"
-  allowDiagramTypeToggle={false}
 />
 ```
 
@@ -102,14 +97,14 @@ function selectBestVisualizer(machine: Machine): VisualizerType {
   const shape = extractShape(machine);
   const stateCount = countStates(shape);
   const hasHierarchy = hasNestedStates(shape);
-  const transitionDensity = calculateTransitionDensity(shape);
+  const transitionDensity = calculateTransitionDensity(shape);  // Note: Keep lightweight for perf
 
   if (hasHierarchy) {
     return "sketch";  // Best for hierarchical visualization
   }
 
   if (stateCount <= 5 && transitionDensity < 0.5) {
-    return "mermaid";  // Clean, familiar for simple machines
+    return "mermaid-statechart";  // Clean, familiar for simple machines
   }
 
   if (transitionDensity > 0.7) {
@@ -118,39 +113,58 @@ function selectBestVisualizer(machine: Machine): VisualizerType {
 
   return "reactflow";  // Default for complex flat machines
 }
+
+// Transition density calculation (lightweight, no perf impact)
+function calculateTransitionDensity(shape: MachineShape): number {
+  const stateCount = countStates(shape);
+  const transitionCount = countTransitions(shape);
+  const maxPossibleTransitions = stateCount * stateCount;
+  return transitionCount / maxPossibleTransitions;
+}
 ```
 
 ### C. Unified Picker Component
 
-One picker UI with two style variants:
+**Dropdown with flat list of all visualizer permutations**:
 
-#### **Button Group Style** (Recommended)
 ```
-┌─────────────────────────────────────────────────┐
-│ ○ Sketch  ● ReactFlow  ○ ForceGraph  ○ Mermaid │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────┐
+│ ReactFlow ▼              │
+├──────────────────────────┤
+│ • ReactFlow              │
+│   Sketch                 │
+│   ForceGraph             │
+│   Mermaid - Statechart   │
+│   Mermaid - Flowchart    │
+└──────────────────────────┘
 ```
-- Clear visual active state
-- Touch-friendly
-- Accessible (keyboard navigation)
-- Icons + labels for clarity
 
-#### **Dropdown Style** (Compact)
-```
-┌──────────────────┐
-│ ReactFlow ▼      │
-├──────────────────┤
-│ • ReactFlow      │
-│   Sketch         │
-│   ForceGraph     │
-│   Mermaid        │
-└──────────────────┘
-```
-- Space-saving
-- Good for 5+ options
-- Use when vertical space is limited
+**Architecture**: Flat list - each visualizer type/variant is a distinct option
+- ReactFlow (1 option)
+- Sketch (1 option)
+- ForceGraph (1 option)
+- Mermaid Statechart (1 option)
+- Mermaid Flowchart (1 option)
 
-**Implementation**: Single `<VizPicker>` component with `style` prop.
+**Total: 5 discrete visualizer options** - no grouping, no nesting, no composite options.
+
+**Implementation**:
+```typescript
+type VisualizerType =
+  | 'reactflow'
+  | 'sketch'
+  | 'forcegraph'
+  | 'mermaid-statechart'
+  | 'mermaid-flowchart';
+
+const VISUALIZERS = [
+  { value: 'reactflow', label: 'ReactFlow' },
+  { value: 'sketch', label: 'Sketch' },
+  { value: 'forcegraph', label: 'ForceGraph' },
+  { value: 'mermaid-statechart', label: 'Mermaid - Statechart' },
+  { value: 'mermaid-flowchart', label: 'Mermaid - Flowchart' },
+] as const;
+```
 
 ### D. Responsive Layout System
 
@@ -242,7 +256,7 @@ Common use cases as presets:
 ```typescript
 // Simple machines
 <MachineVisualizer preset="simple" machine={machine} />
-// → defaultViz="mermaid", availableViz=["mermaid", "sketch"], layout="stacked"
+// → defaultViz="mermaid-statechart", availableViz=["mermaid-statechart", "mermaid-flowchart", "sketch"], layout="stacked"
 
 // Hierarchical machines
 <MachineVisualizer preset="hierarchical" machine={machine} />
@@ -261,12 +275,14 @@ Common use cases as presets:
 
 ## Migration Strategy
 
-### Phase 1: Build Unified Component
+### Phase 1: Build Unified Component (Wrapper Layer Only)
 1. Create `MachineVisualizer.tsx` in `/docs/src/components/`
-2. Implement unified picker (`VizPicker.tsx`)
-3. Implement auto-selection algorithm
+2. Implement unified dropdown picker (`VizPicker.tsx`)
+3. Implement auto-selection algorithm (lightweight transition density calc)
 4. Implement responsive layout system
 5. Add configuration presets
+
+**Note**: No changes to viz components themselves - work stays in wrapper/integration layer to avoid conflicts with parallel agents working on ReactFlow and ForceGraph externalization.
 
 ### Phase 2: Migrate Examples
 1. Start with 3 representative examples (simple, hierarchical, complex)
@@ -281,17 +297,25 @@ Common use cases as presets:
 
 ---
 
-## Open Questions for Discussion
+## Design Decisions
 
-1. **Default picker style**: Buttons vs dropdown? (Recommend: buttons)
-2. **Auto-selection**: Enable by default or opt-in? (Recommend: opt-in with clear docs)
-3. **Mobile layout**: Stacked with scroll, or collapsible viz? (Recommend: stacked, optional collapse)
-4. **Viz-specific controls**: How to handle ReactFlow layout panel, Mermaid diagram type toggle?
-   - Option A: Unified "Viz Settings" panel (gear icon)
-   - Option B: Inline controls below picker (context-aware)
-5. **Transition animations**: Should viz change have a transition when switching?
-6. **Persistence**: Remember user's viz preference per example (localStorage)?
-7. **URL state**: Sync viz selection to URL query param for shareable links?
+1. **Picker style**: ✅ Dropdown (cleaner, more professional)
+2. **Mermaid options**: ✅ List both diagram types separately in picker
+3. **Interactive prop**: ✅ Configuration prop for wrapper, not UI toggle
+4. **Viz components**: ✅ No changes to viz components themselves (wrapper layer only)
+5. **Transition density**: ✅ Implement but keep lightweight (no perf impact)
+
+## Open Questions
+
+1. **Auto-selection**: Enable by default or opt-in? (Recommend: opt-in with clear docs)
+2. **Mobile layout**: Stacked with scroll, or collapsible viz? (Recommend: stacked, optional collapse)
+3. **Viz-specific controls**: How to handle ReactFlow layout panel?
+   - Option A: Keep as-is (modal overlay)
+   - Option B: Unified "Viz Settings" gear icon panel
+   - Option C: Inline controls below picker (context-aware)
+4. **Transition animations**: Should viz change have a transition when switching?
+5. **Persistence**: Remember user's viz preference per example (localStorage)?
+6. **URL state**: Sync viz selection to URL query param for shareable links?
 
 ---
 
@@ -302,7 +326,8 @@ Based on analysis and UX principles:
 | Aspect | Recommendation | Rationale |
 |--------|---------------|-----------|
 | **Default viz** | `auto` with smart selection | Best experience per machine type |
-| **Picker style** | `buttons` | More discoverable, touch-friendly |
+| **Picker style** | `dropdown` | Clean, professional, space-efficient |
+| **Mermaid options** | Both types listed separately | User choice between statechart/flowchart |
 | **Layout** | `split` on desktop, `stacked` on mobile | Live interaction visibility |
 | **Height** | Responsive (40-50vh mobile, 500px desktop) | Adapts to screen size |
 | **Show picker** | `true` if 2+ viz available | Encourage exploration |
