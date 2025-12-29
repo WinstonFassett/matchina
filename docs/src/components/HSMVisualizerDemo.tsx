@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
-import { HSMMermaidInspector, SketchInspector, ReactFlowInspector, defaultTheme } from 'matchina/viz';
+import { useState, useMemo, useEffect } from 'react';
+import { HSMMermaidInspector, SketchInspector, ReactFlowInspector, ForceGraphInspector, defaultTheme } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
 import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 
-type VisualizerType = 'mermaid' | 'sketch' | 'reactflow';
+type VisualizerType = 'mermaid' | 'sketch' | 'reactflow' | 'forcegraph';
 
 interface VisualizerDemoProps {
   machine: any;
@@ -28,10 +28,23 @@ export function VisualizerDemo({
 }: VisualizerDemoProps) {
   const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>(defaultVisualizer);
   const currentChange = useMachine(machine) as any;
+  const [lastEvent, setLastEvent] = useState<string>();
+  const [prevState, setPrevState] = useState<string>();
+  
   // Also subscribe to active child (first level) to catch child-only transitions
   const cs = machine.getState?.();
   const child = cs?.data?.machine;
   useMachine(child || machine);
+  
+  // Track events for ForceGraphInspector
+  useEffect(() => {
+    if (currentChange?.key && currentChange?.key !== prevState) {
+      setPrevState(currentChange.key);
+      // Extract event type from change if available
+      const eventType = currentChange?.event?.type || 'unknown';
+      setLastEvent(eventType);
+    }
+  }, [currentChange, prevState]);
   const visualizers = useMemo(() => [
     { 
       key: 'sketch', 
@@ -47,6 +60,11 @@ export function VisualizerDemo({
       key: 'reactflow', 
       label: 'React Flow',
       description: 'Interactive node-based visualization'
+    },
+    { 
+      key: 'forcegraph', 
+      label: 'Force Graph',
+      description: 'Force-directed graph visualization'
     }
   ] as const, []);
 
@@ -84,6 +102,22 @@ export function VisualizerDemo({
                 actions[event]();
               }
             }}
+          />
+        );
+      case 'forcegraph':
+        return (
+          <ForceGraphInspector 
+            value={currentChange?.key || 'unknown'} 
+            definition={machine.transitions || {}}
+            lastEvent={lastEvent}
+            prevState={prevState}
+            dispatch={(event: any) => {
+              if (actions && typeof event === 'string' && actions[event]) {
+                actions[event]();
+              }
+            }}
+            interactive={interactive}
+            theme={defaultTheme}
           />
         );
       default:

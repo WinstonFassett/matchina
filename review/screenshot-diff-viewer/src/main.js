@@ -228,6 +228,15 @@ function setupSliders() {
     handle.addEventListener('mousedown', (e) => {
       isDragging = true;
       currentContainer = container;
+      dragStartX = e.clientX;
+      
+      // Store current positions for all sliders
+      document.querySelectorAll('.slider-container').forEach(c => {
+        const h = c.querySelector('.slider-handle');
+        const currentLeft = parseFloat(h.style.left) || 50;
+        dragStartPositions[c.dataset.image] = currentLeft / 100;
+      });
+      
       e.preventDefault();
     });
     
