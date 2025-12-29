@@ -132,6 +132,13 @@ For detailed stacking strategy analysis, see `review/STACKING.md`.
 
 **ALWAYS CREATE TICKETS BEFORE STARTING WORK**
 
+**MANDATORY: ALL BUG AND FEATURE WORK MUST HAVE A TICKET**
+
+- **MUST** create a beads ticket before writing ANY code for bugs or features
+- **MUST** keep the ticket updated throughout development
+- **MUST** update ticket with findings, progress, and completion status
+- **NEVER** write bug fixes or feature code without a corresponding ticket
+
 1. **ASSESS** - Identify what needs to be done
 2. **CREATE TICKETS** - Create beads tickets for each piece of work
 3. **ORGANIZE** - Set up dependencies and priorities
