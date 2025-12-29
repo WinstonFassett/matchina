@@ -5,6 +5,7 @@ This project uses **bd** (beads) for issue tracking. For development patterns, s
 ## Agent Documentation Map
 
 **All agent guidance documents:**
+
 - **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, dev servers
 - **`CLAUDE.md`** - Project overview, architecture, build system
 - **`docs/DEVELOPMENT.md`** - Development patterns, example structure, path aliases
@@ -18,6 +19,7 @@ This project uses **bd** (beads) for issue tracking. For development patterns, s
 ### Cardinal Rules
 
 1. **NEVER declare transitions as a variable** - Always pass transitions inline as a direct argument to `createMachine`/`createFlatMachine`
+
    ```typescript
    // ❌ WRONG - Breaks type inference
    const transitions = { ... };
@@ -48,20 +50,20 @@ This is a major version development - no need to maintain legacy APIs or depreca
 - Use new API names without aliasing old ones
 - Do not add "legacy" or "deprecated" comments unless specifically required
 - Focus on clean, current API design
+
 ## Quick Reference
 
-**Focus: Get next SINGLE work item or list all open work.**
-
 ```bash
-bd ready              # Show issues ready to work (includes in-progress)
-bd list --status=open # List all open issues
-bd show <id>          # View specific issue details
-bd update <id> --status=in_progress  # Claim work
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --status in_progress  # Claim work
 bd close <id>         # Complete work
 bd sync --flush-only  # Export to JSONL
 ```
 
+### Finding Work
 **CRITICAL: ALWAYS CHECK GIT STATUS BEFORE/AFTER WORK**
+
 ```bash
 git status           # MUST check before starting work
 git status           # MUST check after completing work
@@ -72,7 +74,8 @@ git commit -m "..."  # Commit work before moving to next ticket
 ### Finding Work (Task-Oriented)
 
 **CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
-- **NEVER ask user for priority decisions** 
+
+- **NEVER ask user for priority decisions**
 - Work tickets in dependency order first, then by priority
 - Use `bd ready` output order - it's already sorted correctly
 - If multiple items are ready, start with the first one listed
@@ -91,6 +94,7 @@ git commit -m "..."  # Commit work before moving to next ticket
 6. **GATHER EVIDENCE** - UI tickets must include evidence of the fix (screenshots, test results)
 
 ### Why This Matters:
+
 - Prevents "I forgot to create a ticket for that"
 - Ensures work is tracked and visible
 - Allows proper dependency management
@@ -99,6 +103,7 @@ git commit -m "..."  # Commit work before moving to next ticket
 - Documents analysis and decisions for future reference
 
 ### Ticket Creation Pattern:
+
 ```bash
 # Before starting any work:
 bd create "Fix ReactFlow edges missing" type=bug priority=P2
@@ -115,7 +120,27 @@ bd update <first-ticket-id> --status=in_progress
 bd update <first-ticket-id> --description "Investigation results: [root cause, plan, evidence]"
 ```
 
+### Ticket Field Structure:
+
+Beads tickets have dedicated fields for proper organization:
+
+- **`--description`**: Concise problem statement and current state
+- **`--acceptance`**: Clear, actionable checklist of completion criteria
+- **`--design`**: Implementation plan and technical approach
+- **`--notes`**: Additional context, current state details, success metrics
+
+**Example structured update:**
+
+```bash
+bd update <id> \
+  --description "### Problem: X is broken because Y" \
+  --acceptance "- [ ] X works correctly\n- [ ] No regressions in Z" \
+  --design "### Plan: 1. Fix Y 2. Test X 3. Verify Z" \
+  --notes "### Current state: A, B, C examples affected"
+```
+
 ### Evidence Requirements for UI Tickets:
+
 - **NEVER close UI tickets without evidence** that the user will accept
 - Evidence types: browser screenshots, test results, working examples
 - Document the before/after state
@@ -124,18 +149,14 @@ bd update <first-ticket-id> --description "Investigation results: [root cause, p
 - For features: demonstrate the functionality works as intended
 
 ```bash
-# Get next available work item (includes in-progress)
-bd ready
-
-# See everything open
-bd list --status=open
-
-# View specific issue with dependencies
-bd show <issue-id>
-
-# JSON output for parsing (if needed)
+# See what's ready to work on (with JSON for parsing)
 bd ready --json | jq '.[0]'
+
+# Get issue details (with JSON for parsing)
 bd show <issue-id> --json
+
+# List all open issues
+bd list --status=open
 ```
 
 ## Beads Ticket Organization
@@ -145,23 +166,27 @@ bd show <issue-id> --json
 This project uses a **two-tier ticket structure** for managing complex, multi-branch work:
 
 **Long-running ancestor tickets** - Persist across branches for continuity:
+
 - **Context/Plan tickets** (label: `plan`, type: `epic`) - Branch organization, work stream mapping
 - **Review tickets** (label: `review`, type: `task`) - Detailed findings, cross-cutting concerns
 - **Documentation tickets** (label: `doc`) - Persistent reference material
 
 **Shorter-lived work tickets** - Scoped to specific implementations:
+
 - **Epics** (type: `epic`, optional label: `v2` for breaking changes) - Major feature areas
 - **Features/Tasks/Bugs** (type: `feature|task|bug`) - Concrete work items
 
 ### Branch Planning Reference
 
 **System of record**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
+
 - Catchall for branch organization context
 - Contains work stream dependency graph
 - Living document updated as branches are created/merged
 - **Use `bd show matchina-19` for current branch planning context**
 
 **Filesystem artifact**: `review/BRANCH_PLAN.md`
+
 - Historical artifact, may not exist
 - Used as draft area before syncing to bd
 - Beads ticket is source of truth, not this file
@@ -176,6 +201,7 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 ### Dependency Pattern
 
 **Work items usually link to organizing areas** (epics, plans) but this is NOT a blocker:
+
 - Can create work tickets independently and groom dependencies iteratively
 - Long-running tickets (plan/review) typically depend on work epics
 - Work tickets depend on each other based on implementation order
@@ -192,6 +218,7 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
   - Do NOT attempt to start it yourself
 
 **User runs:**
+
 ```bash
 npm run dev              # Vitest watch (core library)
 npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
@@ -227,12 +254,13 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
 - `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
 - `review/` - Living review and planning workspace
 
+**Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
 **Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer), AND git status is clean.
-
 
 ## Commands
 
 **Agents can run:**
+
 ```bash
 npm run dev              # Vitest watch mode (for testing)
 npm test                 # Run all tests with coverage (if everything passes)
@@ -240,6 +268,7 @@ npm run build            # Build core library only (fast, preferred)
 ```
 
 **User runs (agents assume running):**
+
 ```bash
 npm --workspace docs run dev    # Astro dev server at localhost:4321
 npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
@@ -251,6 +280,7 @@ npm run dry-run                # Dry run release (user only)
 ```
 
 **Key points:**
+
 - Agents do NOT run dev servers - assume they're running
 - **NEVER run `npm run build:docs` as agent** - extremely slow and verbose
 - **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
@@ -275,6 +305,7 @@ bd sync --flush-only         # Export to JSONL
 ## Troubleshooting Philosophy
 
 **When bugs appear in examples:**
+
 1. Check if problem reproduces in core library
 2. If yes → pivot to `/test`, write failing test, fix in `/src`
 3. If no → fix in example code
@@ -283,7 +314,15 @@ Evidence > assumptions. Let tests guide the fix.
 
 ## Quality Gates
 
+Do prefer to run tests when working in the core
+Rely on developer (preferred) or browser integration (when running unattended) for manually testing examples in the docs
+Beware verbose quality gates. Do not naively pipe all output to yourself. 
+Docs are notoriously verbose to run dev, build and check. 
+Best to pipe such things into files/buffers and then once done, read them in reverse, ie last 10-20 lines to start
+Developer usually does not want you to run quality gates EXCEPT right before shipping. Even committing skip linting.
+Never destroy work. We have git. But do NOT do hard resets. 
 **When to run:**
+
 - Tests: Always when working in core (`npm run dev` for watch mode)
 - Manual browser testing: For interactive UX (or use puppeteer via dev server)
 - build: When needed to verify library builds correctly
@@ -311,6 +350,7 @@ Evidence > assumptions. Let tests guide the fix.
 **Strategy: Pipe to file, read last 10-20 lines for success/failure, investigate more only if needed.**
 
 **Examples:**
+
 ```bash
 # ✅ Good - run specific test
 npx vitest run test/matchbox.test.ts -t "should create"
@@ -330,9 +370,9 @@ npm test            # Can flood context if tests have logging
 ```
 
 **Safety:**
-- Never destroy work (we have git)
-- Do NOT do hard resets 
 
+- Never destroy work (we have git)
+- Do NOT do hard resets
 
 ## Landing the Plane (Session Completion)
 
@@ -340,17 +380,14 @@ npm test            # Can flood context if tests have logging
 
 **MANDATORY WORKFLOW:**
 
-1. **CHECK GIT STATUS** - CRITICAL: Before completing any work, ALWAYS check `git status` to see what files are modified
-2. **File issues for remaining work** - Create issues for anything that needs follow-up
-3. **Run quality gates** (if code changed) - Tests, linters, builds
-4. **Update issue status** - Close finished work, update in-progress items
-5. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
-6. **Clean up** - Remove any working docs, debug logging in code
-7. **CHECK GIT STATUS AGAIN** - CRITICAL: Verify all changes are committed
-8. **Hand off** - Provide context for next session
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
+5. **Clean up** - Remove any working docs, debug logging in code
+6. **Verify** - All changes committed
+7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
+
 - Work is NOT complete until tested and committed
-- **ALWAYS check `git status` before closing tickets** - never complete work without knowing what will be committed
-- **NEVER leave uncommitted changes when moving to next ticket**
-- If you have uncommitted changes when closing a ticket, you MUST commit them first
