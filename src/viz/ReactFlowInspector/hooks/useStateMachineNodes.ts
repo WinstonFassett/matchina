@@ -150,46 +150,13 @@ export const useStateMachineNodes = (
   const states = useMemo(() => {
     if (!shape?.states) return [];
     
-    // Handle both Map and Object formats for states
-    const statesEntries: [string, any][] = shape.states instanceof Map 
-      ? Array.from(shape.states.entries())
-      : Object.entries(shape.states);
-    
-    // Check if this is a hierarchical machine (has nested states)
-    const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
-      stateConfig && typeof stateConfig === 'object' && stateConfig.states
-    );
-    
-    if (!hasNestedStates) {
-      // Flat machine - use simple state names
-      const flatStates = statesEntries.map(([name, _]: [string, any]) => name);
-      return flatStates;
+    // Shape stores all states (flat and hierarchical) with their full keys
+    // Just extract the keys - they're already in the right format
+    if (shape.states instanceof Map) {
+      return Array.from(shape.states.keys());
     }
     
-    // Hierarchical machine - extract all nested states
-    const allStates: string[] = [];
-    
-    const extractStates = (shapeObj: any, prefix = '') => {
-      if (!shapeObj?.states) return;
-      
-      // Handle both Map and Object formats
-      const entries: [string, any][] = shapeObj.states instanceof Map
-        ? Array.from(shapeObj.states.entries())
-        : Object.entries(shapeObj.states);
-      
-      entries.forEach(([stateName, stateConfig]: [string, any]) => {
-        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
-        allStates.push(fullStateName);
-        
-        // Recursively extract nested states
-        if (stateConfig?.states) {
-          extractStates(stateConfig, fullStateName);
-        }
-      });
-    };
-    
-    extractStates(shape);
-    return allStates;
+    return Object.keys(shape.states);
   }, [shape]);
 
   // Extract transitions for ELK layout from shape
@@ -235,23 +202,8 @@ export const useStateMachineNodes = (
                   return state.charAt(0).toUpperCase() + state.slice(1);
                 }
               })(),
-              isActive: (() => {
-                // For flat machines, exact match. For hierarchical, check if current state ends with this state
-                if (state.includes('.')) {
-                  return currentState === state || currentState.endsWith('.' + state.split('.').pop());
-                } else {
-                  return currentState === state;
-                }
-              })(),
-              isPrevious: (() => {
-                // For flat machines, exact match. For hierarchical, check if previous state ends with this state
-                if (!previousState) return false;
-                if (state.includes('.')) {
-                  return previousState === state || previousState.endsWith('.' + state.split('.').pop());
-                } else {
-                  return previousState === state;
-                }
-              })(),
+              isActive: currentState === state,
+              isPrevious: previousState === state,
             },
             type: "custom",
           };
@@ -280,23 +232,8 @@ export const useStateMachineNodes = (
               return state.charAt(0).toUpperCase() + state.slice(1);
             }
           })(),
-          isActive: (() => {
-            // For flat machines, exact match. For hierarchical, check if current state ends with this state
-            if (state.includes('.')) {
-              return currentState === state || currentState.endsWith('.' + state.split('.').pop());
-            } else {
-              return currentState === state;
-            }
-          })(),
-          isPrevious: (() => {
-            // For flat machines, exact match. For hierarchical, check if previous state ends with this state
-            if (!previousState) return false;
-            if (state.includes('.')) {
-              return previousState === state || previousState.endsWith('.' + state.split('.').pop());
-            } else {
-              return previousState === state;
-            }
-          })(),
+          isActive: currentState === state,
+          isPrevious: previousState === state,
         },
         type: "custom",
       }));
