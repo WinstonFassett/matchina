@@ -18,7 +18,7 @@ export default function RockPaperScissorsExample() {
       
       <VisualizerDemo
         machine={machine}
-        actions={actions}
+        actions={actions as any}
         title="State Machine Visualizer"
         defaultVisualizer="reactflow"
         interactive={false}
