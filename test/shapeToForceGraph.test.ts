@@ -98,8 +98,8 @@ describe('buildForceGraphData', () => {
     
     // Check links
     expect(result.links).toEqual(expect.arrayContaining([
-      { source: 'On', target: 'Off', event: 'toggle', value: 1 },
-      { source: 'Off', target: 'On', event: 'toggle', value: 1 }
+      { source: 'On', target: 'Off', event: 'toggle', value: 1, type: 'transition' },
+      { source: 'Off', target: 'On', event: 'toggle', value: 1, type: 'transition' }
     ]));
   });
 
@@ -108,7 +108,7 @@ describe('buildForceGraphData', () => {
     const result = buildForceGraphData(shape);
     
     expect(result.nodes).toHaveLength(7);
-    expect(result.links).toHaveLength(8); // Fixed: Cart->Payment, Payment.Pending->Authorized/Declined/Cancel, Payment.Authorized->Confirm, Payment.Declined->Retry/Cancel, Confirmation->Complete
+    expect(result.links).toHaveLength(11); // 8 transitions + 3 hierarchy links for Payment compound state
     expect(result.nodeIds.size).toBe(7);
     
     // Check that hierarchical nodes exist
@@ -194,7 +194,8 @@ describe('buildForceGraphData', () => {
       source: 'A',
       target: 'B',
       event: 'valid',
-      value: 1
+      value: 1,
+      type: 'transition'
     });
   });
 

@@ -7,6 +7,9 @@ export interface ForceGraphNode {
   color?: string;
   fullKey: string;      // For state matching
   isInitial?: boolean;
+  isGroup?: boolean;    // For compound states
+  level?: number;       // Hierarchy depth
+  group?: string;       // Parent group ID
 }
 
 export interface ForceGraphLink {
@@ -14,6 +17,7 @@ export interface ForceGraphLink {
   target: string;       // ⭐ STRING ID, not object
   event: string;        // Event name
   value?: number;
+  type?: 'transition' | 'hierarchy';  // Link type for styling
 }
 
 export interface ForceGraphData {
@@ -27,16 +31,28 @@ export interface ForceGraphData {
  * 
  * Critical: Links use STRING IDs for source/target, not node objects.
  * This fixes the original bug where ForceGraph tried to mutate strings.
+ * 
+ * Enhanced: Creates group nodes for compound states and hierarchy links.
  */
 export function buildForceGraphData(
-  shape: MachineShape
+  shape: MachineShape,
+  options: { showHierarchy?: boolean } = {}
 ): ForceGraphData {
+  const { showHierarchy = true } = options;
   const nodes: ForceGraphNode[] = [];
   const links: ForceGraphLink[] = [];
   const nodeIds = new Set<string>();
+  const groupNodes = new Set<string>();
 
-  // Extract nodes from shape.states
+  // First pass: Create all state nodes (including compound states as groups)
   for (const [fullKey, stateNode] of shape.states.entries()) {
+    const level = fullKey.split('.').length - 1;
+    const parentKey = shape.hierarchy.get(fullKey);
+    
+    // Determine if this is a compound state (has children)
+    const hasChildren = Array.from(shape.hierarchy.entries())
+      .some(([_, parent]) => parent === fullKey);
+    
     const node: ForceGraphNode = {
       id: fullKey,
       name: stateNode.key,           // Display just leaf name
@@ -44,13 +60,20 @@ export function buildForceGraphData(
       isInitial: fullKey === shape.initialKey,
       val: fullKey === shape.initialKey ? 15 : 10,  // Initial slightly larger
       color: fullKey === shape.initialKey ? '#60a5fa' : '#8b5cf6',
+      level,
+      group: parentKey || undefined,
+      isGroup: showHierarchy && hasChildren
     };
     
     nodes.push(node);
     nodeIds.add(fullKey);
+    
+    if (hasChildren) {
+      groupNodes.add(fullKey);
+    }
   }
 
-  // Extract links from shape.transitions
+  // Second pass: Create transition links
   for (const [fromState, eventMap] of shape.transitions.entries()) {
     for (const [eventName, toState] of eventMap.entries()) {
       // Validate that both source and target states exist
@@ -60,12 +83,28 @@ export function buildForceGraphData(
           target: toState,      // String ID
           event: eventName,     // Custom property for labels
           value: 1,            // Link strength
+          type: 'transition'
         });
       } else {
         // Skip invalid transitions but could warn in development
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Invalid transition: ${fromState} -> ${toState} via ${eventName}`);
         }
+      }
+    }
+  }
+
+  // Third pass: Create hierarchy links (parent-child relationships)
+  if (showHierarchy) {
+    for (const [childKey, parentKey] of shape.hierarchy.entries()) {
+      if (parentKey && shape.states.has(childKey) && shape.states.has(parentKey)) {
+        links.push({
+          source: parentKey,
+          target: childKey,
+          event: 'contains',
+          value: 0.5,  // Weaker link for hierarchy
+          type: 'hierarchy'
+        });
       }
     }
   }

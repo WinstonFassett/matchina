@@ -121,8 +121,10 @@ export function VisualizerDemo({
               lastEvent={lastEvent}
               prevState={prevState}
               dispatch={(event: any) => {
-                if (actions && typeof event === 'string' && actions[event]) {
-                  actions[event]();
+                // ForceGraphInspector sends { type: string } format
+                const eventName = typeof event === 'string' ? event : event?.type;
+                if (actions && eventName && actions[eventName]) {
+                  actions[eventName]();
                 }
               }}
               interactive={interactive}

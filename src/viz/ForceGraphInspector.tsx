@@ -5,8 +5,23 @@ import { buildShapeTree } from "../inspect/build-visualizer-tree";
 import { buildForceGraphData } from './ForceGraphInspector/utils/shapeToForceGraph';
 
 interface Diagram {
-  nodes: Array<{ id: string; name: string }>;
-  links: Array<{ name: string; source: any; target: any }>;
+  nodes: Array<{ 
+    id: string; 
+    name: string;
+    isGroup?: boolean;
+    level?: number;
+    group?: string;
+    val?: number;
+    color?: string;
+    fullKey?: string;
+  }>;
+  links: Array<{ 
+    name: string; 
+    source: any; 
+    target: any;
+    type?: 'transition' | 'hierarchy';
+    value?: number;
+  }>;
 }
 
 function getTypedEntries(obj: any): [string, any][] {
@@ -107,18 +122,29 @@ export default function ForceGraphInspector({
     }
     
     // Use the new converter that properly handles string IDs and validation
-    const graphData = buildForceGraphData(shape);
+    const graphData = buildForceGraphData(shape, { showHierarchy: true });
     
     // Convert to the old Diagram format for compatibility with existing rendering code
+    // But preserve new hierarchy information for enhanced rendering
     return {
       nodes: graphData.nodes.map(node => ({
         id: node.id,
-        name: node.name
+        name: node.name,
+        // Pass through hierarchy info for rendering
+        isGroup: node.isGroup,
+        level: node.level,
+        group: node.group,
+        val: node.val,
+        color: node.color,
+        fullKey: node.fullKey
       })),
       links: graphData.links.map(link => ({
         name: link.event,
         source: link.source,  // String ID - this fixes the "node not found" error
-        target: link.target   // String ID - this fixes the "node not found" error
+        target: link.target,  // String ID - this fixes the "node not found" error
+        // Pass through link type for different styling
+        type: link.type,
+        value: link.value
       }))
     };
   }, [definition]);
@@ -163,18 +189,44 @@ export default function ForceGraphInspector({
             // Highlight active state
             const isActive = node.id === valueRef.current;
             ctx.strokeStyle = getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
-            ctx.lineWidth = 0.5;
-            ctx.fillStyle = isActive
-              ? getCssVar(ref, "--primary", "#1e40af")
-              : node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+            ctx.lineWidth = node.isGroup ? 2 : 0.5;  // Thicker border for groups
+            
+            // Different styling for group nodes
+            let fillColor;
+            if (isActive) {
+              fillColor = getCssVar(ref, "--primary", "#1e40af");
+            } else if (node.isGroup) {
+              fillColor = getCssVar(ref, "--accent", "#f59e0b");  // Orange for groups
+            } else {
+              fillColor = node.color || getCssVar(ref, "--forcegraph-node-bg", "#8b5cf6");
+            }
+            
+            ctx.fillStyle = fillColor;
 
-            ctx.roundRect(
-              node.x - rectWidth / 2,
-              node.y - rectHeight / 2,
-              rectWidth,
-              rectHeight,
-              6
-            );
+            // Different shapes for groups vs regular nodes
+            if (node.isGroup) {
+              // Rounded rectangle for group nodes
+              const groupPadding = paddingX * 1.5;
+              const groupWidth = textWidth + groupPadding * 2;
+              const groupHeight = fontSize + paddingY * 3;
+              
+              ctx.roundRect(
+                node.x - groupWidth / 2,
+                node.y - groupHeight / 2,
+                groupWidth,
+                groupHeight,
+                8  // More rounded for groups
+              );
+            } else {
+              // Regular rectangle for state nodes
+              ctx.roundRect(
+                node.x - rectWidth / 2,
+                node.y - rectHeight / 2,
+                rectWidth,
+                rectHeight,
+                6
+              );
+            }
             ctx.fill();
             ctx.stroke();
 
@@ -294,6 +346,18 @@ export default function ForceGraphInspector({
         })
         .linkColor((link: any) => {
           const value = valueRef.current;
+          
+          // Hierarchy links get different styling
+          if (link.type === 'hierarchy') {
+            return getCssVar(
+              ref,
+              "--accent",
+              "--forcegraph-accent",
+              "#64748b"  // Muted gray for hierarchy
+            );
+          }
+          
+          // Transition links - existing logic
           if (
             value === link.source.name &&
             canFire(definition, value, link.name)
