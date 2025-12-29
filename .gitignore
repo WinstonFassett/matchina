@@ -21,3 +21,5 @@ playwright-report/
 
 # Beads archive - local storage for completed issues
 .beads/archive/
+.beads/config.yaml
+.beads/interactions.jsonl
