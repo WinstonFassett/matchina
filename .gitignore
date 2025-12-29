@@ -4,6 +4,8 @@ dev/
 
 node_modules
 coverage
+coverage-*.txt
+coverage-*.json
 dist
 types
 .vscode
@@ -13,6 +15,7 @@ types
 *.conf
 *.env*
 *-output.txt
+test-output-*.txt
 bun.lockb
 review/screenshots/
 test-results/
@@ -24,3 +27,6 @@ playwright-report/
 .beads/config.yaml
 .beads/interactions.jsonl
 .beads/issues.jsonl
+
+# Test scripts in docs
+docs/test-*.mjs
