@@ -38,8 +38,8 @@
   flex: 0 0 auto;
   max-width: 100%;
   min-width: 0;
-  background: var(--matchina-inspector-color-background, white);
-  border: 1px solid var(--matchina-inspector-color-border, #e5e7eb);
+  background: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-gray-5);
   border-radius: 6px;
   padding: 12px;
   position: relative;
@@ -50,18 +50,18 @@
 }
 
 .state-item:hover {
-  background: var(--matchina-inspector-color-hover, #f9fafb);
+  background: var(--sl-color-gray-6);
 }
 
 .state-item.active {
-  background: var(--matchina-inspector-color-active, #8b5cf6);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  background: var(--sl-color-blue);
+  border-color: var(--sl-color-blue);
   color: white;
 }
 
 .state-item.active-ancestor {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--sl-color-blue);
   border-width: 2px;
 }
 
@@ -100,7 +100,7 @@
 .state-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--matchina-inspector-color-text, #111827);
+  color: var(--sl-color-text);
   margin-bottom: 8px;
 }
 
@@ -151,8 +151,8 @@
 }
 
 .transition-button.enabled {
-  color: var(--matchina-inspector-color-text, #111827);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  color: var(--sl-color-text);
+  border-color: var(--sl-color-blue);
   background: none;
   cursor: pointer;
   font-weight: 500;
@@ -161,14 +161,14 @@
 /* Transition buttons inside active state need proper contrast */
 .state-item.active .transition-button.enabled {
   color: rgba(255, 255, 255, 0.8);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
-  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--sl-color-blue);
+  background: rgba(59, 130, 246, 0.2);
 }
 
 .state-item.active .transition-button.enabled:hover {
-  background: rgba(139, 92, 246, 0.8);
+  background: rgba(59, 130, 246, 0.8);
   opacity: 1;
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  border-color: var(--sl-color-blue);
 }
 
 .transition-button.enabled.ancestor-state {
@@ -184,9 +184,9 @@
 }
 
 .transition-button.enabled:hover {
-  background: var(--matchina-inspector-color-active, #8b5cf6);
+  background: var(--sl-color-blue);
   color: white;
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  border-color: var(--sl-color-blue);
 }
 
 .ancestor-indicator {

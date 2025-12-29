@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { HSMMermaidInspector, SketchInspector, ReactFlowInspector } from 'matchina/viz';
+import { HSMMermaidInspector, SketchInspector, ReactFlowInspector, defaultTheme } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
 import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 
@@ -50,14 +50,19 @@ export function VisualizerDemo({
     // }
   ] as const, []);
 
+  const activeStatePath = getActiveStatePath(machine);
+  const config = {};
+  const isInteractive = interactive;
+
   const renderVisualizer = () => {
     switch (activeVisualizer) {
       case 'mermaid':
         return (
-          <HSMMermaidInspector 
-            machine={machine} 
-            actions={actions}
-            interactive={interactive}
+          <HSMMermaidInspector
+            machine={machine}
+            stateKey={activeStatePath}
+            actions={actions as any}
+            interactive={isInteractive}
           />
         );
       case 'sketch':
@@ -66,6 +71,7 @@ export function VisualizerDemo({
             machine={machine} 
             actions={actions}
             interactive={interactive}
+            theme={defaultTheme}
           />
         );
       case 'reactflow':

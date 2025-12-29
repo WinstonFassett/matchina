@@ -26,20 +26,21 @@ export interface InspectorTheme {
 }
 
 /**
- * Default theme with CSS variables
+ * Default theme that matches the original SketchInspector styling
  */
 export const defaultTheme: InspectorTheme = {
   values: {
     colors: {
-      primary: 'hsl(221, 83%, 53%)',
-      background: 'hsl(0, 0%, 100%)',
-      surface: 'hsl(210, 40%, 98%)',
-      border: 'hsl(214, 32%, 91%)',
-      text: 'hsl(222, 84%, 5%)',
-      textSecondary: 'hsl(215, 16%, 47%)',
-      active: 'hsl(142, 76%, 36%)',
-      activeBackground: 'hsl(142, 76%, 96%)',
-      hover: 'hsl(210, 40%, 96%)',
+      // Use Starlight theme variables to match original docs styling
+      background: 'var(--sl-color-bg)',
+      surface: 'var(--sl-color-bg)',
+      border: 'var(--sl-color-gray-5)',
+      text: 'var(--sl-color-text)',
+      textSecondary: 'var(--sl-color-text-secondary)',
+      primary: 'var(--sl-color-blue)',
+      active: 'var(--sl-color-blue)',
+      activeBackground: 'var(--sl-color-blue-low)',
+      hover: 'var(--sl-color-gray-6)',
     },
     spacing: {
       xs: '0.25rem',
