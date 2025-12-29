@@ -45,7 +45,11 @@ describe('describeHSM', () => {
             },
             Authorizing: {
               data: () => ({}),
-              on: { success: 'Authorized' }
+              on: { 
+                authRequired: 'AuthChallenge',
+                authSucceeded: 'Authorized',
+                authFailed: 'AuthorizationError'
+              }
             },
             Authorized: {
               data: () => ({}),
@@ -78,7 +82,7 @@ describe('describeHSM', () => {
     expect(machine.getState().key).toBe('Payment.Authorizing');
 
     // Success should go to Payment.Authorized
-    machine.send('success');
+    machine.send('authSucceeded');
     expect(machine.getState().key).toBe('Payment.Authorized');
 
     // Back should use parent transition to go to Cart
