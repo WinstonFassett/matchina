@@ -95,10 +95,8 @@ export function MachineVisualizer({
   );
 
   // Responsive layout classes
-  const isStacked = resolvedLayout === 'stacked';
   const isSplit = resolvedLayout === 'split';
   const isVizLeft = vizPosition === 'left';
-  const isVizTop = vizPosition === 'top';
 
   const containerClasses = [
     'machine-visualizer',
