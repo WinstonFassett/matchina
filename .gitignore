@@ -23,10 +23,17 @@ test-results/
 playwright-report/
 
 # Beads archive - local storage for completed issues
+.beads/
 .beads/archive/
 .beads/config.yaml
 .beads/interactions.jsonl
 .beads/issues.jsonl
+.beads/.gitignore
+.beads/README.md
+.beads/metadata.json
+
+# Claude settings and skills
+.claude/
 
 # Test scripts in docs
 docs/test-*.mjs
