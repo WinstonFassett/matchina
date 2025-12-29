@@ -6,14 +6,8 @@ import { createLazyShapeStore } from "./shape-store";
 import { AllEventsOf } from "./types";
 
 // Enhanced machine interfaces for better type safety
-export interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any>> {
+export interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any>> extends FactoryMachine<any> {
   shape: ReturnType<typeof createLazyShapeStore>;
-  send: (type: string, ...params: any[]) => void;
-  transition?: (event: any) => void;
-  notify?: (event: any) => void;
-  resolveExit?: (event: any) => any;
-  getState(): any;
-  transitions?: Record<string, Record<string, any>>;
 }
 
 // Type representing all events in a hierarchical machine (including child.* events)
