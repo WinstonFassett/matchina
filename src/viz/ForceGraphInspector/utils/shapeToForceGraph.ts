@@ -93,13 +93,16 @@ export function buildForceGraphData(
         }
       }
       
-      links.push({
-        source: actualFromState,    // Use full key for flattened HSMs
-        target: actualToState,      // Use full key for flattened HSMs
-        event: eventName,           // Custom property for labels
-        value: 1,                  // Link strength
-        type: 'transition'
-      });
+      // Only add link if both states exist (skip invalid transitions)
+      if (shape.states.has(actualFromState) && shape.states.has(actualToState)) {
+        links.push({
+          source: actualFromState,    // Use full key for flattened HSMs
+          target: actualToState,      // Use full key for flattened HSMs
+          event: eventName,           // Custom property for labels
+          value: 1,                  // Link strength
+          type: 'transition'
+        });
+      }
     }
   }
 

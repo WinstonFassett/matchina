@@ -125,7 +125,7 @@ function calculateTransitionDensity(shape: MachineShape): number {
 
 ### C. Unified Picker Component
 
-**Dropdown style** (primary):
+**Dropdown with flat list of all visualizer permutations**:
 
 ```
 ┌──────────────────────────┐
@@ -139,14 +139,32 @@ function calculateTransitionDensity(shape: MachineShape): number {
 └──────────────────────────┘
 ```
 
-- Clean, professional appearance
-- Space-efficient
-- Good for 5+ options (including both Mermaid types)
-- Standard UI pattern
+**Architecture**: Flat list - each visualizer type/variant is a distinct option
+- ReactFlow (1 option)
+- Sketch (1 option)
+- ForceGraph (1 option)
+- Mermaid Statechart (1 option)
+- Mermaid Flowchart (1 option)
 
-**Key requirement**: List both Mermaid diagram types as separate options, not combined.
+**Total: 5 discrete visualizer options** - no grouping, no nesting, no composite options.
 
-**Implementation**: Single `<VizPicker>` dropdown component.
+**Implementation**:
+```typescript
+type VisualizerType =
+  | 'reactflow'
+  | 'sketch'
+  | 'forcegraph'
+  | 'mermaid-statechart'
+  | 'mermaid-flowchart';
+
+const VISUALIZERS = [
+  { value: 'reactflow', label: 'ReactFlow' },
+  { value: 'sketch', label: 'Sketch' },
+  { value: 'forcegraph', label: 'ForceGraph' },
+  { value: 'mermaid-statechart', label: 'Mermaid - Statechart' },
+  { value: 'mermaid-flowchart', label: 'Mermaid - Flowchart' },
+] as const;
+```
 
 ### D. Responsive Layout System
 
