@@ -1,6 +1,5 @@
 import mermaid from "mermaid";
 import React, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import "./mermaid.css";
 // Initialize Mermaid
 
 const useMermaid = (id: string, content: string): { svg: string | null; error: string | null } => {
