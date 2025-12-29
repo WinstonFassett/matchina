@@ -97,7 +97,7 @@ export function VisualizerDemo({
         );
       case 'reactflow':
         return (
-          <div className="w-full h-full min-h-[320px]">
+          <div className="w-full h-full">
             <ReactFlowInspector 
               value={currentChange?.key || 'unknown'} 
               definition={machine}
@@ -114,7 +114,7 @@ export function VisualizerDemo({
         );
       case 'forcegraph':
         return (
-          <div className="w-full h-full min-h-[320px] flex items-center justify-center">
+          <div className="w-full h-full">
             <ForceGraphInspector 
               value={currentChange?.key || 'unknown'} 
               definition={machine}
