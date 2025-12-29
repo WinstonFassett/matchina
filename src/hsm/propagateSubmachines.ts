@@ -6,7 +6,7 @@ import { createLazyShapeStore } from "./shape-store";
 import { AllEventsOf } from "./types";
 
 // Enhanced machine interfaces for better type safety
-interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any>> {
+export interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any>> {
   shape: ReturnType<typeof createLazyShapeStore>;
   send: (type: string, ...params: any[]) => void;
   transition?: (event: any) => void;
@@ -15,6 +15,13 @@ interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any
   getState(): any;
   transitions?: Record<string, Record<string, any>>;
 }
+
+// Type representing all events in a hierarchical machine (including child.* events)
+export type HierarchicalEvents<M extends FactoryMachine<any>> = 
+  AllEventsOf<M> | 
+  'child.change' | 
+  'child.exit' | 
+  `child.${string}`;
 
 interface DuckTypedMachine {
   getState(): any;
@@ -126,7 +133,7 @@ export function makeHierarchical<M extends FactoryMachine<any>>(machine: M) {
  * Returns a disposer that unhooks the root and any hooked descendants and
  * clears internal tracking structures.
  */
-export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): HierarchicalMachine<M> {
+export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): () => void {
   const hookedMachines = new Set<PropagatedMachine>();
 
   // Attach lazy shape store for visualization
@@ -434,5 +441,19 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): Hi
   // Initial wiring: hook current chain once
   hookCurrentChain(true); // Notify on initial wiring
 
-  return root as HierarchicalMachine<M>;
+  // Return disposer function
+  return () => {
+    // Unhook root machine
+    unhookRoot();
+    
+    // Unhook all discovered machines
+    hookedMachines.forEach(machine => {
+      if (machine.__propagateUnhook) {
+        machine.__propagateUnhook();
+      }
+    });
+    
+    // Clear tracking
+    hookedMachines.clear();
+  };
 }
