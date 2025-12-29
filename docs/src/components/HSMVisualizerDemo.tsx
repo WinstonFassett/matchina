@@ -100,7 +100,7 @@ export function VisualizerDemo({
           <div className="w-full h-full min-h-[320px]">
             <ReactFlowInspector 
               value={currentChange?.key || 'unknown'} 
-              definition={machine.transitions || {}}
+              definition={machine}
               dispatch={(event: any) => {
                 if (actions && typeof event === 'string' && actions[event]) {
                   actions[event]();
@@ -114,7 +114,7 @@ export function VisualizerDemo({
           <div className="w-full h-full min-h-[320px] flex items-center justify-center">
             <ForceGraphInspector 
               value={currentChange?.key || 'unknown'} 
-              definition={machine.transitions || {}}
+              definition={machine}
               lastEvent={lastEvent}
               prevState={prevState}
               dispatch={(event: any) => {
