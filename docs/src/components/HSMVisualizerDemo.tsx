@@ -97,7 +97,7 @@ export function VisualizerDemo({
         );
       case 'reactflow':
         return (
-          <div className="w-full h-full min-h-[320px]">
+          <div style={{ width: '400px', height: '400px' }}>
             <ReactFlowInspector 
               value={currentChange?.key || 'unknown'} 
               definition={machine.transitions || {}}
@@ -166,7 +166,7 @@ export function VisualizerDemo({
       )}
 
       {/* Visualizer Display Section */}
-      <div className="visualizer-display p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ width: '100%', height: '400px', position: 'relative' }}>
+      <div className="visualizer-display bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ width: '100%', height: '400px', position: 'relative' }}>
         {renderVisualizer()}
       </div>
 
