@@ -99,9 +99,9 @@ export function MachineExampleWithChart({
         </div>
       </div>
 
-      <div className={`flex flex-col md:flex-row gap-4 w-full ${currentInspectorType === "mermaid" ? "lg:flex-row-reverse" : ""}`}>
+      <div className={`flex flex-col md:flex-row gap-4 w-full h-96 ${currentInspectorType === "mermaid" ? "lg:flex-row-reverse" : ""}`}>
         {/* Mermaid diagram */}
-        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-2" : ""}`}>
+        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-2" : ""} h-full`}>
           {currentInspectorType === "basic" && (
             <div className="p-4 border border-gray-300 rounded">
               <p className="text-sm text-gray-600">Basic Inspector not available - use Mermaid or ReactFlow</p>
@@ -126,7 +126,7 @@ export function MachineExampleWithChart({
               lastEvent={lastChange?.type}
               prevState={lastChange.from?.key}
               mode={currentState.data}
-              definition={config}
+              definition={machine}
               dispatch={({ type }: { type: string }) => machine.send(type)}
               interactive={isInteractive}
             />
@@ -134,7 +134,7 @@ export function MachineExampleWithChart({
         </div>
 
         {/* App View */}
-        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-1" : ""}`}>
+        <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-1" : ""} h-full`}>
           {AppView ? (
             <AppView machine={machine} />
           ) : (
