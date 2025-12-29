@@ -69,7 +69,6 @@ export function VisualizerDemo({
   ] as const, []);
 
   const activeStatePath = getActiveStatePath(machine);
-  const config = {};
   const isInteractive = interactive;
 
   const renderVisualizer = () => {

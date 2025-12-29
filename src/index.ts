@@ -18,6 +18,9 @@ export * from "./match-case";
 // export * from "./factory-machine-types";
 export * from "./state-keyed";
 // export * from "./utility-types";
+
+// HSM exports
+export * from "./hsm";
 export * from "./matchbox-factory";
 export * from "./matchina";
 export * from "./extras/emitter";

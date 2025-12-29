@@ -215,7 +215,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       if (state) statesChain.push(state);
 
       const child = getChildFromParentState(state);
-      if (child && isFactoryMachine(child)) {
+      if (child) {
         descend(child);
       }
     }
