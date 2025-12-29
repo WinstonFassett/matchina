@@ -2,8 +2,6 @@
 
 This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
 
-<<<<<<< Updated upstream
-=======
 ## Agent Documentation Map
 
 **All agent guidance documents:**
@@ -53,7 +51,6 @@ This is a major version development - no need to maintain legacy APIs or depreca
 - Do not add "legacy" or "deprecated" comments unless specifically required
 - Focus on clean, current API design
 
->>>>>>> Stashed changes
 ## Quick Reference
 
 ```bash
@@ -64,9 +61,7 @@ bd close <id>         # Complete work
 bd sync --flush-only  # Export to JSONL
 ```
 
-<<<<<<< Updated upstream
 ### Finding Work
-=======
 **CRITICAL: ALWAYS CHECK GIT STATUS BEFORE/AFTER WORK**
 
 ```bash
@@ -152,7 +147,6 @@ bd update <id> \
 - Include reproduction steps if applicable
 - For bugs: prove the issue is fixed in the actual UI
 - For features: demonstrate the functionality works as intended
->>>>>>> Stashed changes
 
 ```bash
 # See what's ready to work on (with JSON for parsing)
@@ -165,8 +159,6 @@ bd show <issue-id> --json
 bd list --status=open
 ```
 
-<<<<<<< Updated upstream
-=======
 ## Beads Ticket Organization
 
 ### Methodology
@@ -255,7 +247,6 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
 
 **Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
 
->>>>>>> Stashed changes
 ## Development Resources
 
 - `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
@@ -263,9 +254,7 @@ npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
 - `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
 - `review/` - Living review and planning workspace
 
-<<<<<<< Updated upstream
 **Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
-=======
 **Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer), AND git status is clean.
 
 ## Commands
@@ -300,7 +289,6 @@ npm run dry-run                # Dry run release (user only)
 - **`npm run build` now only builds the core library** - docs build moved to `build:all`
 - **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
 - **When running builds**: Limit output ingestion (see Quality Gates section)
->>>>>>> Stashed changes
 
 ## Session Completion
 
@@ -326,7 +314,6 @@ Evidence > assumptions. Let tests guide the fix.
 
 ## Quality Gates
 
-<<<<<<< Updated upstream
 Do prefer to run tests when working in the core
 Rely on developer (preferred) or browser integration (when running unattended) for manually testing examples in the docs
 Beware verbose quality gates. Do not naively pipe all output to yourself. 
@@ -334,7 +321,6 @@ Docs are notoriously verbose to run dev, build and check.
 Best to pipe such things into files/buffers and then once done, read them in reverse, ie last 10-20 lines to start
 Developer usually does not want you to run quality gates EXCEPT right before shipping. Even committing skip linting.
 Never destroy work. We have git. But do NOT do hard resets. 
-=======
 **When to run:**
 
 - Tests: Always when working in core (`npm run dev` for watch mode)
@@ -384,7 +370,6 @@ npm test            # Can flood context if tests have logging
 ```
 
 **Safety:**
->>>>>>> Stashed changes
 
 - Never destroy work (we have git)
 - Do NOT do hard resets
