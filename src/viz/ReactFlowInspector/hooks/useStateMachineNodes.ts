@@ -324,7 +324,6 @@ export const useStateMachineNodes = (
           setTimeout(() => setIsLayoutComplete(false), 1000);
         })
         .catch((error) => {
-          console.error("Layout failed, using fallback:", error);
           // Fallback to simple grid layout if ELK fails
           const fallbackNodes = initialNodes.map((node, index) => ({
             ...node,
@@ -455,8 +454,6 @@ export const useStateMachineNodes = (
         // Keep positions but ELK will recalculate based on layout options
       }));
 
-      console.log("Forcing layout with key:", forceLayoutKey);
-
       // Use ELK to calculate optimal layout with current layout options
       getLayoutedElements(
         currentNodePositions,
@@ -470,7 +467,6 @@ export const useStateMachineNodes = (
           setIsLayoutComplete(true); // Signal that layout is complete
         })
         .catch((error) => {
-          console.error("Re-layout failed:", error);
           setIsLayouting(false);
         });
     }

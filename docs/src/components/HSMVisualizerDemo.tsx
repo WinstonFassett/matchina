@@ -26,9 +26,6 @@ export function VisualizerDemo({
   interactive = true,
   className = ''
 }: VisualizerDemoProps) {
-  console.log('VisualizerDemo - activeVisualizer:', defaultVisualizer);
-  console.log('VisualizerDemo - machine:', machine);
-  
   const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>(defaultVisualizer);
   const currentChange = useMachine(machine) as any;
   const [lastEvent, setLastEvent] = useState<string>();
@@ -99,8 +96,6 @@ export function VisualizerDemo({
           </div>
         );
       case 'reactflow':
-        console.log('VisualizerDemo - Rendering ReactFlow with machine:', machine);
-        console.log('VisualizerDemo - currentChange:', currentChange);
         return (
           <div className="w-full h-full min-h-[320px]">
             <ReactFlowInspector 

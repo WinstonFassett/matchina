@@ -85,7 +85,6 @@ export default function ForceGraphInspector({
   theme = defaultTheme
 }: ForceGraphInspectorProps) {
   const baseFontSize = 4;
-  console.log("ForceGraphInspector", valueFromProp, lastEvent, prevState);
   const ref = useRef<HTMLDivElement>(null);
   const graphInstance = useRef<any>(null);
 
@@ -310,7 +309,7 @@ export default function ForceGraphInspector({
             ctx.fillText(label, node.x, node.y);
             ctx.restore();
           } catch (e) {
-            console.error("nodeCanvasObject error:", e);
+            // Silently handle canvas rendering errors
           }
         })
         .nodePointerAreaPaint(
