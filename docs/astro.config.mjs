@@ -12,8 +12,8 @@ export default defineConfig({
   // Use Netlify preview URL when available; fall back to GitHub Pages site.
   site: process.env.DEPLOY_PRIME_URL || "https://winstonfassett.github.io",
   // Control base path via env so Netlify previews can use "/" and GH Pages can use "/matchina/".
-  // CONTEXT is set by Netlify: "production", "deploy-preview", "branch-deploy", or undefined (local/GH Pages)
-  base: process.env.CONTEXT ? "/" : "matchina",
+  // DEPLOY_PRIME_URL is set on all Netlify deploys (previews and production)
+  base: process.env.DEPLOY_PRIME_URL ? "/" : "matchina",
   build: {
     assets: "assets",
   },
