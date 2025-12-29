@@ -135,46 +135,32 @@ export function VisualizerDemo({
         <p className="text-sm mb-4">{description}</p>
       )}
 
+      {/* UI Controls Section */}
       {showControls && (
-        <div className="visualizer-controls mb-4">
-          <div className="flex flex-wrap gap-2">
-            {visualizers.map(({ key, label, description: desc }) => (
+        <div className="visualizer-controls mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Visualizer:</span>
+            {visualizers.map((viz) => (
               <button
-                key={key}
-                onClick={() => setActiveVisualizer(key as VisualizerType)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeVisualizer === key
-                    ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                key={viz.key}
+                onClick={() => setActiveVisualizer(viz.key)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeVisualizer === viz.key
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
-                title={desc}
+                title={viz.description}
               >
-                {label}
+                {viz.label}
               </button>
             ))}
           </div>
-          
-          {interactive && (
-            <div className="mt-2 text-xs">
-              💡 Click on transitions to trigger them when available
-            </div>
-          )}
         </div>
       )}
 
-      <div className="visualizer-container border-2 border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden shadow-sm">
-        <div className="px-4 py-2 border-b border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-gray-800">
-          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-            {visualizers.find(v => v.key === activeVisualizer)?.label}
-          </span>
-          <span className="text-xs ml-2 text-neutral-600 dark:text-neutral-400">
-            Current state: <strong className="text-neutral-800 dark:text-neutral-200">{getActiveStatePath(machine)}</strong>
-          </span>
-        </div>
-        
-        <div className="p-4 min-h-[300px]">
-          {renderVisualizer()}
-        </div>
+      {/* Visualizer Display Section */}
+      <div className="visualizer-display p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        {renderVisualizer()}
       </div>
 
       {currentChange?.data && (

@@ -72,7 +72,7 @@
 }
 
 .state-item.active-ancestor .state-item:not(.active):hover {
-  background: var(--matchina-inspector-color-hover, #f9fafb);
+  background: var(--sl-color-gray-6, #f9fafb);
 }
 
 /* Multi-level nesting transparency for better visual hierarchy */
@@ -82,13 +82,13 @@
 }
 
 .state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active):hover {
-  background: var(--matchina-inspector-color-hover, #f9fafb);
+  background: var(--sl-color-gray-6, #f9fafb);
 }
 
 /* Deep nested active states should still be prominent */
 .state-item.active-ancestor .state-item.active-ancestor .state-item.active {
-  background: var(--matchina-inspector-color-active, #8b5cf6);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  background: var(--sl-color-blue, #8b5cf6);
+  border-color: var(--sl-color-blue, #8b5cf6);
   color: white;
   border-width: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -111,7 +111,7 @@
 .state-badge {
   font-size: 11px;
   background: #f3f4f6;
-  color: var(--matchina-inspector-color-active, #8b5cf6);
+  color: var(--sl-color-blue, #8b5cf6);
   padding: 2px 6px;
   border-radius: 3px;
   margin-left: 8px;
@@ -121,8 +121,8 @@
 
 .state-content.active .state-badge {
   background: white;
-  color: var(--matchina-inspector-color-active, #8b5cf6);
-  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  color: var(--sl-color-blue, #8b5cf6);
+  border-color: var(--sl-color-blue, #8b5cf6);
 }
 
 /* Transitions listed vertically */
@@ -172,7 +172,7 @@
 }
 
 .transition-button.enabled.ancestor-state {
-  color: var(--matchina-inspector-color-text, #111827);
+  color: var(--sl-color-text, #111827);
   border-color: transparent;
   background: rgba(248, 250, 252, 0.5);
 }

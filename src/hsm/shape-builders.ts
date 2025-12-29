@@ -121,7 +121,7 @@ export function buildFlattenedShape(
         key: parts[parts.length - 1],
         fullKey: parentKey,
         isFinal: false, // Parent states are never final (they have children)
-        isCompound: grandParentKey !== undefined, // Parent is compound if it has its own parent
+        isCompound: true, // Parent states are compound because they have children
       });
     }
   }
