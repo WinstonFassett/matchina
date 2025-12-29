@@ -11,7 +11,6 @@ import {
   loadNodePositions,
   clearNodePositions,
 } from "../utils/layoutStorage";
-import { buildShapeTree } from "../../../inspect/build-visualizer-tree";
 
 // Extract transitions from shape tree for ELK layout
 const extractTransitionsForLayout = (shapeTree: any) => {
@@ -74,19 +73,22 @@ export const useStateMachineNodes = (
     }
   }, [key, setNodes]);
 
-  // Build shape tree from machine (like Sketch and Mermaid do)
-  const shapeTree = useMemo(() => buildShapeTree(machine), [machine]);
+  // Get shape directly from machine (like Sketch does)
+  const shape = useMemo(() => {
+    const shapeController = machine.shape;
+    return shapeController?.getState();
+  }, [machine]);
 
-  // Extract states from shape tree
+  // Extract states from shape
   const states = useMemo(() => {
-    if (shapeTree?.states) return Object.keys(shapeTree.states);
+    if (shape?.states) return Object.keys(shape.states);
     return [];
-  }, [shapeTree]);
+  }, [shape]);
 
-  // Extract transitions for ELK layout from shape tree
+  // Extract transitions for ELK layout from shape
   const transitions = useMemo(
-    () => extractTransitionsForLayout(shapeTree),
-    [shapeTree]
+    () => extractTransitionsForLayout(shape),
+    [shape]
   );
 
   // Reset when machine changes

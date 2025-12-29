@@ -84,18 +84,19 @@ export default function ForceGraphInspector({
   const graphInstance = useRef<any>(null);
 
   const diagram: Diagram = useMemo(() => {
-    // Build shape tree from machine (like Sketch and Mermaid do)
-    const shapeTree = buildShapeTree(definition);
+    // Get shape directly from machine (like Sketch does)
+    const shapeController = definition.shape;
+    const shape = shapeController?.getState();
     
-    if (!shapeTree?.states) {
+    if (!shape?.states) {
       return { nodes: [], links: [] };
     }
     
-    const stateIds = Object.keys(shapeTree.states);
+    const stateIds = Object.keys(shape.states);
     const nodes = stateIds.map((key) => ({ id: key, name: key }));
     const links: Diagram["links"] = [];
     stateIds.forEach((key) => {
-      const state = shapeTree.states[key];
+      const state = shape.states[key];
       const source = findNode(nodes, key);
       state.on &&
         Object.keys(state.on).forEach((name) => {
