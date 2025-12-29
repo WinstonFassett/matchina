@@ -5,6 +5,7 @@ export interface ReactFlowGraphData {
   nodes: Node[];
   edges: Edge[];
   nodeIds: Set<string>;
+  groupIds: Set<string>; // Compound states that contain children
 }
 
 /**
@@ -12,6 +13,7 @@ export interface ReactFlowGraphData {
  *
  * Creates nodes from all states (including hierarchical) with full keys.
  * Creates edges from all transitions.
+ * Identifies compound states (parents) and marks them for visual grouping.
  * Positions are placeholder (0,0) - ELK layout will calculate real positions.
  *
  * Design principle: Just format conversion, no layout logic here.
@@ -22,10 +24,22 @@ export function buildReactFlowGraph(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const nodeIds = new Set<string>();
+  const groupIds = new Set<string>();
   let edgeId = 0;
+
+  // Identify compound states (states that have children)
+  const compoundStates = new Set<string>();
+  for (const [childKey, parentKey] of shape.hierarchy.entries()) {
+    if (parentKey) {
+      compoundStates.add(parentKey);
+    }
+  }
 
   // First pass: Create nodes from all states
   for (const [fullKey, stateNode] of shape.states.entries()) {
+    const parentKey = shape.hierarchy.get(fullKey);
+    const isCompound = compoundStates.has(fullKey);
+    
     const node: Node = {
       id: fullKey,
       position: { x: 0, y: 0 }, // Placeholder - ELK will set real positions
@@ -34,12 +48,21 @@ export function buildReactFlowGraph(
         fullKey: stateNode.fullKey, // For state matching
         isActive: false, // Will be updated by component
         isPrevious: false, // Will be updated by component
+        parent: parentKey, // For hierarchy visualization
+        isCompound: isCompound, // For styling compound states
       },
       type: "custom",
+      // Parent assignment for ReactFlow's built-in hierarchy (if using subgraph)
+      // Note: Full subgraph support would require additional setup
+      parentNode: parentKey, 
     };
 
     nodes.push(node);
     nodeIds.add(fullKey);
+    
+    if (isCompound) {
+      groupIds.add(fullKey);
+    }
   }
 
   // Second pass: Create edges from transitions
@@ -75,5 +98,6 @@ export function buildReactFlowGraph(
     nodes,
     edges,
     nodeIds,
+    groupIds,
   };
 }
