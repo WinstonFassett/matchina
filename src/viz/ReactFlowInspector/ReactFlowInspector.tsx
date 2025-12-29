@@ -233,7 +233,14 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
                 if (e.target === e.currentTarget) setShowLayoutDialog(false);
               }}
             >
-              <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
+              <div className="mt-16 mr-4 max-w-[300px] overflow-auto relative">
+                <button
+                  onClick={() => setShowLayoutDialog(false)}
+                  className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                  title="Close"
+                >
+                  ✕
+                </button>
                 <LayoutPanel
                   options={layoutOptions}
                   onOptionsChange={handleLayoutChange}
