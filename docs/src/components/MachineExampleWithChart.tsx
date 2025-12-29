@@ -3,7 +3,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { MermaidInspector, ReactFlowInspector } from 'matchina/viz';
+import { MermaidInspector, HSMReactFlowInspector } from 'matchina/viz';
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -121,13 +121,8 @@ export function MachineExampleWithChart({
             </div>
           )}
           {currentInspectorType === "react-flow" && (
-            <ReactFlowInspector
-              value={activeStatePath}
-              lastEvent={lastChange?.type}
-              prevState={lastChange.from?.key}
-              mode={currentState.data}
-              definition={machine}
-              dispatch={({ type }: { type: string }) => machine.send(type)}
+            <HSMReactFlowInspector
+              machine={machine}
               interactive={isInteractive}
             />
           )}

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { HSMMermaidInspector, SketchInspector, ReactFlowInspector, ForceGraphInspector, defaultTheme } from 'matchina/viz';
+import { HSMMermaidInspector, SketchInspector, HSMReactFlowInspector, ForceGraphInspector, defaultTheme } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
 import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 
@@ -98,16 +98,8 @@ export function VisualizerDemo({
       case 'reactflow':
         return (
           <div className="w-full h-full">
-            <ReactFlowInspector 
-              value={currentChange?.key || 'unknown'} 
-              definition={machine}
-              lastEvent={lastEvent}
-              prevState={prevState}
-              dispatch={(event: any) => {
-                if (actions && typeof event === 'string' && actions[event]) {
-                  actions[event]();
-                }
-              }}
+            <HSMReactFlowInspector 
+              machine={machine}
               interactive={interactive}
             />
           </div>
