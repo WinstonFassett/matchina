@@ -124,11 +124,7 @@ export const useStateMachineNodes = (
   layoutOptions?: LayoutOptions,
   forceLayoutKey?: number
 ) => {
-  console.log('useStateMachineNodes CALLED with machine:', { machine, currentState });
-  
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
-  console.log('useStateMachineNodes - useNodesState initialized');
-  
   const hasInitialized = useRef(false);
   const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const currentMachineId = useRef<string | null>(null);
@@ -156,28 +152,19 @@ export const useStateMachineNodes = (
   const states = useMemo(() => {
     if (!shape?.states) return [];
     
-    // DEBUG: Log the shape structure
-    console.log('ReactFlow DEBUG - shape:', shape);
-    console.log('ReactFlow DEBUG - shape.states is Map:', shape.states instanceof Map);
-    
     // Handle both Map and Object formats for states
     const statesEntries = shape.states instanceof Map 
       ? Array.from(shape.states.entries())
       : Object.entries(shape.states);
-    
-    console.log('ReactFlow DEBUG - statesEntries:', statesEntries);
     
     // Check if this is a hierarchical machine (has nested states)
     const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
       stateConfig && typeof stateConfig === 'object' && stateConfig.states
     );
     
-    console.log('ReactFlow DEBUG - hasNestedStates:', hasNestedStates);
-    
     if (!hasNestedStates) {
       // Flat machine - use simple state names
       const flatStates = statesEntries.map(([name, _]) => name);
-      console.log('ReactFlow DEBUG - flat states:', flatStates);
       return flatStates;
     }
     
@@ -199,7 +186,6 @@ export const useStateMachineNodes = (
     };
     
     extractStates(shape);
-    console.log('ReactFlow DEBUG - hierarchical states:', allStates);
     return allStates;
   }, [shape]);
 

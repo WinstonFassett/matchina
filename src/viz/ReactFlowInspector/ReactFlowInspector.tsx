@@ -59,10 +59,6 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   dispatch,
   interactive = true,
 }) => {
-  console.log('ReactFlowInspector MOUNTED - definition:', definition);
-  console.log('ReactFlowInspector MOUNTED - definition.shape:', definition?.shape);
-  console.log('ReactFlowInspector MOUNTED - value:', value);
-  
   // const [previousState, setPreviousState] = useState<string | null>(null);
   // const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
   //   string | undefined
@@ -154,8 +150,6 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     [dispatch]
   );
 
-  console.log('ReactFlowInspector - about to return JSX, nodes:', nodes.length);
-  
   return (
     <>
       <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden">
