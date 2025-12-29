@@ -131,6 +131,30 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     }
   }, [isLayoutComplete]);
 
+  // Smooth zoom to active state when it changes
+  useEffect(() => {
+    if (!reactFlowInstanceRef.current || !isInitialized || !value) return;
+
+    const activeNode = nodes.find((node) => node.id === value);
+    if (!activeNode) return;
+
+    // Smooth pan/zoom to the active node with a little padding
+    reactFlowInstanceRef.current.fitBounds(
+      {
+        x: activeNode.position.x,
+        y: activeNode.position.y,
+        width: activeNode.width || 120,
+        height: activeNode.height || 80,
+      },
+      {
+        padding: 0.4,
+        duration: 500, // Smooth 500ms animation
+        minZoom: 0.5,
+        maxZoom: 2,
+      }
+    );
+  }, [value, nodes, isInitialized]);
+
   const { edges, onEdgesChange, updateEdges } = useStateMachineEdges(
     initialEdges,
     nodes,

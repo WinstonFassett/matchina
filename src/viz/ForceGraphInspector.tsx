@@ -459,9 +459,9 @@ export default function ForceGraphInspector({
             );
           }
           
-          // Transition links - existing logic
+          // Transition links - highlight active transitions
           if (
-            value === link.source.name &&
+            value === link.source &&  // Use full key for flattened HSMs
             canFire(definition, value, link.name)
           ) {
             return getCssVar(
@@ -487,14 +487,23 @@ export default function ForceGraphInspector({
         .linkHoverPrecision(10)
         .onLinkClick(({ name }: { name: string }) => {
           if (interactive) {
+            console.log('ForceGraph: Link clicked:', name);
             dispatch({ type: name });
           }
         })
         .onNodeClick((node: any) => {
           if (interactive) {
-            // For node clicks, we could show available transitions or trigger a default action
-            // For now, let's log the node click for debugging
-            console.log('Node clicked:', node.id, node.name);
+            console.log('ForceGraph: Node clicked:', node.id);
+            // Find available transitions from this node and trigger the first one
+            const shape = definition.shape?.getState();
+            if (shape?.transitions.has(node.id)) {
+              const transitions = shape.transitions.get(node.id);
+              if (transitions && transitions.size > 0) {
+                const firstEvent = transitions.keys().next().value;
+                console.log('ForceGraph: Dispatching event:', firstEvent);
+                dispatch({ type: firstEvent });
+              }
+            }
           }
         });
       // Increase node spacing and collision radius
