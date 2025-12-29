@@ -24,7 +24,7 @@ import { getAlgorithmInfo, getAvailableAlgorithms } from "./utils/elkLayout";
 const LayoutPanel: React.FC<LayoutPanelProps> = memo(
   ({ options, onOptionsChange }) => {
     // Always open when shown in the portal
-    const debounceRef = useRef<NodeJS.Timeout>(null);
+    const debounceRef = useRef<any>(null);
     const algorithmConfig = getAlgorithmInfo(options.algorithm);
     const availableAlgorithms = getAvailableAlgorithms();
 
