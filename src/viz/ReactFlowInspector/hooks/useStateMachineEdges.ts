@@ -14,101 +14,24 @@ const extractTransitions = (machine: any): Transition[] => {
 
   // Get shape from machine (like nodes hook does)
   const shape = machine.shape?.getState();
-  if (!shape?.states) return transitions;
+  if (!shape) return transitions;
 
-  // Handle both Map and Object formats for states
-  const statesEntries: [string, any][] = shape.states instanceof Map 
-    ? Array.from(shape.states.entries())
-    : Object.entries(shape.states);
-
-  // Check if this is a hierarchical machine (has nested states)
-  const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
-    stateConfig && typeof stateConfig === 'object' && stateConfig.states
-  );
-  
-  if (!hasNestedStates) {
-    // Flat machine - use simple extraction
-    statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
-      if (!stateConfig?.on) return;
-
-      // Handle both Map and Object formats for transitions
-      const onEntries: [string, any][] = stateConfig.on instanceof Map
-        ? Array.from(stateConfig.on.entries())
-        : Object.entries(stateConfig.on);
-
-      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
-          let targets: string[] = [];
-
-          if (typeof transitionConfig === "string") {
-            targets = [transitionConfig];
-          } else if (Array.isArray(transitionConfig)) {
-            targets = transitionConfig
-              .map((config) =>
-                typeof config === "string" ? config : config?.target
-              )
-              .filter(Boolean);
-          } else if (transitionConfig?.target) {
-            targets = [transitionConfig.target];
-          }
-
-          targets.forEach((target) => {
-            transitions.push({ from: stateName, to: target, event });
+  // Shape has a transitions Map: Map<string, Map<string, string>>
+  // where: from -> event -> target
+  if (shape.transitions instanceof Map) {
+    for (const [fromState, eventMap] of shape.transitions.entries()) {
+      if (eventMap instanceof Map) {
+        for (const [event, targetState] of eventMap.entries()) {
+          transitions.push({
+            from: fromState,
+            to: targetState,
+            event: String(event)
           });
         }
-      );
-    });
-    return transitions;
+      }
+    }
   }
 
-  // Hierarchical machine - extract recursively
-  const extractFromStates = (statesObj: any, prefix = '') => {
-    if (!statesObj) return;
-
-    const stateEntries: [string, any][] = statesObj instanceof Map
-      ? Array.from(statesObj.entries())
-      : Object.entries(statesObj);
-
-    stateEntries.forEach(([stateName, stateConfig]: [string, any]) => {
-      if (!stateConfig?.on) return;
-
-      const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
-
-      // Handle both Map and Object formats for transitions
-      const onEntries: [string, any][] = stateConfig.on instanceof Map
-        ? Array.from(stateConfig.on.entries())
-        : Object.entries(stateConfig.on);
-
-      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
-          let targets: string[] = [];
-
-          if (typeof transitionConfig === "string") {
-            targets = [transitionConfig];
-          } else if (Array.isArray(transitionConfig)) {
-            targets = transitionConfig
-              .map((config) =>
-                typeof config === "string" ? config : config?.target
-              )
-              .filter(Boolean);
-          } else if (transitionConfig?.target) {
-            targets = [transitionConfig.target];
-          }
-
-          targets.forEach((target) => {
-            // Handle relative targets - if target doesn't contain a dot, it's in the same level
-            const fullTarget = !target.includes('.') && prefix ? `${prefix}.${target}` : target;
-            transitions.push({ from: fullStateName, to: fullTarget, event });
-          });
-        }
-      );
-
-      // Recursively extract from nested states
-      if (stateConfig?.states) {
-        extractFromStates(stateConfig.states, fullStateName);
-      }
-    });
-  };
-
-  extractFromStates(shape.states);
   return transitions;
 };
 

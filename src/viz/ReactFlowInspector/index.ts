@@ -1,4 +1,4 @@
 export { default } from "./ReactFlowInspector";
 export * from "./utils/elkLayout";
-export * from "./useStateMachineNodes";
-export * from "./useStateMachineEdges";
+export * from "./hooks/useStateMachineNodes";
+export * from "./hooks/useStateMachineEdges";
