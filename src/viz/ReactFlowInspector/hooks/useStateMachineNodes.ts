@@ -174,7 +174,12 @@ export const useStateMachineNodes = (
     const extractStates = (shapeObj: any, prefix = '') => {
       if (!shapeObj?.states) return;
       
-      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+      // Handle both Map and Object formats for states
+      const stateEntries = shapeObj.states instanceof Map
+        ? Array.from(shapeObj.states.entries())
+        : Object.entries(shapeObj.states);
+      
+      stateEntries.forEach(([stateName, stateConfig]: [string, any]) => {
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         allStates.push(fullStateName);
         
