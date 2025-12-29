@@ -92,6 +92,17 @@ export const useStateMachineEdges = (
         const isTransitionFromPrevious =
           previousState === transition.from && currentState === transition.to;
         const isPossibleExit = transition.from === currentState;
+        
+        if (index === 0) {
+          // Log state comparison info once per update
+          console.log('🔍 [edges] State comparison:', {
+            currentState,
+            transitionFrom: transition.from,
+            transitionTo: transition.to,
+            isPossibleExit,
+            isTransitionFromPrevious
+          });
+        }
 
         // Calculate z-index based on priority: recent transition > current exits > inactive
         let zIndex = 1; // Default for inactive edges

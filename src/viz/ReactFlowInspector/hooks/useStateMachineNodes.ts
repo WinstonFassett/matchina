@@ -314,15 +314,24 @@ export const useStateMachineNodes = (
   // Update node states without changing positions
   const updateNodeStates = useCallback(() => {
     setNodes((currentNodes) => {
-      console.log('🔍 [updateNodeStates] Updating active state highlighting for currentState:', currentState);
-      return currentNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          isActive: currentState === node.id,
-          isPrevious: previousState === node.id,
-        },
-      }));
+      console.log('🔍 [HSM] Updating active state highlighting');
+      console.log('  currentState:', currentState, `(type: ${typeof currentState})`);
+      console.log('  comparing against', currentNodes.length, 'nodes');
+      const updated = currentNodes.map((node) => {
+        const isActive = currentState === node.id;
+        if (isActive || node.data?.isActive) {
+          console.log(`  ${node.id}: isActive=${isActive} (was ${node.data?.isActive})`);
+        }
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            isActive: currentState === node.id,
+            isPrevious: previousState === node.id,
+          },
+        };
+      });
+      return updated;
     });
   }, [currentState, previousState, setNodes]);
 
