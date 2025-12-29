@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
+import { useMachine } from "../integrations/react";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
 import { buildShapeTree } from "../inspect/build-visualizer-tree";
@@ -112,6 +113,10 @@ export default function ForceGraphInspector({
   const ref = useRef<HTMLDivElement>(null);
   const graphInstance = useRef<any>(null);
 
+  // Copy the exact working pattern from SketchInspector
+  useMachine(definition);
+  const currentState = definition.getState();
+  
   const diagram: Diagram = useMemo(() => {
     // Handle both HSM machines (with shape) and legacy factory machines
     if (definition.shape?.getState) {
@@ -205,38 +210,35 @@ export default function ForceGraphInspector({
     }
   }, [definition]);
   
-  // Handle value tracking for both HSM and legacy machines
+  // Handle value tracking using the working pattern from SketchInspector
   const currentValue = useMemo(() => {
+    console.log('ForceGraph: useMemo triggered, currentState:', currentState?.key, currentState?.fullKey);
+    
     if (definition.shape?.getState) {
-      // HSM Machine - get current state from shape
-      const shape = definition.shape.getState();
-      const currentChange = definition.getChange?.();
-      
-      // For HSM machines, try to get the active state from the change or shape
-      if (currentChange?.to) {
-        // Handle different formats of 'to' property
-        return typeof currentChange.to === 'string' 
-          ? currentChange.to 
-          : currentChange.to.key || currentChange.to.fullKey || valueFromProp;
-      }
-      
-      // Fallback: try to find initial state or use provided value
-      return shape?.initialKey || valueFromProp;
+      // HSM Machine - use current state from machine
+      const result = currentState?.key || currentState?.fullKey || valueFromProp;
+      console.log('ForceGraph: HSM result:', result);
+      return result;
     } else {
       // Legacy Factory Machine - get current state from machine
-      const currentState = definition.getState?.();
-      return currentState?.key || valueFromProp;
+      const result = currentState?.key || valueFromProp;
+      console.log('ForceGraph: Legacy result:', result);
+      return result;
     }
-  }, [definition, valueFromProp]);
+  }, [currentState, valueFromProp]);
   
   const valueRef = useRef(currentValue);
   valueRef.current = currentValue;
   
   // Update ForceGraph when state changes
   useEffect(() => {
+    console.log('ForceGraph: useEffect triggered, currentValue:', currentValue);
     if (graphInstance.current) {
+      console.log('ForceGraph: Calling graphData refresh');
       // Force a re-render to update node highlighting
-      graphInstance.current.refresh();
+      graphInstance.current.graphData(graphInstance.current.graphData());
+    } else {
+      console.log('ForceGraph: No graph instance yet');
     }
   }, [currentValue]);
   
