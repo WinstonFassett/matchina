@@ -87,7 +87,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Move child to final state
-    parentMachine.send('child.exit');
+    parentMachine.send('complete');
     
     // Should trigger child.exit bubble
     expect(childMachine.getState().key).toBe('Done');
@@ -127,7 +127,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Should route to deepest child
-    parentMachine.send('activate');
+    parentMachine.send('start');
     
     expect(grandchildMachine.getState().key).toBe('Active');
     expect(childMachine.getState().key).toBe('Idle');
@@ -160,7 +160,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Send child.change event with payload
-    parentMachine.send('activate');
+    parentMachine.send('child.change', { type: 'start', params: [] });
     
     // Should have routed to child
     expect(childMachine.getState().key).toBe('Active');
@@ -220,7 +220,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Send event that causes child state change
-    parentMachine.send('activate');
+    parentMachine.send('start');
     
     // Should have notified hierarchy of change
     expect(childMachine.getState().key).toBe('Active');
@@ -249,7 +249,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Send event that no one can handle
-    const result = parentMachine.send('deactivate');
+    const result = parentMachine.send('unknown');
     
     // Should return null (no transition occurred)
     expect(result).toBe(null);
@@ -289,7 +289,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Send event that triggers resolveExit path
-    parentMachine.send('child.exit');
+    parentMachine.send('complete');
     
     // Should have gone through resolveExit and transition
     expect(childMachine.getState().key).toBe('Done');
@@ -329,7 +329,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Should route to deepest child
-    parentMachine.send('activate');
+    parentMachine.send('start');
     
     expect(grandchildMachine.getState().key).toBe('Active');
     expect(childMachine.getState().key).toBe('Idle');
@@ -360,7 +360,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // This should route to child first
-    const result = parentMachine.send('activate');
+    const result = parentMachine.send('start');
     
     // For now just check that something happened
     expect(childMachine.getState().key).toBeDefined();
@@ -399,7 +399,7 @@ describe('propagateSubmachines - REAL TESTS', () => {
     const disposer = propagateSubmachines(parentMachine);
     
     // Send event that triggers resolveExit path
-    parentMachine.send('child.exit');
+    parentMachine.send('complete');
     
     // Should have gone through resolveExit and transition
     expect(childMachine.getState().key).toBe('Done');
