@@ -8,6 +8,14 @@ interface Diagram {
   links: Array<{ name: string; source: any; target: any }>;
 }
 
+function getTypedEntries(obj: any): [string, any][] {
+  return Object.entries(obj) as [string, any][];
+}
+
+function getTypedMapEntries<K, V>(map: Map<K, V>): [K, V][] {
+  return Array.from(map.entries());
+}
+
 function findNode(nodes: { id: string }[], id: string) {
   return nodes.find((it) => it.id === id);
 }
@@ -104,7 +112,7 @@ export default function ForceGraphInspector({
       if (!shapeObj?.states) return states;
       
       // Handle both Map and Object formats for states
-      const statesEntries = shapeObj.states instanceof Map 
+      const statesEntries: [string, any][] = shapeObj.states instanceof Map 
         ? Array.from(shapeObj.states.entries())
         : Object.entries(shapeObj.states);
       
@@ -121,7 +129,7 @@ export default function ForceGraphInspector({
         return states;
       }
       
-      statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+      statesEntries.forEach(([stateName, stateConfig]) => {
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         const level = prefix ? prefix.split('.').length : 0;
         
@@ -142,10 +150,10 @@ export default function ForceGraphInspector({
       
       // Use transitions Map if available (new shape structure)
       if (shapeObj?.transitions instanceof Map) {
-        Array.from(shapeObj.transitions.entries()).forEach(([key, transitionMap]: [string, any]) => {
+        (Array.from(shapeObj.transitions.entries()) as [string, any][]).forEach(([key, transitionMap]) => {
           // If value is a Map, extract from it
           if (transitionMap instanceof Map) {
-            Array.from(transitionMap.entries()).forEach(([eventKey, targetState]: [string, any]) => {
+            (Array.from(transitionMap.entries()) as [string, any][]).forEach(([eventKey, targetState]) => {
               links.push({
                 source: key,
                 target: targetState,
@@ -161,7 +169,7 @@ export default function ForceGraphInspector({
       if (!shapeObj?.states) return links;
       
       // Handle both Map and Object formats for states
-      const statesEntries = shapeObj.states instanceof Map 
+      const statesEntries: [string, any][] = shapeObj.states instanceof Map 
         ? Array.from(shapeObj.states.entries())
         : Object.entries(shapeObj.states);
       
@@ -172,11 +180,11 @@ export default function ForceGraphInspector({
       
       if (!hasNestedStates && !prefix) {
         // Flat machine - use simple extraction
-        statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+        statesEntries.forEach(([stateName, stateConfig]) => {
           if (!stateConfig?.on) return;
           
           // Handle both Map and Object formats for transitions
-          const onEntries = stateConfig.on instanceof Map
+          const onEntries: [string, any][] = stateConfig.on instanceof Map
             ? Array.from(stateConfig.on.entries())
             : Object.entries(stateConfig.on);
 
@@ -201,13 +209,13 @@ export default function ForceGraphInspector({
         return links;
       }
       
-      statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+      statesEntries.forEach(([stateName, stateConfig]) => {
         if (!stateConfig?.on) return;
         
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         
         // Handle both Map and Object formats for transitions
-        const onEntries = stateConfig.on instanceof Map
+        const onEntries: [string, any][] = stateConfig.on instanceof Map
           ? Array.from(stateConfig.on.entries())
           : Object.entries(stateConfig.on);
 

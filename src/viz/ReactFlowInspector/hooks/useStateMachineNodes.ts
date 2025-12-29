@@ -19,7 +19,7 @@ const extractTransitionsForLayout = (shapeTree: any) => {
   if (!shapeTree?.states) return transitions;
   
   // Handle both Map and Object formats for states
-  const statesEntries = shapeTree.states instanceof Map 
+  const statesEntries: [string, any][] = shapeTree.states instanceof Map 
     ? Array.from(shapeTree.states.entries())
     : Object.entries(shapeTree.states);
   
@@ -34,12 +34,11 @@ const extractTransitionsForLayout = (shapeTree: any) => {
       if (!stateConfig?.on) return;
 
       // Handle both Map and Object formats for transitions
-      const onEntries = stateConfig.on instanceof Map
+      const onEntries: [string, any][] = stateConfig.on instanceof Map
         ? Array.from(stateConfig.on.entries())
         : Object.entries(stateConfig.on);
 
-      onEntries.forEach(
-        ([event, transitionConfig]: [string, any]) => {
+      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
           let targets: string[] = [];
 
           if (typeof transitionConfig === "string") {
@@ -67,7 +66,7 @@ const extractTransitionsForLayout = (shapeTree: any) => {
   const extractFromStates = (statesObj: any, prefix = '') => {
     if (!statesObj) return;
 
-    const stateEntries = statesObj instanceof Map
+    const stateEntries: [string, any][] = statesObj instanceof Map
       ? Array.from(statesObj.entries())
       : Object.entries(statesObj);
 
@@ -77,12 +76,11 @@ const extractTransitionsForLayout = (shapeTree: any) => {
       const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
 
       // Handle both Map and Object formats for transitions
-      const onEntries = stateConfig.on instanceof Map
+      const onEntries: [string, any][] = stateConfig.on instanceof Map
         ? Array.from(stateConfig.on.entries())
         : Object.entries(stateConfig.on);
 
-      onEntries.forEach(
-        ([event, transitionConfig]: [string, any]) => {
+      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
           let targets: string[] = [];
 
           if (typeof transitionConfig === "string") {
@@ -153,7 +151,7 @@ export const useStateMachineNodes = (
     if (!shape?.states) return [];
     
     // Handle both Map and Object formats for states
-    const statesEntries = shape.states instanceof Map 
+    const statesEntries: [string, any][] = shape.states instanceof Map 
       ? Array.from(shape.states.entries())
       : Object.entries(shape.states);
     
@@ -164,7 +162,7 @@ export const useStateMachineNodes = (
     
     if (!hasNestedStates) {
       // Flat machine - use simple state names
-      const flatStates = statesEntries.map(([name, _]) => name);
+      const flatStates = statesEntries.map(([name, _]: [string, any]) => name);
       return flatStates;
     }
     
@@ -174,12 +172,12 @@ export const useStateMachineNodes = (
     const extractStates = (shapeObj: any, prefix = '') => {
       if (!shapeObj?.states) return;
       
-      // Handle both Map and Object formats for states
-      const stateEntries = shapeObj.states instanceof Map
+      // Handle both Map and Object formats
+      const entries: [string, any][] = shapeObj.states instanceof Map
         ? Array.from(shapeObj.states.entries())
         : Object.entries(shapeObj.states);
       
-      stateEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+      entries.forEach(([stateName, stateConfig]: [string, any]) => {
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         allStates.push(fullStateName);
         

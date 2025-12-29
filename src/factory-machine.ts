@@ -111,22 +111,18 @@ export function createMachine<
 
   brandFactoryMachine(machine);
 
-  // Auto-attach shapes for machines with flat state keys (containing dots)
-  // This enables visualization for machines created with matchina() directly
-  const stateKeys = Object.keys(states);
-  const hasFlatKeys = stateKeys.some(key => key.includes('.'));
-  if (hasFlatKeys) {
-    try {
-      const shapeStore = createStaticShapeStore(machine);
-      Object.defineProperty(machine, 'shape', {
-        value: shapeStore,
-        enumerable: false,
-        configurable: true,
-        writable: true,
-      });
-    } catch (e) {
-      console.error('[createMachine] Failed to attach shape:', e);
-    }
+  // Attach shape for visualization (works for both flat and hierarchical machines)
+  // This enables visualization for all machines created with createMachine()
+  try {
+    const shapeStore = createStaticShapeStore(machine);
+    Object.defineProperty(machine, 'shape', {
+      value: shapeStore,
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {
+    console.error('[createMachine] Failed to attach shape:', e);
   }
 
   return machine;

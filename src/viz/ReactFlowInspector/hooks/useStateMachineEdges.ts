@@ -17,7 +17,7 @@ const extractTransitions = (machine: any): Transition[] => {
   if (!shape?.states) return transitions;
 
   // Handle both Map and Object formats for states
-  const statesEntries = shape.states instanceof Map 
+  const statesEntries: [string, any][] = shape.states instanceof Map 
     ? Array.from(shape.states.entries())
     : Object.entries(shape.states);
 
@@ -32,12 +32,11 @@ const extractTransitions = (machine: any): Transition[] => {
       if (!stateConfig?.on) return;
 
       // Handle both Map and Object formats for transitions
-      const onEntries = stateConfig.on instanceof Map
+      const onEntries: [string, any][] = stateConfig.on instanceof Map
         ? Array.from(stateConfig.on.entries())
         : Object.entries(stateConfig.on);
 
-      onEntries.forEach(
-        ([event, transitionConfig]: [string, any]) => {
+      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
           let targets: string[] = [];
 
           if (typeof transitionConfig === "string") {
@@ -65,7 +64,7 @@ const extractTransitions = (machine: any): Transition[] => {
   const extractFromStates = (statesObj: any, prefix = '') => {
     if (!statesObj) return;
 
-    const stateEntries = statesObj instanceof Map
+    const stateEntries: [string, any][] = statesObj instanceof Map
       ? Array.from(statesObj.entries())
       : Object.entries(statesObj);
 
@@ -75,12 +74,11 @@ const extractTransitions = (machine: any): Transition[] => {
       const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
 
       // Handle both Map and Object formats for transitions
-      const onEntries = stateConfig.on instanceof Map
+      const onEntries: [string, any][] = stateConfig.on instanceof Map
         ? Array.from(stateConfig.on.entries())
         : Object.entries(stateConfig.on);
 
-      onEntries.forEach(
-        ([event, transitionConfig]: [string, any]) => {
+      onEntries.forEach(([event, transitionConfig]: [string, any]) => {
           let targets: string[] = [];
 
           if (typeof transitionConfig === "string") {
