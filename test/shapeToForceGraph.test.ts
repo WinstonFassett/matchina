@@ -199,6 +199,29 @@ describe('buildForceGraphData', () => {
     });
   });
 
+  it('handles flattened machines correctly (no hierarchy)', () => {
+    const shape = createToggleShape(); // Toggle is a flattened machine
+    const result = buildForceGraphData(shape);
+    
+    expect(result.nodes).toHaveLength(2);
+    expect(result.links).toHaveLength(2);
+    
+    // Flattened machines should have level 0 for all nodes
+    result.nodes.forEach(node => {
+      expect(node.level).toBe(0);
+      expect(node.group).toBeUndefined();
+      expect(node.isGroup).toBe(false);
+    });
+    
+    // Should not have hierarchy links for flattened machines
+    const hierarchyLinks = result.links.filter(link => link.type === 'hierarchy');
+    expect(hierarchyLinks).toHaveLength(0);
+    
+    // Should only have transition links
+    const transitionLinks = result.links.filter(link => link.type === 'transition');
+    expect(transitionLinks).toHaveLength(2);
+  });
+
   it('returns empty data for shape with no states', () => {
     const shape: MachineShape = {
       states: new Map(),

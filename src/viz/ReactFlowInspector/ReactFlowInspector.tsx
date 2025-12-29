@@ -35,11 +35,11 @@ const edgeAnimationStyles = `
 
 interface ReactFlowInspectorProps {
   value: string;
-  definition: any;
-  lastEvent?: string;
-  prevState?: string;
+  nodes: Node[];
+  edges: Edge[];
+  previousState?: string;
   dispatch: (event: { type: string }) => void;
-  mode?: any;
+  layoutOptions?: LayoutOptions;
   interactive?: boolean; // Controls whether edges can be clicked to trigger transitions
 }
 
@@ -53,28 +53,14 @@ const edgeTypes: EdgeTypes = {
 
 const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   value,
-  definition,
-  // lastEvent,
-  prevState: previousState,
+  nodes: initialNodes,
+  edges: initialEdges,
+  previousState,
   dispatch,
+  layoutOptions,
   interactive = true,
 }) => {
-  // const [previousState, setPreviousState] = useState<string | null>(null);
-  // const [lastTriggeredEvent, setLastTriggeredEvent] = useState<
-  //   string | undefined
-  // >(lastEvent);
-  // const instanceId = useRef(Math.random().toString(36).substring(2, 9));
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
-
-  // Track state changes for previous state highlighting
-  // useEffect(() => {
-  //   if (prevState) {
-  //     setPreviousState(prevState);
-  //   }
-  //   if (lastEvent) {
-  //     // setLastTriggeredEvent(lastEvent);
-  //   }
-  // }, [value, prevState, lastEvent]);
 
   // Load saved layout settings or use defaults
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
@@ -93,17 +79,17 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     setForceLayoutKey((prev) => prev + 1);
   }, []);
 
-  // Use a key to force remount when definition changes
+  // Use a key to force remount when nodes/edges change
   const machineKey = useRef<number>(0);
   useEffect(() => {
     machineKey.current += 1;
-  }, [definition]);
+  }, [initialNodes, initialEdges]);
 
   const reactFlowInstanceRef = useRef<any>(null);
 
   const { nodes, onNodesChange, isInitialized, isLayoutComplete } =
     useStateMachineNodes(
-      definition,
+      initialNodes,
       value,
       previousState,
       machineKey.current,
@@ -125,7 +111,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   }, [isLayoutComplete]);
 
   const { edges, onEdgesChange, updateEdges } = useStateMachineEdges(
-    definition,
+    initialEdges,
     nodes,
     value,
     previousState,

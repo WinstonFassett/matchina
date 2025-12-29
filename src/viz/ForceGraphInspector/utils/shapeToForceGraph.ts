@@ -46,7 +46,7 @@ export function buildForceGraphData(
 
   // First pass: Create all state nodes (including compound states as groups)
   for (const [fullKey, stateNode] of shape.states.entries()) {
-    const level = fullKey.split('.').length - 1;
+    const level = fullKey.includes('.') ? fullKey.split('.').length - 1 : 0;
     const parentKey = shape.hierarchy.get(fullKey);
     
     // Determine if this is a compound state (has children)
