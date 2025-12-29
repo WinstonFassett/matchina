@@ -6,6 +6,8 @@ interface CustomNodeProps {
     label: string;
     isActive: boolean;
     isPrevious: boolean;
+    isCompound?: boolean;
+    parent?: string;
   };
 }
 
@@ -16,6 +18,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     }
     if (data.isPrevious) {
       return "bg-blue-200 text-blue-900 border-blue-300 shadow-md";
+    }
+    // Compound states get a dashed border to indicate they contain children
+    if (data.isCompound) {
+      return "bg-purple-50 text-gray-800 border-purple-300 border-dashed";
     }
     return "bg-white text-gray-800 border-gray-300";
   };
