@@ -146,6 +146,7 @@ async function renderComparisons() {
           <div class="card-header">
             ${diffIndicator} ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
             ${hasDiff ? `<div style="font-size: 11px; color: #666; margin-top: 4px;">Size: ${diffResult.beforeSize} → ${diffResult.afterSize} bytes</div>` : ''}
+            <button class="animate-slider-btn" data-image="${imageName}" style="margin-top: 8px; padding: 4px 8px; font-size: 11px;">Animate Slider</button>
           </div>
           <div class="image-container">
             <div class="slider-container" data-image="${imageName}">
@@ -189,45 +190,121 @@ async function renderComparisons() {
 
   if (currentView === 'slider') {
     setupSliders();
+    setupSliderAnimations();
   }
 }
 
 function setupSliders() {
-  document.querySelectorAll('.slider-container').forEach(container => {
+  let isDragging = false;
+  let currentContainer = null;
+  let dragStartX = 0;
+  let dragStartPositions = {};
+
+  function updateAllSliders(x) {
+    const deltaX = x - dragStartX;
+    document.querySelectorAll('.slider-container').forEach(container => {
+      const handle = container.querySelector('.slider-handle');
+      const afterImage = container.querySelector('.after-image');
+      const rect = container.getBoundingClientRect();
+      const startPos = dragStartPositions[container.dataset.image] || 0.5;
+      const position = Math.max(0, Math.min(1, startPos + (deltaX / rect.width)));
+      handle.style.left = `${position * 100}%`;
+      afterImage.style.clipPath = `inset(0 0 0 ${position * 100}%)`;
+    });
+  }
+
+  function updateSlider(x, container) {
     const handle = container.querySelector('.slider-handle');
     const afterImage = container.querySelector('.after-image');
-    let isDragging = false;
+    const rect = container.getBoundingClientRect();
+    const position = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    handle.style.left = `${position * 100}%`;
+    afterImage.style.clipPath = `inset(0 0 0 ${position * 100}%)`;
+  }
 
-    function updateSlider(x) {
-      const rect = container.getBoundingClientRect();
-      const percent = Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
-      handle.style.left = percent + '%';
-      afterImage.style.clipPath = `inset(0 0 0 ${percent}%)`;
-    }
+  document.querySelectorAll('.slider-container').forEach(container => {
+    const handle = container.querySelector('.slider-handle');
 
-    handle.addEventListener('mousedown', () => isDragging = true);
-    
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        updateSlider(e.clientX);
-      }
+    handle.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      currentContainer = container;
+      e.preventDefault();
     });
-    
-    document.addEventListener('mouseup', () => isDragging = false);
     
     container.addEventListener('click', (e) => {
       if (!isDragging) {
-        updateSlider(e.clientX);
+        updateAllSliders(e.clientX);
       }
+    });
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    currentContainer = null;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      updateAllSliders(e.clientX);
+    }
+  });
+}
+
+function setupSliderAnimations() {
+  let globalAnimation = null;
+  let globalStartTime = null;
+
+  document.querySelectorAll('.animate-slider-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Stop any existing animation
+      if (globalAnimation) {
+        document.querySelectorAll('.animate-slider-btn').forEach(b => {
+          b.dataset.animating = 'false';
+          b.textContent = 'Animate Slider';
+        });
+        globalAnimation = null;
+        globalStartTime = null;
+        return;
+      }
+      
+      // Start global animation
+      document.querySelectorAll('.animate-slider-btn').forEach(b => {
+        b.dataset.animating = 'true';
+        b.textContent = 'Stop Animation';
+      });
+      
+      globalStartTime = Date.now();
+      const duration = 1000; // 1 second per swing
+      
+      const animate = () => {
+        if (!globalStartTime) return;
+        
+        const elapsed = Date.now() - globalStartTime;
+        const progress = (elapsed % duration) / duration;
+        // Oscillate between 0 and 1 (full dimensions)
+        const position = 0.5 + Math.sin(progress * Math.PI * 2) * 0.5;
+        
+        // Update all sliders
+        document.querySelectorAll('.slider-container').forEach(container => {
+          const handle = container.querySelector('.slider-handle');
+          const afterImage = container.querySelector('.after-image');
+          handle.style.left = `${position * 100}%`;
+          afterImage.style.clipPath = `inset(0 0 0 ${position * 100}%)`;
+        });
+        
+        globalAnimation = requestAnimationFrame(animate);
+      };
+      
+      animate();
     });
   });
 }
 
 async function initialize() {
-  // Load image sets first
-  await loadImageSets();
+// Load image sets first
+await loadImageSets();
 
-  // Populate set selectors
+// Populate set selectors
   const beforeSelect = document.getElementById('beforeSet');
   const afterSelect = document.getElementById('afterSet');
   

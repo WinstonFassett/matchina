@@ -28,6 +28,7 @@ app.get('/api/sets', (req, res) => {
   res.json(result);
 });
 
+
 // API endpoint to compare two images and detect differences
 app.get('/api/diff/:beforeSet/:afterSet/:filename', async (req, res) => {
   const { beforeSet, afterSet, filename } = req.params;

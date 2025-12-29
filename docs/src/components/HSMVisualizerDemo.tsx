@@ -43,11 +43,11 @@ export function VisualizerDemo({
       label: 'Mermaid Diagram',
       description: 'Flow chart with hierarchical clustering'
     },
-    // { 
-    //   key: 'reactflow', 
-    //   label: 'React Flow',
-    //   description: 'Interactive node-based visualization'
-    // }
+    { 
+      key: 'reactflow', 
+      label: 'React Flow',
+      description: 'Interactive node-based visualization'
+    }
   ] as const, []);
 
   const activeStatePath = getActiveStatePath(machine);
@@ -78,8 +78,12 @@ export function VisualizerDemo({
         return (
           <ReactFlowInspector 
             value={currentChange?.key || 'unknown'} 
-            definition={{}}
-            dispatch={() => {}}
+            definition={machine.transitions || {}}
+            dispatch={(event: any) => {
+              if (actions && typeof event === 'string' && actions[event]) {
+                actions[event]();
+              }
+            }}
           />
         );
       default:
