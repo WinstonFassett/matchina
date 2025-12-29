@@ -85,11 +85,11 @@ function SketchInspector({
         <div className="state-content">
           <span className="state-name">{stateKey}</span>
           {/* [{fullKey}] */}
-          {isActive && fullPath && fullPath !== stateKey && (
+          {/* isActive && fullPath && fullPath !== stateKey && (
             <div className="state-fullKey">
               <span className="fullKey-label">path:</span> {fullPath}
             </div>
-          )}
+          ) */}
           
           {/* Show transitions from this state */}
           {stateConfig.on && Object.keys(stateConfig.on).length > 0 && (
