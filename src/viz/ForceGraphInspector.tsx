@@ -92,19 +92,114 @@ export default function ForceGraphInspector({
       return { nodes: [], links: [] };
     }
     
-    const stateIds = Object.keys(shape.states);
-    const nodes = stateIds.map((key) => ({ id: key, name: key }));
-    const links: Diagram["links"] = [];
-    stateIds.forEach((key) => {
-      const state = shape.states[key];
-      const source = findNode(nodes, key);
-      state.on &&
-        Object.keys(state.on).forEach((name) => {
-          const targetId = state.on![name];
-          const target = findNode(nodes, targetId);
-          links.push({ name, source, target });
+    // Extract states recursively (including nested)
+    const extractStates = (shapeObj: any, prefix = ''): { id: string; name: string; level: number }[] => {
+      const states: { id: string; name: string; level: number }[] = [];
+      
+      if (!shapeObj?.states) return states;
+      
+      // Check if this is a hierarchical machine (has nested states)
+      const hasNestedStates = Object.values(shapeObj.states).some((stateConfig: any) => 
+        stateConfig && typeof stateConfig === 'object' && stateConfig.states
+      );
+      
+      if (!hasNestedStates && !prefix) {
+        // Flat machine - use simple state names
+        Object.keys(shapeObj.states).forEach(stateName => {
+          states.push({ id: stateName, name: stateName, level: 0 });
         });
-    });
+        return states;
+      }
+      
+      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
+        const level = prefix ? prefix.split('.').length : 0;
+        
+        states.push({ id: fullStateName, name: fullStateName, level });
+        
+        // Recursively extract nested states
+        if (stateConfig?.states) {
+          states.push(...extractStates(stateConfig, fullStateName));
+        }
+      });
+      
+      return states;
+    };
+    
+    // Extract transitions recursively (including nested)
+    const extractTransitions = (shapeObj: any, prefix = ''): Diagram["links"] => {
+      const links: Diagram["links"] = [];
+      
+      if (!shapeObj?.states) return links;
+      
+      // Check if this is a hierarchical machine (has nested states)
+      const hasNestedStates = Object.values(shapeObj.states).some((stateConfig: any) => 
+        stateConfig && typeof stateConfig === 'object' && stateConfig.states
+      );
+      
+      if (!hasNestedStates && !prefix) {
+        // Flat machine - use simple extraction
+        Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+          if (!stateConfig?.on) return;
+          
+          Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
+            let targets: string[] = [];
+            
+            if (typeof transitionConfig === "string") {
+              targets = [transitionConfig];
+            } else if (Array.isArray(transitionConfig)) {
+              targets = transitionConfig
+                .map((config) => typeof config === "string" ? config : config?.target)
+                .filter(Boolean);
+            } else if (transitionConfig?.target) {
+              targets = [transitionConfig.target];
+            }
+            
+            targets.forEach((target) => {
+              links.push({ source: stateName, target, name: event });
+            });
+          });
+        });
+        return links;
+      }
+      
+      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+        if (!stateConfig?.on) return;
+        
+        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
+        
+        Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
+          let targets: string[] = [];
+          
+          if (typeof transitionConfig === "string") {
+            targets = [transitionConfig];
+          } else if (Array.isArray(transitionConfig)) {
+            targets = transitionConfig
+              .map((config) => typeof config === "string" ? config : config?.target)
+              .filter(Boolean);
+          } else if (transitionConfig?.target) {
+            targets = [transitionConfig.target];
+          }
+          
+          targets.forEach((target) => {
+            // Handle relative targets - if target doesn't contain a dot, it's in the same level
+            const fullTarget = !target.includes('.') && prefix ? `${prefix}.${target}` : target;
+            links.push({ source: fullStateName, target: fullTarget, name: event });
+          });
+        });
+        
+        // Recursively extract from nested states
+        if (stateConfig?.states) {
+          links.push(...extractTransitions(stateConfig, fullStateName));
+        }
+      });
+      
+      return links;
+    };
+    
+    const nodes = extractStates(shape);
+    const links = extractTransitions(shape);
+    
     return { nodes, links };
   }, [definition]);
   const valueRef = useRef(valueFromProp);
@@ -326,13 +421,13 @@ export default function ForceGraphInspector({
       let sameNodesLinks: Record<string, any[]> = {};
       const curvatureMinMax = 0.5;
       diagram.links.forEach((link) => {
-        link.nodePairId =
+        const nodePairId =
           link.source <= link.target
             ? link.source + "_" + link.target
             : link.target + "_" + link.source;
         let map = link.source === link.target ? selfLoopLinks : sameNodesLinks;
-        if (!map[link.nodePairId]) map[link.nodePairId] = [];
-        map[link.nodePairId].push(link);
+        if (!map[nodePairId]) map[nodePairId] = [];
+        map[nodePairId].push(link);
       });
       Object.keys(selfLoopLinks).forEach((id) => {
         let links = selfLoopLinks[id];
@@ -361,6 +456,11 @@ export default function ForceGraphInspector({
           }
         });
       Graph.graphData(diagram);
+      
+      // Fit view to show all nodes properly
+      setTimeout(() => {
+        Graph.zoomToFit(400, 50); // 400ms animation, 50px padding
+      }, 100);
     });
     return () => {
       mounted = false;
@@ -377,6 +477,11 @@ export default function ForceGraphInspector({
     if (graphInstance.current) {
       console.log("Updating graph data", diagram);
       graphInstance.current.graphData(diagram);
+      
+      // Fit view when data updates
+      setTimeout(() => {
+        graphInstance.current?.zoomToFit(400, 50);
+      }, 100);
     }
   }, [diagram, valueFromProp]);
 

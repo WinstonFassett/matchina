@@ -12,38 +12,107 @@ import {
   clearNodePositions,
 } from "../utils/layoutStorage";
 
-// Extract transitions from shape tree for ELK layout
+// Extract transitions from shape tree for ELK layout (including hierarchical)
 const extractTransitionsForLayout = (shapeTree: any) => {
   const transitions: Array<{ from: string; to: string; event: string }> = [];
 
   if (!shapeTree?.states) return transitions;
+  
+  // Handle both Map and Object formats for states
+  const statesEntries = shapeTree.states instanceof Map 
+    ? Array.from(shapeTree.states.entries())
+    : Object.entries(shapeTree.states);
+  
+  // Check if this is a hierarchical machine (has nested states)
+  const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
+    stateConfig && typeof stateConfig === 'object' && stateConfig.states
+  );
+  
+  if (!hasNestedStates) {
+    // Flat machine - use simple extraction
+    statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+      if (!stateConfig?.on) return;
 
-  Object.entries(shapeTree.states).forEach(([stateName, stateConfig]: [string, any]) => {
-    if (!stateConfig?.on) return;
+      // Handle both Map and Object formats for transitions
+      const onEntries = stateConfig.on instanceof Map
+        ? Array.from(stateConfig.on.entries())
+        : Object.entries(stateConfig.on);
 
-    Object.entries(stateConfig.on).forEach(
-      ([event, transitionConfig]: [string, any]) => {
-        let targets: string[] = [];
+      onEntries.forEach(
+        ([event, transitionConfig]: [string, any]) => {
+          let targets: string[] = [];
 
-        if (typeof transitionConfig === "string") {
-          targets = [transitionConfig];
-        } else if (Array.isArray(transitionConfig)) {
-          targets = transitionConfig
-            .map((config) =>
-              typeof config === "string" ? config : config?.target
-            )
-            .filter(Boolean);
-        } else if (transitionConfig?.target) {
-          targets = [transitionConfig.target];
+          if (typeof transitionConfig === "string") {
+            targets = [transitionConfig];
+          } else if (Array.isArray(transitionConfig)) {
+            targets = transitionConfig
+              .map((config) =>
+                typeof config === "string" ? config : config?.target
+              )
+              .filter(Boolean);
+          } else if (transitionConfig?.target) {
+            targets = [transitionConfig.target];
+          }
+
+          targets.forEach((target) => {
+            transitions.push({ from: stateName, to: target, event });
+          });
         }
+      );
+    });
+    return transitions;
+  }
 
-        targets.forEach((target) => {
-          transitions.push({ from: stateName, to: target, event });
-        });
+  // Hierarchical machine - extract recursively
+  const extractFromStates = (statesObj: any, prefix = '') => {
+    if (!statesObj) return;
+
+    const stateEntries = statesObj instanceof Map
+      ? Array.from(statesObj.entries())
+      : Object.entries(statesObj);
+
+    stateEntries.forEach(([stateName, stateConfig]: [string, any]) => {
+      if (!stateConfig?.on) return;
+
+      const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
+
+      // Handle both Map and Object formats for transitions
+      const onEntries = stateConfig.on instanceof Map
+        ? Array.from(stateConfig.on.entries())
+        : Object.entries(stateConfig.on);
+
+      onEntries.forEach(
+        ([event, transitionConfig]: [string, any]) => {
+          let targets: string[] = [];
+
+          if (typeof transitionConfig === "string") {
+            targets = [transitionConfig];
+          } else if (Array.isArray(transitionConfig)) {
+            targets = transitionConfig
+              .map((config) =>
+                typeof config === "string" ? config : config?.target
+              )
+              .filter(Boolean);
+          } else if (transitionConfig?.target) {
+            targets = [transitionConfig.target];
+          }
+
+          targets.forEach((target) => {
+            // Handle relative targets - if target doesn't contain a dot, it's in the same level
+            const fullTarget = !target.includes('.') && prefix ? `${prefix}.${target}` : target;
+            transitions.push({ from: fullStateName, to: fullTarget, event });
+          });
+        }
+      );
+
+      // Recursively extract from nested states
+      if (stateConfig?.states) {
+        extractFromStates(stateConfig.states, fullStateName);
       }
-    );
-  });
+    });
+  };
 
+  extractFromStates(shapeTree.states);
   return transitions;
 };
 
@@ -55,7 +124,11 @@ export const useStateMachineNodes = (
   layoutOptions?: LayoutOptions,
   forceLayoutKey?: number
 ) => {
+  console.log('useStateMachineNodes CALLED with machine:', { machine, currentState });
+  
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
+  console.log('useStateMachineNodes - useNodesState initialized');
+  
   const hasInitialized = useRef(false);
   const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const currentMachineId = useRef<string | null>(null);
@@ -79,10 +152,55 @@ export const useStateMachineNodes = (
     return shapeController?.getState();
   }, [machine]);
 
-  // Extract states from shape
+  // Extract states from shape (including nested states)
   const states = useMemo(() => {
-    if (shape?.states) return Object.keys(shape.states);
-    return [];
+    if (!shape?.states) return [];
+    
+    // DEBUG: Log the shape structure
+    console.log('ReactFlow DEBUG - shape:', shape);
+    console.log('ReactFlow DEBUG - shape.states is Map:', shape.states instanceof Map);
+    
+    // Handle both Map and Object formats for states
+    const statesEntries = shape.states instanceof Map 
+      ? Array.from(shape.states.entries())
+      : Object.entries(shape.states);
+    
+    console.log('ReactFlow DEBUG - statesEntries:', statesEntries);
+    
+    // Check if this is a hierarchical machine (has nested states)
+    const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
+      stateConfig && typeof stateConfig === 'object' && stateConfig.states
+    );
+    
+    console.log('ReactFlow DEBUG - hasNestedStates:', hasNestedStates);
+    
+    if (!hasNestedStates) {
+      // Flat machine - use simple state names
+      const flatStates = statesEntries.map(([name, _]) => name);
+      console.log('ReactFlow DEBUG - flat states:', flatStates);
+      return flatStates;
+    }
+    
+    // Hierarchical machine - extract all nested states
+    const allStates: string[] = [];
+    
+    const extractStates = (shapeObj: any, prefix = '') => {
+      if (!shapeObj?.states) return;
+      
+      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
+        allStates.push(fullStateName);
+        
+        // Recursively extract nested states
+        if (stateConfig?.states) {
+          extractStates(stateConfig, fullStateName);
+        }
+      });
+    };
+    
+    extractStates(shape);
+    console.log('ReactFlow DEBUG - hierarchical states:', allStates);
+    return allStates;
   }, [shape]);
 
   // Extract transitions for ELK layout from shape
@@ -118,9 +236,33 @@ export const useStateMachineNodes = (
               ? { x: savedPos.x, y: savedPos.y }
               : { x: 0, y: 0 },
             data: {
-              label: state.charAt(0).toUpperCase() + state.slice(1),
-              isActive: currentState === state,
-              isPrevious: previousState === state,
+              label: (() => {
+                // For flat machines, use simple state name. For hierarchical, show last part
+                if (state.includes('.')) {
+                  const parts = state.split('.');
+                  const lastPart = parts[parts.length - 1];
+                  return lastPart ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1) : state;
+                } else {
+                  return state.charAt(0).toUpperCase() + state.slice(1);
+                }
+              })(),
+              isActive: (() => {
+                // For flat machines, exact match. For hierarchical, check if current state ends with this state
+                if (state.includes('.')) {
+                  return currentState === state || currentState.endsWith('.' + state.split('.').pop());
+                } else {
+                  return currentState === state;
+                }
+              })(),
+              isPrevious: (() => {
+                // For flat machines, exact match. For hierarchical, check if previous state ends with this state
+                if (!previousState) return false;
+                if (state.includes('.')) {
+                  return previousState === state || previousState.endsWith('.' + state.split('.').pop());
+                } else {
+                  return previousState === state;
+                }
+              })(),
             },
             type: "custom",
           };
@@ -139,9 +281,33 @@ export const useStateMachineNodes = (
         id: state,
         position: { x: 0, y: 0 }, // Temporary position
         data: {
-          label: state.charAt(0).toUpperCase() + state.slice(1),
-          isActive: currentState === state,
-          isPrevious: previousState === state,
+          label: (() => {
+            // For flat machines, use simple state name. For hierarchical, show last part
+            if (state.includes('.')) {
+              const parts = state.split('.');
+              const lastPart = parts[parts.length - 1];
+              return lastPart ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1) : state;
+            } else {
+              return state.charAt(0).toUpperCase() + state.slice(1);
+            }
+          })(),
+          isActive: (() => {
+            // For flat machines, exact match. For hierarchical, check if current state ends with this state
+            if (state.includes('.')) {
+              return currentState === state || currentState.endsWith('.' + state.split('.').pop());
+            } else {
+              return currentState === state;
+            }
+          })(),
+          isPrevious: (() => {
+            // For flat machines, exact match. For hierarchical, check if previous state ends with this state
+            if (!previousState) return false;
+            if (state.includes('.')) {
+              return previousState === state || previousState.endsWith('.' + state.split('.').pop());
+            } else {
+              return previousState === state;
+            }
+          })(),
         },
         type: "custom",
       }));
