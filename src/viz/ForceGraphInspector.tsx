@@ -113,43 +113,112 @@ export default function ForceGraphInspector({
   const graphInstance = useRef<any>(null);
 
   const diagram: Diagram = useMemo(() => {
-    // Get shape directly from machine (like Sketch does)
-    const shapeController = definition.shape;
-    const shape = shapeController?.getState();
-    
-    if (!shape?.states) {
-      return { nodes: [], links: [] };
+    // Handle both HSM machines (with shape) and legacy factory machines
+    if (definition.shape?.getState) {
+      // HSM Machine - use the new converter
+      const shape = definition.shape.getState();
+      
+      if (!shape?.states) {
+        return { nodes: [], links: [] };
+      }
+      
+      // Use the new converter that properly handles string IDs and validation
+      const graphData = buildForceGraphData(shape, { showHierarchy: true });
+      
+      // Convert to the old Diagram format for compatibility with existing rendering code
+      // But preserve new hierarchy information for enhanced rendering
+      return {
+        nodes: graphData.nodes.map(node => ({
+          id: node.id,
+          name: node.name,
+          // Pass through hierarchy info for rendering
+          isGroup: node.isGroup,
+          level: node.level,
+          group: node.group,
+          val: node.val,
+          color: node.color,
+          fullKey: node.fullKey
+        })),
+        links: graphData.links.map(link => ({
+          name: link.event,
+          source: link.source,  // String ID - this fixes the "node not found" error
+          target: link.target,  // String ID - this fixes the "node not found" error
+          // Pass through link type for different styling
+          type: link.type,
+          value: link.value
+        }))
+      };
+    } else {
+      // Legacy Factory Machine - convert to ForceGraph format
+      const currentState = definition.getState?.();
+      const transitions = definition.transitions || {};
+      
+      if (!currentState) {
+        return { nodes: [], links: [] };
+      }
+      
+      // Extract states from transitions
+      const stateNames = new Set<string>();
+      stateNames.add(currentState.key);
+      
+      // Add all target states from transitions
+      Object.values(transitions).forEach((transitionMap: any) => {
+        if (typeof transitionMap === 'object') {
+          Object.values(transitionMap).forEach((targetState: any) => {
+            if (typeof targetState === 'string') {
+              stateNames.add(targetState);
+            }
+          });
+        }
+      });
+      
+      // Create nodes
+      const nodes = Array.from(stateNames).map(stateName => ({
+        id: stateName,
+        name: stateName,
+        isGroup: false,
+        level: 0,
+        val: stateName === currentState.key ? 15 : 10,
+        color: stateName === currentState.key ? '#60a5fa' : '#8b5cf6',
+        fullKey: stateName
+      }));
+      
+      // Create links
+      const links: any[] = [];
+      Object.entries(transitions).forEach(([sourceState, transitionMap]: [string, any]) => {
+        if (typeof transitionMap === 'object') {
+          Object.entries(transitionMap).forEach(([eventName, targetState]: [string, any]) => {
+            if (typeof targetState === 'string') {
+              links.push({
+                name: eventName,
+                source: sourceState,
+                target: targetState,
+                type: 'transition',
+                value: 1
+              });
+            }
+          });
+        }
+      });
+      
+      return { nodes, links };
     }
-    
-    // Use the new converter that properly handles string IDs and validation
-    const graphData = buildForceGraphData(shape, { showHierarchy: true });
-    
-    // Convert to the old Diagram format for compatibility with existing rendering code
-    // But preserve new hierarchy information for enhanced rendering
-    return {
-      nodes: graphData.nodes.map(node => ({
-        id: node.id,
-        name: node.name,
-        // Pass through hierarchy info for rendering
-        isGroup: node.isGroup,
-        level: node.level,
-        group: node.group,
-        val: node.val,
-        color: node.color,
-        fullKey: node.fullKey
-      })),
-      links: graphData.links.map(link => ({
-        name: link.event,
-        source: link.source,  // String ID - this fixes the "node not found" error
-        target: link.target,  // String ID - this fixes the "node not found" error
-        // Pass through link type for different styling
-        type: link.type,
-        value: link.value
-      }))
-    };
   }, [definition]);
-  const valueRef = useRef(valueFromProp);
-  valueRef.current = valueFromProp;
+  
+  // Handle value tracking for both HSM and legacy machines
+  const currentValue = useMemo(() => {
+    if (definition.shape?.getState) {
+      // HSM Machine - use the provided value prop
+      return valueFromProp;
+    } else {
+      // Legacy Factory Machine - get current state from machine
+      const currentState = definition.getState?.();
+      return currentState?.key || valueFromProp;
+    }
+  }, [definition, valueFromProp]);
+  
+  const valueRef = useRef(currentValue);
+  valueRef.current = currentValue;
   // Setup ForceGraph once
   useEffect(() => {
     let mounted = true;
