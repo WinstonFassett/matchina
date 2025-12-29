@@ -46,7 +46,7 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   const currentState: TransitionEvent = useMachine(machine);
 
   // Step 4: Get previous state for edge highlighting
-  const previousState = useMachine(machine)?.from;
+  const previousState = currentState?.from;
 
   // Step 5: Create dispatch function for edge clicks
   const dispatch = useCallback(
