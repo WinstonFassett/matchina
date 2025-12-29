@@ -39,7 +39,7 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 }
 
 // Shared typed handler - computes next state based on input
-const handleTyped = (value: string) => (ev: { from: { data: { selectedTags: string[] } } }) => {
+const handleTyped = (value) => (ev) => {
   const { selectedTags } = ev.from.data;
   if (!value.trim()) return activeStates.Empty(selectedTags);
 
@@ -50,16 +50,7 @@ const handleTyped = (value: string) => (ev: { from: { data: { selectedTags: stri
 };
 
 // Shared addTag handler
-const handleAddTag = (tag?: string) => (ev: { 
-  from: { 
-    data: { 
-      input: string; 
-      selectedTags: string[]; 
-      suggestions?: string[]; 
-      highlightedIndex?: number; 
-    } 
-  } 
-}) => {
+const handleAddTag = (tag) => (ev) => {
   const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
   const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
   if (!tagToAdd || selectedTags.includes(tagToAdd)) {
@@ -74,9 +65,9 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
   return matchina(activeStates, {
     Empty: {
       typed: handleTyped,
-      removeTag: (tag: string) => (ev: any) => 
-        activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
-      backspace: () => (ev: any) => {
+      removeTag: (tag) => (ev) => 
+        activeStates.Empty(ev.from.data.selectedTags.filter((t) => t !== tag)),
+      backspace: () => (ev) => {
         const selectedTags = ev.from.data.selectedTags;
         if (selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -86,9 +77,9 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     },
     TextEntry: {
       typed: handleTyped,
-      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
+      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
       addTag: handleAddTag,
-      backspace: () => (ev: any) => {
+      backspace: () => (ev) => {
         const { input, selectedTags } = ev.from.data;
         if (input.length === 0 && selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -98,20 +89,20 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     },
     Suggesting: {
       typed: handleTyped,
-      clear: () => (ev: any) => activeStates.Empty(ev.from.data.selectedTags),
-      highlightNext: () => (ev: any) => {
+      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
+      highlightNext: () => (ev) => {
         const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
         const next = Math.min(suggestions.length - 1, highlightedIndex + 1);
         return activeStates.Suggesting(input, selectedTags, suggestions, next);
       },
-      highlightPrev: () => (ev: any) => {
+      highlightPrev: () => (ev) => {
         const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
         const prev = Math.max(0, highlightedIndex - 1);
         return activeStates.Suggesting(input, selectedTags, suggestions, prev);
       },
       selectHighlighted: handleAddTag,
       addTag: handleAddTag,
-      backspace: () => (ev: any) => {
+      backspace: () => (ev) => {
         const { input, selectedTags } = ev.from.data;
         if (input.length === 0 && selectedTags.length > 0) {
           return activeStates.Empty(selectedTags.slice(0, -1));
@@ -138,19 +129,19 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      blur: () => (ev: any) => {
+      blur: () => (ev) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      close: () => (ev: any) => {
+      close: () => (ev) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      removeTag: (tag: string) => (ev: any) => {
+      removeTag: (tag) => (ev) => {
         // Delegate to child machine
         const activeMachine = ev.from.data.machine;
         activeMachine?.removeTag?.(tag);
