@@ -152,7 +152,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   return (
     <>
-      <div className="w-[320px] h-[320px] border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden">
+      <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden">
         <style>{edgeAnimationStyles}</style>
         <ReactFlowProvider>
           <ReactFlow
