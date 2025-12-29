@@ -117,8 +117,8 @@ export default function ForceGraphInspector({
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
-      Graph.height(400)
-        .width(400)
+      Graph.height(320)
+        .width(320)
         .linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)

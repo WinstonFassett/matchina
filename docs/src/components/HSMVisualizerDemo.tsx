@@ -75,49 +75,57 @@ export function VisualizerDemo({
     switch (activeVisualizer) {
       case 'mermaid':
         return (
-          <HSMMermaidInspector
-            machine={machine}
-            stateKey={activeStatePath}
-            actions={actions as any}
-            interactive={isInteractive}
-          />
+          <div className="w-full h-full min-h-[320px]">
+            <HSMMermaidInspector
+              machine={machine}
+              stateKey={activeStatePath}
+              actions={actions as any}
+              interactive={isInteractive}
+            />
+          </div>
         );
       case 'sketch':
         return (
-          <SketchInspector 
-            machine={machine} 
-            actions={actions}
-            interactive={interactive}
-            theme={defaultTheme}
-          />
+          <div className="w-full h-full min-h-[320px] overflow-auto">
+            <SketchInspector 
+              machine={machine} 
+              actions={actions}
+              interactive={interactive}
+              theme={defaultTheme}
+            />
+          </div>
         );
       case 'reactflow':
         return (
-          <ReactFlowInspector 
-            value={currentChange?.key || 'unknown'} 
-            definition={machine.transitions || {}}
-            dispatch={(event: any) => {
-              if (actions && typeof event === 'string' && actions[event]) {
-                actions[event]();
-              }
-            }}
-          />
+          <div className="w-full h-full min-h-[320px]">
+            <ReactFlowInspector 
+              value={currentChange?.key || 'unknown'} 
+              definition={machine.transitions || {}}
+              dispatch={(event: any) => {
+                if (actions && typeof event === 'string' && actions[event]) {
+                  actions[event]();
+                }
+              }}
+            />
+          </div>
         );
       case 'forcegraph':
         return (
-          <ForceGraphInspector 
-            value={currentChange?.key || 'unknown'} 
-            definition={machine.transitions || {}}
-            lastEvent={lastEvent}
-            prevState={prevState}
-            dispatch={(event: any) => {
-              if (actions && typeof event === 'string' && actions[event]) {
-                actions[event]();
-              }
-            }}
-            interactive={interactive}
-            theme={defaultTheme}
-          />
+          <div className="w-full h-full min-h-[320px] flex items-center justify-center">
+            <ForceGraphInspector 
+              value={currentChange?.key || 'unknown'} 
+              definition={machine.transitions || {}}
+              lastEvent={lastEvent}
+              prevState={prevState}
+              dispatch={(event: any) => {
+                if (actions && typeof event === 'string' && actions[event]) {
+                  actions[event]();
+                }
+              }}
+              interactive={interactive}
+              theme={defaultTheme}
+            />
+          </div>
         );
       default:
         return <div>Unknown visualizer type</div>;
