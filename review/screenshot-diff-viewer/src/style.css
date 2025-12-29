@@ -12,7 +12,7 @@ body {
 }
 
 #app {
-    max-width: 1400px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -72,8 +72,9 @@ button:hover {
 
 .grid-view {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
     margin-bottom: 40px;
 }
 
@@ -95,7 +96,7 @@ button:hover {
 .image-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 400px;
     overflow: hidden;
     background: #000;
 }
@@ -171,8 +172,9 @@ button:hover {
 .side-by-side {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: #ddd;
+    gap: 2px;
+    background: #333;
+    height: 400px;
 }
 
 .side-by-side img {

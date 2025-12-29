@@ -43,7 +43,7 @@ function SketchInspector({
     const shapeController = machine.shape;
     return shapeController?.getState();
   }, [machine, currentState.key]);
-  
+
   // Step 3: Prepare highlighting info - compute deepest active path
   const fullPath = (() => {
     const stateKey = currentState?.key || '';

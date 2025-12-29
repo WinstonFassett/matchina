@@ -104,18 +104,27 @@ export function buildFlattenedShape(
     }
   }
 
-  // Create hierarchy entries for parent states (but don't create synthetic state nodes)
-  // This allows the visualization to build the proper tree structure
+  // Create hierarchy entries for parent states AND create parent state nodes
+  // This allows the visualization to show the complete hierarchy structure
   for (const parentKey of parentStates) {
     if (!hierarchy.has(parentKey)) {
       const parts = parentKey.split(".");
       const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
       hierarchy.set(parentKey, grandParentKey);
     }
+    
+    // Create parent state node if it doesn't exist
+    if (!states.has(parentKey)) {
+      const parts = parentKey.split(".");
+      const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+      states.set(parentKey, {
+        key: parts[parts.length - 1],
+        fullKey: parentKey,
+        isFinal: false, // Parent states are never final (they have children)
+        isCompound: grandParentKey !== undefined, // Parent is compound if it has its own parent
+      });
+    }
   }
-
-  // Don't create synthetic parent states - let the hierarchy data represent the actual structure
-  // Parent states will be represented by their children in the hierarchy, not as separate nodes
 
   return {
     states,

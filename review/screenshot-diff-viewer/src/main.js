@@ -1,21 +1,21 @@
 import './style.css'
 
 // Dynamic image loading
-let availableImages = [];
+let imageSets = {};
 
-async function loadImages() {
+async function loadImageSets() {
   try {
-    const response = await fetch('/api/images');
-    availableImages = await response.json();
+    const response = await fetch('/api/sets');
+    imageSets = await response.json();
   } catch (error) {
-    console.error('Failed to load images:', error);
-    availableImages = [];
+    console.error('Failed to load image sets:', error);
+    imageSets = {};
   }
 }
 
 const SET_NAMES = {
-  'baseline/upstream': 'Baseline (Upstream)',
-  'current': 'Current Branch',
+  'baseline': 'Baseline',
+  'current': 'Current',
   'after-css-fix': 'After CSS Fix',
   'after-theme-fix': 'After Theme Fix'
 };
@@ -34,25 +34,40 @@ function parseImageName(filename) {
 }
 
 function updateStats() {
+  const beforeSet = document.getElementById('beforeSet').value;
+  const afterSet = document.getElementById('afterSet').value;
+  
+  if (!beforeSet || !afterSet) {
+    document.getElementById('stats').innerHTML = '<div class="loading">Select image sets to compare</div>';
+    return;
+  }
+
+  const beforeCount = imageSets[beforeSet]?.length || 0;
+  const afterCount = imageSets[afterSet]?.length || 0;
+  
   document.getElementById('stats').innerHTML = `
-    <strong>Available Images:</strong> ${availableImages.length}<br>
-    <strong>Filtered Images:</strong> ${currentImages.length}<br>
-    <strong>View Mode:</strong> ${currentView}
+    <strong>Image Sets:</strong> ${SET_NAMES[beforeSet]} vs ${SET_NAMES[afterSet]}<br>
+    <strong>Images:</strong> ${beforeCount} vs ${afterCount}<br>
+    <strong>Comparisons:</strong> ${Math.min(beforeCount, afterCount)} pairs
   `;
 }
 
 function loadComparison() {
-  if (availableImages.length === 0) {
-    currentImages = [];
-    renderComparisons();
-    return;
-  }
+  const beforeSet = document.getElementById('beforeSet').value;
+  const afterSet = document.getElementById('afterSet').value;
+  
+  if (!beforeSet || !afterSet) return;
 
+  const beforeImages = imageSets[beforeSet] || [];
+  const afterImages = imageSets[afterSet] || [];
+  
+  const commonImages = beforeImages.filter(img => afterImages.includes(img));
+  
   const typeFilter = document.getElementById('typeFilter').value;
   const themeFilter = document.getElementById('themeFilter').value;
   const layoutFilter = document.getElementById('layoutFilter').value;
   
-  let filteredImages = availableImages;
+  let filteredImages = commonImages;
   
   if (typeFilter) {
     filteredImages = filteredImages.filter(img => parseImageName(img).type === typeFilter);
@@ -71,6 +86,8 @@ function loadComparison() {
 
 function updateFilterInfo() {
   const filterInfo = document.getElementById('filterInfo');
+  const beforeSet = document.getElementById('beforeSet').value;
+  const afterSet = document.getElementById('afterSet').value;
   const typeFilter = document.getElementById('typeFilter').value;
   const themeFilter = document.getElementById('themeFilter').value;
   const layoutFilter = document.getElementById('layoutFilter').value;
@@ -80,36 +97,60 @@ function updateFilterInfo() {
   if (themeFilter) activeFilters.push(`theme: ${themeFilter}`);
   if (layoutFilter) activeFilters.push(`layout: ${layoutFilter}`);
   
+  const totalCommon = (imageSets[beforeSet] || []).filter(img => (imageSets[afterSet] || []).includes(img)).length;
+  
   if (activeFilters.length > 0) {
     filterInfo.style.display = 'block';
-    filterInfo.innerHTML = `🔍 Filtering by: ${activeFilters.join(', ')} - Showing ${currentImages.length} of ${availableImages.length} images`;
+    filterInfo.innerHTML = `🔍 Filtering by: ${activeFilters.join(', ')} - Showing ${currentImages.length} of ${totalCommon} common images`;
   } else {
     filterInfo.style.display = 'none';
   }
 }
 
-function renderComparisons() {
+async function renderComparisons() {
   const container = document.getElementById('comparisons');
+  const beforeSet = document.getElementById('beforeSet').value;
+  const afterSet = document.getElementById('afterSet').value;
   
   if (currentImages.length === 0) {
     container.innerHTML = '<div class="loading">No images found for the selected criteria</div>';
     return;
   }
 
-  container.innerHTML = currentImages.map(imageName => {
+  // Check for differences
+  const diffResults = await Promise.all(
+    currentImages.map(async imageName => {
+      try {
+        const response = await fetch(`/api/diff/${beforeSet}/${afterSet}/${imageName}`);
+        return await response.json();
+      } catch (error) {
+        return { filename: imageName, hasDifference: false, error: true };
+      }
+    })
+  );
+
+  container.innerHTML = currentImages.map((imageName, index) => {
     const parsed = parseImageName(imageName);
-    const imagePath = `/${imageName}`;
+    const beforePath = `/${beforeSet}/${imageName}`;
+    const afterPath = `/${afterSet}/${imageName}`;
+    const diffResult = diffResults[index];
+    const hasDiff = diffResult.hasDifference;
+    
+    const diffIndicator = hasDiff ? 
+      '<span style="color: #dc3545; font-weight: bold;">● DIFF</span>' : 
+      '<span style="color: #28a745;">● SAME</span>';
     
     if (currentView === 'slider') {
       return `
-        <div class="comparison-card">
+        <div class="comparison-card" style="${hasDiff ? 'border: 2px solid #dc3545;' : ''}">
           <div class="card-header">
-            ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${diffIndicator} ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${hasDiff ? `<div style="font-size: 11px; color: #666; margin-top: 4px;">Size: ${diffResult.beforeSize} → ${diffResult.afterSize} bytes</div>` : ''}
           </div>
           <div class="image-container">
             <div class="slider-container" data-image="${imageName}">
-              <img src="${imagePath}" class="before-image" alt="Before">
-              <img src="${imagePath}" class="after-image" alt="After">
+              <img src="${beforePath}" class="before-image" alt="Before">
+              <img src="${afterPath}" class="after-image" alt="After">
               <div class="slider-handle"></div>
             </div>
           </div>
@@ -117,27 +158,29 @@ function renderComparisons() {
       `;
     } else if (currentView === 'side-by-side') {
       return `
-        <div class="comparison-card">
+        <div class="comparison-card" style="${hasDiff ? 'border: 2px solid #dc3545;' : ''}">
           <div class="card-header">
-            ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${diffIndicator} ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${hasDiff ? `<div style="font-size: 11px; color: #666; margin-top: 4px;">Size: ${diffResult.beforeSize} → ${diffResult.afterSize} bytes</div>` : ''}
           </div>
-          <div class="side-by-side" style="height: 200px;">
-            <img src="${imagePath}" alt="Before">
-            <img src="${imagePath}" alt="After">
+          <div class="side-by-side">
+            <img src="${beforePath}" alt="Before">
+            <img src="${afterPath}" alt="After">
           </div>
         </div>
       `;
     } else {
       return `
-        <div class="comparison-card">
+        <div class="comparison-card" style="${hasDiff ? 'border: 2px solid #dc3545;' : ''}">
           <div class="card-header">
-            ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${diffIndicator} ${parsed.type} - ${parsed.theme} - ${parsed.layout} - ${parsed.state}
+            ${hasDiff ? `<div style="font-size: 11px; color: #666; margin-top: 4px;">Size: ${diffResult.beforeSize} → ${diffResult.afterSize} bytes</div>` : ''}
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #ddd; height: 200px;">
-            <div style="background: #f8f9fa; padding: 8px; text-align: center; font-size: 12px; display: flex; align-items: center; justify-content: center;">Image</div>
-            <div style="background: #f8f9fa; padding: 8px; text-align: center; font-size: 12px; display: flex; align-items: center; justify-content: center;">Image</div>
-            <img src="${imagePath}" alt="Image" style="grid-column: 1;">
-            <img src="${imagePath}" alt="Image" style="grid-column: 2;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #333; height: 400px;">
+            <div style="background: #f8f9fa; padding: 8px; text-align: center; font-size: 12px; display: flex; align-items: center; justify-content: center;">Before</div>
+            <div style="background: #f8f9fa; padding: 8px; text-align: center; font-size: 12px; display: flex; align-items: center; justify-content: center;">After</div>
+            <img src="${beforePath}" alt="Before" style="grid-column: 1;">
+            <img src="${afterPath}" alt="After" style="grid-column: 2;">
           </div>
         </div>
       `;
@@ -181,13 +224,32 @@ function setupSliders() {
 }
 
 async function initialize() {
-  // Load images first
-  await loadImages();
+  // Load image sets first
+  await loadImageSets();
 
-  // Extract unique values for filters from loaded images
-  const types = [...new Set(availableImages.map(img => parseImageName(img).type).sort())];
-  const themes = [...new Set(availableImages.map(img => parseImageName(img).theme).sort())];
-  const layouts = [...new Set(availableImages.map(img => parseImageName(img).layout).sort())];
+  // Populate set selectors
+  const beforeSelect = document.getElementById('beforeSet');
+  const afterSelect = document.getElementById('afterSet');
+  
+  Object.entries(SET_NAMES).forEach(([path, name]) => {
+    if (imageSets[path]) {
+      beforeSelect.innerHTML += `<option value="${path}">${name}</option>`;
+      afterSelect.innerHTML += `<option value="${path}">${name}</option>`;
+    }
+  });
+
+  // Set default selections
+  const availableSets = Object.keys(imageSets);
+  if (availableSets.length >= 2) {
+    beforeSelect.value = availableSets[0];
+    afterSelect.value = availableSets[1];
+  }
+
+  // Extract unique values for filters from all images
+  const allImages = Object.values(imageSets).flat();
+  const types = [...new Set(allImages.map(img => parseImageName(img).type).sort())];
+  const themes = [...new Set(allImages.map(img => parseImageName(img).theme).sort())];
+  const layouts = [...new Set(allImages.map(img => parseImageName(img).layout).sort())];
 
   // Populate filters
   const typeFilter = document.getElementById('typeFilter');
@@ -208,6 +270,14 @@ async function initialize() {
   loadComparison();
 
   // Event listeners
+  beforeSelect.addEventListener('change', () => {
+    updateStats();
+    loadComparison();
+  });
+  afterSelect.addEventListener('change', () => {
+    updateStats();
+    loadComparison();
+  });
   typeFilter.addEventListener('change', loadComparison);
   themeFilter.addEventListener('change', loadComparison);
   layoutFilter.addEventListener('change', loadComparison);
@@ -215,6 +285,11 @@ async function initialize() {
   document.getElementById('compareBtn').addEventListener('click', loadComparison);
   
   document.getElementById('resetBtn').addEventListener('click', () => {
+    const availableSets = Object.keys(imageSets);
+    if (availableSets.length >= 2) {
+      beforeSelect.value = availableSets[0];
+      afterSelect.value = availableSets[1];
+    }
     typeFilter.value = '';
     themeFilter.value = '';
     layoutFilter.value = '';
@@ -235,13 +310,27 @@ async function initialize() {
 
 document.querySelector('#app').innerHTML = `
   <div class="header">
-    <h1>🖼️ Screenshot Viewer</h1>
+    <h1>🖼️ Screenshot Diff Viewer</h1>
     <div class="stats" id="stats">
-      <div class="loading">Loading images...</div>
+      <div class="loading">Loading image sets...</div>
     </div>
   </div>
 
   <div class="controls">
+    <div class="control-group">
+      <label>Before Set</label>
+      <select id="beforeSet">
+        <option value="">Select baseline...</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label>After Set</label>
+      <select id="afterSet">
+        <option value="">Select comparison...</option>
+      </select>
+    </div>
+
     <div class="control-group">
       <label>Filter by Type</label>
       <select id="typeFilter">
@@ -263,7 +352,7 @@ document.querySelector('#app').innerHTML = `
       </select>
     </div>
 
-    <button id="compareBtn">Refresh</button>
+    <button id="compareBtn">Compare Sets</button>
     <button id="resetBtn">Reset</button>
   </div>
 
