@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from "react";
 import { useMachine } from "../../integrations/react";
 import type { TransitionEvent } from "../../state-machine";
+import type { StateNode } from "../../hsm/shape-types";
 import type { LayoutOptions } from "./utils/elkLayout";
 import { buildReactFlowGraph } from "./utils/shapeToReactFlow";
 import ReactFlowInspector from "./ReactFlowInspector";
@@ -43,10 +44,10 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   );
 
   // Step 3: Subscribe to state changes for highlighting
-  const currentChange: TransitionEvent = useMachine(machine);
+  const currentChange = useMachine(machine) as TransitionEvent<StateNode, StateNode>;
 
   // Extract state key/fullKey for matching against node IDs
-  // currentChange.to is a state object with .key or .fullKey property
+  // currentChange.to is a StateNode object with .key or .fullKey property
   const currentState = currentChange?.to?.fullKey || currentChange?.to?.key || String(currentChange?.to || "");
   
   // Step 4: Get previous state for edge highlighting
