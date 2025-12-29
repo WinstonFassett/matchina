@@ -1,6 +1,6 @@
 import mermaid from "mermaid";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Mermaid from "../Mermaid";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Mermaid from "./Mermaid";
 import mermaidInspectorCss from "./MermaidInspector.css?raw";
 
 mermaid.initialize({

@@ -3,10 +3,10 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { MermaidInspector } from "./inspectors/MermaidInspector";
+import { MermaidInspector } from 'matchina/viz';
 import BasicInspector from "./inspectors/BasicInspector";
 import StateForceGraph from "./inspectors/ForceGraphInspector";
-import ReactFlowInspector from "./inspectors/ReactFlowInspector";
+import { ReactFlowInspector } from 'matchina/viz';
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -118,7 +118,6 @@ export function MachineExampleWithChart({
               stateKey={activeStatePath}
               actions={actions as any}
               interactive={isInteractive}
-              diagramType={diagramType}
             />
           )}
           {currentInspectorType === "force-graph" && (

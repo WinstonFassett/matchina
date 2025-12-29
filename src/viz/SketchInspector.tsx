@@ -3,6 +3,7 @@ import { useMachine } from "../integrations/react";
 import type { MachineShape, StateNode } from "../hsm/shape-types";
 import type { InspectorTheme } from './theme';
 import { defaultTheme, generateCSSVariables } from './theme';
+import './SketchInspector.css';
 
 interface SketchInspectorProps {
   machine: any;

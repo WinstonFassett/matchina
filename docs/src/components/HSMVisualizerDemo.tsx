@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import HSMMermaidInspector from './inspectors/HSMMermaidInspector';
-import SketchInspector from './inspectors/SketchInspector';
-import ReactFlowInspector from './inspectors/ReactFlowInspector';
+import { HSMMermaidInspector, SketchInspector, ReactFlowInspector } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
 import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 

@@ -38,8 +38,8 @@
   flex: 0 0 auto;
   max-width: 100%;
   min-width: 0;
-  background: var(--sl-color-bg);
-  border: 1px solid var(--sl-color-gray-5);
+  background: var(--matchina-inspector-color-background, white);
+  border: 1px solid var(--matchina-inspector-color-border, #e5e7eb);
   border-radius: 6px;
   padding: 12px;
   position: relative;
@@ -50,46 +50,46 @@
 }
 
 .state-item:hover {
-  background: var(--sl-color-gray-6);
+  background: var(--matchina-inspector-color-hover, #f9fafb);
 }
 
 .state-item.active {
-  background: var(--sl-color-accent);
-  border-color: var(--sl-color-accent-high);
-  color: var(--sl-color-text-invert);
+  background: var(--matchina-inspector-color-active, #8b5cf6);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  color: white;
 }
 
 .state-item.active-ancestor {
   background: rgba(139, 92, 246, 0.15);
-  border-color: var(--sl-color-accent);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
   border-width: 2px;
 }
 
 /* Nested state boxes inside active ancestor - but don't override active nested states */
 .state-item.active-ancestor .state-item:not(.active) {
   background: transparent;
-  border-color: var(--sl-color-gray-4);
+  border-color: #d1d5db;
 }
 
 .state-item.active-ancestor .state-item:not(.active):hover {
-  background: var(--sl-color-gray-6);
+  background: var(--matchina-inspector-color-hover, #f9fafb);
 }
 
 /* Multi-level nesting transparency for better visual hierarchy */
 .state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active) {
   background: transparent;
-  border-color: var(--sl-color-gray-3);
+  border-color: #e5e7eb;
 }
 
 .state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active):hover {
-  background: var(--sl-color-gray-6);
+  background: var(--matchina-inspector-color-hover, #f9fafb);
 }
 
 /* Deep nested active states should still be prominent */
 .state-item.active-ancestor .state-item.active-ancestor .state-item.active {
-  background: var(--sl-color-accent);
-  border-color: var(--sl-color-accent-high);
-  color: var(--sl-color-text-invert);
+  background: var(--matchina-inspector-color-active, #8b5cf6);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
+  color: white;
   border-width: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -100,7 +100,7 @@
 .state-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--sl-color-text);
+  color: var(--matchina-inspector-color-text, #111827);
   margin-bottom: 8px;
 }
 
@@ -110,19 +110,19 @@
 
 .state-badge {
   font-size: 11px;
-  background: var(--sl-color-gray-2);
-  color: var(--sl-color-accent);
+  background: #f3f4f6;
+  color: var(--matchina-inspector-color-active, #8b5cf6);
   padding: 2px 6px;
   border-radius: 3px;
   margin-left: 8px;
   font-weight: normal;
-  border: 1px solid var(--sl-color-gray-4);
+  border: 1px solid #d1d5db;
 }
 
 .state-content.active .state-badge {
-  background: var(--sl-color-text-invert);
-  color: var(--sl-color-accent);
-  border-color: var(--sl-color-accent);
+  background: white;
+  color: var(--matchina-inspector-color-active, #8b5cf6);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
 }
 
 /* Transitions listed vertically */
@@ -146,13 +146,13 @@
   font-family: 'SF Mono', Monaco, monospace;
   font-style: italic;
   font-size: 13px;
-  color: var(--sl-color-gray-3);
+  color: #9ca3af;
   cursor: default;
 }
 
 .transition-button.enabled {
-  color: var(--sl-color-text);
-  border-color: var(--sl-color-accent);
+  color: var(--matchina-inspector-color-text, #111827);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
   background: none;
   cursor: pointer;
   font-weight: 500;
@@ -161,54 +161,32 @@
 /* Transition buttons inside active state need proper contrast */
 .state-item.active .transition-button.enabled {
   color: rgba(255, 255, 255, 0.8);
-  border-color: var(--sl-color-accent);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
   background: rgba(139, 92, 246, 0.2);
-}
-
-/* Dark mode specific adjustments */
-@media (prefers-color-scheme: dark) {
-  .state-item.active .transition-button.enabled {
-    background: rgba(139, 92, 246, 0.3);
-  }
 }
 
 .state-item.active .transition-button.enabled:hover {
   background: rgba(139, 92, 246, 0.8);
   opacity: 1;
-  border-color: var(--sl-color-accent);
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
 }
 
 .transition-button.enabled.ancestor-state {
-  color: var(--sl-color-text);
+  color: var(--matchina-inspector-color-text, #111827);
   border-color: transparent;
   background: rgba(248, 250, 252, 0.5);
 }
 
-/* Dark mode specific adjustments for ancestor-state buttons */
-@media (prefers-color-scheme: dark) {
-  .transition-button.enabled.ancestor-state {
-    background: rgba(248, 250, 252, 0.5);
-  }
-}
-
 .transition-button.enabled.ancestor-state:hover {
-  background: var(--sl-color-gray-4);
-  color: var(--sl-color-gray-7);
-  border-color: var(--sl-color-gray-5);
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .transition-button.enabled:hover {
-  background: var(--sl-color-accent);
-  color: var(--sl-color-text-invert);
-  border-color: var(--sl-color-accent);
-}
-
-/* Dark mode specific hover adjustments */
-@media (prefers-color-scheme: dark) {
-  .transition-button.enabled:hover {
-    background: var(--sl-color-accent-high);
-    color: var(--sl-color-text-invert);
-  }
+  background: var(--matchina-inspector-color-active, #8b5cf6);
+  color: white;
+  border-color: var(--matchina-inspector-color-active, #8b5cf6);
 }
 
 .ancestor-indicator {
@@ -224,7 +202,7 @@
 }
 
 .transition-arrow {
-  color: var(--sl-color-gray-4);
+  color: #9ca3af;
   margin: 0 4px;
 }
 
@@ -243,7 +221,7 @@
 /* Metadata */
 .state-metadata {
   font-size: 11px;
-  color: var(--sl-color-gray-3);
+  color: #9ca3af;
   margin-top: 4px;
   display: flex;
   flex-direction: column;
@@ -251,7 +229,7 @@
 }
 
 .state-metadata .query {
-  background: var(--sl-color-gray-6);
+  background: #e5e7eb;
   padding: 2px 4px;
   border-radius: 2px;
   font-family: 'SF Mono', Monaco, monospace;
@@ -260,7 +238,7 @@
 /* Full path label in active state */
 .state-fullKey {
   font-size: 11px;
-  color: var(--sl-color-text-invert);
+  color: white;
   opacity: 0.8;
   margin-top: 4px;
 }
