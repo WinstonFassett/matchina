@@ -233,10 +233,20 @@ export default function ForceGraphInspector({
   // Update ForceGraph when state changes
   useEffect(() => {
     console.log('ForceGraph: useEffect triggered, currentValue:', currentValue);
+    // Update the ref that node highlighting uses
+    valueRef.current = currentValue;
+    
     if (graphInstance.current) {
       console.log('ForceGraph: Calling graphData refresh');
-      // Force a re-render to update node highlighting
+      // Force a proper canvas redraw by resetting the graph data
       graphInstance.current.graphData(graphInstance.current.graphData());
+      // Force canvas redraw by triggering resize
+      setTimeout(() => {
+        if (graphInstance.current) {
+          graphInstance.current.width();
+          graphInstance.current.height();
+        }
+      }, 10);
     } else {
       console.log('ForceGraph: No graph instance yet');
     }

@@ -43,10 +43,14 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   );
 
   // Step 3: Subscribe to state changes for highlighting
-  const currentState: TransitionEvent = useMachine(machine);
+  const currentChange: TransitionEvent = useMachine(machine);
 
+  // Extract state key/fullKey for matching against node IDs
+  // currentChange.to is a state object with .key or .fullKey property
+  const currentState = currentChange?.to?.fullKey || currentChange?.to?.key || String(currentChange?.to || "");
+  
   // Step 4: Get previous state for edge highlighting
-  const previousState = currentState?.from;
+  const previousState = currentChange?.from?.fullKey || currentChange?.from?.key || String(currentChange?.from || "");
 
   // Step 5: Create dispatch function for edge clicks
   const dispatch = useCallback(
@@ -59,10 +63,10 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   // Step 6: Pass converted data to base ReactFlowInspector
   return (
     <ReactFlowInspector
-      value={String(currentState?.to || "")}
+      value={currentState}
       nodes={graphData?.nodes || []}
       edges={graphData?.edges || []}
-      previousState={previousState ? String(previousState) : undefined}
+      previousState={previousState}
       dispatch={dispatch}
       layoutOptions={layoutOptions}
       interactive={interactive}
