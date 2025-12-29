@@ -69,6 +69,15 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
     initial: undefined as string | undefined
   }); // _XStateNode - Educational type definition
 
+  // Safety check - if machine doesn't have getState, return empty shape
+  if (typeof machine?.getState !== 'function') {
+    console.warn('buildShapeTreeFromHierarchy: machine.getState is not a function', machine);
+    return {
+      initial: 'Unknown',
+      states: {}
+    };
+  }
+
   const initialState = machine.getState();
   const declaredInitial = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
 
