@@ -23,7 +23,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 
 import CustomEdge from "./CustomEdge";
-import CustomNode from "./CustomNode";
+import CustomNodeComponent from "./CustomNode";
 import LayoutPanel from "./LayoutPanel";
 import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
 import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
@@ -54,7 +54,7 @@ interface ReactFlowInspectorProps {
 }
 
 const nodeTypes: NodeTypes = {
-  custom: CustomNode as any, // Type assertion to avoid complex generic issues
+  custom: CustomNodeComponent as any, // Type assertion to avoid complex generic issues
 };
 
 const edgeTypes: EdgeTypes = {

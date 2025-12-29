@@ -76,21 +76,30 @@ export function buildForceGraphData(
   // Second pass: Create transition links
   for (const [fromState, eventMap] of shape.transitions.entries()) {
     for (const [eventName, toState] of eventMap.entries()) {
-      // Validate that both source and target states exist
-      if (shape.states.has(fromState) && shape.states.has(toState)) {
-        links.push({
-          source: fromState,    // String ID
-          target: toState,      // String ID
-          event: eventName,     // Custom property for labels
-          value: 1,            // Link strength
-          type: 'transition'
-        });
-      } else {
-        // Skip invalid transitions but could warn in development
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`Invalid transition: ${fromState} -> ${toState} via ${eventName}`);
+      // For flattened HSMs, transitions use short names but nodes use full keys
+      // We need to map short names to full keys
+      let actualFromState = fromState;
+      let actualToState = toState;
+      
+      if (shape.type === 'flattened') {
+        // Find the full key that matches the short name
+        for (const [fullKey, stateNode] of shape.states.entries()) {
+          if (stateNode.key === fromState) {
+            actualFromState = fullKey;
+          }
+          if (stateNode.key === toState) {
+            actualToState = fullKey;
+          }
         }
       }
+      
+      links.push({
+        source: actualFromState,    // Use full key for flattened HSMs
+        target: actualToState,      // Use full key for flattened HSMs
+        event: eventName,           // Custom property for labels
+        value: 1,                  // Link strength
+        type: 'transition'
+      });
     }
   }
 

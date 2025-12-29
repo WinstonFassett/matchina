@@ -162,7 +162,7 @@ export const useStateMachineNodes = (
       if (savedPositions && savedPositions.length === states.length) {
         // Use saved positions
         console.log('🔍 [init] Using saved positions for machine', machineId);
-        const restoredNodes: Node[] = states.map((state) => {
+        const restoredNodes: CustomNode[] = states.map((state) => {
           const savedPos = savedPositions.find((p) => p.id === state);
           return {
             id: state,
@@ -196,7 +196,7 @@ export const useStateMachineNodes = (
       setIsLayouting(true);
 
       // Create initial nodes without positions (ELK will calculate them)
-      const initialNodes: Node[] = states.map((state) => ({
+      const nodesForLayout: CustomNode[] = states.map((state) => ({
         id: state,
         position: { x: 0, y: 0 }, // Temporary position
         data: {
@@ -229,7 +229,7 @@ export const useStateMachineNodes = (
       // Use ELK to calculate optimal layout
       console.log('🔍 [ELK] Starting layout for', states.length, 'nodes with', transitions.length, 'transitions');
       getLayoutedElements(
-        initialNodes,
+        nodesForLayout,
         initialEdges,
         layoutOptions || getDefaultLayoutOptions()
       )
@@ -253,7 +253,7 @@ export const useStateMachineNodes = (
         .catch((error) => {
           console.error('❌ [ELK] Layout failed:', error);
           // Fallback to simple grid layout if ELK fails
-          const fallbackNodes = initialNodes.map((node, index) => ({
+          const fallbackNodes = nodesForLayout.map((node, index) => ({
             ...node,
             data: {
               ...node.data,
@@ -284,7 +284,7 @@ export const useStateMachineNodes = (
     key,
     layoutOptions,
     transitions,
-  ]);
+  ]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // Update node states without changing positions
   const updateNodeStates = useCallback(() => {
@@ -409,7 +409,7 @@ export const useStateMachineNodes = (
           setIsLayouting(false);
         });
     }
-  }, [forceLayoutKey]); // Only depend on forceLayoutKey to prevent re-layouts during dragging
+  }, [forceLayoutKey, nodes, transitions, layoutOptions]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   return {
     nodes,
