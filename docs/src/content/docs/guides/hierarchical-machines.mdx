@@ -31,6 +31,60 @@ Use hierarchy only when a state temporarily takes control and must return contro
 - **"Loading" nested under "Viewing"** when both can exist independently
 - Using hierarchy as namespacing for unrelated concerns
 
+## HSM Design Guidelines
+
+### State Design Principles
+
+**Prefer Simple States**
+- Use simple states without parameters or typed payloads when possible
+- Complex parameter threading reduces readability and reasoning
+- Example: `Empty: () => ({})` instead of `Empty: (selectedTags: string[]) => ({ selectedTags })`
+
+**Present Tense Naming**
+- Use present tense or gerunds: `Ready`, `Waiting`, `Loading`, `Saving`, `Typing`
+- Avoid past tense states which can be ambiguous
+- States should describe what the thing **IS**, not what it **WAS**
+
+**Mutual Exclusivity**
+- States must be mutually exclusive - no overlapping conditions
+- Avoid states like `Selecting` AND `Suggesting` that can be true simultaneously
+- Each state should represent a unique, non-overlapping condition
+
+### Transition Design Principles
+
+**Single Exit States**
+- Prefer transitions that map to exactly one target state
+- Avoid functional transitions that return multiple possible states
+- Example: Instead of `typed: (value) => value ? "TextEntry" : "Empty"`, use:
+  ```typescript
+  Typing: {
+    toTextEntry: "TextEntry",
+    toEmpty: "Empty"
+  }
+  ```
+
+**Use Hooks for Conditional Logic**
+- Handle conditional logic in hooks rather than functional transitions
+- Use `resolveExit` hooks for fallback behavior
+- This keeps transitions inspectable and simplifies reasoning
+
+### HSM Usage Patterns
+
+**HSMs Are Footguns**
+- Question whether HSMs help or hurt your specific use case
+- Most HSMs can be flattened into simple state machines
+- Prefer flattening when hierarchy isn't truly necessary
+
+**True Substates Only**
+- Use HSMs for genuine delegation of control (processes/subprocesses)
+- Avoid using HSMs for semantic groupings or labeling work types
+- Hierarchy should represent actual control flow, not categorization
+
+**Flatten When Possible**
+- Consider if your HSM can be represented as a flat machine
+- Flattened machines are easier to reason about and debug
+- Use `createFlatMachine()` for type-safe flattened representation
+
 ## Flattening Approach
 
 ### Option 1: Type-Safe Flat Machine (Recommended)
