@@ -11,16 +11,15 @@ import {
   loadNodePositions,
   clearNodePositions,
 } from "../utils/layoutStorage";
+import { buildShapeTree } from "../../../inspect/build-visualizer-tree";
 
-// Extract transitions from machine for ELK layout
-const extractTransitionsForLayout = (machine: any) => {
+// Extract transitions from shape tree for ELK layout
+const extractTransitionsForLayout = (shapeTree: any) => {
   const transitions: Array<{ from: string; to: string; event: string }> = [];
 
-  // Get states object from either machine.config.states or machine.states
-  const states = machine?.config?.states || machine?.states;
-  if (!states) return transitions;
+  if (!shapeTree?.states) return transitions;
 
-  Object.entries(states).forEach(([stateName, stateConfig]: [string, any]) => {
+  Object.entries(shapeTree.states).forEach(([stateName, stateConfig]: [string, any]) => {
     if (!stateConfig?.on) return;
 
     Object.entries(stateConfig.on).forEach(
@@ -75,17 +74,19 @@ export const useStateMachineNodes = (
     }
   }, [key, setNodes]);
 
-  // Extract states from any machine structure (works with both machine.config.states and direct machine.states)
-  const states = useMemo(() => {
-    if (machine?.config?.states) return Object.keys(machine.config.states);
-    if (machine?.states) return Object.keys(machine.states);
-    return [];
-  }, [machine]);
+  // Build shape tree from machine (like Sketch and Mermaid do)
+  const shapeTree = useMemo(() => buildShapeTree(machine), [machine]);
 
-  // Extract transitions for ELK layout
+  // Extract states from shape tree
+  const states = useMemo(() => {
+    if (shapeTree?.states) return Object.keys(shapeTree.states);
+    return [];
+  }, [shapeTree]);
+
+  // Extract transitions for ELK layout from shape tree
   const transitions = useMemo(
-    () => extractTransitionsForLayout(machine),
-    [machine]
+    () => extractTransitionsForLayout(shapeTree),
+    [shapeTree]
   );
 
   // Reset when machine changes

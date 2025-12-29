@@ -1,6 +1,16 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef, useEffect, useState } from "react";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
+import { buildShapeTree } from "../inspect/build-visualizer-tree";
+
+interface Diagram {
+  nodes: Array<{ id: string; name: string }>;
+  links: Array<{ name: string; source: any; target: any }>;
+}
+
+function findNode(nodes: { id: string }[], id: string) {
+  return nodes.find((it) => it.id === id);
+}
 
 type StateMachineDefinition = {
   states: Record<
@@ -11,29 +21,15 @@ type StateMachineDefinition = {
   >;
 };
 
-type Diagram = {
-  nodes: { id: string; name: string }[];
-  links: {
-    name: string;
-    source: any;
-    target: any;
-    [key: string]: any;
-  }[];
-};
-
 type ForceGraphInspectorProps = {
   value: string;
-  definition: StateMachineDefinition;
+  definition: any; // FactoryMachine
   lastEvent?: string;
   prevState?: string;
   dispatch: (event: { type: string }) => void;
   interactive?: boolean;
   theme?: InspectorTheme;
 };
-
-function findNode(nodes: { id: string }[], id: string) {
-  return nodes.find((it) => it.id === id);
-}
 
 function canFire(
   machine: StateMachineDefinition,
@@ -88,15 +84,18 @@ export default function ForceGraphInspector({
   const graphInstance = useRef<any>(null);
 
   const diagram: Diagram = useMemo(() => {
-    if (!definition || !definition.states) {
+    // Build shape tree from machine (like Sketch and Mermaid do)
+    const shapeTree = buildShapeTree(definition);
+    
+    if (!shapeTree?.states) {
       return { nodes: [], links: [] };
     }
     
-    const stateIds = Object.keys(definition.states);
+    const stateIds = Object.keys(shapeTree.states);
     const nodes = stateIds.map((key) => ({ id: key, name: key }));
     const links: Diagram["links"] = [];
     stateIds.forEach((key) => {
-      const state = definition.states[key];
+      const state = shapeTree.states[key];
       const source = findNode(nodes, key);
       state.on &&
         Object.keys(state.on).forEach((name) => {
