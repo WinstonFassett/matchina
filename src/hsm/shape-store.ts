@@ -17,9 +17,10 @@ import { buildFlattenedShape, buildHierarchicalShape } from "./shape-builders";
  * but still provides the subscribe interface for consistency.
  */
 export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeController {
+  const machineWithInitial = machine as { initialKey?: string };
   const shape = buildFlattenedShape(
     machine.transitions as Record<string, Record<string, any>>,
-    (machine as any).initialKey as string
+    machineWithInitial.initialKey as string
   );
   const subscribers = new Set<(shape: MachineShape) => void>();
 

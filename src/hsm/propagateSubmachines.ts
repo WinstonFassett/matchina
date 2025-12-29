@@ -5,6 +5,55 @@ import { send as sendHook } from "../state-machine-hooks";
 import { createLazyShapeStore } from "./shape-store";
 import { AllEventsOf } from "./types";
 
+// Enhanced machine interfaces for better type safety
+interface HierarchicalMachine<M extends FactoryMachine<any> = FactoryMachine<any>> {
+  shape: ReturnType<typeof createLazyShapeStore>;
+  send: (type: string, ...params: any[]) => void;
+  transition?: (event: any) => void;
+  notify?: (event: any) => void;
+  resolveExit?: (event: any) => any;
+  getState(): any;
+  transitions?: Record<string, Record<string, any>>;
+}
+
+interface DuckTypedMachine {
+  getState(): any;
+  send(type: string, ...params: any[]): any;
+}
+
+interface OptionalDuckTypedMachine {
+  getState(): any;
+  send?(type: string, ...params: any[]): any;
+}
+
+interface PropagatedMachine extends DuckTypedMachine {
+  __propagateUnhook?: () => void;
+  hierarchical?: boolean;
+  transitions?: Record<string, Record<string, any>>;
+  resolveExit?: (event: any) => any;
+  transition?: (event: any) => void;
+}
+
+interface ChildChangePayload {
+  target?: any;
+  type: string;
+  params?: any[];
+  _internal?: boolean;
+}
+
+interface InternalChildChangePayload extends ChildChangePayload {
+  _internal: true;
+}
+
+// Enhanced root machine interface  
+interface RootMachine {
+  send: (type: string, ...params: any[]) => void;
+  transition?: (event: any) => void;
+  notify?: (event: any) => void;
+  resolveExit?: (event: any) => any;
+  getState(): any;
+}
+
 /**
  * Hierarchical propagation core
  *
@@ -36,27 +85,16 @@ import { AllEventsOf } from "./types";
  *   through `handleAtRoot(type, params)`.
  */
 
-// Minimal duck-typed machine shape
-type AnyMachine = { getState(): any; send?: (...args: any[]) => void };
-
-// Probe for and return state submachine
-function getChildFromParentState(state: any): AnyMachine | undefined {
-  const m = state?.data?.machine as any;
+// Probe for and return state submachine with better typing
+function getChildFromParentState(state: any): DuckTypedMachine | undefined {
+  const m = state?.data?.machine;
   if (!m) return undefined;
-  if (isFactoryMachine(m)) return m as AnyMachine;
+  if (isFactoryMachine(m)) return m as DuckTypedMachine;
   const isValid = typeof m?.getState === "function" && typeof m?.send === "function";
-  return isValid ? (m as AnyMachine) : undefined;
+  return isValid ? (m as DuckTypedMachine) : undefined;
 }
 
 
-export type HierarchicalMachine<M> = M & {
-  /** Root `send` extended to accept `child.*` events and routed child changes */
-  send: (type: HierarchicalEvents<M>, ...params: any[]) => void;
-};
-
-export type HierarchicalEvents<M> =
-  | AllEventsOf<M>
-  | string;
 
 /**
  * Wrap a machine with hierarchical propagation semantics and attach shape metadata.
@@ -88,66 +126,60 @@ export function makeHierarchical<M extends FactoryMachine<any>>(machine: M) {
  * Returns a disposer that unhooks the root and any hooked descendants and
  * clears internal tracking structures.
  */
-export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): () => void {
+export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): HierarchicalMachine<M> {
+  const hookedMachines = new Set<PropagatedMachine>();
 
-  const hookedMachines = new Set<AnyMachine>();
+  // Attach lazy shape store for visualization
+  // Shape is computed on first access and cached
+  (root as HierarchicalMachine<M>).shape = createLazyShapeStore(root);
+  
+  const rootMachine = root as unknown as RootMachine;
 
   // Install a send hook on any discovered machine to re-route non-root sends to root
-  function hookMachine(m: AnyMachine) {
-    if ((m as any).__propagateUnhook) return;
-    hookedMachines.add(m);
+  function hookMachine(m: OptionalDuckTypedMachine): void {
+    const propagatedMachine = m as PropagatedMachine;
+    if (propagatedMachine.__propagateUnhook) return;
+    hookedMachines.add(propagatedMachine);
     const unhook = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
       // First, let the machine handle its own event
       const result = innerSend(type, ...params);
       
       // Check if the machine has reached a final state after handling the event
       const state = m.getState?.();
-      if (state && isChildFinal(m, state)) {
-        let current = root;
-        let parent = null;
+      if (state && isChildFinal(m as DuckTypedMachine, state)) {
+        let current: DuckTypedMachine | null = rootMachine;
         while (current) {
           const currentState = current.getState?.();
           if (!currentState) break;
           const child = getChildFromParentState(currentState);
-          if (child === m) {
-            parent = current;
-            break;
-          }
           if (!child) break;
-          current = child as any;
+          current = child;
         }
-        if (parent) {
-          (parent as any).send('child.exit');
+        if (current) {
+          current.send?.('child.exit');
           hookCurrentChain(true); // Notify on child.exit
         }
       } else if (state && !type.startsWith('child.')) {
-        // For non-final states and non-child events, update the hierarchy
-        hookCurrentChain(true); // Notify on direct child sends
-      }
-      
-      // Reserved child.* events are handled at the machine's own level
-      if (type.startsWith('child.')) return result;
-      
-      // After handling, send a child.change event to the root to notify of state changes
-      // This routes through the root's event loop to preserve ordering and visibility
-      // Use _internal flag to avoid infinite recursion but ensure notification happens
-      // Only send if the event was actually handled to avoid excessive notifications
-      if (result) {
-        (root as any).send('child.change', { target: m, type, params, _internal: true });
+        // Use _internal flag to avoid infinite recursion but ensure notification happens
+        // Only send if the event was actually handled to avoid excessive notifications
+        if (result) {
+          rootMachine.send('child.change', { target: m, type, params, _internal: true });
+        }
       }
       
       return result;
-    })(m as any);
-    (m as any).__propagateUnhook = unhook;
-    (m as any).hierarchical = true;
+    })(m as DuckTypedMachine);
+    propagatedMachine.__propagateUnhook = unhook;
+    propagatedMachine.hierarchical = true;
   }
 
   // Determine if a child's current state is final
   // if marked as such or has no transitions
-  function isChildFinal(child: any, childState: any): boolean {
+  function isChildFinal(child: DuckTypedMachine, childState: any): boolean {
     if (childState?.data?.final) return true;
-    const transitions = (child as any).transitions?.[childState?.key];
-    return transitions && Object.keys(transitions).length === 0;
+    const propagatedChild = child as PropagatedMachine;
+    const transitions = propagatedChild.transitions?.[childState?.key];
+    return Boolean(transitions && Object.keys(transitions).length === 0);
   }
 
   /**
@@ -172,13 +204,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    * Descend to the deepest active child machine in the hierarchy.
    * Returns the chain of machines and states visited.
    */
-  function descendToDeepestActive(root: AnyMachine): { machinesChain: AnyMachine[]; statesChain: any[] } {
-    const machinesChain: AnyMachine[] = [];
+  function descendToDeepestActive(root: DuckTypedMachine): { machinesChain: DuckTypedMachine[]; statesChain: any[] } {
+    const machinesChain: DuckTypedMachine[] = [];
     const statesChain: any[] = [];
 
-    function descend(m: AnyMachine): void {
+    function descend(m: DuckTypedMachine): void {
       machinesChain.push(m);
-      const state = m.getState();
+      const state = m.getState?.();
       if (state) statesChain.push(state);
 
       const child = getChildFromParentState(state);
@@ -196,15 +228,16 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    * Returns whether the event was handled and by which machine.
    */
   function attemptTransitionAtLevel(
-   m: AnyMachine, 
+   m: DuckTypedMachine, 
    type: string, 
    params: any[], 
    state: any
-  ): { handled: boolean; event?: any; handledBy?: AnyMachine } {
+  ): { handled: boolean; event?: any; handledBy?: DuckTypedMachine } {
    // Try current machine
-   const ev = (m as any).resolveExit?.({ type, params, from: state });
+   const propagatedMachine = m as PropagatedMachine;
+   const ev = propagatedMachine.resolveExit?.({ type, params, from: state });
    if (ev) {
-     (m as any).transition?.(ev);
+     propagatedMachine.transition?.(ev);
      return { handled: true, event: ev, handledBy: m };
    }
 
@@ -214,13 +247,13 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   /**
    * Handle duck-typed child machines (those with .send method).
    */
-  function handleDuckTypedChild(child: any, type: string, params: any[]): boolean {
+  function handleDuckTypedChild(child: DuckTypedMachine, type: string, params: any[]): boolean {
     try {
-      const before = (child as AnyMachine).getState?.();
+      const before = child.getState?.();
       const beforeKey = before?.key;
       const beforeDataRef = before?.data;
-      const sendResult = (child as any).send(type, ...params);
-      const after = (child as AnyMachine).getState?.();
+      const sendResult = child.send?.(type, ...params);
+      const after = child.getState?.();
       const changed = after !== before || after?.key !== beforeKey || after?.data !== beforeDataRef;
       return changed || !!sendResult;
     } catch {
@@ -231,20 +264,20 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   /**
    * Bubble child.exit events up the hierarchy after transitions.
    */
-  function bubbleChildExitEvents(machinesChain: AnyMachine[]): void {
+  function bubbleChildExitEvents(machinesChain: DuckTypedMachine[]): void {
     for (let i = machinesChain.length - 2; i >= 0; i--) {
-      const parent = machinesChain[i] as any;
+      const parent = machinesChain[i] as PropagatedMachine;
       const parentState = parent.getState?.();
       if (!parentState) continue;
       
-      const child = getChildFromParentState(parentState) as any;
+      const child = getChildFromParentState(parentState);
       if (!child) continue;
       
       const childState = child.getState?.();
       if (!childState || isChildFinal(child, childState)) {
         const exitEv = parent.resolveExit?.({
           type: 'child.exit',
-          params: [{ id: parentState?.data?.id ?? parentState?.id, state: childState?.key, data: childState?.data }],
+          params: [{ child, from: childState }],
           from: parentState,
         });
         if (exitEv) parent.transition?.(exitEv);
@@ -255,14 +288,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   /**
    * Notify hierarchy of changes and hook newly discovered machines.
    */
-  function notifyHierarchyOfChange(result: { handled: boolean; handledBy?: AnyMachine }, type: string, params: any[]): void {
+  function notifyHierarchyOfChange(result: { handled: boolean; handledBy?: DuckTypedMachine }, type: string, params: any[]): void {
     // Hook any newly discovered machines in the hierarchy
     hookCurrentChain();
     
     // Emit a routed child change via root.send so observers can react through the normal loop.
     // Use an internal flag to avoid re-entering handleAtRoot and causing recursion.
     if (result.handled && !String(type).startsWith('child.')) {
-      (root as any).send?.('child.change', { target: result.handledBy, type, params, _internal: true });
+      rootMachine.send?.('child.change', { target: result.handledBy, type, params, _internal: true });
     }
   }
 
@@ -286,9 +319,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     
     // For all other reserved events and root-targeted child.change, try to handle at root
     hookCurrentChain(false);
-    const from = (root as any).getState();
-    const ev = (root as any).resolveExit?.({ type, params, from });
-    if (ev) (root as any).transition?.(ev);
+    const from = rootMachine.getState();
+    const ev = rootMachine.resolveExit?.({ type, params, from });
+    if (ev) rootMachine.transition?.(ev);
     return ev;
   }
 
@@ -302,7 +335,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return handleReservedEvents(type, params);
     }
 
-    const { machinesChain, statesChain } = descendToDeepestActive(root as AnyMachine);
+    const { machinesChain, statesChain } = descendToDeepestActive(root as DuckTypedMachine);
 
     // Try handling at each level from deepest to shallowest
     for (let i = machinesChain.length - 1; i >= 0; i--) {
@@ -312,12 +345,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       // Try child machine handling first
       if (i < machinesChain.length - 1) {
         const child = getChildFromParentState(state);
-        if (child && (child as any).send) {
+        if (child) {
           const duckHandled = handleDuckTypedChild(child, type, params);
           if (duckHandled) {
             bubbleChildExitEvents(machinesChain);
             notifyHierarchyOfChange({ handled: true, handledBy: child }, type, params);
-            return null;
+            return;
           }
         }
       }
@@ -343,7 +376,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    * @param {boolean} notify - Whether to force a notification after hooking (default: false)
    */
   function hookCurrentChain(notify = false) {
-    let current: AnyMachine | undefined = root;
+    let current: DuckTypedMachine | undefined = root;
 
     // Single pass following active chain to hook discovered machines
     while (current) {
@@ -356,12 +389,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       hookMachine(child);
 
       // Continue traversal for any child that exposes getState (duck-typed or branded)
-      current = (child as AnyMachine);
+      current = (child as DuckTypedMachine);
     }
 
     // Only notify if explicitly requested to avoid excessive notifications
     if (notify) {
-      (root as any).notify?.({ type: 'child.change', params: [{ _internal: true }] });
+      rootMachine.notify?.({ type: 'child.change', params: [{ _internal: true }] });
     }
   }
 
@@ -372,12 +405,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       // Internal child-change: create a new change event to update lastChange for React
       if (payload && payload._internal) {
         // Get the current state
-        const currentState = (root as any).getState?.();
+        const currentState = rootMachine.getState?.();
         if (currentState) {
           // Create a new change event representing a self-transition
           // This updates the machine's lastChange so React's useSyncExternalStore detects the change
           const newChangeEvent = new FactoryMachineEventImpl(
-            'child.change' as any,
+            'child.change' as 'child.change',
             currentState,
             currentState,
             [payload],
@@ -385,7 +418,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
           );
           // Call transition to update lastChange and notify subscribers
           // Note: transition() will call notify() through the lifecycle, so we don't call it separately
-          (root as any).transition?.(newChangeEvent);
+          rootMachine.transition?.(newChangeEvent);
         }
         return;
       }
@@ -396,19 +429,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return handleAtRoot(type, params);
     }
     return handleAtRoot(type, params);
-  })(root as any);
+  })(root);
 
   // Initial wiring: hook current chain once
   hookCurrentChain(true); // Notify on initial wiring
 
-  return () => {
-    unhookRoot();
-    hookedMachines.forEach((m: any) => {
-      if (m.__propagateUnhook) {
-        m.__propagateUnhook();
-        delete m.__propagateUnhook;
-      }
-    });
-    hookedMachines.clear();
-  };
+  return root as HierarchicalMachine<M>;
 }

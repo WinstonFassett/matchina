@@ -139,10 +139,11 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
   const visited = new Set<string>();
 
   const initialState = machine.getState();
-  const initialKey = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
+  const machineWithInitial = machine as { initialKey?: string };
+  const initialKey = machineWithInitial.initialKey ?? initialState?.key ?? 'Unknown';
 
   // Recursively walk all states in machine hierarchy
-  function walkMachine(m: any, parentFullKey?: string): void {
+  function walkMachine(m: { states?: Record<string, any>; transitions?: Record<string, Record<string, any>> }, parentFullKey?: string): void {
     // Iterate over ALL states in the machine, not just the current one
     const machineStates = m.states || {};
     const machineTransitions = m.transitions || {};
@@ -209,7 +210,8 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
       transitionMap.set(fullKey, trans);
 
       // Check if state has a submachine
-      const machineFactory = (stateFactory as any)?.machineFactory;
+      const stateFactoryWithMachine = stateFactory as { machineFactory?: () => { machine?: any; } };
+      const machineFactory = stateFactoryWithMachine?.machineFactory;
       if (machineFactory) {
         try {
           // Create instance to inspect
