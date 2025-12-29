@@ -36,8 +36,14 @@ function canFire(
   state: string,
   event: string
 ) {
-  const mode = machine.states[state];
-  return mode && mode.on && mode.on[event];
+  // Handle both Map and Object formats for states
+  const states = machine.states instanceof Map ? machine.states : machine.states;
+  const mode = states instanceof Map ? states.get(state) : states[state];
+  if (!mode || !mode.on) return false;
+  
+  // Handle both Map and Object formats for transitions
+  const on = mode.on instanceof Map ? mode.on : mode.on;
+  return on instanceof Map ? on.has(event) : !!on[event];
 }
 
 function getQuadraticXY(
@@ -98,20 +104,25 @@ export default function ForceGraphInspector({
       
       if (!shapeObj?.states) return states;
       
+      // Handle both Map and Object formats for states
+      const statesEntries = shapeObj.states instanceof Map 
+        ? Array.from(shapeObj.states.entries())
+        : Object.entries(shapeObj.states);
+      
       // Check if this is a hierarchical machine (has nested states)
-      const hasNestedStates = Object.values(shapeObj.states).some((stateConfig: any) => 
+      const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
         stateConfig && typeof stateConfig === 'object' && stateConfig.states
       );
       
       if (!hasNestedStates && !prefix) {
         // Flat machine - use simple state names
-        Object.keys(shapeObj.states).forEach(stateName => {
+        statesEntries.forEach(([stateName, _]) => {
           states.push({ id: stateName, name: stateName, level: 0 });
         });
         return states;
       }
       
-      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+      statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         const level = prefix ? prefix.split('.').length : 0;
         
@@ -126,23 +137,51 @@ export default function ForceGraphInspector({
       return states;
     };
     
-    // Extract transitions recursively (including nested)
+    // Extract transitions from shape.transitions (now stored separately)
     const extractTransitions = (shapeObj: any, prefix = ''): Diagram["links"] => {
       const links: Diagram["links"] = [];
       
+      // Use transitions Map if available (new shape structure)
+      if (shapeObj?.transitions instanceof Map) {
+        Array.from(shapeObj.transitions.entries()).forEach(([key, transitionMap]: [string, any]) => {
+          // If value is a Map, extract from it
+          if (transitionMap instanceof Map) {
+            Array.from(transitionMap.entries()).forEach(([eventKey, targetState]: [string, any]) => {
+              links.push({
+                source: key,
+                target: targetState,
+                name: eventKey
+              });
+            });
+          }
+        });
+        return links;
+      }
+      
+      // Fallback: extract from states.on (old structure)
       if (!shapeObj?.states) return links;
       
+      // Handle both Map and Object formats for states
+      const statesEntries = shapeObj.states instanceof Map 
+        ? Array.from(shapeObj.states.entries())
+        : Object.entries(shapeObj.states);
+      
       // Check if this is a hierarchical machine (has nested states)
-      const hasNestedStates = Object.values(shapeObj.states).some((stateConfig: any) => 
+      const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
         stateConfig && typeof stateConfig === 'object' && stateConfig.states
       );
       
       if (!hasNestedStates && !prefix) {
         // Flat machine - use simple extraction
-        Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+        statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
           if (!stateConfig?.on) return;
           
-          Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
+          // Handle both Map and Object formats for transitions
+          const onEntries = stateConfig.on instanceof Map
+            ? Array.from(stateConfig.on.entries())
+            : Object.entries(stateConfig.on);
+
+          onEntries.forEach(([event, transitionConfig]: [string, any]) => {
             let targets: string[] = [];
             
             if (typeof transitionConfig === "string") {
@@ -163,12 +202,17 @@ export default function ForceGraphInspector({
         return links;
       }
       
-      Object.entries(shapeObj.states).forEach(([stateName, stateConfig]: [string, any]) => {
+      statesEntries.forEach(([stateName, stateConfig]: [string, any]) => {
         if (!stateConfig?.on) return;
         
         const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
         
-        Object.entries(stateConfig.on).forEach(([event, transitionConfig]: [string, any]) => {
+        // Handle both Map and Object formats for transitions
+        const onEntries = stateConfig.on instanceof Map
+          ? Array.from(stateConfig.on.entries())
+          : Object.entries(stateConfig.on);
+
+        onEntries.forEach(([event, transitionConfig]: [string, any]) => {
           let targets: string[] = [];
           
           if (typeof transitionConfig === "string") {
@@ -212,55 +256,62 @@ export default function ForceGraphInspector({
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
-      Graph.height(320)
-        .width(320)
+      
+      // Get container dimensions
+      const width = ref.current.offsetWidth || 800;
+      const height = ref.current.offsetHeight || 600;
+      
+      Graph.height(height)
+        .width(width)
         .linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
         .nodeCanvasObjectMode(() => "after")
         .nodeCanvasObject((node: any, ctx: CanvasRenderingContext2D) => {
-          const label = node.name;
-          const fontSize = baseFontSize;
-          const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
-          ctx.font = `${fontSize}px ${fontFamily}`;
-          const textWidth = ctx.measureText(label).width;
-          const paddingX = baseFontSize * 0.75,
-            paddingY = baseFontSize * 0.5;
-          const rectWidth = textWidth + paddingX * 2;
-          const rectHeight = fontSize + paddingY * 2;
-          ctx.save();
-          ctx.beginPath();
+          if (node.x === undefined || node.y === undefined) {
+            return;
+          }
+          try {
+            const label = node.name;
+            const fontSize = baseFontSize;
+            const fontFamily = getCssVar(ref, "--font-sans", "sans-serif");
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            const textWidth = ctx.measureText(label).width;
+            const paddingX = baseFontSize * 0.75;
+            const paddingY = baseFontSize * 0.5;
+            const rectWidth = textWidth + paddingX * 2;
+            const rectHeight = fontSize + paddingY * 2;
+            ctx.save();
+            ctx.beginPath();
 
-          // Highlight active state
-          const isActive = node.id === valueRef.current;
-          ctx.strokeStyle =
-            // isActive
-            // ? getCssVar(ref, "--primary", "#1e40af")
-            // :
-            getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
-          ctx.lineWidth = 0.5;
+            // Highlight active state
+            const isActive = node.id === valueRef.current;
+            ctx.strokeStyle = getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
+            ctx.lineWidth = 0.5;
+            ctx.fillStyle = isActive
+              ? getCssVar(ref, "--primary", "#1e40af")
+              : node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
 
-          ctx.fillStyle = isActive
-            ? getCssVar(ref, "--primary", "#1e40af")
-            : node.color || getCssVar(ref, "--forcegraph-node-bg", "#eee");
+            ctx.roundRect(
+              node.x - rectWidth / 2,
+              node.y - rectHeight / 2,
+              rectWidth,
+              rectHeight,
+              6
+            );
+            ctx.fill();
+            ctx.stroke();
 
-          ctx.roundRect(
-            node.x - rectWidth / 2,
-            node.y - rectHeight / 2,
-            rectWidth,
-            rectHeight,
-            6
-          );
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = isActive
-            ? getCssVar(ref, "--card", "#fff")
-            : getCssVar(ref, "--forcegraph-label", "#222");
-          ctx.fillText(label, node.x, node.y);
-          ctx.restore();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = isActive
+              ? getCssVar(ref, "--card", "#fff")
+              : getCssVar(ref, "--forcegraph-label", "#222");
+            ctx.fillText(label, node.x, node.y);
+            ctx.restore();
+          } catch (e) {
+            console.error("nodeCanvasObject error:", e);
+          }
         })
         .nodePointerAreaPaint(
           (node: any, color: string, ctx: CanvasRenderingContext2D) => {
@@ -469,13 +520,11 @@ export default function ForceGraphInspector({
         graphInstance.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [definition]);
+  }, [definition, diagram]);
 
   // Update graph data and highlight on value change
   useEffect(() => {
     if (graphInstance.current) {
-      console.log("Updating graph data", diagram);
       graphInstance.current.graphData(diagram);
       
       // Fit view when data updates
@@ -500,5 +549,5 @@ export default function ForceGraphInspector({
     }
   }, [lastEvent, prevState, diagram]);
 
-  return <div ref={ref}>{/* ForceGraph will render here */}</div>;
+  return <div ref={ref} style={{ width: '100%', height: '100%' }}>{/* ForceGraph will render here */}</div>;
 }
