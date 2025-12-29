@@ -1,7 +1,7 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
-import MermaidInspector from "../../../components/inspectors/MermaidInspector";
+import { MermaidInspector } from "matchina/viz";
 import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
 

@@ -3,10 +3,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { MermaidInspector } from 'matchina/viz';
-import BasicInspector from "./inspectors/BasicInspector";
-import StateForceGraph from "./inspectors/ForceGraphInspector";
-import { ReactFlowInspector } from 'matchina/viz';
+import { MermaidInspector, ReactFlowInspector } from 'matchina/viz';
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -106,11 +103,9 @@ export function MachineExampleWithChart({
         {/* Mermaid diagram */}
         <div className={`flex-1 ${currentInspectorType === "mermaid" ? "lg:flex-2" : ""}`}>
           {currentInspectorType === "basic" && (
-            <BasicInspector
-              config={config}
-              stateKey={activeStatePath}
-              actions={actions as any}
-            />
+            <div className="p-4 border border-gray-300 rounded">
+              <p className="text-sm text-gray-600">Basic Inspector not available - use Mermaid or ReactFlow</p>
+            </div>
           )}
           {currentInspectorType === "mermaid" && (
             <MermaidInspector
@@ -121,14 +116,9 @@ export function MachineExampleWithChart({
             />
           )}
           {currentInspectorType === "force-graph" && (
-            <StateForceGraph
-              value={activeStatePath}
-              lastEvent={lastChange?.type}
-              prevState={lastChange.from?.key}
-              definition={config}
-              dispatch={({ type }) => machine.send(type)}
-              interactive={isInteractive}
-            />
+            <div className="p-4 border border-gray-300 rounded">
+              <p className="text-sm text-gray-600">Force Graph Inspector not available - use Mermaid or ReactFlow</p>
+            </div>
           )}
           {currentInspectorType === "react-flow" && (
             <ReactFlowInspector
@@ -137,7 +127,7 @@ export function MachineExampleWithChart({
               prevState={lastChange.from?.key}
               mode={currentState.data}
               definition={config}
-              dispatch={({ type }) => machine.send(type)}
+              dispatch={({ type }: { type: string }) => machine.send(type)}
               interactive={isInteractive}
             />
           )}
