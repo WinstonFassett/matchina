@@ -1,0 +1,281 @@
+import type { FactoryMachine } from "../factory-machine";
+import type { MachineShape } from "../hsm/shape-types";
+
+/**
+ * Get the current active state path for both hierarchical and flattened machines.
+ * Returns dot-joined path (e.g., "Active.Empty" or "Payment.MethodEntry").
+ */
+export function getActiveStatePath(machine: FactoryMachine<any>): string {
+  try {
+    const currentState = machine.getState();
+    const stateKey = currentState?.key || '';
+    
+    // For flattened machines, state key already contains the full path
+    if (stateKey.includes('.')) {
+      return stateKey;
+    }
+    
+    // For hierarchical machines, walk the nested machine chain
+    const parts: string[] = [];
+    let cursor: any = machine;
+    let guard = 0;
+    while (cursor && guard++ < 25) {
+      const state = cursor.getState?.();
+      if (!state) break;
+      parts.push(state.key);
+      cursor = state?.data?.machine;
+    }
+    return parts.length ? parts.join('.') : 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
+}
+
+/**
+ * Build a shape tree from a machine's shape or hierarchical structure.
+ * 
+ * Prefer shape when available (flattened and nested machines with shape metadata).
+ * Fall back to runtime introspection for hierarchical machines without shapes.
+ * 
+ * For best results, use createMachineFromFlat() to create flattened machines
+ * which automatically get shape metadata attached.
+ */
+export function buildShapeTree<F extends FactoryMachine<any>>(
+  machine: F,
+  parentKey?: string
+): any {
+  const shape = machine.shape?.getState();
+  if (shape) {
+    // Use shape when available (preferred path)
+    return buildShapeTreeFromShape(shape);
+  }
+
+  // Fallback to runtime introspection for hierarchical machines
+  return buildShapeTreeFromHierarchy(machine, parentKey);
+}
+
+/**
+ * Build tree from hierarchical machine structure via runtime introspection.
+ * Used for nested machines that don't have shape metadata.
+ * This is a fallback - prefer shapes when available.
+ */
+function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
+  // Educational type definition for XState compatibility
+  void ({
+    key: "",
+    fullKey: "",
+    on: {} as Record<string, string>,
+    states: undefined as any,
+    initial: undefined as string | undefined
+  }); // _XStateNode - Educational type definition
+
+  const initialState = machine.getState();
+  const declaredInitial = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
+
+  const definition: {
+    initial: string;
+    states: Record<string, any>;
+  } = {
+    initial: declaredInitial,
+    states: {},
+  };
+
+  // Build flat state list
+  Object.entries(machine.states ?? {}).forEach(([key, _state]) => {
+    const fullKey = parentKey ? `${parentKey}.${key}` : key;
+    definition.states[key] = {
+      key,
+      fullKey,
+      on: {},
+    };
+  });
+
+  // Add transitions
+  Object.entries(machine.transitions ?? {}).forEach(([fromKey, events]) => {
+    Object.entries(events as object).forEach(([event, entry]) => {
+      // Skip function transitions - they can't be statically resolved
+      if (typeof entry === 'function') {
+        return;
+      }
+      definition.states[fromKey].on[event] = entry;
+    });
+  });
+
+  // Auto-discover nested machines from submachine markers
+  Object.entries(machine.states ?? {}).forEach(([stateKey, stateFactory]) => {
+    const machineFactory = (stateFactory as any)?.machineFactory;
+    if (!machineFactory) {
+      return;
+    }
+
+    try {
+      // Create an instance to get the child machine
+      // machineFactory() returns { machine: childMachine } for submachines
+      const result = machineFactory();
+      const childMachine = result.machine || result;
+      const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
+
+      // Try to get shape first (preferred for flat machines)
+      const shape = (childMachine as any).shape?.getState();
+      let childDefinition;
+
+      if (shape) {
+        // Use shape-based visualization
+        childDefinition = buildShapeTreeFromShape(shape);
+      } else {
+        // Fallback to hierarchy-based visualization
+        childDefinition = buildShapeTreeFromHierarchy(
+          childMachine,
+          childFullKey
+        );
+      }
+
+      if (!definition.states[stateKey]) {
+        definition.states[stateKey] = { on: {} };
+      }
+      if (childMachine.initialKey !== undefined) {
+        definition.states[stateKey].initial = childMachine.initialKey;
+      }
+      definition.states[stateKey].states = childDefinition.states;
+    } catch (e) {
+      // Skip if nested machine inspection fails
+      console.error('Failed to inspect nested machine:', e);
+    }
+  });
+
+  // Fallback: check current state for inline nested machine
+  try {
+    const currentKey = initialState?.key;
+    if (
+      currentKey &&
+      initialState?.data?.machine &&
+      !definition.states[currentKey]?.states
+    ) {
+      const childMachine = initialState.data.machine;
+      if (childMachine && typeof childMachine.getState === 'function') {
+        const childFullKey = parentKey ? `${parentKey}.${currentKey}` : currentKey;
+        const childDefinition = buildShapeTreeFromHierarchy(
+          childMachine,
+          childFullKey
+        );
+
+        if (!definition.states[currentKey]) {
+          definition.states[currentKey] = { on: {} };
+        }
+        if (childMachine.initialKey !== undefined) {
+          definition.states[currentKey].initial = childMachine.initialKey;
+        }
+        definition.states[currentKey].states = childDefinition.states;
+      }
+    }
+  } catch (e) {
+    // Don't break if nested machine inspection fails
+  }
+
+  return definition;
+}
+
+/**
+ * Build XState-compatible tree from a MachineShape.
+ * This converts static shape metadata into a renderable tree structure.
+ */
+function buildShapeTreeFromShape(shape: MachineShape) {
+  type XStateNode = {
+    key: string;
+    fullKey: string;
+    on: Record<string, string>;
+    states?: Record<string, XStateNode>;
+    initial?: string;
+  };
+
+  // Build tree recursively using hierarchy information from shape
+  function buildNode(fullKey: string): XStateNode {
+    const node = shape.states.get(fullKey);
+    if (!node) {
+      // Handle synthetic parents that don't exist in shape (violation of shape spec)
+      // Create a synthetic node for visualization purposes
+      const parts = fullKey.split('.');
+      const syntheticNode: XStateNode = {
+        key: parts[parts.length - 1],
+        fullKey,
+        on: {}
+      };
+      
+      // Find all direct children of this synthetic parent
+      const children: string[] = [];
+      for (const [stateFullKey, parentFullKey] of shape.hierarchy.entries()) {
+        if (parentFullKey === fullKey) {
+          children.push(stateFullKey);
+        }
+      }
+      
+      // Build child states
+      if (children.length > 0) {
+        syntheticNode.states = {};
+        for (const childFullKey of children) {
+          const childNode = buildNode(childFullKey);
+          // Use local key (not full key) for child state names
+          const localKey = childFullKey.split('.').pop() || childFullKey;
+          syntheticNode.states[localKey] = childNode;
+        }
+        // Set initial to first child (simplified - could be enhanced to find actual initial)
+        syntheticNode.initial = children[0]?.split('.').pop();
+      }
+      
+      return syntheticNode;
+    }
+
+    const state: XStateNode = {
+      key: node.key,
+      fullKey,
+      on: {}
+    };
+
+    // Get transitions from this state
+    const transitions = shape.transitions.get(fullKey);
+    if (transitions) {
+      for (const [event, target] of transitions.entries()) {
+        state.on[event] = target;
+      }
+    }
+
+    // Find all direct children
+    const children: string[] = [];
+    for (const [stateFullKey, parentFullKey] of shape.hierarchy.entries()) {
+      if (parentFullKey === fullKey) {
+        children.push(stateFullKey);
+      }
+    }
+
+    // If has children, build nested states
+    if (children.length > 0) {
+      state.states = {};
+      for (const childFullKey of children) {
+        const childNode = buildNode(childFullKey);
+        // Use local key (not full key) for child state names
+        const localKey = childFullKey.split('.').pop() || childFullKey;
+        state.states[localKey] = childNode;
+      }
+      // Set initial to first child (simplified - could be enhanced to find actual initial)
+      state.initial = children[0]?.split('.').pop();
+    }
+
+    return state;
+  }
+
+  // Build all root-level states
+  const rootStates: Record<string, XStateNode> = {};
+  const allHierarchyEntries = Array.from(shape.hierarchy.entries()) as [string, string | undefined][];
+  
+  for (const [fullKey, parentFullKey] of allHierarchyEntries) {
+    if (parentFullKey === undefined) {
+      const node = buildNode(fullKey);
+      rootStates[node.key] = node;
+    }
+  }
+
+  return {
+    initial: shape.initialKey,
+    states: rootStates
+  };
+}

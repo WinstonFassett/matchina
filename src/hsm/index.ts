@@ -37,14 +37,14 @@ export type {
 } from "./types";
 export { sendWhen } from "./types";
 
-// Inspection utilities
+// Inspection utilities - now imported from inspect package
 export { 
   inspect, 
   getFullKey, 
   getDepth, 
   getStack, 
   getActiveChain 
-} from "./inspect";
+} from "../inspect";
 
 // Shape types and utilities
 export type { 

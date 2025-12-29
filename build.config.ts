@@ -27,6 +27,16 @@ export default defineBuildConfig({
       input: 'src/integrations/react/',
       outDir: "./dist/integrations/react",
       builder: 'mkdist'
+    },
+    {
+      input: 'src/inspect/',
+      outDir: "./dist/inspect",
+      builder: 'mkdist'
+    },
+    {
+      input: 'src/viz/',
+      outDir: "./dist/viz",
+      builder: 'mkdist'
     }
   ],
   declaration: true,
