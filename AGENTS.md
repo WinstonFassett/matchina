@@ -79,6 +79,50 @@ git commit -m "..."  # Commit work before moving to next ticket
 - Dependencies should be set up in beads, not guessed
 - **If dependency order is unclear, create a ticket to determine order** or find existing context/plan epic to organize
 
+## 🚨 CRITICAL: TICKETS FIRST, THEN WORK - WITH EVIDENCE
+
+**ALWAYS CREATE TICKETS BEFORE STARTING WORK**
+
+1. **ASSESS** - Identify what needs to be done
+2. **CREATE TICKETS** - Create beads tickets for each piece of work
+3. **ORGANIZE** - Set up dependencies and priorities
+4. **THEN WORK** - Only after tickets exist and are organized
+5. **UPDATE WITH FINDINGS** - As you investigate, update tickets with analysis/plan BEFORE coding
+6. **GATHER EVIDENCE** - UI tickets must include evidence of the fix (screenshots, test results)
+
+### Why This Matters:
+- Prevents "I forgot to create a ticket for that"
+- Ensures work is tracked and visible
+- Allows proper dependency management
+- Provides clear work history
+- Prevents scope creep and forgotten tasks
+- Documents analysis and decisions for future reference
+
+### Ticket Creation Pattern:
+```bash
+# Before starting any work:
+bd create "Fix ReactFlow edges missing" type=bug priority=P2
+bd create "Add hierarchical support to ForceGraph" type=feature priority=P2
+bd create "Investigate rock paper scissors viz picker" type=task priority=P3
+
+# Then organize dependencies:
+bd update <ticket-id> --depends=<other-ticket-id>
+
+# Then mark as in progress and analyze:
+bd update <first-ticket-id> --status=in_progress
+
+# IMPORTANT: Update ticket with findings BEFORE coding
+bd update <first-ticket-id> --description "Investigation results: [root cause, plan, evidence]"
+```
+
+### Evidence Requirements for UI Tickets:
+- **NEVER close UI tickets without evidence** that the user will accept
+- Evidence types: browser screenshots, test results, working examples
+- Document the before/after state
+- Include reproduction steps if applicable
+- For bugs: prove the issue is fixed in the actual UI
+- For features: demonstrate the functionality works as intended
+
 ```bash
 # Get next available work item (includes in-progress)
 bd ready
