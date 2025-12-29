@@ -64,7 +64,6 @@ describe("createPromiseMachine", () => {
   it("should transition to Rejected state on error", async () => {
     const machine = addEventApi(
       createPromiseMachine(async () => {
-        // console.log('execute')
         await delay(1);
         throw new Error("custom error");
       })

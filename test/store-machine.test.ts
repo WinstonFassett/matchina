@@ -58,24 +58,20 @@ describe("createStoreMachine", () => {
     const store = createStoreMachine<User>(
       { name: "Alice", age: 30 },
       {
-        // Update user with a function that receives current state
         updateUser: (updater: (user: User) => User) => (change) =>
           updater(change.from),
 
-        // Simple increment
         birthday: () => (change) => ({
           ...change.from,
           age: change.from.age + 1,
         }),
 
         doNothing: (msg: string) => (change) => {
-          console.log(msg);
           return undefined as unknown as typeof change.from;
         },
       }
     );
 
-    // Update using a function
     store.dispatch("updateUser", (user: User) => ({
       ...user,
       name: "Bob",
@@ -84,7 +80,6 @@ describe("createStoreMachine", () => {
 
     expect(store.getState()).toEqual({ name: "Bob", age: 31 });
 
-    // Use a simple transition
     store.dispatch("birthday");
     expect(store.getState()).toEqual({ name: "Bob", age: 32 });
 
@@ -95,7 +90,6 @@ describe("createStoreMachine", () => {
 
   it("should provide change information in transitions", () => {
     const store = createStoreMachine(0, {
-      // Transition that uses the change object
       add: (amount: number) => (change) => {
         expect(change).toMatchObject({
           type: "add",
@@ -105,7 +99,6 @@ describe("createStoreMachine", () => {
         return change.from + amount;
       },
 
-      // Another transition
       subtract: (amount: number) => (change) => {
         expect(change.type).toBe("subtract");
         expect(change.params).toEqual([3]);
@@ -140,11 +133,9 @@ describe("createStoreMachine", () => {
         },
       },
       {
-        // Update using Immer
         update: (updater: (draft: AppState) => void) => (change) =>
           produce(change.from, updater),
 
-        // Specific update
         updateName: (name: string) => (change) =>
           produce(change.from, (draft) => {
             draft.user.name = name;
@@ -152,7 +143,6 @@ describe("createStoreMachine", () => {
       }
     );
 
-    // Test update with Immer
     store.dispatch("update", (draft: AppState) => {
       draft.user.name = "Bob";
       draft.user.preferences.notifications = true;
@@ -161,7 +151,6 @@ describe("createStoreMachine", () => {
     expect(store.getState().user.name).toBe("Bob");
     expect(store.getState().user.preferences.notifications).toBe(true);
 
-    // Test specific transition with Immer
     store.dispatch("updateName", "Charlie");
     expect(store.getState().user.name).toBe("Charlie");
   });
@@ -184,7 +173,7 @@ describe("createStoreMachine", () => {
         filter: "all",
       },
       {
-        addTodo: (text: string) => (change) =>
+      addTodo: (text: string) => (change) =>
           produce(change.from, (draft) => {
             draft.todos.push({
               id: Date.now(),
@@ -208,7 +197,6 @@ describe("createStoreMachine", () => {
       }
     );
 
-    // Add some todos
     store.dispatch("addTodo", "Learn TypeScript");
     store.dispatch("addTodo", "Learn State Machines");
 
@@ -217,12 +205,10 @@ describe("createStoreMachine", () => {
     expect(todos[0].text).toBe("Learn TypeScript");
     expect(todos[0].completed).toBe(false);
 
-    // Toggle a todo
     const todoId = todos[0].id;
     store.dispatch("toggleTodo", todoId);
     expect(store.getState().todos[0].completed).toBe(true);
 
-    // Set filter
     store.dispatch("setFilter", "completed");
     expect(store.getState().filter).toBe("completed");
   });

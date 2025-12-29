@@ -107,29 +107,29 @@ describe("onLifecycle usage", () => {
     const removeLifecycle = onLifecycle(machine, {
       Rejected: {
         enter(change) {
-          console.log("something Rejected from", change.from.key);
+          // console.log("something Rejected from", change.from.key);
           didEnterRejected ||= ++count;
           // next(change);
         },
       },
       "*": {
         leave: (change) => {
-          console.log("* leaving", change.from.key);
+          // console.log("* leaving", change.from.key);
         },
         enter: (change) => {
-          console.log("* entering", change.to.key);
+          // console.log("* entering", change.to.key);
         },
         on: {
           "*": {
             before: (event, next) => {
-              console.log("* before", event.type);
-              console.group();
+              // console.log("* before", event.type);
+              // console.group();
               // next(event);
-              console.groupEnd();
-              console.log("* before done");
+              // console.groupEnd();
+              // console.log("* before done");
             },
             after: (event) => {
-              console.log("* after", event.type);
+              // console.log("* after", event.type);
             },
 
             // e: 'execute'
@@ -140,49 +140,49 @@ describe("onLifecycle usage", () => {
         on: {
           executing: {
             guard(change) {
-              console.log("GUARD", change.type);
+              // console.log("GUARD", change.type);
               const {
                 type: event,
                 params,
                 from: { key: from },
                 to: { key: to },
               } = change;
-              console.log(
-                `${from} wants to ${event} to ${to} with params ${params.join(
-                  ", "
-                )}`
-              );
-              console.group();
+              // console.log(
+              //   `${from} wants to ${event} to ${to} with params ${params.join(
+              //     ", "
+              //   )}`
+              // );
+              // console.group();
               const accept = params[1][0] > 1;
               if (accept) {
                 didGuardAccept ||= ++count;
               } else {
                 didGuardReject ||= ++count;
               }
-              console.log("GUARD accept?", accept);
+              // console.log("GUARD accept?", accept);
 
-              console.groupEnd();
+              // console.groupEnd();
               return accept;
             },
             before: (ev, ...rest) => {
-              console.log("BEFORE", ev.type);
+              // console.log("BEFORE", ev.type);
               expect(ev.type).toBe("executing");
               const {
                 params: [amount],
               } = ev;
-              console.log("executing", amount);
+              // console.log("executing", amount);
               didBeforeExecute ||= ++count;
               // console.group()
               // console.groupEnd()
               // console.log('done executing')
             },
             handle: (event) => {
-              console.log("*** HANDLE");
+              // console.log("*** HANDLE");
               const num = event.params[1][0];
               const accept = event.params[1][0] >= 100;
               if (!accept) {
                 didHandlerReject ||= ++count;
-                console.log("handler rejecting");
+                // console.log("handler rejecting");
                 // reject by returning
                 return;
               }
@@ -194,53 +194,53 @@ describe("onLifecycle usage", () => {
                   .catch(machine.api.reject),
               });
               didHandleExecute ||= ++count;
-              console.log("handler accepting");
+              // console.log("handler accepting");
               return event;
             },
           },
         },
         leave: (ev) => {
-          console.log("LLLLLEEEAAAVVVIIINNNGGGG", ev);
+          // console.log("LLLLLEEEAAAVVVIIINNNGGGG", ev);
           didLeaveIdle ||= ++count;
           const {
             type: event,
             from: { key: from },
             to: { key: to },
           } = ev;
-          console.log(`leaving ${from} to ${event} to ${to}`);
+          // console.log(`leaving ${from} to ${event} to ${to}`);
         },
       },
       Pending: {
         enter: (e) => {
           didEnterPending ||= ++count;
-          console.log("entering Pending via", e.type);
+          // console.log("entering Pending via", e.type);
         },
         on: {
           resolve: {
             before: (ev) => {
               didBeforeResolve ||= ++count;
-              console.log("In Pending before resolve");
+              // console.log("In Pending before resolve");
               expect(ev.type).toBe("resolve");
-              console.group();
-              console.groupEnd();
-              console.log("done before resolve");
+              // console.group();
+              // console.groupEnd();
+              // console.log("done before resolve");
             },
             after: (ev) => {
               ev.type = "resolve";
               didAfterResolve ||= ++count;
-              console.log("Resolved from Pending");
+              // console.log("Resolved from Pending");
             },
           },
         },
       },
     });
     const checkState = () => {
-      console.log("state", machine.getState().key);
+      // console.log("state", machine.getState().key);
     };
     expectState("Idle");
     expect(didBeforeExecute).toBeFalsy();
     expect(didGuardReject).toBeFalsy();
-    console.log("test guard reject");
+    // console.log("test guard reject");
     machine.execute(1);
     checkState();
     expect(didGuardReject).toBeTruthy();
@@ -249,20 +249,20 @@ describe("onLifecycle usage", () => {
     expectState("Idle");
 
     expect(didGuardAccept).toBeFalsy();
-    console.log("test guard accept, handler reject");
+    // console.log("test guard accept, handler reject");
     machine.execute(99);
     expect(didGuardAccept).toBeTruthy();
     expect(didHandlerReject).toBeTruthy();
     expectState("Idle");
 
-    console.log("BEFORE FAIL", machine.getState().key);
-    console.log("***test handler accept");
+    // console.log("BEFORE FAIL", machine.getState().key);
+    // console.log("***test handler accept");
     machine.execute(100);
-    console.log("AFTER Execute", machine.getState().key);
+    // console.log("AFTER Execute", machine.getState().key);
     expectState("Pending");
     expect(didBeforeResolve).toBeFalsy();
     await delay(100);
-    console.log("AFTER delay", machine.getState().key);
+    // console.log("AFTER delay", machine.getState().key);
 
     expectState("Resolved");
     expect(didBeforeResolve).toBeTruthy();
@@ -277,14 +277,14 @@ describe("onLifecycle usage", () => {
     expectStateData().toBeInstanceOf(Error);
     expect((machine.getState().data as any).message).toBe("test");
 
-    console.log("removing lifecycle");
+    // console.log("removing lifecycle");
     // removeLifecycle();
     machine.reset();
-    console.log("resetting");
+    // console.log("resetting");
 
     expectState("Idle");
 
-    console.log("executing without lifecycle");
+    // console.log("executing without lifecycle");
     // without lifecycle, there is nothing implementing the delay
     machine.execute(1000);
     expectState("Pending");
@@ -293,18 +293,18 @@ describe("onLifecycle usage", () => {
     expectState("Resolved");
     expectStateData().toBe(1);
 
-    console.log({
-      didGuardReject,
-      didGuardAccept,
-      didHandlerReject,
-      didHandleExecute,
-      didBeforeExecute,
-      didLeaveIdle,
-      didEnterPending,
-      didBeforeResolve,
-      didAfterResolve,
-      didEnterRejected,
-    });
+    // console.log({
+    //   didGuardReject,
+    //   didGuardAccept,
+    //   didHandlerReject,
+    //   didHandleExecute,
+    //   didBeforeExecute,
+    //   didLeaveIdle,
+    //   didEnterPending,
+    //   didBeforeResolve,
+    //   didAfterResolve,
+    //   didEnterRejected,
+    // });
 
     expect(didGuardReject).toBe(1);
     expect(didGuardAccept).toBe(2);
