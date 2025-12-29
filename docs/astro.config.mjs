@@ -12,10 +12,8 @@ export default defineConfig({
   // Use Netlify preview URL when available; fall back to GitHub Pages site.
   site: process.env.DEPLOY_PRIME_URL || "https://winstonfassett.github.io",
   // Control base path via env so Netlify previews can use "/" and GH Pages can use "/matchina/".
-  // Netlify previews need root path, GitHub Pages needs "/matchina/"
-  base: (process.env.DEPLOY_PRIME_URL ? "/" : process.env.DOCS_BASE || "/matchina/")
-    .replace(/^(?!\/)*/, "/")
-    .replace(/(?<!\/)$/, "/"),
+  // Ensure leading and trailing slashes for Astro.
+  base: process.env.DEPLOY_PRIME_URL ? "/" : "/matchina/",
   build: {
     assets: "assets",
   },
