@@ -117,6 +117,10 @@ export default function ForceGraphInspector({
   useMachine(definition);
   const currentState = definition.getState();
   
+  console.log('ForceGraph: Machine type:', definition.shape ? 'HSM' : 'Legacy');
+  console.log('ForceGraph: Current state:', currentState?.key);
+  console.log('ForceGraph: Has notify:', typeof definition.notify);
+  
   const diagram: Diagram = useMemo(() => {
     // Handle both HSM machines (with shape) and legacy factory machines
     if (definition.shape?.getState) {
@@ -256,17 +260,38 @@ export default function ForceGraphInspector({
   useEffect(() => {
     let mounted = true;
     let Graph: any;
+    let resizeObserver: ResizeObserver;
+    
     import("force-graph").then((module) => {
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
       
-      // Get container dimensions
-      const width = ref.current.offsetWidth || 800;
-      const height = ref.current.offsetHeight || 600;
+      const updateDimensions = () => {
+        if (!ref.current || !Graph) return;
+        
+        // Get the ACTUAL rendered dimensions from the container's CSS layout
+        const containerWidth = ref.current.offsetWidth || 400;
+        const containerHeight = ref.current.offsetHeight || 300;
+        
+        console.log('ForceGraph: Honoring container CSS dimensions:', containerWidth, 'x', containerHeight);
+        
+        // ForceGraph should match its container, not override layout
+        Graph.height(containerHeight)
+          .width(containerWidth);
+      };
       
-      Graph.height(height)
-        .width(width)
+      // Initial dimensions
+      updateDimensions();
+      
+      // Watch for container resize
+      resizeObserver = new ResizeObserver(() => {
+        updateDimensions();
+      });
+      
+      resizeObserver.observe(ref.current);
+      
+      Graph
         .linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
@@ -566,6 +591,15 @@ export default function ForceGraphInspector({
         });
       Graph.graphData(diagram);
       
+      // Constrain canvas to respect container layout
+      const canvas = ref.current.querySelector('canvas');
+      if (canvas) {
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        canvas.style.width = 'auto';
+        canvas.style.height = 'auto';
+      }
+      
       // Fit view to show all nodes properly
       setTimeout(() => {
         Graph.zoomToFit(400, 50); // 400ms animation, 50px padding
@@ -573,6 +607,9 @@ export default function ForceGraphInspector({
     });
     return () => {
       mounted = false;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (graphInstance.current) {
         graphInstance.current.stopAnimation();
         graphInstance.current = null;
@@ -607,5 +644,5 @@ export default function ForceGraphInspector({
     }
   }, [lastEvent, prevState, diagram]);
 
-  return <div ref={ref} style={{ width: '100%', height: '100%' }}>{/* ForceGraph will render here */}</div>;
+  return <div ref={ref} className="w-full h-full overflow-hidden max-w-full">{/* ForceGraph will render here */}</div>;
 }
