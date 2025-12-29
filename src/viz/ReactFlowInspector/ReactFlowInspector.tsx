@@ -1,6 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import type { EdgeTypes, NodeTypes } from "reactflow";
+import type { EdgeTypes, NodeTypes, Node, Edge } from "reactflow";
+
+// Custom node data structure
+export interface CustomNodeData {
+  label: string;
+  isActive: boolean;
+  isPrevious: boolean;
+}
+
+// Custom node type that extends reactflow Node with our data
+export type CustomNode = Node<CustomNodeData>;
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -35,7 +45,7 @@ const edgeAnimationStyles = `
 
 interface ReactFlowInspectorProps {
   value: string;
-  nodes: Node[];
+  nodes: CustomNode[];
   edges: Edge[];
   previousState?: string;
   dispatch: (event: { type: string }) => void;

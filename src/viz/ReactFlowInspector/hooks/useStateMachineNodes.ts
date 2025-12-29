@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useRef, useEffect, useState } from "react";
 import { useNodesState } from "reactflow";
 import type { Node, NodeChange } from "reactflow";
+import type { CustomNode } from "../ReactFlowInspector";
 import {
   getLayoutedElements,
   getDefaultLayoutOptions,
@@ -115,7 +116,7 @@ const extractTransitionsForLayout = (shapeTree: any) => {
 };
 
 export const useStateMachineNodes = (
-  initialNodes: Node[],
+  initialNodes: CustomNode[],
   currentState: string,
   previousState?: string,
   key?: number,
@@ -123,7 +124,7 @@ export const useStateMachineNodes = (
   forceLayoutKey?: number,
   transitions: Array<{ from: string; to: string; event: string }> = []
 ) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([] as CustomNode[]);
   const hasInitialized = useRef(false);
   const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [isLayouting, setIsLayouting] = useState(false);
@@ -154,7 +155,7 @@ export const useStateMachineNodes = (
     if (!hasInitialized.current && states.length > 0 && !isLayouting) {
       console.log('🔍 [init] Starting layout initialization for', states.length, 'states');
       // Try to load saved positions first
-      const machineId = machine?.id || machine?.config?.id || "unknown";
+      const machineId = `machine-${states.join('-')}` || "unknown";
       const savedPositions = loadNodePositions(machineId);
       console.log('🔍 [init] Saved positions available:', savedPositions?.length || 0);
 
@@ -337,7 +338,7 @@ export const useStateMachineNodes = (
         setHasManualChanges(true);
 
         // Save node positions with debounce
-        const machineId = machine?.id || machine?.config?.id || "unknown";
+        const machineId = `machine-${states.join('-')}` || "unknown";
         clearTimeout(savePositionsTimeout.current);
         savePositionsTimeout.current = setTimeout(() => {
           const positions = nodes.map((node) => ({
@@ -352,16 +353,16 @@ export const useStateMachineNodes = (
       // Apply the changes normally
       onNodesChange(changes);
     },
-    [onNodesChange, nodes, machine?.id]
+    [onNodesChange, nodes]
   );
 
   // Clear saved positions and force relayout
   const forceRelayout = useCallback(() => {
-    const machineId = machine?.id || machine?.config?.id || "unknown";
+    const machineId = `machine-${states.join('-')}` || "unknown";
     clearNodePositions(machineId);
     setHasManualChanges(false);
     hasInitialized.current = false;
-  }, [machine]);
+  }, [states]);
 
   // Force re-layout ONLY when forceLayoutKey changes (layout button clicked)
   // This prevents auto-layout during normal dragging operations

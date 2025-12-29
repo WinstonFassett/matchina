@@ -1,7 +1,34 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { HSMMermaidInspector, SketchInspector, HSMReactFlowInspector, ForceGraphInspector, defaultTheme } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
 import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
+
+// Simple ErrorBoundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ForceGraph Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
 
 type VisualizerType = 'mermaid' | 'sketch' | 'reactflow' | 'forcegraph';
 
@@ -107,21 +134,23 @@ export function VisualizerDemo({
       case 'forcegraph':
         return (
           <div className="w-full h-full">
-            <ForceGraphInspector 
-              value={currentChange?.key || 'unknown'} 
-              definition={machine}
-              lastEvent={lastEvent}
-              prevState={prevState}
-              dispatch={(event: any) => {
-                // ForceGraphInspector sends { type: string } format
-                const eventName = typeof event === 'string' ? event : event?.type;
-                if (actions && eventName && actions[eventName]) {
-                  actions[eventName]();
-                }
-              }}
-              interactive={interactive}
-              theme={defaultTheme}
-            />
+            <ErrorBoundary fallback={<div className="p-4 text-red-500">Force Graph Error: Unable to render visualization</div>}>
+              <ForceGraphInspector 
+                value={currentChange?.key || 'unknown'} 
+                definition={machine}
+                lastEvent={lastEvent}
+                prevState={prevState}
+                dispatch={(event: any) => {
+                  // ForceGraphInspector sends { type: string } format
+                  const eventName = typeof event === 'string' ? event : event?.type;
+                  if (actions && eventName && actions[eventName]) {
+                    actions[eventName]();
+                  }
+                }}
+                interactive={interactive}
+                theme={defaultTheme}
+              />
+            </ErrorBoundary>
           </div>
         );
       default:
