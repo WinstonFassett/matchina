@@ -231,6 +231,15 @@ export default function ForceGraphInspector({
   
   const valueRef = useRef(currentValue);
   valueRef.current = currentValue;
+  
+  // Update ForceGraph when state changes
+  useEffect(() => {
+    if (graphInstance.current) {
+      // Force a re-render to update node highlighting
+      graphInstance.current.refresh();
+    }
+  }, [currentValue]);
+  
   // Setup ForceGraph once
   useEffect(() => {
     let mounted = true;
