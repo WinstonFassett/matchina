@@ -208,8 +208,20 @@ export default function ForceGraphInspector({
   // Handle value tracking for both HSM and legacy machines
   const currentValue = useMemo(() => {
     if (definition.shape?.getState) {
-      // HSM Machine - use the provided value prop
-      return valueFromProp;
+      // HSM Machine - get current state from shape
+      const shape = definition.shape.getState();
+      const currentChange = definition.getChange?.();
+      
+      // For HSM machines, try to get the active state from the change or shape
+      if (currentChange?.to) {
+        // Handle different formats of 'to' property
+        return typeof currentChange.to === 'string' 
+          ? currentChange.to 
+          : currentChange.to.key || currentChange.to.fullKey || valueFromProp;
+      }
+      
+      // Fallback: try to find initial state or use provided value
+      return shape?.initialKey || valueFromProp;
     } else {
       // Legacy Factory Machine - get current state from machine
       const currentState = definition.getState?.();
@@ -455,6 +467,13 @@ export default function ForceGraphInspector({
         .onLinkClick(({ name }: { name: string }) => {
           if (interactive) {
             dispatch({ type: name });
+          }
+        })
+        .onNodeClick((node: any) => {
+          if (interactive) {
+            // For node clicks, we could show available transitions or trigger a default action
+            // For now, let's log the node click for debugging
+            console.log('Node clicked:', node.id, node.name);
           }
         });
       // Increase node spacing and collision radius
