@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useEffect, useState } from "react";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
 import { buildShapeTree } from "../inspect/build-visualizer-tree";
+import { buildForceGraphData } from './ForceGraphInspector/utils/shapeToForceGraph';
 
 interface Diagram {
   nodes: Array<{ id: string; name: string }>;
@@ -105,153 +106,21 @@ export default function ForceGraphInspector({
       return { nodes: [], links: [] };
     }
     
-    // Extract states recursively (including nested)
-    const extractStates = (shapeObj: any, prefix = ''): { id: string; name: string; level: number }[] => {
-      const states: { id: string; name: string; level: number }[] = [];
-      
-      if (!shapeObj?.states) return states;
-      
-      // Handle both Map and Object formats for states
-      const statesEntries: [string, any][] = shapeObj.states instanceof Map 
-        ? Array.from(shapeObj.states.entries())
-        : Object.entries(shapeObj.states);
-      
-      // Check if this is a hierarchical machine (has nested states)
-      const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
-        stateConfig && typeof stateConfig === 'object' && stateConfig.states
-      );
-      
-      if (!hasNestedStates && !prefix) {
-        // Flat machine - use simple state names
-        statesEntries.forEach(([stateName, _]) => {
-          states.push({ id: stateName, name: stateName, level: 0 });
-        });
-        return states;
-      }
-      
-      statesEntries.forEach(([stateName, stateConfig]) => {
-        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
-        const level = prefix ? prefix.split('.').length : 0;
-        
-        states.push({ id: fullStateName, name: fullStateName, level });
-        
-        // Recursively extract nested states
-        if (stateConfig?.states) {
-          states.push(...extractStates(stateConfig, fullStateName));
-        }
-      });
-      
-      return states;
+    // Use the new converter that properly handles string IDs and validation
+    const graphData = buildForceGraphData(shape);
+    
+    // Convert to the old Diagram format for compatibility with existing rendering code
+    return {
+      nodes: graphData.nodes.map(node => ({
+        id: node.id,
+        name: node.name
+      })),
+      links: graphData.links.map(link => ({
+        name: link.event,
+        source: link.source,  // String ID - this fixes the "node not found" error
+        target: link.target   // String ID - this fixes the "node not found" error
+      }))
     };
-    
-    // Extract transitions from shape.transitions (now stored separately)
-    const extractTransitions = (shapeObj: any, prefix = ''): Diagram["links"] => {
-      const links: Diagram["links"] = [];
-      
-      // Use transitions Map if available (new shape structure)
-      if (shapeObj?.transitions instanceof Map) {
-        (Array.from(shapeObj.transitions.entries()) as [string, any][]).forEach(([key, transitionMap]) => {
-          // If value is a Map, extract from it
-          if (transitionMap instanceof Map) {
-            (Array.from(transitionMap.entries()) as [string, any][]).forEach(([eventKey, targetState]) => {
-              links.push({
-                source: key,
-                target: targetState,
-                name: eventKey
-              });
-            });
-          }
-        });
-        return links;
-      }
-      
-      // Fallback: extract from states.on (old structure)
-      if (!shapeObj?.states) return links;
-      
-      // Handle both Map and Object formats for states
-      const statesEntries: [string, any][] = shapeObj.states instanceof Map 
-        ? Array.from(shapeObj.states.entries())
-        : Object.entries(shapeObj.states);
-      
-      // Check if this is a hierarchical machine (has nested states)
-      const hasNestedStates = statesEntries.some(([_, stateConfig]: [string, any]) => 
-        stateConfig && typeof stateConfig === 'object' && stateConfig.states
-      );
-      
-      if (!hasNestedStates && !prefix) {
-        // Flat machine - use simple extraction
-        statesEntries.forEach(([stateName, stateConfig]) => {
-          if (!stateConfig?.on) return;
-          
-          // Handle both Map and Object formats for transitions
-          const onEntries: [string, any][] = stateConfig.on instanceof Map
-            ? Array.from(stateConfig.on.entries())
-            : Object.entries(stateConfig.on);
-
-          onEntries.forEach(([event, transitionConfig]: [string, any]) => {
-            let targets: string[] = [];
-            
-            if (typeof transitionConfig === "string") {
-              targets = [transitionConfig];
-            } else if (Array.isArray(transitionConfig)) {
-              targets = transitionConfig
-                .map((config) => typeof config === "string" ? config : config?.target)
-                .filter(Boolean);
-            } else if (transitionConfig?.target) {
-              targets = [transitionConfig.target];
-            }
-            
-            targets.forEach((target) => {
-              links.push({ source: stateName, target, name: event });
-            });
-          });
-        });
-        return links;
-      }
-      
-      statesEntries.forEach(([stateName, stateConfig]) => {
-        if (!stateConfig?.on) return;
-        
-        const fullStateName = prefix ? `${prefix}.${stateName}` : stateName;
-        
-        // Handle both Map and Object formats for transitions
-        const onEntries: [string, any][] = stateConfig.on instanceof Map
-          ? Array.from(stateConfig.on.entries())
-          : Object.entries(stateConfig.on);
-
-        onEntries.forEach(([event, transitionConfig]: [string, any]) => {
-          let targets: string[] = [];
-          
-          if (typeof transitionConfig === "string") {
-            targets = [transitionConfig];
-          } else if (Array.isArray(transitionConfig)) {
-            targets = transitionConfig
-              .map((config) => typeof config === "string" ? config : config?.target)
-              .filter(Boolean);
-          } else if (transitionConfig?.target) {
-            targets = [transitionConfig.target];
-          }
-          
-          targets.forEach((target) => {
-            // Handle relative targets - if target doesn't contain a dot, it's in the same level
-            const fullTarget = !target.includes('.') && prefix ? `${prefix}.${target}` : target;
-            links.push({ source: fullStateName, target: fullTarget, name: event });
-          });
-        });
-        
-        // Recursively extract from nested states
-        if (stateConfig?.states) {
-          links.push(...extractTransitions(stateConfig, fullStateName));
-        }
-      });
-      
-      return links;
-    };
-    
-    const nodes = extractStates(shape);
-    const links = extractTransitions(shape);
-    
-    return { nodes, links };
   }, [definition]);
   const valueRef = useRef(valueFromProp);
   valueRef.current = valueFromProp;
