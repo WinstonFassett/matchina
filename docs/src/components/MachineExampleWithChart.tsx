@@ -3,7 +3,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { MermaidInspector, HSMReactFlowInspector } from 'matchina/viz';
+import { MermaidInspector, HSMReactFlowInspector, ForceGraphInspector } from 'matchina/viz';
 
 interface MachineExampleWithChartProps {
   machine: FactoryMachine<any>;
@@ -116,9 +116,17 @@ export function MachineExampleWithChart({
             />
           )}
           {currentInspectorType === "force-graph" && (
-            <div className="p-4 border border-gray-300 rounded">
-              <p className="text-sm text-gray-600">Force Graph Inspector not available - use Mermaid or ReactFlow</p>
-            </div>
+            <ForceGraphInspector
+              value={activeStatePath}
+              definition={machine as any}
+              dispatch={(event: any) => {
+                const eventName = typeof event === 'string' ? event : event?.type;
+                if (eventName && actions[eventName]) {
+                  machine.send(eventName);
+                }
+              }}
+              interactive={isInteractive}
+            />
           )}
           {currentInspectorType === "react-flow" && (
             <HSMReactFlowInspector

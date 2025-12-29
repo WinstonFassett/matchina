@@ -14,6 +14,8 @@ npm run build           # Build static site
 npm run deploy          # Deploy to GitHub Pages
 ```
 
+**Dev Server Hot Reloading:** The Astro dev server automatically picks up upstream library rebuilds. Restarting is usually NOT necessary for changes to the matchina library - only for changes to the docs configuration or major dependency changes.
+
 If puppeteer/browser tests fail because server isn't running, inform user - don't try to start it.
 
 ## Critical Patterns (Must Follow)
