@@ -34,7 +34,7 @@ type VisualizerType = 'mermaid' | 'sketch' | 'reactflow' | 'forcegraph';
 
 interface VisualizerDemoProps {
   machine: any;
-  actions?: Record<string, () => void>;
+  actions?: Record<string, (...args: any[]) => void>;
   title?: string;
   description?: string;
   defaultVisualizer?: VisualizerType;
