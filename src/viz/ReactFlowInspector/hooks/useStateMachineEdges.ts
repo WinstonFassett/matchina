@@ -9,34 +9,8 @@ interface Transition {
   event: string;
 }
 
-const extractTransitions = (machine: any): Transition[] => {
-  const transitions: Transition[] = [];
-
-  // Get shape from machine (like nodes hook does)
-  const shape = machine.shape?.getState();
-  if (!shape) return transitions;
-
-  // Shape has a transitions Map: Map<string, Map<string, string>>
-  // where: from -> event -> target
-  if (shape.transitions instanceof Map) {
-    for (const [fromState, eventMap] of shape.transitions.entries()) {
-      if (eventMap instanceof Map) {
-        for (const [event, targetState] of eventMap.entries()) {
-          transitions.push({
-            from: fromState,
-            to: targetState,
-            event: String(event)
-          });
-        }
-      }
-    }
-  }
-
-  return transitions;
-};
-
 export const useStateMachineEdges = (
-  machine: any,
+  initialEdges: Edge[],
   nodes: Node[],
   currentState: string,
   previousState?: string,
@@ -44,10 +18,17 @@ export const useStateMachineEdges = (
 ) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const transitions = useMemo(() => extractTransitions(machine), [machine]);
+  // Convert edges to transitions for styling logic
+  const transitions = useMemo(() => {
+    return initialEdges.map((edge) => ({
+      from: edge.source,
+      to: edge.target,
+      event: (edge.label as string) || "",
+    }));
+  }, [initialEdges]);
 
   const updateEdges = useCallback(() => {
-    if (!machine || nodes.length === 0) return;
+    if (nodes.length === 0) return;
 
     const nodePositions = new Map(
       nodes.map((node) => [node.id, node.position])
@@ -267,7 +248,6 @@ export const useStateMachineEdges = (
     currentState,
     previousState,
     setEdges,
-    machine,
     interactive,
   ]);
 

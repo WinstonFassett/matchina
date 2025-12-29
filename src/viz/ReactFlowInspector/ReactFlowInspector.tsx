@@ -87,6 +87,15 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   const reactFlowInstanceRef = useRef<any>(null);
 
+  // Convert edges to transitions for ELK layout
+  const transitions = useMemo(() => {
+    return initialEdges.map((edge) => ({
+      from: edge.source,
+      to: edge.target,
+      event: (edge.label as string) || "",
+    }));
+  }, [initialEdges]);
+
   const { nodes, onNodesChange, isInitialized, isLayoutComplete } =
     useStateMachineNodes(
       initialNodes,
@@ -94,7 +103,8 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
       previousState,
       machineKey.current,
       layoutOptions,
-      forceLayoutKey
+      forceLayoutKey,
+      transitions
     );
 
   // Fit view when layout is complete

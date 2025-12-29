@@ -115,17 +115,17 @@ const extractTransitionsForLayout = (shapeTree: any) => {
 };
 
 export const useStateMachineNodes = (
-  machine: any,
+  initialNodes: Node[],
   currentState: string,
   previousState?: string,
   key?: number,
   layoutOptions?: LayoutOptions,
-  forceLayoutKey?: number
+  forceLayoutKey?: number,
+  transitions: Array<{ from: string; to: string; event: string }> = []
 ) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([] as Node[]);
   const hasInitialized = useRef(false);
   const savePositionsTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-  const currentMachineId = useRef<string | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
   const [isLayoutComplete, setIsLayoutComplete] = useState(false);
   const [hasManualChanges, setHasManualChanges] = useState(false);
@@ -140,40 +140,14 @@ export const useStateMachineNodes = (
     }
   }, [key, setNodes]);
 
-  // Get shape directly from machine (like Sketch does)
-  const shape = useMemo(() => {
-    const shapeController = machine.shape;
-    return shapeController?.getState();
-  }, [machine]);
-
-  // Extract states from shape (including nested states)
+  // Use initialNodes directly (already extracted and formatted by wrapper)
   const states = useMemo(() => {
-    if (!shape?.states) return [];
-    
-    // Shape stores all states (flat and hierarchical) with their full keys
-    // Just extract the keys - they're already in the right format
-    if (shape.states instanceof Map) {
-      return Array.from(shape.states.keys());
-    }
-    
-    return Object.keys(shape.states);
-  }, [shape]);
+    return initialNodes.map((node) => node.id);
+  }, [initialNodes]);
 
-  // Extract transitions for ELK layout from shape
-  const transitions = useMemo(
-    () => extractTransitionsForLayout(shape),
-    [shape]
-  );
 
-  // Reset when machine changes
-  useEffect(() => {
-    if (machine?.id !== currentMachineId.current) {
-      hasInitialized.current = false;
-      setIsLayouting(false);
-      setHasManualChanges(false);
-      currentMachineId.current = machine?.id || null;
-    }
-  }, [machine]);
+
+
 
   // Initialize layout only once per machine
   useEffect(() => {
