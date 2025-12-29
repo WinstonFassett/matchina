@@ -62,8 +62,8 @@ describe('Unified HSM Visualization', () => {
       // Activate with empty selected tags
       machine.send('focus'); // Inactive -> Active.Empty
       
-      // Type with proper parameters
-      machine.send('typed', 'react', []); // Active.Empty -> Active.Typing
+      // Type with proper parameters (handled by store hook)
+      machine.send('typed'); // Active.Empty -> Active.Typing
       
       const activePath = getActiveStatePath(machine);
       expect(activePath).toBe('Active.Typing'); // Should be flattened key
@@ -124,15 +124,15 @@ describe('Unified HSM Visualization', () => {
       expect(definition.states).toBeDefined();
       expect(definition.states.Active).toBeDefined();
       expect(definition.states.Active.states).toBeDefined();
-      expect(definition.states.Active.states['Active.Empty']).toBeDefined();
-      expect(definition.states.Active.states['Active.Typing']).toBeDefined();
-      expect(definition.states.Active.states['Active.TextEntry']).toBeDefined();
-      expect(definition.states.Active.states['Active.Suggesting']).toBeDefined();
+      expect(definition.states.Active.states.Empty).toBeDefined();
+      expect(definition.states.Active.states.Typing).toBeDefined();
+      expect(definition.states.Active.states.TextEntry).toBeDefined();
+      expect(definition.states.Active.states.Suggesting).toBeDefined();
       expect(definition.states.Inactive).toBeDefined();
       
       // Check fullKey values
       expect(definition.states.Active.fullKey).toBe('Active');
-      expect(definition.states.Active.states['Active.Empty'].fullKey).toBe('Active.Empty');
+      expect(definition.states.Active.states.Empty.fullKey).toBe('Active.Empty');
       expect(definition.states.Inactive.fullKey).toBe('Inactive');
     });
   });

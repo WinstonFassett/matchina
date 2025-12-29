@@ -120,13 +120,13 @@ export function VisualizerDemo({
         </div>
       )}
 
-      <div className="visualizer-container border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-        <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-gray-900">
-          <span className="text-sm font-medium">
+      <div className="visualizer-container border-2 border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden shadow-sm">
+        <div className="px-4 py-2 border-b border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-gray-800">
+          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             {visualizers.find(v => v.key === activeVisualizer)?.label}
           </span>
-          <span className="text-xs ml-2">
-            Current state: <strong>{getActiveStatePath(machine)}</strong>
+          <span className="text-xs ml-2 text-neutral-600 dark:text-neutral-400">
+            Current state: <strong className="text-neutral-800 dark:text-neutral-200">{getActiveStatePath(machine)}</strong>
           </span>
         </div>
         

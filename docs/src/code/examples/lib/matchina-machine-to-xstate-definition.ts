@@ -212,8 +212,11 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
       // Build child states
       if (children.length > 0) {
         syntheticNode.states = {};
-        for (const childKey of children) {
-          syntheticNode.states[childKey] = buildNode(childKey);
+        for (const childFullKey of children) {
+          const childNode = buildNode(childFullKey);
+          // Use local key (not full key) for child state names
+          const localKey = childFullKey.split('.').pop() || childFullKey;
+          syntheticNode.states[localKey] = childNode;
         }
         // Set initial to first child (simplified - could be enhanced to find actual initial)
         syntheticNode.initial = children[0]?.split('.').pop();
@@ -249,7 +252,9 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
       state.states = {};
       for (const childFullKey of children) {
         const childNode = buildNode(childFullKey);
-        state.states[childNode.key] = childNode;
+        // Use local key (not full key) for child state names
+        const localKey = childFullKey.split('.').pop() || childFullKey;
+        state.states[localKey] = childNode;
       }
       // Set initial to first child (simplified - could be enhanced to find actual initial)
       state.initial = children[0]?.split('.').pop();

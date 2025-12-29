@@ -169,7 +169,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
             fitView
-            fitViewOptions={{ padding: 0.3, includeHiddenNodes: true }}
+            fitViewOptions={{ padding: 0.2, includeHiddenNodes: true, minZoom: 0.5, maxZoom: 2 }}
           >
             <Controls
               showZoom={true}

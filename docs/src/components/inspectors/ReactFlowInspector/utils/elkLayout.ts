@@ -217,17 +217,17 @@ export const getLayoutedElements = async (
 };
 
 export const getDefaultLayoutOptions = (): LayoutOptions => ({
-  direction: "RIGHT",
+  direction: "DOWN", // Changed from RIGHT for better hierarchical visualization
   algorithm: "layered",
-  nodeSpacing: 120, // Increased from 80
-  layerSpacing: 150, // Increased from 120
-  edgeSpacing: 30, // Increased from 15
+  nodeSpacing: 100, // Reduced for more compact layout
+  layerSpacing: 120, // Reduced for tighter vertical spacing
+  edgeSpacing: 20, // Reduced for cleaner edges
   thoroughness: 7,
   // aspectRatio removed as it doesn't work properly
   compactComponents: false,
-  separateComponents: true, // Changed to true to better separate components
-  edgeNodeSpacing: 40, // Increased from 20
-  componentSpacing: 80, // Increased from 40
+  separateComponents: false, // Changed to false for better component integration
+  edgeNodeSpacing: 30, // Reduced for cleaner edges
+  componentSpacing: 60, // Reduced for more compact layout
 });
 
 // Algorithm metadata for UI - only working algorithms
