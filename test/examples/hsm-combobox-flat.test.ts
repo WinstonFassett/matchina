@@ -5,10 +5,11 @@ describe("HSM Combobox (Flat)", () => {
   it("should initialize to Inactive with empty selectedTags array", () => {
     const machine = createFlatComboboxMachine();
     const state = machine.getState();
+    const storeState = machine.store.getState();
 
     expect(state.key).toBe("Inactive");
-    expect(state.data.selectedTags).toEqual([]);
-    expect(Array.isArray(state.data.selectedTags)).toBe(true);
+    expect(storeState.selectedTags).toEqual([]);
+    expect(Array.isArray(storeState.selectedTags)).toBe(true);
   });
 
   it("should transition to Active.Empty on focus", async () => {
@@ -20,9 +21,10 @@ describe("HSM Combobox (Flat)", () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     const state = machine.getState();
+    const storeState = machine.store.getState();
     expect(state.key).toBe("Active.Empty");
-    expect(state.data.selectedTags).toEqual([]);
-    expect(Array.isArray(state.data.selectedTags)).toBe(true);
+    expect(storeState.selectedTags).toEqual([]);
+    expect(Array.isArray(storeState.selectedTags)).toBe(true);
   });
 
   it("should auto-transition from Typing to TextEntry when no suggestions", async () => {
@@ -32,14 +34,15 @@ describe("HSM Combobox (Flat)", () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     // Type something that won't match suggestions
-    machine.send("typed", "zzz", []);
+    machine.send("typed", "zzz");
 
     // Wait for auto-transition
     await new Promise(resolve => setTimeout(resolve, 10));
 
     const state = machine.getState();
+    const storeState = machine.store.getState();
     expect(state.key).toBe("Active.TextEntry");
-    expect(state.data.input).toBe("zzz");
+    expect(storeState.input).toBe("zzz");
   });
 
   it("should auto-transition from Typing to Suggesting when there are suggestions", async () => {
@@ -49,15 +52,16 @@ describe("HSM Combobox (Flat)", () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     // Type something that matches suggestions (e.g., "typ" matches "typescript")
-    machine.send("typed", "typ", []);
+    machine.send("typed", "typ");
 
     // Wait for auto-transition
     await new Promise(resolve => setTimeout(resolve, 10));
 
     const state = machine.getState();
+    const storeState = machine.store.getState();
     expect(state.key).toBe("Active.Suggesting");
-    expect(state.data.input).toBe("typ");
-    expect(state.data.suggestions).toContain("typescript");
+    expect(storeState.input).toBe("typ");
+    expect(storeState.suggestions).toContain("typescript");
   });
 
   it("should have hierarchical shape metadata", () => {

@@ -39,7 +39,7 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 }
 
 // Shared typed handler - computes next state based on input
-const handleTyped = (value) => (ev) => {
+const handleTyped = (value: string) => (ev: any) => {
   const { selectedTags } = ev.from.data;
   if (!value.trim()) return activeStates.Empty(selectedTags);
 
@@ -50,7 +50,7 @@ const handleTyped = (value) => (ev) => {
 };
 
 // Shared addTag handler
-const handleAddTag = (tag) => (ev) => {
+const handleAddTag = (tag: string) => (ev: any) => {
   const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
   const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
   if (!tagToAdd || selectedTags.includes(tagToAdd)) {
@@ -66,7 +66,7 @@ function createActiveForApp(data?: { selectedTags?: string[] }) {
     Empty: {
       typed: handleTyped,
       removeTag: (tag) => (ev) => 
-        activeStates.Empty(ev.from.data.selectedTags.filter((t) => t !== tag)),
+        activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
       backspace: () => (ev) => {
         const selectedTags = ev.from.data.selectedTags;
         if (selectedTags.length > 0) {

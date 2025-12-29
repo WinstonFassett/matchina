@@ -1,5 +1,5 @@
-import type { FactoryMachine, StateMatchboxFactory } from "matchina";
-import type { MachineShape, StateNode } from "matchina/hsm";
+import type { FactoryMachine } from "matchina";
+import type { MachineShape } from "matchina/hsm";
 
 /**
  * Get the current active state path for both hierarchical and flattened machines.
