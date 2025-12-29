@@ -1,4 +1,5 @@
 import type { FactoryMachine, StateMatchboxFactory } from "matchina";
+import type { MachineShape, StateNode } from "matchina/hsm";
 
 /**
  * Get the current active state path for both hierarchical and flattened machines.
@@ -39,13 +40,11 @@ export function getActiveStatePath(machine: FactoryMachine<any>): string {
  * For best results, use createMachineFromFlat() to create flattened machines
  * which automatically get shape metadata attached.
  */
-export function buildVisualizerTree<
-  F extends FactoryMachine<{
-    states: StateMatchboxFactory<any>;
-    transitions: any;
-  }>,
->(machine: F, parentKey?: string) {
-  const shape = (machine as any).shape?.getState();
+export function buildVisualizerTree<F extends FactoryMachine<any>>(
+  machine: F,
+  parentKey?: string
+): any {
+  const shape = machine.shape?.getState();
   if (shape) {
     // Use shape when available (preferred path)
     return buildVisualizerTreeFromShape(shape);
@@ -180,7 +179,7 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
  * Build XState-compatible tree from a MachineShape.
  * This converts static shape metadata into a renderable tree structure.
  */
-function buildVisualizerTreeFromShape(shape: any) {
+function buildVisualizerTreeFromShape(shape: MachineShape) {
   type XStateNode = {
     key: string;
     fullKey: string;
@@ -193,7 +192,34 @@ function buildVisualizerTreeFromShape(shape: any) {
   function buildNode(fullKey: string): XStateNode {
     const node = shape.states.get(fullKey);
     if (!node) {
-      throw new Error(`State not found in shape: ${fullKey}`);
+      // Handle synthetic parents that don't exist in shape (violation of shape spec)
+      // Create a synthetic node for visualization purposes
+      const parts = fullKey.split('.');
+      const syntheticNode: XStateNode = {
+        key: parts[parts.length - 1],
+        fullKey,
+        on: {}
+      };
+      
+      // Find all direct children of this synthetic parent
+      const children: string[] = [];
+      for (const [stateFullKey, parentFullKey] of shape.hierarchy.entries()) {
+        if (parentFullKey === fullKey) {
+          children.push(stateFullKey);
+        }
+      }
+      
+      // Build child states
+      if (children.length > 0) {
+        syntheticNode.states = {};
+        for (const childKey of children) {
+          syntheticNode.states[childKey] = buildNode(childKey);
+        }
+        // Set initial to first child (simplified - could be enhanced to find actual initial)
+        syntheticNode.initial = children[0]?.split('.').pop();
+      }
+      
+      return syntheticNode;
     }
 
     const state: XStateNode = {
@@ -203,9 +229,9 @@ function buildVisualizerTreeFromShape(shape: any) {
     };
 
     // Get transitions from this state
-    const trans = shape.transitions.get(fullKey);
-    if (trans) {
-      for (const [event, target] of trans) {
+    const transitions = shape.transitions.get(fullKey);
+    if (transitions) {
+      for (const [event, target] of transitions.entries()) {
         state.on[event] = target;
       }
     }
@@ -234,7 +260,9 @@ function buildVisualizerTreeFromShape(shape: any) {
 
   // Build all root-level states
   const rootStates: Record<string, XStateNode> = {};
-  for (const [fullKey, parentFullKey] of shape.hierarchy.entries()) {
+  const allHierarchyEntries = Array.from(shape.hierarchy.entries()) as [string, string | undefined][];
+  
+  for (const [fullKey, parentFullKey] of allHierarchyEntries) {
     if (parentFullKey === undefined) {
       const node = buildNode(fullKey);
       rootStates[node.key] = node;
