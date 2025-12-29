@@ -57,13 +57,14 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   edges: initialEdges,
   previousState,
   dispatch,
-  layoutOptions,
+  layoutOptions: initialLayoutOptions,
   interactive = true,
 }) => {
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
 
-  // Load saved layout settings or use defaults
+  // Load saved layout settings or use defaults, allowing prop override
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
+    if (initialLayoutOptions) return initialLayoutOptions;
     const saved = loadLayoutSettings();
     return saved || getDefaultLayoutOptions();
   });
