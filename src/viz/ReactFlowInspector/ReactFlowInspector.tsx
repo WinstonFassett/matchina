@@ -86,6 +86,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   const [forceLayoutKey, setForceLayoutKey] = useState<number>(0);
 
   const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
+    console.log('🔍 [Layout] Options changed:', newOptions);
     setLayoutOptions(newOptions);
     saveLayoutSettings(newOptions);
     // Force immediate re-layout
@@ -186,7 +187,10 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             {/* Layout Options Button */}
             <Panel position="top-right">
               <button
-                onClick={() => setShowLayoutDialog(!showLayoutDialog)}
+                onClick={() => {
+                  console.log('🔍 [Portal] Layout button clicked, showLayoutDialog:', showLayoutDialog);
+                  setShowLayoutDialog(!showLayoutDialog);
+                }}
                 className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <svg
@@ -211,22 +215,27 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
       </div>
 
       {showLayoutDialog &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-start justify-end"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setShowLayoutDialog(false);
-            }}
-          >
-            <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
-              <LayoutPanel
-                options={layoutOptions}
-                onOptionsChange={handleLayoutChange}
-              />
-            </div>
-          </div>,
-          document.body
-        )}
+        (() => {
+          console.log('🔍 [Portal] Rendering portal to document.body');
+          return createPortal(
+            <div
+              className="fixed inset-0 z-50 flex items-start justify-end"
+              style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
+              onClick={(e) => {
+                console.log('🔍 [Portal] Backdrop clicked');
+                if (e.target === e.currentTarget) setShowLayoutDialog(false);
+              }}
+            >
+              <div className="mt-16 mr-4 max-w-[300px] overflow-auto">
+                <LayoutPanel
+                  options={layoutOptions}
+                  onOptionsChange={handleLayoutChange}
+                />
+              </div>
+            </div>,
+            document.body
+          );
+        })()}
     </>
   );
 };
