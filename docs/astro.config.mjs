@@ -13,7 +13,10 @@ export default defineConfig({
   site: process.env.DEPLOY_PRIME_URL || "https://winstonfassett.github.io",
   // Control base path via env so Netlify previews can use "/" and GH Pages can use "/matchina/".
   // Ensure leading and trailing slashes for Astro.
-  base: "matchina",
+  base:
+    (process.env.DOCS_BASE || "/matchina/")
+      .replace(/^(?!\/)*/, "/")
+      .replace(/(?<!\/)$/, "/"),
   build: {
     assets: "assets",
   },
