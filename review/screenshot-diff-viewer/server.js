@@ -11,11 +11,12 @@ const PORT = 5173;
 
 // API endpoint to get image sets
 app.get('/api/sets', (req, res) => {
+  const baseDir = '/Users/winston/dev/personal/matchina/review/screenshots';
   const sets = {
-    'baseline': '/Users/winston/dev/personal/matchina/review/baseline',
-    'current': '/Users/winston/dev/personal/matchina/review/current', 
-    'after-css-fix': '/Users/winston/dev/personal/matchina/review/after-css-fix',
-    'after-theme-fix': '/Users/winston/dev/personal/matchina/review/after-theme-fix'
+    'baseline': path.join(baseDir, 'baseline'),
+    'current': path.join(baseDir, 'current'), 
+    'current-fixed': path.join(baseDir, 'current-fixed'),
+    'final': path.join(baseDir, 'final')
   };
   
   const result = {};
@@ -32,14 +33,15 @@ app.get('/api/sets', (req, res) => {
 // API endpoint to compare two images and detect differences
 app.get('/api/diff/:beforeSet/:afterSet/:filename', async (req, res) => {
   const { beforeSet, afterSet, filename } = req.params;
-  const validSets = ['baseline', 'current', 'after-css-fix', 'after-theme-fix'];
+  const validSets = ['baseline', 'current', 'current-fixed', 'final'];
   
   if (!validSets.includes(beforeSet) || !validSets.includes(afterSet)) {
     return res.status(400).json({ error: 'Invalid set names' });
   }
   
-  const beforePath = `/Users/winston/dev/personal/matchina/review/${beforeSet}/${filename}`;
-  const afterPath = `/Users/winston/dev/personal/matchina/review/${afterSet}/${filename}`;
+  const baseDir = '/Users/winston/dev/personal/matchina/review/screenshots';
+  const beforePath = path.join(baseDir, beforeSet, filename);
+  const afterPath = path.join(baseDir, afterSet, filename);
   
   if (!fs.existsSync(beforePath) || !fs.existsSync(afterPath)) {
     return res.status(404).json({ error: 'Images not found' });
@@ -71,10 +73,11 @@ app.get('/api/diff/:beforeSet/:afterSet/:filename', async (req, res) => {
 // Serve images from specific sets
 app.get('/:set/:filename', (req, res, next) => {
   const { set, filename } = req.params;
-  const validSets = ['baseline', 'current', 'after-css-fix', 'after-theme-fix'];
+  const validSets = ['baseline', 'current', 'current-fixed', 'final'];
   
   if (validSets.includes(set) && filename.endsWith('.png')) {
-    const filePath = `/Users/winston/dev/personal/matchina/review/${set}/${filename}`;
+    const baseDir = '/Users/winston/dev/personal/matchina/review/screenshots';
+    const filePath = path.join(baseDir, set, filename);
     if (fs.existsSync(filePath)) {
       return res.sendFile(filePath);
     }
