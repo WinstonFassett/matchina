@@ -12,14 +12,13 @@ export default function RockPaperScissorsExample() {
 
   return (
     <div className="space-y-6">
-      <RPSAppView machine={machine} />
-      
       <MachineVisualizer
         machine={machine}
         title="State Machine Visualizer"
         defaultViz="reactflow"
         interactive={false}
         layout="stacked"
+        AppView={RPSAppView}
       />
     </div>
   );

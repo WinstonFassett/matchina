@@ -44,12 +44,6 @@ export default function TrafficLightComparisonExample() {
           </button>
         </div>
       </div>
-
-      {mode === "flat" ? (
-        <TrafficLightViewFlat machine={machine} />
-      ) : (
-        <TrafficLightViewNested machine={machine} />
-      )}
       
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
@@ -58,6 +52,7 @@ export default function TrafficLightComparisonExample() {
         defaultViz="sketch"
         interactive={true}
         layout="stacked"
+        AppView={mode === "flat" ? TrafficLightViewFlat : TrafficLightViewNested}
       />
     </div>
   );

@@ -42,12 +42,6 @@ export default function CheckoutExample() {
           </button>
         </div>
       </div>
-
-      {mode === "flat" ? (
-        <CheckoutViewFlat machine={flatMachine} />
-      ) : (
-        <CheckoutViewNested machine={nestedMachine} />
-      )}
       
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
@@ -56,6 +50,7 @@ export default function CheckoutExample() {
         defaultViz="sketch"
         interactive={true}
         layout="stacked"
+        AppView={mode === "flat" ? CheckoutViewFlat : CheckoutViewNested}
       />
     </div>
   );

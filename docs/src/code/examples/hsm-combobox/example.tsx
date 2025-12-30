@@ -47,12 +47,6 @@ export default function ComboboxExample() {
           </button>
         </div>
       </div>
-
-      {mode === "flat" ? (
-        <ComboboxViewFlat machine={flatMachine} />
-      ) : (
-        <ComboboxView machine={hierarchicalMachine} />
-      )}
       
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
@@ -61,6 +55,7 @@ export default function ComboboxExample() {
         defaultViz="sketch"
         interactive={true}
         layout="stacked"
+        AppView={mode === "flat" ? ComboboxViewFlat : ComboboxView}
       />
     </div>
   );
