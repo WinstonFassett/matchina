@@ -1,5 +1,18 @@
 /* Simple Mermaid theme CSS - this gets injected via themeCSS, not as a stylesheet */
 
+/* Container styling to prevent overflow */
+.mermaid-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* SVG styling to prevent overflow */
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Fix node styling - only text, let nodes keep natural colors */
 .node text {
   fill: var(--sl-color-text);

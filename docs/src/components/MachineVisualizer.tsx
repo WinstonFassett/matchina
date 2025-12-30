@@ -83,10 +83,15 @@ export function MachineVisualizer({
   const [currentViz, setCurrentViz] = useState<VisualizerType>(initialViz);
 
   // Machine state and actions
-  useMachine(machine);
+  // CRITICAL: useMachine must be called in MachineVisualizer to subscribe to state changes
+  // This ensures the entire component (including AppView) re-renders when machine state changes
+  // Without this, AppView might be rendered with stale state if it only reads machine.getState()
+  const change = useMachine(machine);
   const currentState = machine.getState();
-  const activeStatePath = getActiveStatePath(machine);
-  const config = useMemo(() => buildVisualizerTree(machine), [machine]);
+  // Explicitly depend on 'change' to ensure activeStatePath updates when state changes
+  const activeStatePath = useMemo(() => getActiveStatePath(machine), [machine, change]);
+  // Explicitly depend on 'change' to ensure visualizer config updates when state changes
+  const config = useMemo(() => buildVisualizerTree(machine), [machine, change]);
   const actions = useMemo(() => eventApi(machine), [machine]);
 
   // Determine if we should show the picker

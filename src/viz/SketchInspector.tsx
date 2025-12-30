@@ -19,9 +19,7 @@ function SketchInspector({
   className = '',
   theme = defaultTheme
 }: SketchInspectorProps) {
-  // Step 1: Listen to machine changes for reactivity (parent + deepest active child)
-  useMachine(machine);
-  // Find deepest active machine to subscribe to leaf-only transitions
+  // Step 1: Find deepest active machine to subscribe to for leaf-only transitions
   const deepestMachine = (() => {
     let cursor: any = machine;
     let last: any = machine;
@@ -35,6 +33,10 @@ function SketchInspector({
     }
     return last;
   })();
+  
+  // Subscribe to the deepest active machine for reactivity
+  // This ensures we react to changes in nested machines, which automatically propagates
+  // changes from the parent as well (since parent changes cause deepest to change)
   useMachine(deepestMachine || machine);
   const currentState = machine.getState();
   

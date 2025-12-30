@@ -78,23 +78,17 @@ const InlineSvg = forwardRef<HTMLDivElement, InlineSvgProps>(({ svg }, ref) => {
    }, [svg]);
 
    useEffect(() => {
-     // Override cluster styles after SVG is rendered
+     // Fix cluster styling after SVG is rendered - remove yellow background
      const container = (ref as any)?.current;
      if (container) {
-       const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-       const clusterRects = container.querySelectorAll('.cluster rect, .subgraph rect');
+       const clusterRects = container.querySelectorAll('.cluster rect, .subgraph rect, .statediagram-cluster rect');
        
        clusterRects.forEach((rect: SVGRectElement) => {
          const element = rect as SVGRectElement;
-         if (isDarkMode) {
-           element.style.fill = '#000000';
-           element.style.stroke = 'var(--sl-color-gray-5)';
-           element.style.strokeWidth = '2px';
-         } else {
-           element.style.fill = 'var(--sl-color-gray-1)';
-           element.style.stroke = 'var(--sl-color-gray-4)';
-           element.style.strokeWidth = '2px';
-         }
+         // Make clusters transparent with proper border styling
+         element.style.fill = 'transparent';
+         element.style.stroke = 'var(--sl-color-accent-high)';
+         element.style.strokeWidth = '2px';
        });
      }
    }, [svg, ref]);
