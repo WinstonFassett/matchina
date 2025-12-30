@@ -51,10 +51,9 @@ export function buildReactFlowGraph(
         parent: parentKey, // For hierarchy visualization
         isCompound: isCompound, // For styling compound states
       },
-      type: "custom",
-      // Parent assignment for ReactFlow's built-in hierarchy (if using subgraph)
-      // Note: Full subgraph support would require additional setup
-      parentNode: parentKey, 
+      type: isCompound ? 'group' : 'custom', // Use group type for compound states
+      // Parent assignment for ReactFlow's built-in hierarchy
+      parentId: parentKey, // Use parentId (not deprecated parentNode)
     };
 
     nodes.push(node);

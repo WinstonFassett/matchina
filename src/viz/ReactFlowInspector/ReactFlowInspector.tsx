@@ -24,6 +24,7 @@ import "reactflow/dist/style.css";
 
 import CustomEdge from "./CustomEdge";
 import CustomNodeComponent from "./CustomNode";
+import GroupNode from "./GroupNode";
 import LayoutPanel from "./LayoutPanel";
 import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
 import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
@@ -55,6 +56,7 @@ interface ReactFlowInspectorProps {
 
 const nodeTypes: NodeTypes = {
   custom: CustomNodeComponent as any, // Type assertion to avoid complex generic issues
+  group: GroupNode as any,
 };
 
 const edgeTypes: EdgeTypes = {
