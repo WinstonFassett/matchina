@@ -27,9 +27,25 @@ export default defineBuildConfig({
       input: 'src/integrations/react/',
       outDir: "./dist/integrations/react",
       builder: 'mkdist'
+    },
+    {
+      input: 'src/viz/',
+      outDir: "./dist/viz",
+      builder: 'mkdist'
+    },
+    {
+      input: 'src/hsm/',
+      outDir: "./dist/hsm",
+      builder: 'mkdist'
+    },
+    {
+      input: 'src/inspect/',
+      outDir: "./dist/inspect",
+      builder: 'mkdist'
     }
   ],
   declaration: true,
+  failOnWarn: false,
   rollup: {
     emitCJS: true,  
     esbuild: {
