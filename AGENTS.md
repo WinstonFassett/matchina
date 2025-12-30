@@ -363,6 +363,12 @@ bd sync --flush-only         # Export to JSONL
 
 ## Troubleshooting Philosophy
 
+**Key principles:**
+- **Evidence first**: Don't speculate about root causes. Test and observe actual behavior.
+- **Minimal changes**: Make the smallest possible fix that addresses the observed problem. Avoid over-engineering or adding unnecessary code.
+- **Simplicity over verbosity**: The library values elegance and expressiveness. Complex fixes or boilerplate are a code smell.
+- **Direct investigation**: Rather than extensive speculation, run tests, add logging, or manually reproduce to understand the issue.
+
 **When bugs appear in examples:**
 
 1. Check if problem reproduces in core library
