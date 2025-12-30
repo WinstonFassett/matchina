@@ -14,38 +14,38 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.ts",
+      "require": "./dist/index.ts"
     },
     "./react": {
       "types": "./dist/integrations/react.d.ts",
-      "import": "./dist/integrations/react.mjs",
-      "require": "./dist/integrations/react.js"
+      "import": "./dist/integrations/react.ts",
+      "require": "./dist/integrations/react.ts"
     },
     "./zod": {
       "types": "./dist/integrations/zod.d.ts",
-      "import": "./dist/integrations/zod.mjs",
-      "require": "./dist/integrations/zod.js"
+      "import": "./dist/integrations/zod.ts",
+      "require": "./dist/integrations/zod.ts"
     },
     "./valibot": {
       "types": "./dist/integrations/valibot.d.ts",
-      "import": "./dist/integrations/valibot.mjs",
-      "require": "./dist/integrations/valibot.js"
+      "import": "./dist/integrations/valibot.ts",
+      "require": "./dist/integrations/valibot.ts"
     },
     "./inspect": {
       "types": "./dist/inspect/index.d.ts",
-      "import": "./dist/inspect/index.mjs",
-      "require": "./dist/inspect/index.js"
+      "import": "./dist/inspect/index.ts",
+      "require": "./dist/inspect/index.ts"
     },
     "./viz": {
       "types": "./dist/viz/index.d.ts",
-      "import": "./dist/viz/index.mjs",
-      "require": "./dist/viz/index.js"
+      "import": "./dist/viz/index.ts",
+      "require": "./dist/viz/index.ts"
     },
     "./hsm": {
       "types": "./dist/hsm/index.d.ts",
-      "import": "./dist/hsm/index.mjs",
-      "require": "./dist/hsm/index.js"
+      "import": "./dist/hsm/index.ts",
+      "require": "./dist/hsm/index.ts"
     }
   },
   "main": "./dist/index.js",
@@ -66,9 +66,8 @@
     "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
     "dev:all": "npm run dev && npm --workspace docs run dev",
-    "dev:docs": "npm --workspace docs run dev",
+    "dev:docs": "npm run dev:stub && npm --workspace docs run dev",
     "dev:prepare": "unbuild --stub",
-    "dev:stub": "unbuild --stub",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",

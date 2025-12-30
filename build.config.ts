@@ -1,47 +1,26 @@
 import { defineBuildConfig } from 'unbuild'
 
-const mkdistEntry = {
-  input: "./src/",
-  outDir: "./dist",
-  builder: 'mkdist',
-  pattern: [
-    "**",
-    "!dev",
-    // "!snippets"
-  ],
-} as const
-
 export default defineBuildConfig({
-  
   entries: [
     {
-      ...mkdistEntry,
+      input: "./src/",
+      outDir: "./dist",
+      builder: 'mkdist',
+      pattern: [
+        "**",
+        "!dev",
+      ],
       format: "esm",
     },
-
     {
-      ...mkdistEntry,
-      format: "cjs",      
-    },    
-    {
-      input: 'src/integrations/react/',
-      outDir: "./dist/integrations/react",
-      builder: 'mkdist'
-    },
-    {
-      input: 'src/viz/',
-      outDir: "./dist/viz",
-      builder: 'mkdist'
-    },
-    {
-      input: 'src/hsm/',
-      outDir: "./dist/hsm",
-      builder: 'mkdist'
-    },
-    {
-      input: 'src/inspect/',
-      outDir: "./dist/inspect",
-      builder: 'mkdist'
+      input: "./src/",
+      outDir: "./dist",
+      builder: 'mkdist',
+      pattern: [
+        "**",
+        "!dev",
+      ],
+      format: "cjs",
     }
   ],
   declaration: true,
