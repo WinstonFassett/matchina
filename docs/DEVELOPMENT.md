@@ -458,6 +458,29 @@ npm run build           # Build static site
 npm run preview         # Preview built site
 ```
 
+### Troubleshooting Dev Server
+
+If you encounter errors about missing matchina modules when running `npm run dev:docs`:
+
+```bash
+# Error: Cannot find module 'matchina' or its corresponding type declarations
+# Error: Cannot find module 'matchina/hsm' or its corresponding type declarations
+```
+
+**Cause:** The `unbuild --stub` command cleans the dist directory, but the typedoc plugin needs the built files.
+
+**Solution:** The dev:prepare script builds first, then stubs:
+
+```bash
+npm run dev:docs    # This runs: npm run build:lib && unbuild --stub
+```
+
+**Manual fix if needed:**
+```bash
+npm run build:lib    # Build the library first
+npm run dev:docs     # Then run dev server
+```
+
 ### Deployment
 
 Documentation is hosted on GitHub Pages:

@@ -4,7 +4,6 @@ import type { TransitionEvent } from "../../state-machine";
 import type { StateNode } from "../../hsm/shape-types";
 import type { LayoutOptions } from "./utils/elkLayout";
 import { buildReactFlowGraph } from "./utils/shapeToReactFlow";
-import { buildVisualizerTree } from "../../../docs/src/code/examples/lib/matchina-machine-to-xstate-definition";
 import ReactFlowInspector from "./ReactFlowInspector";
 
 interface HSMReactFlowInspectorProps {
@@ -44,39 +43,8 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
       // Use shape-based conversion for HSM machines (preferred path)
       return buildReactFlowGraph(shape);
     } else {
-      // Fallback to hierarchy-based conversion for machines without shapes (e.g., promise machines)
-      // Use the same method that Mermaid uses for consistency
-      const tree = buildVisualizerTree(machine as any);
-      if (!tree?.states) return null;
-      
-      // Convert tree format to ReactFlow format
-      const nodes = Object.entries(tree.states).map(([key, state]: [string, any]) => ({
-        id: key,
-        position: { x: 0, y: 0 },
-        data: {
-          label: state.key || key,
-          fullKey: state.fullKey || key,
-          isActive: false,
-          isPrevious: false,
-          isCompound: false,
-        },
-        type: "custom",
-      }));
-      
-      const edges = Object.entries(tree.states)
-        .flatMap(([fromKey, state]: [string, any]) => {
-          if (!state.on) return [];
-          return Object.entries(state.on).map(([event, toKey]: [string, any]) => ({
-            id: `${fromKey}-${toKey}-${event}`,
-            source: fromKey,
-            target: toKey,
-            label: event,
-            type: "custom",
-            data: { event, isClickable: false },
-          }));
-        });
-      
-      return { nodes, edges, nodeIds: new Set(nodes.map(n => n.id)), groupIds: new Set() };
+      // No fallback for machines without shapes - they need to have shapes
+      return null;
     }
   }, [shape, machine]);
 

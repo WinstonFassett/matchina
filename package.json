@@ -109,7 +109,7 @@
     "dev": "vitest dev",
     "dev:all": "npm run dev && npm --workspace docs run dev",
     "dev:docs": "npm run dev:prepare && npm --workspace docs run dev",
-    "dev:prepare": "unbuild --stub",
+    "dev:prepare": "npm run build:lib",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
