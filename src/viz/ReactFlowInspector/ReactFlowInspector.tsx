@@ -218,8 +218,8 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             {/* Layout Options Button */}
             <Panel position="top-right">
               <button
-                onClick={() => {
-                  console.log('🔍 [Portal] Layout button clicked, showLayoutDialog:', showLayoutDialog);
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowLayoutDialog(!showLayoutDialog);
                 }}
                 className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"

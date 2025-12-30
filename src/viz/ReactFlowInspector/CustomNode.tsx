@@ -17,7 +17,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
       return "bg-blue-600 text-white border-blue-700 shadow-lg";
     }
     if (data.isPrevious) {
-      return "bg-blue-200 text-blue-900 border-blue-300 shadow-md";
+      return "bg-transparent text-gray-700 border-blue-400 border-2 shadow-sm";
     }
     // Compound states get a dashed border to indicate they contain children
     if (data.isCompound) {
