@@ -420,5 +420,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      // Use 'node' condition in dev to load .ts files from dist/ (unbuild --stub)
+      // In production, use default conditions to load .mjs files
+      conditions: process.env.NODE_ENV === 'production' ? undefined : ['node']
+    }
   },
 });
