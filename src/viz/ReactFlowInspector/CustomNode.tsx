@@ -17,7 +17,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
       return "bg-blue-600 text-white border-blue-700 shadow-lg";
     }
     if (data.isPrevious) {
-      return "bg-transparent text-gray-700 border-blue-400 border-2 shadow-sm";
+      return "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-blue-400 dark:border-blue-500 border-2 shadow-sm";
     }
     // Compound states get a dashed border to indicate they contain children
     if (data.isCompound) {
@@ -35,52 +35,52 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         type="target"
         position={Position.Top}
         id="top"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
       <Handle
         type="source"
         position={Position.Top}
         id="top"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
 
       <Handle
         type="target"
         position={Position.Right}
         id="right"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
 
       <Handle
         type="target"
         position={Position.Bottom}
         id="bottom"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
 
       <Handle
         type="target"
         position={Position.Left}
         id="left"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
       <Handle
         type="source"
         position={Position.Left}
         id="left"
-        className="w-3 h-3 !bg-transparent border-0 opacity-0"
+        className="w-3 h-3 bg-transparent! border-0 opacity-0"
       />
 
       {data.label}

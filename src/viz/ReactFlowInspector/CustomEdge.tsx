@@ -15,6 +15,49 @@ interface CustomEdgeProps extends ReactFlowEdgeProps {
   data: CustomEdgeData;
 }
 
+// Helper function to get edge label styling based on state and theme
+const getEdgeLabelStyle = (data: CustomEdgeData, labelStyle?: any, labelBgStyle?: any) => {
+  const isDarkMode = typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+  
+  // Base styles
+  const baseStyle: {
+    backgroundColor: string;
+    color: string;
+    padding: string;
+    borderRadius: string;
+    fontWeight: any;
+    fontSize: string;
+    boxShadow: string;
+    border: string;
+    opacity?: string;
+  } = {
+    backgroundColor: labelBgStyle?.fill || (isDarkMode ? "#374151" : "#ffffff"),
+    color: labelStyle?.fill || (isDarkMode ? "#d1d5db" : "#374151"),
+    padding: "2px 4px",
+    borderRadius: "4px",
+    fontWeight: labelStyle?.fontWeight || "normal",
+    fontSize: labelStyle?.fontSize || "10px",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+    border: isDarkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.05)",
+  };
+
+  // Override for clickable edges
+  if (data?.isClickable) {
+    baseStyle.backgroundColor = isDarkMode ? "#4b5563" : "#f3f4f6";
+    baseStyle.color = isDarkMode ? "#e5e7eb" : "#111827";
+    baseStyle.fontWeight = "500";
+  }
+
+  // Override for disabled/inactive edges
+  if (!data?.isEnabled) {
+    baseStyle.backgroundColor = isDarkMode ? "#1f2937" : "#f9fafb";
+    baseStyle.color = isDarkMode ? "#6b7280" : "#9ca3af";
+    baseStyle.opacity = "0.7";
+  }
+
+  return baseStyle;
+};
+
 const CustomEdge: React.FC<CustomEdgeProps> = ({
   id,
   sourceX,

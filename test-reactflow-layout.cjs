@@ -40,12 +40,16 @@ async function testReactFlowLayoutButton() {
       if (await layoutDialog.isVisible()) {
         console.log('✅ Layout dialog opened successfully');
         
-        // Try to close it
-        const closeButton = page.locator('button').filter({ hasText: '✕' }).first();
-        if (await closeButton.isVisible()) {
-          await closeButton.click();
-          await page.waitForTimeout(300);
-          console.log('✅ Layout dialog closed successfully');
+        // Try to close it by clicking the backdrop (more reliable)
+        await page.locator('.fixed.inset-0').first().click({ position: { x: 100, y: 100 } });
+        await page.waitForTimeout(300);
+        
+        // Check if dialog is closed
+        const isDialogStillVisible = await layoutDialog.isVisible();
+        if (!isDialogStillVisible) {
+          console.log('✅ Layout dialog closed successfully via backdrop click');
+        } else {
+          console.log('❌ Layout dialog still visible after backdrop click');
         }
       } else {
         console.log('❌ Layout dialog did not appear after clicking button');
