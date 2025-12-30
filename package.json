@@ -13,34 +13,44 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/index.ts",
+      "import": "./dist/index.ts",
+      "require": "./dist/index.ts"
     },
     "./react": {
-      "types": "./dist/integrations/react.d.ts",
-      "import": "./dist/integrations/react.mjs",
-      "require": "./dist/integrations/react.js"
+      "types": "./dist/integrations/react.ts",
+      "import": "./dist/integrations/react.ts",
+      "require": "./dist/integrations/react.ts"
     },
     "./zod": {
-      "types": "./dist/integrations/zod.d.ts",
-      "import": "./dist/integrations/zod.mjs",
-      "require": "./dist/integrations/zod.js"
+      "types": "./dist/integrations/zod.ts",
+      "import": "./dist/integrations/zod.ts",
+      "require": "./dist/integrations/zod.ts"
     },
     "./valibot": {
-      "types": "./dist/integrations/valibot.d.ts",
-      "import": "./dist/integrations/valibot.mjs",
-      "require": "./dist/integrations/valibot.js"
+      "types": "./dist/integrations/valibot.ts",
+      "import": "./dist/integrations/valibot.ts",
+      "require": "./dist/integrations/valibot.ts"
     },
     "./inspect": {
-      "types": "./dist/nesting/index.d.ts",
-      "import": "./dist/nesting/index.mjs",
-      "require": "./dist/nesting/index.js"
+      "types": "./dist/inspect/index.ts",
+      "import": "./dist/inspect/index.ts",
+      "require": "./dist/inspect/index.ts"
+    },
+    "./viz": {
+      "types": "./dist/viz/index.ts",
+      "import": "./dist/viz/index.ts",
+      "require": "./dist/viz/index.ts"
+    },
+    "./hsm": {
+      "types": "./dist/hsm/index.ts",
+      "import": "./dist/hsm/index.ts",
+      "require": "./dist/hsm/index.ts"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.ts",
+  "module": "./dist/index.ts",
+  "types": "./dist/index.ts",
   "files": [
     "dist"
   ],
@@ -49,12 +59,15 @@
     "docs"
   ],
   "scripts": {
-    "build": "npm run build:lib && npm run build:docs",
+    "build": "npm run build:lib",
     "build:lib": "unbuild && size-limit",
     "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
+    "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
-    "dev:docs": "npm --workspace docs run dev",
+    "dev:all": "npm run dev && npm --workspace docs run dev",
+    "dev:docs": "npm run dev:prepare && npm --workspace docs run dev",
+    "dev:prepare": "unbuild --stub",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
