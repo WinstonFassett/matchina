@@ -121,6 +121,8 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
 }
 .edgeLabel p {
   border: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
 }
 
 /* Dark mode edge label fixes */
@@ -130,7 +132,7 @@ html[data-theme="dark"] .edgeLabel rect {
 }
 
 html[data-theme="dark"] .edgeLabel text {
-  fill: #ccc !important;
+  fill: #e5e7eb !important;
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
@@ -186,6 +188,43 @@ html[data-theme="dark"] .edge-inactive {
 html[data-theme="dark"] .edge-inactive {
   background-color: var(--sl-color-gray-2) !important;
   color: var(--sl-color-gray-5) !important;
+}
+
+/* Dark mode hover improvements */
+html[data-theme="dark"] .edge-ancestor.edge-interactive:hover {
+  background-color: var(--sl-color-accent-high) !important;
+  color: #1f2937 !important;
+}
+
+html[data-theme="dark"] .edge-active.edge-interactive:hover {
+  background-color: var(--sl-color-accent) !important;
+  color: #1f2937 !important;
+}
+
+/* Fix bold label clipping - ensure text doesn't get clipped */
+.edgeLabel p,
+.edgeLabel span,
+.edgeLabel text {
+  font-weight: 500 !important;
+  text-rendering: optimizeLegibility !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+/* State text styling - prevent clipping */
+.state text,
+.state-diagram-v2 text,
+g[class*="state"] text,
+.state span,
+.state-diagram-v2 span,
+g[class*="state"] span,
+.state p,
+.state-diagram-v2 p,
+g[class*="state"] p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
 }
 
 /* State highlight styling */
