@@ -29,17 +29,23 @@ export default defineBuildConfig({
       builder: 'mkdist'
     },
     {
-      input: 'src/inspect/',
-      outDir: "./dist/inspect",
+      input: 'src/viz/',
+      outDir: "./dist/viz",
       builder: 'mkdist'
     },
     {
-      input: 'src/viz/',
-      outDir: "./dist/viz",
+      input: 'src/hsm/',
+      outDir: "./dist/hsm",
+      builder: 'mkdist'
+    },
+    {
+      input: 'src/inspect/',
+      outDir: "./dist/inspect",
       builder: 'mkdist'
     }
   ],
   declaration: true,
+  failOnWarn: false,
   rollup: {
     emitCJS: true,  
     esbuild: {
