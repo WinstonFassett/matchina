@@ -274,8 +274,14 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 
 ```bash
 npm run dev              # Vitest watch (core library)
-npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
+npm run dev:docs         # Live TypeScript development + docs server
 ```
+
+**Live Development:**
+- `npm run dev:docs` provides live TypeScript development with automatic updates
+- No manual rebuild required when editing source files
+- Uses unbuild --stub with mkdist builder for browser compatibility
+- Full TypeScript support during development
 
 ## Testing Requirements
 

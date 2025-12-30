@@ -730,6 +730,39 @@ Matchina is very lightweight:
 | valibot integration  | 680 B         |
 | full library         | 3.42 kB       |
 
+## Development
+
+### Live Development
+
+This project uses a custom live TypeScript development setup that provides instant updates without requiring manual rebuilds:
+
+```bash
+npm run dev:docs  # Start live development with automatic updates
+```
+
+**How it works:**
+- Uses `unbuild --stub` with `mkdist` builder to copy TypeScript files directly
+- No Jiti transformation = no `require is not defined` browser errors
+- Live file watching = instant updates when you edit source files
+- Full TypeScript support during development
+
+### Building for Production
+
+For production builds and publishing:
+
+```bash
+npm run build  # Build .mjs/.js files for npm publishing
+```
+
+The production build generates proper JavaScript files for npm consumers, while development uses TypeScript files directly for live updates.
+
+### Project Structure
+
+- `src/` - TypeScript source code
+- `docs/` - Astro documentation site
+- `dist/` - Built files (TypeScript for dev, JavaScript for production)
+- `build.config.ts` - Unbuild configuration with mkdist builder
+
 ## Contributing
 
 Contributions are welcome! Feel free to:
