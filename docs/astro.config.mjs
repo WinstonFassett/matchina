@@ -349,6 +349,10 @@ export default defineConfig({
                   link: "/examples/hsm-traffic-light",
                 },
                 {
+                  label: "ReactFlow Subflow Test",
+                  link: "/examples/reactflow-subflow-test",
+                },
+                {
                   label: "Hierarchical Combobox",
                   link: "/examples/hsm-combobox",
                 },

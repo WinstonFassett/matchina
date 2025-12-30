@@ -1,0 +1,29 @@
+---
+title: ReactFlow Subflow Test
+description: Exact ReactFlow subflow example from reactflow.dev
+---
+
+import ExactReactFlowSubflow from "../../../../../ExactReactFlowSubflow";
+import CodeTabs from "@components/CodeTabs.astro";
+import subflowCode from "../../../../../ExactReactFlowSubflow.tsx?raw";
+
+This is the **exact unadulterated ReactFlow subflow example** from https://reactflow.dev/examples/grouping/sub-flows
+
+<div className="not-content">
+  <ExactReactFlowSubflow client:only="react" />
+</div>
+
+## What to Look For:
+
+- **Group A** - Contains "Node A.1" as a child
+- **Group B** - Contains "Node B.1" with `extent: 'parent'` constraint
+- **Group B.A** - Nested group inside Group B with "Node B.A.1" and "Node B.A.2"
+- **Hierarchical structure** - Parent-child relationships with visual containment
+
+## Code
+
+<CodeTabs
+  files={[
+    { name: "ExactReactFlowSubflow.tsx", code: subflowCode },
+  ]}
+/>
