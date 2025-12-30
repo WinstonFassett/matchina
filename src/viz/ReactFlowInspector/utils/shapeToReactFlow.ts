@@ -35,14 +35,10 @@ export function buildReactFlowGraph(
     }
   }
 
-  console.log('🔍 [shapeToReactFlow] Compound states identified:', Array.from(compoundStates));
-
   // First pass: Create nodes from all states
   for (const [fullKey, stateNode] of shape.states.entries()) {
     const parentKey = shape.hierarchy.get(fullKey);
     const isCompound = compoundStates.has(fullKey);
-    
-    console.log(`🔍 [shapeToReactFlow] Creating node ${fullKey}: isCompound=${isCompound}, parentKey=${parentKey}`);
     
     const node: Node = {
       id: fullKey,
@@ -60,7 +56,6 @@ export function buildReactFlowGraph(
       parentId: parentKey, // Use parentId (not deprecated parentNode)
     };
 
-    console.log(`🔍 [shapeToReactFlow] Node created: ${fullKey} with type=${node.type}, isCompound=${node.data.isCompound}`);
     nodes.push(node);
     nodeIds.add(fullKey);
     
@@ -69,11 +64,42 @@ export function buildReactFlowGraph(
     }
   }
 
+  // Special handling for promise machines: add missing terminal states if they exist in transitions but not in states
+  const allTransitionTargets = new Set<string>();
+  for (const [fromState, eventMap] of shape.transitions.entries()) {
+    for (const [event, targetState] of eventMap.entries()) {
+      if (typeof targetState === 'string') {
+        allTransitionTargets.add(targetState);
+      }
+    }
+  }
+
+  // Add missing states that are transition targets but not in the shape states
+  for (const targetState of allTransitionTargets) {
+    if (!nodeIds.has(targetState)) {
+      const node: Node = {
+        id: targetState,
+        position: { x: 0, y: 0 },
+        data: {
+          label: targetState,
+          fullKey: targetState,
+          isActive: false,
+          isPrevious: false,
+          parent: undefined,
+          isCompound: false,
+        },
+        type: 'custom',
+      };
+      nodes.push(node);
+      nodeIds.add(targetState);
+    }
+  }
+
   // Second pass: Create edges from transitions
   for (const [fromState, eventMap] of shape.transitions.entries()) {
     for (const [eventName, toState] of eventMap.entries()) {
-      // Validate both states exist
-      if (shape.states.has(fromState) && shape.states.has(toState)) {
+      // Validate both states exist (including the ones we just added)
+      if (nodeIds.has(fromState) && nodeIds.has(toState)) {
         const edge: Edge = {
           id: `${fromState}-${toState}-${eventName}-${edgeId++}`,
           source: fromState,
