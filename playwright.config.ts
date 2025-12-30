@@ -11,6 +11,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4321',
     trace: 'on-first-retry',
     screenshot: 'on',
+    headless: true, // Run in background by default
   },
   projects: [
     {
