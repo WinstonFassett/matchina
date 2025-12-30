@@ -66,7 +66,9 @@
     "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
     "dev:all": "npm run dev && npm --workspace docs run dev",
-    "dev:docs": "npm --workspace docs run dev",
+    "dev:docs": "npm run dev:stub && npm --workspace docs run dev",
+    "dev:prepare": "unbuild --stub",
+    "dev:stub": "unbuild --stub",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
@@ -79,7 +81,6 @@
     "publish": "npm publish --access public"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^20.8.2",
     "@types/react": "^18.2.31",
