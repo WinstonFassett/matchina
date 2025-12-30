@@ -186,7 +186,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   return (
     <>
-      <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden" style={{ minHeight: '400px' }}>
+      <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
         <style>{edgeAnimationStyles}</style>
         <ReactFlowProvider>
           <ReactFlow
@@ -204,6 +204,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             }}
             fitView
             fitViewOptions={{ padding: 0.2, includeHiddenNodes: true, minZoom: 0.5, maxZoom: 2 }}
+            style={{ width: '100%', flex: 1 }}
           >
             <Controls
               showZoom={true}

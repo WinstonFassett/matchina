@@ -35,10 +35,14 @@ export function buildReactFlowGraph(
     }
   }
 
+  console.log('🔍 [shapeToReactFlow] Compound states identified:', Array.from(compoundStates));
+
   // First pass: Create nodes from all states
   for (const [fullKey, stateNode] of shape.states.entries()) {
     const parentKey = shape.hierarchy.get(fullKey);
     const isCompound = compoundStates.has(fullKey);
+    
+    console.log(`🔍 [shapeToReactFlow] Creating node ${fullKey}: isCompound=${isCompound}, parentKey=${parentKey}`);
     
     const node: Node = {
       id: fullKey,
@@ -56,6 +60,7 @@ export function buildReactFlowGraph(
       parentId: parentKey, // Use parentId (not deprecated parentNode)
     };
 
+    console.log(`🔍 [shapeToReactFlow] Node created: ${fullKey} with type=${node.type}, isCompound=${node.data.isCompound}`);
     nodes.push(node);
     nodeIds.add(fullKey);
     
