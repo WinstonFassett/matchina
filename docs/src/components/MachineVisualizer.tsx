@@ -121,9 +121,11 @@ export function MachineVisualizer({
   ].filter(Boolean).join(' ');
 
   // Height styling
+  // For split layout, use explicit height so flex children can use h-full
+  // For stacked layout, use min-height to allow content to grow
   const heightStyle = isSplit
-    ? { minHeight: `${minVizHeight}px` }
-    : { height: `${minVizHeight}px` };
+    ? { height: `${minVizHeight}px` }
+    : { minHeight: `${minVizHeight}px` };
 
   return (
     <div className={`space-y-4 ${className}`}>
