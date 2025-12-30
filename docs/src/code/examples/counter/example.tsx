@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { CounterView } from "./CounterView";
 import { createCounterMachine } from "./machine";
@@ -8,11 +8,11 @@ import { createCounterMachine } from "./machine";
 export default function CounterExample() {
   const machine = useMemo(createCounterMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={machine as any}
       AppView={CounterView}
       showRawState={true}
-      inspectorType="react-flow"
+      defaultViz="reactflow"
     />
   );
 }

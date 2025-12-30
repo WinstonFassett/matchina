@@ -1,14 +1,12 @@
-import { useMemo, useState } from "react";
-import { eventApi } from "matchina";
+import { useState } from "react";
 import { useMachine } from "matchina/react";
 import { createRPSMachine } from "./machine";
 import { RPSAppView } from "./RPSAppView";
-import { VisualizerDemo } from "@components/HSMVisualizerDemo";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 
 export default function RockPaperScissorsExample() {
   const [machine] = useState(() => createRPSMachine());
-  const actions = useMemo(() => eventApi(machine), [machine]);
-  
+
   // Subscribe to machine state changes to trigger re-renders
   useMachine(machine);
 
@@ -16,12 +14,12 @@ export default function RockPaperScissorsExample() {
     <div className="space-y-6">
       <RPSAppView machine={machine} />
       
-      <VisualizerDemo
+      <MachineVisualizer
         machine={machine}
-        actions={actions as any}
         title="State Machine Visualizer"
-        defaultVisualizer="reactflow"
+        defaultViz="reactflow"
         interactive={false}
+        layout="stacked"
       />
     </div>
   );

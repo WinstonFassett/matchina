@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { eventApi } from "matchina";
 import { createFlatCheckoutMachine } from "./machine-flat";
 import { createCheckoutMachine } from "./machine";
 import { CheckoutViewFlat } from "./CheckoutViewFlat";
 import { CheckoutViewNested } from "./CheckoutViewNested";
-import { VisualizerDemo } from "@components/HSMVisualizerDemo";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 
 type Mode = "flat" | "nested";
 
@@ -15,8 +14,6 @@ export default function HSMCheckoutIndex() {
   const flatMachine = useMemo(() => createFlatCheckoutMachine(), []);
   const nestedMachine = useMemo(() => createCheckoutMachine(), []);
   const machine = mode === "flat" ? flatMachine : nestedMachine;
-
-  const actions = useMemo(() => eventApi(machine), [machine]);
 
   return (
     <div className="space-y-6">
@@ -52,13 +49,13 @@ export default function HSMCheckoutIndex() {
         <CheckoutViewNested machine={nestedMachine} />
       )}
       
-      <VisualizerDemo
+      <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
-        actions={actions}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultVisualizer="sketch"
+        defaultViz="sketch"
         interactive={true}
+        layout="stacked"
       />
     </div>
   );

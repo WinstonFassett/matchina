@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { StopwatchView } from "./StopwatchView";
 import { createStopwatchMachine } from "./machine";
@@ -6,11 +6,11 @@ import { createStopwatchMachine } from "./machine";
 export default function StopwatchExample() {
   const stopwatch = useMemo(createStopwatchMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={stopwatch}
       AppView={StopwatchView}
       showRawState={true}
-      inspectorType="react-flow"
+      defaultViz="reactflow"
     />
   );
 }

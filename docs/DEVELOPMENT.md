@@ -47,7 +47,7 @@ docs/
 │   │       └── example-name/
 │   │           ├── machine.ts        # Exports createXyzMachine() function
 │   │           ├── XyzView.tsx       # React component (takes machine prop)
-│   │           ├── example.tsx       # For docs (with MachineExampleWithChart)
+│   │           ├── example.tsx       # For docs (with MachineVisualizer)
 │   │           ├── index.tsx         # Clean export (no demo wrapper)
 │   │           └── [optional files]  # hooks.ts, types.ts, states.ts, etc.
 │   ├── content/
@@ -57,7 +57,7 @@ docs/
 │   │       └── reference/      # Auto-generated API docs
 │   └── components/
 │       ├── inspectors/         # Visualizers (mermaid, force-graph, etc.)
-│       ├── MachineExampleWithChart.tsx
+│       ├── MachineVisualizer.tsx
 │       ├── CodeTabs.astro
 │       └── CodeBlock.astro
 ├── astro.config.mjs            # Sidebar configuration (MUST UPDATE)
@@ -187,7 +187,7 @@ export function ToggleView({ machine }: { machine: ToggleMachine }) {
 Wraps the example with visualizer for docs:
 
 ```typescript
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { ToggleView } from "./ToggleView";
 import { createToggleMachine } from "./machine";
@@ -195,21 +195,23 @@ import { createToggleMachine } from "./machine";
 export default function ToggleExample() {
   const machine = useMemo(createToggleMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={machine as any}
       AppView={ToggleView}
       showRawState={true}
-      inspectorType="force-graph"  // or "mermaid", "react-flow", "basic"
+      defaultViz="auto"  // or "reactflow", "forcegraph", "sketch", "mermaid-statechart", "mermaid-flowchart"
     />
   );
 }
 ```
 
-**Inspector Types:**
-- `force-graph` - Interactive force-directed graph (default)
-- `mermaid` - Mermaid diagram rendering
-- `react-flow` - React Flow based diagram
-- `basic` - Simple state display
+**Visualizer Types:**
+- `auto` - Auto-selects best visualizer based on machine complexity (default)
+- `reactflow` - React Flow node-based diagram
+- `forcegraph` - Interactive force-directed graph
+- `sketch` - Sketch.systems style nested layout
+- `mermaid-statechart` - Mermaid statechart diagram
+- `mermaid-flowchart` - Mermaid flowchart diagram
 
 #### 4. `index.tsx` - Clean Export
 
@@ -369,7 +371,7 @@ import { CodeTabs } from "@components/CodeTabs.astro";
 
 **In Components:**
 ```typescript
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 ```
 
 ### When to Use Relative vs. Alias
@@ -388,7 +390,7 @@ import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 // Within toggle example
 import { ToggleView } from "./ToggleView";  // ✅ Relative (same dir)
 import { createToggleMachine } from "./machine";  // ✅ Relative (same dir)
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";  // ✅ Alias
+import { MachineVisualizer } from "@components/MachineVisualizer";  // ✅ Alias
 import { useMachine } from "matchina/react";  // ✅ Alias
 ```
 

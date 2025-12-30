@@ -26,7 +26,7 @@ Every example in `src/code/examples/example-name/`:
 
 1. **`machine.ts`** - Export `createXyzMachine()` function (NOT global instance)
 2. **`XyzView.tsx`** - React component accepting `machine` prop
-3. **`example.tsx`** - Uses `MachineExampleWithChart`, default export for docs
+3. **`example.tsx`** - Uses `MachineVisualizer`, default export for docs
 4. **`index.tsx`** - Clean component without demo wrapper
 5. **Optional**: `types.ts`, `states.ts`, `hooks.ts`, `utils.ts`
 

@@ -22,7 +22,7 @@ Quick reference for adding features to Matchina. Focus on making things work—s
 **Required files:**
 - [ ] `machine.ts` - Export `createXyzMachine()` factory (NO global instances!)
 - [ ] `XyzView.tsx` - Component accepting `machine` prop, uses `useMachine()`
-- [ ] `example.tsx` - Uses `MachineExampleWithChart`, default export
+- [ ] `example.tsx` - Uses `MachineVisualizer`, default export
 - [ ] `index.tsx` - Clean component without wrapper
 
 **Optional:** `types.ts`, `states.ts`, `hooks.ts`, `utils.ts`

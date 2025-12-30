@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MermaidInspector } from "matchina/viz";
@@ -9,10 +9,10 @@ export function BalancedParenthesesDemo() {
   const checker = useMemo(() => balancedParenthesesChecker(), []);
   return (
     <div>
-      <MachineExampleWithChart
+      <MachineVisualizer
         machine={checker}
         showRawState={true}
-        inspectorType="force-graph"
+        defaultViz="forcegraph"
         AppView={BalancedParentheses}
       />
     </div>

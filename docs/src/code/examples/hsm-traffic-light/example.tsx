@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { eventApi } from "matchina";
 import { createFlatTrafficLight } from "./machine-flat";
 import { createPropagatingTrafficLight } from "./machine";
 import { TrafficLightViewFlat } from "./TrafficLightViewFlat";
 import { TrafficLightViewNested } from "./TrafficLightViewNested";
-import { VisualizerDemo } from "@components/HSMVisualizerDemo";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 
 type Mode = "flat" | "nested";
 
@@ -17,8 +16,6 @@ export default function TrafficLightComparisonExample() {
       ? createFlatTrafficLight() 
       : createPropagatingTrafficLight();
   }, [mode]);
-
-  const actions = useMemo(() => eventApi(machine), [machine]);
 
   return (
     <div className="space-y-6">
@@ -54,13 +51,13 @@ export default function TrafficLightComparisonExample() {
         <TrafficLightViewNested machine={machine} />
       )}
       
-      <VisualizerDemo
+      <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
-        actions={actions}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultVisualizer="sketch"
+        defaultViz="sketch"
         interactive={true}
+        layout="stacked"
       />
     </div>
   );

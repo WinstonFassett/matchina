@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useState } from "react";
 import { useAdvancedFetcher } from "./hooks";
 import { FetcherAppView } from "./FetcherAppView";
@@ -21,11 +21,11 @@ export default function FetcherExample() {
   return (
     <div>
       <OptionsForm options={options} onChange={setOptions} />
-      <MachineExampleWithChart
+      <MachineVisualizer
         machine={fetcher as any}
         AppView={FetcherAppView}
         showRawState={true}
-        inspectorType="mermaid"
+        defaultViz="mermaid-statechart"
       />
     </div>
   );
