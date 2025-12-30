@@ -35,7 +35,9 @@ export function useMachineMaybe<Change>(
     (listener: EffectFunc<Change>) => {
       if (!machine) return () => {};
 
-      // Use withSubscribe to ensure single notify wrapper with multiple listeners
+      // Use withSubscribe to ensure notify is wrapped only once, even with multiple subscribers.
+      // withSubscribe is idempotent - calling it multiple times is safe.
+      // It checks if machine.subscribe already exists before wrapping.
       const machineWithSub = withSubscribe(machine);
       return machineWithSub.subscribe(listener);
     },
