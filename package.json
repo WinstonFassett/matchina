@@ -33,9 +33,19 @@
       "require": "./dist/integrations/valibot.js"
     },
     "./inspect": {
-      "types": "./dist/nesting/index.d.ts",
-      "import": "./dist/nesting/index.mjs",
-      "require": "./dist/nesting/index.js"
+      "types": "./dist/inspect/index.d.ts",
+      "import": "./dist/inspect/index.mjs",
+      "require": "./dist/inspect/index.js"
+    },
+    "./viz": {
+      "types": "./dist/viz/index.d.ts",
+      "import": "./dist/viz/index.mjs",
+      "require": "./dist/viz/index.js"
+    },
+    "./hsm": {
+      "types": "./dist/hsm/index.d.ts",
+      "import": "./dist/hsm/index.mjs",
+      "require": "./dist/hsm/index.js"
     }
   },
   "main": "./dist/index.js",
@@ -49,12 +59,16 @@
     "docs"
   ],
   "scripts": {
-    "build": "npm run build:lib && npm run build:docs",
+    "build": "npm run build:lib",
     "build:lib": "unbuild && size-limit",
     "test-build": "npm run test:types && npm --workspace docs run check",
     "build:docs": "npm --workspace docs run build",
+    "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
-    "dev:docs": "npm --workspace docs run dev",
+    "dev:all": "npm run dev && npm --workspace docs run dev",
+    "dev:docs": "npm run dev:stub && npm --workspace docs run dev",
+    "dev:prepare": "unbuild --stub",
+    "dev:stub": "unbuild --stub",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
