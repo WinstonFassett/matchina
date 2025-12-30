@@ -11,7 +11,7 @@ export default function ToggleExample() {
       machine={machine as any}
       AppView={ToggleView}
       showRawState={true}
-      inspectorType="force-graph"
+      inspectorType="react-flow"
     />
   );
 }

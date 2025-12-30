@@ -1,0 +1,248 @@
+/* CORE LAYOUT - Sketch.systems style */
+.sketch-inspector {
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 1.3;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.state-tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+/* Remove duplicate .state-item definition */
+
+/* Nested states wrap efficiently */
+.nested-states {
+  margin: 8px 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  max-width: calc(100% - 16px);
+}
+
+/* State item boxes */
+.state-item {
+  flex: 0 0 auto;
+  max-width: 100%;
+  min-width: 0;
+  background: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  padding: 12px;
+  position: relative;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  transition: background-color 0.15s ease;
+}
+
+.state-item:hover {
+  background: var(--sl-color-gray-6);
+}
+
+.state-item.active {
+  background: var(--sl-color-blue);
+  border-color: var(--sl-color-blue);
+  color: white;
+}
+
+.state-item.active-ancestor {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--sl-color-blue);
+  border-width: 2px;
+}
+
+/* Nested state boxes inside active ancestor - but don't override active nested states */
+.state-item.active-ancestor .state-item:not(.active) {
+  background: transparent;
+  border-color: #d1d5db;
+}
+
+.state-item.active-ancestor .state-item:not(.active):hover {
+  background: var(--sl-color-gray-6, #f9fafb);
+}
+
+/* Multi-level nesting transparency for better visual hierarchy */
+.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active) {
+  background: transparent;
+  border-color: #e5e7eb;
+}
+
+.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active):hover {
+  background: var(--sl-color-gray-6, #f9fafb);
+}
+
+/* Deep nested active states should still be prominent */
+.state-item.active-ancestor .state-item.active-ancestor .state-item.active {
+  background: var(--sl-color-blue, #8b5cf6);
+  border-color: var(--sl-color-blue, #8b5cf6);
+  color: white;
+  border-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* State content - no styling, just content container */
+
+/* State name and badge on same line */
+.state-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sl-color-text);
+  margin-bottom: 8px;
+}
+
+.state-item.active .state-name {
+  color: white;
+}
+
+.state-badge {
+  font-size: 11px;
+  background: #f3f4f6;
+  color: var(--sl-color-blue, #8b5cf6);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 8px;
+  font-weight: normal;
+  border: 1px solid #d1d5db;
+}
+
+.state-content.active .state-badge {
+  background: white;
+  color: var(--sl-color-blue, #8b5cf6);
+  border-color: var(--sl-color-blue, #8b5cf6);
+}
+
+/* Transitions listed vertically */
+.transitions-inline {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.transition-row {
+  display: flex;
+  align-items: center;
+  margin: 3px 0;
+  font-style: italic;
+}
+
+.transition-button {
+  background: none;
+  border: 1px solid transparent;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-style: italic;
+  font-size: 13px;
+  color: #9ca3af;
+  cursor: default;
+}
+
+.transition-button.enabled {
+  color: var(--sl-color-text);
+  border-color: var(--sl-color-blue);
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Transition buttons inside active state need proper contrast */
+.state-item.active .transition-button.enabled {
+  color: rgba(255, 255, 255, 0.8);
+  border-color: var(--sl-color-blue);
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.state-item.active .transition-button.enabled:hover {
+  background: rgba(59, 130, 246, 0.8);
+  opacity: 1;
+  border-color: var(--sl-color-blue);
+}
+
+.transition-button.enabled.ancestor-state {
+  color: var(--sl-color-text, #111827);
+  border-color: transparent;
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.transition-button.enabled.ancestor-state:hover {
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.transition-button.enabled:hover {
+  background: var(--sl-color-blue);
+  color: white;
+  border-color: var(--sl-color-blue);
+}
+
+.ancestor-indicator {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.transition-name {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.transition-arrow {
+  color: #9ca3af;
+  margin: 0 4px;
+}
+
+.state-item.active .transition-arrow {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.transition-target {
+  font-size: 13px;
+}
+
+.state-item.active .transition-target {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Metadata */
+.state-metadata {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.state-metadata .query {
+  background: #e5e7eb;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+/* Full path label in active state */
+.state-fullKey {
+  font-size: 11px;
+  color: white;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.fullKey-label {
+  font-weight: 500;
+}

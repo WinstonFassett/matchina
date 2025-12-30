@@ -27,7 +27,7 @@ if (twoslash && ["ts", "tsx"].includes(lang)) {
   html = await codeToHtml(rawCode, {
     lang,
     theme,
-    transformers: [transformerTwoslash()],
+    transformers: [transformerTwoslash() as any],
   });
 }
 //  else if (lang !== "md") {

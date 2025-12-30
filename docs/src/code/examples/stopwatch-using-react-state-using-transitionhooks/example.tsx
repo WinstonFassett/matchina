@@ -6,7 +6,7 @@ export default function StopwatchExample() {
   const stopwatch = useStopwatch();
   return (
     <MachineExampleWithChart
-      inspectorType="force-graph"
+      inspectorType="react-flow"
       machine={stopwatch}
       AppView={StopwatchView}
       showRawState={true}

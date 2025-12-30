@@ -1,8 +1,8 @@
 import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
-import MermaidInspector from "../../../components/inspectors/MermaidInspector";
-import { getXStateDefinition } from "../lib/matchina-machine-to-xstate-definition";
+import { MermaidInspector } from "matchina/viz";
+import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
 
 export function BalancedParenthesesDemo() {
@@ -55,7 +55,7 @@ export function BalancedParentheses() {
       {checker.text && <pre>Pending validation:{checker.text}</pre>}
       {state.is("Open") && <pre>Expecting {state.data.pair[1]}</pre>}
       <MermaidInspector
-        config={getXStateDefinition(checker)}
+        config={buildVisualizerTree(checker)}
         stateKey={state.key}
         actions={actions}
       />
