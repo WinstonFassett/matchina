@@ -170,14 +170,7 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
                 position: "absolute",
                 transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
                 pointerEvents: "all",
-                backgroundColor: labelBgStyle?.fill || "#ffffff",
-                color: labelStyle?.fill || "inherit",
-                padding: `${labelBgPadding?.[1] || 2}px ${labelBgPadding?.[0] || 4}px`,
-                borderRadius: labelBgBorderRadius || 4,
-                fontWeight: labelStyle?.fontWeight || "normal",
-                fontSize: labelStyle?.fontSize || "10px",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                border: "1px solid rgba(0,0,0,0.05)",
+                ...getEdgeLabelStyle(data, labelStyle, labelBgStyle),
               }}
               className="nodrag nopan"
             >
@@ -214,14 +207,7 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: "all",
-              backgroundColor: labelBgStyle?.fill || "#ffffff",
-              color: labelStyle?.fill || "inherit",
-              padding: `${labelBgPadding?.[1] || 2}px ${labelBgPadding?.[0] || 4}px`,
-              borderRadius: labelBgBorderRadius || 4,
-              fontWeight: labelStyle?.fontWeight || "normal",
-              fontSize: labelStyle?.fontSize || "10px",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-              border: "1px solid rgba(0,0,0,0.05)",
+              ...getEdgeLabelStyle(data, labelStyle, labelBgStyle),
             }}
             className="nodrag nopan"
           >
