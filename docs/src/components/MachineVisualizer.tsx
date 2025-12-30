@@ -204,7 +204,7 @@ function renderVisualizer({
       return (
         <div className={commonClasses}>
           <HSMReactFlowInspector
-            machine={machine}
+            machine={machine as any}
             interactive={interactive}
           />
         </div>

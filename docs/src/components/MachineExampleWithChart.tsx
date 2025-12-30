@@ -39,6 +39,7 @@ export function MachineExampleWithChart({
   const config = useMemo(() => buildVisualizerTree(machine), [machine]);
   // Create an API for the actions
   const actions = useMemo(() => eventApi(machine), [machine]);
+  // const lastChange = machine.getChange();
   
   // Local state for inspector type and diagram type
   const [currentInspectorType, setCurrentInspectorType] = useState<"mermaid" | "force-graph" | "react-flow" | "basic">(inspectorType);
