@@ -1,27 +1,36 @@
-import { useState, useMemo } from 'react';
-import HSMMermaidInspector from './inspectors/HSMMermaidInspector';
-import SketchInspector from './inspectors/SketchInspector';
-import ReactFlowInspector from './inspectors/ReactFlowInspector';
+import React, { useState, useMemo, useEffect } from 'react';
+import { HSMMermaidInspector, SketchInspector, HSMReactFlowInspector, ForceGraphInspector, defaultTheme } from 'matchina/viz';
 import { useMachine } from 'matchina/react';
+import { getActiveStatePath } from '../code/examples/lib/matchina-machine-to-xstate-definition';
 
-function getFullStatePath(machine: any): string {
-  try {
-    const parts: string[] = [];
-    let cursor: any = machine;
-    let guard = 0;
-    while (cursor && guard++ < 25) {
-      const s = cursor.getState?.();
-      if (!s) break;
-      parts.push(s.key);
-      cursor = s?.data?.machine;
+// Simple ErrorBoundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ForceGraph Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
     }
-    return parts.length ? parts.join('.') : 'Unknown';
-  } catch {
-    return 'Unknown';
+
+    return this.props.children;
   }
 }
 
-type VisualizerType = 'mermaid' | 'sketch' | 'reactflow';
+type VisualizerType = 'mermaid' | 'sketch' | 'reactflow' | 'forcegraph';
 
 interface VisualizerDemoProps {
   machine: any;
@@ -46,10 +55,23 @@ export function VisualizerDemo({
 }: VisualizerDemoProps) {
   const [activeVisualizer, setActiveVisualizer] = useState<VisualizerType>(defaultVisualizer);
   const currentChange = useMachine(machine) as any;
+  const [lastEvent, setLastEvent] = useState<string>();
+  const [prevState, setPrevState] = useState<string>();
+  
   // Also subscribe to active child (first level) to catch child-only transitions
   const cs = machine.getState?.();
   const child = cs?.data?.machine;
   useMachine(child || machine);
+  
+  // Track events for ForceGraphInspector
+  useEffect(() => {
+    if (currentChange?.key && currentChange?.key !== prevState) {
+      setPrevState(currentChange.key);
+      // Extract event type from change if available
+      const eventType = currentChange?.event?.type || 'unknown';
+      setLastEvent(eventType);
+    }
+  }, [currentChange, prevState]);
   const visualizers = useMemo(() => [
     { 
       key: 'sketch', 
@@ -61,38 +83,75 @@ export function VisualizerDemo({
       label: 'Mermaid Diagram',
       description: 'Flow chart with hierarchical clustering'
     },
-    // { 
-    //   key: 'reactflow', 
-    //   label: 'React Flow',
-    //   description: 'Interactive node-based visualization'
-    // }
+    { 
+      key: 'reactflow', 
+      label: 'React Flow',
+      description: 'Interactive node-based visualization'
+    },
+    { 
+      key: 'forcegraph', 
+      label: 'Force Graph',
+      description: 'Force-directed graph visualization'
+    }
   ] as const, []);
+
+  const activeStatePath = getActiveStatePath(machine);
+  const isInteractive = interactive;
 
   const renderVisualizer = () => {
     switch (activeVisualizer) {
       case 'mermaid':
         return (
-          <HSMMermaidInspector 
-            machine={machine} 
-            actions={actions}
-            interactive={interactive}
-          />
+          <div className="w-full h-full min-h-[320px]">
+            <HSMMermaidInspector
+              machine={machine}
+              stateKey={activeStatePath}
+              actions={actions as any}
+              interactive={isInteractive}
+            />
+          </div>
         );
       case 'sketch':
         return (
-          <SketchInspector 
-            machine={machine} 
-            actions={actions}
-            interactive={interactive}
-          />
+          <div className="w-full h-full min-h-[320px] overflow-auto">
+            <SketchInspector 
+              machine={machine} 
+              actions={actions}
+              interactive={interactive}
+              theme={defaultTheme}
+            />
+          </div>
         );
       case 'reactflow':
         return (
-          <ReactFlowInspector 
-            value={currentChange?.key || 'unknown'} 
-            definition={{}}
-            dispatch={() => {}}
-          />
+          <div className="w-full h-full">
+            <HSMReactFlowInspector 
+              machine={machine}
+              interactive={interactive}
+            />
+          </div>
+        );
+      case 'forcegraph':
+        return (
+          <div className="w-full h-full">
+            <ErrorBoundary fallback={<div className="p-4 text-red-500">Force Graph Error: Unable to render visualization</div>}>
+              <ForceGraphInspector 
+                value={currentChange?.key || 'unknown'} 
+                definition={machine}
+                lastEvent={lastEvent}
+                prevState={prevState}
+                dispatch={(event: any) => {
+                  // ForceGraphInspector sends { type: string } format
+                  const eventName = typeof event === 'string' ? event : event?.type;
+                  if (actions && eventName && actions[eventName]) {
+                    actions[eventName]();
+                  }
+                }}
+                interactive={interactive}
+                theme={defaultTheme}
+              />
+            </ErrorBoundary>
+          </div>
         );
       default:
         return <div>Unknown visualizer type</div>;
@@ -109,46 +168,32 @@ export function VisualizerDemo({
         <p className="text-sm mb-4">{description}</p>
       )}
 
+      {/* UI Controls Section */}
       {showControls && (
-        <div className="visualizer-controls mb-4">
-          <div className="flex flex-wrap gap-2">
-            {visualizers.map(({ key, label, description: desc }) => (
+        <div className="visualizer-controls mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Visualizer:</span>
+            {visualizers.map((viz) => (
               <button
-                key={key}
-                onClick={() => setActiveVisualizer(key as VisualizerType)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeVisualizer === key
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                key={viz.key}
+                onClick={() => setActiveVisualizer(viz.key)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  activeVisualizer === viz.key
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
-                title={desc}
+                title={viz.description}
               >
-                {label}
+                {viz.label}
               </button>
             ))}
           </div>
-          
-          {interactive && (
-            <div className="mt-2 text-xs">
-              💡 Click on transitions to trigger them when available
-            </div>
-          )}
         </div>
       )}
 
-      <div className="visualizer-container border border-neutral-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-2 border-b border-neutral-200">
-          <span className="text-sm font-medium">
-            {visualizers.find(v => v.key === activeVisualizer)?.label}
-          </span>
-          <span className="text-xs ml-2">
-            Current state: <strong>{getFullStatePath(machine)}</strong>
-          </span>
-        </div>
-        
-        <div className="p-4 min-h-[300px]">
-          {renderVisualizer()}
-        </div>
+      {/* Visualizer Display Section */}
+      <div className="visualizer-display p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ width: '100%', height: '400px', position: 'relative' }}>
+        {renderVisualizer()}
       </div>
 
       {currentChange?.data && (
@@ -164,4 +209,3 @@ export function VisualizerDemo({
 }
 
 export default VisualizerDemo;
-export { VisualizerDemo as HSMVisualizerDemo }; // Legacy export

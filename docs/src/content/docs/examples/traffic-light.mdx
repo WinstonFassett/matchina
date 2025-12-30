@@ -6,9 +6,6 @@ description: A simple traffic light with distinct states
 import TrafficLightExample from "@code/examples/traffic-light/example";
 import machineCode from "@code/examples/traffic-light/machine.ts?raw";
 import viewCode from "@code/examples/traffic-light/TrafficLightView.tsx?raw";
-import indexCode from "@code/examples/traffic-light/index.tsx?raw";
-import exampleCode from "@code/examples/traffic-light/example.tsx?raw";
-import CodeBlock from "@components/CodeBlock.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 
 A traffic light state machine that cycles through Red, Yellow, and Green states, demonstrating a state machine with multiple distinct states in a defined sequence.
@@ -17,93 +14,16 @@ A traffic light state machine that cycles through Red, Yellow, and Green states,
   <TrafficLightExample client:only="react" />
 </div>
 
-## Implementation Details
+## Key Features
 
-This example demonstrates:
-
-- Defining states with typed data using `defineStates()`
-- Creating a machine with multiple distinct states (Red, Yellow, Green)
-- Cyclical transitions between states in a defined sequence
-- State-based UI rendering with conditional styling
-- Type-safe state handling throughout the application
-
-Unlike the counter example which focuses on state data, or the toggle example with just two states, this traffic light example shows how to model a system with a clear sequence of states and associated messages.
-
-## Machine Code
+- **Multiple States**: Red, Yellow, and Green with distinct messages
+- **Cyclical Transitions**: Proper traffic light sequence using `next` event
+- **State-based UI**: Conditional styling based on current state
+- **Type Safety**: Typed state data and transitions
 
 <CodeTabs
   files={[
     { name: "machine.ts", code: machineCode },
     { name: "TrafficLightView.tsx", code: viewCode },
-    { name: "index.tsx", code: indexCode },
   ]}
 />
-
-## Additional Notes
-
-- Each state (Red, Yellow, Green) represents a discrete condition of the traffic light
-- The `next` transition allows cycling through the states in the proper sequence
-- The view component uses `state.match()` to elegantly handle different UI states
-- Pattern matching is type-safe and ensures all states are handled
-
-## How This Example Works
-
-This traffic light example demonstrates the core components of a Matchina state machine:
-
-1. **State Definition**: We define three states (`Red`, `Yellow`, `Green`), each with associated data (a message).
-
-   ```ts
-   const states = defineStates({
-     Green: () => ({ message: "Go" }),
-     Yellow: () => ({ message: "Prepare to stop" }),
-     Red: () => ({ message: "Stop" }),
-   });
-   ```
-
-2. **Machine Creation**: The state machine is created using `matchina()`, which takes:
-
-   - The defined states
-   - A transition map describing allowed state changes (using the `next` event)
-   - An initial state (`"Red"`)
-
-   ```ts
-   return matchina(
-     states,
-     {
-       Green: { next: "Yellow" },
-       Yellow: { next: "Red" },
-       Red: { next: "Green" },
-     },
-     "Red"
-   );
-   ```
-
-3. **State Transitions**: The machine cycles through states when `machine.next()` is called.
-
-4. **State Access**: The current state is accessed using `machine.getState()`, which provides:
-
-   - The state key (`currentState.key`)
-   - Type-safe access to state data (`currentState.data.message`)
-   - Methods for state checking (`currentState.is("Red")`)
-
-5. **Type Safety**: TypeScript ensures type safety throughout, preventing invalid state references.
-
-For a minimal introduction, see the [Quick Start](/matchina/guides/quickstart).
-
-## Extensions
-
-This basic implementation can be extended in several ways:
-
-- Add automatic transitions using lifecycle hooks and timers
-- Implement pedestrian crossing controls
-- Add special states like "flashing yellow" for low-traffic periods
-
-Check out the [Extended Traffic Light Example](/matchina/examples/traffic-light-extended) to see the first two extensions implemented (automatic transitions and pedestrian crossing).
-
-## Next Steps
-
-Now that you've seen state machines with varying complexity, you might want to explore:
-
-- [Matchbox Factories](/matchina/guides/matchbox-factories) - Learn more about storing and using data in states
-- [Lifecycle Hooks](/matchina/guides/lifecycle) - Add behavior when states change
-- [Matchbox Type Inference](/matchina/guides/matchbox-typescript-inference) - Learn about Matchbox type inference

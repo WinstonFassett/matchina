@@ -4,13 +4,19 @@
 
 **References:** `DEVELOPMENT.md` (patterns), `FEATURE-CHECKLIST.md` (workflows)
 
-## Commands (User Usually Runs)
+## Commands (User Runs, Not Agent)
+
+**CRITICAL: Do NOT run dev server from agents. ASSUME it's already running.**
 
 ```bash
-npm run dev             # Astro dev server at localhost:4321
+npm run dev             # Astro dev server at localhost:4321 (USER RUNS)
 npm run build           # Build static site
 npm run deploy          # Deploy to GitHub Pages
 ```
+
+**Dev Server Hot Reloading:** The Astro dev server automatically picks up upstream library rebuilds. Restarting is usually NOT necessary for changes to the matchina library - only for changes to the docs configuration or major dependency changes.
+
+If puppeteer/browser tests fail because server isn't running, inform user - don't try to start it.
 
 ## Critical Patterns (Must Follow)
 

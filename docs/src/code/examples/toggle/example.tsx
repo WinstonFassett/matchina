@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { ToggleView } from "./ToggleView";
 import { createToggleMachine } from "./machine";
@@ -7,11 +7,13 @@ import { createToggleMachine } from "./machine";
 export default function ToggleExample() {
   const machine = useMemo(createToggleMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={machine as any}
       AppView={ToggleView}
       showRawState={true}
-      inspectorType="force-graph"
+      defaultViz="auto"
+      layout="split"
+      interactive={true}
     />
   );
 }
