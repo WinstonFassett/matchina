@@ -298,7 +298,8 @@ const MermaidInspector = memo(
         } else {
           p.classList.add('edge-inactive');
         }
-        p.onclick = canInvoke ? () => action?.() : null;
+        // All transitions are clickable; state machine guards against invalid transitions
+        p.onclick = action ? () => action?.() : null;
       });
     }
 

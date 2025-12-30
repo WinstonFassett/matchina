@@ -73,17 +73,6 @@ export const useStateMachineEdges = (
         const isTransitionFromPrevious =
           previousState === transition.from && currentState === transition.to;
         const isPossibleExit = transition.from === currentState;
-        
-        if (index === 0) {
-          // Log state comparison info once per update
-          console.log('🔍 [edges] State comparison:', {
-            currentState,
-            transitionFrom: transition.from,
-            transitionTo: transition.to,
-            isPossibleExit,
-            isTransitionFromPrevious
-          });
-        }
 
         // Calculate z-index based on priority: recent transition > current exits > inactive
         let zIndex = 1; // Default for inactive edges
@@ -167,7 +156,8 @@ export const useStateMachineEdges = (
           zIndex,
           data: {
             event: transition.event,
-            isClickable: interactive && transition.from === currentState,
+            isClickable: interactive,
+            isEnabled: transition.from === currentState,
           },
         });
       });
@@ -227,7 +217,8 @@ export const useStateMachineEdges = (
           zIndex,
           data: {
             event: transition.event,
-            isClickable: interactive && transition.from === currentState,
+            isClickable: interactive,
+            isEnabled: transition.from === currentState,
             isSelfTransition: true,
             selfLoopOffset: 30, // Smaller offset to keep loops closer to nodes
             // Distribute around the 4 sides of the node based on index

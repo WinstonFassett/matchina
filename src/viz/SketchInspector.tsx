@@ -115,24 +115,24 @@ function SketchInspector({
                 const canInvoke = isActive || isBranchActive;
                 
                 return (
-                  <div key={event} className="transition-row" style={getThemeStyles(theme, 'transitionRow')}>
-                    <button 
-                      className={`transition-button ${canInvoke && interactive ? 'enabled' : 'disabled'} ${isActive ? 'current-state' : isBranchActive ? 'ancestor-state' : ''}`}
-                      onClick={() => {
-                        if (interactive && canInvoke) {
-                          machine.send(event);
-                        }
-                      }}
-                      disabled={!canInvoke || !interactive}
-                      type="button"
-                      style={{
-                        ...getThemeStyles(theme, 'transitionButton'),
-                        ...(canInvoke && interactive ? getThemeStyles(theme, 'enabledTransition') : getThemeStyles(theme, 'disabledTransition')),
-                        ...(isActive ? getThemeStyles(theme, 'currentStateTransition') : {}),
-                        ...(isBranchActive && !isActive ? getThemeStyles(theme, 'ancestorStateTransition') : {}),
-                      }}
-                    >
-                      {event}
+                   <div key={event} className="transition-row" style={getThemeStyles(theme, 'transitionRow')}>
+                     <button 
+                       className={`transition-button ${canInvoke && interactive ? 'enabled' : 'disabled'} ${isActive ? 'current-state' : isBranchActive ? 'ancestor-state' : ''}`}
+                       onClick={() => {
+                         if (interactive) {
+                           machine.send(event);
+                         }
+                       }}
+                       disabled={!interactive}
+                       type="button"
+                       style={{
+                         ...getThemeStyles(theme, 'transitionButton'),
+                         ...(canInvoke && interactive ? getThemeStyles(theme, 'enabledTransition') : getThemeStyles(theme, 'disabledTransition')),
+                         ...(isActive ? getThemeStyles(theme, 'currentStateTransition') : {}),
+                         ...(isBranchActive && !isActive ? getThemeStyles(theme, 'ancestorStateTransition') : {}),
+                       }}
+                     >
+                       {event}
                       {!isActive && isBranchActive && <span className="ancestor-indicator"> ↑</span>}
                     </button>
                     <span className="transition-arrow" style={getThemeStyles(theme, 'transitionArrow')}> → </span>

@@ -5,6 +5,7 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath } from "reactflow";
 interface CustomEdgeData {
   event: string;
   isClickable: boolean;
+  isEnabled?: boolean;
   isSelfTransition?: boolean;
   selfLoopOffset?: number;
   selfLoopIndex?: number;
