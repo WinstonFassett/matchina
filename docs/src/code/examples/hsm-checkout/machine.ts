@@ -13,18 +13,28 @@ export const paymentStates = defineStates({
 // Create payment machine factory
 function createPayment() {
   const m = matchina(paymentStates, {
-    MethodEntry: { authorize: "Authorizing" },
+    MethodEntry: { 
+      authorize: "Authorizing",
+      exit: "MethodEntry" // Exit resets to initial state
+    },
     Authorizing: {
       authRequired: "AuthChallenge",
       authSucceeded: "Authorized",
-      authFailed: "AuthorizationError"
+      authFailed: "AuthorizationError",
+      exit: "MethodEntry" // Exit from any payment state goes back to MethodEntry
     },
     AuthChallenge: {
       authSucceeded: "Authorized",
-      authFailed: "AuthorizationError"
+      authFailed: "AuthorizationError",
+      exit: "MethodEntry"
     },
-    AuthorizationError: { retry: "MethodEntry" },
-    Authorized: {},
+    AuthorizationError: { 
+      retry: "MethodEntry",
+      exit: "MethodEntry"
+    },
+    Authorized: {
+      exit: "MethodEntry"
+    },
   }, paymentStates.MethodEntry());
 
   return withReset(makeHierarchical(m), paymentStates.MethodEntry());

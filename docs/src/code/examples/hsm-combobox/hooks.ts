@@ -8,6 +8,21 @@ export function createComboboxStoreHook(store: any) {
         case 'typed':
           if (ev.params && ev.params[0] !== undefined) {
             store.dispatch('setInput', ev.params[0]);
+            
+            // After updating input, check if we should transition to suggesting
+            setTimeout(() => {
+              const state = store.getState();
+              if (state.suggestions.length > 0) {
+                // We're in a flat machine, send the transition event
+                if (ev.target && typeof ev.target.send === 'function') {
+                  ev.target.send("toSuggesting");
+                }
+              } else {
+                if (ev.target && typeof ev.target.send === 'function') {
+                  ev.target.send("toTextEntry");
+                }
+              }
+            }, 0);
           }
           break;
         case 'removeTag':

@@ -137,21 +137,7 @@ export function createFlatComboboxMachine() {
 
   // Add store hook and auto-transition effect
   setup(baseMachine)(
-    createComboboxStoreHook(store),
-    effect((ev) => {
-      // Auto-transition based on store state
-      if (ev && ev.to && ev.to.key && ev.to.key.startsWith('Active.Typing')) {
-        // Wait a tick to ensure store is updated
-        setTimeout(() => {
-          const state = store.getState();
-          if (state.suggestions.length > 0) {
-            baseMachine.send("toSuggesting");
-          } else {
-            baseMachine.send("toTextEntry");
-          }
-        }, 0);
-      }
-    })
+    createComboboxStoreHook(store)
   );
 
   // Attach store to machine for external access

@@ -220,9 +220,11 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  console.log('🔍 [Layout] Button clicked, current state:', showLayoutDialog);
                   setShowLayoutDialog(!showLayoutDialog);
                 }}
                 className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                title="Layout Options"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -257,11 +259,12 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
                 if (e.target === e.currentTarget) setShowLayoutDialog(false);
               }}
             >
-              <div className="mt-16 mr-4 max-w-[300px] overflow-auto relative">
+              <div className="mt-16 mr-4 max-w-[300px] max-h-[80vh] overflow-auto relative">
                 <button
                   onClick={() => setShowLayoutDialog(false)}
-                  className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
                   title="Close"
+                  style={{ minWidth: '24px', minHeight: '24px' }}
                 >
                   ✕
                 </button>
