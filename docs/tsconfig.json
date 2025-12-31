@@ -5,6 +5,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@components/*": ["src/components/*"],
@@ -12,7 +13,8 @@
       "@lib/*": ["../*"],
       "matchina": ["../src/index.ts"],
       "matchina/*": ["../src/*"],
-      "matchina/react": ["../src/integrations/react"]
+      "matchina/react": ["../src/integrations/react"],
+      "matchina/hsm": ["../src/hsm/index.ts"]
     }
   }
 }

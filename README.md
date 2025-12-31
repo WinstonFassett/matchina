@@ -17,12 +17,6 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **Composable APIs** that work together or standalone
 - Inspired by [suchipi/safety-match](https://github.com/suchipi/safety-match), [christianalfoni/timsy](https://github.com/christianalfoni/timsy), [pelotom/unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
 
-## Philosophy & Inspiration
-
-- **Nano-sized, opt-in primitives** for state machines and async logic.
-- Inspired by [Timsy](https://github.com/streamich/timsy), [XState](https://xstate.js.org/), and Andre Sitnik’s nano library style.
-- Each primitive is useful standalone or composable.
-
 ## What is Matchina?
 
 A super lightweight, strongly-typed toolkit for building and extending state machines, factories, and async flows in TypeScript. Use only what you need.
@@ -50,6 +44,18 @@ A super lightweight, strongly-typed toolkit for building and extending state mac
 - **React Integration**:
   - React hooks for consuming state machines
   - Type-safe component rendering based on state
+
+- **Hierarchical State Machines**:
+  - Build complex nested state machines with `submachine()` composition
+  - Dual-mode support: flattened definitions or nested hierarchies
+  - Shape-based visualization with automatic transition discovery
+  - Event propagation between parent and child machines
+
+- **Visualization Tools**:
+  - Multiple inspector types: ReactFlow, Mermaid, Sketch, ForceGraph
+  - Dark/light theme support with unified styling
+  - Real-time state highlighting and interactive exploration
+  - Export visualizations for documentation and debugging
 
 ## Installation
 
@@ -554,9 +560,11 @@ For detailed documentation, examples, and API reference, visit:
 - [Getting Started](https://winstonfassett.github.io/matchina/guides/quickstart)
 - [Matchbox Factories](https://winstonfassett.github.io/matchina/guides/matchbox-factories)
 - [State Machines](https://winstonfassett.github.io/matchina/guides/machines)
+- [Hierarchical Machines](https://winstonfassett.github.io/matchina/guides/hierarchical-machines)
 - [Promise Handling](https://winstonfassett.github.io/matchina/guides/promises)
 - [Lifecycle Hooks](https://winstonfassett.github.io/matchina/guides/lifecycle)
 - [React Integration](https://winstonfassett.github.io/matchina/guides/react)
+- [Visualization Tools](https://winstonfassett.github.io/matchina/guides/visualization)
 - [Full Examples](https://winstonfassett.github.io/matchina/examples)
 
 ## Integrations
@@ -629,6 +637,22 @@ const store2 = createStoreMachine(
 ### Valibot/Zod Integration
 
 You can integrate validation libraries like Valibot or Zod with matchina:
+
+### Hierarchical State Machines & Visualization
+
+For HSM and visualization features, import from the specialized packages:
+
+```typescript
+// Hierarchical State Machines
+import { submachine, makeHierarchical } from 'matchina/hsm';
+
+// Visualization Components  
+import { ReactFlowInspector, HSMMermaidInspector } from 'matchina/viz';
+import { defaultTheme, applyTheme } from 'matchina/viz';
+
+// React integration for visualization
+import { MachineVisualizer } from 'matchina/react';
+```
 
 ## Transition Hooks
 

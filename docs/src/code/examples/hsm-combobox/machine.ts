@@ -135,13 +135,13 @@ export function createComboboxMachine() {
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      close: () => (ev) => {
+      close: () => (ev: any) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive(selectedTags);
       },
-      removeTag: (tag) => (ev) => {
+      removeTag: (tag: string) => (ev: any) => {
         // Delegate to child machine
         const activeMachine = ev.from.data.machine;
         activeMachine?.removeTag?.(tag);

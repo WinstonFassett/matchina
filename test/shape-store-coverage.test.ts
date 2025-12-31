@@ -42,12 +42,12 @@ describe('shape-store coverage', () => {
       expect(callback).not.toHaveBeenCalled();
       
       // Notify should be no-op for static store
-      shapeStore.notify('anything');
+      shapeStore.notify?.('anything');
       expect(callback).not.toHaveBeenCalled();
       
       // Unsubscribe should work
       unsubscribe();
-      shapeStore.notify('anything');
+      shapeStore.notify?.('anything');
       expect(callback).not.toHaveBeenCalled();
     });
 
@@ -69,7 +69,7 @@ describe('shape-store coverage', () => {
       const unsubscribe2 = shapeStore.subscribe(callback2);
       
       // Static store notify is no-op
-      shapeStore.notify('test');
+      shapeStore.notify?.('test');
       
       expect(callback1).not.toHaveBeenCalled();
       expect(callback2).not.toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe('shape-store coverage', () => {
       const unsubscribe = shapeStore.subscribe(callback);
       
       // Notify should trigger callback with new shape
-      shapeStore.notify('some change');
+      shapeStore.notify?.('some change');
       
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith(shapeStore.getState());
@@ -161,7 +161,7 @@ describe('shape-store coverage', () => {
       shapeStore.subscribe(callback);
       
       // Notify should invalidate cache
-      shapeStore.notify('invalidate');
+      shapeStore.notify?.('invalidate');
       
       const shape2 = shapeStore.getState();
       
@@ -186,7 +186,7 @@ describe('shape-store coverage', () => {
       const unsubscribe1 = shapeStore.subscribe(callback1);
       const unsubscribe2 = shapeStore.subscribe(callback2);
       
-      shapeStore.notify('broadcast');
+      shapeStore.notify?.('broadcast');
       
       expect(callback1).toHaveBeenCalledTimes(1);
       expect(callback2).toHaveBeenCalledTimes(1);
@@ -211,12 +211,12 @@ describe('shape-store coverage', () => {
       
       // Notify with no subscribers should not throw
       expect(() => {
-        shapeStore.notify('no subscribers');
+        shapeStore.notify?.('no subscribers');
       }).not.toThrow();
       
       // Should still invalidate cache
       const shape1 = shapeStore.getState();
-      shapeStore.notify('invalidate');
+      shapeStore.notify?.('invalidate');
       const shape2 = shapeStore.getState();
       
       // Should rebuild (different instances)
@@ -245,7 +245,7 @@ describe('shape-store coverage', () => {
         unsubscribe2();
       });
       
-      shapeStore.notify('test');
+      shapeStore.notify?.('test');
       
       expect(callback1).toHaveBeenCalled();
       expect(callback2).toHaveBeenCalled();
@@ -254,7 +254,7 @@ describe('shape-store coverage', () => {
       callback1.mockClear();
       callback2.mockClear();
       
-      shapeStore.notify('second test');
+      shapeStore.notify?.('second test');
       
       expect(callback1).toHaveBeenCalledTimes(1);
       expect(callback2).not.toHaveBeenCalled();
