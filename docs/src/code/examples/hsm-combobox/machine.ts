@@ -52,7 +52,6 @@ function createActiveForApp() {
     TextEntry: {
       typed: handleTyped,
       clear: () => (ev) => activeStates.Empty(),
-      addTag: handleAddTag,
       backspace: () => (ev) => {
         return ev.from;
       },
@@ -72,7 +71,6 @@ function createActiveForApp() {
       cancel: () => (ev) => {
         return activeStates.TextEntry();
       },
-      addTag: handleAddTag,
       backspace: () => (ev) => {
         return ev.from;
       },
