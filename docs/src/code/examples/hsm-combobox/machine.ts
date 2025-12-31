@@ -45,7 +45,7 @@ function createActiveForApp() {
       clear: 'Empty',
       cancel: 'TextEntry',
     },
-  });
+  }, "Empty");
 }
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;
@@ -65,9 +65,7 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      deactivate: () => (ev) => {
-        return appStates.Inactive();
-      },
+      // No transitions - store handles all data operations
     },
   }, appStates.Inactive());
 
