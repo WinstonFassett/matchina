@@ -153,37 +153,27 @@ export const useStateMachineNodes = (
   // Initialize layout only once per machine
   useEffect(() => {
     if (!hasInitialized.current && states.length > 0 && !isLayouting) {
-      console.log('🔍 [init] Starting layout initialization for', states.length, 'states');
       // Try to load saved positions first
       const machineId = `machine-${states.join('-')}` || "unknown";
       const savedPositions = loadNodePositions(machineId);
-      console.log('🔍 [init] Saved positions available:', savedPositions?.length || 0);
 
       if (savedPositions && savedPositions.length === states.length) {
         // Use saved positions
-        console.log('🔍 [init] Using saved positions for machine', machineId);
-        const restoredNodes: CustomNode[] = states.map((state) => {
-          const savedPos = savedPositions.find((p) => p.id === state);
+        const restoredNodes: CustomNode[] = initialNodes.map((node) => {
+          const savedPos = savedPositions.find((p) => p.id === node.id);
           return {
-            id: state,
+            ...node,
             position: savedPos
               ? { x: savedPos.x, y: savedPos.y }
               : { x: 0, y: 0 },
             data: {
-              label: (() => {
-                // For flat machines, use simple state name. For hierarchical, show last part
-                if (state.includes('.')) {
-                  const parts = state.split('.');
-                  const lastPart = parts[parts.length - 1];
-                  return lastPart ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1) : state;
-                } else {
-                  return state.charAt(0).toUpperCase() + state.slice(1);
-                }
-              })(),
-              isActive: currentState === state,
-              isPrevious: previousState === state,
+              ...node.data,
+              // Preserve label from shapeToReactFlow (short name like "Red")
+              // Only capitalize if needed
+              label: node.data.label || node.id,
+              isActive: currentState === node.id,
+              isPrevious: previousState === node.id,
             },
-            type: "custom",
           };
         });
 
@@ -195,25 +185,17 @@ export const useStateMachineNodes = (
 
       setIsLayouting(true);
 
-      // Create initial nodes without positions (ELK will calculate them)
-      const nodesForLayout: CustomNode[] = states.map((state) => ({
-        id: state,
-        position: { x: 0, y: 0 }, // Temporary position
+      // Use initialNodes directly (already have correct types from shapeToReactFlow)
+      const nodesForLayout: CustomNode[] = initialNodes.map((node) => ({
+        ...node,
+        position: { x: 0, y: 0 }, // Reset position for ELK layout
         data: {
-          label: (() => {
-            // For flat machines, use simple state name. For hierarchical, show last part
-            if (state.includes('.')) {
-              const parts = state.split('.');
-              const lastPart = parts[parts.length - 1];
-              return lastPart ? lastPart.charAt(0).toUpperCase() + lastPart.slice(1) : state;
-            } else {
-              return state.charAt(0).toUpperCase() + state.slice(1);
-            }
-          })(),
-          isActive: currentState === state,
-          isPrevious: previousState === state,
+          ...node.data,
+          // Preserve label from shapeToReactFlow (short name like "Red")
+          label: node.data.label || node.id,
+          isActive: currentState === node.id,
+          isPrevious: previousState === node.id,
         },
-        type: "custom",
       }));
 
       // Create edges for ELK layout
@@ -227,31 +209,30 @@ export const useStateMachineNodes = (
           : [];
 
       // Use ELK to calculate optimal layout
-      console.log('🔍 [ELK] Starting layout for', states.length, 'nodes with', transitions.length, 'transitions');
       getLayoutedElements(
         nodesForLayout,
         initialEdges,
         layoutOptions || getDefaultLayoutOptions()
       )
         .then(({ nodes: layoutedNodes }) => {
-          console.log('🔍 [ELK] Layout succeeded. Returned positions:');
-          layoutedNodes.forEach(n => {
-            console.log(`  ${n.id}: x=${n.position.x}, y=${n.position.y}`);
-          });
-          const hasValidPositions = layoutedNodes.every(n => n.position.x !== 0 || n.position.y !== 0);
-          console.log('🔍 [ELK] Has valid (non-zero) positions:', hasValidPositions);
-          
-          setNodes(layoutedNodes);
+          // Apply active state highlighting to layouted nodes
+          const highlightedNodes = layoutedNodes.map((node) => ({
+            ...node,
+            data: {
+              ...node.data,
+              isActive: currentState === node.id,
+              isPrevious: previousState === node.id,
+            },
+          }));
+          setNodes(highlightedNodes);
           hasInitialized.current = true;
           setHasManualChanges(false);
           setIsLayouting(false);
           setIsLayoutComplete(true); // Signal that layout is complete
-          console.log('✅ [ELK] State updated, isLayoutComplete set to true');
           // Reset the flag after a short delay to allow for re-triggering
           setTimeout(() => setIsLayoutComplete(false), 1000);
         })
-        .catch((error) => {
-          console.error('❌ [ELK] Layout failed:', error);
+        .catch(() => {
           // Fallback to simple grid layout if ELK fails
           const fallbackNodes = nodesForLayout.map((node, index) => ({
             ...node,
@@ -265,8 +246,16 @@ export const useStateMachineNodes = (
               y: Math.floor(index / 3) * 100,
             },
           }));
-          console.log('🔍 [ELK] Using fallback grid layout:', fallbackNodes.map(n => ({ id: n.id, x: n.position.x, y: n.position.y })));
-          setNodes(fallbackNodes);
+          // Apply active state highlighting to fallback nodes
+          const highlightedFallback = fallbackNodes.map((node) => ({
+            ...node,
+            data: {
+              ...node.data,
+              isActive: currentState === node.id,
+              isPrevious: previousState === node.id,
+            },
+          }));
+          setNodes(highlightedFallback);
           hasInitialized.current = true;
           setHasManualChanges(false);
           setIsLayouting(false);
@@ -288,26 +277,16 @@ export const useStateMachineNodes = (
 
   // Update node states without changing positions
   const updateNodeStates = useCallback(() => {
-    setNodes((currentNodes) => {
-      console.log('🔍 [HSM] Updating active state highlighting');
-      console.log('  currentState:', currentState, `(type: ${typeof currentState})`);
-      console.log('  comparing against', currentNodes.length, 'nodes');
-      const updated = currentNodes.map((node) => {
-        const isActive = currentState === node.id;
-        if (isActive || node.data?.isActive) {
-          console.log(`  ${node.id}: isActive=${isActive} (was ${node.data?.isActive})`);
-        }
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            isActive: currentState === node.id,
-            isPrevious: previousState === node.id,
-          },
-        };
-      });
-      return updated;
-    });
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          isActive: currentState === node.id,
+          isPrevious: previousState === node.id,
+        },
+      }))
+    );
   }, [currentState, previousState, setNodes]);
 
   // Update states when they change

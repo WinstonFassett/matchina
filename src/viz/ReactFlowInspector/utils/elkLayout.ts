@@ -44,7 +44,12 @@ const getElkOptions = (options: LayoutOptions) => {
     "elk.separateConnectedComponents": options.separateComponents
       ? "true"
       : "false",
-    // Aspect ratio removed as it doesn't work properly
+    // HIERARCHICAL LAYOUT OPTIONS - Important for compound nodes
+    "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+    "elk.layered.considerModelOrder.hierarchy": "true",
+    "elk.layered.thoroughness": "7", // Better layout quality
+    // Compound node sizing
+    "elk.padding": "[top=20,left=20,bottom=20,right=20]",
   };
 
   // Algorithm-specific options that actually work
@@ -167,21 +172,62 @@ export const getLayoutedElements = async (
 ): Promise<{ nodes: Node[]; edges: Edge[] }> => {
   const nodeWidth = 150;
   const nodeHeight = 50;
+  const groupPadding = 40; // Padding inside group nodes for children
   const direction = layoutOptions.direction;
 
   const isHorizontal = direction === "RIGHT" || direction === "LEFT";
   const elkOptions = getElkOptions(layoutOptions);
 
+  // Build hierarchical ELK graph structure
+  // Children must be nested INSIDE their parent for ELK to handle hierarchy
+  const nodeMap = new Map<string, any>();
+  const rootChildren: any[] = [];
+
+  // First pass: create all ELK nodes
+  for (const node of nodes) {
+    const elkNode: any = {
+      id: node.id,
+      targetPosition: isHorizontal ? "left" : "top",
+      sourcePosition: isHorizontal ? "right" : "bottom",
+      width: node.type === 'group' ? nodeWidth * 2 : nodeWidth,
+      height: node.type === 'group' ? nodeHeight * 3 : nodeHeight,
+      // Preserve original data for later
+      _originalNode: node,
+    };
+
+    // Group nodes need padding and layout options for children
+    if (node.type === 'group') {
+      elkNode.layoutOptions = {
+        ...elkOptions,
+        "elk.padding": `[top=${groupPadding + 20},left=${groupPadding},bottom=${groupPadding},right=${groupPadding}]`,
+      };
+      elkNode.children = [];
+    }
+
+    nodeMap.set(node.id, elkNode);
+  }
+
+  // Second pass: build hierarchy by nesting children inside parents
+  for (const node of nodes) {
+    const elkNode = nodeMap.get(node.id);
+    const parentId = node.parentId;
+
+    if (parentId && nodeMap.has(parentId)) {
+      // This is a child - add to parent's children array
+      const parentNode = nodeMap.get(parentId);
+      if (parentNode.children) {
+        parentNode.children.push(elkNode);
+      }
+    } else {
+      // This is a root-level node
+      rootChildren.push(elkNode);
+    }
+  }
+
   const graph = {
     id: "root",
     layoutOptions: elkOptions,
-    children: nodes.map((node) => ({
-      ...node,
-      targetPosition: isHorizontal ? "left" : "top",
-      sourcePosition: isHorizontal ? "right" : "bottom",
-      width: nodeWidth,
-      height: nodeHeight,
-    })),
+    children: rootChildren,
     edges: edges.map((edge) => ({
       ...edge,
       sources: [edge.source],
@@ -192,14 +238,41 @@ export const getLayoutedElements = async (
   try {
     const layoutedGraph = await elk.layout(graph);
 
-    return {
-      nodes:
-        layoutedGraph.children?.map((node_1) => ({
-          ...node_1,
-          position: { x: node_1.x || 0, y: node_1.y || 0 },
+    // Recursively extract all nodes with their positions
+    // For ReactFlow: root nodes need absolute positions, child nodes need positions relative to parent
+    const extractNodes = (elkNodes: any[], isRoot = true): Node[] => {
+      const result: Node[] = [];
+      for (const elkNode of elkNodes) {
+        const originalNode = elkNode._originalNode;
+
+        // Create the ReactFlow node with position
+        // ELK positions for nested children are already relative to parent - perfect for ReactFlow
+        const rfNode: Node = {
+          ...originalNode,
+          position: { x: elkNode.x || 0, y: elkNode.y || 0 },
+          // Update width/height if ELK computed them (important for group nodes)
+          ...(elkNode.width && elkNode.height && {
+            style: {
+              ...originalNode?.style,
+              width: elkNode.width,
+              height: elkNode.height,
+            }
+          }),
           targetPosition: isHorizontal ? Position.Left : Position.Top,
           sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-        })) || [],
+        };
+        result.push(rfNode);
+
+        // Recursively process children
+        if (elkNode.children && elkNode.children.length > 0) {
+          result.push(...extractNodes(elkNode.children, false));
+        }
+      }
+      return result;
+    };
+
+    return {
+      nodes: extractNodes(layoutedGraph.children || []),
       edges: edges,
     };
   } catch (error) {
