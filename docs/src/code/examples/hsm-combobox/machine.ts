@@ -133,7 +133,57 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      // No transitions - store handles all data operations
+      typed: (value: string) => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("typed", value);
+        }
+        return ev.from; // Stay in Active state
+      },
+      clear: () => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("clear");
+        }
+        return ev.from; // Stay in Active state
+      },
+      cancel: () => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("cancel");
+        }
+        return ev.from; // Stay in Active state
+      },
+      highlightNext: () => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("highlightNext");
+        }
+        return ev.from; // Stay in Active state
+      },
+      highlightPrev: () => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("highlightPrev");
+        }
+        return ev.from; // Stay in Active state
+      },
+      selectHighlighted: () => (ev: any) => {
+        // Delegate to submachine
+        const activeMachine = ev.from.data.machine;
+        if (activeMachine && activeMachine.send) {
+          activeMachine.send("selectHighlighted");
+        }
+        return ev.from; // Stay in Active state
+      },
+      deactivate: () => (ev) => {
+        return appStates.Inactive();
+      },
     },
   }, appStates.Inactive());
 
