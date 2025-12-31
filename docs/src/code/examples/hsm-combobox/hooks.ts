@@ -45,6 +45,10 @@ export function createComboboxStoreHook(store: any) {
             store.dispatch('addTag', tag);
           }
           break;
+        case 'deactivate':
+          // Clear input and reset when deactivating
+          store.dispatch('clear');
+          break;
       }
     }
   });

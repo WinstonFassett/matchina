@@ -31,37 +31,23 @@ function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: 'Typing',
-      clear: 'Empty',
-      cancel: 'TextEntry',
-      highlightNext: 'Empty',
-      highlightPrev: 'Empty',
-      selectHighlighted: 'Empty',
     },
     Typing: {
       toEmpty: 'Empty',
       toSuggesting: 'Suggesting',
       toTextEntry: 'TextEntry',
-      clear: 'Empty',
-      cancel: 'TextEntry',
-      highlightNext: 'Typing',
-      highlightPrev: 'Typing',
-      selectHighlighted: 'Empty',
     },
     TextEntry: {
       typed: 'Typing',
       clear: 'Empty',
-      cancel: 'TextEntry',
-      highlightNext: 'TextEntry',
-      highlightPrev: 'TextEntry',
-      selectHighlighted: 'Empty',
     },
     Suggesting: {
       typed: 'Typing',
       clear: 'Empty',
-      cancel: 'TextEntry',
       highlightNext: 'Suggesting',
       highlightPrev: 'Suggesting',
       selectHighlighted: 'Empty',
+      cancel: 'TextEntry',
     },
   }, "Empty");
 }
@@ -150,6 +136,10 @@ function createHierarchicalComboboxHook(store: any) {
             selectState.data.machine.send("selectHighlighted");
           }
           break;
+        case 'deactivate':
+          // Clear input and reset when deactivating
+          store.dispatch('clear');
+          break;
       }
     }
   });
@@ -163,12 +153,6 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      typed: "Active", // Stay in Active, delegate to submachine
-      clear: "Active", // Stay in Active, delegate to submachine
-      cancel: "Active", // Stay in Active, delegate to submachine
-      highlightNext: "Active", // Stay in Active, delegate to submachine
-      highlightPrev: "Active", // Stay in Active, delegate to submachine
-      selectHighlighted: "Active", // Stay in Active, delegate to submachine
       deactivate: "Inactive",
     },
   }, appStates.Inactive());
