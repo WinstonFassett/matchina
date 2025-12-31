@@ -63,9 +63,12 @@ export function ComboboxView({ machine }: { machine: Machine }) {
       case "Enter":
         e.preventDefault();
         if (activeState.is("Suggesting") && storeState.suggestions.length > 0) {
-          machine.selectHighlighted();
+          const tag = storeState.suggestions[storeState.highlightedIndex];
+          machine.addTag(tag);
+          machine.clear();
         } else if (storeState.input?.trim()) {
           machine.addTag(storeState.input.trim());
+          machine.clear();
         }
         break;
     }
@@ -97,7 +100,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             type="text"
             value={machine.store.getState().input}
             onChange={(e) => {
-              machine.store.dispatch('typed', e.target.value);
+              machine.setInput(e.target.value);
               // Trigger hook typed event
               if (activeActions?.typed) {
                 activeActions.typed(e.target.value);
@@ -118,6 +121,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
                   onMouseDown={(e) => {
                     e.preventDefault();
                     machine.addTag(suggestion);
+                    machine.clear();
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
                     index === machine.store.getState().highlightedIndex
