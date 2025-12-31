@@ -53,13 +53,11 @@ export function createComboboxMachine() {
 
   const hierarchical = makeHierarchical(combobox);
   
-  // Minimal hook - only handle typed events for auto-transitions
+  // Hook: ONLY auto-transitions based on store state
   setup(hierarchical)(effect((ev: any) => {
-    console.log('Nested hook received:', ev.type, ev.params);
     if (ev?.type === 'typed') {
       setTimeout(() => {
         const state = store.getState();
-        console.log('Auto-transition - suggestions:', state.suggestions.length);
         ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
       }, 0);
     }

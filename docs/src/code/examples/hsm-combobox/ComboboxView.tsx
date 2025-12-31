@@ -1,75 +1,74 @@
-import React, { useEffect, useRef } from "react";
-import { createMachine, eventApi, type FactoryMachine } from "matchina";
+import { useRef } from "react";
 import { useMachine } from "matchina/react";
-import type { createComboboxMachine } from "./machine";
 
-type Machine = ReturnType<typeof createComboboxMachine>;
-
-// Create a dummy state factory for the noop machine
-const dummyStates = { Noop: () => ({ key: 'Noop' }) };
-const noopMachine = createMachine(dummyStates, {}, "Noop");
-function useMachineMaybe(machine: FactoryMachine<any> | undefined) {
-  return useMachine(machine ?? noopMachine);
+interface ComboboxViewProps {
+  machine: any;
 }
 
-export function ComboboxView({ machine }: { machine: Machine }) {
-  useMachine(machine);
+export function ComboboxView({ machine }: ComboboxViewProps) {
+  useMachine(machine);  // Re-render on state changes
+  useMachine(machine.store);  // Re-render on store changes
+
   const state = machine.getState();
-  const actions = eventApi(machine);
-  console.log('Available actions:', Object.keys(actions));
-
-  const activeMachine = state.is("Active") ? state.data.machine : undefined;
-  useMachineMaybe(activeMachine);
-  const activeState = activeMachine?.getState();
-  const activeActions = activeMachine ? eventApi(activeMachine) : null;
-
+  const storeState = machine.store.getState();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (activeMachine && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [activeMachine]);
+  // Get active submachine if in Active state
+  const activeMachine = state.is("Active") ? state.data?.machine : undefined;
+  if (activeMachine) useMachine(activeMachine);
+  const activeState = activeMachine?.getState();
 
-  const getStateChain = (): string => {
-    const parts = [state.key];
-    if (activeState) parts.push(activeState.key);
-    return parts.join(" / ");
+  // State display: "Inactive" or "Active / Empty" etc
+  const getStateDisplay = () => {
+    if (!activeState) return state.key;
+    return `${state.key} / ${activeState.key}`;
   };
 
-  const selectedTags: string[] = machine.store.getState().selectedTags;
+  // Check if in suggesting state
+  const isSuggesting = activeState?.is("Suggesting");
+
+  // Single handler: store first, then machine
+  const handleChange = (value: string) => {
+    machine.store.dispatch('setInput', value);
+    activeMachine?.send?.('typed');  // Send to active submachine
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!activeState) return;
 
-    const storeState = machine.store.getState();
-
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        machine.deactivate();
+        machine.send('deactivate');
+        break;
+      case "Backspace":
+        if (!storeState.input?.trim() && storeState.selectedTags.length > 0) {
+          e.preventDefault();
+          machine.store.dispatch('removeTag', storeState.selectedTags.at(-1));
+        }
         break;
       case "ArrowDown":
         e.preventDefault();
-        if (activeState.is("Suggesting")) {
-          machine.highlight('next');
+        if (isSuggesting) {
+          machine.store.dispatch('highlight', 'next');
+          activeMachine?.send?.('highlightNext');
         }
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (activeState.is("Suggesting")) {
-          machine.highlight('prev');
+        if (isSuggesting) {
+          machine.store.dispatch('highlight', 'prev');
+          activeMachine?.send?.('highlightPrev');
         }
         break;
       case "Enter":
         e.preventDefault();
-        if (activeState.is("Suggesting") && storeState.suggestions.length > 0) {
-          const tag = storeState.suggestions[storeState.highlightedIndex];
-          machine.addTag(tag);
-          machine.clear();
+        if (isSuggesting && storeState.suggestions.length > 0) {
+          machine.store.dispatch('selectHighlighted');
+          activeMachine?.send?.('selectHighlighted');
         } else if (storeState.input?.trim()) {
-          machine.addTag(storeState.input.trim());
-          machine.clear();
+          machine.store.dispatch('addTag', storeState.input.trim());
+          machine.store.dispatch('clear');
         }
         break;
     }
@@ -78,17 +77,16 @@ export function ComboboxView({ machine }: { machine: Machine }) {
   return (
     <div className="space-y-3">
       <div className="text-sm text-gray-600 dark:text-gray-400">
-        State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{getStateChain()}</span>
+        State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{getStateDisplay()}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-        {selectedTags.map((tag) => (
+        {storeState.selectedTags.map((tag: string) => (
           <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium">
             {tag}
             <button
-              onClick={() => machine.removeTag(tag)}
+              onClick={() => machine.store.dispatch('removeTag', tag)}
               className="inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
-              aria-label={`Remove ${tag}`}
             >
               ×
             </button>
@@ -99,35 +97,28 @@ export function ComboboxView({ machine }: { machine: Machine }) {
           <input
             ref={inputRef}
             type="text"
-            value={machine.store.getState().input}
-            onChange={(e) => {
-              console.log('UI onChange - calling setInput with:', e.target.value);
-              console.log('Machine type:', machine.constructor.name);
-              console.log('Machine has setInput:', typeof machine.setInput);
-              machine.setInput(e.target.value);
-              // Trigger machine transition using library's event API
-              actions.typed();
-              console.log('UI onChange - store state after setInput:', machine.store.getState());
-            }}
-            onFocus={() => actions.focus()}
-            onBlur={() => machine.deactivate()}
+            value={storeState.input}
+            onChange={(e) => handleChange(e.target.value)}
+            onFocus={() => machine.send('focus')}
+            onBlur={() => machine.send('deactivate')}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
 
-          {activeState?.is("Suggesting") && machine.store.getState().suggestions?.length > 0 && (
+          {isSuggesting && storeState.suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-20">
-              {machine.store.getState().suggestions.map((suggestion: string, index: number) => (
+              {storeState.suggestions.map((suggestion: string, index: number) => (
                 <button
                   key={suggestion}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    machine.addTag(suggestion);
-                    machine.clear();
+                    machine.store.dispatch('addTag', suggestion);
+                    machine.store.dispatch('clear');
+                    activeMachine?.send?.('selectHighlighted');
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
-                    index === machine.store.getState().highlightedIndex
+                    index === storeState.highlightedIndex
                       ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
                       : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                   }`}

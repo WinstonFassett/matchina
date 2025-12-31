@@ -11,7 +11,6 @@ export interface ComboboxState {
   selectedTags: string[];
   suggestions: string[];
   highlightedIndex: number;
-  isActive: boolean;
 }
 
 export function createComboboxStore() {
@@ -20,12 +19,9 @@ export function createComboboxStore() {
     selectedTags: [],
     suggestions: [],
     highlightedIndex: 0,
-    isActive: false,
   }, {
     setInput: (input: string) => (change) => {
-      console.log('Store setInput called with:', input);
       const suggestions = getSuggestions(input, change.from.selectedTags);
-      console.log('Generated suggestions:', suggestions);
       return {
         ...change.from,
         input,
@@ -33,35 +29,40 @@ export function createComboboxStore() {
         highlightedIndex: 0,
       };
     },
-    
+
     addTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: [...change.from.selectedTags, tag],
     }),
-    
+
     removeTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: change.from.selectedTags.filter((t: string) => t !== tag),
     }),
-    
+
     clear: () => (change) => ({
       ...change.from,
       input: "",
       suggestions: [],
       highlightedIndex: 0,
     }),
-    
+
     highlight: (direction: 'next' | 'prev') => (change) => ({
       ...change.from,
-      highlightedIndex: direction === 'next' 
+      highlightedIndex: direction === 'next'
         ? Math.min(change.from.suggestions.length - 1, change.from.highlightedIndex + 1)
         : Math.max(0, change.from.highlightedIndex - 1),
     }),
-    
+
+    setHighlighted: (index: number) => (change) => ({
+      ...change.from,
+      highlightedIndex: Math.max(0, Math.min(index, change.from.suggestions.length - 1)),
+    }),
+
     selectHighlighted: () => (change) => {
       const tag = change.from.suggestions[change.from.highlightedIndex];
       if (!tag) return change.from;
-      
+
       return {
         ...change.from,
         selectedTags: [...change.from.selectedTags, tag],
@@ -70,19 +71,6 @@ export function createComboboxStore() {
         highlightedIndex: 0,
       };
     },
-    
-    activate: () => (change) => ({
-      ...change.from,
-      isActive: true,
-    }),
-    
-    deactivate: () => (change) => ({
-      ...change.from,
-      isActive: false,
-      input: "",
-      suggestions: [],
-      highlightedIndex: 0,
-    }),
   });
 }
 

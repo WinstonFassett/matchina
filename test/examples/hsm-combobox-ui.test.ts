@@ -2,58 +2,45 @@ import { describe, it, expect } from "vitest";
 import { createFlatComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/machine-flat";
 
 describe("Flat Combobox UI Integration", () => {
-  it("should handle real-world usage patterns", async () => {
-    const machine = createFlatComboboxMachine();
+  it("should handle real-world usage patterns", () => {
+    const combobox = createFlatComboboxMachine();
 
     // Initial state should be Inactive
-    expect(machine.getState().key).toBe("Inactive");
+    expect(combobox.getState().is('Inactive')).toBe(true);
 
     // Focus to activate
-    machine.send("focus");
-    await new Promise(resolve => setTimeout(resolve, 0));
-    expect(machine.getState().key).toBe("Active.Empty");
+    combobox.focus();
+    expect(combobox.getState().is('Active.Empty')).toBe(true);
 
-    // Type something that matches suggestions (should auto-transition to Suggesting)
-    machine.send("typed", "typ");
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    const state = machine.getState();
-    const storeState = machine.store.getState();
-    
-    // Should have auto-transitioned to Suggesting
-    expect(state.key).toBe("Active.Suggesting");
-    expect(storeState.input).toBe("typ");
-    expect(storeState.suggestions).toContain("typescript");
+    // Type something that matches suggestions
+    combobox.setInput("typ");
 
-    // Add a tag from suggestions
-    machine.send("selectHighlighted");
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    const finalState = machine.getState();
-    const finalStoreState = machine.store.getState();
-    
+    // Should have transitioned to Suggesting
+    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.model.getState().input).toBe("typ");
+    expect(combobox.model.getState().suggestions).toContain("typescript");
+
+    // Select the suggestion
+    combobox.selectSuggestion();
+
     // Should be back to Empty with tag added
-    expect(finalState.key).toBe("Active.Empty");
-    expect(finalStoreState.selectedTags).toContain("typescript");
-    expect(finalStoreState.input).toBe("");
+    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.model.getState().selectedTags).toContain("typescript");
+    expect(combobox.model.getState().input).toBe("");
   });
 
-  it("should handle typing without suggestions", async () => {
-    const machine = createFlatComboboxMachine();
+  it("should handle typing without suggestions", () => {
+    const combobox = createFlatComboboxMachine();
 
-    machine.send("focus");
-    await new Promise(resolve => setTimeout(resolve, 0));
+    combobox.focus();
+    expect(combobox.getState().is('Active.Empty')).toBe(true);
 
     // Type something that won't match suggestions
-    machine.send("typed", "zzz");
-    await new Promise(resolve => setTimeout(resolve, 10));
+    combobox.setInput("zzz");
 
-    const state = machine.getState();
-    const storeState = machine.store.getState();
-    
-    // Should have auto-transitioned to TextEntry
-    expect(state.key).toBe("Active.TextEntry");
-    expect(storeState.input).toBe("zzz");
-    expect(storeState.suggestions).toEqual([]);
+    // No guard - transitions to Suggesting, UI hides empty dropdown
+    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.model.getState().input).toBe("zzz");
+    expect(combobox.model.getState().suggestions).toEqual([]);
   });
 });

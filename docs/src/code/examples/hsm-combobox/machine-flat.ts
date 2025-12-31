@@ -1,11 +1,12 @@
 import { describeHSM } from "matchina/hsm";
-import { setup, effect, addEventApi } from "matchina";
+import { setup, guard, effect, addEventApi, addStoreApi } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createFlatComboboxMachine() {
-  const store = createComboboxStore();
+  const store = addStoreApi(createComboboxStore());
 
-  const flatMachine = describeHSM({
+  // HSM: Inactive, Active.Empty, Active.Suggesting
+  const machine = describeHSM({
     initial: 'Inactive',
     states: {
       Inactive: {
@@ -20,77 +21,70 @@ export function createFlatComboboxMachine() {
           Empty: {
             data: undefined,
             on: {
-              typed: 'Typing',
-              deactivate: '^Inactive'
-            }
-          },
-          Typing: {
-            data: undefined,
-            on: {
-              toEmpty: 'Empty',
-              toSuggesting: 'Suggesting',
-              toTextEntry: 'TextEntry',
-              deactivate: '^Inactive'
-            }
-          },
-          TextEntry: {
-            data: undefined,
-            on: {
-              typed: 'Typing',
-              clear: 'Empty',
-              deactivate: '^Inactive'
+              type: 'Suggesting',
+              blur: '^Inactive'
             }
           },
           Suggesting: {
             data: undefined,
             on: {
-              typed: 'Typing',
-              clear: 'Empty',
-              highlightNext: 'Suggesting',
-              highlightPrev: 'Suggesting',
-              selectHighlighted: 'Empty',
-              cancel: 'TextEntry',
-              deactivate: '^Inactive'
+              type: 'Suggesting',
+              select: 'Empty',
+              dismiss: 'Empty',
+              blur: '^Inactive'
             }
           }
         },
         on: {
-          deactivate: '^Inactive'
+          blur: '^Inactive'
         }
       }
     }
   });
 
-  // Minimal hook - only handle typed events for auto-transitions
-  setup(flatMachine)(effect((ev: any) => {
-    console.log('Flat hook received:', ev.type, ev.params);
-    if (ev?.type === 'typed') {
-      setTimeout(() => {
-        const state = store.getState();
-        console.log('Store state:', state);
-        console.log('Auto-transition - suggestions:', state.suggestions.length);
-        ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
-      }, 0);
-    }
-  }));
-
-  // Expose store APIs on machine for direct access
-  const machineWithStore = Object.assign(flatMachine, { 
-    store,
-    // Store APIs
-    addTag: (tag: string) => store.dispatch('addTag', tag),
-    removeTag: (tag: string) => store.dispatch('removeTag', tag),
-    setInput: (input: string) => {
-      console.log('Flat machine setInput called with:', input);
-      store.dispatch('setInput', input);
-    },
-    highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
-    clear: () => store.dispatch('clear'),
-    deactivate: () => store.dispatch('clear')
-  });
+  // Guard: block Empty→Suggesting if no suggestions
+  setup(machine)(
+    guard((ev) => {
+      if (ev.type === 'type' && ev.from.key === 'Empty') {
+        return store.getState().suggestions.length > 0;
+      }
+      return true;
+    }),
+    effect((ev: any) => {
+      // Coordinate store updates based on machine events
+      if (ev.type === 'type') store.api.setInput(ev.params?.[0] ?? '');
+      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === 'select') store.api.selectHighlighted();
+      if (ev.type === 'dismiss') store.api.clear();
+    })
+  );
 
   // Add event API to machine
-  addEventApi(machineWithStore);
+  addEventApi(machine);
 
-  return machineWithStore;
+  // Component-level API - no wrapper functions, just expose what's needed
+  const combobox = Object.assign(machine, {
+    model: store,
+
+    // Store operations (UI calls these when it needs store changes only)
+    removeTag: store.api.removeTag,
+    highlight: store.api.highlight,
+    setHighlighted: store.api.setHighlighted,
+
+    // Machine operations + coordinated via effects
+    focus: machine.api.focus,
+    blur: machine.api.blur,
+    type: machine.api.type,  // effect coordinates store.setInput
+    select: machine.api.select,  // effect coordinates store.selectHighlighted
+    dismiss: machine.api.dismiss,  // effect coordinates store.clear
+
+    // Semantic aliases for the UI
+    setInput: machine.api.type,
+    selectSuggestion: machine.api.select,
+    addTag: (tag: string) => store.api.addTag(tag),
+  });
+
+  return combobox;
 }
+
+export type FlatComboboxMachine = ReturnType<typeof createFlatComboboxMachine>;
