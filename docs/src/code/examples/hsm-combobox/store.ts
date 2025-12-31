@@ -33,6 +33,9 @@ export function createComboboxStore() {
     addTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: [...change.from.selectedTags, tag],
+      input: "",
+      suggestions: [],
+      highlightedIndex: 0,
     }),
 
     removeTag: (tag: string) => (change) => ({
