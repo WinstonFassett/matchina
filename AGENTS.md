@@ -266,7 +266,7 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 
 - **ASSUME dev server is already running** - Developer pilots both agent and dev server
 - Don't check if running, don't try to start
-- If puppeteer/browser tests fail due to server not running:
+- If playwright/browser tests fail due to server not running:
   - Inform user that dev server needs to be running
   - Do NOT attempt to start it yourself
 
@@ -293,7 +293,7 @@ npm run dev:docs         # Live TypeScript development + docs server
 
 2. **Interactive UX (requires manual or automated browser testing)**
    - User must test manually in browser, OR
-   - Use puppeteer for automated screenshot/interaction review
+   - Use playwright for automated screenshot/interaction review
 
 3. **Puppeteer setup (review/e2e, not test/e2e)**
    - Available for screenshot-based review
@@ -304,7 +304,7 @@ npm run dev:docs         # Live TypeScript development + docs server
    - Preferred for React component testing
    - Not set up yet - track as potential improvement
 
-**Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
+**Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use playwright.
 
 ## Playwright Usage
 
@@ -323,7 +323,7 @@ npm run dev:docs         # Live TypeScript development + docs server
 - `review/` - Living review and planning workspace
 
 **Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
-**Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer), AND git status is clean.
+**Focus:** Make things work. Tests pass, UI works (manually tested or playwright), AND git status is clean.
 
 ## Commands
 
@@ -398,7 +398,7 @@ Never destroy work. We have git. But do NOT do hard resets.
 **When to run:**
 
 - Tests: Always when working in core (`npm run dev` for watch mode)
-- Manual browser testing: For interactive UX (or use puppeteer via dev server)
+- Manual browser testing: For interactive UX (or use playwright via dev server)
 - build: When needed to verify library builds correctly
 - build:docs: Rarely - user runs when needed (prefer live dev server testing)
 - build:all: Rarely - only when full build of library + docs is required
