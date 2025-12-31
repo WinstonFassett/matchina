@@ -1,45 +1,47 @@
 import {
   createMachine,
   defineStates,
-  onLifecycle,
-  addEventApi,
+  createStoreMachine,
+  setup,
+  effect,
 } from "matchina";
+
+interface CounterState {
+  count: number;
+}
 
 export const createCounterMachine = () => {
   const states = defineStates({
-    Active: (count: number = 0) => ({ count }),
+    Active: undefined,
   });
 
-  // Create a machine with proper transitions
-  const machine = addEventApi(
-    createMachine(
-      states,
-      {
-        Active: {
-          increment: "Active",
-          decrement: "Active",
-          reset: () => () => states.Active(0),
-        },
-      },
-      states.Active()
-    )
-  );
-  onLifecycle(machine, {
-    Active: {
-      on: {
-        increment: {
-          effect: (ev) => {
-            ev.to.data.count = ev.from.data.count + 1;
-          },
-        },
-        decrement: {
-          effect: (ev) => {
-            ev.to.data.count = ev.from.data.count - 1;
-          },
-        },
+  const store = createStoreMachine<CounterState>({ count: 0 }, {
+    increment: () => (change) => ({ count: change.from.count + 1 }),
+    decrement: () => (change) => ({ count: change.from.count - 1 }),
+    reset: () => () => ({ count: 0 }),
+  });
+
+  const machine = createMachine(
+    states,
+    {
+      Active: {
+        increment: "Active",
+        decrement: "Active",
+        reset: "Active",
       },
     },
-  });
-  return machine;
+    states.Active()
+  );
+
+  setup(machine)(
+    effect((ev) => {
+      if (ev.type === "increment") store.dispatch("increment");
+      if (ev.type === "decrement") store.dispatch("decrement");
+      if (ev.type === "reset") store.dispatch("reset");
+    })
+  );
+
+  return Object.assign(machine, { store });
 };
+
 export type CounterMachine = ReturnType<typeof createCounterMachine>;
