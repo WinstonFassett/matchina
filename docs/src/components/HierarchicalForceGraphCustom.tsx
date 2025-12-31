@@ -612,6 +612,8 @@ export default function HierarchicalForceGraph({
           });
 
           // Update nodes (rounded rectangles centered on position)
+          const nodeWidth = 80;
+          const nodeHeight = 32;
           nodes.forEach((rect, i) => {
             const node = forceNodes[i];
             rect.setAttribute('x', (node.x - nodeWidth / 2).toString());
@@ -627,8 +629,6 @@ export default function HierarchicalForceGraph({
 
           // Update containers with smooth curved edges
           let containerIndex = 0;
-          const nodeWidth = 80;
-          const nodeHeight = 32;
           const minPadding = 40; // Minimum padding around nodes
 
           groups.forEach((groupNodes, groupName) => {
