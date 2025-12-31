@@ -36,8 +36,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   // Event handlers
   const handleInputChange = (value: string) => {
     setInputValue(value);
-    const tags = currentData.selectedTags || [];
-    actions.typed?.(value, tags);
+    actions.typed?.(value);
   };
 
   const handleFocus = () => {
@@ -47,8 +46,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   };
 
   const handleBlur = () => {
-    const tags = currentData.selectedTags || [];
-    actions.deactivate?.(tags);
+    actions.deactivate?.();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,47 +57,45 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        actions.deactivate?.(selectedTags);
+        actions.deactivate?.();
         break;
       case "Backspace":
         // If input is empty and there are tags, remove the last tag
         if (!input.trim() && selectedTags.length > 0) {
           e.preventDefault();
           const lastTag = selectedTags[selectedTags.length - 1];
-          actions.removeTag?.(lastTag, selectedTags);
+          actions.removeTag?.(lastTag);
         }
         break;
       case "ArrowDown":
         e.preventDefault();
         if (parsed.child === 'Suggesting') {
-          actions.highlightNext?.(input, selectedTags, suggestions, highlightedIndex);
+          actions.highlightNext?.();
         }
         break;
       case "ArrowUp":
         e.preventDefault();
         if (parsed.child === 'Suggesting') {
-          actions.highlightPrev?.(input, selectedTags, suggestions, highlightedIndex);
+          actions.highlightPrev?.();
         }
         break;
       case "Enter":
         e.preventDefault();
         if (parsed.child === 'Suggesting' && suggestions.length > 0) {
-          actions.selectHighlighted?.(suggestions, highlightedIndex, selectedTags);
+          actions.selectHighlighted?.();
         } else if (input.trim()) {
-          actions.addTag?.(input.trim(), selectedTags);
+          actions.addTag?.(input.trim());
         }
         break;
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    const tags = currentData.selectedTags || [];
-    actions.addTag?.(suggestion, tags);
+    actions.addTag?.(suggestion);
   };
 
   const handleTagRemove = (tag: string) => {
-    const tags = currentData.selectedTags || [];
-    actions.removeTag?.(tag, tags);
+    actions.removeTag?.(tag);
   };
 
   return (
