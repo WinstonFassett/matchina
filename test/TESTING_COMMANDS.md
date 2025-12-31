@@ -43,11 +43,11 @@ npm run test:e2e:file -- --grep "specific test name"
 ## Unit Testing (Vitest)
 
 ```bash
-# Run all unit tests with coverage
+# Run all tests with coverage
 npm run test
 
-# Run in watch mode for development
-npm run dev
+# NOTE: `npm run dev` is FOR HUMANS ONLY - it runs forever and blocks agents
+# Humans use `npm run dev` for watch mode, agents use `npm test` for verification
 
 # Run specific test file
 npx vitest run test/path/to/test.spec.ts

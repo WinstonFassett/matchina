@@ -11,7 +11,8 @@ Quick reference for adding features to Matchina. Focus on making things work—s
 
 - [ ] **Implement in `/src`** - Follow nano-sized, composable pattern
 - [ ] **Write tests in `/test`** - Test type inference and runtime behavior
-  - `npm run dev` for watch mode
+  - `npm test` for agents (runs and completes)
+  - `npm run dev` for humans (watch mode)
 - [ ] **Update `.size-limit.json`** if adding public API
 - [ ] **Update `package.json` exports** if adding integration (like `/react`)
 
@@ -38,7 +39,7 @@ Quick reference for adding features to Matchina. Focus on making things work—s
 ## Verification
 
 **What matters:**
-- [ ] Tests pass (`npm test` or `npm run dev` for watch)
+- [ ] Tests pass (`npm test` for agents, `npm run dev` for humans)
 - [ ] Example works in browser (if created)
 - [ ] Visualizer shows states correctly (if applicable)
 

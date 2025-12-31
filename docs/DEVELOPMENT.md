@@ -416,11 +416,12 @@ describe("createMachine", () => {
 
 **Run Tests:**
 ```bash
-npm test                # Type check + Vitest with coverage
-npm run dev             # Vitest watch mode
-npm run test:types      # TypeScript type checking only
+npm test                # Type check + Vitest with coverage (AGENT-SAFE)
+npm run typecheck       # TypeScript type checking only (AGENT-SAFE)
 npm run coverage        # Coverage report
 ```
+
+**🚨 NOTE: `npm run dev` is FOR HUMANS ONLY** - it runs forever and blocks agents. Use `npm test` for verification.
 
 **Test Single File:**
 ```bash
@@ -603,7 +604,7 @@ export const createCheckoutMachine = () => {
 4. Evidence > assumptions
 
 **What matters:**
-- Tests pass (`npm run dev` watch mode)
+- Tests pass (`npm test` for agents, `npm run dev` for humans)
 - UI works in browser
 - State machine behaves correctly
 
