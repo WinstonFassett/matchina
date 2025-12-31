@@ -53,11 +53,10 @@ export function createFlatComboboxMachine() {
     setHighlighted: store.api.setHighlighted,
 
     // Machine operations
-    focus: machine.api.focus,
-    blur: machine.api.blur,
-    type: machine.api.type,
-    addTag: machine.api.addTag,
-    select: machine.api.select,
+    focus: () => machine.send('focus'),
+    blur: () => machine.send('blur'),
+    addTag: () => machine.send('addTag'),
+    select: () => machine.send('select'),
 
     // Coordinated action: update store then transition
     setInput: (value: string) => {
