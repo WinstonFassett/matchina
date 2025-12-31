@@ -1,11 +1,13 @@
 import {
   defineStates,
   createMachine,
+  createStoreMachine,
+  addStoreApi,
+  withSubscribe,
   setup,
   enter,
   when,
-  transitionHooks,
-  atom,
+  effect,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -14,6 +16,19 @@ interface StopwatchState {
   at: number;
 }
 
+const createStopwatchStore = () => {
+  const store = createStoreMachine<StopwatchState>({ elapsed: 0, at: 0 }, {
+    tick: () => (change) => ({
+      elapsed: change.from.elapsed + (Date.now() - change.from.at),
+      at: Date.now(),
+    }),
+    start: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
+    resume: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
+    clear: () => () => ({ elapsed: 0, at: Date.now() }),
+  });
+  return addStoreApi(withSubscribe(store));
+};
+
 export const createStopwatchMachine = () => {
   const states = defineStates({
     Stopped: undefined,
@@ -21,8 +36,7 @@ export const createStopwatchMachine = () => {
     Suspended: undefined,
   });
 
-  const initialState: StopwatchState = { elapsed: 0, at: 0 };
-  const store = atom(initialState);
+  const store = createStopwatchStore();
 
   const machine = createMachine(
     states,
@@ -44,12 +58,12 @@ export const createStopwatchMachine = () => {
   );
 
   setup(machine)(
-    transitionHooks(
-      { type: "_tick", effect: () => store.update(s => ({ elapsed: s.elapsed + (Date.now() - s.at), at: Date.now() })) },
-      { type: "start", effect: () => store.update(s => ({ ...s, at: Date.now() })) },
-      { type: "resume", effect: () => store.update(s => ({ ...s, at: Date.now() })) },
-      { type: "clear", effect: () => store.set({ elapsed: 0, at: Date.now() }) },
-    ),
+    effect((ev) => {
+      if (ev.type === "_tick") store.api.tick();
+      if (ev.type === "start") store.api.start();
+      if (ev.type === "resume") store.api.resume();
+      if (ev.type === "clear") store.api.clear();
+    }),
     enter(
       when(
         (ev) => ev.to.is("Ticking"),

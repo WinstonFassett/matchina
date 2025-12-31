@@ -1,11 +1,21 @@
-import { createMachine, defineStates, setup, transitionHooks, atom } from "matchina";
+import { createMachine, defineStates, setup, effect, createStoreMachine, addStoreApi, withSubscribe } from "matchina";
+
+const createCounterStore = () => {
+  const store = createStoreMachine({ count: 0 }, {
+    increment: () => (change) => ({ count: change.from.count + 1 }),
+    decrement: () => (change) => ({ count: change.from.count - 1 }),
+    reset: () => () => ({ count: 0 }),
+  });
+  return addStoreApi(withSubscribe(store));
+};
 
 export const createCounterMachine = () => {
   const states = defineStates({
     Active: undefined,
+    Inactive: undefined,
   });
 
-  const store = atom({ count: 0 });
+  const store = createCounterStore();
 
   const machine = createMachine(
     states,
@@ -14,17 +24,21 @@ export const createCounterMachine = () => {
         increment: "Active",
         decrement: "Active",
         reset: "Active",
+        deactivate: "Inactive",
+      },
+      Inactive: {
+        activate: "Active",
       },
     },
     "Active"
   );
 
   setup(machine)(
-    transitionHooks(
-      { type: "increment", effect: () => store.update(s => ({ count: s.count + 1 })) },
-      { type: "decrement", effect: () => store.update(s => ({ count: s.count - 1 })) },
-      { type: "reset", effect: () => store.set({ count: 0 }) },
-    )
+    effect((ev) => {
+      if (ev.to.is("Active") && ev.type in store.api) {
+        (store.api as any)[ev.type]();
+      }
+    })
   );
 
   return Object.assign(machine, { store });

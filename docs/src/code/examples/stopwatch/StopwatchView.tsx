@@ -1,18 +1,14 @@
 import { getAvailableActions as getStateEvents } from "matchina";
 import { useMachine } from "matchina/react";
-import { useSyncExternalStore } from "react";
 import type { createStopwatchMachine } from "./machine";
 
 type StopwatchMachine = ReturnType<typeof createStopwatchMachine>;
 
 export function StopwatchView({ machine }: { machine: StopwatchMachine }) {
   useMachine(machine);
-  const storeState = useSyncExternalStore(
-    (cb) => machine.store.subscribe(cb),
-    () => machine.store.get()
-  );
+  useMachine(machine.store);
   const state = machine.getState();
-  const elapsed = storeState.elapsed;
+  const elapsed = machine.store.getState().elapsed;
 
   const stateColorClass = state.match({
     Stopped: () => "text-red-500",

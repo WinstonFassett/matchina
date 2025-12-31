@@ -1,4 +1,4 @@
-import { matchina, defineStates, setup, transitionHooks, atom } from "matchina";
+import { matchina, defineStates, setup, transitionHooks, createStoreMachine, addStoreApi, withSubscribe } from "matchina";
 
 interface User {
   id: string;
@@ -14,6 +14,19 @@ interface AuthFormState {
   error: string | null;
   user: User | null;
 }
+
+const createAuthStore = (initialState: AuthFormState) => {
+  const store = createStoreMachine<AuthFormState>(initialState, {
+    setEmail: (email: string) => (change) => ({ ...change.from, email }),
+    setPassword: (password: string) => (change) => ({ ...change.from, password }),
+    setName: (name: string) => (change) => ({ ...change.from, name }),
+    setError: (error: string | null) => (change) => ({ ...change.from, error }),
+    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
+    clearError: () => (change) => ({ ...change.from, error: null }),
+    reset: () => () => initialState,
+  });
+  return addStoreApi(withSubscribe(store));
+};
 
 const states = defineStates({
   LoggedOut: undefined,
@@ -36,7 +49,7 @@ export const createAuthMachine = () => {
     user: null,
   };
 
-  const store = atom(initialState);
+  const store = createAuthStore(initialState);
 
   const machine = matchina(
     states,
@@ -85,12 +98,12 @@ export const createAuthMachine = () => {
 
   setup(machine)(
     transitionHooks(
-      { type: "failure", effect: (ev) => store.update(s => ({ ...s, error: ev.params[0] as string })) },
-      { from: "LoggingIn", to: "LoggedIn", effect: (ev) => store.update(s => ({ ...s, user: ev.params[0] as User, error: null })) },
-      { from: "Registering", to: "LoggedIn", effect: (ev) => store.update(s => ({ ...s, user: ev.params[0] as User, error: null })) },
-      { to: "LoginForm", effect: () => store.update(s => ({ ...s, error: null })) },
-      { to: "RegisterForm", effect: () => store.update(s => ({ ...s, error: null })) },
-      { type: "logout", effect: () => store.set(initialState) },
+      { type: "failure", effect: (ev) => store.api.setError(ev.params[0] as string) },
+      { from: "LoggingIn", to: "LoggedIn", effect: (ev) => store.api.setUser(ev.params[0] as User) },
+      { from: "Registering", to: "LoggedIn", effect: (ev) => store.api.setUser(ev.params[0] as User) },
+      { to: "LoginForm", effect: () => store.api.clearError() },
+      { to: "RegisterForm", effect: () => store.api.clearError() },
+      { type: "logout", effect: () => store.api.reset() },
     )
   );
 

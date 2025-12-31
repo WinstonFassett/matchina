@@ -1,5 +1,9 @@
+import { createStoreMachine, StoreChange } from "./store-machine";
+import { withSubscribe } from "./extras/with-subscribe";
+
 /**
- * Atom - A dead simple single value store with get/set/update/subscribe.
+ * Atom - A simple single value store with get/set/update/subscribe.
+ * Composed from createStoreMachine + withSubscribe.
  * Inspired by nanostores, designed for internal machine data.
  * 
  * @example
@@ -15,44 +19,25 @@ export interface Atom<T> {
   get(): T;
   set(value: T): void;
   update(fn: (current: T) => T): void;
-  subscribe(listener: (value: T, prev: T) => void): () => void;
+  subscribe(listener: (change: StoreChange<T>) => void): () => void;
+  getState(): T;
+  getChange(): StoreChange<T>;
 }
 
 export function atom<T>(initialValue: T): Atom<T> {
-  let value = initialValue;
-  const listeners = new Set<(value: T, prev: T) => void>();
-
+  const store = createStoreMachine<T>(initialValue, {
+    set: (value: T) => () => value,
+    update: (fn: (current: T) => T) => (change) => fn(change.from),
+  });
+  
+  const enhanced = withSubscribe(store);
+  
   return {
-    get: () => value,
-    set: (next: T) => {
-      const prev = value;
-      value = next;
-      listeners.forEach(fn => fn(value, prev));
-    },
-    update: (fn: (current: T) => T) => {
-      const prev = value;
-      value = fn(value);
-      listeners.forEach(fn => fn(value, prev));
-    },
-    subscribe: (listener: (value: T, prev: T) => void) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-  };
-}
-
-/**
- * Creates an atom with a React-friendly API.
- * Includes a notify method for triggering re-renders.
- */
-export function reactiveAtom<T>(initialValue: T): Atom<T> & { notify(): void } {
-  const base = atom(initialValue);
-  return {
-    ...base,
-    notify: () => {
-      const current = base.get();
-      // Trigger listeners without changing value
-      base.set(current);
-    },
+    get: () => store.getState(),
+    set: (value: T) => store.dispatch("set", value),
+    update: (fn: (current: T) => T) => store.dispatch("update", fn),
+    subscribe: enhanced.subscribe,
+    getState: () => store.getState(),
+    getChange: () => store.getChange(),
   };
 }
