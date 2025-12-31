@@ -32,8 +32,6 @@ function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: 'Typing',
-      toSuggesting: 'Suggesting',
-      toTextEntry: 'TextEntry',
     },
     Typing: {
       toEmpty: 'Empty',
@@ -43,7 +41,6 @@ function createActiveForApp() {
     TextEntry: {
       typed: 'Typing',
       clear: 'Empty',
-      toSuggesting: 'Suggesting',
     },
     Suggesting: {
       typed: 'Typing',
