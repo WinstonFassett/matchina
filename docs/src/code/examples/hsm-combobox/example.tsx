@@ -55,6 +55,7 @@ export default function ComboboxExample() {
         defaultViz="sketch"
         interactive={true}
         layout="stacked"
+        preset="hierarchical"
         AppView={mode === "flat" ? ComboboxViewFlat : ComboboxView}
       />
     </div>

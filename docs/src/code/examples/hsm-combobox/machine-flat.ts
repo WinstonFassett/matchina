@@ -1,6 +1,8 @@
-import { createFlatMachine, createStoreMachine, defineStates, setup } from "matchina";
+import { describeHSM } from "matchina/hsm";
+import { createStoreMachine, setup } from "matchina";
 import { createComboboxStoreHook } from "./hooks";
 
+// Available options for autocomplete
 const AVAILABLE_TAGS = [
   "typescript", "javascript", "react", "vue", "angular",
   "node", "deno", "bun", "python", "rust",
@@ -32,15 +34,7 @@ function getSuggestions(state: ComboboxState): string[] {
     .slice(0, 5);
 }
 
-// Flat state keys - createFlatMachine handles flattened hierarchy
-const states = defineStates({
-  Inactive: undefined,
-  "Active.Empty": undefined,
-  "Active.Typing": undefined,
-  "Active.TextEntry": undefined,
-  "Active.Suggesting": undefined,
-});
-
+// Create the automatically flattened version using describeHSM
 export function createFlatComboboxMachine() {
   // Create store to manage all combo box state
   const store = createStoreMachine<ComboboxState>({
@@ -93,53 +87,83 @@ export function createFlatComboboxMachine() {
     }),
   });
 
-  // Use createFlatMachine with nested structure - it handles flattening automatically
-  const baseMachine = createFlatMachine(states, {
-    Inactive: {
-      focus: states["Active.Empty"],
-    },
-
-    "Active.Empty": {
-      typed: () => states["Active.Typing"](),
-      removeTag: states["Active.Empty"],
-      addTag: states["Active.Empty"],
-      deactivate: states.Inactive,
-    },
-
-    "Active.Typing": {
-      toEmpty: states["Active.Empty"],
-      toSuggesting: states["Active.Suggesting"], 
-      toTextEntry: states["Active.TextEntry"],
-      removeTag: states["Active.Typing"],
-      deactivate: states.Inactive,
-    },
-
-    "Active.TextEntry": {
-      typed: () => states["Active.Typing"](),
-      clear: states["Active.Empty"],
-      removeTag: states["Active.TextEntry"],
-      addTag: states["Active.Empty"],
-      deactivate: states.Inactive,
-    },
-
-    "Active.Suggesting": {
-      typed: () => states["Active.Typing"](),
-      clear: states["Active.Empty"],
-      highlightNext: states["Active.Suggesting"],
-      highlightPrev: states["Active.Suggesting"],
-      selectHighlighted: states["Active.Empty"],
-      removeTag: states["Active.Suggesting"],
-      cancel: states["Active.TextEntry"],
-      addTag: states["Active.Empty"],
-      deactivate: states.Inactive,
-    },
-  }, states.Inactive());
+  // Use describeHSM to auto-flatten a nested description
+  const flatMachine = describeHSM({
+    initial: 'Inactive',
+    states: {
+      Inactive: {
+        data: () => ({}), // No selectedTags in machine state - it's in store
+        on: {
+          focus: 'Active'
+        }
+      },
+      Active: {
+        initial: 'Empty',
+        states: {
+          Empty: {
+            data: () => ({ input: "" }), // No selectedTags in machine state - it's in store
+            on: {
+              typed: 'Typing',
+              removeTag: 'Empty', // Stay in Empty
+              addTag: 'Empty', // Stay in Empty
+              deactivate: '^Inactive'
+            }
+          },
+          Typing: {
+            data: (input: string) => ({ input }), // No selectedTags in machine state - it's in store
+            on: {
+              // Auto-transition based on suggestions
+              toEmpty: 'Empty',
+              toSuggesting: 'Suggesting',
+              toTextEntry: 'TextEntry',
+              removeTag: 'Typing',
+              deactivate: '^Inactive'
+            }
+          },
+          TextEntry: {
+            data: (input: string) => ({ input }), // No selectedTags in machine state - it's in store
+            on: {
+              typed: 'Typing',
+              clear: 'Empty',
+              removeTag: 'TextEntry',
+              addTag: 'Empty',
+              deactivate: '^Inactive'
+            }
+          },
+          Suggesting: {
+            data: (input: string, suggestions: string[], highlightedIndex: number = 0) => ({
+              input, suggestions, highlightedIndex // No selectedTags in machine state - it's in store
+            }),
+            on: {
+              typed: 'Typing',
+              clear: 'Empty',
+              highlightNext: 'Suggesting',
+              highlightPrev: 'Suggesting',
+              selectHighlighted: 'Empty',
+              removeTag: 'Suggesting',
+              cancel: 'TextEntry',
+              addTag: 'Empty',
+              deactivate: '^Inactive'
+            }
+          }
+        },
+        on: {
+          blur: '^Inactive',
+          close: '^Inactive',
+          removeTag: () => (ev) => {
+            // Delegate to child machine - let it handle the event
+            return ev.from;
+          }
+        }
+      }
+    }
+  });
 
   // Add store hook and auto-transition effect
-  setup(baseMachine)(
+  setup(flatMachine)(
     createComboboxStoreHook(store)
   );
 
   // Attach store to machine for external access
-  return Object.assign(baseMachine, { store });
+  return Object.assign(flatMachine, { store });
 }

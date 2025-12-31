@@ -10,19 +10,19 @@ const AVAILABLE_TAGS = [
 
 // Active child states for the tag editor
 export const activeStates = defineStates({
-  Empty: (selectedTags: string[] = []) => ({
+  Empty: () => ({
     input: "",
-    selectedTags
+    // selectedTags is in store, not machine state
   }),
-  TextEntry: (input: string, selectedTags: string[]) => ({
+  TextEntry: (input: string) => ({
     input,
-    selectedTags
+    // selectedTags is in store, not machine state
   }),
-  Suggesting: (input: string, selectedTags: string[], suggestions: string[], highlightedIndex: number = 0) => ({
+  Suggesting: (input: string, suggestions: string[], highlightedIndex: number = 0) => ({
     input,
-    selectedTags,
     suggestions,
     highlightedIndex
+    // selectedTags is in store, not machine state
   }),
 });
 
@@ -53,64 +53,61 @@ const handleTyped = (value: string) => (ev: any) => {
 const handleAddTag = (tag: string) => (ev: any) => {
   const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
   const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
-  if (!tagToAdd || selectedTags.includes(tagToAdd)) {
-    return activeStates.Empty(selectedTags);
+  if (!tagToAdd) {
+    return activeStates.Empty();
   }
-  return activeStates.Empty([...selectedTags, tagToAdd]);
+  return activeStates.Empty();
 };
 
-function createActiveForApp(data?: { selectedTags?: string[] }) {
-  const tags = data?.selectedTags ?? [];
-
+function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: handleTyped,
       removeTag: (tag) => (ev) => 
-        activeStates.Empty(ev.from.data.selectedTags.filter((t: string) => t !== tag)),
+        activeStates.Empty(),
       backspace: () => (ev) => {
-        const selectedTags = ev.from.data.selectedTags;
-        if (selectedTags.length > 0) {
-          return activeStates.Empty(selectedTags.slice(0, -1));
-        }
+        // selectedTags is in store, not machine state
         return ev.from;
       },
     },
     TextEntry: {
       typed: handleTyped,
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
+      clear: () => (ev) => activeStates.Empty(),
       addTag: handleAddTag,
       backspace: () => (ev) => {
-        const { input, selectedTags } = ev.from.data;
-        if (input.length === 0 && selectedTags.length > 0) {
-          return activeStates.Empty(selectedTags.slice(0, -1));
-        }
+        // selectedTags is in store, not machine state
         return ev.from;
       },
     },
     Suggesting: {
       typed: handleTyped,
-      clear: () => (ev) => activeStates.Empty(ev.from.data.selectedTags),
+      clear: () => (ev) => activeStates.Empty(),
       highlightNext: () => (ev) => {
-        const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
+        const { input, suggestions, highlightedIndex } = ev.from.data;
         const next = Math.min(suggestions.length - 1, highlightedIndex + 1);
-        return activeStates.Suggesting(input, selectedTags, suggestions, next);
+        return activeStates.Suggesting(input, suggestions, next);
       },
       highlightPrev: () => (ev) => {
-        const { input, selectedTags, suggestions, highlightedIndex } = ev.from.data;
+        const { input, suggestions, highlightedIndex } = ev.from.data;
         const prev = Math.max(0, highlightedIndex - 1);
-        return activeStates.Suggesting(input, selectedTags, suggestions, prev);
+        return activeStates.Suggesting(input, suggestions, prev);
       },
-      selectHighlighted: handleAddTag,
+      selectHighlighted: () => (ev) => {
+        const { input, suggestions, highlightedIndex } = ev.from.data;
+        // selectedTags is in store, not machine state
+        return activeStates.Empty();
+      },
+      cancel: () => (ev) => {
+        const { input } = ev.from.data;
+        return activeStates.TextEntry(input);
+      },
       addTag: handleAddTag,
       backspace: () => (ev) => {
-        const { input, selectedTags } = ev.from.data;
-        if (input.length === 0 && selectedTags.length > 0) {
-          return activeStates.Empty(selectedTags.slice(0, -1));
-        }
+        // selectedTags is in store, not machine state
         return ev.from;
       },
     },
-  }, activeStates.Empty(tags));
+  });
 }
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;
@@ -119,7 +116,7 @@ export type ActiveMachine = ReturnType<typeof createActiveForApp>;
 const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
 
 export const appStates = defineStates({
-  Inactive: (selectedTags: string[] = []) => ({ selectedTags }),
+  Inactive: () => ({}), // No selectedTags in machine state - it's in store
   Active: activeMachineFactory,
 });
 

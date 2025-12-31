@@ -113,11 +113,15 @@ export function MachineVisualizer({
   const vizContainerClasses = [
     'visualizer-container',
     isSplit ? 'flex-1 h-full' : 'w-full',
+    // For HSM examples, put visualization on bottom
+    preset === 'hierarchical' ? 'order-2' : '',
   ].filter(Boolean).join(' ');
 
   const appContainerClasses = [
     'app-container',
     isSplit ? 'flex-1 h-full' : 'w-full',
+    // For HSM examples, put app on top
+    preset === 'hierarchical' ? 'order-1' : '',
   ].filter(Boolean).join(' ');
 
   // Height styling
