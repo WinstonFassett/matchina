@@ -387,5 +387,6 @@ export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Create flat machine using existing API
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
   // Users requiring type safety should use createFlatMachine() with defineStates() directly
+  // Note: createFlatMachine already applies parent transition fallback and child.exit handling
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }

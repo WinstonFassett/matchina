@@ -260,21 +260,38 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 - Work tickets depend on each other based on implementation order
 - Don't block on perfect organization—refine as you go
 
-## Development Servers
+## 🚨 CRITICAL: AGENTS NEVER RUN DEV SERVER
 
-**CRITICAL: Do NOT run dev servers from agents.**
+**ABSOLUTELY NO DEV SCRIPTS - EVER**
 
-- **ASSUME dev server is already running** - Developer pilots both agent and dev server
-- Don't check if running, don't try to start
-- If playwright/browser tests fail due to server not running:
-  - Inform user that dev server needs to be running
-  - Do NOT attempt to start it yourself
+Dev scripts are designed for humans and are COMPLETELY UNSUITABLE for agents:
 
-**User runs:**
+- **They NEVER RETURN** - Run forever until killed, blocking the agent
+- **They DUPLICATE RESOURCES** - User already has dev server running
+- **They KILL MOMENTUM** - Agent sits waiting for a process that never ends
+- **THEY WASTE RESOURCES** - Multiple dev servers running simultaneously
 
+**NEVER, EVER, UNDER ANY CIRCUMSTANCES RUN THESE COMMANDS:**
 ```bash
-npm run dev              # Vitest watch (core library)
-npm run dev:docs         # Live TypeScript development + docs server
+# ❌ FORBIDDEN - These run forever and block agents
+npm run dev              # Vitest watch (NEVER for agents)
+npm run dev:docs         # Live dev server (NEVER for agents)
+npm run dev:all          # Both servers (NEVER for agents)
+```
+
+**IF YOU NEED TO TEST:**
+```bash
+# ✅ AGENT-SAFE - These run and complete
+npm test                 # Run all tests with coverage
+npm run build            # Build core library only
+npm run build:all        # Build library + docs (when needed)
+npm run typecheck        # Type checking only
+```
+
+**User runs these (agents assume they're already running):**
+```bash
+npm run dev              # Vitest watch (human runs this)
+npm run dev:docs         # Live TypeScript development + docs server (human runs this)
 ```
 
 **Live Development:**
@@ -282,6 +299,7 @@ npm run dev:docs         # Live TypeScript development + docs server
 - No manual rebuild required when editing source files
 - Uses unbuild --stub with mkdist builder for browser compatibility
 - Full TypeScript support during development
+- **HUMAN ONLY** - Agents use `npm test` and `npm run build`
 
 ## Testing Requirements
 
@@ -327,21 +345,27 @@ npm run dev:docs         # Live TypeScript development + docs server
 
 ## Commands
 
-**Agents can run:**
+**🚨 AGENT-SAFE COMMANDS ONLY:**
 
 ```bash
-npm run dev              # Vitest watch mode (for testing)
-npm test                 # Run all tests with coverage (if everything passes)
+npm test                 # Run all tests with coverage (PREFERRED for verification)
 npm run build            # Build core library only (fast, preferred)
+npm run build:all        # Build core library + docs (when full build needed)
+npm run typecheck        # Type checking only (fast verification)
 ```
 
-**User runs (agents assume running):**
+**🚫 FORBIDDEN - NEVER RUN AS AGENT:**
+```bash
+npm run dev              # Vitest watch mode (runs forever, blocks agent)
+npm run dev:docs         # Live dev server (runs forever, blocks agent)
+npm run dev:all          # Both servers (runs forever, blocks agent)
+```
+
+**User runs (agents assume these are already running):**
 
 ```bash
 npm --workspace docs run dev    # Astro dev server at localhost:4321
 npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
-npm run build:all              # Build core library + docs (when full build needed)
-npm run dev:all                # Run both core dev server and docs dev server
 npm run release                # Release process (user only)
 npm run publish                # Publish to npm (user only)
 npm run dry-run                # Dry run release (user only)
@@ -349,10 +373,11 @@ npm run dry-run                # Dry run release (user only)
 
 **Key points:**
 
-- Agents do NOT run dev servers - assume they're running
+- **AGENTS NEVER RUN DEV SCRIPTS** - they run forever and block momentum
 - **NEVER run `npm run build:docs` as agent** - extremely slow and verbose
 - **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
 - **NEVER run `npm run release`, `npm run publish`, or `npm run dry-run` as agent** - user only
+- **Prefer `npm test` for verification** - tests run and complete
 - **Prefer `npm run build` (core only) over `npm run build:all`** - much faster
 - **`npm run build` now only builds the core library** - docs build moved to `build:all`
 - **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
@@ -397,13 +422,13 @@ Developer usually does not want you to run quality gates EXCEPT right before shi
 Never destroy work. We have git. But do NOT do hard resets. 
 **When to run:**
 
-- Tests: Always when working in core (`npm run dev` for watch mode)
-- Manual browser testing: For interactive UX (or use playwright via dev server)
-- build: When needed to verify library builds correctly
-- build:docs: Rarely - user runs when needed (prefer live dev server testing)
-- build:all: Rarely - only when full build of library + docs is required
-- test-build: When type checking both core and docs (verbose, use sparingly)
-- Linting: Only right before shipping (skip during development)
+- **Tests**: Always when working in core (`npm test` for verification, NOT `npm run dev`)
+- **Manual browser testing**: For interactive UX (or use playwright via dev server)
+- **build**: When needed to verify library builds correctly (`npm run build`)
+- **build:docs**: Rarely - user runs when needed (prefer live dev server testing)
+- **build:all**: Rarely - only when full build of library + docs is required
+- **typecheck**: When you need fast type verification without full build
+- **Linting**: Only right before shipping (skip during development)
 
 **Verbose output handling (CRITICAL):**
 

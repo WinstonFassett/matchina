@@ -47,14 +47,35 @@ export function createFlatComboboxMachine() {
   const combobox = Object.assign(machine, {
     model: store,
 
-    // Pure store operations
+    // Machine state transitions (exposed directly)
+    focus: () => machine.send('focus'),
+    blur: () => machine.send('blur'),
+    select: () => machine.send('select'),
+
+    // Store operations that update state and trigger machine events
+    setInput: (input: string) => {
+      store.api.setInput(input);
+      machine.send('type');
+    },
+
+    addTag: (tag: string) => {
+      store.api.addTag(tag);
+    },
+
+    // Pure store operations (no machine events)
     removeTag: store.api.removeTag,
     highlight: store.api.highlight,
     setHighlighted: store.api.setHighlighted,
 
-    // Machine operations (use machine.send() for state transitions)
-    addTag: machine.api.addTag,
-    select: machine.api.select,
+    // Convenience methods that combine store + machine
+    selectSuggestion: () => {
+      store.api.selectHighlighted();
+      machine.send('select');
+    },
+
+    dismiss: () => {
+      machine.send('select');
+    },
   });
 
   return combobox;

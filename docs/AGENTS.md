@@ -6,8 +6,23 @@
 
 ## Commands (User Runs, Not Agent)
 
-**CRITICAL: Do NOT run dev server from agents. ASSUME it's already running.**
+**🚨 CRITICAL: AGENTS NEVER RUN DEV SCRIPTS - EVER**
 
+Dev scripts run forever and BLOCK agents from completing work. They waste resources and duplicate what the user is already running.
+
+**🚫 FORBIDDEN - NEVER RUN AS AGENT:**
+```bash
+npm run dev             # Astro dev server at localhost:4321 (NEVER for agents)
+```
+
+**✅ AGENT-SAFE ALTERNATIVES:**
+```bash
+npm test                # Run tests to verify changes work
+npm run build           # Build to verify compilation
+npm run typecheck       # Fast type verification
+```
+
+**User runs these (agents assume they're already running):**
 ```bash
 npm run dev             # Astro dev server at localhost:4321 (USER RUNS)
 npm run build           # Build static site

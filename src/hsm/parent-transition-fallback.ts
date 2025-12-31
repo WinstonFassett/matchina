@@ -19,7 +19,7 @@ export function withParentTransitionFallback(
 ) {
   const { delimiter = '.' } = options;
   
-  // Use resolveExit hook to intercept exit resolution
+  // Use resolveExit hook to intercept exit resolution (this is called in send())
   setup(machine)(
     resolveExit((ev: any, next: any) => {
       const currentKey = ev.from?.key;
@@ -42,14 +42,18 @@ export function withParentTransitionFallback(
         const parentKey = parts.join(delimiter);
         const parentTransitions = machine.transitions[parentKey];
         
-        if (parentTransitions && parentTransitions[ev.type]) {
+        if (!parentTransitions) continue;
+        
+        if (parentTransitions[ev.type]) {
           // Found a parent transition, resolve it manually
           const target = parentTransitions[ev.type];
           if (typeof target === 'string') {
-            // Resolve target: if relative (no dot), prepend parent key
-            const resolvedTarget = target.includes(delimiter) ? target : `${parentKey}${delimiter}${target}`;
-            // Create a new event with the resolved state
-            const targetState = machine.states[resolvedTarget]?.(...ev.params);
+            // Target is already resolved by flattenTransitions
+            // It may be:
+            // - Absolute path like "Inactive" (from ^escape)
+            // - Fully qualified like "Parent.Child"
+            // - Just use it as-is, don't prepend parent key
+            const targetState = machine.states[target]?.(...ev.params);
             if (targetState) {
               return new FactoryMachineEventImpl(
                 ev.type,
