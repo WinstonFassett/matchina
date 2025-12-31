@@ -36,15 +36,12 @@ export function ComboboxView({ machine }: { machine: Machine }) {
     return parts.join(" / ");
   };
 
-  const selectedTags: string[] = state.match({
-    Active: () => activeState?.data?.selectedTags ?? [],
-    Inactive: ({ selectedTags }: { selectedTags: string[] }) => selectedTags ?? [],
-  }, []);
+  const selectedTags: string[] = machine.store.getState().selectedTags;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!activeState) return;
 
-    const { suggestions = [] } = activeState.data;
+    const storeState = machine.store.getState();
 
     switch (e.key) {
       case "Escape":
@@ -54,21 +51,21 @@ export function ComboboxView({ machine }: { machine: Machine }) {
       case "ArrowDown":
         e.preventDefault();
         if (activeState.is("Suggesting")) {
-          activeActions?.highlightNext?.();
+          machine.highlight('next');
         }
         break;
       case "ArrowUp":
         e.preventDefault();
         if (activeState.is("Suggesting")) {
-          activeActions?.highlightPrev?.();
+          machine.highlight('prev');
         }
         break;
       case "Enter":
         e.preventDefault();
-        if (activeState.is("Suggesting") && suggestions.length > 0) {
-          activeActions?.selectHighlighted?.();
-        } else if (activeState.data.input?.trim()) {
-          activeActions?.addTag?.(activeState.data.input.trim());
+        if (activeState.is("Suggesting") && storeState.suggestions.length > 0) {
+          machine.selectHighlighted();
+        } else if (storeState.input?.trim()) {
+          machine.addTag(storeState.input.trim());
         }
         break;
     }
@@ -98,7 +95,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
           <input
             ref={inputRef}
             type="text"
-            value={activeState?.data?.input ?? ""}
+            value={machine.store.getState().input}
             onChange={(e) => activeActions?.typed?.(e.target.value)}
             onFocus={() => actions.focus()}
             onBlur={() => actions.close()}
@@ -107,17 +104,17 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
 
-          {activeState?.is("Suggesting") && activeState.data.suggestions?.length > 0 && (
+          {activeState?.is("Suggesting") && machine.store.getState().suggestions?.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-20">
-              {activeState.data.suggestions.map((suggestion: string, index: number) => (
+              {machine.store.getState().suggestions.map((suggestion: string, index: number) => (
                 <button
                   key={suggestion}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    activeActions?.addTag?.(suggestion);
+                    machine.addTag(suggestion);
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
-                    index === activeState.data.highlightedIndex
+                    index === machine.store.getState().highlightedIndex
                       ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
                       : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                   }`}
