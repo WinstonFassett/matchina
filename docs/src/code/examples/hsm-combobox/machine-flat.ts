@@ -10,7 +10,6 @@ export function createFlatComboboxMachine() {
     initial: 'Inactive',
     states: {
       Inactive: {
-        data: undefined,
         on: {
           focus: 'Active',
           addTag: 'Active'
@@ -20,14 +19,12 @@ export function createFlatComboboxMachine() {
         initial: 'Empty',
         states: {
           Empty: {
-            data: (value: string) => ({ value }),
             on: {
               type: 'Suggesting',
               blur: '^Inactive'
             }
           },
           Suggesting: {
-            data: (value: string) => ({ value }),
             on: {
               type: 'Suggesting',
               select: 'Empty',
@@ -44,10 +41,9 @@ export function createFlatComboboxMachine() {
     }
   });
 
-  // Effects coordinate all store updates from machine events
+  // Effects coordinate machine transitions with store updates
   setup(machine)(
     effect((ev: any) => {
-      if (ev.type === 'type') store.api.setInput(ev.to.data?.value ?? '');
       if (ev.type === 'addTag') store.api.addTag(ev.params?.[0] ?? '');
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'blur') store.api.clear();
@@ -75,9 +71,7 @@ export function createFlatComboboxMachine() {
     select: machine.api.select,
     dismiss: machine.api.dismiss,
 
-    // Semantic aliases for UI
-    setInput: machine.api.type,
-    selectSuggestion: machine.api.select,
+
   });
 
   return combobox;

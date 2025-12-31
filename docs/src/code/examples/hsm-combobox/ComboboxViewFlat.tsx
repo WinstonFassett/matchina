@@ -8,9 +8,10 @@ interface ComboboxViewFlatProps {
 
 export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   useMachine(machine);
-  useMachine(machine.model);
   const { model } = machine;
+  useMachine(model);
   const { input, selectedTags, suggestions, highlightedIndex } = model.getState();
+  const store = model;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const state = machine.getState();
@@ -42,7 +43,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
       case "Enter":
         e.preventDefault();
         if (isSuggesting && suggestions.length > 0) {
-          machine.selectSuggestion();
+          machine.select();
         } else if (input.trim()) {
           machine.addTag(input.trim());
         }
@@ -76,7 +77,10 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => machine.setInput(e.target.value)}
+            onChange={(e) => {
+              store.api.setInput(e.target.value);
+              machine.type();
+            }}
             onFocus={() => machine.focus()}
             onBlur={() => machine.blur()}
             onKeyDown={handleKeyDown}
@@ -92,7 +96,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
                   onMouseDown={(e) => {
                     e.preventDefault();
                     machine.setHighlighted(index);
-                    machine.selectSuggestion();
+                    machine.select();
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
                     index === highlightedIndex
