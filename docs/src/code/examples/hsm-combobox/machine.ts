@@ -36,7 +36,6 @@ function createActiveForApp() {
       highlightNext: 'Empty',
       highlightPrev: 'Empty',
       selectHighlighted: 'Empty',
-      deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     Typing: {
       toEmpty: 'Empty',
@@ -47,7 +46,6 @@ function createActiveForApp() {
       highlightNext: 'Typing',
       highlightPrev: 'Typing',
       selectHighlighted: 'Empty',
-      deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     TextEntry: {
       typed: 'Typing',
@@ -56,7 +54,6 @@ function createActiveForApp() {
       highlightNext: 'TextEntry',
       highlightPrev: 'TextEntry',
       selectHighlighted: 'Empty',
-      deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     Suggesting: {
       typed: 'Typing',
@@ -65,7 +62,6 @@ function createActiveForApp() {
       highlightNext: 'Suggesting',
       highlightPrev: 'Suggesting',
       selectHighlighted: 'Empty',
-      deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
   }, "Empty");
 }
