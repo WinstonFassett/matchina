@@ -11,8 +11,7 @@ export function createComboboxMachine() {
     states: {
       Inactive: {
         on: {
-          focus: 'Active',
-          addTag: 'Active'
+          focus: 'Active'
         }
       },
       Active: {
@@ -34,7 +33,6 @@ export function createComboboxMachine() {
           }
         },
         on: {
-          addTag: 'Active',
           blur: '^Inactive'
         }
       }
@@ -44,7 +42,6 @@ export function createComboboxMachine() {
   // Effects coordinate machine transitions with store updates
   setup(machine)(
     effect((ev: any) => {
-      if (ev.type === 'addTag') store.api.addTag(ev.params?.[0] ?? '');
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'dismiss') store.api.clear();
