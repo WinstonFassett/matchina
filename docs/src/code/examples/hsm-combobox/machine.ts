@@ -1,4 +1,4 @@
-import { defineStates, matchina, setup, effect } from "matchina";
+import { defineStates, matchina, setup, effect, addEventApi } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
 import { createComboboxStore } from "./store";
 
@@ -74,21 +74,29 @@ export function createComboboxMachine() {
   
   // Minimal hook - only handle typed events for auto-transitions
   setup(hierarchical)(effect((ev: any) => {
-    if (ev?.type === 'typed' && ev?.params?.[0] !== undefined) {
+    console.log('Nested hook received:', ev.type, ev.params);
+    if (ev?.type === 'typed') {
       setTimeout(() => {
         const state = store.getState();
+        console.log('Auto-transition - suggestions:', state.suggestions.length);
         ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
       }, 0);
     }
   }));
 
-  return Object.assign(hierarchical, { 
+  const machineWithStore = Object.assign(hierarchical, { 
     store,
-    addTag: store.dispatch.bind(null, 'addTag'),
-    removeTag: store.dispatch.bind(null, 'removeTag'),
-    setInput: store.dispatch.bind(null, 'setInput'),
+    // Store APIs
+    addTag: (tag: string) => store.dispatch('addTag', tag),
+    removeTag: (tag: string) => store.dispatch('removeTag', tag),
+    setInput: (input: string) => store.dispatch('setInput', input),
     highlight: (d: 'next' | 'prev') => store.dispatch('highlight', d),
     clear: () => store.dispatch('clear'),
     deactivate: () => store.dispatch('clear')
   });
+
+  // Add event API to machine
+  addEventApi(machineWithStore);
+
+  return machineWithStore;
 }

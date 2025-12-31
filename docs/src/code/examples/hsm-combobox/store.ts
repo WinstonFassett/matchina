@@ -22,10 +22,10 @@ export function createComboboxStore() {
     highlightedIndex: 0,
     isActive: false,
   }, {
-    typed: (value: string) => (change) => ({
+    setInput: (input: string) => (change) => ({
       ...change.from,
-      input: value,
-      suggestions: getSuggestions(value, change.from.selectedTags),
+      input,
+      suggestions: getSuggestions(input, change.from.selectedTags),
       highlightedIndex: 0,
     }),
     
@@ -37,12 +37,6 @@ export function createComboboxStore() {
     removeTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: change.from.selectedTags.filter((t: string) => t !== tag),
-    }),
-    
-    setInput: (input: string) => (change) => ({
-      ...change.from,
-      input,
-      suggestions: getSuggestions(input, change.from.selectedTags),
     }),
     
     clear: () => (change) => ({

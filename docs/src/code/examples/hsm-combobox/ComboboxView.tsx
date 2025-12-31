@@ -16,6 +16,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
   useMachine(machine);
   const state = machine.getState();
   const actions = eventApi(machine);
+  console.log('Available actions:', Object.keys(actions));
 
   const activeMachine = state.is("Active") ? state.data.machine : undefined;
   useMachineMaybe(activeMachine);
@@ -101,10 +102,8 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             value={machine.store.getState().input}
             onChange={(e) => {
               machine.setInput(e.target.value);
-              // Trigger hook typed event
-              if (activeActions?.typed) {
-                activeActions.typed(e.target.value);
-              }
+              // Trigger machine transition using library's event API
+              actions.typed();
             }}
             onFocus={() => actions.focus()}
             onBlur={() => machine.deactivate()}

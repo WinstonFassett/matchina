@@ -1,5 +1,5 @@
 import { describeHSM } from "matchina/hsm";
-import { setup, effect } from "matchina";
+import { setup, effect, addEventApi } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createFlatComboboxMachine() {
@@ -63,9 +63,11 @@ export function createFlatComboboxMachine() {
 
   // Minimal hook - only handle typed events for auto-transitions
   setup(flatMachine)(effect((ev: any) => {
-    if (ev?.type === 'typed' && ev?.params?.[0] !== undefined) {
+    console.log('Flat hook received:', ev.type, ev.params);
+    if (ev?.type === 'typed') {
       setTimeout(() => {
         const state = store.getState();
+        console.log('Auto-transition - suggestions:', state.suggestions.length);
         ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
       }, 0);
     }
@@ -75,13 +77,16 @@ export function createFlatComboboxMachine() {
   const machineWithStore = Object.assign(flatMachine, { 
     store,
     // Store APIs
-    addTag: store.dispatch.bind(null, 'addTag'),
-    removeTag: store.dispatch.bind(null, 'removeTag'),
-    setInput: store.dispatch.bind(null, 'setInput'),
+    addTag: (tag: string) => store.dispatch('addTag', tag),
+    removeTag: (tag: string) => store.dispatch('removeTag', tag),
+    setInput: (input: string) => store.dispatch('setInput', input),
     highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
     clear: () => store.dispatch('clear'),
     deactivate: () => store.dispatch('clear')
   });
+
+  // Add event API to machine
+  addEventApi(machineWithStore);
 
   return machineWithStore;
 }
