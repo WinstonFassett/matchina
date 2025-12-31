@@ -29,6 +29,7 @@ interface HierarchicalWebColaProps {
   data: HierarchicalGraphData;
   currentState?: string;
   onEventClick?: (event: string) => void;
+  layoutMode?: 'springy' | 'static';
 }
 
 // Color scheme - matching custom force graph
@@ -47,7 +48,7 @@ const COLORS = {
   containerLabel: '#9ca3af',
 };
 
-export default function HierarchicalWebCola({ data, currentState, onEventClick }: HierarchicalWebColaProps) {
+export default function HierarchicalWebCola({ data, currentState, onEventClick, layoutMode = 'springy' }: HierarchicalWebColaProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions] = useState({ width: 800, height: 600 });
 
@@ -262,7 +263,7 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick }
       .linkDistance(100)
       .avoidOverlaps(true)
       .handleDisconnected(true)
-      .start(30, 20, 20);
+      .start(layoutMode === 'static' ? 1 : 30, 20, 20);
 
     // Update function for positions
     function updatePositions() {
@@ -385,7 +386,7 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick }
     return () => {
       layout.stop();
     };
-    }, [data, dimensions, currentState, onEventClick]);
+    }, [data, dimensions, currentState, onEventClick, layoutMode]);
 
   return (
     <div className="hierarchical-webcola">

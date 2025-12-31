@@ -29,6 +29,7 @@ interface HierarchicalForceGraphProps {
   data: HierarchicalGraphData;
   currentState?: string;
   onEventClick?: (event: string) => void;
+  layoutMode?: 'springy' | 'static';
 }
 
 // Simple convex hull calculation
@@ -226,6 +227,17 @@ class ForceSimulation {
   restart() {
     this.alpha = 1;
   }
+  
+  setStaticMode(staticMode: boolean) {
+    if (staticMode) {
+      // In static mode, set alpha to 0 to stop animation
+      this.alpha = 0;
+      this.alphaDecay = 0; // Prevent any decay
+    } else {
+      // In springy mode, reset to default decay rate
+      this.alphaDecay = 0.0228;
+    }
+  }
 }
 
 // Color scheme - matching ReactFlow docs aesthetic
@@ -255,7 +267,8 @@ const COLORS = {
 export default function HierarchicalForceGraph({
   data,
   currentState,
-  onEventClick
+  onEventClick,
+  layoutMode = 'springy'
 }: HierarchicalForceGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -286,6 +299,11 @@ export default function HierarchicalForceGraph({
       }));
       
       const simulation = new ForceSimulation(forceNodes, data.links);
+      
+      // Apply layout mode
+      if (layoutMode === 'static') {
+        simulation.setStaticMode(true);
+      }
       
       console.log('Setting up SVG dimensions...');
       // Set up SVG dimensions
@@ -680,7 +698,7 @@ export default function HierarchicalForceGraph({
     } catch (error) {
       console.error('Error in force graph rendering:', error);
     }
-  }, [data, dimensions]);
+  }, [data, dimensions, layoutMode]);
 
   return (
     <div className="hierarchical-force-graph">
