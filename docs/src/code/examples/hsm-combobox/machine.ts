@@ -8,9 +8,6 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
-// Active child states for the tag editor
-export const activeStates = ;
-
 function getSuggestions(input: string, selectedTags: string[]): string[] {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return [];
@@ -30,29 +27,29 @@ function createActiveForApp() {
       Typing: undefined,
       TextEntry: undefined,
       Suggesting: undefined,
-    }), 
+    }),
     {
       Empty: {
-        typed: 'Typing',
+        typed: "Typing",
       },
       Typing: {
-        toEmpty: 'Empty',
-        toSuggesting: 'Suggesting',
-        toTextEntry: 'TextEntry',
+        toEmpty: "Empty",
+        toSuggesting: "Suggesting",
+        toTextEntry: "TextEntry",
       },
       TextEntry: {
-        typed: 'Typing',
-        clear: 'Empty',
+        typed: "Typing",
+        clear: "Empty",
       },
       Suggesting: {
-        typed: 'Typing',
-        clear: 'Empty',
-        highlightNext: 'Suggesting',
-        highlightPrev: 'Suggesting',
-        selectHighlighted: 'Empty',
-        cancel: 'TextEntry',
+        typed: "Typing",
+        clear: "Empty",
+        highlightNext: "Suggesting",
+        highlightPrev: "Suggesting",
+        selectHighlighted: "Empty",
+        cancel: "TextEntry",
       },
-    }, 
+    },
     "Empty"
   );
 }
