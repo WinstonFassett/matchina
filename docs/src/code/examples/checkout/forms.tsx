@@ -172,12 +172,7 @@ export function PaymentForm({
       </div>
       <div className="flex space-x-4">
         <button
-          onClick={() =>
-            machine.backToShipping({
-              cart,
-              shipping,
-            })
-          }
+          onClick={() => machine.backToShipping()}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
         >
           Back to Shipping
