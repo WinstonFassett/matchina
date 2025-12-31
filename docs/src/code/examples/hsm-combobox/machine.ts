@@ -17,15 +17,19 @@ export function createComboboxMachine() {
       Active: {
         initial: 'Empty',
         states: {
-          Empty: {},
+          Empty: {
+            on: {
+              type: 'Suggesting'
+            }
+          },
           Suggesting: {
             on: {
+              type: 'Suggesting',
               select: 'Empty'
             }
           }
         },
         on: {
-          type: 'Suggesting',
           blur: '^Inactive'
         }
       }
