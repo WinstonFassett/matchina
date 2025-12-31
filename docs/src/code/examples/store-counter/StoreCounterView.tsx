@@ -1,20 +1,9 @@
-import { useSyncExternalStore } from "react";
+import { useMachine } from "matchina/react";
 import type { CounterStore } from "./store";
 
 export function StoreCounterView({ store }: { store: CounterStore }) {
-  const count = useSyncExternalStore(
-    (callback) => {
-      const orig = store.notify;
-      store.notify = (ev) => {
-        orig.call(store, ev);
-        callback();
-      };
-      return () => {
-        store.notify = orig;
-      };
-    },
-    () => store.getState()
-  );
+  const change = useMachine(store);
+  const count = change.to;
 
   return (
     <div className="flex flex-col items-center gap-4 p-6">
