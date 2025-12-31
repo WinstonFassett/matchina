@@ -45,6 +45,7 @@
     "vite": "^7.3.0"
   },
   "devDependencies": {
-    "@shikijs/twoslash": "^3.20.0"
+    "@shikijs/twoslash": "^3.20.0",
+    "webcola": "^3.4.0"
   }
 }

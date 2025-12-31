@@ -1,0 +1,99 @@
+---
+title: Color Scheme Explorer
+description: Interactive color palette explorer for Matchina themes
+---
+
+import MatchinaColorPalette from '../../../components/MatchinaColorPalette.tsx';
+
+# Color Scheme Explorer
+
+Interactive exploration of Matchina's color schemes based on Catppuccin-inspired palettes.
+
+<div className="not-content">
+  <MatchinaColorPalette client:only="react" />
+</div>
+
+## Theme Overview
+
+Matchina uses a Catppuccin-inspired color system with carefully chosen palettes for both dark and light themes. The system emphasizes:
+
+- **Accessibility** - WCAG AA compliant contrast ratios
+- **Visual Hierarchy** - Clear semantic color mapping
+- **Eye Comfort** - Reduced eye strain with soothing pastels
+- **Consistency** - Unified across all visualizers
+
+## Available Themes
+
+### Dark Themes
+- **Mocha** - Richest colors, most popular dark theme
+- **Frappé** - Less vibrant, muted aesthetic
+- **Macchiato** - Medium contrast, gentle colors
+
+### Light Themes  
+- **Latte** - Lightest theme for daytime use
+
+## Color Categories
+
+### Semantic Colors
+- **Backgrounds** - Base, mantle, crust for depth
+- **Text** - Primary, secondary, muted for hierarchy
+- **Surfaces** - Interactive elements and borders
+
+### State Machine Colors
+- **Active States** - Blue highlighting for current states
+- **Ancestor States** - Transparent blue for hierarchy
+- **Initial States** - Green for starting points
+- **Final States** - Red for termination points
+
+### Interactive Elements
+- **Transitions** - Available, hover, recent, unavailable
+- **Status** - Success, warning, error, info
+- **Accents** - Purple, pink, teal for variety
+
+## Usage in Visualizers
+
+### ReactFlow Inspector
+- Node backgrounds and borders
+- Edge styling and animations
+- Interactive hover states
+
+### Mermaid Inspector  
+- State node fills and strokes
+- Edge labels and paths
+- Theme switching integration
+
+### Sketch Inspector
+- State item styling
+- Nested state hierarchy
+- Transition button states
+
+## Implementation
+
+The color system uses CSS custom properties for easy theme switching:
+
+```css
+:root[data-theme="mocha"] {
+  --matchina-base: #1e1e2e;
+  --matchina-text: #cdd6f4;
+  --matchina-blue: #89b4fa;
+  /* ... */
+}
+```
+
+Components reference semantic variables:
+
+```css
+.state-active {
+  background: var(--matchina-state-active);
+  color: var(--matchina-bg-primary);
+}
+```
+
+## Accessibility
+
+All color combinations meet WCAG AA requirements:
+- Normal text: 4.5:1 contrast minimum
+- Large text: 3:1 contrast minimum  
+- UI components: 3:1 contrast minimum
+
+Colorblind-safe patterns and labels are used in addition to color coding.
