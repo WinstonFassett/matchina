@@ -132,11 +132,8 @@ function RegisterFormView({ machine, handleAutoSuccess }: any) {
   );
 }
 
-function PasswordResetFormView({ data, machine, handleAutoSuccess }: any) {
-  const [email, setEmail] = useState(data.email || "");
-  React.useEffect(() => {
-    setEmail(data.email || "");
-  }, [data.email]);
+function PasswordResetFormView({ machine, handleAutoSuccess }: any) {
+  const [email, setEmail] = useState("");
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
@@ -151,9 +148,9 @@ function PasswordResetFormView({ data, machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {data.error && (
+        {machine.store.getState().error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{data.error}</p>
+            <p className="text-sm">{machine.store.getState().error}</p>
           </div>
         )}
         <button
@@ -256,9 +253,8 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           />
         ),
 
-        PasswordResetForm: (data) => (
+        PasswordResetForm: () => (
           <PasswordResetFormView
-            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />

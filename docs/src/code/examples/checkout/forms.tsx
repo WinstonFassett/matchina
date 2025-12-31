@@ -9,33 +9,23 @@ function getMissing(fields: Record<string, string>) {
 }
 
 export function ShippingForm({
-  data,
   machine,
 }: {
-  data: ShippingData;
   machine: CheckoutMachine;
 }) {
-  const {
-    cart,
-    shipping = { address: "", city: "", zipCode: "", error: null },
-  } = data;
-  const [address, setAddress] = useState(shipping.address || "");
-  const [city, setCity] = useState(shipping.city || "");
-  const [zipCode, setZipCode] = useState(shipping.zipCode || "");
-  React.useEffect(() => {
-    setAddress(shipping.address || "");
-    setCity(shipping.city || "");
-    setZipCode(shipping.zipCode || "");
-  }, [shipping.address, shipping.city, shipping.zipCode]);
+  const cart = machine.store.getState().cart;
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
 
   const missingFields = getMissing({ address, city, zipCode });
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
-      {shipping.error && (
+      {machine.store.getState().error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {shipping.error}
+          {machine.store.getState().error}
         </div>
       )}
       {missingFields.length > 0 && (
