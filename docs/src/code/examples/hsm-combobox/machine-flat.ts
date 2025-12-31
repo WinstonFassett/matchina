@@ -36,9 +36,8 @@ export function createFlatComboboxMachine() {
             }
           }
         },
-        data: (tag?: string) => ({ tag: tag ?? '' }),
         on: {
-          addTag: (tag: string) => ({ tag }),
+          addTag: 'Active',
           blur: '^Inactive'
         }
       }
@@ -49,7 +48,7 @@ export function createFlatComboboxMachine() {
   setup(machine)(
     effect((ev: any) => {
       if (ev.type === 'type') store.api.setInput(ev.to.data?.value ?? '');
-      if (ev.type === 'addTag') store.api.addTag(ev.to.data?.value ?? '');
+      if (ev.type === 'addTag') store.api.addTag(ev.params?.[0] ?? '');
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'dismiss') store.api.clear();
