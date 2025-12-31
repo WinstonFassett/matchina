@@ -65,7 +65,14 @@ export const appStates = defineStates({
 
 // Hook specific to hierarchical machine structure
 function createHierarchicalComboboxHook(store: any) {
+  console.log('Nested machine hook created!');
+  let currentMachine: any = null;
+  
   return effect((ev: any) => {
+    if (ev && ev.machine) {
+      currentMachine = ev.machine;
+    }
+    
     console.log('Nested machine hook received event:', ev.type, ev.params);
     if (ev && ev.type) {
       switch (ev.type) {
@@ -76,26 +83,22 @@ function createHierarchicalComboboxHook(store: any) {
             // Auto-transition to correct state based on suggestions
             setTimeout(() => {
               const state = store.getState();
-              const currentState = ev.machine?.getState();
               console.log('Auto-transition check - suggestions:', state.suggestions.length, 'input:', state.input.trim());
               
-              if (currentState?.is("Active") && currentState.data?.machine) {
-                const activeMachine = currentState.data.machine;
-                const activeState = activeMachine.getState();
-                console.log('Active state:', activeState.key);
-                
-                if (state.suggestions.length > 0 && activeState?.is("Typing")) {
-                  // Transition to Suggesting
-                  console.log('Sending toSuggesting');
-                  activeMachine.send("toSuggesting");
-                } else if (state.input.trim() && activeState?.is("Typing")) {
-                  // Transition to TextEntry
-                  console.log('Sending toTextEntry');
-                  activeMachine.send("toTextEntry");
-                } else if (!state.input.trim() && activeState?.is("Typing")) {
-                  // Transition to Empty
-                  console.log('Sending toEmpty');
-                  activeMachine.send("toEmpty");
+              if (state.suggestions.length > 0) {
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  console.log('Sending toSuggesting to main machine');
+                  currentMachine.send("toSuggesting");
+                }
+              } else if (state.input.trim()) {
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  console.log('Sending toTextEntry to main machine');
+                  currentMachine.send("toTextEntry");
+                }
+              } else {
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  console.log('Sending toEmpty to main machine');
+                  currentMachine.send("toEmpty");
                 }
               }
             }, 0);
@@ -103,17 +106,11 @@ function createHierarchicalComboboxHook(store: any) {
           break;
         case 'clear':
           store.dispatch('clear');
-          // Delegate to submachine
-          const currentState = ev.machine?.getState();
-          if (currentState?.is("Active") && currentState.data?.machine) {
-            currentState.data.machine.send("clear");
-          }
           break;
         case 'cancel':
-          // Delegate to submachine
-          const cancelState = ev.machine?.getState();
-          if (cancelState?.is("Active") && cancelState.data?.machine) {
-            cancelState.data.machine.send("cancel");
+          // Send cancel to main machine
+          if (currentMachine && typeof currentMachine.send === 'function') {
+            currentMachine.send("cancel");
           }
           break;
         case 'highlight':
@@ -121,27 +118,21 @@ function createHierarchicalComboboxHook(store: any) {
             const direction = ev.params[0];
             if (direction === 'next') {
               store.dispatch('highlightNext');
-              // Delegate to submachine
-              const highlightState = ev.machine?.getState();
-              if (highlightState?.is("Active") && highlightState.data?.machine) {
-                highlightState.data.machine.send("highlightNext");
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                currentMachine.send("highlightNext");
               }
             } else if (direction === 'prev') {
               store.dispatch('highlightPrev');
-              // Delegate to submachine
-              const highlightPrevState = ev.machine?.getState();
-              if (highlightPrevState?.is("Active") && highlightPrevState.data?.machine) {
-                highlightPrevState.data.machine.send("highlightPrev");
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                currentMachine.send("highlightPrev");
               }
             }
           }
           break;
         case 'selectHighlighted':
           store.dispatch('selectHighlighted');
-          // Delegate to submachine
-          const selectState = ev.machine?.getState();
-          if (selectState?.is("Active") && selectState.data?.machine) {
-            selectState.data.machine.send("selectHighlighted");
+          if (currentMachine && typeof currentMachine.send === 'function') {
+            currentMachine.send("selectHighlighted");
           }
           break;
         case 'deactivate':
