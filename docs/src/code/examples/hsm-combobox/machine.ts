@@ -146,6 +146,22 @@ function createHierarchicalComboboxHook(store: any) {
               }
             } else if (direction === 'prev') {
               store.dispatch('highlightPrev');
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                currentMachine.send("highlightPrev");
+              }
+            }
+          }
+          break;
+        case 'selectHighlighted':
+          store.dispatch('selectHighlighted');
+          if (currentMachine && typeof currentMachine.send === 'function') {
+            currentMachine.send("selectHighlighted");
+          }
+          break;
+        case 'deactivate':
+          store.dispatch('clear');
+          break;
+      }
     }
   });
 }
@@ -159,7 +175,7 @@ export function createComboboxMachine() {
   }, appStates.Inactive());
 
   const hierarchical = makeHierarchical(combobox);
-  setup(hierarchical)(createNestedMachineHook(store));
+  setup(hierarchical)(createHierarchicalComboboxHook(store));
 
   return Object.assign(hierarchical, { 
     store,
