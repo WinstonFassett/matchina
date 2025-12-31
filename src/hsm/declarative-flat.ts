@@ -376,6 +376,14 @@ export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Resolve initial state - handle hierarchical initial (e.g., 'Payment.MethodEntry')
   const initialKey = resolveInitialChild(config.initial, config.states);
 
+  // Ensure all states have a transitions entry (even if empty)
+  // This is required for visualization and introspection
+  for (const stateKey of Object.keys(flatStates)) {
+    if (!(stateKey in flatTransitions)) {
+      flatTransitions[stateKey] = {};
+    }
+  }
+
   // Create flat machine using existing API
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
   // Users requiring type safety should use createFlatMachine() with defineStates() directly
