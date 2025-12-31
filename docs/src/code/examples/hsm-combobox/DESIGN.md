@@ -315,78 +315,84 @@ useMachine(combobox);  // single subscription, catches all changes
 
 ---
 
-### Implementation Approach
+### Implementation Approach (Clean with Effects)
 
 ```typescript
-function createCombobox() {
-  const machine = createHSM();  // Inactive, Active.Empty, Active.Suggesting
+function createFlatComboboxMachine() {
   const store = addStoreApi(createComboboxStore());
 
-  // Guard: block Empty→Suggesting when no suggestions
+  const machine = describeHSM({
+    initial: 'Inactive',
+    states: {
+      Inactive: {
+        on: { focus: 'Active' }
+      },
+      Active: {
+        initial: 'Empty',
+        states: {
+          Empty: {
+            on: { type: 'Suggesting', blur: '^Inactive' }
+          },
+          Suggesting: {
+            on: { type: 'Suggesting', select: 'Empty', dismiss: 'Empty', blur: '^Inactive' }
+          }
+        },
+        on: { blur: '^Inactive' }
+      }
+    }
+  });
+
+  // Guard: block Empty→Suggesting if no suggestions
+  // Effect: coordinate store updates from machine events
   setup(machine)(
     guard((ev) => {
-      if (ev.type === 'type' && ev.from.is('Empty')) {
+      if (ev.type === 'type' && ev.from.key === 'Empty') {
         return store.getState().suggestions.length > 0;
       }
       return true;
+    }),
+    effect((ev) => {
+      // Auto-update store when machine events occur
+      if (ev.type === 'type') store.api.setInput(ev.params?.[0] ?? '');
+      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === 'select') store.api.selectHighlighted();
+      if (ev.type === 'dismiss') store.api.clear();
     })
   );
 
-  // Unified subscription
-  const subscribers = new Set<() => void>();
-  const notify = () => subscribers.forEach(fn => fn());
-  machine.subscribe(notify);
-  store.subscribe(notify);
+  addEventApi(machine);
 
-  return {
-    // Expose model (store) directly - consumers can subscribe to it
+  // API: no wrapper functions - machine events handle coordination
+  return Object.assign(machine, {
     model: store,
 
-    // For useMachine compatibility on the combobox itself
-    subscribe: (fn: () => void) => {
-      subscribers.add(fn);
-      return () => subscribers.delete(fn);
-    },
-    notify,
-    getChange: () => store.getChange(),
-
-    // Derived state
-    get isActive() { return !machine.getState().is('Inactive'); },
-    get isSuggesting() { return machine.getState().is('Suggesting'); },
-
-    // Pure store actions (just delegate)
-    addTag: store.api.addTag,
+    // Store operations (no machine involvement)
     removeTag: store.api.removeTag,
     highlight: store.api.highlight,
+    setHighlighted: store.api.setHighlighted,
 
-    // Coordinated actions (store + machine)
-    focus: () => machine.send('focus'),
-    blur: () => {
-      store.api.clear();
-      machine.send('blur');
-    },
-    setInput: (value: string) => {
-      store.api.setInput(value);  // FIRST - recomputes suggestions
-      machine.send('type');        // THEN - guard checks suggestions
-    },
-    selectSuggestion: () => {
-      store.api.selectHighlighted();
-      machine.send('select');
-    },
-    dismiss: () => {
-      store.api.clear();
-      machine.send('dismiss');
-    },
-  };
+    // Machine events (effects auto-coordinate with store)
+    focus: machine.api.focus,
+    blur: machine.api.blur,
+    type: machine.api.type,
+    select: machine.api.select,
+    dismiss: machine.api.dismiss,
+
+    // Semantic aliases for UI
+    setInput: machine.api.type,
+    selectSuggestion: machine.api.select,
+    addTag: (tag) => store.api.addTag(tag),
+  });
 }
 ```
 
 **Key points:**
-- Store updates FIRST, machine transitions SECOND (for setInput)
-- Guard checks store state to decide transitions
-- Unified subscribe for React
-- Pure store actions just delegate, no wrapper logic
-- Coordinated actions handle the store→machine ordering
+- **No wrapper functions** - Effects handle store coordination
+- Guard checks store state to decide Empty→Suggesting transition
+- Effect listens to machine events and updates store automatically
+- `setInput(value)` calls `machine.api.type(value)`, effect handles `store.api.setInput(value)`
+- Cleaner separation: machine is pure state, effect is the coordinator
+- Works with React via `useMachine(combobox)`
 
 ---
 
