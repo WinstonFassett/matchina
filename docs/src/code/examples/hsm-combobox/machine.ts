@@ -1,5 +1,7 @@
 import { defineStates, matchina } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
+import { createComboboxStoreHook } from "./hooks";
+import { createComboboxStore } from "./store";
 
 // Available options for autocomplete
 const AVAILABLE_TAGS = [
@@ -7,20 +9,12 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
-
 // Active child states for the tag editor
 export const activeStates = defineStates({
-  Empty: undefined, // No data needed - selectedTags is in store
-  TextEntry: (input: string) => ({
-    input,
-    // selectedTags is in store, not machine state
-  }),
-  Suggesting: (input: string, suggestions: string[], highlightedIndex: number = 0) => ({
-    input,
-    suggestions,
-    highlightedIndex
-    // selectedTags is in store, not machine state
-  }),
+  Empty: undefined, // No data needed - everything is in store
+  Typing: undefined, // No data needed - everything is in store
+  TextEntry: undefined, // No data needed - everything is in store
+  Suggesting: undefined, // No data needed - everything is in store
 });
 
 function getSuggestions(input: string, selectedTags: string[]): string[] {
@@ -37,22 +31,16 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 
 // Shared typed handler - computes next state based on input
 const handleTyped = (value: string) => (ev: any) => {
-  const { selectedTags } = ev.from.data;
-  if (!value.trim()) return activeStates.Empty(selectedTags);
+  // Everything is in store, no need to pass data to states
+  if (!value.trim()) return activeStates.Empty();
 
-  const suggestions = getSuggestions(value, selectedTags);
-  return suggestions.length > 0
-    ? activeStates.Suggesting(value, selectedTags, suggestions, 0)
-    : activeStates.TextEntry(value, selectedTags);
+  // Auto-transition logic will be handled by the store hook
+  return activeStates.TextEntry();
 };
 
 // Shared addTag handler
 const handleAddTag = (tag: string) => (ev: any) => {
-  const { input, selectedTags, suggestions = [], highlightedIndex = 0 } = ev.from.data;
-  const tagToAdd = tag || (suggestions.length > 0 ? suggestions[highlightedIndex] : input?.trim());
-  if (!tagToAdd) {
-    return activeStates.Empty();
-  }
+  // Everything is in store, no need to pass data to states
   return activeStates.Empty();
 };
 
@@ -62,6 +50,15 @@ function createActiveForApp() {
       typed: handleTyped,
       removeTag: (tag) => (ev) => 
         activeStates.Empty(),
+      backspace: () => (ev) => {
+        // selectedTags is in store, not machine state
+        return ev.from;
+      },
+    },
+    Typing: {
+      // Auto-transitions are handled by the store hook
+      removeTag: (tag) => (ev) => 
+        activeStates.Typing(),
       backspace: () => (ev) => {
         // selectedTags is in store, not machine state
         return ev.from;
@@ -80,23 +77,20 @@ function createActiveForApp() {
       typed: handleTyped,
       clear: () => (ev) => activeStates.Empty(),
       highlightNext: () => (ev) => {
-        const { input, suggestions, highlightedIndex } = ev.from.data;
-        const next = Math.min(suggestions.length - 1, highlightedIndex + 1);
-        return activeStates.Suggesting(input, suggestions, next);
+        // Everything is in store, no need to pass data to states
+        return activeStates.Suggesting();
       },
       highlightPrev: () => (ev) => {
-        const { input, suggestions, highlightedIndex } = ev.from.data;
-        const prev = Math.max(0, highlightedIndex - 1);
-        return activeStates.Suggesting(input, suggestions, prev);
+        // Everything is in store, no need to pass data to states
+        return activeStates.Suggesting();
       },
       selectHighlighted: () => (ev) => {
-        const { input, suggestions, highlightedIndex } = ev.from.data;
-        // selectedTags is in store, not machine state
+        // Everything is in store, no need to pass data to states
         return activeStates.Empty();
       },
       cancel: () => (ev) => {
-        const { input } = ev.from.data;
-        return activeStates.TextEntry(input);
+        // Everything is in store, no need to pass data to states
+        return activeStates.TextEntry();
       },
       addTag: handleAddTag,
       backspace: () => (ev) => {
@@ -113,11 +107,14 @@ export type ActiveMachine = ReturnType<typeof createActiveForApp>;
 const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
 
 export const appStates = defineStates({
-  Inactive: () => ({}), // No selectedTags in machine state - it's in store
+  Inactive: undefined, // No selectedTags in machine state - it's in store
   Active: activeMachineFactory,
 });
 
 export function createComboboxMachine() {
+  // Use shared store instead of creating a new one
+  const store = createComboboxStore();
+
   const combobox = matchina(appStates, {
     Inactive: {
       focus: "Active"
@@ -127,13 +124,13 @@ export function createComboboxMachine() {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
-        return appStates.Inactive(selectedTags);
+        return appStates.Inactive();
       },
       close: () => (ev: any) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
-        return appStates.Inactive(selectedTags);
+        return appStates.Inactive();
       },
       removeTag: (tag: string) => (ev: any) => {
         // Delegate to child machine
@@ -142,9 +139,15 @@ export function createComboboxMachine() {
         return ev.from;
       },
     },
-  }, appStates.Inactive([]));
+  }, appStates.Inactive());
 
   const hierarchical = makeHierarchical(combobox);
 
-  return hierarchical;
+  // Add store hook and auto-transition effect
+  setup(hierarchical)(
+    createComboboxStoreHook(store)
+  );
+
+  // Attach store to machine for external access
+  return Object.assign(hierarchical, { store });
 }

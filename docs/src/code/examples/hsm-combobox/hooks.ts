@@ -14,7 +14,7 @@ export function createComboboxStoreHook(store: any) {
       switch (ev.type) {
         case 'typed':
           if (ev.params && ev.params[0] !== undefined) {
-            store.dispatch('setInput', ev.params[0]);
+            store.dispatch('typed', ev.params[0]);
             
             // After updating input, check if we should transition to suggesting
             setTimeout(() => {
@@ -44,7 +44,7 @@ export function createComboboxStoreHook(store: any) {
           break;
         case 'deactivate':
         case 'clear':
-          store.dispatch('resetForInactive');
+          store.dispatch('deactivate');
           break;
         case 'highlightNext':
           store.dispatch('highlightNext');

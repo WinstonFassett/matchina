@@ -1,98 +1,19 @@
 import { describeHSM } from "matchina/hsm";
-import { createStoreMachine, setup } from "matchina";
+import { setup } from "matchina";
 import { createComboboxStoreHook } from "./hooks";
-
-// Available options for autocomplete
-const AVAILABLE_TAGS = [
-  "typescript", "javascript", "react", "vue", "angular",
-  "node", "deno", "bun", "python", "rust",
-];
-
-// Store state for combo box - eliminates parameter threading
-export interface ComboboxState {
-  input: string;
-  selectedTags: string[];
-  suggestions: string[];
-  highlightedIndex: number;
-}
-
-type StoreChange<T> = {
-  from: T;
-  to: T;
-};
-
-// Helper function for suggestions - now uses store state
-function getSuggestions(state: ComboboxState): string[] {
-  if (!state || state.input === undefined || !state.selectedTags) return [];
-  const trimmed = state.input.trim().toLowerCase();
-  if (!trimmed) return [];
-  
-  return AVAILABLE_TAGS
-    .filter(tag => {
-      return tag.toLowerCase().includes(trimmed) && !state.selectedTags.includes(tag);
-    })
-    .slice(0, 5);
-}
+import { createComboboxStore } from "./store";
 
 // Create the automatically flattened version using describeHSM
 export function createFlatComboboxMachine() {
-  // Create store to manage all combo box state
-  const store = createStoreMachine<ComboboxState>({
-    input: "",
-    selectedTags: [],
-    suggestions: [],
-    highlightedIndex: 0,
-  }, {
-    setInput: (input: string) => (change: StoreChange<ComboboxState>) => {
-      const newState = {
-        ...change.from,
-        input,
-        suggestions: getSuggestions({ ...change.from, input }),
-        highlightedIndex: 0,
-      };
-      return newState;
-    },
-    addTag: (tag: string) => (change: StoreChange<ComboboxState>) => {
-      const newState = {
-        ...change.from,
-        selectedTags: [...change.from.selectedTags, tag],
-        input: "",
-        suggestions: [],
-        highlightedIndex: 0,
-      };
-      return newState;
-    },
-    removeTag: (tag: string) => (change: StoreChange<ComboboxState>) => {
-      const newState = {
-        ...change.from,
-        selectedTags: change.from.selectedTags.filter(t => t !== tag),
-        suggestions: getSuggestions(change.from),
-        highlightedIndex: 0,
-      };
-      return newState;
-    },
-    resetForInactive: () => () => ({
-      input: "",
-      selectedTags: [],
-      suggestions: [],
-      highlightedIndex: 0,
-    }),
-    highlightNext: (change: StoreChange<ComboboxState>) => ({
-      ...change.from,
-      highlightedIndex: Math.min(change.from.suggestions.length - 1, change.from.highlightedIndex + 1),
-    }),
-    highlightPrev: (change: StoreChange<ComboboxState>) => ({
-      ...change.from,
-      highlightedIndex: Math.max(0, change.from.highlightedIndex - 1),
-    }),
-  });
+  // Use shared store instead of creating a new one
+  const store = createComboboxStore();
 
   // Use describeHSM to auto-flatten a nested description
   const flatMachine = describeHSM({
     initial: 'Inactive',
     states: {
       Inactive: {
-        data: undefined, // No data needed - selectedTags is in store
+        data: undefined, // No data needed - everything is in store
         on: {
           focus: 'Active'
         }
@@ -101,7 +22,7 @@ export function createFlatComboboxMachine() {
         initial: 'Empty',
         states: {
           Empty: {
-            data: undefined, // No data needed - selectedTags is in store
+            data: undefined, // No data needed - everything is in store
             on: {
               typed: 'Typing',
               removeTag: 'Empty', // Stay in Empty
@@ -110,7 +31,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Typing: {
-            data: (input: string) => ({ input }), // Only input needed, selectedTags is in store
+            data: undefined, // No data needed - everything is in store
             on: {
               // Auto-transition based on suggestions
               toEmpty: 'Empty',
@@ -121,7 +42,7 @@ export function createFlatComboboxMachine() {
             }
           },
           TextEntry: {
-            data: (input: string) => ({ input }), // Only input needed, selectedTags is in store
+            data: undefined, // No data needed - everything is in store
             on: {
               typed: 'Typing',
               clear: 'Empty',
@@ -131,9 +52,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Suggesting: {
-            data: (input: string, suggestions: string[], highlightedIndex: number = 0) => ({
-              input, suggestions, highlightedIndex // No selectedTags in machine state - it's in store
-            }),
+            data: undefined, // No data needed - everything is in store
             on: {
               typed: 'Typing',
               clear: 'Empty',
