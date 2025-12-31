@@ -192,7 +192,6 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
     setTimeout(() => {
       const state = machine.getState();
       if (state.is("LoggingIn")) {
-        const data = state.data as { email: string; password: string };
         machine.success({
           user: {
             id: "user-123",
@@ -276,7 +275,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                       user: {
                         id: "user-123",
                         name: "Demo User",
-                        email: data.email,
+                        email: "demo@example.com",
                         avatar: "https://i.pravatar.cc/150?u=demo",
                       },
                     })
@@ -296,11 +295,11 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        Registering: (data) => (
+        Registering: () => (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Creating Account...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Registering {data.email}</p>
+            <p className="mb-6 opacity-70">Creating account...</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
@@ -311,9 +310,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                     machine.success({
                       user: {
                         id: "user-123",
-                        name: data.name,
-                        email: data.email,
-                        avatar: "https://i.pravatar.cc/150?u=" + data.email,
+                        name: "Demo User",
+                        email: "demo@example.com",
+                        avatar: "https://i.pravatar.cc/150?u=demo",
                       },
                     })
                   }
@@ -332,18 +331,18 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        RequestingPasswordReset: (data) => (
+        RequestingPasswordReset: () => (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Sending Reset Link...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Sending to {data.email}</p>
+            <p className="mb-6 opacity-70">Sending reset link...</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
               <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => machine.success({ email: data.email })}
+                  onClick={() => machine.success({ email: "demo@example.com" })}
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                 >
                   Reset Success
@@ -359,13 +358,13 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        PasswordResetSent: (data) => (
+        PasswordResetSent: () => (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4 text-blue-600">
               Reset Link Sent!
             </h2>
             <p className="mb-6 opacity-70">
-              We've sent a password reset link to {data.email}.
+              We've sent a password reset link to demo@example.com.
             </p>
             <button
               onClick={() => machine.goToLogin()}
@@ -376,20 +375,22 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        LoggedIn: (data) => (
+        LoggedIn: () => {
+          const user = machine.store.getState().user;
+          return (
           <div className="text-center">
             <div className="mb-4">
-              {data.user.avatar && (
+              {user?.avatar && (
                 <img
-                  src={data.user.avatar}
-                  alt={data.user.name}
+                  src={user.avatar}
+                  alt={user.name}
                   className="w-16 h-16 rounded-full mx-auto mb-4"
                 />
               )}
               <h2 className="text-2xl font-bold text-green-600">
-                Welcome, {data.user.name}!
+                Welcome, {user?.name}!
               </h2>
-              <p className="opacity-70">{data.user.email}</p>
+              <p className="opacity-70">{user?.email}</p>
             </div>
             <div className="bg-green-500/10 border border-green-500/20 rounded p-4 mb-4">
               <p className="text-green-600">You are successfully logged in!</p>
@@ -400,8 +401,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
             >
               Log Out
             </button>
-          </div>
-        ),
+            </div>
+          );
+        },
       })}
     </div>
   );
