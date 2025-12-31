@@ -68,7 +68,7 @@ describe('Unified HSM Visualization', () => {
       machine.send('focus'); // Inactive -> Active.Empty
       
       // Type with input parameter
-      machine.send('typed', 'test'); // Active.Empty -> Active.Typing
+      machine.store.dispatch('typed', 'test'); // Active.Empty -> Active.Typing
       
       const activePath = getActiveStatePath(machine);
       expect(activePath).toBe('Active.Typing'); // Should be flattened key

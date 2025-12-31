@@ -2,13 +2,9 @@ import { useMachine } from "matchina/react";
 import { type AuthMachine } from "./machine";
 import React, { useState } from "react";
 
-function LoginFormView({ data, machine, handleAutoSuccess }: any) {
-  const [email, setEmail] = useState(data.email || "");
-  const [password, setPassword] = useState(data.password || "");
-  React.useEffect(() => {
-    setEmail(data.email || "");
-    setPassword(data.password || "");
-  }, [data.email, data.password]);
+function LoginFormView({ machine, handleAutoSuccess }: any) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Log In</h2>
@@ -32,9 +28,9 @@ function LoginFormView({ data, machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {data.error && (
+        {machine.store.getState().error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{data.error}</p>
+            <p className="text-sm">{machine.store.getState().error}</p>
           </div>
         )}
         <button
@@ -73,13 +69,9 @@ function LoginFormView({ data, machine, handleAutoSuccess }: any) {
   );
 }
 
-function RegisterFormView({ data, machine, handleAutoSuccess }: any) {
-  const [name, setName] = useState(data.name || "");
-  const [email, setEmail] = useState(data.email || "");
-  React.useEffect(() => {
-    setName(data.name || "");
-    setEmail(data.email || "");
-  }, [data.name, data.email]);
+function RegisterFormView({ machine, handleAutoSuccess }: any) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Register</h2>
@@ -103,9 +95,9 @@ function RegisterFormView({ data, machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {data.error && (
+        {machine.store.getState().error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{data.error}</p>
+            <p className="text-sm">{machine.store.getState().error}</p>
           </div>
         )}
         <button
@@ -252,17 +244,15 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        LoginForm: (data) => (
+        LoginForm: () => (
           <LoginFormView
-            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />
         ),
 
-        RegisterForm: (data) => (
+        RegisterForm: () => (
           <RegisterFormView
-            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />
@@ -280,7 +270,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Logging In...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Authenticating {data.email}</p>
+            <p className="mb-6 opacity-70">Authenticating...</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">

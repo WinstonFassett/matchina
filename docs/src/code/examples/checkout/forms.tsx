@@ -218,13 +218,11 @@ export function PaymentForm({
 }
 
 export function CartForm({
-  data,
   machine,
 }: {
-  data: CartData;
   machine: CheckoutMachine;
 }) {
-  const [items, setItems] = useState(data.items);
+  const [items, setItems] = useState(machine.store.getState().cart.items);
 
   const handleQuantityChange = (id: string, quantity: number) => {
     setItems((prev) =>

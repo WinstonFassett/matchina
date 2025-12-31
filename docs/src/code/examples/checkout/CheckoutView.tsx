@@ -26,7 +26,7 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
   return (
     <div className="max-w-2xl mx-auto rounded-lg border border-current/20 p-6">
       {currentState.match({
-        Cart: (data) => <CartForm data={data} machine={machine} />,
+        Cart: () => <CartForm machine={machine} />,
         Shipping: (data) => <ShippingForm data={data} machine={machine} />,
         Payment: (data) => (
           <PaymentForm
