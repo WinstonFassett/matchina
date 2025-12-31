@@ -1,81 +1,73 @@
-import { defineStates, matchina, setup, effect, addEventApi } from "matchina";
-import { submachine, makeHierarchical } from "matchina/hsm";
+import { describeHSM } from "matchina/hsm";
+import { addEventApi, addStoreApi } from "matchina";
 import { createComboboxStore } from "./store";
 
-export const activeStates = defineStates({
-  Empty: undefined,
-  Typing: undefined,
-  TextEntry: undefined,
-  Suggesting: undefined,
-});
-
-function createActiveForApp() {
-  return matchina(activeStates, {
-    Empty: {
-      typed: "Typing",
-    },
-    Typing: {
-      toEmpty: "Empty",
-      toSuggesting: "Suggesting",
-      toTextEntry: "TextEntry",
-    },
-    TextEntry: {
-      typed: "Typing",
-      clear: "Empty",
-    },
-    Suggesting: {
-      typed: "Typing",
-      clear: "Empty",
-      highlightNext: "Suggesting",
-      highlightPrev: "Suggesting",
-      selectHighlighted: "Empty",
-      cancel: "TextEntry",
-    },
-  }, "Empty");
-}
-
-export type ActiveMachine = ReturnType<typeof createActiveForApp>;
-
-const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
-
-export const appStates = defineStates({
-  Inactive: undefined,
-  Active: activeMachineFactory,
-});
-
 export function createComboboxMachine() {
-  const store = createComboboxStore();
+  const store = addStoreApi(createComboboxStore());
 
-  const combobox = matchina(appStates, {
-    Inactive: { focus: "Active" },
-    Active: { deactivate: "Inactive" },
-  }, appStates.Inactive());
-
-  const hierarchical = makeHierarchical(combobox);
-  
-  // Hook: ONLY auto-transitions based on store state
-  setup(hierarchical)(effect((ev: any) => {
-    if (ev?.type === 'typed') {
-      setTimeout(() => {
-        const state = store.getState();
-        ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
-      }, 0);
+  // HSM: Inactive, Active.Empty, Active.Suggesting
+  const machine = describeHSM({
+    initial: 'Inactive',
+    states: {
+      Inactive: {
+        on: {
+          focus: 'Active',
+          addTag: 'Active'
+        }
+      },
+      Active: {
+        initial: 'Empty',
+        states: {
+          Empty: {
+            on: {
+              type: 'Suggesting',
+              blur: '^Inactive'
+            }
+          },
+          Suggesting: {
+            on: {
+              type: 'Suggesting',
+              select: 'Empty',
+              dismiss: 'Empty',
+              blur: '^Inactive'
+            }
+          }
+        },
+        on: {
+          addTag: 'Active',
+          blur: '^Inactive'
+        }
+      }
     }
-  }));
-
-  const machineWithStore = Object.assign(hierarchical, { 
-    store,
-    // Store APIs
-    addTag: (tag: string) => store.dispatch('addTag', tag),
-    removeTag: (tag: string) => store.dispatch('removeTag', tag),
-    setInput: (input: string) => store.dispatch('setInput', input),
-    highlight: (d: 'next' | 'prev') => store.dispatch('highlight', d),
-    clear: () => store.dispatch('clear'),
-    deactivate: () => store.dispatch('clear')
   });
 
-  // Add event API to machine
-  addEventApi(machineWithStore);
+  addEventApi(machine);
 
-  return machineWithStore;
+  // Component API - pure delegation, no coordination
+  const combobox = Object.assign(machine, {
+    model: store,
+
+    // Pure store operations
+    removeTag: store.api.removeTag,
+    highlight: store.api.highlight,
+    setHighlighted: store.api.setHighlighted,
+
+    // Machine operations
+    focus: machine.api.focus,
+    blur: machine.api.blur,
+    type: machine.api.type,
+    addTag: machine.api.addTag,
+    select: machine.api.select,
+    dismiss: machine.api.dismiss,
+
+    // Coordinated action: update store then transition
+    setInput: (value: string) => {
+      store.api.setInput(value);
+      machine.api.type();
+    },
+  });
+
+  return combobox;
 }
+
+export type ComboboxMachine = ReturnType<typeof createComboboxMachine>;
