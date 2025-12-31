@@ -211,12 +211,22 @@ function flattenStates(
  * Example:
  * - Payment.MethodEntry: { authorize: 'Authorizing' } → Payment.MethodEntry: { authorize: 'Payment.Authorizing' }
  * - Payment: { back: '^Shipping' } → Payment: { back: 'Shipping' }
+ * - Payment: { type: 'Suggesting' } → Payment: { type: 'Payment.Suggesting' } (targets child)
  */
 function flattenTransitions(
   states: Record<string, DeclarativeStateConfig>,
-  prefix = ''
+  prefix = '',
+  childKeys: Record<string, Set<string>> = {}
 ): Record<string, Record<string, string | ((...params: any[]) => any)>> {
   const flattened: Record<string, Record<string, string | ((...params: any[]) => any)>> = {};
+
+  // First pass: collect all child keys for each parent
+  for (const [key, config] of Object.entries(states)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (config.states) {
+      childKeys[fullKey] = new Set(Object.keys(config.states));
+    }
+  }
 
   for (const [key, config] of Object.entries(states)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -236,9 +246,15 @@ function flattenTransitions(
             // Already fully qualified
             flattened[fullKey][event] = target;
           } else {
-            // Relative to parent of current state (not current state itself)
-            // For Payment.MethodEntry with 'Authorizing', resolves to Payment.Authorizing
-            flattened[fullKey][event] = parentKey ? `${parentKey}.${target}` : target;
+            // Check if target is a child of this state
+            if (config.states && target in config.states) {
+              // Target is a direct child state
+              flattened[fullKey][event] = `${fullKey}.${target}`;
+            } else {
+              // Relative to parent of current state (not current state itself)
+              // For Payment.MethodEntry with 'Authorizing', resolves to Payment.Authorizing
+              flattened[fullKey][event] = parentKey ? `${parentKey}.${target}` : target;
+            }
           }
         } else {
           // Transition resolver function - pass through
@@ -250,7 +266,7 @@ function flattenTransitions(
     // Recursively flatten child transitions
     // The new parent key is the full key of the current state
     if (config.states) {
-      Object.assign(flattened, flattenTransitions(config.states, fullKey));
+      Object.assign(flattened, flattenTransitions(config.states, fullKey, childKeys));
     }
   }
 
