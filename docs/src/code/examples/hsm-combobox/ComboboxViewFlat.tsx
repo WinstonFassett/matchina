@@ -8,6 +8,7 @@ interface ComboboxViewFlatProps {
 
 export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   useMachine(machine);
+  useMachine(machine.model);
   const { model } = machine;
   const { input, selectedTags, suggestions, highlightedIndex } = model.getState();
   const inputRef = useRef<HTMLInputElement>(null);
