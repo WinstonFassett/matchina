@@ -25,8 +25,7 @@ export function createFlatComboboxMachine() {
           Suggesting: {
             on: {
               type: 'Suggesting',
-              select: 'Empty',
-              dismiss: 'Empty'
+              select: 'Empty'
             }
           }
         },
@@ -42,7 +41,6 @@ export function createFlatComboboxMachine() {
     effect((ev: any) => {
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'blur') store.api.clear();
-      if (ev.type === 'dismiss') store.api.clear();
     })
   );
 
@@ -64,7 +62,6 @@ export function createFlatComboboxMachine() {
     type: machine.api.type,
     addTag: machine.api.addTag,
     select: machine.api.select,
-    dismiss: machine.api.dismiss,
 
     // Coordinated action: update store then transition
     setInput: (value: string) => {

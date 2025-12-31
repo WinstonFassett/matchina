@@ -23,7 +23,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        machine.dismiss();
+        machine.blur();
         break;
       case "Backspace":
         if (!input && selectedTags.length > 0) {
