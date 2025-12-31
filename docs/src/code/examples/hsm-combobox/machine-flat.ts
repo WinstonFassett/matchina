@@ -96,42 +96,42 @@ export function createFlatComboboxMachine() {
   // Use createFlatMachine with nested structure - it handles flattening automatically
   const baseMachine = createFlatMachine(states, {
     Inactive: {
-      focus: "Active.Empty",
+      focus: states["Active.Empty"],
     },
 
     "Active.Empty": {
-      typed: "Active.Typing",
-      removeTag: "Active.Empty",
-      addTag: "Active.Empty",
-      deactivate: "Inactive",
+      typed: () => states["Active.Typing"](),
+      removeTag: states["Active.Empty"],
+      addTag: states["Active.Empty"],
+      deactivate: states.Inactive,
     },
 
     "Active.Typing": {
-      toEmpty: "Active.Empty",
-      toSuggesting: "Active.Suggesting", 
-      toTextEntry: "Active.TextEntry",
-      removeTag: "Active.Typing",
-      deactivate: "Inactive",
+      toEmpty: states["Active.Empty"],
+      toSuggesting: states["Active.Suggesting"], 
+      toTextEntry: states["Active.TextEntry"],
+      removeTag: states["Active.Typing"],
+      deactivate: states.Inactive,
     },
 
     "Active.TextEntry": {
-      typed: "Active.Typing",
-      clear: "Active.Empty",
-      removeTag: "Active.TextEntry",
-      addTag: "Active.Empty",
-      deactivate: "Inactive",
+      typed: () => states["Active.Typing"](),
+      clear: states["Active.Empty"],
+      removeTag: states["Active.TextEntry"],
+      addTag: states["Active.Empty"],
+      deactivate: states.Inactive,
     },
 
     "Active.Suggesting": {
-      typed: "Active.Typing",
-      clear: "Active.Empty",
-      highlightNext: "Active.Suggesting",
-      highlightPrev: "Active.Suggesting",
-      selectHighlighted: "Active.Empty",
-      removeTag: "Active.Suggesting",
-      cancel: "Active.TextEntry",
-      addTag: "Active.Empty",
-      deactivate: "Inactive",
+      typed: () => states["Active.Typing"](),
+      clear: states["Active.Empty"],
+      highlightNext: states["Active.Suggesting"],
+      highlightPrev: states["Active.Suggesting"],
+      selectHighlighted: states["Active.Empty"],
+      removeTag: states["Active.Suggesting"],
+      cancel: states["Active.TextEntry"],
+      addTag: states["Active.Empty"],
+      deactivate: states.Inactive,
     },
   }, states.Inactive());
 

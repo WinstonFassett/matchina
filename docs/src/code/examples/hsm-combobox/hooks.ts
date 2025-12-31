@@ -1,7 +1,14 @@
 import { effect } from "matchina";
 
 export function createComboboxStoreHook(store: any) {
+  let currentMachine: any = null;
+  
   return effect((ev: any) => {
+    // Store reference to machine for auto-transition logic
+    if (ev && ev.machine) {
+      currentMachine = ev.machine;
+    }
+    
     // Handle store updates based on events and params
     if (ev && ev.type) {
       switch (ev.type) {
@@ -14,12 +21,12 @@ export function createComboboxStoreHook(store: any) {
               const state = store.getState();
               if (state.suggestions.length > 0) {
                 // We're in a flat machine, send the transition event
-                if (ev.machine && typeof ev.machine.send === 'function') {
-                  ev.machine.send("toSuggesting");
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  currentMachine.send("toSuggesting");
                 }
               } else {
-                if (ev.machine && typeof ev.machine.send === 'function') {
-                  ev.machine.send("toTextEntry");
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  currentMachine.send("toTextEntry");
                 }
               }
             }, 0);

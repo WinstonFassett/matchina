@@ -200,23 +200,21 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           user: {
             id: "user-123",
             name: "Demo User",
-            email: data.email,
+            email: "demo@example.com",
             avatar: "https://i.pravatar.cc/150?u=demo",
           },
         });
       } else if (state.is("Registering")) {
-        const data = state.data as { name: string; email: string };
         machine.success({
           user: {
             id: "user-123",
-            name: data.name,
-            email: data.email,
-            avatar: "https://i.pravatar.cc/150?u=" + data.email,
+            name: "Demo User",
+            email: "demo@example.com",
+            avatar: "https://i.pravatar.cc/150?u=demo",
           },
         });
       } else if (state.is("RequestingPasswordReset")) {
-        const data = state.data as { email: string };
-        machine.success({ email: data.email });
+        machine.success({ email: "demo@example.com" });
       }
     }, 1500);
   };
