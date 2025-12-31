@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 export default function TrafficLightHierarchicalView() {
   const [graphData, setGraphData] = useState<any>(null);
+  const [currentState, setCurrentState] = useState<string>('Working.Red');
 
   useEffect(() => {
     console.log('TrafficLightHierarchicalView: useEffect called');
@@ -48,11 +49,33 @@ export default function TrafficLightHierarchicalView() {
     return <div>Loading...</div>;
   }
 
+  // Handle event clicks to simulate state transitions
+  const handleEventClick = (event: string) => {
+    const transitions: Record<string, Record<string, string>> = {
+      'Working.Red': { TIMER: 'Working.Green' },
+      'Working.Green': { TIMER: 'Working.Yellow' },
+      'Working.Yellow': { TIMER: 'Working.Red' },
+      'Error.ErrorState': { RESET: 'Error.Recover' },
+      'Error.Recover': { RESTART: 'Working.Red' },
+    };
+    const nextState = transitions[currentState]?.[event];
+    if (nextState) {
+      setCurrentState(nextState);
+    }
+  };
+
   return (
     <div>
       <h3>Traffic Light HSM - Hierarchical Force Graph</h3>
       <p>Demonstrating convex hull containers around compound states with force-directed layout.</p>
-      <HierarchicalForceGraph data={graphData} />
+      <p style={{ fontSize: '12px', color: '#9ca3af' }}>
+        Current state: <strong style={{ color: '#3b82f6' }}>{currentState}</strong> — Click an event label to transition
+      </p>
+      <HierarchicalForceGraph
+        data={graphData}
+        currentState={currentState}
+        onEventClick={handleEventClick}
+      />
     </div>
   );
 }

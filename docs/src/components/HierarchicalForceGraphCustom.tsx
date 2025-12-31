@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // Custom force simulation - no external dependencies
 interface ForceNode {
@@ -23,6 +23,12 @@ interface ForceLink {
 interface HierarchicalGraphData {
   nodes: ForceNode[];
   links: ForceLink[];
+}
+
+interface HierarchicalForceGraphProps {
+  data: HierarchicalGraphData;
+  currentState?: string;
+  onEventClick?: (event: string) => void;
 }
 
 // Simple convex hull calculation
@@ -55,6 +61,50 @@ function convexHull(points: [number, number][]): [number, number][] {
   upper.pop();
   lower.pop();
   return lower.concat(upper);
+}
+
+// Create smooth curved path from points using cardinal spline
+function smoothHullPath(points: [number, number][], tension: number = 0.5): string {
+  if (points.length < 3) {
+    // For 2 points, create a rounded rectangle
+    if (points.length === 2) {
+      const [[x1, y1], [x2, y2]] = points;
+      const padding = 35;
+      const radius = 15;
+      const minX = Math.min(x1, x2) - padding;
+      const maxX = Math.max(x1, x2) + padding;
+      const minY = Math.min(y1, y2) - padding;
+      const maxY = Math.max(y1, y2) + padding;
+      return `M${minX + radius},${minY}
+              L${maxX - radius},${minY} Q${maxX},${minY} ${maxX},${minY + radius}
+              L${maxX},${maxY - radius} Q${maxX},${maxY} ${maxX - radius},${maxY}
+              L${minX + radius},${maxY} Q${minX},${maxY} ${minX},${maxY - radius}
+              L${minX},${minY + radius} Q${minX},${minY} ${minX + radius},${minY} Z`;
+    }
+    return '';
+  }
+
+  // Close the loop by adding first point at end
+  const closed = [...points, points[0], points[1]];
+
+  let path = `M${points[0][0]},${points[0][1]}`;
+
+  for (let i = 0; i < closed.length - 2; i++) {
+    const p0 = closed[Math.max(0, i - 1)];
+    const p1 = closed[i];
+    const p2 = closed[i + 1];
+    const p3 = closed[Math.min(closed.length - 1, i + 2)];
+
+    // Calculate control points using Catmull-Rom to Bezier conversion
+    const cp1x = p1[0] + (p2[0] - p0[0]) / 6 * tension;
+    const cp1y = p1[1] + (p2[1] - p0[1]) / 6 * tension;
+    const cp2x = p2[0] - (p3[0] - p1[0]) / 6 * tension;
+    const cp2y = p2[1] - (p3[1] - p1[1]) / 6 * tension;
+
+    path += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0]},${p2[1]}`;
+  }
+
+  return path + ' Z';
 }
 
 // Simple force simulation implementation
@@ -178,7 +228,35 @@ class ForceSimulation {
   }
 }
 
-export default function HierarchicalForceGraph({ data }: { data: HierarchicalGraphData }) {
+// Color scheme - matching ReactFlow docs aesthetic
+const COLORS = {
+  // Node colors (light nodes like ReactFlow)
+  activeState: '#3b82f6',     // Blue - current state
+  groupNode: '#f5f5f5',       // Light gray - compound/group states
+  childNode: '#ffffff',       // White - child states
+  nodeBorder: '#374151',      // Gray-700 border
+  nodeText: '#1f2937',        // Dark gray text
+
+  // Edge colors
+  activeEdge: '#3b82f6',      // Blue - can fire from current state
+  inactiveEdge: '#9ca3af',    // Gray-400 - softer
+  edgeLabel: '#e5e7eb',       // Gray-200
+  edgeLabelBg: '#374151',     // Gray-700
+
+  // Container colors (semi-transparent like ReactFlow groups)
+  containerFill: 'rgba(107, 114, 128, 0.15)',   // Gray with transparency
+  containerStroke: '#6b7280', // Gray-500
+  containerLabel: '#9ca3af',  // Gray-400
+
+  // Background
+  background: '#1a1a1a',
+};
+
+export default function HierarchicalForceGraph({
+  data,
+  currentState,
+  onEventClick
+}: HierarchicalForceGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -214,6 +292,40 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
       svg.setAttribute('width', dimensions.width.toString());
       svg.setAttribute('height', dimensions.height.toString());
       svg.setAttribute('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
+
+      // Create defs for arrow markers
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      svg.appendChild(defs);
+
+      // Arrow marker for inactive edges
+      const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      arrowMarker.setAttribute('id', 'arrow');
+      arrowMarker.setAttribute('viewBox', '0 -5 10 10');
+      arrowMarker.setAttribute('refX', '45'); // Adjusted for rectangular nodes (width 80)
+      arrowMarker.setAttribute('refY', '0');
+      arrowMarker.setAttribute('markerWidth', '6');
+      arrowMarker.setAttribute('markerHeight', '6');
+      arrowMarker.setAttribute('orient', 'auto');
+      const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      arrowPath.setAttribute('d', 'M0,-5L10,0L0,5');
+      arrowPath.setAttribute('fill', COLORS.inactiveEdge);
+      arrowMarker.appendChild(arrowPath);
+      defs.appendChild(arrowMarker);
+
+      // Arrow marker for active edges
+      const activeArrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      activeArrowMarker.setAttribute('id', 'arrow-active');
+      activeArrowMarker.setAttribute('viewBox', '0 -5 10 10');
+      activeArrowMarker.setAttribute('refX', '45'); // Adjusted for rectangular nodes (width 80)
+      activeArrowMarker.setAttribute('refY', '0');
+      activeArrowMarker.setAttribute('markerWidth', '6');
+      activeArrowMarker.setAttribute('markerHeight', '6');
+      activeArrowMarker.setAttribute('orient', 'auto');
+      const activeArrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      activeArrowPath.setAttribute('d', 'M0,-5L10,0L0,5');
+      activeArrowPath.setAttribute('fill', COLORS.activeEdge);
+      activeArrowMarker.appendChild(activeArrowPath);
+      defs.appendChild(activeArrowMarker);
 
       // Group nodes by compound state
       const groups = new Map<string, ForceNode[]>();
@@ -253,42 +365,116 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
         
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('class', 'container');
-        path.setAttribute('fill', '#4ecdc4');
-        path.setAttribute('fill-opacity', '0.1');
-        path.setAttribute('stroke', '#4ecdc4');
-        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', COLORS.containerFill);
+        path.setAttribute('stroke', COLORS.containerStroke);
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('stroke-dasharray', '4,2');
         containerGroup.appendChild(path);
         containers.push(path);
       });
 
-      // Create links
-      const links: SVGLineElement[] = [];
+      // Create edge label group (rendered after links but before nodes)
+      const edgeLabelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      edgeLabelGroup.setAttribute('class', 'edge-labels');
+
+      // Create links as paths (for curves) with labels
+      interface LinkElements {
+        path: SVGPathElement;
+        labelBg: SVGRectElement;
+        labelText: SVGTextElement;
+        link: ForceLink;
+      }
+      const linkElements: LinkElements[] = [];
+
       data.links.forEach(link => {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('stroke', '#999');
-        line.setAttribute('stroke-opacity', '0.6');
-        line.setAttribute('stroke-width', '2');
-        linkGroup.appendChild(line);
-        links.push(line);
+        // Create path for the edge
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const isActive = link.source === currentState;
+        path.setAttribute('stroke', isActive ? COLORS.activeEdge : COLORS.inactiveEdge);
+        path.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', isActive ? 'url(#arrow-active)' : 'url(#arrow)');
+        path.style.cursor = 'pointer';
+        path.style.transition = 'stroke 0.2s, stroke-width 0.2s';
+        linkGroup.appendChild(path);
+
+        // Create label background
+        const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        labelBg.setAttribute('fill', COLORS.edgeLabelBg);
+        labelBg.setAttribute('rx', '4');
+        labelBg.setAttribute('ry', '4');
+        labelBg.style.cursor = 'pointer';
+        edgeLabelGroup.appendChild(labelBg);
+
+        // Create label text
+        const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        labelText.setAttribute('font-size', '10px');
+        labelText.setAttribute('text-anchor', 'middle');
+        labelText.setAttribute('dy', '.35em');
+        labelText.setAttribute('fill', isActive ? COLORS.activeEdge : COLORS.edgeLabel);
+        labelText.setAttribute('font-weight', isActive ? 'bold' : 'normal');
+        labelText.textContent = link.event;
+        labelText.style.cursor = 'pointer';
+        labelText.style.pointerEvents = 'none';
+        edgeLabelGroup.appendChild(labelText);
+
+        // Add click handler to path and label
+        const handleClick = () => {
+          if (onEventClick) {
+            onEventClick(link.event);
+          }
+        };
+        path.addEventListener('click', handleClick);
+        labelBg.addEventListener('click', handleClick);
+
+        // Add hover effect
+        const handleMouseEnter = () => {
+          path.setAttribute('stroke-width', '3');
+          labelBg.setAttribute('fill', COLORS.activeEdge);
+          labelText.setAttribute('fill', '#fff');
+        };
+        const handleMouseLeave = () => {
+          path.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+          labelBg.setAttribute('fill', COLORS.edgeLabelBg);
+          labelText.setAttribute('fill', isActive ? COLORS.activeEdge : COLORS.edgeLabel);
+        };
+        path.addEventListener('mouseenter', handleMouseEnter);
+        path.addEventListener('mouseleave', handleMouseLeave);
+        labelBg.addEventListener('mouseenter', handleMouseEnter);
+        labelBg.addEventListener('mouseleave', handleMouseLeave);
+
+        linkElements.push({ path, labelBg, labelText, link });
       });
 
-      // Create nodes - set initial positions immediately
-      const nodes: SVGCircleElement[] = [];
+      // Insert edge labels after links but before nodes
+      svg.insertBefore(edgeLabelGroup, nodeGroup);
+
+      // Create nodes as rounded rectangles - set initial positions immediately
+      const nodeWidth = 80;
+      const nodeHeight = 32;
+      const nodeRadius = 8;
+      const nodes: SVGRectElement[] = [];
       forceNodes.forEach(node => {
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('r', '15');
-        circle.setAttribute('cx', node.x.toString());
-        circle.setAttribute('cy', node.y.toString());
-        circle.setAttribute('fill', node.level === 0 ? '#ff6b6b' : '#4ecdc4');
-        circle.setAttribute('stroke', '#333');
-        circle.setAttribute('stroke-width', '2');
-        circle.style.cursor = 'pointer';
-        nodeGroup.appendChild(circle);
-        nodes.push(circle);
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', nodeWidth.toString());
+        rect.setAttribute('height', nodeHeight.toString());
+        rect.setAttribute('x', (node.x - nodeWidth / 2).toString());
+        rect.setAttribute('y', (node.y - nodeHeight / 2).toString());
+        rect.setAttribute('rx', nodeRadius.toString());
+        rect.setAttribute('ry', nodeRadius.toString());
+        // Use COLORS: compound states (level 0) = amber, child states = emerald
+        const isActive = node.id === currentState || node.id.endsWith('.' + currentState);
+        rect.setAttribute('fill', isActive ? COLORS.activeState : (node.level === 0 ? COLORS.groupNode : COLORS.childNode));
+        rect.setAttribute('stroke', COLORS.nodeBorder);
+        rect.setAttribute('stroke-width', isActive ? '3' : '2');
+        rect.style.cursor = 'pointer';
+        rect.style.transition = 'fill 0.2s, stroke-width 0.2s';
+        nodeGroup.appendChild(rect);
+        nodes.push(rect);
 
         // Add drag functionality
         let isDragging = false;
-        circle.addEventListener('mousedown', (e) => {
+        rect.addEventListener('mousedown', (e) => {
           isDragging = true;
           node.fx = node.x;
           node.fy = node.y;
@@ -326,7 +512,7 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
         text.setAttribute('font-size', '12px');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dy', '.35em');
-        text.setAttribute('fill', '#fff');
+        text.setAttribute('fill', COLORS.nodeText);
         text.textContent = node.name;
         labelGroup.appendChild(text);
         labels.push(text);
@@ -348,7 +534,7 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
         text.setAttribute('font-weight', 'bold');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dy', '.35em');
-        text.setAttribute('fill', '#4ecdc4');
+        text.setAttribute('fill', COLORS.containerLabel);
         text.textContent = groupName;
         groupLabelGroup.appendChild(text);
         groupLabels.push(text);
@@ -357,24 +543,41 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
       // Animation loop
       function animate() {
         if (simulation.tick()) {
-          // Update links - use forceNodes which has the simulation positions
-          links.forEach((line, i) => {
-            const link = data.links[i];
+          // Update links and edge labels - use forceNodes which has the simulation positions
+          linkElements.forEach(({ path, labelBg, labelText, link }) => {
             const source = forceNodes.find(n => n.id === link.source);
             const target = forceNodes.find(n => n.id === link.target);
             if (source && target) {
-              line.setAttribute('x1', source.x.toString());
-              line.setAttribute('y1', source.y.toString());
-              line.setAttribute('x2', target.x.toString());
-              line.setAttribute('y2', target.y.toString());
+              // Create curved path
+              const dx = target.x - source.x;
+              const dy = target.y - source.y;
+              const dr = Math.sqrt(dx * dx + dy * dy) * 0.8; // Curve radius
+              const pathData = `M${source.x},${source.y} A${dr},${dr} 0 0,1 ${target.x},${target.y}`;
+              path.setAttribute('d', pathData);
+
+              // Position label at midpoint of edge
+              const midX = (source.x + target.x) / 2;
+              const midY = (source.y + target.y) / 2 - 10; // Offset slightly above
+
+              // Update label text position
+              labelText.setAttribute('x', midX.toString());
+              labelText.setAttribute('y', midY.toString());
+
+              // Update label background to fit text
+              const bbox = labelText.getBBox();
+              const padding = 4;
+              labelBg.setAttribute('x', (bbox.x - padding).toString());
+              labelBg.setAttribute('y', (bbox.y - padding).toString());
+              labelBg.setAttribute('width', (bbox.width + padding * 2).toString());
+              labelBg.setAttribute('height', (bbox.height + padding * 2).toString());
             }
           });
 
-          // Update nodes
-          nodes.forEach((circle, i) => {
+          // Update nodes (rounded rectangles centered on position)
+          nodes.forEach((rect, i) => {
             const node = forceNodes[i];
-            circle.setAttribute('cx', node.x.toString());
-            circle.setAttribute('cy', node.y.toString());
+            rect.setAttribute('x', (node.x - nodeWidth / 2).toString());
+            rect.setAttribute('y', (node.y - nodeHeight / 2).toString());
           });
 
           // Update labels
@@ -384,9 +587,9 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
             text.setAttribute('y', node.y.toString());
           });
 
-          // Update containers with padding
+          // Update containers with smooth curved edges
           let containerIndex = 0;
-          const containerPadding = 35; // Padding around nodes
+          const containerPadding = 40; // Padding around nodes
 
           groups.forEach((groupNodes, groupName) => {
             if (groupName === 'root') return;
@@ -408,23 +611,24 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
                 const scale = (dist + containerPadding) / dist;
                 return [centroidX + dx * scale, centroidY + dy * scale] as [number, number];
               });
-              const pathData = `M${expandedHull.map(p => p.join(',')).join(' L')} Z`;
+              // Use smooth curved path instead of sharp edges
+              const pathData = smoothHullPath(expandedHull, 2.5);
               containers[containerIndex].setAttribute('d', pathData);
             } else if (points.length === 2) {
-              // Create rectangle around 2 points
-              const [[x1, y1], [x2, y2]] = points;
-              const minX = Math.min(x1, x2) - containerPadding;
-              const maxX = Math.max(x1, x2) + containerPadding;
-              const minY = Math.min(y1, y2) - containerPadding;
-              const maxY = Math.max(y1, y2) + containerPadding;
-              const pathData = `M${minX},${minY} L${maxX},${minY} L${maxX},${maxY} L${minX},${maxY} Z`;
+              // For 2 points, use smooth rounded rectangle from smoothHullPath
+              const pathData = smoothHullPath(points, 1);
               containers[containerIndex].setAttribute('d', pathData);
             } else if (points.length === 1) {
-              // Single point - create circle-like hexagon
+              // Single point - create rounded rectangle
               const [[x, y]] = points;
               const r = containerPadding;
-              const hexPath = `M${x},${y-r} L${x+r*0.866},${y-r*0.5} L${x+r*0.866},${y+r*0.5} L${x},${y+r} L${x-r*0.866},${y+r*0.5} L${x-r*0.866},${y-r*0.5} Z`;
-              containers[containerIndex].setAttribute('d', hexPath);
+              const cr = 12; // corner radius
+              const pathData = `M${x - r + cr},${y - r}
+                L${x + r - cr},${y - r} Q${x + r},${y - r} ${x + r},${y - r + cr}
+                L${x + r},${y + r - cr} Q${x + r},${y + r} ${x + r - cr},${y + r}
+                L${x - r + cr},${y + r} Q${x - r},${y + r} ${x - r},${y + r - cr}
+                L${x - r},${y - r + cr} Q${x - r},${y - r} ${x - r + cr},${y - r} Z`;
+              containers[containerIndex].setAttribute('d', pathData);
             }
 
             // Position group label above the container
