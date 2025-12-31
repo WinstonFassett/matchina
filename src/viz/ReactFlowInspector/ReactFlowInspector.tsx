@@ -73,6 +73,8 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   interactive = true,
 }) => {
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState<{ x: number; y: number } | null>(null);
+  const layoutButtonRef = useRef<HTMLButtonElement>(null);
 
   // Load saved layout settings or use defaults, allowing prop override
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
@@ -83,6 +85,28 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   // Force re-layout when options change
   const [forceLayoutKey, setForceLayoutKey] = useState<number>(0);
+
+  const handleLayoutButtonClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (layoutButtonRef.current) {
+      const rect = layoutButtonRef.current.getBoundingClientRect();
+      console.log('🔍 [Layout] Button clicked, position:', { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
+      
+      // Position popover below and slightly left of button
+      // Ensure popover stays within viewport bounds
+      const popoverWidth = 300;
+      const popoverX = Math.min(rect.x - popoverWidth + rect.width + 8, window.innerWidth - popoverWidth - 16);
+      const popoverY = rect.y + rect.height + 4;
+      
+      setButtonPosition({
+        x: Math.max(16, popoverX), // Ensure at least 16px from left edge
+        y: popoverY
+      });
+    }
+    
+    setShowLayoutDialog(!showLayoutDialog);
+  }, [showLayoutDialog]);
 
   const handleLayoutChange = useCallback((newOptions: LayoutOptions) => {
     console.log('🔍 [Layout] Options changed:', newOptions);
@@ -221,11 +245,8 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
             {/* Layout Options Button */}
             <Panel position="top-right">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('🔍 [Layout] Button clicked, current state:', showLayoutDialog);
-                  setShowLayoutDialog(!showLayoutDialog);
-                }}
+                ref={layoutButtonRef}
+                onClick={handleLayoutButtonClick}
                 className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                 title="Layout Options"
               >
@@ -250,19 +271,29 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
         </ReactFlowProvider>
       </div>
 
-      {showLayoutDialog &&
+      {showLayoutDialog && buttonPosition &&
         (() => {
-          console.log('🔍 [Portal] Rendering portal to document.body');
+          console.log('🔍 [Portal] Rendering portal to document.body at position:', buttonPosition);
           return createPortal(
             <div
-              className="fixed inset-0 z-50 flex items-start justify-end"
+              className="fixed inset-0 z-50"
               style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
               onClick={(e) => {
                 console.log('🔍 [Portal] Backdrop clicked');
                 if (e.target === e.currentTarget) setShowLayoutDialog(false);
               }}
             >
-              <div className="mt-16 mr-4 max-w-[300px] max-h-[80vh] overflow-auto relative">
+              <div
+                className="relative"
+                style={{
+                  position: 'fixed',
+                  left: `${buttonPosition.x}px`,
+                  top: `${buttonPosition.y}px`,
+                  maxWidth: '300px',
+                  maxHeight: '80vh',
+                  overflow: 'auto'
+                }}
+              >
                 <button
                   onClick={() => setShowLayoutDialog(false)}
                   className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
