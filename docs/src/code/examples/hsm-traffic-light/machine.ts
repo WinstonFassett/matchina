@@ -7,9 +7,9 @@ import { submachine, makeHierarchical } from "matchina/hsm";
 // 1. Define the Child Machine (Light Cycle)
 // We need a factory for the child machine so it can be instantiated freshly
 const lightCycleStates = defineStates({
-  Red: () => ({}),
-  Green: () => ({}),
-  Yellow: () => ({})
+  Red: undefined,
+  Green: undefined,
+  Yellow: undefined,
 });
 
 const createLightCycle = () => matchina(
@@ -25,9 +25,9 @@ const createLightCycle = () => matchina(
 // 2. Define the Parent Machine (Controller)
 // We use `submachine` to embed the child machine factory
 const controllerStates = defineStates({
-  Broken: () => ({}),
+  Broken: undefined,
   Working: submachine(createLightCycle),
-  Maintenance: () => ({}),
+  Maintenance: undefined,
 });
 
 const createController = () => matchina(

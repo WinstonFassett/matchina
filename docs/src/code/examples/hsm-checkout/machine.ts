@@ -43,12 +43,12 @@ function createPayment() {
 const paymentFactory = submachine(createPayment, { id: "payment" });
 
 const checkoutStates = defineStates({
-  Cart: () => ({}),
-  Shipping: () => ({}),
-  ShippingPaid: () => ({}),
+  Cart: undefined,
+  Shipping: undefined,
+  ShippingPaid: undefined,
   Payment: paymentFactory,
-  Review: () => ({}),
-  Confirmation: () => ({}),
+  Review: undefined,
+  Confirmation: undefined,
 });
 
 export function createCheckoutMachine() {
