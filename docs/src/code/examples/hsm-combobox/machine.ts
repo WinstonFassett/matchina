@@ -86,9 +86,9 @@ export function createComboboxMachine() {
     store,
     addTag: store.dispatch.bind(null, 'addTag'),
     removeTag: store.dispatch.bind(null, 'removeTag'),
+    setInput: store.dispatch.bind(null, 'setInput'),
     highlight: (d: 'next' | 'prev') => store.dispatch('highlight', d),
-    selectHighlighted: () => store.dispatch('selectHighlighted'),
     clear: () => store.dispatch('clear'),
-    deactivate: () => store.dispatch('deactivate')
+    deactivate: () => store.dispatch('clear')
   });
 }

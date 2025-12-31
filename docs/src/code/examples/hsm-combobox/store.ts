@@ -29,35 +29,21 @@ export function createComboboxStore() {
       highlightedIndex: 0,
     }),
     
-    addTag: (tag?: string) => (change) => {
-      const tagToAdd = tag || change.from.suggestions[change.from.highlightedIndex] || change.from.input.trim();
-      if (!tagToAdd || change.from.selectedTags.includes(tagToAdd)) {
-        return change.from;
-      }
-      return {
-        ...change.from,
-        selectedTags: [...change.from.selectedTags, tagToAdd],
-        input: "",
-        suggestions: [],
-        highlightedIndex: 0,
-      };
-    },
+    addTag: (tag: string) => (change) => ({
+      ...change.from,
+      selectedTags: [...change.from.selectedTags, tag],
+    }),
     
     removeTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: change.from.selectedTags.filter((t: string) => t !== tag),
-      suggestions: getSuggestions(change.from.input, change.from.selectedTags),
     }),
     
-    backspace: () => (change) => {
-      if (change.from.input.length === 0 && change.from.selectedTags.length > 0) {
-        return {
-          ...change.from,
-          selectedTags: change.from.selectedTags.slice(0, -1),
-        };
-      }
-      return change.from;
-    },
+    setInput: (input: string) => (change) => ({
+      ...change.from,
+      input,
+      suggestions: getSuggestions(input, change.from.selectedTags),
+    }),
     
     clear: () => (change) => ({
       ...change.from,

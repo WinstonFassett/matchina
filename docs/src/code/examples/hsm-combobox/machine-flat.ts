@@ -77,10 +77,10 @@ export function createFlatComboboxMachine() {
     // Store APIs
     addTag: store.dispatch.bind(null, 'addTag'),
     removeTag: store.dispatch.bind(null, 'removeTag'),
+    setInput: store.dispatch.bind(null, 'setInput'),
     highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
-    selectHighlighted: () => store.dispatch('selectHighlighted'),
     clear: () => store.dispatch('clear'),
-    deactivate: () => store.dispatch('deactivate')
+    deactivate: () => store.dispatch('clear')
   });
 
   return machineWithStore;
