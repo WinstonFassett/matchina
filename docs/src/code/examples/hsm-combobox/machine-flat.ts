@@ -19,14 +19,14 @@ export function createFlatComboboxMachine() {
         initial: 'Empty',
         states: {
           Empty: {
-            data: undefined,
+            data: (value: string) => ({ value }),
             on: {
               type: 'Suggesting',
               blur: '^Inactive'
             }
           },
           Suggesting: {
-            data: undefined,
+            data: (value: string) => ({ value }),
             on: {
               type: 'Suggesting',
               select: 'Empty',
@@ -42,16 +42,10 @@ export function createFlatComboboxMachine() {
     }
   });
 
-  // Guard: block Empty→Suggesting if no suggestions
+  // No guard - just coordinate store updates
   setup(machine)(
-    guard((ev) => {
-      if (ev.type === 'type' && ev.from.key === 'Empty') {
-        return store.getState().suggestions.length > 0;
-      }
-      return true;
-    }),
     effect((ev: any) => {
-      // Handle blur, select, dismiss (pure side effects)
+      if (ev.type === 'type') store.api.setInput(ev.to.data?.value ?? '');
       if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'dismiss') store.api.clear();
@@ -75,11 +69,8 @@ export function createFlatComboboxMachine() {
     blur: machine.api.blur,
     dismiss: machine.api.dismiss,
 
-    // Coordinated actions: store FIRST, machine SECOND (for proper guard timing)
-    setInput: (value: string) => {
-      store.api.setInput(value);  // FIRST - recomputes suggestions
-      machine.api.type();         // THEN - guard sees updated suggestions
-    },
+    // Machine events - effects coordinate store updates
+    setInput: (value: string) => machine.api.type(value),
     selectSuggestion: () => {
       store.api.selectHighlighted();
       machine.api.select();
