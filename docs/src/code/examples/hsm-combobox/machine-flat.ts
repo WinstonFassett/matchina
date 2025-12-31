@@ -1,5 +1,5 @@
 import { describeHSM } from "matchina/hsm";
-import { setup, guard, effect, addEventApi, addStoreApi } from "matchina";
+import { setup, effect, addEventApi, addStoreApi } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createFlatComboboxMachine() {
@@ -58,35 +58,16 @@ export function createFlatComboboxMachine() {
   // Add event API to machine
   addEventApi(machine);
 
-  // Unified subscription: both machine and store notify
-  const subscribers = new Set<() => void>();
-  const notify = () => subscribers.forEach(fn => fn());
-
   // Component-level API - all actions go through machine, effects coordinate
   const combobox = Object.assign(machine, {
     model: store,
 
-    // Unified subscribe that catches both machine and store changes
-    subscribe(fn: () => void) {
-      subscribers.add(fn);
-      return () => subscribers.delete(fn);
-    },
+    // Pure store operations
+    removeTag: store.api.removeTag,
+    highlight: store.api.highlight,
+    setHighlighted: store.api.setHighlighted,
 
-    // Pure store operations - wrap to notify subscribers
-    removeTag: (tag: string) => {
-      store.api.removeTag(tag);
-      notify();
-    },
-    highlight: (direction: 'next' | 'prev') => {
-      store.api.highlight(direction);
-      notify();
-    },
-    setHighlighted: (index: number) => {
-      store.api.setHighlighted(index);
-      notify();
-    },
-
-    // Machine operations - effects handle all store coordination
+    // Machine operations
     focus: machine.api.focus,
     blur: machine.api.blur,
     type: machine.api.type,
@@ -98,10 +79,6 @@ export function createFlatComboboxMachine() {
     setInput: machine.api.type,
     selectSuggestion: machine.api.select,
   });
-
-  // Subscribe machine changes to unified notify
-  // (HSM doesn't have subscribe yet, so we notify manually on API calls)
-  // (store changes are notified above in the wrapped methods)
 
   return combobox;
 }

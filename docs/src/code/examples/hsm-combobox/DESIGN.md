@@ -315,7 +315,7 @@ useMachine(combobox);  // single subscription, catches all changes
 
 ---
 
-### Implementation Approach (Clean with Effects)
+### Implementation Approach (Declarative, No Subscription Wrapping)
 
 ```typescript
 function createFlatComboboxMachine() {
@@ -325,74 +325,64 @@ function createFlatComboboxMachine() {
     initial: 'Inactive',
     states: {
       Inactive: {
-        on: { focus: 'Active' }
+        data: undefined,
+        on: { focus: 'Active', addTag: 'Active' }
       },
       Active: {
         initial: 'Empty',
         states: {
           Empty: {
+            data: (value: string) => ({ value }),
             on: { type: 'Suggesting', blur: '^Inactive' }
           },
           Suggesting: {
+            data: (value: string) => ({ value }),
             on: { type: 'Suggesting', select: 'Empty', dismiss: 'Empty', blur: '^Inactive' }
           }
         },
-        on: { blur: '^Inactive' }
+        on: { addTag: 'Active', blur: '^Inactive' }
       }
     }
   });
 
-  // Guard: block Empty→Suggesting if no suggestions
   // Effect: coordinate store updates from machine events
   setup(machine)(
-    guard((ev) => {
-      if (ev.type === 'type' && ev.from.key === 'Empty') {
-        return store.getState().suggestions.length > 0;
-      }
-      return true;
-    }),
     effect((ev) => {
-      // Auto-update store when machine events occur
-      if (ev.type === 'type') store.api.setInput(ev.params?.[0] ?? '');
-      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === 'type') store.api.setInput(ev.to.data?.value ?? '');
+      if (ev.type === 'addTag') store.api.addTag(ev.params?.[0] ?? '');
       if (ev.type === 'select') store.api.selectHighlighted();
+      if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'dismiss') store.api.clear();
     })
   );
 
   addEventApi(machine);
 
-  // API: no wrapper functions - machine events handle coordination
+  // Clean API - machine is agnostic of subscriptions
   return Object.assign(machine, {
     model: store,
-
-    // Store operations (no machine involvement)
     removeTag: store.api.removeTag,
     highlight: store.api.highlight,
     setHighlighted: store.api.setHighlighted,
-
-    // Machine events (effects auto-coordinate with store)
     focus: machine.api.focus,
     blur: machine.api.blur,
     type: machine.api.type,
+    addTag: machine.api.addTag,
     select: machine.api.select,
     dismiss: machine.api.dismiss,
-
-    // Semantic aliases for UI
     setInput: machine.api.type,
     selectSuggestion: machine.api.select,
-    addTag: (tag) => store.api.addTag(tag),
   });
 }
 ```
 
 **Key points:**
-- **No wrapper functions** - Effects handle store coordination
-- Guard checks store state to decide Empty→Suggesting transition
-- Effect listens to machine events and updates store automatically
-- `setInput(value)` calls `machine.api.type(value)`, effect handles `store.api.setInput(value)`
-- Cleaner separation: machine is pure state, effect is the coordinator
-- Works with React via `useMachine(combobox)`
+- **Machine is pure** - No subscription logic, just state transitions
+- **State carries typed data** - Empty/Suggesting have `{ value }`, effect reads it
+- **Effect coordinates** - Listens to events, syncs store
+- **View handles subscriptions** - `useMachine(combobox)` subscribes to both machine and store
+- **No wrapper functions** - Direct API delegation
+- **Clean separation** - Machine defines behavior, store holds data, effects coordinate
 
 ---
 
