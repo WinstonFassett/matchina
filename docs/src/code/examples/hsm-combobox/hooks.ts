@@ -4,23 +4,19 @@ export function createComboboxStoreHook(store: any) {
   let currentMachine: any = null;
   
   return effect((ev: any) => {
-    // Store reference to machine for auto-transition logic
     if (ev && ev.machine) {
       currentMachine = ev.machine;
     }
     
-    // Handle store updates based on events and params
     if (ev && ev.type) {
       switch (ev.type) {
         case 'typed':
           if (ev.params && ev.params[0] !== undefined) {
             store.dispatch('typed', ev.params[0]);
             
-            // After updating input, check if we should transition to suggesting
             setTimeout(() => {
               const state = store.getState();
               if (state.suggestions.length > 0) {
-                // We're in a flat machine, send the transition event
                 if (currentMachine && typeof currentMachine.send === 'function') {
                   currentMachine.send("toSuggesting");
                 }
@@ -53,7 +49,6 @@ export function createComboboxStoreHook(store: any) {
           store.dispatch('highlightPrev');
           break;
         case 'selectHighlighted':
-          // Special case: get current state to find highlighted item
           const currentState = store.getState();
           const tag = currentState.suggestions[currentState.highlightedIndex];
           if (tag) {

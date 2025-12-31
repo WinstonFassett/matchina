@@ -3,17 +3,14 @@ import { setup } from "matchina";
 import { createComboboxStoreHook } from "./hooks";
 import { createComboboxStore } from "./store";
 
-// Create the automatically flattened version using describeHSM
 export function createFlatComboboxMachine() {
-  // Use shared store instead of creating a new one
   const store = createComboboxStore();
 
-  // Use describeHSM to auto-flatten a nested description
   const flatMachine = describeHSM({
     initial: 'Inactive',
     states: {
       Inactive: {
-        data: undefined, // No data needed - everything is in store
+        data: undefined,
         on: {
           focus: 'Active'
         }
@@ -22,18 +19,17 @@ export function createFlatComboboxMachine() {
         initial: 'Empty',
         states: {
           Empty: {
-            data: undefined, // No data needed - everything is in store
+            data: undefined,
             on: {
               typed: 'Typing',
-              removeTag: 'Empty', // Stay in Empty
-              addTag: 'Empty', // Stay in Empty
+              removeTag: 'Empty',
+              addTag: 'Empty',
               deactivate: '^Inactive'
             }
           },
           Typing: {
-            data: undefined, // No data needed - everything is in store
+            data: undefined,
             on: {
-              // Auto-transition based on suggestions
               toEmpty: 'Empty',
               toSuggesting: 'Suggesting',
               toTextEntry: 'TextEntry',
@@ -42,7 +38,7 @@ export function createFlatComboboxMachine() {
             }
           },
           TextEntry: {
-            data: undefined, // No data needed - everything is in store
+            data: undefined,
             on: {
               typed: 'Typing',
               clear: 'Empty',
@@ -52,7 +48,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Suggesting: {
-            data: undefined, // No data needed - everything is in store
+            data: undefined,
             on: {
               typed: 'Typing',
               clear: 'Empty',
@@ -70,7 +66,6 @@ export function createFlatComboboxMachine() {
           blur: '^Inactive',
           close: '^Inactive',
           removeTag: () => (ev) => {
-            // Delegate to child machine - let it handle the event
             return ev.from;
           }
         }
@@ -78,11 +73,9 @@ export function createFlatComboboxMachine() {
     }
   });
 
-  // Add store hook and auto-transition effect
   setup(flatMachine)(
     createComboboxStoreHook(store)
   );
 
-  // Attach store to machine for external access
   return Object.assign(flatMachine, { store });
 }
