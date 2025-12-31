@@ -23,15 +23,16 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync input value with machine state
+  // Sync input value with STORE state (flat machine uses store)
   useEffect(() => {
-    if (state.data?.input !== undefined) {
-      setInputValue(state.data.input);
+    const storeState = machine.store.getState();
+    if (storeState.input !== undefined) {
+      setInputValue(storeState.input);
     }
-  }, [state]);
+  }, [state, machine]);
 
-  // Get current data
-  const currentData = state.data || { input: "", selectedTags: [], suggestions: [], highlightedIndex: 0 };
+  // Get current data from STORE (flat machine uses store, not state data)
+  const currentData = machine.store.getState();
 
   // Event handlers
   const handleInputChange = (value: string) => {
