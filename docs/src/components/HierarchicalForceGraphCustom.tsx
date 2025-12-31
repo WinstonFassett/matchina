@@ -496,6 +496,10 @@ export default function HierarchicalForceGraph({
           isDragging = true;
           node.fx = node.x;
           node.fy = node.y;
+          // Temporarily enable animation for smooth dragging
+          if (layoutMode === 'static') {
+            simulation.alphaDecay = 0.0228; // Enable animation during drag
+          }
           simulation.restart();
           e.preventDefault();
         });
@@ -513,6 +517,10 @@ export default function HierarchicalForceGraph({
             isDragging = false;
             node.fx = null;
             node.fy = null;
+            // Restore static mode if needed
+            if (layoutMode === 'static') {
+              simulation.setStaticMode(true);
+            }
             simulation.restart();
           }
         };
