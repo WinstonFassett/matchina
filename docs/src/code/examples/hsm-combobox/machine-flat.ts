@@ -71,7 +71,11 @@ export function createFlatComboboxMachine() {
     select: machine.api.select,
     dismiss: machine.api.dismiss,
 
-
+    // Coordinated action: update store then transition
+    setInput: (value: string) => {
+      store.api.setInput(value);
+      machine.api.type();
+    },
   });
 
   return combobox;

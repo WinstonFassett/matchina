@@ -8,10 +8,9 @@ interface ComboboxViewFlatProps {
 
 export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   useMachine(machine);
+  useMachine(machine.model);
   const { model } = machine;
-  useMachine(model);
   const { input, selectedTags, suggestions, highlightedIndex } = model.getState();
-  const store = model;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const state = machine.getState();
@@ -77,10 +76,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => {
-              store.api.setInput(e.target.value);
-              machine.type();
-            }}
+            onChange={(e) => machine.setInput(e.target.value)}
             onFocus={() => machine.focus()}
             onBlur={() => machine.blur()}
             onKeyDown={handleKeyDown}
