@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useMachine } from "matchina/react";
 import type { ComboboxMachine } from "./machine";
 
@@ -16,6 +16,13 @@ export function ComboboxView({ machine }: ComboboxViewProps) {
   const state = machine.getState();
   const isActive = state.key !== 'Inactive';
   const isSuggesting = state.is('Active.Suggesting');
+
+  // Focus input when entering Active state
+  useEffect(() => {
+    if (isActive) {
+      inputRef.current?.focus();
+    }
+  }, [isActive]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isActive) return;
