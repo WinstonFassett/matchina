@@ -94,32 +94,26 @@ export function ShippingForm({
 }
 
 export function PaymentForm({
-  data,
   machine,
   handleAsyncProcessing,
 }: {
-  data: PaymentData;
   machine: CheckoutMachine;
   handleAsyncProcessing: (data: PaymentData) => void;
 }) {
-  const { cart, shipping, payment } = data;
-  const [cardNumber, setCardNumber] = useState(payment.cardNumber || "");
-  const [expiryDate, setExpiryDate] = useState(payment.expiryDate || "");
-  const [cvv, setCvv] = useState(payment.cvv || "");
-  React.useEffect(() => {
-    setCardNumber(payment.cardNumber || "");
-    setExpiryDate(payment.expiryDate || "");
-    setCvv(payment.cvv || "");
-  }, [payment.cardNumber, payment.expiryDate, payment.cvv]);
+  const cart = machine.store.getState().cart;
+  const shipping = machine.store.getState().shipping;
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
 
   const missingFields = getMissing({ cardNumber, expiryDate, cvv });
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
-      {payment.error && (
+      {machine.store.getState().error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {payment.error}
+          {machine.store.getState().error}
         </div>
       )}
       {missingFields.length > 0 && (

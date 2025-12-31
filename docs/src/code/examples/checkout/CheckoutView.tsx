@@ -28,9 +28,8 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
       {currentState.match({
         Cart: () => <CartForm machine={machine} />,
         Shipping: () => <ShippingForm machine={machine} />,
-        Payment: (data) => (
+        Payment: () => (
           <PaymentForm
-            data={data}
             machine={machine}
             handleAsyncProcessing={handleAsyncProcessing}
           />
