@@ -71,7 +71,7 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   // For flattened machines, the key already contains dots (e.g. "Working.Red")
   // For nested machines, we need to walk the hierarchy
   const fullPath = (() => {
-    const currentMachineState = machine.getState?.();
+    const currentMachineState = machine.shape?.getState();
     const stateKey = currentMachineState?.key || '';
 
     // If state key already contains dots, it's a flattened full path

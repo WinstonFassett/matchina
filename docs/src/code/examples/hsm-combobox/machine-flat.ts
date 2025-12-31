@@ -1,4 +1,4 @@
-import { defineStates, createFlatMachine, setup, effect, createStoreMachine } from "matchina";
+import { createFlatMachine, createStoreMachine, defineStates, setup } from "matchina";
 import { createComboboxStoreHook } from "./hooks";
 
 const AVAILABLE_TAGS = [
