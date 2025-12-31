@@ -81,7 +81,7 @@ function createActiveForApp() {
         return ev.from;
       },
     },
-  });
+  }, "Empty");
 }
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;
@@ -112,11 +112,6 @@ export function createComboboxMachine() {
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive();
-      },
-      removeTag: (tag: string) => (ev: any) => {
-        const activeMachine = ev.from.data.machine;
-        activeMachine?.removeTag?.(tag);
-        return ev.from;
       },
     },
   }, appStates.Inactive());

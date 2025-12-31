@@ -64,10 +64,7 @@ export function createFlatComboboxMachine() {
         },
         on: {
           blur: '^Inactive',
-          close: '^Inactive',
-          removeTag: () => (ev) => {
-            return ev.from;
-          }
+          close: '^Inactive'
         }
       }
     }
