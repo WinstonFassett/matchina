@@ -34,7 +34,7 @@ describe("HSM Combobox (Flat)", () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     // Type something that won't match suggestions
-    machine.store.dispatch("typed", "zzz");
+    machine.send("typed", "zzz");
 
     // Wait for auto-transition
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -52,7 +52,7 @@ describe("HSM Combobox (Flat)", () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     // Type something that matches suggestions (e.g., "typ" matches "typescript")
-    machine.store.dispatch("typed", "typ");
+    machine.send("typed", "typ");
 
     // Wait for auto-transition
     await new Promise(resolve => setTimeout(resolve, 10));

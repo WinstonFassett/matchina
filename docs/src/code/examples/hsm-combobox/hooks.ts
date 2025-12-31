@@ -14,12 +14,12 @@ export function createComboboxStoreHook(store: any) {
               const state = store.getState();
               if (state.suggestions.length > 0) {
                 // We're in a flat machine, send the transition event
-                if (ev.target && typeof ev.target.send === 'function') {
-                  ev.target.send("toSuggesting");
+                if (ev.machine && typeof ev.machine.send === 'function') {
+                  ev.machine.send("toSuggesting");
                 }
               } else {
-                if (ev.target && typeof ev.target.send === 'function') {
-                  ev.target.send("toTextEntry");
+                if (ev.machine && typeof ev.machine.send === 'function') {
+                  ev.machine.send("toTextEntry");
                 }
               }
             }, 0);

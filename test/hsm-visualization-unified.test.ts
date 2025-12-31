@@ -64,11 +64,11 @@ describe('Unified HSM Visualization', () => {
       const path = getActiveStatePath(machine);
       expect(path).toBe('Inactive');
 
-      // Activate with empty selected tags
+      // Focus to activate (store-based machine uses 'focus')
       machine.send('focus'); // Inactive -> Active.Empty
       
-      // Type with proper parameters (handled by store hook)
-      machine.send('typed'); // Active.Empty -> Active.Typing
+      // Type with input parameter
+      machine.send('typed', 'test'); // Active.Empty -> Active.Typing
       
       const activePath = getActiveStatePath(machine);
       expect(activePath).toBe('Active.Typing'); // Should be flattened key

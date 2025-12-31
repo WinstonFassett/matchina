@@ -100,7 +100,7 @@ export function createMachine<
       resolveExit: (ev: ResolveEvent<E>) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params) as E
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params, machine as E["machine"]) as E
           : undefined;
       },
     } as unknown as Partial<FactoryMachine<FC>>,
