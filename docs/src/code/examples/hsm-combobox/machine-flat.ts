@@ -12,7 +12,8 @@ export function createFlatComboboxMachine() {
       Inactive: {
         data: undefined,
         on: {
-          focus: 'Active'
+          focus: 'Active',
+          addTag: 'Active'
         }
       },
       Active: {
@@ -35,19 +36,22 @@ export function createFlatComboboxMachine() {
             }
           }
         },
+        data: (tag?: string) => ({ tag: tag ?? '' }),
         on: {
+          addTag: (tag: string) => ({ tag }),
           blur: '^Inactive'
         }
       }
     }
   });
 
-  // No guard - just coordinate store updates
+  // Effects coordinate all store updates from machine events
   setup(machine)(
     effect((ev: any) => {
       if (ev.type === 'type') store.api.setInput(ev.to.data?.value ?? '');
-      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === 'addTag') store.api.addTag(ev.to.data?.value ?? '');
       if (ev.type === 'select') store.api.selectHighlighted();
+      if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'dismiss') store.api.clear();
     })
   );
@@ -55,29 +59,26 @@ export function createFlatComboboxMachine() {
   // Add event API to machine
   addEventApi(machine);
 
-  // Component-level API
+  // Component-level API - all actions go through machine, effects coordinate
   const combobox = Object.assign(machine, {
     model: store,
 
-    // Store operations (no machine involvement)
+    // Pure store operations (no machine involvement)
     removeTag: store.api.removeTag,
     highlight: store.api.highlight,
     setHighlighted: store.api.setHighlighted,
 
-    // Pure machine operations
+    // Machine operations - effects handle all store coordination
     focus: machine.api.focus,
     blur: machine.api.blur,
+    type: machine.api.type,
+    addTag: machine.api.addTag,
+    select: machine.api.select,
     dismiss: machine.api.dismiss,
 
-    // Machine events - effects coordinate store updates
-    setInput: (value: string) => machine.api.type(value),
-    selectSuggestion: () => {
-      store.api.selectHighlighted();
-      machine.api.select();
-    },
-    addTag: (tag: string) => {
-      store.api.addTag(tag);
-    },
+    // Semantic aliases for UI
+    setInput: machine.api.type,
+    selectSuggestion: machine.api.select,
   });
 
   return combobox;
