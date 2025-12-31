@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
 
 // Custom force simulation - no external dependencies
-interface ForceNode {
+interface HierarchicalNode {
   id: string;
   name: string;
   group?: string;
@@ -21,20 +22,20 @@ interface ForceLink {
 }
 
 interface HierarchicalGraphData {
-  nodes: ForceNode[];
+  nodes: HierarchicalNode[];
   links: ForceLink[];
 }
 
 // Simple force simulation implementation
 class ForceSimulation {
-  nodes: ForceNode[];
+  nodes: HierarchicalNode[];
   links: ForceLink[];
   alpha: number = 1;
   alphaMin: number = 0.001;
   alphaDecay: number = 0.0228;
   alphaTarget: number = 0;
   
-  constructor(nodes: ForceNode[], links: ForceLink[]) {
+  constructor(nodes: HierarchicalNode[], links: ForceLink[]) {
     this.nodes = nodes;
     this.links = links;
     this.initializePositions();
@@ -121,8 +122,8 @@ class ForceSimulation {
         node.x += node.vx;
         node.y += node.vy;
       } else {
-        node.x = node.fx;
-        node.y = node.fy;
+        node.x = node.fx ?? node.x;
+        node.y = node.fy ?? node.y;
         node.vx = 0;
         node.vy = 0;
       }
