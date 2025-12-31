@@ -29,7 +29,7 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
 
 const handleTyped = (value: string) => (ev: any) => {
   if (!value.trim()) return activeStates.Empty();
-  return activeStates.TextEntry();
+  return activeStates.Typing();
 };
 
 const handleAddTag = (tag: string) => (ev: any) => {
@@ -39,7 +39,10 @@ const handleAddTag = (tag: string) => (ev: any) => {
 function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
-      typed: handleTyped,
+      typed: (value: string) => (ev: any) => {
+        if (!value.trim()) return activeStates.Empty();
+        return activeStates.Typing();
+      },
       backspace: () => (ev) => {
         return ev.from;
       },
@@ -50,27 +53,22 @@ function createActiveForApp() {
       },
     },
     TextEntry: {
-      typed: handleTyped,
+      typed: (value: string) => (ev: any) => {
+        if (!value.trim()) return activeStates.Empty();
+        return activeStates.Typing();
+      },
       clear: () => (ev) => activeStates.Empty(),
       backspace: () => (ev) => {
         return ev.from;
       },
     },
     Suggesting: {
-      typed: handleTyped,
+      typed: (value: string) => (ev: any) => {
+        if (!value.trim()) return activeStates.Empty();
+        return activeStates.Typing();
+      },
       clear: () => (ev) => activeStates.Empty(),
-      highlightNext: () => (ev) => {
-        return activeStates.Suggesting();
-      },
-      highlightPrev: () => (ev) => {
-        return activeStates.Suggesting();
-      },
-      selectHighlighted: () => (ev) => {
-        return activeStates.Empty();
-      },
-      cancel: () => (ev) => {
-        return activeStates.TextEntry();
-      },
+      cancel: () => (ev) => activeStates.TextEntry(),
       backspace: () => (ev) => {
         return ev.from;
       },
@@ -96,9 +94,6 @@ export function createComboboxMachine() {
     },
     Active: {
       deactivate: () => (ev) => {
-        const activeMachine = ev.from.data.machine;
-        const activeState = activeMachine?.getState();
-        const selectedTags = activeState?.data?.selectedTags ?? [];
         return appStates.Inactive();
       },
     },
