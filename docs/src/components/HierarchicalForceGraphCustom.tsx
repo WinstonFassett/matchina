@@ -494,8 +494,8 @@ export default function HierarchicalForceGraph({
         let isDragging = false;
         rect.addEventListener('mousedown', (e) => {
           isDragging = true;
-          node.fx = node.x;
-          node.fy = node.y;
+          node.fx = node.x as any;
+          node.fy = node.y as any;
           // Temporarily enable animation for smooth dragging
           if (layoutMode === 'static') {
             simulation.alphaDecay = 0.0228; // Enable animation during drag
@@ -507,16 +507,16 @@ export default function HierarchicalForceGraph({
         const handleMouseMove = (e: MouseEvent) => {
           if (!isDragging) return;
           const rect = svg.getBoundingClientRect();
-          node.fx = e.clientX - rect.left;
-          node.fy = e.clientY - rect.top;
+          node.fx = e.clientX - rect.left as any;
+          node.fy = e.clientY - rect.top as any;
           simulation.restart();
         };
 
         const handleMouseUp = () => {
           if (isDragging) {
             isDragging = false;
-            node.fx = null;
-            node.fy = null;
+            node.fx = null as any;
+            node.fy = null as any;
             // Restore static mode if needed
             if (layoutMode === 'static') {
               simulation.setStaticMode(true);
