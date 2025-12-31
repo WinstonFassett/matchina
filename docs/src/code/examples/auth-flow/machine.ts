@@ -1,4 +1,4 @@
-import { matchina, defineStates, createStoreMachine, setup, effect } from "matchina";
+import { matchina, defineStates, setup, transitionHooks, atom } from "matchina";
 
 interface User {
   id: string;
@@ -36,15 +36,7 @@ export const createAuthMachine = () => {
     user: null,
   };
 
-  const store = createStoreMachine<AuthFormState>(initialState, {
-    setEmail: (email: string) => (change) => ({ ...change.from, email }),
-    setPassword: (password: string) => (change) => ({ ...change.from, password }),
-    setName: (name: string) => (change) => ({ ...change.from, name }),
-    setError: (error: string | null) => (change) => ({ ...change.from, error }),
-    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
-    clearError: () => (change) => ({ ...change.from, error: null }),
-    reset: () => () => initialState,
-  });
+  const store = atom(initialState);
 
   const machine = matchina(
     states,
@@ -92,23 +84,14 @@ export const createAuthMachine = () => {
   );
 
   setup(machine)(
-    effect((ev) => {
-      if (ev.type === "failure" && ev.params[0]) {
-        store.dispatch("setError", ev.params[0] as string);
-      }
-      if (ev.type === "success" && ev.from.is("LoggingIn")) {
-        store.dispatch("setUser", ev.params[0] as User);
-      }
-      if (ev.type === "success" && ev.from.is("Registering")) {
-        store.dispatch("setUser", ev.params[0] as User);
-      }
-      if (ev.type === "showLogin" || ev.type === "showRegister") {
-        store.dispatch("clearError");
-      }
-      if (ev.type === "logout") {
-        store.dispatch("reset");
-      }
-    })
+    transitionHooks(
+      { type: "failure", effect: (ev) => store.update(s => ({ ...s, error: ev.params[0] as string })) },
+      { from: "LoggingIn", to: "LoggedIn", effect: (ev) => store.update(s => ({ ...s, user: ev.params[0] as User, error: null })) },
+      { from: "Registering", to: "LoggedIn", effect: (ev) => store.update(s => ({ ...s, user: ev.params[0] as User, error: null })) },
+      { to: "LoginForm", effect: () => store.update(s => ({ ...s, error: null })) },
+      { to: "RegisterForm", effect: () => store.update(s => ({ ...s, error: null })) },
+      { type: "logout", effect: () => store.set(initialState) },
+    )
   );
 
   return Object.assign(machine, { store });

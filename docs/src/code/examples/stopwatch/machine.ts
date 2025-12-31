@@ -1,11 +1,11 @@
 import {
   defineStates,
   createMachine,
-  createStoreMachine,
   setup,
   enter,
   when,
-  effect,
+  transitionHooks,
+  atom,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
@@ -22,16 +22,7 @@ export const createStopwatchMachine = () => {
   });
 
   const initialState: StopwatchState = { elapsed: 0, at: 0 };
-  
-  const store = createStoreMachine<StopwatchState>(initialState, {
-    tick: () => (change) => ({
-      elapsed: change.from.elapsed + (Date.now() - change.from.at),
-      at: Date.now(),
-    }),
-    start: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
-    resume: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
-    clear: () => () => ({ elapsed: 0, at: Date.now() }),
-  });
+  const store = atom(initialState);
 
   const machine = createMachine(
     states,
@@ -53,12 +44,12 @@ export const createStopwatchMachine = () => {
   );
 
   setup(machine)(
-    effect((ev) => {
-      if (ev.type === "_tick") store.dispatch("tick");
-      if (ev.type === "start") store.dispatch("start");
-      if (ev.type === "resume") store.dispatch("resume");
-      if (ev.type === "clear") store.dispatch("clear");
-    }),
+    transitionHooks(
+      { type: "_tick", effect: () => store.update(s => ({ elapsed: s.elapsed + (Date.now() - s.at), at: Date.now() })) },
+      { type: "start", effect: () => store.update(s => ({ ...s, at: Date.now() })) },
+      { type: "resume", effect: () => store.update(s => ({ ...s, at: Date.now() })) },
+      { type: "clear", effect: () => store.set({ elapsed: 0, at: Date.now() }) },
+    ),
     enter(
       when(
         (ev) => ev.to.is("Ticking"),

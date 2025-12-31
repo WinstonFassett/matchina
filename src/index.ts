@@ -40,3 +40,4 @@ export * from "./match-filters";
 export * from "./hsm";
 export * from "./is-machine";
 export * from "./transition-helper";
+export * from "./atom";
