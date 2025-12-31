@@ -97,13 +97,7 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      blur: () => (ev) => {
-        const activeMachine = ev.from.data.machine;
-        const activeState = activeMachine?.getState();
-        const selectedTags = activeState?.data?.selectedTags ?? [];
-        return appStates.Inactive();
-      },
-      close: () => (ev: any) => {
+      deactivate: () => (ev) => {
         const activeMachine = ev.from.data.machine;
         const activeState = activeMachine?.getState();
         const selectedTags = activeState?.data?.selectedTags ?? [];

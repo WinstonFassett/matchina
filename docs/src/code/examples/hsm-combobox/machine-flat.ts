@@ -59,8 +59,7 @@ export function createFlatComboboxMachine() {
           }
         },
         on: {
-          blur: '^Inactive',
-          close: '^Inactive'
+          deactivate: '^Inactive'
         }
       }
     }
