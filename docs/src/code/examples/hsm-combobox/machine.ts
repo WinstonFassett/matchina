@@ -31,26 +31,40 @@ function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: 'Typing',
+      clear: 'Empty',
+      cancel: 'TextEntry',
+      highlightNext: 'Empty',
+      highlightPrev: 'Empty',
+      selectHighlighted: 'Empty',
       deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     Typing: {
       toEmpty: 'Empty',
       toSuggesting: 'Suggesting',
       toTextEntry: 'TextEntry',
+      clear: 'Empty',
+      cancel: 'TextEntry',
+      highlightNext: 'Typing',
+      highlightPrev: 'Typing',
+      selectHighlighted: 'Empty',
       deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     TextEntry: {
       typed: 'Typing',
       clear: 'Empty',
+      cancel: 'TextEntry',
+      highlightNext: 'TextEntry',
+      highlightPrev: 'TextEntry',
+      selectHighlighted: 'Empty',
       deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
     Suggesting: {
       typed: 'Typing',
       clear: 'Empty',
+      cancel: 'TextEntry',
       highlightNext: 'Suggesting',
       highlightPrev: 'Suggesting',
       selectHighlighted: 'Empty',
-      cancel: 'TextEntry',
       deactivate: () => (ev) => ev.from, // Go to parent Inactive
     },
   }, "Empty");
@@ -67,13 +81,7 @@ export const appStates = defineStates({
 
 // Hook specific to hierarchical machine structure
 function createHierarchicalComboboxHook(store: any) {
-  let currentMachine: any = null;
-  
   return effect((ev: any) => {
-    if (ev && ev.machine) {
-      currentMachine = ev.machine;
-    }
-    
     if (ev && ev.type) {
       switch (ev.type) {
         case 'typed':
@@ -83,7 +91,7 @@ function createHierarchicalComboboxHook(store: any) {
             // Auto-transition to correct state based on suggestions
             setTimeout(() => {
               const state = store.getState();
-              const currentState = currentMachine?.getState();
+              const currentState = ev.machine?.getState();
               
               if (currentState?.is("Active") && currentState.data?.machine) {
                 const activeMachine = currentState.data.machine;
@@ -103,21 +111,47 @@ function createHierarchicalComboboxHook(store: any) {
             }, 0);
           }
           break;
+        case 'clear':
+          store.dispatch('clear');
+          // Delegate to submachine
+          const currentState = ev.machine?.getState();
+          if (currentState?.is("Active") && currentState.data?.machine) {
+            currentState.data.machine.send("clear");
+          }
+          break;
+        case 'cancel':
+          // Delegate to submachine
+          const cancelState = ev.machine?.getState();
+          if (cancelState?.is("Active") && cancelState.data?.machine) {
+            cancelState.data.machine.send("cancel");
+          }
+          break;
         case 'highlight':
           if (ev.params && ev.params[0] !== undefined) {
             const direction = ev.params[0];
             if (direction === 'next') {
               store.dispatch('highlightNext');
+              // Delegate to submachine
+              const highlightState = ev.machine?.getState();
+              if (highlightState?.is("Active") && highlightState.data?.machine) {
+                highlightState.data.machine.send("highlightNext");
+              }
             } else if (direction === 'prev') {
               store.dispatch('highlightPrev');
+              // Delegate to submachine
+              const highlightPrevState = ev.machine?.getState();
+              if (highlightPrevState?.is("Active") && highlightPrevState.data?.machine) {
+                highlightPrevState.data.machine.send("highlightPrev");
+              }
             }
           }
           break;
         case 'selectHighlighted':
-          const currentState = store.getState();
-          const tag = currentState.suggestions[currentState.highlightedIndex];
-          if (tag) {
-            store.dispatch('addTag', tag);
+          store.dispatch('selectHighlighted');
+          // Delegate to submachine
+          const selectState = ev.machine?.getState();
+          if (selectState?.is("Active") && selectState.data?.machine) {
+            selectState.data.machine.send("selectHighlighted");
           }
           break;
       }
@@ -133,57 +167,13 @@ export function createComboboxMachine() {
       focus: "Active"
     },
     Active: {
-      typed: (value: string) => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("typed", value);
-        }
-        return ev.from; // Stay in Active state
-      },
-      clear: () => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("clear");
-        }
-        return ev.from; // Stay in Active state
-      },
-      cancel: () => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("cancel");
-        }
-        return ev.from; // Stay in Active state
-      },
-      highlightNext: () => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("highlightNext");
-        }
-        return ev.from; // Stay in Active state
-      },
-      highlightPrev: () => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("highlightPrev");
-        }
-        return ev.from; // Stay in Active state
-      },
-      selectHighlighted: () => (ev: any) => {
-        // Delegate to submachine
-        const activeMachine = ev.from.data.machine;
-        if (activeMachine && activeMachine.send) {
-          activeMachine.send("selectHighlighted");
-        }
-        return ev.from; // Stay in Active state
-      },
-      deactivate: () => (ev) => {
-        return appStates.Inactive();
-      },
+      typed: "Active", // Stay in Active, delegate to submachine
+      clear: "Active", // Stay in Active, delegate to submachine
+      cancel: "Active", // Stay in Active, delegate to submachine
+      highlightNext: "Active", // Stay in Active, delegate to submachine
+      highlightPrev: "Active", // Stay in Active, delegate to submachine
+      selectHighlighted: "Active", // Stay in Active, delegate to submachine
+      deactivate: "Inactive",
     },
   }, appStates.Inactive());
 
