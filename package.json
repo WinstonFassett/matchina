@@ -130,6 +130,7 @@
     "publish": "npm publish --access public"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^20.8.2",
     "@types/react": "^18.3.7",
@@ -149,12 +150,12 @@
     "@astrojs/ts-plugin": "^1.10.4"
   },
   "peerDependencies": {
+    "force-graph": "^1.51.0",
     "immer": "^10.1.1",
-    "valibot": "^1.0.0",
-    "zod": "^3.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "force-graph": "^1.51.0"
+    "valibot": "^1.0.0",
+    "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
