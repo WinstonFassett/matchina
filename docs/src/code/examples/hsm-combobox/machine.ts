@@ -61,7 +61,7 @@ export function createComboboxMachine() {
     // Coordinated action: update store then transition
     setInput: (value: string) => {
       store.api.setInput(value);
-      machine.api.type();
+      machine.send('type');
     },
   });
 
