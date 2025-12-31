@@ -1,6 +1,5 @@
-import { defineStates, matchina, setup } from "matchina";
+import { defineStates, matchina, setup, effect } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
-import { createComboboxStoreHook } from "./hooks";
 import { createComboboxStore } from "./store";
 
 const AVAILABLE_TAGS = [
@@ -26,6 +25,57 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
       !selectedTags.includes(tag)
     )
     .slice(0, 5);
+}
+
+// Hook specific to hierarchical machine structure
+function createHierarchicalComboboxHook(store: any) {
+  let currentMachine: any = null;
+  
+  return effect((ev: any) => {
+    if (ev && ev.machine) {
+      currentMachine = ev.machine;
+    }
+    
+    if (ev && ev.type) {
+      switch (ev.type) {
+        case 'typed':
+          if (ev.params && ev.params[0] !== undefined) {
+            store.dispatch('typed', ev.params[0]);
+            
+            setTimeout(() => {
+              const state = store.getState();
+              if (state.suggestions.length > 0) {
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  currentMachine.send("toSuggesting");
+                }
+              } else {
+                if (currentMachine && typeof currentMachine.send === 'function') {
+                  currentMachine.send("toTextEntry");
+                }
+              }
+            }, 0);
+          }
+          break;
+        case 'highlight':
+          if (ev.params && ev.params[0] !== undefined) {
+            const direction = ev.params[0];
+            if (direction === 'next') {
+              store.dispatch('highlightNext');
+            } else if (direction === 'prev') {
+              store.dispatch('highlightPrev');
+            }
+          }
+          break;
+        case 'selectHighlighted':
+          const currentState = store.getState();
+          const tag = currentState.suggestions[currentState.highlightedIndex];
+          if (tag) {
+            store.dispatch('addTag', tag);
+          }
+          break;
+      }
+    }
+  });
 }
 
 function createActiveForApp() {
@@ -72,7 +122,7 @@ export function createComboboxMachine() {
   const hierarchical = makeHierarchical(combobox);
 
   setup(hierarchical)(
-    createComboboxStoreHook(store)
+    createHierarchicalComboboxHook(store)
   );
 
   // Expose store APIs on machine for direct access
