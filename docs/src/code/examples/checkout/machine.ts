@@ -1,4 +1,4 @@
-import { matchina, createStoreMachine, setup, effect } from "matchina";
+import { matchina, createStoreMachine, addStoreApi, withSubscribe, setup, effect } from "matchina";
 import { states } from "./states";
 import type { CartData, ShippingForm, PaymentForm } from "./types";
 
@@ -18,6 +18,18 @@ const defaultCart: CartData = {
   total: 199.97,
 };
 
+const createCheckoutStore = (initialState: CheckoutState) => {
+  const store = createStoreMachine<CheckoutState>(initialState, {
+    updateCart: (cart: CartData) => (change) => ({ ...change.from, cart }),
+    updateShipping: (shipping: ShippingForm) => (change) => ({ ...change.from, shipping }),
+    updatePayment: (payment: PaymentForm) => (change) => ({ ...change.from, payment }),
+    setOrderId: (orderId: string) => (change) => ({ ...change.from, orderId, error: null }),
+    setError: (error: string) => (change) => ({ ...change.from, error }),
+    reset: () => () => initialState,
+  });
+  return addStoreApi(withSubscribe(store));
+};
+
 export const createCheckoutMachine = () => {
   const initialState: CheckoutState = {
     cart: defaultCart,
@@ -27,14 +39,7 @@ export const createCheckoutMachine = () => {
     error: null,
   };
 
-  const store = createStoreMachine<CheckoutState>(initialState, {
-    updateCart: (cart: CartData) => (change) => ({ ...change.from, cart }),
-    updateShipping: (shipping: ShippingForm) => (change) => ({ ...change.from, shipping }),
-    updatePayment: (payment: PaymentForm) => (change) => ({ ...change.from, payment }),
-    setOrderId: (orderId: string) => (change) => ({ ...change.from, orderId, error: null }),
-    setError: (error: string) => (change) => ({ ...change.from, error }),
-    reset: () => () => initialState,
-  });
+  const store = createCheckoutStore(initialState);
 
   const machine = matchina(
     states,
@@ -68,13 +73,13 @@ export const createCheckoutMachine = () => {
   setup(machine)(
     effect((ev) => {
       if (ev.type === "success" && ev.params[0]) {
-        store.dispatch("setOrderId", ev.params[0] as string);
+        store.api.setOrderId(ev.params[0] as string);
       }
       if (ev.type === "failure" && ev.params[0]) {
-        store.dispatch("setError", ev.params[0] as string);
+        store.api.setError(ev.params[0] as string);
       }
       if (ev.type === "newOrder") {
-        store.dispatch("reset");
+        store.api.reset();
       }
     })
   );

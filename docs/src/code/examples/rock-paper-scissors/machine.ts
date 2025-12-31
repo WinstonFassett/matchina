@@ -1,4 +1,4 @@
-import { createMachine, createStoreMachine, setup, effect } from "matchina";
+import { createMachine, createStoreMachine, addStoreApi, withSubscribe, setup, effect } from "matchina";
 import { states, type Move } from "./states";
 import { randomMove, determineWinner } from "./game-utils";
 
@@ -11,16 +11,7 @@ interface GameState {
   gameWinner: "player" | "computer" | null;
 }
 
-export function createRPSMachine() {
-  const initialState: GameState = {
-    playerMove: null,
-    computerMove: null,
-    playerScore: 0,
-    computerScore: 0,
-    roundWinner: null,
-    gameWinner: null,
-  };
-
+const createGameStore = (initialState: GameState) => {
   const store = createStoreMachine<GameState>(initialState, {
     setPlayerMove: (move: Move) => (change) => ({ ...change.from, playerMove: move }),
     setComputerMove: (move: Move) => (change) => ({ ...change.from, computerMove: move }),
@@ -44,6 +35,20 @@ export function createRPSMachine() {
     reset: () => () => initialState,
     clearRound: () => (change) => ({ ...change.from, playerMove: null, computerMove: null, roundWinner: null }),
   });
+  return addStoreApi(withSubscribe(store));
+};
+
+export function createRPSMachine() {
+  const initialState: GameState = {
+    playerMove: null,
+    computerMove: null,
+    playerScore: 0,
+    computerScore: 0,
+    roundWinner: null,
+    gameWinner: null,
+  };
+
+  const store = createGameStore(initialState);
 
   const machine = createMachine(
     states,
@@ -71,24 +76,24 @@ export function createRPSMachine() {
   setup(machine)(
     effect((ev) => {
       if (ev.type === "selectMove" && ev.params[0]) {
-        store.dispatch("setPlayerMove", ev.params[0] as Move);
+        store.api.setPlayerMove(ev.params[0] as Move);
       }
       if (ev.type === "computerSelectMove") {
-        store.dispatch("setComputerMove", randomMove());
+        store.api.setComputerMove(randomMove());
       }
       if (ev.type === "judge") {
-        store.dispatch("judgeRound");
-        store.dispatch("checkGameOver");
+        store.api.judgeRound();
+        store.api.checkGameOver();
       }
       if (ev.type === "nextRound") {
-        store.dispatch("clearRound");
+        store.api.clearRound();
         const { gameWinner } = store.getState();
         if (gameWinner) {
           machine.send("gameOver");
         }
       }
       if (ev.type === "newGame") {
-        store.dispatch("reset");
+        store.api.reset();
       }
     })
   );
