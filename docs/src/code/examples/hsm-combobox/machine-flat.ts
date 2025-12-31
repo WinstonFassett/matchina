@@ -80,7 +80,10 @@ export function createFlatComboboxMachine() {
     // Store APIs
     addTag: (tag: string) => store.dispatch('addTag', tag),
     removeTag: (tag: string) => store.dispatch('removeTag', tag),
-    setInput: (input: string) => store.dispatch('setInput', input),
+    setInput: (input: string) => {
+      console.log('Flat machine setInput called with:', input);
+      store.dispatch('setInput', input);
+    },
     highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
     clear: () => store.dispatch('clear'),
     deactivate: () => store.dispatch('clear')

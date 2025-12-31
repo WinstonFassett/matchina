@@ -101,9 +101,13 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             type="text"
             value={machine.store.getState().input}
             onChange={(e) => {
+              console.log('UI onChange - calling setInput with:', e.target.value);
+              console.log('Machine type:', machine.constructor.name);
+              console.log('Machine has setInput:', typeof machine.setInput);
               machine.setInput(e.target.value);
               // Trigger machine transition using library's event API
               actions.typed();
+              console.log('UI onChange - store state after setInput:', machine.store.getState());
             }}
             onFocus={() => actions.focus()}
             onBlur={() => machine.deactivate()}

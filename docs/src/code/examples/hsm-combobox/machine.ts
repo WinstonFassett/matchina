@@ -2,55 +2,36 @@ import { defineStates, matchina, setup, effect, addEventApi } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
 import { createComboboxStore } from "./store";
 
-const AVAILABLE_TAGS = [
-  "typescript", "javascript", "react", "vue", "angular",
-  "node", "deno", "bun", "python", "rust",
-];
-
-function getSuggestions(input: string, selectedTags: string[]): string[] {
-  const trimmed = input.trim().toLowerCase();
-  if (!trimmed) return [];
-
-  return AVAILABLE_TAGS
-    .filter(tag =>
-      tag.toLowerCase().includes(trimmed) &&
-      !selectedTags.includes(tag)
-    )
-    .slice(0, 5);
-}
+export const activeStates = defineStates({
+  Empty: undefined,
+  Typing: undefined,
+  TextEntry: undefined,
+  Suggesting: undefined,
+});
 
 function createActiveForApp() {
-  return matchina(
-    defineStates({
-      Empty: undefined,
-      Typing: undefined,
-      TextEntry: undefined,
-      Suggesting: undefined,
-    }),
-    {
-      Empty: {
-        typed: "Typing",
-      },
-      Typing: {
-        toEmpty: "Empty",
-        toSuggesting: "Suggesting",
-        toTextEntry: "TextEntry",
-      },
-      TextEntry: {
-        typed: "Typing",
-        clear: "Empty",
-      },
-      Suggesting: {
-        typed: "Typing",
-        clear: "Empty",
-        highlightNext: "Suggesting",
-        highlightPrev: "Suggesting",
-        selectHighlighted: "Empty",
-        cancel: "TextEntry",
-      },
+  return matchina(activeStates, {
+    Empty: {
+      typed: "Typing",
     },
-    "Empty"
-  );
+    Typing: {
+      toEmpty: "Empty",
+      toSuggesting: "Suggesting",
+      toTextEntry: "TextEntry",
+    },
+    TextEntry: {
+      typed: "Typing",
+      clear: "Empty",
+    },
+    Suggesting: {
+      typed: "Typing",
+      clear: "Empty",
+      highlightNext: "Suggesting",
+      highlightPrev: "Suggesting",
+      selectHighlighted: "Empty",
+      cancel: "TextEntry",
+    },
+  }, "Empty");
 }
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;

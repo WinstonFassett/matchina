@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Combobox Comparison - Flat vs Nested', () => {
   test.beforeEach(async ({ page }) => {
+    // Capture console logs
+    page.on('console', msg => {
+      console.log('Browser console:', msg.text());
+    });
+    
     await page.goto('http://localhost:4321/matchina/examples/hsm-combobox');
     // Wait for page to load
     await page.waitForLoadState('networkidle');
