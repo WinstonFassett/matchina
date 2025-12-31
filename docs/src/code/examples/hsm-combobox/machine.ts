@@ -1,5 +1,6 @@
 import { defineStates, matchina, setup, effect } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
+import { createComboboxStoreHook } from "./hooks";
 import { createComboboxStore } from "./store";
 
 const AVAILABLE_TAGS = [
@@ -31,6 +32,8 @@ function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: 'Typing',
+      toSuggesting: 'Suggesting',
+      toTextEntry: 'TextEntry',
     },
     Typing: {
       toEmpty: 'Empty',
@@ -40,6 +43,7 @@ function createActiveForApp() {
     TextEntry: {
       typed: 'Typing',
       clear: 'Empty',
+      toSuggesting: 'Suggesting',
     },
     Suggesting: {
       typed: 'Typing',
@@ -64,6 +68,7 @@ export const appStates = defineStates({
 // Hook specific to hierarchical machine structure
 function createHierarchicalComboboxHook(store: any) {
   return effect((ev: any) => {
+    console.log('Nested machine hook received event:', ev.type, ev.params);
     if (ev && ev.type) {
       switch (ev.type) {
         case 'typed':
@@ -74,19 +79,24 @@ function createHierarchicalComboboxHook(store: any) {
             setTimeout(() => {
               const state = store.getState();
               const currentState = ev.machine?.getState();
+              console.log('Auto-transition check - suggestions:', state.suggestions.length, 'input:', state.input.trim());
               
               if (currentState?.is("Active") && currentState.data?.machine) {
                 const activeMachine = currentState.data.machine;
                 const activeState = activeMachine.getState();
+                console.log('Active state:', activeState.key);
                 
                 if (state.suggestions.length > 0 && activeState?.is("Typing")) {
                   // Transition to Suggesting
+                  console.log('Sending toSuggesting');
                   activeMachine.send("toSuggesting");
                 } else if (state.input.trim() && activeState?.is("Typing")) {
                   // Transition to TextEntry
+                  console.log('Sending toTextEntry');
                   activeMachine.send("toTextEntry");
                 } else if (!state.input.trim() && activeState?.is("Typing")) {
                   // Transition to Empty
+                  console.log('Sending toEmpty');
                   activeMachine.send("toEmpty");
                 }
               }
@@ -155,7 +165,7 @@ export function createComboboxMachine() {
     Active: {
       deactivate: "Inactive",
     },
-  }, appStates.Inactive());
+  }, "Inactive");
 
   // Use makeHierarchical for true nested machines with propagation
   const hierarchical = makeHierarchical(combobox);

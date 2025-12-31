@@ -98,8 +98,10 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             value={machine.store.getState().input}
             onChange={(e) => {
               machine.store.dispatch('typed', e.target.value);
-              // Trigger state transition
-              activeActions?.typed();
+              // Trigger hook typed event
+              if (activeActions?.typed) {
+                activeActions.typed(e.target.value);
+              }
             }}
             onFocus={() => actions.focus()}
             onBlur={() => machine.deactivate()}
