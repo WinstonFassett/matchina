@@ -17,19 +17,15 @@ export function createFlatComboboxMachine() {
       Active: {
         initial: 'Empty',
         states: {
-          Empty: {
-            on: {
-              type: 'Suggesting'
-            }
-          },
+          Empty: {},
           Suggesting: {
             on: {
-              type: 'Suggesting',
               select: 'Empty'
             }
           }
         },
         on: {
+          type: 'Suggesting',
           blur: '^Inactive'
         }
       }
@@ -57,15 +53,15 @@ export function createFlatComboboxMachine() {
     setHighlighted: store.api.setHighlighted,
 
     // Machine operations
-    focus: () => machine.send('focus'),
-    blur: () => machine.send('blur'),
-    addTag: () => machine.send('addTag'),
-    select: () => machine.send('select'),
+    focus: machine.api.focus,
+    blur: machine.api.blur,
+    addTag: machine.api.addTag,
+    select: machine.api.select,
 
     // Coordinated action: update store then transition
     setInput: (value: string) => {
       store.api.setInput(value);
-      machine.send('type');
+      machine.api.type();
     },
   });
 
