@@ -173,13 +173,15 @@ export function createComboboxMachine() {
     },
   }, appStates.Inactive());
 
-  // NO makeHierarchical - it's already hierarchical with submachines!
-  setup(combobox)(
+  // Use makeHierarchical for true nested machines with propagation
+  const hierarchical = makeHierarchical(combobox);
+
+  setup(hierarchical)(
     createHierarchicalComboboxHook(store)
   );
 
   // Expose store APIs on machine for direct access
-  const machineWithStore = Object.assign(combobox, { 
+  const machineWithStore = Object.assign(hierarchical, { 
     store,
     // Store APIs
     addTag: store.dispatch.bind(null, 'addTag'),
