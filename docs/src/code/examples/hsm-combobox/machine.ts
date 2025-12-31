@@ -1,5 +1,4 @@
 import { defineStates, matchina, setup, effect } from "matchina";
-import { submachine, makeHierarchical } from "matchina/hsm";
 import { createComboboxStore } from "./store";
 
 const AVAILABLE_TAGS = [
@@ -7,12 +6,13 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
-// Active child states for the tag editor
-export const activeStates = defineStates({
-  Empty: undefined,
-  Typing: undefined,
-  TextEntry: undefined,
-  Suggesting: undefined,
+// Simple flat states for hierarchical example
+export const appStates = defineStates({
+  Inactive: undefined,
+  Active_Empty: undefined,
+  Active_Typing: undefined,
+  Active_TextEntry: undefined,
+  Active_Suggesting: undefined,
 });
 
 function getSuggestions(input: string, selectedTags: string[]): string[] {
@@ -59,55 +59,36 @@ function createHierarchicalComboboxHook(store: any) {
   });
 }
 
-function createActiveForApp() {
-  return matchina(activeStates, {
-    Empty: {
-      typed: 'Typing',
-    },
-    Typing: {
-      // No transitions - auto-transitions handled by hook
-    },
-    TextEntry: {
-      typed: 'Typing',
-      clear: 'Empty',
-    },
-    Suggesting: {
-      typed: 'Typing',
-      clear: 'Empty',
-      cancel: 'TextEntry',
-    },
-  }, "Empty");
-}
-
-export type ActiveMachine = ReturnType<typeof createActiveForApp>;
-
-const activeMachineFactory = submachine(createActiveForApp, { id: "active" });
-
-export const appStates = defineStates({
-  Inactive: undefined,
-  Active: activeMachineFactory,
-});
-
 export function createComboboxMachine() {
   const store = createComboboxStore();
 
   const combobox = matchina(appStates, {
     Inactive: {
-      focus: "Active"
+      focus: "Active_Empty"
     },
-    Active: {
-      // No transitions - store handles all data operations
+    Active_Empty: {
+      typed: "Active_Typing",
+    },
+    Active_Typing: {
+      // No transitions - handled by UI
+    },
+    Active_TextEntry: {
+      typed: "Active_Typing",
+      clear: "Active_Empty",
+    },
+    Active_Suggesting: {
+      typed: "Active_Typing",
+      clear: "Active_Empty",
+      cancel: "Active_TextEntry",
     },
   }, appStates.Inactive());
 
-  const hierarchical = makeHierarchical(combobox);
-
-  setup(hierarchical)(
+  setup(combobox)(
     createHierarchicalComboboxHook(store)
   );
 
   // Expose store APIs on machine for direct access
-  const machineWithStore = Object.assign(hierarchical, { 
+  const machineWithStore = Object.assign(combobox, { 
     store,
     // Store APIs
     addTag: store.dispatch.bind(null, 'addTag'),

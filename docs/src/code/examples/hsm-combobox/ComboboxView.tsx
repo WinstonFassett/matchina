@@ -17,52 +17,43 @@ export function ComboboxView({ machine }: { machine: Machine }) {
   const state = machine.getState();
   const actions = eventApi(machine);
 
-  const activeMachine = state.is("Active") ? state.data.machine : undefined;
-  useMachineMaybe(activeMachine);
-  const activeState = activeMachine?.getState();
-  const activeActions = activeMachine ? eventApi(activeMachine) : null;
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (activeMachine && inputRef.current) {
+    if (state.key.startsWith('Active_') && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [activeMachine]);
+  }, [state]);
 
   const getStateChain = (): string => {
-    const parts = [state.key];
-    if (activeState) parts.push(activeState.key);
-    return parts.join(" / ");
+    return state.key;
   };
 
   const selectedTags: string[] = machine.store.getState().selectedTags;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!activeState) return;
-
     const storeState = machine.store.getState();
 
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        actions.close?.();
+        machine.deactivate();
         break;
       case "ArrowDown":
         e.preventDefault();
-        if (activeState.is("Suggesting")) {
+        if (state.is("Active_Suggesting")) {
           machine.highlight('next');
         }
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (activeState.is("Suggesting")) {
+        if (state.is("Active_Suggesting")) {
           machine.highlight('prev');
         }
         break;
       case "Enter":
         e.preventDefault();
-        if (activeState.is("Suggesting") && storeState.suggestions.length > 0) {
+        if (state.is("Active_Suggesting") && storeState.suggestions.length > 0) {
           machine.selectHighlighted();
         } else if (storeState.input?.trim()) {
           machine.addTag(storeState.input.trim());
@@ -82,7 +73,7 @@ export function ComboboxView({ machine }: { machine: Machine }) {
           <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium">
             {tag}
             <button
-              onClick={() => actions.removeTag?.(tag)}
+              onClick={() => machine.removeTag(tag)}
               className="inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
               aria-label={`Remove ${tag}`}
             >
@@ -96,15 +87,24 @@ export function ComboboxView({ machine }: { machine: Machine }) {
             ref={inputRef}
             type="text"
             value={machine.store.getState().input}
-            onChange={(e) => activeActions?.typed?.(e.target.value)}
+            onChange={(e) => {
+              machine.store.dispatch('typed', e.target.value);
+              // Trigger state transition based on suggestions
+              const storeState = machine.store.getState();
+              if (storeState.suggestions.length > 0) {
+                actions.typed();
+              } else {
+                actions.typed();
+              }
+            }}
             onFocus={() => actions.focus()}
-            onBlur={() => actions.close()}
+            onBlur={() => machine.deactivate()}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
 
-          {activeState?.is("Suggesting") && machine.store.getState().suggestions?.length > 0 && (
+          {state.is("Active_Suggesting") && machine.store.getState().suggestions?.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto z-20">
               {machine.store.getState().suggestions.map((suggestion: string, index: number) => (
                 <button
