@@ -1,5 +1,5 @@
 import { describeHSM } from "matchina/hsm";
-import { addEventApi, addStoreApi } from "matchina";
+import { addEventApi, addStoreApi, setup, effect } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createComboboxMachine() {
@@ -40,6 +40,16 @@ export function createComboboxMachine() {
       }
     }
   });
+
+  // Effects coordinate machine transitions with store updates
+  setup(machine)(
+    effect((ev: any) => {
+      if (ev.type === 'addTag') store.api.addTag(ev.params?.[0] ?? '');
+      if (ev.type === 'select') store.api.selectHighlighted();
+      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === 'dismiss') store.api.clear();
+    })
+  );
 
   addEventApi(machine);
 
