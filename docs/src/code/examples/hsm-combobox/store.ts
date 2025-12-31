@@ -22,12 +22,17 @@ export function createComboboxStore() {
     highlightedIndex: 0,
     isActive: false,
   }, {
-    setInput: (input: string) => (change) => ({
-      ...change.from,
-      input,
-      suggestions: getSuggestions(input, change.from.selectedTags),
-      highlightedIndex: 0,
-    }),
+    setInput: (input: string) => (change) => {
+      console.log('Store setInput called with:', input);
+      const suggestions = getSuggestions(input, change.from.selectedTags);
+      console.log('Generated suggestions:', suggestions);
+      return {
+        ...change.from,
+        input,
+        suggestions,
+        highlightedIndex: 0,
+      };
+    },
     
     addTag: (tag: string) => (change) => ({
       ...change.from,

@@ -67,6 +67,7 @@ export function createFlatComboboxMachine() {
     if (ev?.type === 'typed') {
       setTimeout(() => {
         const state = store.getState();
+        console.log('Store state:', state);
         console.log('Auto-transition - suggestions:', state.suggestions.length);
         ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
       }, 0);
