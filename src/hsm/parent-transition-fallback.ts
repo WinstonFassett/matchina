@@ -46,8 +46,10 @@ export function withParentTransitionFallback(
           // Found a parent transition, resolve it manually
           const target = parentTransitions[ev.type];
           if (typeof target === 'string') {
+            // Resolve target: if relative (no dot), prepend parent key
+            const resolvedTarget = target.includes(delimiter) ? target : `${parentKey}${delimiter}${target}`;
             // Create a new event with the resolved state
-            const targetState = machine.states[target]?.(...ev.params);
+            const targetState = machine.states[resolvedTarget]?.(...ev.params);
             if (targetState) {
               return new FactoryMachineEventImpl(
                 ev.type,
