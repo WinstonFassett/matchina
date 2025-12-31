@@ -51,12 +51,9 @@ export function createComboboxMachine() {
     highlight: store.api.highlight,
     setHighlighted: store.api.setHighlighted,
 
-    // Machine operations
-    focus: machine.api.focus,
-    blur: machine.api.blur,
+    // Machine operations (use machine.send() for state transitions)
     addTag: machine.api.addTag,
     select: machine.api.select,
-    type: machine.api.type,
   });
 
   return combobox;

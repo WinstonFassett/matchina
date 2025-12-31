@@ -23,7 +23,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        machine.blur();
+        machine.send('blur');
         break;
       case "Backspace":
         if (!input && selectedTags.length > 0) {
@@ -78,10 +78,10 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             value={input}
             onChange={(e) => {
               machine.model.api.setInput(e.target.value);
-              machine.type();
+              machine.send('type');
             }}
-            onFocus={() => machine.focus()}
-            onBlur={() => machine.blur()}
+            onFocus={() => machine.send('focus')}
+            onBlur={() => machine.send('blur')}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
