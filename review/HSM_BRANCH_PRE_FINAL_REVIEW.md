@@ -75,3 +75,14 @@ The TypeScript errors indicate underlying API inconsistencies that should be add
 2. Consolidate TypeScript issues into single beads ticket as requested
 3. Address type safety issues systematically
 4. Once resolved, proceed with merge as this represents a major milestone for Matchina
+
+---
+
+# Asides:
+
+### Enhancement idea: defineStates that just accepts strings
+- could have a simpler API like `defineStates('Idle', 'Loading', 'Success')`
+- internally converts to `Idle: undefined, Loading: undefined, Success: undefined`
+- this would make the API much cleaner for simple state machines
+- could also support mixed: `defineStates('Idle', { Loading: { timeout: number }, Success: undefined })`
+
