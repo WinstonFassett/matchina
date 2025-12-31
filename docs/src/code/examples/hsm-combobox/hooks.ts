@@ -28,25 +28,15 @@ export function createComboboxStoreHook(store: any) {
             }, 0);
           }
           break;
-        case 'removeTag':
+        case 'highlight':
           if (ev.params && ev.params[0] !== undefined) {
-            store.dispatch('removeTag', ev.params[0]);
+            const direction = ev.params[0];
+            if (direction === 'next') {
+              store.dispatch('highlightNext');
+            } else if (direction === 'prev') {
+              store.dispatch('highlightPrev');
+            }
           }
-          break;
-        case 'addTag':
-          if (ev.params && ev.params[0] !== undefined) {
-            store.dispatch('addTag', ev.params[0]);
-          }
-          break;
-        case 'deactivate':
-        case 'clear':
-          store.dispatch('deactivate');
-          break;
-        case 'highlightNext':
-          store.dispatch('highlightNext');
-          break;
-        case 'highlightPrev':
-          store.dispatch('highlightPrev');
           break;
         case 'selectHighlighted':
           const currentState = store.getState();

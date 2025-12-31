@@ -110,5 +110,17 @@ export function createComboboxMachine() {
     createComboboxStoreHook(store)
   );
 
-  return Object.assign(hierarchical, { store });
+  // Expose store APIs on machine for direct access
+  const machineWithStore = Object.assign(hierarchical, { 
+    store,
+    // Store APIs
+    addTag: store.dispatch.bind(null, 'addTag'),
+    removeTag: store.dispatch.bind(null, 'removeTag'),
+    highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
+    selectHighlighted: () => store.dispatch('selectHighlighted'),
+    clear: () => store.dispatch('clear'),
+    deactivate: () => store.dispatch('deactivate')
+  });
+
+  return machineWithStore;
 }

@@ -46,6 +46,7 @@ export function createComboboxStore() {
     removeTag: (tag: string) => (change) => ({
       ...change.from,
       selectedTags: change.from.selectedTags.filter((t: string) => t !== tag),
+      suggestions: getSuggestions(change.from.input, change.from.selectedTags),
     }),
     
     backspace: () => (change) => {
@@ -65,15 +66,25 @@ export function createComboboxStore() {
       highlightedIndex: 0,
     }),
     
-    highlightNext: () => (change) => ({
+    highlight: (direction: 'next' | 'prev') => (change) => ({
       ...change.from,
-      highlightedIndex: Math.min(change.from.suggestions.length - 1, change.from.highlightedIndex + 1),
+      highlightedIndex: direction === 'next' 
+        ? Math.min(change.from.suggestions.length - 1, change.from.highlightedIndex + 1)
+        : Math.max(0, change.from.highlightedIndex - 1),
     }),
     
-    highlightPrev: () => (change) => ({
-      ...change.from,
-      highlightedIndex: Math.max(0, change.from.highlightedIndex - 1),
-    }),
+    selectHighlighted: () => (change) => {
+      const tag = change.from.suggestions[change.from.highlightedIndex];
+      if (!tag) return change.from;
+      
+      return {
+        ...change.from,
+        selectedTags: [...change.from.selectedTags, tag],
+        input: "",
+        suggestions: [],
+        highlightedIndex: 0,
+      };
+    },
     
     activate: () => (change) => ({
       ...change.from,
