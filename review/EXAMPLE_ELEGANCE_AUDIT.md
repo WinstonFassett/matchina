@@ -26,17 +26,17 @@
 
 | Example | Issue | Severity |
 |---------|-------|----------|
-| `toggle/machine.ts` | States use `() => ({})` instead of `undefined` | Low |
-| `traffic-light/machine.ts` | States have `message` data: `Red: () => ({ message: "Stop" })` | Low |
-| `hsm-checkout/machine.ts` | Some states use `() => ({})` | Low |
+| `toggle/machine.ts` | ✅ FIXED - Now uses `undefined` | Done |
+| `traffic-light/machine.ts` | ✅ FIXED - Now uses `undefined` | Done |
+| `hsm-checkout/machine.ts` | ✅ FIXED - Now uses `undefined` | Done |
+| `hsm-traffic-light/machine.ts` | ✅ FIXED - Now uses `undefined` | Done |
 
 ### ❌ MAJOR Violations (Need Remediation)
 
-#### 1. `counter/machine.ts`
-- **States with data**: `Active: (count: number = 0) => ({ count })`
-- **Functional transition**: `reset: () => () => states.Active(0)`
-- **Mutates state data in effects**: `ev.to.data.count = ev.from.data.count + 1`
-- **Should use**: Store for count, simple transitions
+#### 1. `counter/machine.ts` ✅ FIXED
+- ~~States with data~~ → Now uses `undefined` state
+- ~~Functional transition~~ → Now uses string transitions
+- ~~Mutates state data~~ → Now uses store for count
 
 #### 2. `stopwatch/machine.ts`
 - **States with data**: `Stopped: (elapsed = 0) => ({ elapsed })`
@@ -82,8 +82,9 @@
 | Category | Count |
 |----------|-------|
 | Elegant (no issues) | 4 |
-| Minor issues | 3 |
-| **Major violations** | **7** |
+| Minor issues (all fixed) | 4 |
+| Major violations fixed | 1 |
+| **Major violations remaining** | **6** |
 
 ## Remediation Priority
 
