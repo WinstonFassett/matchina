@@ -7,21 +7,15 @@ interface User {
   avatar?: string;
 }
 
-interface AuthFormState {
-  email: string;
-  password: string;
-  name: string;
+interface AuthState {
   error: string | null;
   user: User | null;
 }
 
-const createAuthStore = (initialState: AuthFormState) => {
-  const store = createStoreMachine<AuthFormState>(initialState, {
-    setEmail: (email: string) => (change) => ({ ...change.from, email }),
-    setPassword: (password: string) => (change) => ({ ...change.from, password }),
-    setName: (name: string) => (change) => ({ ...change.from, name }),
-    setError: (error: string | null) => (change) => ({ ...change.from, error }),
+const createAuthStore = (initialState: AuthState) => {
+  const store = createStoreMachine<AuthState>(initialState, {
     setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
+    setError: (error: string | null) => (change) => ({ ...change.from, error }),
     clearError: () => (change) => ({ ...change.from, error: null }),
     reset: () => () => initialState,
   });
@@ -41,10 +35,7 @@ const states = defineStates({
 });
 
 export const createAuthMachine = () => {
-  const initialState: AuthFormState = {
-    email: "demo@example.com",
-    password: "password123",
-    name: "Demo User",
+  const initialState: AuthState = {
     error: null,
     user: null,
   };
