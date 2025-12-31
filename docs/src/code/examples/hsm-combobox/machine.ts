@@ -8,6 +8,7 @@ const AVAILABLE_TAGS = [
   "node", "deno", "bun", "python", "rust",
 ];
 
+// Active child states for the tag editor
 export const activeStates = defineStates({
   Empty: undefined,
   Typing: undefined,
@@ -27,53 +28,24 @@ function getSuggestions(input: string, selectedTags: string[]): string[] {
     .slice(0, 5);
 }
 
-const handleTyped = (value: string) => (ev: any) => {
-  if (!value.trim()) return activeStates.Empty();
-  return activeStates.Typing();
-};
-
-const handleAddTag = (tag: string) => (ev: any) => {
-  return activeStates.Empty();
-};
-
 function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
-      typed: (value: string) => (ev: any) => {
-        if (!value.trim()) return activeStates.Empty();
-        return activeStates.Typing();
-      },
-      backspace: () => (ev) => {
-        return ev.from;
-      },
+      typed: 'Typing',
     },
     Typing: {
-      backspace: () => (ev) => {
-        return ev.from;
-      },
+      // No transitions - auto-transitions handled by hook
     },
     TextEntry: {
-      typed: (value: string) => (ev: any) => {
-        if (!value.trim()) return activeStates.Empty();
-        return activeStates.Typing();
-      },
-      clear: () => (ev) => activeStates.Empty(),
-      backspace: () => (ev) => {
-        return ev.from;
-      },
+      typed: 'Typing',
+      clear: 'Empty',
     },
     Suggesting: {
-      typed: (value: string) => (ev: any) => {
-        if (!value.trim()) return activeStates.Empty();
-        return activeStates.Typing();
-      },
-      clear: () => (ev) => activeStates.Empty(),
-      cancel: () => (ev) => activeStates.TextEntry(),
-      backspace: () => (ev) => {
-        return ev.from;
-      },
+      typed: 'Typing',
+      clear: 'Empty',
+      cancel: 'TextEntry',
     },
-  }, "Empty");
+  });
 }
 
 export type ActiveMachine = ReturnType<typeof createActiveForApp>;
