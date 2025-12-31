@@ -76,7 +76,10 @@ export function ComboboxView({ machine }: ComboboxViewProps) {
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => machine.setInput(e.target.value)}
+            onChange={(e) => {
+              machine.model.api.setInput(e.target.value);
+              machine.type();
+            }}
             onFocus={() => machine.focus()}
             onBlur={() => machine.blur()}
             onKeyDown={handleKeyDown}

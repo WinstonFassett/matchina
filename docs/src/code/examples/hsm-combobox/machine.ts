@@ -56,12 +56,7 @@ export function createComboboxMachine() {
     blur: machine.api.blur,
     addTag: machine.api.addTag,
     select: machine.api.select,
-
-    // Coordinated action: update store then transition
-    setInput: (value: string) => {
-      store.api.setInput(value);
-      machine.api.type();
-    },
+    type: machine.api.type,
   });
 
   return combobox;
