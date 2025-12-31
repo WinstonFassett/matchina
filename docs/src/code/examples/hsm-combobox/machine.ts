@@ -104,6 +104,30 @@ function createHierarchicalComboboxHook(store: any) {
             }, 0);
           }
           break;
+        case 'child.change':
+          // Handle submachine state changes - trigger auto-transitions
+          setTimeout(() => {
+            const state = store.getState();
+            console.log('Child change - suggestions:', state.suggestions.length, 'input:', state.input.trim());
+            
+            if (state.suggestions.length > 0) {
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                console.log('Sending toSuggesting due to suggestions');
+                currentMachine.send("toSuggesting");
+              }
+            } else if (state.input.trim()) {
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                console.log('Sending toTextEntry due to input');
+                currentMachine.send("toTextEntry");
+              }
+            } else {
+              if (currentMachine && typeof currentMachine.send === 'function') {
+                console.log('Sending toEmpty due to empty input');
+                currentMachine.send("toEmpty");
+              }
+            }
+          }, 0);
+          break;
         case 'clear':
           store.dispatch('clear');
           break;
