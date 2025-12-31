@@ -19,16 +19,14 @@ export function createFlatComboboxMachine() {
         states: {
           Empty: {
             on: {
-              type: 'Suggesting',
-              blur: '^Inactive'
+              type: 'Suggesting'
             }
           },
           Suggesting: {
             on: {
               type: 'Suggesting',
               select: 'Empty',
-              dismiss: 'Empty',
-              blur: '^Inactive'
+              dismiss: 'Empty'
             }
           }
         },
