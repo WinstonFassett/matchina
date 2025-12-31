@@ -1,6 +1,5 @@
 import { describeHSM } from "matchina/hsm";
-import { setup } from "matchina";
-import { createComboboxStoreHook } from "./hooks";
+import { setup, effect } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createFlatComboboxMachine() {
@@ -62,9 +61,15 @@ export function createFlatComboboxMachine() {
     }
   });
 
-  setup(flatMachine)(
-    createComboboxStoreHook(store)
-  );
+  // Minimal hook - only handle typed events for auto-transitions
+  setup(flatMachine)(effect((ev: any) => {
+    if (ev?.type === 'typed' && ev?.params?.[0] !== undefined) {
+      setTimeout(() => {
+        const state = store.getState();
+        ev.machine?.send?.(state.suggestions.length > 0 ? "toSuggesting" : "toTextEntry");
+      }, 0);
+    }
+  }));
 
   // Expose store APIs on machine for direct access
   const machineWithStore = Object.assign(flatMachine, { 
