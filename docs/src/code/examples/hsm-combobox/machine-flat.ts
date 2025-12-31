@@ -51,8 +51,7 @@ export function createFlatComboboxMachine() {
       return true;
     }),
     effect((ev: any) => {
-      // Coordinate store updates based on machine events
-      if (ev.type === 'type') store.api.setInput(ev.params?.[0] ?? '');
+      // Handle blur, select, dismiss (pure side effects)
       if (ev.type === 'blur') store.api.clear();
       if (ev.type === 'select') store.api.selectHighlighted();
       if (ev.type === 'dismiss') store.api.clear();
@@ -62,26 +61,32 @@ export function createFlatComboboxMachine() {
   // Add event API to machine
   addEventApi(machine);
 
-  // Component-level API - no wrapper functions, just expose what's needed
+  // Component-level API
   const combobox = Object.assign(machine, {
     model: store,
 
-    // Store operations (UI calls these when it needs store changes only)
+    // Store operations (no machine involvement)
     removeTag: store.api.removeTag,
     highlight: store.api.highlight,
     setHighlighted: store.api.setHighlighted,
 
-    // Machine operations + coordinated via effects
+    // Pure machine operations
     focus: machine.api.focus,
     blur: machine.api.blur,
-    type: machine.api.type,  // effect coordinates store.setInput
-    select: machine.api.select,  // effect coordinates store.selectHighlighted
-    dismiss: machine.api.dismiss,  // effect coordinates store.clear
+    dismiss: machine.api.dismiss,
 
-    // Semantic aliases for the UI
-    setInput: machine.api.type,
-    selectSuggestion: machine.api.select,
-    addTag: (tag: string) => store.api.addTag(tag),
+    // Coordinated actions: store FIRST, machine SECOND (for proper guard timing)
+    setInput: (value: string) => {
+      store.api.setInput(value);  // FIRST - recomputes suggestions
+      machine.api.type();         // THEN - guard sees updated suggestions
+    },
+    selectSuggestion: () => {
+      store.api.selectHighlighted();
+      machine.api.select();
+    },
+    addTag: (tag: string) => {
+      store.api.addTag(tag);
+    },
   });
 
   return combobox;
