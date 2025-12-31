@@ -1,6 +1,5 @@
 import { defineStates, matchina, setup, effect } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
-import { createComboboxStoreHook } from "./hooks";
 import { createComboboxStore } from "./store";
 
 const AVAILABLE_TAGS = [
@@ -147,23 +146,6 @@ function createHierarchicalComboboxHook(store: any) {
               }
             } else if (direction === 'prev') {
               store.dispatch('highlightPrev');
-              if (currentMachine && typeof currentMachine.send === 'function') {
-                currentMachine.send("highlightPrev");
-              }
-            }
-          }
-          break;
-        case 'selectHighlighted':
-          store.dispatch('selectHighlighted');
-          if (currentMachine && typeof currentMachine.send === 'function') {
-            currentMachine.send("selectHighlighted");
-          }
-          break;
-        case 'deactivate':
-          // Clear input and reset when deactivating
-          store.dispatch('clear');
-          break;
-      }
     }
   });
 }
@@ -172,32 +154,20 @@ export function createComboboxMachine() {
   const store = createComboboxStore();
 
   const combobox = matchina(appStates, {
-    Inactive: {
-      focus: "Active"
-    },
-    Active: {
-      deactivate: "Inactive",
-    },
-  }, "Inactive");
+    Inactive: { focus: "Active" },
+    Active: { deactivate: "Inactive" },
+  }, appStates.Inactive());
 
-  // Use makeHierarchical for true nested machines with propagation
   const hierarchical = makeHierarchical(combobox);
+  setup(hierarchical)(createNestedMachineHook(store));
 
-  setup(hierarchical)(
-    createHierarchicalComboboxHook(store)
-  );
-
-  // Expose store APIs on machine for direct access
-  const machineWithStore = Object.assign(hierarchical, { 
+  return Object.assign(hierarchical, { 
     store,
-    // Store APIs
     addTag: store.dispatch.bind(null, 'addTag'),
     removeTag: store.dispatch.bind(null, 'removeTag'),
-    highlight: (direction: 'next' | 'prev') => store.dispatch('highlight', direction),
+    highlight: (d: 'next' | 'prev') => store.dispatch('highlight', d),
     selectHighlighted: () => store.dispatch('selectHighlighted'),
     clear: () => store.dispatch('clear'),
     deactivate: () => store.dispatch('deactivate')
   });
-
-  return machineWithStore;
 }
