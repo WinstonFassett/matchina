@@ -1,76 +1,64 @@
-import { matchina, defineStates } from "matchina";
+import { matchina, defineStates, createStoreMachine, setup, effect } from "matchina";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
+interface AuthFormState {
+  email: string;
+  password: string;
+  name: string;
+  error: string | null;
+  user: User | null;
+}
 
 const states = defineStates({
-  LoggedOut: () => ({}),
-
-  LoginForm: ({
-    email = "demo@example.com",
-    password = "password123",
-    error = undefined,
-  }: {
-    email?: string;
-    password?: string;
-    error?: string | null;
-  } = {}) => ({ email, password, error }),
-
-  RegisterForm: ({
-    name = "Demo User",
-    email = "demo@example.com",
-    error = undefined,
-  }: {
-    name?: string;
-    email?: string;
-    error?: string | null;
-  } = {}) => ({ name, email, error }),
-
-  PasswordResetForm: ({
-    email = "demo@example.com",
-    error = undefined,
-  }: {
-    email?: string;
-    error?: string | null;
-  } = {}) => ({ email, error }),
-
-  PasswordResetSent: ({ email }: { email: string }) => ({ email }),
-
-  LoggingIn: ({ email, password }: { email: string; password: string }) => ({
-    email,
-    password,
-  }),
-  Registering: ({ name, email }: { name: string; email: string }) => ({
-    name,
-    email,
-  }),
-  RequestingPasswordReset: ({ email }: { email: string }) => ({ email }),
-
-  LoggedIn: ({
-    user,
-  }: {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      avatar?: string;
-    };
-  }) => ({ user }),
+  LoggedOut: undefined,
+  LoginForm: undefined,
+  RegisterForm: undefined,
+  PasswordResetForm: undefined,
+  PasswordResetSent: undefined,
+  LoggingIn: undefined,
+  Registering: undefined,
+  RequestingPasswordReset: undefined,
+  LoggedIn: undefined,
 });
 
 export const createAuthMachine = () => {
-  return matchina(
+  const initialState: AuthFormState = {
+    email: "demo@example.com",
+    password: "password123",
+    name: "Demo User",
+    error: null,
+    user: null,
+  };
+
+  const store = createStoreMachine<AuthFormState>(initialState, {
+    setEmail: (email: string) => (change) => ({ ...change.from, email }),
+    setPassword: (password: string) => (change) => ({ ...change.from, password }),
+    setName: (name: string) => (change) => ({ ...change.from, name }),
+    setError: (error: string | null) => (change) => ({ ...change.from, error }),
+    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
+    clearError: () => (change) => ({ ...change.from, error: null }),
+    reset: () => () => initialState,
+  });
+
+  const machine = matchina(
     states,
     {
       LoggedOut: {
         showLogin: "LoginForm",
         showRegister: "RegisterForm",
       },
-
       LoginForm: {
         login: "LoggingIn",
         goToRegister: "RegisterForm",
         goToPasswordReset: "PasswordResetForm",
         cancel: "LoggedOut",
       },
-
       RegisterForm: {
         register: "Registering",
         goToLogin: "LoginForm",
@@ -81,52 +69,49 @@ export const createAuthMachine = () => {
         goToLogin: "LoginForm",
         cancel: "LoggedOut",
       },
-
       LoggingIn: {
         success: "LoggedIn",
-        failure:
-          (error: string) =>
-          ({ from }) => {
-            return states.LoginForm({
-              email: from.data.email,
-              password: from.data.password,
-              error,
-            });
-          },
+        failure: "LoginForm",
       },
-
       Registering: {
         success: "LoggedIn",
-        failure:
-          (error: string) =>
-          ({ from }) =>
-            states.RegisterForm({
-              name: from.data.name,
-              email: from.data.email,
-              error,
-            }),
+        failure: "RegisterForm",
       },
       RequestingPasswordReset: {
         success: "PasswordResetSent",
-        failure:
-          (error: string) =>
-          ({ from }) =>
-            states.PasswordResetForm({
-              email: from.data.email,
-              error,
-            }),
+        failure: "PasswordResetForm",
       },
-
       PasswordResetSent: {
         goToLogin: "LoginForm",
       },
-
       LoggedIn: {
         logout: "LoggedOut",
       },
     },
-    states.LoggedOut()
+    "LoggedOut"
   );
+
+  setup(machine)(
+    effect((ev) => {
+      if (ev.type === "failure" && ev.params[0]) {
+        store.dispatch("setError", ev.params[0] as string);
+      }
+      if (ev.type === "success" && ev.from.is("LoggingIn")) {
+        store.dispatch("setUser", ev.params[0] as User);
+      }
+      if (ev.type === "success" && ev.from.is("Registering")) {
+        store.dispatch("setUser", ev.params[0] as User);
+      }
+      if (ev.type === "showLogin" || ev.type === "showRegister") {
+        store.dispatch("clearError");
+      }
+      if (ev.type === "logout") {
+        store.dispatch("reset");
+      }
+    })
+  );
+
+  return Object.assign(machine, { store });
 };
 
 export type AuthMachine = ReturnType<typeof createAuthMachine>;
