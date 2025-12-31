@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef } from "react";
 import { useMachine } from "matchina/react";
 import type { FlatComboboxMachine } from "./machine-flat";
 
@@ -9,11 +9,6 @@ interface ComboboxViewFlatProps {
 export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   useMachine(machine);
   const { model } = machine;
-  const [, rerender] = useState({});
-  
-  useEffect(() => {
-    return model.subscribe(() => rerender({}));
-  }, [model]);
   const { input, selectedTags, suggestions, highlightedIndex } = model.getState();
   const inputRef = useRef<HTMLInputElement>(null);
 
