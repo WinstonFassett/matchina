@@ -306,6 +306,15 @@ npm run dev:docs         # Live TypeScript development + docs server
 
 **Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
 
+## Playwright Usage
+
+**CRITICAL: When running Playwright directly (npx playwright), DO NOT run the HTTP report server.**
+
+- Use line reporter instead: `npx playwright test --reporter=line`
+- The HTML report server can conflict with other dev servers
+- Line reporter provides sufficient output for test results
+- Only use HTML report when explicitly needed and no other servers are running
+
 ## Development Resources
 
 - `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
