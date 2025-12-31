@@ -286,10 +286,24 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick }
         const source = colaNodes[link.source as number];
         const target = colaNodes[link.target as number];
         if (source && target) {
-          const midX = ((source.x || 0) + (target.x || 0)) / 2;
-          const midY = ((source.y || 0) + (target.y || 0)) / 2 - 10;
-          labelText.setAttribute('x', midX.toString());
-          labelText.setAttribute('y', midY.toString());
+          // Position label along the arc curve (at approximately 40% of the path)
+          const sx = source.x || 0;
+          const sy = source.y || 0;
+          const tx = target.x || 0;
+          const ty = target.y || 0;
+          const dx = tx - sx;
+          const dy = ty - sy;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          const t = 0.4;
+          const angle = Math.atan2(dy, dx);
+          const dr = distance * 0.8;
+          const arcPoint = Math.sin((t - 0.5) * Math.PI) * (dr - distance / 2);
+          const labelX = sx + dx * t - Math.sin(angle) * arcPoint;
+          const labelY = sy + dy * t + Math.cos(angle) * arcPoint - 10;
+
+          labelText.setAttribute('x', labelX.toString());
+          labelText.setAttribute('y', labelY.toString());
 
           // Update label background to fit text
           const bbox = labelText.getBBox();

@@ -548,20 +548,32 @@ export default function HierarchicalForceGraph({
             const source = forceNodes.find(n => n.id === link.source);
             const target = forceNodes.find(n => n.id === link.target);
             if (source && target) {
-              // Create curved path
+              // Create curved path (arc)
               const dx = target.x - source.x;
               const dy = target.y - source.y;
-              const dr = Math.sqrt(dx * dx + dy * dy) * 0.8; // Curve radius
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              const dr = distance * 0.8; // Curve radius
               const pathData = `M${source.x},${source.y} A${dr},${dr} 0 0,1 ${target.x},${target.y}`;
               path.setAttribute('d', pathData);
 
-              // Position label at midpoint of edge
-              const midX = (source.x + target.x) / 2;
-              const midY = (source.y + target.y) / 2 - 10; // Offset slightly above
+              // Position label along the arc curve (at approximately 40% of the path)
+              // For an arc from source to target, calculate point at t=0.4
+              // Using parametric representation of the arc
+              const t = 0.4;
+              const angle = Math.atan2(dy, dx);
+              const midDistance = distance * t;
+              const centerX = source.x + dx * 0.5;
+              const centerY = source.y + dy * 0.5;
+              
+              // Calculate point on arc at parameter t
+              // This approximates the curved path position
+              const arcPoint = Math.sin((t - 0.5) * Math.PI) * (dr - distance / 2);
+              const labelX = source.x + dx * t - Math.sin(angle) * arcPoint;
+              const labelY = source.y + dy * t + Math.cos(angle) * arcPoint - 10; // Offset above
 
               // Update label text position
-              labelText.setAttribute('x', midX.toString());
-              labelText.setAttribute('y', midY.toString());
+              labelText.setAttribute('x', labelX.toString());
+              labelText.setAttribute('y', labelY.toString());
 
               // Update label background to fit text
               const bbox = labelText.getBBox();
@@ -589,7 +601,9 @@ export default function HierarchicalForceGraph({
 
           // Update containers with smooth curved edges
           let containerIndex = 0;
-          const containerPadding = 40; // Padding around nodes
+          const nodeWidth = 80;
+          const nodeHeight = 32;
+          const minPadding = 40; // Minimum padding around nodes
 
           groups.forEach((groupNodes, groupName) => {
             if (groupName === 'root') return;
@@ -602,13 +616,15 @@ export default function HierarchicalForceGraph({
 
             if (points.length >= 3) {
               const hull = convexHull(points);
-              // Expand hull outward from centroid by padding amount
+              // Expand hull outward from centroid by padding amount + node radius
+              // Use max of node half-width/height plus minimum padding
+              const nodePadding = Math.max(nodeWidth / 2, nodeHeight / 2) + minPadding;
               const expandedHull = hull.map(([x, y]) => {
                 const dx = x - centroidX;
                 const dy = y - centroidY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist === 0) return [x, y] as [number, number];
-                const scale = (dist + containerPadding) / dist;
+                const scale = (dist + nodePadding) / dist;
                 return [centroidX + dx * scale, centroidY + dy * scale] as [number, number];
               });
               // Use smooth curved path instead of sharp edges
@@ -616,25 +632,36 @@ export default function HierarchicalForceGraph({
               containers[containerIndex].setAttribute('d', pathData);
             } else if (points.length === 2) {
               // For 2 points, use smooth rounded rectangle from smoothHullPath
-              const pathData = smoothHullPath(points, 1);
+              // Expand to account for node dimensions
+              const nodeRadius = Math.max(nodeWidth / 2, nodeHeight / 2) + minPadding;
+              const expandedPoints = points.map(([x, y]) => {
+                const dx = x - centroidX;
+                const dy = y - centroidY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist === 0) return [x, y] as [number, number];
+                const scale = (dist + nodeRadius) / dist;
+                return [centroidX + dx * scale, centroidY + dy * scale] as [number, number];
+              });
+              const pathData = smoothHullPath(expandedPoints, 1);
               containers[containerIndex].setAttribute('d', pathData);
             } else if (points.length === 1) {
-              // Single point - create rounded rectangle
+              // Single point - create rounded rectangle with node padding
               const [[x, y]] = points;
-              const r = containerPadding;
+              const nodePadding = Math.max(nodeWidth / 2, nodeHeight / 2) + minPadding;
               const cr = 12; // corner radius
-              const pathData = `M${x - r + cr},${y - r}
-                L${x + r - cr},${y - r} Q${x + r},${y - r} ${x + r},${y - r + cr}
-                L${x + r},${y + r - cr} Q${x + r},${y + r} ${x + r - cr},${y + r}
-                L${x - r + cr},${y + r} Q${x - r},${y + r} ${x - r},${y + r - cr}
-                L${x - r},${y - r + cr} Q${x - r},${y - r} ${x - r + cr},${y - r} Z`;
+              const pathData = `M${x - nodePadding + cr},${y - nodePadding}
+                L${x + nodePadding - cr},${y - nodePadding} Q${x + nodePadding},${y - nodePadding} ${x + nodePadding},${y - nodePadding + cr}
+                L${x + nodePadding},${y + nodePadding - cr} Q${x + nodePadding},${y + nodePadding} ${x + nodePadding - cr},${y + nodePadding}
+                L${x - nodePadding + cr},${y + nodePadding} Q${x - nodePadding},${y + nodePadding} ${x - nodePadding},${y + nodePadding - cr}
+                L${x - nodePadding},${y - nodePadding + cr} Q${x - nodePadding},${y - nodePadding} ${x - nodePadding + cr},${y - nodePadding} Z`;
               containers[containerIndex].setAttribute('d', pathData);
             }
 
             // Position group label above the container
+            const nodePadding = Math.max(nodeWidth / 2, nodeHeight / 2) + minPadding;
             const minY = Math.min(...points.map(([, y]) => y));
             groupLabels[containerIndex].setAttribute('x', centroidX.toString());
-            groupLabels[containerIndex].setAttribute('y', (minY - containerPadding - 10).toString());
+            groupLabels[containerIndex].setAttribute('y', (minY - nodePadding - 10).toString());
 
             containerIndex++;
           });
