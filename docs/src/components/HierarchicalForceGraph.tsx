@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import * as d3 from 'd3';
 
 // Custom force simulation - no external dependencies
 interface ForceNode {
@@ -20,8 +21,13 @@ interface ForceLink {
   event: string;
 }
 
+interface HierarchicalNode extends ForceNode {
+  fx?: number | null;
+  fy?: number | null;
+}
+
 interface HierarchicalGraphData {
-  nodes: ForceNode[];
+  nodes: HierarchicalNode[];
   links: ForceLink[];
 }
 
@@ -121,8 +127,8 @@ class ForceSimulation {
         node.x += node.vx;
         node.y += node.vy;
       } else {
-        node.x = node.fx;
-        node.y = node.fy;
+        node.x = node.fx ?? 0;
+        node.y = node.fy ?? 0;
         node.vx = 0;
         node.vy = 0;
       }
@@ -146,7 +152,7 @@ class ForceSimulation {
 
 export default function HierarchicalForceGraph({ data }: { data: HierarchicalGraphData }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const dimensions = { width: 800, height: 600 };
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
@@ -192,18 +198,18 @@ export default function HierarchicalForceGraph({ data }: { data: HierarchicalGra
       return hull ? `M${hull.join("L")}Z` : '';
     }
 
-    // Create container shapes for groups
-    const containers = svg.append("g")
-      .attr("class", "containers")
-      .selectAll("path")
-      .data(Array.from(groups.entries()))
-      .enter()
-      .append("path")
-      .attr("class", "container")
-      .attr("fill", (d, i) => d3.schemeCategory10[i % 10])
-      .attr("fill-opacity", 0.1)
-      .attr("stroke", (d, i) => d3.schemeCategory10[i % 10])
-      .attr("stroke-width", 2);
+      // Create container shapes for groups
+      const containers = svg.append("g")
+        .attr("class", "containers")
+        .selectAll("path")
+        .data(Array.from(groups.entries()))
+        .enter()
+        .append("path")
+        .attr("class", "container")
+        .attr("fill", (_, i) => d3.schemeCategory10[i % 10])
+        .attr("fill-opacity", 0.1)
+        .attr("stroke", (_, i) => d3.schemeCategory10[i % 10])
+        .attr("stroke-width", 2);
 
     // Create links
     const link = svg.append("g")

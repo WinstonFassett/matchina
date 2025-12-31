@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Custom force simulation - no external dependencies
 interface ForceNode {
@@ -264,14 +264,14 @@ const COLORS = {
   background: '#1a1a1a',
 };
 
-export default function HierarchicalForceGraph({
+export default function HierarchicalForceGraphCustom({
   data,
   currentState,
   onEventClick,
   layoutMode = 'springy'
 }: HierarchicalForceGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const dimensions = { width: 800, height: 600 };
 
   useEffect(() => {
     console.log('HierarchicalForceGraph: useEffect called with data:', data);
@@ -494,8 +494,8 @@ export default function HierarchicalForceGraph({
         let isDragging = false;
         rect.addEventListener('mousedown', (e) => {
           isDragging = true;
-          node.fx = node.x;
-          node.fy = node.y;
+          (node as any).fx = node.x;
+          (node as any).fy = node.y;
           // Temporarily enable animation for smooth dragging
           if (layoutMode === 'static') {
             simulation.alphaDecay = 0.0228; // Enable animation during drag
@@ -507,16 +507,16 @@ export default function HierarchicalForceGraph({
         const handleMouseMove = (e: MouseEvent) => {
           if (!isDragging) return;
           const rect = svg.getBoundingClientRect();
-          node.fx = e.clientX - rect.left;
-          node.fy = e.clientY - rect.top;
+          (node as any).fx = e.clientX - rect.left;
+          (node as any).fy = e.clientY - rect.top;
           simulation.restart();
         };
 
         const handleMouseUp = () => {
           if (isDragging) {
             isDragging = false;
-            node.fx = null;
-            node.fy = null;
+            (node as any).fx = null;
+            (node as any).fy = null;
             // Restore static mode if needed
             if (layoutMode === 'static') {
               simulation.setStaticMode(true);
@@ -596,10 +596,6 @@ export default function HierarchicalForceGraph({
               const arcPoint = Math.sin((t - 0.5) * Math.PI) * (dr - distance / 2);
               const labelX = source.x + dx * t - Math.sin(angle) * arcPoint;
               const labelY = source.y + dy * t + Math.cos(angle) * arcPoint - 10; // Offset above
-
-              // Update label text position
-              labelText.setAttribute('x', labelX.toString());
-              labelText.setAttribute('y', labelY.toString());
 
               // Update label background to fit text
               const bbox = labelText.getBBox();

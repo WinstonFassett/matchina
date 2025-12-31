@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Graph } from '@antv/g6';
 
 export interface G6HierarchicalData {

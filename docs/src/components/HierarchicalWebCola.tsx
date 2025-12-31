@@ -78,7 +78,7 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick, 
       svg.setAttribute('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
 
       // Transform data to Cola format
-      const colaNodes: ColaNode[] = data.nodes.map((node, i) => ({
+      const colaNodes: ColaNode[] = data.nodes.map((node) => ({
         id: node.id,
         name: node.name,
         group: node.group,
@@ -98,14 +98,16 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick, 
         .map(link => {
           const sourceIndex = nodeIndex.get(link.source);
           const targetIndex = nodeIndex.get(link.target);
-          console.log(`Link ${link.event}: ${link.source} (${sourceIndex}) -> ${link.target} (${targetIndex})`);
+          if (sourceIndex === undefined || targetIndex === undefined) {
+            return null;
+          }
           return {
-            source: sourceIndex!,
-            target: targetIndex!,
+            source: colaNodes[sourceIndex],
+            target: colaNodes[targetIndex],
             event: link.event,
           };
         })
-        .filter(link => link.source !== undefined && link.target !== undefined);
+        .filter((link): link is ColaLink => link !== undefined);
 
       console.log(`Created ${colaLinks.length} WebCola links from ${data.links.length} data links`);
 
@@ -139,7 +141,7 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick, 
         .style("cursor", "pointer");
 
       // Add click handlers to links
-      linkSelection.on("click", (event, d: any) => {
+      linkSelection.on("click", (_, d: any) => {
         if (onEventClick) {
           onEventClick(d.event);
         }
@@ -255,29 +257,28 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick, 
         // Update edge labels - position along the line
         d3Svg.selectAll(".edge-label")
           .attr("x", (d: any) => {
-            const sx = d.source.x;
-            const sy = d.source.y;
             const tx = d.target.x;
-            const ty = d.target.y;
-            return sx + (tx - sx) * 0.5;
+            return d.source.x + (tx - d.source.x) * 0.5;
           })
           .attr("y", (d: any) => {
-            const sx = d.source.x;
-            const sy = d.source.y;
-            const tx = d.target.x;
             const ty = d.target.y;
-            return sy + (ty - sy) * 0.5 - 10;
+            return d.source.y + (ty - d.source.y) * 0.5 - 10;
           });
 
         // Update edge label backgrounds to fit text
-        d3Svg.selectAll(".edge-label-bg").each(function() {
-          const text = d3.select(this.nextSibling);
-          const bbox = (text.node() as any).getBBox();
-          d3.select(this)
-            .attr("x", bbox.x - 4)
-            .attr("y", bbox.y - 4)
-            .attr("width", bbox.width + 8)
-            .attr("height", bbox.height + 8);
+        d3Svg.selectAll(".edge-label-bg").each(function(d, i) {
+          const textElement = (this as HTMLElement).nextElementSibling;
+          if (textElement) {
+            const text = d3.select(textElement);
+            const bbox = (text.node() as any)?.getBBox();
+            if (bbox) {
+              d3.select(this)
+                .attr("x", bbox.x - 4)
+                .attr("y", bbox.y - 4)
+                .attr("width", bbox.width + 8)
+                .attr("height", bbox.height + 8);
+            }
+          }
         });
 
         // Update nodes using D3 selection
