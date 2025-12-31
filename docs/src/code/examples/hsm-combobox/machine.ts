@@ -1,4 +1,4 @@
-import { defineStates, matchina } from "matchina";
+import { defineStates, matchina, setup } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
 import { createComboboxStoreHook } from "./hooks";
 import { createComboboxStore } from "./store";
@@ -40,15 +40,11 @@ function createActiveForApp() {
   return matchina(activeStates, {
     Empty: {
       typed: handleTyped,
-      removeTag: (tag) => (ev) => 
-        activeStates.Empty(),
       backspace: () => (ev) => {
         return ev.from;
       },
     },
     Typing: {
-      removeTag: (tag) => (ev) => 
-        activeStates.Typing(),
       backspace: () => (ev) => {
         return ev.from;
       },

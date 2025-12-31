@@ -22,7 +22,6 @@ export function createFlatComboboxMachine() {
             data: undefined,
             on: {
               typed: 'Typing',
-              removeTag: 'Empty',
               addTag: 'Empty',
               deactivate: '^Inactive'
             }
@@ -33,7 +32,6 @@ export function createFlatComboboxMachine() {
               toEmpty: 'Empty',
               toSuggesting: 'Suggesting',
               toTextEntry: 'TextEntry',
-              removeTag: 'Typing',
               deactivate: '^Inactive'
             }
           },
@@ -42,7 +40,6 @@ export function createFlatComboboxMachine() {
             on: {
               typed: 'Typing',
               clear: 'Empty',
-              removeTag: 'TextEntry',
               addTag: 'Empty',
               deactivate: '^Inactive'
             }
@@ -55,7 +52,6 @@ export function createFlatComboboxMachine() {
               highlightNext: 'Suggesting',
               highlightPrev: 'Suggesting',
               selectHighlighted: 'Empty',
-              removeTag: 'Suggesting',
               cancel: 'TextEntry',
               addTag: 'Empty',
               deactivate: '^Inactive'
