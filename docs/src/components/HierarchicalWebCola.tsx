@@ -10,14 +10,17 @@ interface ColaNode extends cola.Node {
   height: number;
 }
 
-interface ColaLink extends cola.Link<ColaNode> {
+interface ColaLink {
+  source: number;
+  target: number;
   event: string;
 }
 
-interface ColaGroup extends cola.Group {
+interface ColaGroup {
   name: string;
   leaves: number[];
   padding: number;
+  bounds?: cola.Rectangle;
 }
 
 interface HierarchicalGraphData {
@@ -259,7 +262,7 @@ export default function HierarchicalWebCola({ data, currentState, onEventClick, 
       .size([dimensions.width, dimensions.height])
       .nodes(colaNodes)
       .links(colaLinks)
-      .groups(colaGroups)
+      .groups(colaGroups as any)
       .linkDistance(100)
       .avoidOverlaps(true)
       .handleDisconnected(true)
