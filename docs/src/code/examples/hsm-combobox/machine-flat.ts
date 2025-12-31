@@ -92,7 +92,7 @@ export function createFlatComboboxMachine() {
     initial: 'Inactive',
     states: {
       Inactive: {
-        data: () => ({}), // No selectedTags in machine state - it's in store
+        data: undefined, // No data needed - selectedTags is in store
         on: {
           focus: 'Active'
         }
@@ -101,7 +101,7 @@ export function createFlatComboboxMachine() {
         initial: 'Empty',
         states: {
           Empty: {
-            data: () => ({ input: "" }), // No selectedTags in machine state - it's in store
+            data: undefined, // No data needed - selectedTags is in store
             on: {
               typed: 'Typing',
               removeTag: 'Empty', // Stay in Empty
@@ -110,7 +110,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Typing: {
-            data: (input: string) => ({ input }), // No selectedTags in machine state - it's in store
+            data: (input: string) => ({ input }), // Only input needed, selectedTags is in store
             on: {
               // Auto-transition based on suggestions
               toEmpty: 'Empty',
@@ -121,7 +121,7 @@ export function createFlatComboboxMachine() {
             }
           },
           TextEntry: {
-            data: (input: string) => ({ input }), // No selectedTags in machine state - it's in store
+            data: (input: string) => ({ input }), // Only input needed, selectedTags is in store
             on: {
               typed: 'Typing',
               clear: 'Empty',

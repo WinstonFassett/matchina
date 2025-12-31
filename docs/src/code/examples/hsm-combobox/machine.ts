@@ -10,10 +10,7 @@ const AVAILABLE_TAGS = [
 
 // Active child states for the tag editor
 export const activeStates = defineStates({
-  Empty: () => ({
-    input: "",
-    // selectedTags is in store, not machine state
-  }),
+  Empty: undefined, // No data needed - selectedTags is in store
   TextEntry: (input: string) => ({
     input,
     // selectedTags is in store, not machine state
