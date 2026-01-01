@@ -108,12 +108,48 @@ function toStateChart(config: any) {
       if (state?.on) {
         Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
           if (!target) return;
-          const targetId: string | undefined =
-            typeof target === "string"
-              ? target.includes('.') ? target.replace(/\./g, '_') : getStateId(target, parentPrefix)  // Fix flattened state targets
-              : (target as any)?.target
-              ? getStateId((target as any).target, parentPrefix)
-              : undefined;
+          let targetId: string | undefined;
+          
+          if (typeof target === "string") {
+            // Handle nested state targets properly
+            if (target.includes('.')) {
+              // Nested state like "Working.Red" - use the full path with underscores
+              targetId = target.replace(/\./g, '_');
+            } else {
+              // Check if this target exists as a nested state somewhere in the hierarchy
+              const findNestedState = (cfg: any, targetName: string, currentPrefix: string = ""): string | undefined => {
+                if (!cfg?.states) return undefined;
+                
+                // Check if target exists at current level
+                if (cfg.states[targetName]) {
+                  return getStateId(targetName, currentPrefix);
+                }
+                
+                // Recursively check nested states
+                for (const [nestedKey, nestedState] of Object.entries(cfg.states)) {
+                  if (nestedState && (nestedState as any).states) {
+                    const nestedPrefix = getStateId(nestedKey, currentPrefix);
+                    const result = findNestedState(nestedState, targetName, nestedPrefix);
+                    if (result) return result;
+                  }
+                }
+                
+                return undefined;
+              };
+              
+              // Try to find the target as a nested state first
+              const nestedTarget = findNestedState(config, target);
+              if (nestedTarget) {
+                targetId = nestedTarget;
+              } else {
+                // Fall back to top-level state
+                targetId = getStateId(target, parentPrefix);
+              }
+            }
+          } else if ((target as any)?.target) {
+            targetId = getStateId((target as any).target, parentPrefix);
+          }
+          
           if (targetId) {
             rows.push(`${indent}${id} --> ${targetId}: ${id}<br>${eventType}`);
           }
