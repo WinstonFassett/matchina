@@ -200,6 +200,37 @@ const MermaidInspector = memo(
       configRef.current = config;
     }, [config]);
 
+    // Apply dark theme edge label styling when theme changes
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+      
+      const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+      
+      // Apply or remove dark theme styling
+      container.querySelectorAll('.edgeLabel p').forEach(p => {
+        const element = p as HTMLElement;
+        if (isDarkTheme) {
+          element.style.backgroundColor = '#333';
+          element.style.color = '#e5e7eb';
+        } else {
+          // Reset to default for light theme
+          element.style.backgroundColor = '';
+          element.style.color = '';
+        }
+      });
+      
+      container.querySelectorAll('.edgeLabel text').forEach(text => {
+        const element = text as SVGTextElement;
+        if (isDarkTheme) {
+          element.style.fill = '#e5e7eb';
+        } else {
+          // Reset to default for light theme
+          element.style.fill = '';
+        }
+      });
+    }, [stateKey]); // Trigger when state changes (theme changes might trigger re-render)
+
     // Helper function to find action in nested states using the config shape
     const findActionInNestedStates = (eventType: string, fromState: string): (() => void) | undefined => {
       const machine = machineRef.current;
@@ -273,6 +304,20 @@ const MermaidInspector = memo(
           (p as any)._edge = { fromState: normalizedFromState, type };
           p.innerHTML = type; // Only show the event type
         });
+        
+        // Fix dark theme edge label styling (JavaScript approach like edge-active)
+        const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDarkTheme) {
+          // Apply dark theme styling to edge labels
+          el.querySelectorAll('.edgeLabel p').forEach(p => {
+            (p as HTMLElement).style.backgroundColor = '#333';
+            (p as HTMLElement).style.color = '#e5e7eb';
+          });
+          el.querySelectorAll('.edgeLabel text').forEach(text => {
+            (text as SVGTextElement).style.fill = '#e5e7eb';
+          });
+        }
+        
         // Ensure the active state is highlighted immediately after Mermaid
         // finishes rendering and we normalized the DOM. This fixes the case
         // (observed in Astro on first render) where the highlight effect
