@@ -240,20 +240,27 @@ const MermaidInspector = memo(
         .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
 
       if (currentDiagramType === 'statechart') {
-        const activeSel = `[id*="state-${currentKey}-"]`;
+        // Convert currentKey to match Mermaid ID format (dots to underscores)
+        const mermaidKey = currentKey.replace(/\./g, '_');
+        const activeSel = `[id*="state-${mermaidKey}-"]`;
         const activeEl = root.querySelector(activeSel) as Element | null;
         if (activeEl) activeEl.classList.add('state-highlight');
 
-        if (currentKey.includes('_')) {
-          const parentKey = currentKey.split('_')[0];
-          const parentSel = `[id*="state-${parentKey}-"]`;
+        if (currentKey.includes('.')) {
+          const parentKey = currentKey.split('.')[0];
+          const mermaidParentKey = parentKey.replace(/\./g, '_');
+          const parentSel = `[id*="state-${mermaidParentKey}-"]`;
           const parentEl = root.querySelector(parentSel) as Element | null;
           if (parentEl && parentEl !== activeEl) parentEl.classList.add('state-container-highlight');
         }
       } else {
         let activated = false;
+        
+        // Convert currentKey to match Mermaid ID format (dots to underscores)
+        const mermaidKey = currentKey.replace(/\./g, '_');
+        
         try {
-          const byId = root.querySelector(`g#${CSS.escape(currentKey)}`) as SVGGElement | null;
+          const byId = root.querySelector(`g#${CSS.escape(mermaidKey)}`) as SVGGElement | null;
           if (byId) {
             byId.classList.add("active");
             activated = true;
@@ -261,13 +268,14 @@ const MermaidInspector = memo(
         } catch {}
         if (!activated) {
           const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
-            .find((g) => g.textContent?.trim() === currentKey);
+            .find((g) => g.textContent?.trim() === mermaidKey);
           if (candidate) candidate.classList.add("active");
         }
-        if (currentKey.includes('_')) {
-          const parentKey = currentKey.split('_')[0];
+        if (currentKey.includes('.')) {
+          const parentKey = currentKey.split('.')[0];
+          const mermaidParentKey = parentKey.replace(/\./g, '_');
           const parentNode = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
-            .find((g) => g.textContent?.trim() === parentKey);
+            .find((g) => g.textContent?.trim() === mermaidParentKey);
           if (parentNode) parentNode.classList.add('active-container');
         }
       }
