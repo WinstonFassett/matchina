@@ -373,9 +373,9 @@ const MermaidInspector = memo(
             // Apply purple background directly to match state chart styling
             const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
             byId.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
-              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.strokeWidth = '2px';
+              (shape as SVGElement).style.setProperty('fill', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
             // Also update text color for contrast
             byId.querySelectorAll('text, p').forEach(text => {
@@ -398,9 +398,9 @@ const MermaidInspector = memo(
             // Apply purple background directly to match state chart styling
             const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
             candidate.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
-              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.strokeWidth = '2px';
+              (shape as SVGElement).style.setProperty('fill', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
             // Also update text color for contrast
             candidate.querySelectorAll('text, p').forEach(text => {
@@ -424,9 +424,9 @@ const MermaidInspector = memo(
             // Apply purple background directly to match state chart styling
             const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
             candidate.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
-              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
-              (shape as SVGElement).style.strokeWidth = '2px';
+              (shape as SVGElement).style.setProperty('fill', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
+              (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
             // Also update text color for contrast
             candidate.querySelectorAll('text, p').forEach(text => {
