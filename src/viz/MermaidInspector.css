@@ -264,6 +264,19 @@ html:not([data-theme="dark"]) .node.active p {
   color: #ffffff !important;
 }
 
+/* Flowchart active container (parent highlighting) */
+.node.active-container path,
+.node.active-container rect {
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+  fill-opacity: 0.15 !important;
+}
+
+html[data-theme="dark"] .node.active-container path,
+html[data-theme="dark"] .node.active-container rect {
+  fill-opacity: 0.25 !important;
+}
+
 .state-container-highlight rect {
   stroke: var(--sl-color-accent-high) !important;
   stroke-width: 2px !important;

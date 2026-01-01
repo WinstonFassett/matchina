@@ -20,21 +20,35 @@ async function setTheme(page: Page, theme: Theme) {
   await page.waitForTimeout(200);
 }
 
-async function selectVisualizer(page: Page, visualizer: VisualizerTab) {
-  const buttonText = 'Mermaid Diagram';
-  await page.locator('.visualizer-controls button', { hasText: buttonText }).click();
-  await page.waitForTimeout(400);
+async function selectVisualizer(page: Page, type: DiagramType) {
+  // Use the test ID we added to VizPicker
+  try {
+    const dropdown = page.locator('[data-testid="visualizer-picker"]');
+    await dropdown.waitFor({ state: 'visible', timeout: 1000 });
+    
+    // Select the appropriate option using the correct value from VISUALIZERS
+    const optionValue = type === 'statechart' ? 'mermaid-statechart' : 'mermaid-flowchart';
+    await dropdown.selectOption(optionValue);
+  } catch (error) {
+    console.error('Failed to select visualizer:', error);
+    throw error;
+  }
 }
 
 async function selectDiagramType(page: Page, type: DiagramType) {
-  // Select diagram type from the "Type:" dropdown in mermaid view
-  const optionText = type === 'statechart' ? 'State Chart' : 'Flowchart';
-  await page.getByRole('combobox').filter({ hasText: /State Chart|Flowchart/ }).selectOption(optionText);
-  await page.waitForTimeout(800); // Give mermaid time to render
+  // In the new UI, diagram type is selected in the main dropdown, not a separate combobox
+  // This function is no longer needed but kept for compatibility
+  await page.waitForTimeout(100);
 }
 
 async function getMermaidContainer(page: Page) {
-  return page.locator('#mermaid-1');
+  // Try different possible selectors for Mermaid container
+  try {
+    return page.locator('#mermaid-1');
+  } catch {
+    // Try alternative selectors
+    return page.locator('.mermaid').first();
+  }
 }
 
 async function getExampleContainer(page: Page) {
@@ -47,10 +61,16 @@ function screenshotName(theme: Theme, type: DiagramType): string {
 
 test.describe('Mermaid Diagram Type Styling Comparison', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(BASE_URL);
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(800);
-    await selectVisualizer(page, 'mermaid');
+    try {
+      await page.goto(BASE_URL);
+      await page.waitForLoadState('domcontentloaded', { timeout: 2000 });
+      await page.waitForTimeout(200);
+      
+      await selectVisualizer(page, 'statechart'); // Default to statechart
+    } catch (error) {
+      console.error('Test setup failed:', error);
+      throw error;
+    }
   });
 
   for (const theme of ['light', 'dark'] as Theme[]) {
@@ -60,16 +80,20 @@ test.describe('Mermaid Diagram Type Styling Comparison', () => {
       });
 
       test(`statechart - ${theme}`, async ({ page }) => {
-        await selectDiagramType(page, 'statechart');
+        await selectVisualizer(page, 'statechart');
+        await page.waitForTimeout(500); // Wait for Mermaid to render
         const mermaid = await getMermaidContainer(page);
+        await mermaid.waitFor({ state: 'visible', timeout: 2000 });
         await mermaid.screenshot({
           path: screenshotName(theme, 'statechart')
         });
       });
 
       test(`flowchart - ${theme}`, async ({ page }) => {
-        await selectDiagramType(page, 'flowchart');
+        await selectVisualizer(page, 'flowchart');
+        await page.waitForTimeout(500); // Wait for Mermaid to render
         const mermaid = await getMermaidContainer(page);
+        await mermaid.waitFor({ state: 'visible', timeout: 2000 });
         await mermaid.screenshot({
           path: screenshotName(theme, 'flowchart')
         });
@@ -83,8 +107,9 @@ test.describe('Mermaid Diagram Type Styling Comparison', () => {
       await setTheme(page, theme);
 
       for (const type of ['statechart', 'flowchart'] as DiagramType[]) {
-        await selectDiagramType(page, type);
+        await selectVisualizer(page, type);
         const mermaid = await getMermaidContainer(page);
+        await mermaid.waitFor({ state: 'visible', timeout: 2000 });
         await mermaid.screenshot({
           path: screenshotName(theme, type)
         });

@@ -88,8 +88,9 @@ function toStateChart(config: any) {
       const state = cfg.states[stateKey];
       const id = getStateId(stateKey, parentPrefix);
 
-      // Nested state (composite)
+      // Create state definition for ALL states (both composite and leaf)
       if (state?.states) {
+        // Composite state - contains nested states
         rows.push(`${indent}state ${id} {`);
         walk(state, id, depth + 1);
         if (state.initial) {
@@ -98,6 +99,9 @@ function toStateChart(config: any) {
           rows.push(`${indent}  [*] --> ${nestedInitial}`);
         }
         rows.push(`${indent}}`);
+      } else {
+        // Leaf state - create empty state definition for proper DOM element generation
+        rows.push(`${indent}state ${id} { }`);
       }
 
       // Transitions

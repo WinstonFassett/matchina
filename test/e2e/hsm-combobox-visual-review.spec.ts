@@ -27,8 +27,10 @@ async function selectMachineMode(page: Page, mode: MachineMode) {
 }
 
 async function selectVisualizer(page: Page, visualizer: VisualizerTab) {
-  const buttonText = visualizer === 'sketch' ? 'Sketch Systems Style' : 'Mermaid Diagram';
-  await page.locator('.visualizer-controls button', { hasText: buttonText }).click();
+  // The new UI uses a dropdown picker, not separate buttons
+  const dropdown = page.locator('select').first();
+  const option = visualizer === 'sketch' ? 'sketch' : 'mermaid-statechart';
+  await dropdown.selectOption(option);
   await page.waitForTimeout(400);
 }
 
