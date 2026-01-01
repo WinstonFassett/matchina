@@ -264,6 +264,26 @@ html:not([data-theme="dark"]) .node.active p {
   color: #ffffff !important;
 }
 
+/* Light mode: active node should have highlighted background */
+html:not([data-theme="dark"]) .node.active rect,
+html:not([data-theme="dark"]) .node.active circle,
+html:not([data-theme="dark"]) .node.active ellipse,
+html:not([data-theme="dark"]) .node.active polygon {
+  fill: var(--sl-color-accent) !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* Dark mode: active node should have highlighted background */
+html[data-theme="dark"] .node.active rect,
+html[data-theme="dark"] .node.active circle,
+html[data-theme="dark"] .node.active ellipse,
+html[data-theme="dark"] .node.active polygon {
+  fill: var(--sl-color-accent) !important;
+  stroke: var(--sl-color-accent-low) !important;
+  stroke-width: 2px !important;
+}
+
 /* Flowchart active container (parent highlighting) */
 .node.active-container path,
 .node.active-container rect {
