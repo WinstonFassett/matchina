@@ -1,17 +1,25 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
 import { useState } from "react";
-import { RPSAppView } from "./RPSAppView";
+import { useMachine } from "matchina/react";
 import { createRPSMachine } from "./machine";
+import { RPSAppView } from "./RPSAppView";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 
 export default function RockPaperScissorsExample() {
   const [machine] = useState(() => createRPSMachine());
+
+  // Subscribe to machine state changes to trigger re-renders
+  useMachine(machine);
+
   return (
-    <MachineExampleWithChart
-      machine={machine as any}
-      AppView={RPSAppView}
-      showRawState={true}
-      inspectorType="react-flow"
-      interactive={false}
-    />
+    <div className="space-y-6">
+      <MachineVisualizer
+        machine={machine}
+        title="State Machine Visualizer"
+        defaultViz="reactflow"
+        interactive={false}
+        layout="stacked"
+        AppView={RPSAppView}
+      />
+    </div>
   );
 }

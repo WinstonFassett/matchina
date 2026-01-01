@@ -31,52 +31,157 @@ Use hierarchy only when a state temporarily takes control and must return contro
 - **"Loading" nested under "Viewing"** when both can exist independently
 - Using hierarchy as namespacing for unrelated concerns
 
+## HSM Design Guidelines
+
+### State Design Principles
+
+**Prefer Simple States**
+- Use simple states without parameters or typed payloads when possible
+- Complex parameter threading reduces readability and reasoning
+- Example: `Empty: () => ({})` instead of `Empty: (selectedTags: string[]) => ({ selectedTags })`
+
+**Present Tense Naming**
+- Use present tense or gerunds: `Ready`, `Waiting`, `Loading`, `Saving`, `Typing`
+- Avoid past tense states which can be ambiguous
+- States should describe what the thing **IS**, not what it **WAS**
+
+**Mutual Exclusivity**
+- States must be mutually exclusive - no overlapping conditions
+- Avoid states like `Selecting` AND `Suggesting` that can be true simultaneously
+- Each state should represent a unique, non-overlapping condition
+
+### Transition Design Principles
+
+**Single Exit States**
+- Prefer transitions that map to exactly one target state
+- Avoid functional transitions that return multiple possible states
+- Example: Instead of `typed: (value) => value ? "TextEntry" : "Empty"`, use:
+  ```typescript
+  Typing: {
+    toTextEntry: "TextEntry",
+    toEmpty: "Empty"
+  }
+  ```
+
+**Use Hooks for Conditional Logic**
+- Handle conditional logic in hooks rather than functional transitions
+- Use `resolveExit` hooks for fallback behavior
+- This keeps transitions inspectable and simplifies reasoning
+
+### HSM Usage Patterns
+
+**HSMs Are Footguns**
+- Question whether HSMs help or hurt your specific use case
+- Most HSMs can be flattened into simple state machines
+- Prefer flattening when hierarchy isn't truly necessary
+
+**True Substates Only**
+- Use HSMs for genuine delegation of control (processes/subprocesses)
+- Avoid using HSMs for semantic groupings or labeling work types
+- Hierarchy should represent actual control flow, not categorization
+
+**Flatten When Possible**
+- Consider if your HSM can be represented as a flat machine
+- Flattened machines are easier to reason about and debug
+- Use `createFlatMachine()` for type-safe flattened representation
+
 ## Flattening Approach
 
-Define nested structure with `defineSubmachine`, then flatten to a single-level machine:
+### Option 1: Type-Safe Flat Machine (Recommended)
+
+Use `createFlatMachine` with `defineStates` for full type inference:
 
 ```ts
 import { 
-  defineMachine, 
-  defineSubmachine, 
-  flattenMachineDefinition,
-  createMachineFromFlat,
-  defineStates 
+  defineStates,
+  createFlatMachine 
 } from "matchina";
 
-// Define hierarchical structure
-const def = defineMachine(
-  defineStates({
-    Broken: undefined,
-    Working: defineSubmachine(
-      defineStates({ Red: undefined, Green: undefined, Yellow: undefined }),
-      {
-        Red: { tick: "Green" },
-        Green: { tick: "Yellow" },
-        Yellow: { tick: "Red" },
-      },
-      "Red"
-    ),
-    Maintenance: undefined,
-  }),
-  {
-    Broken: { repair: "Working", maintenance: "Maintenance" },
-    Working: { break: "Broken", maintenance: "Maintenance" },
-    Maintenance: { complete: "Working" },
-  },
-  "Working"
-);
+// Define states with dot-notation for hierarchy
+const states = defineStates({
+  Broken: undefined,
+  "Working.Red": undefined,
+  "Working.Green": undefined,
+  "Working.Yellow": undefined,
+  Maintenance: undefined,
+});
 
-// Flatten and create machine
-const flat = flattenMachineDefinition(def);
-const machine = createMachineFromFlat(flat);
+// Define transitions (parent transitions apply to all children)
+const transitions = {
+  // Child transitions
+  "Working.Red": { tick: "Working.Green" },
+  "Working.Green": { tick: "Working.Yellow" },
+  "Working.Yellow": { tick: "Working.Red" },
+  
+  // Parent transitions (inherited by all children)
+  "Working": { break: "Broken", maintenance: "Maintenance" },
+  "Broken": { repair: "Working", maintenance: "Maintenance" },
+  "Maintenance": { complete: "Working" },
+};
 
-// States are now: "Broken", "Working.Red", "Working.Green", "Working.Yellow", "Maintenance"
+// Create machine with automatic enhancements
+const machine = createFlatMachine(states, transitions, "Working.Red");
+
+// Usage
 machine.getState().key; // "Working.Red" (initial)
 machine.send("tick");   // -> "Working.Green"
 machine.send("break");  // -> "Broken"
 machine.send("repair"); // -> "Working.Red"
 ```
+
+### Option 2: Declarative Hierarchy (Ergonomic, Dynamic)
+
+Use `createDeclarativeFlatMachine` for DRY hierarchical definition:
+
+```ts
+import { 
+  createDeclarativeFlatMachine 
+} from "matchina";
+
+const machine = createDeclarativeFlatMachine({
+  initial: "Working.Red",
+  states: {
+    Broken: {
+      data: () => ({}),
+      on: { repair: "Working", maintenance: "Maintenance" }
+    },
+    Working: {
+      initial: "Red", // Initial child state
+      states: {
+        Red: {
+          data: () => ({}),
+          on: { tick: "Green" } // Relative: resolves to Working.Green
+        },
+        Green: {
+          data: () => ({}),
+          on: { tick: "Yellow" }
+        },
+        Yellow: {
+          data: () => ({}),
+          on: { tick: "Red" }
+        }
+      },
+      on: { 
+        break: "Broken", 
+        maintenance: "Maintenance",
+        "child.exit": "Maintenance" // Auto-triggered when final child reached
+      }
+    },
+    Maintenance: {
+      data: () => ({}),
+      on: { complete: "Working" } // Auto-resolves to Working.Red
+    }
+  }
+});
+
+// Same usage, but hierarchy defined once
+machine.getState().key; // "Working.Red"
+machine.send("tick");   // -> "Working.Green"
+```
+
+**Trade-offs:**
+- **createFlatMachine**: Full type safety, verbose dot-notation
+- **createDeclarativeFlatMachine**: DRY hierarchy, runtime dynamic (less type safety)
 
 ## How Flattening Works
 
@@ -94,39 +199,111 @@ Nested states become dot-notation keys:
 When parent and child define the same event, **child wins** (first-seen policy):
 
 ```ts
-const def = defineMachine(
-  {
-    Parent: defineSubmachine(
-      { Child: undefined },
-      { Child: { event: "Child" } }, // Child handles "event"
-      "Child"
-    )
-  },
-  { Parent: { event: "Parent" } }, // Parent also defines "event"
-  "Parent"
-);
+const states = defineStates({
+  "Parent.Child": undefined
+});
 
-const flat = flattenMachineDefinition(def);
+const transitions = {
+  "Parent.Child": { event: "Parent.Child" }, // Child handles "event"
+  "Parent": { event: "Parent" } // Parent also defines "event"
+};
+
+const machine = createFlatMachine(states, transitions, "Parent.Child");
 // "Parent.Child" has { event: "Parent.Child" } - child transition wins
 ```
 
 ## API Reference
 
-### `defineMachine(states, transitions, initial)`
-Creates a machine definition object (not a running machine).
+### `createFlatMachine(states, transitions, initial)`
+Creates a flattened machine with automatic enhancements:
+- **Parent transition fallback** - Child states inherit parent transitions
+- **Child exit triggering** - Final child states automatically trigger `child.exit`
+- **Static shape metadata** - For visualization and introspection
+- **Full type inference** - When used with `defineStates()`
 
-### `defineSubmachine(states, transitions, initial)`
-Marks a state as containing a nested machine. Returns `{ machine: MachineDefinition }`.
+### `createDeclarativeFlatMachine(config)`
+Creates a flattened machine from hierarchical configuration:
+- **DRY hierarchy definition** - Define structure once, no repetitive dot-notation
+- **Auto-resolution** - Relative transitions (`'Green'` → `'Working.Green'`)
+- **Parent escape** - `'^Parent'` syntax to go up one level
+- **Runtime dynamic** - Less type safety, more ergonomic
 
-### `flattenMachineDefinition(def, options?)`
-Flattens nested definitions into single-level structure.
-- `options.delimiter` - Key separator (default: `"."`)
+### `defineStates(factory)`
+Creates typed state factories. Use with dot-notation for flattened hierarchies.
 
-### `createMachineFromFlat(flatDef)`
-Creates a running machine from a flattened definition.
+### `createHierarchicalMachine(machine)`
+**Alternative approach** - Creates actual nested machine instances with child-first event routing. Use when you need dynamic/reusable child machines.
 
-### `createMachineFrom(def)`
-Creates a running machine from a non-flattened definition (no nesting support).
+## Alternative: Runtime Propagation
+
+:::caution[Experimental]
+Propagation is an escape hatch for scenarios requiring loose composition of independent machine instances. Prefer flattening for most use cases.
+:::
+
+For cases where you need actual nested machine instances (e.g., reusing existing machines, dynamic child creation), use `createHierarchicalMachine`:
+
+```ts
+import { 
+  matchina,
+  defineStates, 
+  submachine,
+  createHierarchicalMachine 
+} from "matchina";
+
+const lightStates = defineStates({ 
+  Red: undefined, 
+  Green: undefined, 
+  Yellow: undefined,
+});
+
+const states = defineStates({
+  Broken: undefined,
+  Working: submachine(() => 
+    matchina(
+      lightStates,
+      {
+        Red: { tick: "Green" },
+        Green: { tick: "Yellow" },
+        Yellow: { tick: "Red" },
+      },
+      "Red"
+    )
+  ),
+  Maintenance: undefined,
+});
+
+const ctrl = matchina(
+  states,
+  {
+    Broken: { repair: "Working", maintenance: "Maintenance" },
+    Working: { break: "Broken", maintenance: "Maintenance" },
+    Maintenance: { complete: "Working" },
+  },
+  "Working"
+);
+
+const machine = createHierarchicalMachine(ctrl);
+
+// Events route through hierarchy (child-first)
+machine.send("tick");  // Routes to child -> Green
+machine.send("break"); // Routes to parent -> Broken
+```
+
+### Key Differences from Flattening
+
+| Aspect | Flattening | Propagation |
+|--------|-----------|-------------|
+| **Runtime** | Single flat machine | Nested machine instances |
+| **State keys** | `"Working.Red"` | `"Working"` (child accessed via `.data.machine`) |
+| **Event routing** | Direct | Child-first traversal |
+| **Memory** | Lower | Higher (multiple instances) |
+| **Use case** | Most HSMs | Dynamic/reusable children |
+
+### Propagation API
+
+- **`submachine(factory)`** - Wrap a machine factory for embedding in state data
+- **`createHierarchicalMachine(machine)`** - Enable child-first event routing
+- **`propagateSubmachines(machine)`** - Lower-level hook installation
 
 ## Interactive Example
 
@@ -137,3 +314,4 @@ See the [Flattened Traffic Light](/matchina/examples/hsm-traffic-light-flat) exa
 - Complex nested types may require explicit annotations
 - Flattening happens at definition time, not runtime
 - The flattened machine is a normal `FactoryMachine` with string keys
+- Propagation creates actual nested instances with child-first event routing

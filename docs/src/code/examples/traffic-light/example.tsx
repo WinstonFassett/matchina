@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { TrafficLightView } from "./TrafficLightView";
 import { createTrafficLightMachine } from "./machine";
@@ -7,11 +7,11 @@ import { createTrafficLightMachine } from "./machine";
 export default function TrafficLightExample() {
   const machine = useMemo(createTrafficLightMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={machine as any}
       AppView={TrafficLightView}
       showRawState={true}
-      inspectorType="react-flow"
+      defaultViz="reactflow"
     />
   );
 }

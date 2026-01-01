@@ -345,8 +345,33 @@ export default defineConfig({
               label: "Hierarchical",
               items: [
                 {
-                  label: "Flattened Traffic Light",
-                  link: "/examples/hsm-traffic-light-flat",
+                  label: "Hierarchical Traffic Light",
+                  link: "/examples/hsm-traffic-light",
+                },
+                {
+                  label: "ReactFlow Subflow Test",
+                  link: "/examples/reactflow-subflow-test",
+                },
+                {
+                  label: "Hierarchical Combobox",
+                  link: "/examples/hsm-combobox",
+                },
+                {
+                  label: "Hierarchical Checkout",
+                  link: "/examples/hsm-checkout",
+                },
+                {
+                  label: "Force Graph Experiments",
+                  link: "/examples/hierarchical-force-graphs",
+                },
+              ],
+            },
+            {
+              label: "Design & Theming",
+              items: [
+                {
+                  label: "Color Scheme Explorer",
+                  link: "/examples/color-scheme-explorer",
                 },
               ],
             },
@@ -412,5 +437,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      // Use 'node' condition in dev to load .ts files from dist/ (unbuild --stub)
+      // In production, use default conditions to load .mjs files
+      conditions: process.env.NODE_ENV === 'production' ? undefined : ['node']
+    }
   },
 });

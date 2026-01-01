@@ -10,6 +10,8 @@ import { withLifecycle } from "./event-lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
+import { brandFactoryMachine } from "./machine-brand";
+import { createStaticShapeStore } from "./hsm/shape-store";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -66,7 +68,7 @@ export function createMachine<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ): FactoryMachine<FC> {
-  const initialState = typeof init === "string" ? states[init]({}) : init;
+  const initialState = typeof init === "string" ? states[init]() : init;
 
   let lastChange: E = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],
@@ -75,13 +77,17 @@ export function createMachine<
     []
   ) as E;
 
+  // Determine the initial key - either from the init parameter or from the initial state
+  const initialKey = typeof init === "string" ? init : init.key;
+
   const machine = withLifecycle(
     {
       states,
       transitions,
+      initialKey, // Store for shape building and introspection
       getChange: () => lastChange,
       getState: () => lastChange.to,
-      send(type, ...params) {
+      send(type: E["type"], ...params: any[]) {
         const resolved = machine.resolveExit({
           type,
           params,
@@ -91,17 +97,33 @@ export function createMachine<
           machine.transition(resolved);
         }
       },
-      resolveExit: (ev) => {
+      resolveExit: (ev: ResolveEvent<E>) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params) as E
           : undefined;
       },
-    } as Partial<FactoryMachine<FC>>,
+    } as unknown as Partial<FactoryMachine<FC>>,
     (ev: E) => {
       lastChange = ev;
     }
   ) as FactoryMachine<FC>;
+
+  brandFactoryMachine(machine);
+
+  // Attach shape for visualization (works for both flat and hierarchical machines)
+  // This enables visualization for all machines created with createMachine()
+  try {
+    const shapeStore = createStaticShapeStore(machine);
+    Object.defineProperty(machine, 'shape', {
+      value: shapeStore,
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
+  } catch (e) {
+    console.error('[createMachine] Failed to attach shape:', e);
+  }
 
   return machine;
 }

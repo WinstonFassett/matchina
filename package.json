@@ -13,39 +13,81 @@
   "type": "module",
   "exports": {
     ".": {
+      "node": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.ts",
+        "require": "./dist/index.ts"
+      },
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
     },
     "./react": {
+      "node": {
+        "types": "./dist/integrations/react.d.ts",
+        "import": "./dist/integrations/react.ts",
+        "require": "./dist/integrations/react.ts"
+      },
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
-      "require": "./dist/integrations/react.js"
+      "require": "./dist/integrations/react.js",
+      "default": "./dist/integrations/react.mjs"
     },
     "./zod": {
+      "node": {
+        "types": "./dist/integrations/zod.d.ts",
+        "import": "./dist/integrations/zod.ts",
+        "require": "./dist/integrations/zod.ts"
+      },
       "types": "./dist/integrations/zod.d.ts",
       "import": "./dist/integrations/zod.mjs",
-      "require": "./dist/integrations/zod.js"
+      "require": "./dist/integrations/zod.js",
+      "default": "./dist/integrations/zod.mjs"
     },
     "./valibot": {
+      "node": {
+        "types": "./dist/integrations/valibot.d.ts",
+        "import": "./dist/integrations/valibot.ts",
+        "require": "./dist/integrations/valibot.ts"
+      },
       "types": "./dist/integrations/valibot.d.ts",
       "import": "./dist/integrations/valibot.mjs",
-      "require": "./dist/integrations/valibot.js"
+      "require": "./dist/integrations/valibot.js",
+      "default": "./dist/integrations/valibot.mjs"
     },
     "./inspect": {
+      "node": {
+        "types": "./dist/inspect/index.d.ts",
+        "import": "./dist/inspect/index.ts",
+        "require": "./dist/inspect/index.ts"
+      },
       "types": "./dist/inspect/index.d.ts",
       "import": "./dist/inspect/index.mjs",
-      "require": "./dist/inspect/index.js"
+      "require": "./dist/inspect/index.js",
+      "default": "./dist/inspect/index.mjs"
     },
     "./viz": {
+      "node": {
+        "types": "./dist/viz/index.d.ts",
+        "import": "./dist/viz/index.ts",
+        "require": "./dist/viz/index.ts"
+      },
       "types": "./dist/viz/index.d.ts",
       "import": "./dist/viz/index.mjs",
-      "require": "./dist/viz/index.js"
+      "require": "./dist/viz/index.js",
+      "default": "./dist/viz/index.mjs"
     },
     "./hsm": {
+      "node": {
+        "types": "./dist/hsm/index.d.ts",
+        "import": "./dist/hsm/index.ts",
+        "require": "./dist/hsm/index.ts"
+      },
       "types": "./dist/hsm/index.d.ts",
       "import": "./dist/hsm/index.mjs",
-      "require": "./dist/hsm/index.js"
+      "require": "./dist/hsm/index.js",
+      "default": "./dist/hsm/index.mjs"
     }
   },
   "main": "./dist/index.js",
@@ -66,9 +108,8 @@
     "build:all": "npm run build:lib && npm run build:docs",
     "dev": "vitest dev",
     "dev:all": "npm run dev && npm --workspace docs run dev",
-    "dev:docs": "npm run dev:stub && npm --workspace docs run dev",
-    "dev:prepare": "unbuild --stub",
-    "dev:stub": "unbuild --stub",
+    "dev:docs": "npm run dev:prepare && npm --workspace docs run dev",
+    "dev:prepare": "npm run build:lib",
     "coverage": "vitest run --coverage",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test docs",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test docs -w",
@@ -76,14 +117,24 @@
     "test": "vitest run --coverage",
     "test:all": "npm run test:types && npm run test",
     "test:types": "tsc --noEmit --skipLibCheck",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:visual": "playwright test --project=chromium test/e2e/visual*.spec.ts",
+    "test:e2e:mermaid": "playwright test --project=chromium test/e2e/mermaid*.spec.ts",
+    "test:e2e:reactflow": "playwright test --project=chromium test/e2e/reactflow*.spec.ts",
+    "test:e2e:forcegraph": "playwright test --project=chromium test/e2e/forcegraph*.spec.ts",
+    "test:e2e:file": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "dry-run": "npm run build && npm test && npx changelogen --dry-run && npm publish --dry-run",
     "publish": "npm publish --access public"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^20.8.2",
-    "@types/react": "^18.2.31",
+    "@types/react": "^18.3.7",
+    "@types/react-dom": "^18.3.7",
     "@vitest/coverage-v8": "^4.0.16",
     "changelogen": "^0.5.0",
     "eslint": "^8.51.0",
@@ -99,8 +150,22 @@
     "@astrojs/ts-plugin": "^1.10.4"
   },
   "peerDependencies": {
+    "force-graph": "^1.51.0",
     "immer": "^10.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "valibot": "^1.0.0",
     "zod": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "force-graph": {
+      "optional": true
+    }
   }
 }

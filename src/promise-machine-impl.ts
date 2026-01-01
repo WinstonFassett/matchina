@@ -37,6 +37,8 @@ export const PROMISE_TRANSITIONS = {
     resolve: "Resolved",
     reject: "Rejected",
   },
+  Resolved: {}, // Terminal state - no outgoing transitions
+  Rejected: {}, // Terminal state - no outgoing transitions
 } as const;
 
 /**

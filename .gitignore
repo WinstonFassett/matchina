@@ -1,8 +1,11 @@
 ignore/
 dev/
+.playwright-mcp/
 
 node_modules
 coverage
+coverage-*.txt
+coverage-*.json
 dist
 types
 .vscode
@@ -11,4 +14,27 @@ types
 *.log*
 *.conf
 *.env*
+*-output.txt
+test-output-*.txt
 bun.lockb
+review/screenshots/
+review/.archive/
+test-results/
+.astro/
+playwright-report/
+
+# Beads archive - local storage for completed issues
+.beads/
+.beads/archive/
+.beads/config.yaml
+.beads/interactions.jsonl
+.beads/issues.jsonl
+.beads/.gitignore
+.beads/README.md
+.beads/metadata.json
+
+# Claude settings and skills
+.claude/
+
+# Test scripts in docs
+docs/test-*.mjs

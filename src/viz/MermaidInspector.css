@@ -1,0 +1,276 @@
+/* Simple Mermaid theme CSS - this gets injected via themeCSS, not as a stylesheet */
+
+/* Container styling to prevent overflow */
+.mermaid-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* SVG styling to prevent overflow */
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix node styling - only text, let nodes keep natural colors */
+.node text {
+  fill: var(--sl-color-text);
+}
+
+/* Fix start state circles for dark theme */
+.node circle.state-start {
+  fill: var(--sl-color-text);
+  stroke: var(--sl-color-text);
+}
+
+/* Dark mode fixes for start states */
+html[data-theme="dark"] .node circle.state-start {
+  fill: var(--sl-color-text);
+  stroke: var(--sl-color-text);
+}
+
+/* State diagram default nodes - transparent background */
+.state-diagram-v2 g.state-node path,
+g[class*="state"] path:not([class*="active"]) {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* State diagram default nodes - dark mode */
+html[data-theme="dark"] .state-diagram-v2 g.state-node path,
+html[data-theme="dark"] g[class*="state"] path:not([class*="active"]) {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* State text styling */
+.state text,
+.state-diagram-v2 text,
+g[class*="state"] text,
+.state span,
+.state-diagram-v2 span,
+g[class*="state"] span,
+.state p,
+.state-diagram-v2 p,
+g[class*="state"] p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
+}
+
+/* Active state text styling - override with theme bg */
+.state-highlight span.nodeLabel,
+.state-highlight span.nodeLabel p,
+.state-highlight .state p,
+.state-highlight .state-diagram-v2 p,
+.state-highlight g[class*="state"] p,
+.state-highlight span > p {
+  color: var(--sl-color-bg) !important;
+  fill: var(--sl-color-bg) !important;
+}
+
+/* Flowchart node styling - match state chart style */
+.node rect {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+  rx: 5;
+  ry: 5;
+}
+
+/* Flowchart text styling */
+.node text,
+.node p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
+}
+
+
+
+
+
+/* Fix state diagram groups/clusters - transparent on both themes */
+.statediagram-cluster rect,
+.statediagram-cluster.statediagram-cluster .inner rect,
+.statediagram-cluster .inner rect,
+#mermaid-1 .statediagram-cluster rect,
+#mermaid-1 .statediagram-cluster .inner rect {
+  fill: transparent !important;
+  background: transparent !important;
+}
+
+/* Dark mode - keep transparent */
+html[data-theme="dark"] .statediagram-cluster rect,
+html[data-theme="dark"] .statediagram-cluster .inner rect,
+html[data-theme="dark"] .statediagram-cluster.statediagram-cluster .inner rect,
+html[data-theme="dark"] #mermaid-1 .statediagram-cluster rect,
+html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
+  fill: transparent !important;
+  background: transparent !important;
+}
+
+/* Edge labels with better contrast */
+.edgeLabel text { 
+  fill: var(--sl-color-text) !important; 
+}
+.edgeLabel rect {
+  fill: var(--sl-color-gray-2) !important;
+  stroke: var(--sl-color-gray-4) !important;
+}
+.edgeLabel p {
+  border: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+/* Dark mode edge label fixes */
+html[data-theme="dark"] .edgeLabel rect {
+  fill: var(--sl-color-gray-1) !important;
+  stroke: var(--sl-color-gray-5) !important;
+}
+
+html[data-theme="dark"] .edgeLabel text {
+  fill: #e5e7eb !important;
+}
+
+/* Flowchart cluster styling removed - handled in mermaid.css */
+
+/* Dark mode flowchart cluster fixes - MOVED TO mermaid.css */
+
+/* Fix edge visibility */
+.transition,
+.flowchart-link {
+  stroke: var(--sl-color-text) !important;
+}
+
+/* Edge label styling classes for interactivity */
+.edge-active {
+  background-color: var(--sl-color-gray-5) !important;
+  color: var(--sl-color-accent-high) !important;
+  font-weight: 600 !important;
+}
+
+.edge-ancestor {
+  color: var(--sl-color-accent-high) !important;
+  font-weight: 400 !important;
+}
+
+.edge-inactive {
+  background-color: var(--sl-color-bg) !important;
+  cursor: default !important;
+  opacity: 0.7 !important;
+}
+
+html[data-theme="dark"] .edge-inactive {
+  color: #ccc !important;
+}
+
+.edge-interactive {
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 10 !important;
+}
+
+.edge-ancestor.edge-interactive:hover {
+  background-color: var(--sl-color-accent-high) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+.edge-active.edge-interactive:hover {
+  background-color: var(--sl-color-accent) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+/* Dark mode improvements for edge labels */
+html[data-theme="dark"] .edge-inactive {
+  background-color: var(--sl-color-gray-2) !important;
+  color: var(--sl-color-gray-5) !important;
+}
+
+/* Dark mode hover improvements */
+html[data-theme="dark"] .edge-ancestor.edge-interactive:hover {
+  background-color: var(--sl-color-accent-high) !important;
+  color: #1f2937 !important;
+}
+
+html[data-theme="dark"] .edge-active.edge-interactive:hover {
+  background-color: var(--sl-color-accent) !important;
+  color: #1f2937 !important;
+}
+
+/* Fix bold label clipping - ensure text doesn't get clipped */
+.edgeLabel p,
+.edgeLabel span,
+.edgeLabel text {
+  font-weight: 500 !important;
+  text-rendering: optimizeLegibility !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+/* State text styling - prevent clipping */
+.state text,
+.state-diagram-v2 text,
+g[class*="state"] text,
+.state span,
+.state-diagram-v2 span,
+g[class*="state"] span,
+.state p,
+.state-diagram-v2 p,
+g[class*="state"] p {
+  fill: var(--sl-color-text) !important;
+  color: var(--sl-color-text) !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+/* State highlight styling */
+.state-diagram-v2 g.state-node.state-highlight path,
+g[class*="state"].state-highlight path:not([class*="active"]) {
+  fill: var(--sl-color-accent-high) !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* Flowchart active node */
+/* Dark mode: transparent/black fill - override inline styles */
+html[data-theme="dark"] .node.active path,
+html[data-theme="dark"] .node.active path[style] {
+  fill: transparent !important;
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+}
+
+/* Light mode: purple fill */
+html:not([data-theme="dark"]) .node.active path {
+  fill: rgb(147, 112, 219) !important;
+  stroke: rgb(147, 112, 219) !important;
+}
+
+/* Dark mode: active node text should be dark */
+html[data-theme="dark"] .node.active text,
+html[data-theme="dark"] .node.active p {
+  fill: #1f2937 !important;
+  color: #1f2937 !important;
+}
+
+/* Light mode: active node text should be white */
+html:not([data-theme="dark"]) .node.active text,
+html:not([data-theme="dark"]) .node.active p {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.state-container-highlight rect {
+  stroke: var(--sl-color-accent-high) !important;
+  stroke-width: 2px !important;
+  fill: var(--sl-color-accent-high) !important;
+  fill-opacity: 0.15 !important;
+}
+
+html[data-theme="dark"] .state-container-highlight rect {
+  fill-opacity: 0.25 !important;
+}

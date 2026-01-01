@@ -1,4 +1,4 @@
-import { MachineExampleWithChart } from "@components/MachineExampleWithChart";
+import { MachineVisualizer } from "@components/MachineVisualizer";
 import { useMemo } from "react";
 import { CheckoutView } from "./CheckoutView";
 import { createCheckoutMachine } from "./machine";
@@ -6,11 +6,11 @@ import { createCheckoutMachine } from "./machine";
 export default function CheckoutExample() {
   const machine = useMemo(createCheckoutMachine, []);
   return (
-    <MachineExampleWithChart
+    <MachineVisualizer
       machine={machine as any}
       AppView={CheckoutView}
       showRawState={true}
-      inspectorType="react-flow"
+      defaultViz="reactflow"
       interactive={false}
     />
   );

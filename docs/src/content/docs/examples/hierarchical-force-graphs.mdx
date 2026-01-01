@@ -1,0 +1,65 @@
+---
+title: Hierarchical Force Graph Experiments
+---
+
+import TrafficLightHierarchicalView from "@code/examples/hierarchical-force-graphs/TrafficLightHierarchicalView";
+import TrafficLightWebColaView from "@code/examples/hierarchical-force-graphs/TrafficLightWebColaView";
+
+# Hierarchical Force-Directed Graph Experiments
+
+*Internal experiments for exploring hierarchical force-directed graphs with container shapes for state machine visualization.*
+
+## Experiment 1: Custom Force Simulation + Convex Hull Containers
+
+### Overview
+Custom force simulation with convex hull calculation to create smooth organic container shapes around compound states.
+
+### Test: Traffic Light HSM
+<div className="not-content">
+  <TrafficLightHierarchicalView client:only="react" />
+</div>
+
+### Results
+- ✅ Smooth organic container shapes
+- ✅ Real-time updates as nodes move
+- ✅ Interactive drag-and-drop
+- ✅ Zero external dependencies
+- ✅ Lightweight custom implementation
+
+---
+
+## Experiment 2: WebCola Constraint-Based Layout
+
+### Overview
+WebCola provides constraint-based layout with automatic group bounds calculation and overlap avoidance.
+
+### Test: Traffic Light HSM
+<div className="not-content">
+  <TrafficLightWebColaView client:only="react" />
+</div>
+
+### Results
+- ✅ Automatic group bounds calculation
+- ✅ Built-in overlap avoidance
+- ✅ Constraint-based positioning
+- ✅ Smooth animations
+- ⚠️ External dependency (~15KB)
+
+---
+
+## Technical Notes
+
+### Custom Implementation Benefits
+- **No external dependencies** - built from scratch
+- **Complete control** over force simulation
+- **Optimized for state machines** - only needed features
+- **Lightweight** - much smaller than existing force-graph libraries
+
+### Container Shape Algorithm
+- **Graham scan convex hull** for organic shapes
+- **Rectangle fallback** for 2-node groups
+- **Real-time updates** as force simulation runs
+
+---
+
+*These are internal experiments for research purposes only.*
