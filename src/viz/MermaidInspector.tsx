@@ -345,6 +345,20 @@ const MermaidInspector = memo(
           ".state-highlight, .state-container-highlight, g.node.active, g.state.active, g.stateGroup.active, .active-container"
         )
         .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
+      
+      // Also clear inline styles from JavaScript-applied node styling
+      root.querySelectorAll('.node.active').forEach(node => {
+        const g = node as SVGGElement;
+        g.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
+          (shape as SVGElement).style.removeProperty('fill');
+          (shape as SVGElement).style.removeProperty('stroke');
+          (shape as SVGElement).style.removeProperty('stroke-width');
+        });
+        g.querySelectorAll('text, p').forEach(text => {
+          (text as SVGElement).style.removeProperty('fill');
+          (text as SVGElement).style.removeProperty('color');
+        });
+      });
 
       if (currentDiagramType === 'statechart') {
         // Convert currentKey to match Mermaid ID format (dots to underscores)
