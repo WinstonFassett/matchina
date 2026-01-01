@@ -311,6 +311,14 @@ const MermaidInspector = memo(
       // Re-apply highlights on updates (state changes, actions, etc.)
       applyHighlights();
     }, [debouncedStateKey, actions, interactive, diagramType]);
+
+    // Also apply highlights on mount to ensure initial state is highlighted
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        applyHighlights();
+      }, 100); // Small delay to ensure Mermaid has rendered
+      return () => clearTimeout(timer);
+    }, []);
     if (!chart) return <div>NO CHART!!!</div>;
 
     return (

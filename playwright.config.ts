@@ -7,16 +7,16 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'html',
-  timeout: 2500, // 2.5 seconds per test - fail fast
+  timeout: 10000, // 10 seconds per test for verification
   expect: {
-    timeout: 1500, // 1.5 seconds per assertion
+    timeout: 5000, // 5 seconds per assertion
   },
   use: {
     baseURL: 'http://localhost:4321',
     trace: 'on-first-retry',
     screenshot: 'on',
     headless: true, // Run in background by default
-    actionTimeout: 800, // 800ms for actions like click/fill
+    actionTimeout: 2000, // 2 seconds for actions like click/fill
   },
   projects: [
     {

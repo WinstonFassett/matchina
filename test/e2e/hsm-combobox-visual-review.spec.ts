@@ -136,7 +136,6 @@ test.describe('HSM Combobox Visual Review', () => {
           await setTheme(page, theme);
           await selectMachineMode(page, mode);
           await selectVisualizer(page, 'mermaid');
-          await page.waitForTimeout(500);
           
           const input = page.locator('input[type="text"]').first();
           const container = await getExampleContainer(page);
