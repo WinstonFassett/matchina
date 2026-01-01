@@ -127,12 +127,12 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
 
 /* Dark mode edge label fixes */
 html[data-theme="dark"] .edgeLabel rect {
-  fill: var(--sl-color-gray-1) !important;
-  stroke: var(--sl-color-gray-5) !important;
+  fill: var(--sl-color-gray-3) !important;  /* Lighter background for better contrast */
+  stroke: var(--sl-color-gray-6) !important;
 }
 
 html[data-theme="dark"] .edgeLabel text {
-  fill: #d1d5db !important;
+  fill: #e5e7eb !important;  /* Lighter gray for better contrast */
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
@@ -186,8 +186,8 @@ html[data-theme="dark"] .edge-inactive {
 
 /* Dark mode improvements for edge labels */
 html[data-theme="dark"] .edge-inactive {
-  background-color: var(--sl-color-gray-2) !important;
-  color: var(--sl-color-gray-5) !important;
+  background-color: var(--sl-color-gray-3) !important;  /* Lighter background */
+  color: #e5e7eb !important;  /* Lighter text for better contrast */
 }
 
 /* Dark mode hover improvements */
