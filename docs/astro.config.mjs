@@ -360,10 +360,6 @@ export default defineConfig({
                   label: "Hierarchical Checkout",
                   link: "/examples/hsm-checkout",
                 },
-                {
-                  label: "Force Graph Experiments",
-                  link: "/examples/hierarchical-force-graphs",
-                },
               ],
             },
             {
