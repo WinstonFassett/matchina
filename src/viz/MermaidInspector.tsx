@@ -45,9 +45,10 @@ function toStateDiagram(config: any, _callbackName: string) {
 
       // Transitions
       if (state?.on) {
-        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+        Object.entries(state?.on).forEach(([eventType, target]: [string, any]) => {
           if (!target) return;
           let targetId: string | undefined;
+          let nestedTarget: string | undefined;
           
           if (typeof target === "string") {
             // Handle nested state targets properly
@@ -77,7 +78,7 @@ function toStateDiagram(config: any, _callbackName: string) {
               };
               
               // Try to find the target as a nested state first
-              const nestedTarget = findNestedState(config, target);
+              nestedTarget = findNestedState(config, target);
               if (nestedTarget) {
                 targetId = nestedTarget;
               } else {
@@ -90,7 +91,20 @@ function toStateDiagram(config: any, _callbackName: string) {
           }
           
           if (targetId) {
-            rows.push(`${indent}${id}-->|${id}<br>${eventType}|${targetId}[${targetId}]`);
+            // Normalize parent state transitions to be from the initial nested state
+            let fromId = id;
+            if (state?.states && parentPrefix === "" && nestedTarget && !stateKey.includes('_')) {
+              // This is a top-level composite state with nested states (not a nested state itself)
+              // The transition should be from the initial nested state
+              // Use the original machine configuration to get the initial state
+              const originalState = config.states[stateKey];
+              const initialState = originalState?.initial;
+              if (initialState) {
+                fromId = getStateId(initialState, id);
+              }
+            }
+            
+            rows.push(`${indent}${fromId}-->|${fromId}<br>${eventType}|${targetId}[${targetId}]`);
           }
         });
       }
@@ -142,9 +156,10 @@ function toStateChart(config: any) {
 
       // Transitions
       if (state?.on) {
-        Object.entries(state.on).forEach(([eventType, target]: [string, any]) => {
+        Object.entries(state?.on).forEach(([eventType, target]: [string, any]) => {
           if (!target) return;
           let targetId: string | undefined;
+          let nestedTarget: string | undefined;
           
           if (typeof target === "string") {
             // Handle nested state targets properly
@@ -174,7 +189,7 @@ function toStateChart(config: any) {
               };
               
               // Try to find the target as a nested state first
-              const nestedTarget = findNestedState(config, target);
+              nestedTarget = findNestedState(config, target);
               if (nestedTarget) {
                 targetId = nestedTarget;
               } else {
@@ -187,7 +202,20 @@ function toStateChart(config: any) {
           }
           
           if (targetId) {
-            rows.push(`${indent}${id} --> ${targetId}: ${id}<br>${eventType}`);
+            // Normalize parent state transitions to be from the initial nested state
+            let fromId = id;
+            if (state?.states && parentPrefix === "" && nestedTarget && !stateKey.includes('_')) {
+              // This is a top-level composite state with nested states (not a nested state itself)
+              // The transition should be from the initial nested state
+              // Use the original machine configuration to get the initial state
+              const originalState = config.states[stateKey];
+              const initialState = originalState?.initial;
+              if (initialState) {
+                fromId = getStateId(initialState, id);
+              }
+            }
+            
+            rows.push(`${indent}${fromId} --> ${targetId}: ${id}<br>${eventType}`);
           }
         });
       }
