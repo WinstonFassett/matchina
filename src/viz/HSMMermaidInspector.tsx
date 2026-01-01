@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from "react";
-import { buildShapeTree } from "../inspect/build-visualizer-tree";
+import { buildShapeTree, getActiveStatePath } from "../inspect/build-visualizer-tree";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
 import MermaidInspector from './MermaidInspector';
@@ -21,10 +21,13 @@ const HSMMermaidInspector = memo(({
   // Build shape tree for HSM visualization
   const config = useMemo(() => buildShapeTree(machine as any), [machine]);
   
+  // Get the full active state path (handles both nested and flattened machines)
+  const fullStateKey = useMemo(() => getActiveStatePath(machine as any), [machine, stateKey]);
+  
   return (
     <MermaidInspector
       config={config}
-      stateKey={stateKey}
+      stateKey={fullStateKey}
       actions={actions}
       interactive={interactive}
     />

@@ -13,9 +13,38 @@ import {
   HSMReactFlowInspector,
   ForceGraphInspector,
   SketchInspector,
+  HSMMermaidInspector,
 } from 'matchina/viz';
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { selectBestVisualizer, getPresetConfig } from './vizAutoSelect';
+
+/**
+ * Check if a machine is hierarchical (has submachines or nested states)
+ */
+function isHierarchicalMachine(machine: FactoryMachine<any>): boolean {
+  // Check if it has shape metadata (flattened HSM)
+  if ((machine as any).shape) {
+    return true;
+  }
+  
+  // Check if it has submachine markers (nested HSM)
+  const states = (machine as any).states;
+  if (states) {
+    for (const stateFactory of Object.values(states)) {
+      if ((stateFactory as any)?.machineFactory) {
+        return true;
+      }
+    }
+  }
+  
+  // Check if current state has nested machine
+  const currentState = machine.getState();
+  if (currentState?.data?.machine) {
+    return true;
+  }
+  
+  return false;
+}
 
 export interface MachineVisualizerProps {
   // Core props
@@ -113,15 +142,11 @@ export function MachineVisualizer({
   const vizContainerClasses = [
     'visualizer-container',
     isSplit ? 'flex-1 h-full' : 'w-full',
-    // For HSM examples, put visualization on bottom
-    preset === 'hierarchical' ? 'order-2' : '',
   ].filter(Boolean).join(' ');
 
   const appContainerClasses = [
     'app-container',
     isSplit ? 'flex-1 h-full' : 'w-full',
-    // For HSM examples, put app on top
-    preset === 'hierarchical' ? 'order-1' : '',
   ].filter(Boolean).join(' ');
 
   // Height styling
@@ -138,7 +163,7 @@ export function MachineVisualizer({
 
       {/* Controls header */}
       {effectiveShowPicker && (
-        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="visualizer-controls">
           <VizPicker
             value={currentViz}
             onChange={setCurrentViz}
@@ -250,14 +275,23 @@ function renderVisualizer({
 
     case 'mermaid-statechart':
       return (
-        <div className={commonClasses}>
-          <MermaidInspector
-            config={config}
-            stateKey={activeStatePath}
-            actions={actions}
-            interactive={interactive}
-            diagramType="statechart"
-          />
+        <div className={commonClasses} data-testid="mermaid-statechart-container">
+          {isHierarchicalMachine(machine) ? (
+            <HSMMermaidInspector
+              machine={machine}
+              stateKey={activeStatePath}
+              actions={actions}
+              interactive={interactive}
+            />
+          ) : (
+            <MermaidInspector
+              config={config}
+              stateKey={activeStatePath}
+              actions={actions}
+              interactive={interactive}
+              diagramType="statechart"
+            />
+          )}
         </div>
       );
 
