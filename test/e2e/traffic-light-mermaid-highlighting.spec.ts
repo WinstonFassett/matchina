@@ -1,10 +1,24 @@
-import { test, Page } from '@playwright/test';
+import { test, Page, expect } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:4321/matchina/examples/hsm-traffic-light';
 const SCREENSHOT_DIR = 'review/screenshots/traffic-light-mermaid-fix';
 
 test.describe('Traffic Light Mermaid State Highlighting Fix', () => {
   test.beforeEach(async ({ page }) => {
+    // Store messages on page object for later access
+    await page.evaluate(() => {
+      (window as any).consoleMessages = [];
+    });
+    
+    page.on('console', msg => {
+      console.log('BROWSER CONSOLE:', msg.text());
+      page.evaluate((text) => {
+        const messages = (window as any).consoleMessages || [];
+        messages.push(text);
+        (window as any).consoleMessages = messages;
+      }, msg.text());
+    });
+
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
@@ -35,6 +49,21 @@ test.describe('Traffic Light Mermaid State Highlighting Fix', () => {
     const parentVisible = await parentHighlight.isVisible().catch(() => false);
     console.log('Nested - Parent container highlighted:', parentVisible);
     
+    // Check for EDGE highlighting (this is what we actually fixed!)
+    const activeEdges = mermaidContainer.locator('.edge-active').first();
+    const edgeVisible = await activeEdges.isVisible().catch(() => false);
+    console.log('Nested - Active edge highlighted:', edgeVisible);
+    
+    // Assert that edge highlighting should work for nested states
+    // This was the main issue we were fixing
+    expect(edgeVisible).toBe(true);
+    
+    // Get all console messages
+    const consoleMessages = await page.evaluate(() => (window as any).consoleMessages || []);
+    console.log('=== NESTED CONSOLE MESSAGES ===');
+    consoleMessages.forEach((msg: string) => console.log(msg));
+    console.log('=== END NESTED CONSOLE ===');
+    
     // Take screenshot only if container exists
     if (await mermaidContainer.isVisible()) {
       await mermaidContainer.screenshot({
@@ -64,6 +93,17 @@ test.describe('Traffic Light Mermaid State Highlighting Fix', () => {
     const parentHighlight = mermaidContainer.locator('.state-container-highlight').first();
     const parentVisible = await parentHighlight.isVisible().catch(() => false);
     console.log('Flattened - Parent container highlighted:', parentVisible);
+    
+    // Check for EDGE highlighting (this is what's actually broken!)
+    const activeEdges = mermaidContainer.locator('.edge-active').first();
+    const edgeVisible = await activeEdges.isVisible().catch(() => false);
+    console.log('Flattened - Active edge highlighted:', edgeVisible);
+    
+    // Get all console messages
+    const consoleMessages = await page.evaluate(() => (window as any).consoleMessages || []);
+    console.log('=== FLATTENED CONSOLE MESSAGES ===');
+    consoleMessages.forEach((msg: string) => console.log(msg));
+    console.log('=== END FLATTENED CONSOLE ===');
     
     // Take screenshot only if container exists
     if (await mermaidContainer.isVisible()) {

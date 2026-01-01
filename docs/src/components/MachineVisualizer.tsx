@@ -13,38 +13,9 @@ import {
   HSMReactFlowInspector,
   ForceGraphInspector,
   SketchInspector,
-  HSMMermaidInspector,
 } from 'matchina/viz';
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { selectBestVisualizer, getPresetConfig } from './vizAutoSelect';
-
-/**
- * Check if a machine is hierarchical (has submachines or nested states)
- */
-function isHierarchicalMachine(machine: FactoryMachine<any>): boolean {
-  // Check if it has shape metadata (flattened HSM)
-  if ((machine as any).shape) {
-    return true;
-  }
-  
-  // Check if it has submachine markers (nested HSM)
-  const states = (machine as any).states;
-  if (states) {
-    for (const stateFactory of Object.values(states)) {
-      if ((stateFactory as any)?.machineFactory) {
-        return true;
-      }
-    }
-  }
-  
-  // Check if current state has nested machine
-  const currentState = machine.getState();
-  if (currentState?.data?.machine) {
-    return true;
-  }
-  
-  return false;
-}
 
 export interface MachineVisualizerProps {
   // Core props
@@ -276,22 +247,14 @@ function renderVisualizer({
     case 'mermaid-statechart':
       return (
         <div className={commonClasses} data-testid="mermaid-statechart-container">
-          {isHierarchicalMachine(machine) ? (
-            <HSMMermaidInspector
-              machine={machine}
-              stateKey={activeStatePath}
-              actions={actions}
-              interactive={interactive}
-            />
-          ) : (
-            <MermaidInspector
-              config={config}
-              stateKey={activeStatePath}
-              actions={actions}
-              interactive={interactive}
-              diagramType="statechart"
-            />
-          )}
+          <MermaidInspector
+            config={config}
+            stateKey={activeStatePath}
+            actions={actions}
+            interactive={interactive}
+            diagramType="statechart"
+            machine={machine}
+          />
         </div>
       );
 
@@ -304,6 +267,7 @@ function renderVisualizer({
             actions={actions}
             interactive={interactive}
             diagramType="flowchart"
+            machine={machine}
           />
         </div>
       );

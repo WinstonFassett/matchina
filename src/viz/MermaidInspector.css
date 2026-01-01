@@ -132,7 +132,7 @@ html[data-theme="dark"] .edgeLabel rect {
 }
 
 html[data-theme="dark"] .edgeLabel text {
-  fill: #e5e7eb !important;
+  fill: #d1d5db !important;
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */
@@ -164,7 +164,7 @@ html[data-theme="dark"] .edgeLabel text {
 }
 
 html[data-theme="dark"] .edge-inactive {
-  color: #ccc !important;
+  color: #d1d5db !important;
 }
 
 .edge-interactive {
@@ -235,16 +235,15 @@ g[class*="state"].state-highlight path:not([class*="active"]) {
   stroke-width: 2px !important;
 }
 
-/* Flowchart active node */
-/* Dark mode: transparent/black fill - override inline styles */
+/* Flowchart active node - match state chart purple background */
 html[data-theme="dark"] .node.active path,
 html[data-theme="dark"] .node.active path[style] {
-  fill: transparent !important;
-  stroke: var(--sl-color-accent-high) !important;
+  fill: rgb(147, 112, 219) !important;
+  stroke: #a78bfa !important;
   stroke-width: 2px !important;
 }
 
-/* Light mode: purple fill */
+/* Light mode: purple fill to match state chart */
 html:not([data-theme="dark"]) .node.active path {
   fill: rgb(147, 112, 219) !important;
   stroke: rgb(147, 112, 219) !important;
@@ -264,24 +263,23 @@ html:not([data-theme="dark"]) .node.active p {
   color: #ffffff !important;
 }
 
-/* Light mode: active node should have highlighted background */
-html:not([data-theme="dark"]) .node.active rect,
-html:not([data-theme="dark"]) .node.active circle,
-html:not([data-theme="dark"]) .node.active ellipse,
-html:not([data-theme="dark"]) .node.active polygon {
-  fill: var(--sl-color-accent) !important;
-  stroke: var(--sl-color-accent-high) !important;
-  stroke-width: 2px !important;
-}
-
-/* Dark mode: active node should have highlighted background */
+/* Dark mode: active node shapes should have purple background to match state chart */
 html[data-theme="dark"] .node.active rect,
 html[data-theme="dark"] .node.active circle,
 html[data-theme="dark"] .node.active ellipse,
 html[data-theme="dark"] .node.active polygon {
-  fill: var(--sl-color-accent) !important;
-  stroke: var(--sl-color-accent-low) !important;
+  fill: rgb(147, 112, 219) !important;
+  stroke: #a78bfa !important;
   stroke-width: 2px !important;
+}
+
+/* Light mode: active node shapes should have purple background */
+html:not([data-theme="dark"]) .node.active rect,
+html:not([data-theme="dark"]) .node.active circle,
+html:not([data-theme="dark"]) .node.active ellipse,
+html:not([data-theme="dark"]) .node.active polygon {
+  fill: rgb(147, 112, 219) !important;
+  stroke: rgb(147, 112, 219) !important;
 }
 
 /* Flowchart active container (parent highlighting) */

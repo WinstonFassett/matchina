@@ -54,7 +54,7 @@ function toStateDiagram(config: any, _callbackName: string) {
               ? getStateId((target as any).target, parentPrefix)
               : undefined;
           if (targetId) {
-            rows.push(`${indent}${id}-->|${stateKey}<br>${eventType}|${targetId}[${targetId}]`);
+            rows.push(`${indent}${id}-->|${id}<br>${eventType}|${targetId}[${targetId}]`);
           }
         });
       }
@@ -100,8 +100,8 @@ function toStateChart(config: any) {
         }
         rows.push(`${indent}}`);
       } else {
-        // Leaf state - create empty state definition for proper DOM element generation
-        rows.push(`${indent}state ${id} { }`);
+        // Leaf state - just declare the state (no braces needed in stateDiagram-v2)
+        rows.push(`${indent}state ${id}`);
       }
 
       // Transitions
@@ -115,7 +115,7 @@ function toStateChart(config: any) {
               ? getStateId((target as any).target, parentPrefix)
               : undefined;
           if (targetId) {
-            rows.push(`${indent}${id} --> ${targetId}: ${stateKey}<br>${eventType}`);
+            rows.push(`${indent}${id} --> ${targetId}: ${id}<br>${eventType}`);
           }
         });
       }
@@ -142,12 +142,14 @@ const MermaidInspector = memo(
     actions,
     interactive = true,
     diagramType: diagramTypeProp,
+    machine, // Add machine prop for direct action lookup
   }: {
     config: any;
     stateKey: string;
     actions?: Record<string, any>;
     interactive?: boolean;
     diagramType?: 'flowchart' | 'statechart';
+    machine?: any; // Machine instance for nested action lookup
   }) => {
     const [id] = useState((lastId++).toString());
     const diagramType = diagramTypeProp ?? 'statechart';
@@ -176,6 +178,8 @@ const MermaidInspector = memo(
     const actionsRef = useRef(actions);
     const interactiveRef = useRef(interactive);
     const diagramTypeRef = useRef(diagramType);
+    const machineRef = useRef(machine);
+    const configRef = useRef(config);
 
     useEffect(() => {
       debouncedStateKeyRef.current = debouncedStateKey;
@@ -189,6 +193,60 @@ const MermaidInspector = memo(
     useEffect(() => {
       diagramTypeRef.current = diagramType;
     }, [diagramType]);
+    useEffect(() => {
+      machineRef.current = machine;
+    }, [machine]);
+    useEffect(() => {
+      configRef.current = config;
+    }, [config]);
+
+    // Helper function to find action in nested states using the config shape
+    const findActionInNestedStates = (eventType: string, fromState: string): (() => void) | undefined => {
+      const machine = machineRef.current;
+      const config = configRef.current;
+      if (!machine || !config) return undefined;
+      
+      // First try the regular actions (top-level)
+      const topLevelAction = actionsRef.current?.[eventType];
+      if (topLevelAction) {
+        return topLevelAction;
+      }
+      
+      // Then look in nested states using the config shape
+      const findInState = (state: any, path: string[]): any => {
+        if (!state) return undefined;
+        
+        // Check if this state has the transition
+        if (state.on && state.on[eventType]) {
+          return (...args: any[]) => (machine as any).send(eventType, ...args);
+        }
+        
+        // Recursively check nested states
+        if (state.states) {
+          for (const [nestedKey, nestedState] of Object.entries(state.states)) {
+            const result = findInState(nestedState, [...path, nestedKey]);
+            if (result) {
+              return result;
+            }
+          }
+        }
+        
+        return undefined;
+      };
+      
+      // Check if fromState is a nested path (e.g., "Working.Red")
+      if (fromState.includes('.')) {
+        const [parentState, nestedState] = fromState.split('.');
+        const parentConfig = config.states[parentState];
+        if (parentConfig && parentConfig.states) {
+          const result = findInState(parentConfig.states[nestedState], [parentState, nestedState]);
+          if (result) return result;
+        }
+      }
+      
+      const result = findInState(config.states, []);
+      return result;
+    };
 
     // One-time setup after render: normalize edge labels and cache metadata
     const onRender = useCallback((el: HTMLElement) => {
@@ -208,7 +266,11 @@ const MermaidInspector = memo(
             .join("")
             .split("\n");
           const [fromState, type] = lines;
-          (p as any)._edge = { fromState, type };
+          
+          // Convert underscores to dots to match currentKey format
+          const normalizedFromState = fromState.replace(/_/g, '.');
+          
+          (p as any)._edge = { fromState: normalizedFromState, type };
           p.innerHTML = type; // Only show the event type
         });
         // Ensure the active state is highlighted immediately after Mermaid
@@ -266,11 +328,34 @@ const MermaidInspector = memo(
             activated = true;
           }
         } catch {}
+        
         if (!activated) {
+          // Try to find by text content - this is the most reliable for flowcharts
           const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
-            .find((g) => g.textContent?.trim() === mermaidKey);
-          if (candidate) candidate.classList.add("active");
+            .find((g) => {
+              const text = g.textContent?.trim();
+              return text === mermaidKey || text === currentKey;
+            });
+          if (candidate) {
+            candidate.classList.add("active");
+            activated = true;
+          }
         }
+        
+        if (!activated) {
+          // Try finding by title element or other attributes
+          const candidate = Array.from(root.querySelectorAll<SVGGElement>("g.node"))
+            .find((g) => {
+              const title = g.querySelector('title')?.textContent;
+              const id = g.getAttribute('id');
+              return title === mermaidKey || title === currentKey || id === mermaidKey || id === currentKey;
+            });
+          if (candidate) {
+            candidate.classList.add("active");
+            activated = true;
+          }
+        }
+        
         if (currentKey.includes('.')) {
           const parentKey = currentKey.split('.')[0];
           const mermaidParentKey = parentKey.replace(/\./g, '_');
@@ -285,18 +370,70 @@ const MermaidInspector = memo(
         const meta = (p as any)._edge as { fromState?: string; type?: string } | undefined;
         const type = meta?.type;
         const from = meta?.fromState;
-        const action = type ? currentActions?.[type] : undefined;
         
-        // Check if this is an action from the current state or an ancestor
-        // For nested states, fromState is just the leaf name (e.g., "MethodEntry")
-        // while currentKey might be the full path (e.g., "payment_MethodEntry")
-        const isCurrentStateAction = from === currentKey || 
-          (currentKey.includes('_') && from === currentKey.split('_').slice(-1)[0]);
+        // Use enhanced action lookup that includes nested states
+        const action = type ? findActionInNestedStates(type, from || '') : undefined;
         
-        // Check if it's an ancestor action - from is an ancestor of currentKey
-        const isAncestorAction = !isCurrentStateAction && from && 
-          (currentKey === from || currentKey.startsWith(from + '_') || 
-           currentKey.endsWith('_' + from) || currentKey.includes('_' + from + '_'));
+        let isCurrentStateAction = false;
+        let isAncestorAction = false;
+        
+        if (from && currentKey) {
+          if (currentDiagramType === 'statechart') {
+            // STATE CHART: Edge labels use different format, handle statechart-specific logic
+            // State charts use IDs like "state-Working.Red-123" and edge labels may be different
+            if (from === currentKey) {
+              isCurrentStateAction = true;
+            }
+            // Handle nested states in statecharts
+            else if (currentKey.includes('.') && from.includes('.')) {
+              if (currentKey.startsWith(from + '.')) {
+                isAncestorAction = true;
+              }
+            }
+            // Handle leaf name matching for statecharts
+            else if (currentKey.includes('.') && !from.includes('.')) {
+              const currentLeaf = currentKey.split('.').slice(-1)[0];
+              if (from === currentLeaf) {
+                isCurrentStateAction = true;
+              }
+            }
+          } else {
+            // FLOWCHART: Edge labels use full paths with underscores (Working_Red)
+            // Flowcharts have different DOM structure and edge labeling
+            if (from === currentKey) {
+              isCurrentStateAction = true;
+            }
+            // Handle underscore to dot conversion for flowcharts
+            else if (from.includes('_') && currentKey.includes('.')) {
+              const fromDots = from.replace(/_/g, '.');
+              if (fromDots === currentKey) {
+                isCurrentStateAction = true;
+              }
+              // Check if from is ancestor of current
+              else if (currentKey.startsWith(fromDots + '.')) {
+                isAncestorAction = true;
+              }
+            }
+            // Handle leaf name matching for flowcharts
+            else if (currentKey.includes('.') && !from.includes('.')) {
+              const currentLeaf = currentKey.split('.').slice(-1)[0];
+              if (from === currentLeaf) {
+                isCurrentStateAction = true;
+              }
+            }
+            // Handle underscore currentKey in flowcharts
+            else if (currentKey.includes('_') && from.includes('.')) {
+              const currentDots = currentKey.replace(/_/g, '.');
+              if (from === currentDots) {
+                isCurrentStateAction = true;
+              }
+              // Check if from is ancestor of current
+              else if (currentDots.startsWith(from + '.')) {
+                isAncestorAction = true;
+              }
+            }
+          }
+        }
         
         const canInvoke = !!action && currentInteractive && (isCurrentStateAction || isAncestorAction);
 
