@@ -497,9 +497,18 @@ const MermaidInspector = memo(
               if (currentKey.startsWith(from + '.')) {
                 isAncestorAction = true;
               }
+              // Check if from is a parent of current (hierarchical transitions)
+              else if (from === currentKey.split('.')[0]) {
+                isAncestorAction = true;
+              }
             }
-            // Handle leaf name matching for statecharts
+            // Handle parent state transitions (from is parent, currentKey is child)
             else if (currentKey.includes('.') && !from.includes('.')) {
+              const currentParent = currentKey.split('.')[0];
+              if (from === currentParent) {
+                isAncestorAction = true;
+              }
+              // Handle leaf name matching for statecharts
               const currentLeaf = currentKey.split('.').slice(-1)[0];
               if (from === currentLeaf) {
                 isCurrentStateAction = true;
@@ -524,6 +533,10 @@ const MermaidInspector = memo(
             }
             // Handle leaf name matching for flowcharts
             else if (currentKey.includes('.') && !from.includes('.')) {
+              const currentParent = currentKey.split('.')[0];
+              if (from === currentParent) {
+                isAncestorAction = true;
+              }
               const currentLeaf = currentKey.split('.').slice(-1)[0];
               if (from === currentLeaf) {
                 isCurrentStateAction = true;
@@ -537,6 +550,10 @@ const MermaidInspector = memo(
               }
               // Check if from is ancestor of current
               else if (currentDots.startsWith(from + '.')) {
+                isAncestorAction = true;
+              }
+              // Check if from is parent of current (hierarchical transitions)
+              else if (from === currentDots.split('.')[0]) {
                 isAncestorAction = true;
               }
             }
