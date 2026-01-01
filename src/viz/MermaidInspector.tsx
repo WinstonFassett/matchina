@@ -211,8 +211,8 @@ const MermaidInspector = memo(
       container.querySelectorAll('.edgeLabel p').forEach(p => {
         const element = p as HTMLElement;
         if (isDarkTheme) {
-          element.style.backgroundColor = '#333';
-          element.style.color = '#e5e7eb';
+          element.style.backgroundColor = '#333';  // Consistent with flowchart
+          element.style.color = '#e5e7eb';     // Lighter gray for better contrast
         } else {
           // Reset to default for light theme
           element.style.backgroundColor = '';
@@ -310,8 +310,8 @@ const MermaidInspector = memo(
         if (isDarkTheme) {
           // Apply dark theme styling to edge labels
           el.querySelectorAll('.edgeLabel p').forEach(p => {
-            (p as HTMLElement).style.backgroundColor = '#333';
-            (p as HTMLElement).style.color = '#e5e7eb';
+            (p as HTMLElement).style.backgroundColor = '#333';  // Consistent with flowchart
+            (p as HTMLElement).style.color = '#e5e7eb';     // Lighter gray for better contrast
           });
           el.querySelectorAll('.edgeLabel text').forEach(text => {
             (text as SVGTextElement).style.fill = '#e5e7eb';
@@ -370,6 +370,18 @@ const MermaidInspector = memo(
           const byId = root.querySelector(`g#${CSS.escape(mermaidKey)}`) as SVGGElement | null;
           if (byId) {
             byId.classList.add("active");
+            // Apply purple background directly to match state chart styling
+            const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+            byId.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
+              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.strokeWidth = '2px';
+            });
+            // Also update text color for contrast
+            byId.querySelectorAll('text, p').forEach(text => {
+              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+            });
             activated = true;
           }
         } catch {}
@@ -383,6 +395,18 @@ const MermaidInspector = memo(
             });
           if (candidate) {
             candidate.classList.add("active");
+            // Apply purple background directly to match state chart styling
+            const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+            candidate.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
+              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.strokeWidth = '2px';
+            });
+            // Also update text color for contrast
+            candidate.querySelectorAll('text, p').forEach(text => {
+              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+            });
             activated = true;
           }
         }
@@ -397,6 +421,18 @@ const MermaidInspector = memo(
             });
           if (candidate) {
             candidate.classList.add("active");
+            // Apply purple background directly to match state chart styling
+            const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+            candidate.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
+              (shape as SVGElement).style.fill = 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.stroke = isDarkTheme ? '#a78bfa' : 'rgb(147, 112, 219)';
+              (shape as SVGElement).style.strokeWidth = '2px';
+            });
+            // Also update text color for contrast
+            candidate.querySelectorAll('text, p').forEach(text => {
+              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+            });
             activated = true;
           }
         }
