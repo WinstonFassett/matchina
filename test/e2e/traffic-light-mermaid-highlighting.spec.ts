@@ -32,7 +32,7 @@ test.describe('Traffic Light Mermaid State Highlighting Fix', () => {
       await page.waitForTimeout(200);
     }
     
-    // Select Mermaid State Chart visualizer using test ID
+    // Test STATE CHART
     await page.getByTestId('visualizer-controls').getByRole('combobox').selectOption('mermaid-statechart');
     await page.waitForTimeout(500);
     

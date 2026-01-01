@@ -47,7 +47,7 @@ export default function CheckoutExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="reactflow"
+        defaultViz="mermaid-statechart"
         interactive={true}
         layout="stacked"
         AppView={mode === "flat" ? CheckoutViewFlat : CheckoutViewNested}

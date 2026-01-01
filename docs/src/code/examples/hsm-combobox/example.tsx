@@ -52,7 +52,7 @@ export default function ComboboxExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="sketch"
+        defaultViz="mermaid-statechart"
         interactive={true}
         layout="stacked"
         preset="hierarchical"

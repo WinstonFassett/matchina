@@ -80,6 +80,10 @@ test.describe('Mermaid Diagram Type Styling Comparison', () => {
       });
 
       test(`statechart - ${theme}`, async ({ page }) => {
+        // Select flat mode first
+        await page.locator('button', { hasText: 'Flattened' }).click();
+        await page.waitForTimeout(200);
+        
         await selectVisualizer(page, 'statechart');
         await page.waitForTimeout(500); // Wait for Mermaid to render
         const mermaid = await getMermaidContainer(page);

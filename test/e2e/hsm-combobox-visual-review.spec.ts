@@ -32,7 +32,7 @@ async function selectVisualizer(page: Page, visualizer: VisualizerTab) {
     const dropdown = page.locator('[data-testid="visualizer-picker"]');
     await dropdown.waitFor({ state: 'visible', timeout: 800 });
     
-    const option = visualizer === 'sketch' ? 'sketch' : 'mermaid-statechart';
+    const option = visualizer === 'sketch' ? 'sketch' : 'mermaid';
     await dropdown.selectOption(option);
   } catch (error) {
     console.error('Failed to select visualizer:', error);
@@ -133,6 +133,19 @@ test.describe('HSM Combobox Visual Review', () => {
     for (const theme of ['light', 'dark'] as Theme[]) {
       for (const mode of ['flat', 'nested'] as MachineMode[]) {
         test(`${theme} - ${mode}`, async ({ page }) => {
+          // Store console messages for debugging
+          await page.addInitScript(() => {
+            (window as any).consoleMessages = [];
+            (window as any).console.log = function(...args: any[]) {
+              (window as any).consoleMessages.push(args.join(' '));
+            };
+          });
+          page.on('console', msg => {
+            if ((window as any).consoleMessages) {
+              (window as any).consoleMessages.push(msg.text());
+            }
+          });
+          
           await setTheme(page, theme);
           await selectMachineMode(page, mode);
           await selectVisualizer(page, 'mermaid');
@@ -159,6 +172,12 @@ test.describe('HSM Combobox Visual Review', () => {
           await container.screenshot({ 
             path: screenshotName(['mermaid', theme, mode, '3-with-tag']) 
           });
+          
+          // Get console messages for debugging
+          const consoleMessages = await page.evaluate(() => (window as any).consoleMessages || []);
+          console.log(`=== COMBOBOX CONSOLE MESSAGES (${theme} - ${mode}) ===`);
+          consoleMessages.forEach((msg: string) => console.log(msg));
+          console.log('=== END COMBOBOX CONSOLE ===');
         });
       }
     }

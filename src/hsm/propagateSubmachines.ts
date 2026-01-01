@@ -135,6 +135,9 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   (root as HierarchicalMachine<M>).shape = createLazyShapeStore(root);
   
   const rootMachine = root as unknown as RootMachine;
+  
+  // Flag to prevent recursion in handleReservedEvents
+  let isHandlingReservedEvent = false;
 
   // Install a send hook on any discovered machine to re-route non-root sends to root
   function hookMachine(m: OptionalDuckTypedMachine): void {
@@ -142,6 +145,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     if (propagatedMachine.__propagateUnhook) return;
     hookedMachines.add(propagatedMachine);
     const unhook = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+      // Skip ALL send hook logic during reserved event handling to prevent recursion
+      if (isHandlingReservedEvent) {
+        return innerSend(type, ...params);
+      }
+      
       // First, let the machine handle its own event
       const result = innerSend(type, ...params);
       
@@ -158,7 +166,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         }
         if (current) {
           current.send?.('child.exit');
-          hookCurrentChain(true); // Notify on child.exit
+          // Skip hooking during reserved event handling to prevent recursion
+          if (!isHandlingReservedEvent) {
+            hookCurrentChain(true); // Notify on child.exit
+          }
         }
       } else if (state && !type.startsWith('child.')) {
         // Use _internal flag to avoid infinite recursion but ensure notification happens
@@ -291,7 +302,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    */
   function notifyHierarchyOfChange(result: { handled: boolean; handledBy?: DuckTypedMachine }, type: string, params: any[]): void {
     // Hook any newly discovered machines in the hierarchy
-    hookCurrentChain();
+    // Skip hooking during reserved event handling to prevent recursion
+    if (!isHandlingReservedEvent) {
+      hookCurrentChain();
+    }
     
     // Emit a routed child change via root.send so observers can react through the normal loop.
     // Use an internal flag to avoid re-entering handleAtRoot and causing recursion.
@@ -305,25 +319,37 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
     * Child.change events are routed through here - if target !== root, they're internal notifications.
     */
   function handleReservedEvents(type: string, params: any[]): any {
-    // Handle child.change events - only process if targeting root
-    if (type === 'child.change') {
-      const { target, _internal } = params[0];
-      if (target !== root) {
-        // Internal notification from a child - hook chain but don't re-enter event loop
-        if (_internal) {
-          hookCurrentChain(false);
-        }
-        // Don't handle non-root target child.change events
-        return;
-      }
+    // Prevent recursive calls to handleReservedEvents
+    if (isHandlingReservedEvent) {
+      return;
     }
     
-    // For all other reserved events and root-targeted child.change, try to handle at root
-    hookCurrentChain(false);
-    const from = rootMachine.getState();
-    const ev = rootMachine.resolveExit?.({ type, params, from });
-    if (ev) rootMachine.transition?.(ev);
-    return ev;
+    try {
+      isHandlingReservedEvent = true;
+      
+      // Handle child.change events - only process if targeting root
+      if (type === 'child.change') {
+        const { target, _internal } = params[0];
+        if (target !== root) {
+          // Internal notification from a child - don't hook chain during reserved events
+          // Don't handle non-root target child.change events
+          return;
+        }
+      }
+      
+      // For all other reserved events and root-targeted child.change, try to handle at root
+      // Skip hookCurrentChain during reserved event handling to prevent recursion
+      const from = rootMachine.getState();
+      const ev = rootMachine.resolveExit?.({ type, params, from });
+      if (ev) {
+        // Call the original transition directly to avoid triggering the enhanced send hook
+        const originalTransition = (root as any).__original?.transition || rootMachine.transition;
+        originalTransition?.call(rootMachine, ev);
+      }
+      return ev;
+    } finally {
+      isHandlingReservedEvent = false;
+    }
   }
 
   /**
@@ -387,7 +413,10 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       if (!child) break;
 
       // Hook every discovered descendant immediately (works for duck-typed children too)
-      hookMachine(child);
+      // Skip hooking during reserved event handling to prevent recursion
+      if (!isHandlingReservedEvent) {
+        hookMachine(child);
+      }
 
       // Continue traversal for any child that exposes getState (duck-typed or branded)
       current = (child as DuckTypedMachine);
@@ -401,6 +430,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
 
   /** Install a send hook on the root to intercept and route child.change events */
   const unhookRoot = sendHook((innerSend: any) => (type: string, ...params: any[]) => {
+    // Skip all hook logic during reserved event handling to prevent recursion
+    if (isHandlingReservedEvent) {
+      return innerSend(type, ...params);
+    }
+    
     if (type === 'child.change') {
       const payload = params[0] || {};
       // Internal child-change: create a new change event to update lastChange for React
@@ -426,6 +460,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       const { type: childType, params: childParams } = payload;
       return handleAtRoot(childType, childParams ?? []);
     }
+    // Don't call handleAtRoot for child.* events during reserved event handling
     if (type.startsWith('child.')) {
       return handleAtRoot(type, params);
     }
