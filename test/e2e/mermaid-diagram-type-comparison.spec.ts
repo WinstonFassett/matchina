@@ -108,8 +108,9 @@ test.describe('Mermaid Diagram Type Styling Comparison', () => {
 
       for (const type of ['statechart', 'flowchart'] as DiagramType[]) {
         await selectVisualizer(page, type);
+        await page.waitForTimeout(300); // Reduced wait time
         const mermaid = await getMermaidContainer(page);
-        await mermaid.waitFor({ state: 'visible', timeout: 2000 });
+        await mermaid.waitFor({ state: 'visible', timeout: 1500 });
         await mermaid.screenshot({
           path: screenshotName(theme, type)
         });

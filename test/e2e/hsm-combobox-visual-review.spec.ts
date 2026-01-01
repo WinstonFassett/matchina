@@ -23,15 +23,21 @@ async function setTheme(page: Page, theme: Theme) {
 async function selectMachineMode(page: Page, mode: MachineMode) {
   const buttonText = mode === 'flat' ? 'Flattened' : 'Nested (Hierarchical)';
   await page.locator('button', { hasText: buttonText }).click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(200);
 }
 
 async function selectVisualizer(page: Page, visualizer: VisualizerTab) {
-  // The new UI uses a dropdown picker, not separate buttons
-  const dropdown = page.locator('select').first();
-  const option = visualizer === 'sketch' ? 'sketch' : 'mermaid-statechart';
-  await dropdown.selectOption(option);
-  await page.waitForTimeout(400);
+  // Use the test ID we added to VizPicker
+  try {
+    const dropdown = page.locator('[data-testid="visualizer-picker"]');
+    await dropdown.waitFor({ state: 'visible', timeout: 800 });
+    
+    const option = visualizer === 'sketch' ? 'sketch' : 'mermaid-statechart';
+    await dropdown.selectOption(option);
+  } catch (error) {
+    console.error('Failed to select visualizer:', error);
+    throw error;
+  }
 }
 
 // The entire example component: mode toggle + widget + visualizer
@@ -130,7 +136,7 @@ test.describe('HSM Combobox Visual Review', () => {
           await setTheme(page, theme);
           await selectMachineMode(page, mode);
           await selectVisualizer(page, 'mermaid');
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(500);
           
           const input = page.locator('input[type="text"]').first();
           const container = await getExampleContainer(page);
