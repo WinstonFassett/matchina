@@ -181,6 +181,14 @@ const MermaidInspector = memo(
     const machineRef = useRef(machine);
     const configRef = useRef(config);
 
+    // Apply highlights immediately when state changes (not just debounced)
+    useEffect(() => {
+      const container = containerRef.current;
+      if (container) {
+        applyHighlights(container);
+      }
+    }, [stateKey]);
+
     useEffect(() => {
       debouncedStateKeyRef.current = debouncedStateKey;
     }, [debouncedStateKey]);
@@ -346,8 +354,8 @@ const MermaidInspector = memo(
         )
         .forEach((n) => n.classList.remove("state-highlight", "state-container-highlight", "active", "active-container"));
       
-      // Also clear inline styles from JavaScript-applied node styling
-      root.querySelectorAll('.node.active').forEach(node => {
+      // Clear inline styles from all nodes first (before removing classes)
+      root.querySelectorAll('g.node').forEach(node => {
         const g = node as SVGGElement;
         g.querySelectorAll('path, rect, circle, ellipse, polygon').forEach(shape => {
           (shape as SVGElement).style.removeProperty('fill');
@@ -359,7 +367,12 @@ const MermaidInspector = memo(
           (text as SVGElement).style.removeProperty('color');
         });
       });
-
+      
+      // Then remove the active class from any nodes that have it
+      root.querySelectorAll('.node.active').forEach(node => {
+        node.classList.remove("active");
+      });
+      
       if (currentDiagramType === 'statechart') {
         // Convert currentKey to match Mermaid ID format (dots to underscores)
         const mermaidKey = currentKey.replace(/\./g, '_');
@@ -391,10 +404,10 @@ const MermaidInspector = memo(
               (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
               (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
-            // Also update text color for contrast
+            // Also update text color for contrast (match state chart dark text on highlight)
             byId.querySelectorAll('text, p').forEach(text => {
-              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
-              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.setProperty('fill', 'var(--sl-color-bg)', 'important');
+              (text as SVGElement).style.setProperty('color', 'var(--sl-color-bg)', 'important');
             });
             activated = true;
           }
@@ -416,10 +429,10 @@ const MermaidInspector = memo(
               (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
               (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
-            // Also update text color for contrast
+            // Also update text color for contrast (match state chart dark text on highlight)
             candidate.querySelectorAll('text, p').forEach(text => {
-              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
-              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.setProperty('fill', 'var(--sl-color-bg)', 'important');
+              (text as SVGElement).style.setProperty('color', 'var(--sl-color-bg)', 'important');
             });
             activated = true;
           }
@@ -442,10 +455,10 @@ const MermaidInspector = memo(
               (shape as SVGElement).style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
               (shape as SVGElement).style.setProperty('stroke-width', '2px', 'important');
             });
-            // Also update text color for contrast
+            // Also update text color for contrast (match state chart dark text on highlight)
             candidate.querySelectorAll('text, p').forEach(text => {
-              (text as SVGElement).style.fill = isDarkTheme ? '#1f2937' : '#ffffff';
-              (text as SVGElement).style.color = isDarkTheme ? '#1f2937' : '#ffffff';
+              (text as SVGElement).style.setProperty('fill', 'var(--sl-color-bg)', 'important');
+              (text as SVGElement).style.setProperty('color', 'var(--sl-color-bg)', 'important');
             });
             activated = true;
           }
