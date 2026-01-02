@@ -1,4 +1,4 @@
-import { matchina, defineStates, setup, transitionHooks, createStoreMachine, addStoreApi, withSubscribe } from "matchina";
+import { matchina, defineStates, createStoreMachine, setup, effect } from "matchina";
 
 interface User {
   id: string;
@@ -7,20 +7,13 @@ interface User {
   avatar?: string;
 }
 
-interface AuthState {
+interface AuthFormState {
+  email: string;
+  password: string;
+  name: string;
   error: string | null;
   user: User | null;
 }
-
-const createAuthStore = (initialState: AuthState) => {
-  const store = createStoreMachine<AuthState>(initialState, {
-    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
-    setError: (error: string | null) => (change) => ({ ...change.from, error }),
-    clearError: () => (change) => ({ ...change.from, error: null }),
-    reset: () => () => initialState,
-  });
-  return addStoreApi(withSubscribe(store));
-};
 
 const states = defineStates({
   LoggedOut: undefined,
@@ -35,12 +28,23 @@ const states = defineStates({
 });
 
 export const createAuthMachine = () => {
-  const initialState: AuthState = {
+  const initialState: AuthFormState = {
+    email: "demo@example.com",
+    password: "password123",
+    name: "Demo User",
     error: null,
     user: null,
   };
 
-  const store = createAuthStore(initialState);
+  const store = createStoreMachine<AuthFormState>(initialState, {
+    setEmail: (email: string) => (change) => ({ ...change.from, email }),
+    setPassword: (password: string) => (change) => ({ ...change.from, password }),
+    setName: (name: string) => (change) => ({ ...change.from, name }),
+    setError: (error: string | null) => (change) => ({ ...change.from, error }),
+    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
+    clearError: () => (change) => ({ ...change.from, error: null }),
+    reset: () => () => initialState,
+  });
 
   const machine = matchina(
     states,
@@ -88,17 +92,46 @@ export const createAuthMachine = () => {
   );
 
   setup(machine)(
-    transitionHooks(
-      { type: "failure", effect: (ev) => store.api.setError(ev.params[0] as string) },
-      { from: "LoggingIn", to: "LoggedIn", effect: (ev) => store.api.setUser(ev.params[0] as User) },
-      { from: "Registering", to: "LoggedIn", effect: (ev) => store.api.setUser(ev.params[0] as User) },
-      { to: "LoginForm", effect: () => store.api.clearError() },
-      { to: "RegisterForm", effect: () => store.api.clearError() },
-      { type: "logout", effect: () => store.api.reset() },
-    )
+    effect((ev) => {
+      if (ev.type === "failure" && ev.params[0]) {
+        store.dispatch("setError", ev.params[0] as string);
+      }
+      if (ev.type === "success" && ev.from.is("LoggingIn")) {
+        store.dispatch("setUser", ev.params[0] as User);
+      }
+      if (ev.type === "success" && ev.from.is("Registering")) {
+        store.dispatch("setUser", ev.params[0] as User);
+      }
+      if (ev.type === "success" && ev.from.is("RequestingPasswordReset")) {
+        // Password reset success doesn't set user, just confirms email sent
+      }
+      if (ev.type === "showLogin" || ev.type === "showRegister") {
+        store.dispatch("clearError");
+      }
+      if (ev.type === "logout") {
+        store.dispatch("reset");
+      }
+    })
   );
 
-  return Object.assign(machine, { store });
+  // Add ergonomic methods that handle store updates
+  const enhancedMachine = Object.assign(machine, {
+    store,
+    
+    success: (data: { user?: User; email?: string }) => {
+      if (data.user) {
+        store.dispatch("setUser", data.user);
+      }
+      machine.send("success");
+    },
+    
+    failure: (error: string) => {
+      store.dispatch("setError", error);
+      machine.send("failure");
+    }
+  });
+
+  return enhancedMachine;
 };
 
 export type AuthMachine = ReturnType<typeof createAuthMachine>;

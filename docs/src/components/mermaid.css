@@ -1,6 +1,6 @@
-/* Minimal base styles - let MermaidInspector.css handle theme-specific styling */
+/* Generic Mermaid styling for all Mermaid diagrams (not just visualizer) */
 
-/* Override hardcoded cluster label colors */
+/* Override hardcoded cluster label colors for all Mermaid diagrams */
 .cluster-label {
   fill: var(--sl-color-text) !important;
 }
@@ -31,7 +31,7 @@ html[data-theme="dark"] .cluster rect[style*="fill"] {
   stroke-width: 2px !important;
 }
 
-/* Dark mode edge label fixes */
+/* Dark mode edge label fixes for all Mermaid diagrams */
 html[data-theme="dark"] .edgeLabel p,
 html[data-theme="dark"] .edgeLabel span
 {
@@ -39,7 +39,7 @@ html[data-theme="dark"] .edgeLabel span
   color: white !important;
 }
 
-/* Fix bold edge label clipping */
+/* Fix bold edge label clipping for all Mermaid diagrams */
 .edgeLabel p, .edgeLabel span {
   font-weight: 500 !important;
   white-space: nowrap !important;
@@ -47,12 +47,12 @@ html[data-theme="dark"] .edgeLabel span
   border-radius: 3px !important;
 }
 
-/* Ensure edge labels don't get clipped */
+/* Ensure edge labels don't get clipped for all Mermaid diagrams */
 .edgeLabel {
   overflow: visible !important;
 }
 
-/* Light mode edge label background */
+/* Light mode edge label background for all Mermaid diagrams */
 .edgeLabel p, .edgeLabel span {
   background-color: rgba(255, 255, 255, 0.9) !important;
   color: #333 !important;

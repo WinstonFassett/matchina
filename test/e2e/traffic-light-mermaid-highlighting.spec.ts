@@ -73,8 +73,8 @@ test.describe('Traffic Light Mermaid State Highlighting Fix', () => {
   });
 
   test('flattened version - initial state Working.Red should be highlighted', async ({ page }) => {
-    // Switch to flattened mode
-    await page.getByTestId('mode-toggle-flattened').click();
+    // Switch to flattened mode using button text
+    await page.getByRole('button', { name: 'Flattened' }).click();
     await page.waitForTimeout(200);
     
     // Select Mermaid State Chart visualizer using test ID

@@ -775,7 +775,7 @@ npm run dev:docs  # Start live development with automatic updates
 For production builds and publishing:
 
 ```bash
-npm run build  # Build .mjs/.js files for npm publishing
+npm run build:lib  # Build .mjs/.js files for npm publishing
 ```
 
 The production build generates proper JavaScript files for npm consumers, while development uses TypeScript files directly for live updates.

@@ -1,7 +1,6 @@
 import mermaid from "mermaid";
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mermaid from "./Mermaid";
-import mermaidInspectorCss from "./MermaidInspector.css?raw";
 
 mermaid.initialize({
   themeVariables: {
@@ -16,7 +15,177 @@ mermaid.initialize({
     activeColor: 'rgb(147, 112, 219)',
     hoverColor: 'rgb(147, 112, 219)',
   },
-  themeCSS: mermaidInspectorCss,
+  themeCSS: `
+    /* Visualizer-specific styling - generic styling in mermaid.css */
+    
+    /* Container styling to prevent overflow */
+    .mermaid-container {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+    
+    .mermaid-container svg {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    /* Base node styling - ESSENTIAL for visual parity */
+    .node text {
+      fill: var(--sl-color-text) !important;
+    }
+    
+    .node p {
+      fill: var(--sl-color-text) !important;
+      color: var(--sl-color-text) !important;
+    }
+    
+    /* State text styling - target all state diagram text elements */
+    .state text,
+    .state-diagram-v2 text,
+    g[class*="state"] text,
+    .state span,
+    .state-diagram-v2 span,
+    g[class*="state"] span,
+    .state p,
+    .state-diagram-v2 p,
+    g[class*="state"] p {
+      fill: var(--sl-color-text) !important;
+      color: var(--sl-color-text) !important;
+    }
+    
+    .node circle.state-start {
+      fill: var(--sl-color-text);
+      stroke: var(--sl-color-text);
+    }
+    
+    /* State diagram nodes - transparent background */
+    .state-diagram-v2 g.state-node path,
+    g[class*="state"] path:not([class*="active"]) {
+      fill: transparent !important;
+      stroke: var(--sl-color-text-accent) !important;
+      stroke-width: 2px !important;
+    }
+    
+    /* Flowchart nodes - match state chart style */
+    .node rect {
+      fill: transparent !important;
+      stroke: var(--sl-color-text-accent) !important;
+      stroke-width: 2px !important;
+      rx: 5;
+      ry: 5;
+    }
+    
+    /* State chart compound state styling */
+    .statediagram-cluster rect,
+    .statediagram-cluster .inner rect {
+      fill: transparent !important;
+      background: transparent !important;
+      stroke: var(--sl-color-text-accent) !important;
+      stroke-width: 2px !important;
+    }
+    
+    /* Flowchart subgraph styling */
+    .cluster rect,
+    .cluster path {
+      fill: var(--sl-color-surface) !important;
+      stroke: var(--sl-color-text-accent) !important;
+      stroke-width: 1px !important;
+    }
+    
+    /* Cluster label styling */
+    .cluster-label {
+      fill: var(--sl-color-text) !important;
+    }
+    
+    .cluster-label .nodeLabel {
+      color: var(--sl-color-text) !important;
+    }
+    
+    /* Active state styling */
+    .active {
+      fill: var(--sl-color-accent-high) !important;
+      stroke: var(--sl-color-accent-high) !important;
+    }
+    
+    .node.active rect,
+    .node.active path,
+    .node.active circle,
+    .node.active ellipse,
+    .node.active polygon {
+      fill: var(--sl-color-accent-high) !important;
+      stroke: var(--sl-color-accent-high) !important;
+    }
+    
+    /* State diagram active node - target the path inside statediagram-state */
+    .node.statediagram-state.active path,
+    .statediagram-state.active path,
+    g[class*="state"].active path,
+    g.node.active path {
+      fill: var(--sl-color-accent-high) !important;
+      stroke: var(--sl-color-accent-high) !important;
+    }
+    
+    /* Override the transparent fill rule for active nodes */
+    g[class*="state"].active path:not([class*="active"]) {
+      fill: var(--sl-color-accent-high) !important;
+      stroke: var(--sl-color-accent-high) !important;
+    }
+    
+    .node.active text,
+    .node.active p {
+      fill: var(--sl-color-bg) !important;
+      color: var(--sl-color-bg) !important;
+    }
+    
+    /* Edge interactivity styling */
+    .edge-active {
+      stroke: var(--sl-color-accent-high) !important;
+      stroke-width: 3px !important;
+    }
+    
+    .edge-clickable {
+      cursor: pointer !important;
+      stroke: var(--sl-color-text-accent) !important;
+    }
+    
+    .edge-clickable:hover {
+      stroke-width: 4px !important;
+    }
+    
+    /* Edge label styling for interactivity - classes are on the p element */
+    p.edge-active {
+      color: var(--sl-color-accent-high) !important;
+      font-weight: 600 !important;
+      text-decoration: underline !important;
+    }
+    
+    p.edge-ancestor {
+      color: var(--sl-color-accent-high) !important;
+      font-weight: 600 !important;
+      text-decoration: underline !important;
+    }
+    
+    p.edge-inactive {
+      color: var(--sl-color-text) !important;
+    }
+    
+    p.edge-interactive {
+      cursor: pointer !important;
+    }
+    
+    p.edge-interactive:hover {
+      background-color: var(--sl-color-accent-high) !important;
+      color: var(--sl-color-bg) !important;
+    }
+    
+    /* Interactive edges */
+    .edge-interactive {
+      cursor: pointer !important;
+      position: relative;
+      z-index: 10 !important;
+    }
+  `,
 });
 
 function toStateDiagram(config: any, _callbackName: string) {
@@ -441,6 +610,8 @@ const MermaidInspector = memo(
     function applyHighlights(rootEl?: HTMLElement | null) {
       const root = rootEl ?? containerRef.current;
       if (!root) return;
+      
+      console.log('applyHighlights called with currentKey:', debouncedStateKeyRef.current);
 
       const currentKey = debouncedStateKeyRef.current;
       const currentActions = actionsRef.current;
@@ -478,7 +649,17 @@ const MermaidInspector = memo(
         const mermaidKey = currentKey.replace(/\./g, '_');
         const activeSel = `[id*="state-${mermaidKey}-"]`;
         const activeEl = root.querySelector(activeSel) as Element | null;
-        if (activeEl) activeEl.classList.add('state-highlight');
+        if (activeEl) {
+          activeEl.classList.add('state-highlight', 'active');
+          
+          // Force text color to be dark on dark theme
+          if (document.documentElement.getAttribute('data-theme') === 'dark') {
+            activeEl.querySelectorAll('text, p').forEach(text => {
+              (text as SVGElement).style.setProperty('color', 'var(--sl-color-bg)', 'important');
+              (text as SVGElement).style.setProperty('fill', 'var(--sl-color-bg)', 'important');
+            });
+          }
+        }
 
         if (currentKey.includes('.')) {
           const parentKey = currentKey.split('.')[0];
@@ -675,6 +856,35 @@ const MermaidInspector = memo(
         // All transitions are clickable; state machine guards against invalid transitions
         p.onclick = action ? () => action?.() : null;
       });
+      
+      // Style edge paths to match their labels
+      // Edge labels and edge paths are in the same order in the DOM
+      const edgeLabels = Array.from(root.querySelectorAll<HTMLElement>('g.edgeLabels > g.edgeLabel'));
+      const edgePathElements = Array.from(root.querySelectorAll<SVGPathElement>('g.edgePaths > path'));
+      
+      edgeLabels.forEach((label, index) => {
+        const p = label.querySelector('p');
+        const path = edgePathElements[index];
+        if (!p || !path) return;
+        
+        const isActive = p.classList.contains('edge-active');
+        const isAncestor = p.classList.contains('edge-ancestor');
+        const isInteractive = p.classList.contains('edge-interactive');
+        
+        // Reset path styling
+        path.style.removeProperty('stroke');
+        path.style.removeProperty('stroke-width');
+        
+        if (isActive || isAncestor) {
+          // Highlight active/ancestor edges with accent color and thicker stroke
+          path.style.setProperty('stroke', 'var(--sl-color-accent-high)', 'important');
+          path.style.setProperty('stroke-width', '3px', 'important');
+        }
+        
+        if (isInteractive) {
+          path.style.setProperty('cursor', 'pointer');
+        }
+      });
     }
 
     useEffect(() => {
@@ -703,58 +913,6 @@ const MermaidInspector = memo(
 );
 export { MermaidInspector };
 
-// Optional helper with UI to switch diagram types (default to statechart)
-export const MermaidInspectorWithSettings = memo(
-  ({
-    config,
-    stateKey,
-    actions,
-    interactive = true,
-  }: {
-    config: any;
-    stateKey: string;
-    actions?: Record<string, any>;
-    interactive?: boolean;
-  }) => {
-    const [diagramType, setDiagramType] = useState<'flowchart' | 'statechart'>('statechart');
-    return (
-      <div>
-        <div style={{
-          marginBottom: '12px',
-          padding: '8px',
-          backgroundColor: 'var(--sl-color-gray-6)',
-          borderRadius: '6px',
-          display: 'flex',
-          gap: '8px',
-          alignItems: 'center'
-        }}>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Diagram Type:</label>
-          <select
-            value={diagramType}
-            onChange={(e) => setDiagramType(e.target.value as 'flowchart' | 'statechart')}
-            style={{
-              padding: '4px 8px',
-              borderRadius: '4px',
-              border: '1px solid var(--sl-color-gray-4)',
-              backgroundColor: 'var(--sl-color-bg)',
-              color: 'var(--sl-color-text)'
-            }}
-          >
-            <option value="statechart">State Chart</option>
-            <option value="flowchart">Flowchart</option>
-          </select>
-        </div>
-        <MermaidInspector
-          config={config}
-          stateKey={stateKey}
-          actions={actions}
-          interactive={interactive}
-          diagramType={diagramType}
-        />
-      </div>
-    );
-  }
-);
 
 export function useDebouncedValue<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -770,4 +928,4 @@ export function useDebouncedValue<T>(value: T, delay?: number): T {
   return debouncedValue;
 }
 
-export default MermaidInspectorWithSettings;
+export default MermaidInspector;

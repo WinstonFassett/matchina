@@ -45,9 +45,21 @@ export function buildFlattenedShape(
     for (const [eventKey, target] of Object.entries(stateTransitions)) {
       let finalTarget = target;
       if (typeof target === "string") {
-        // For flattened machines, convert namespaced targets to leaf state names
+        // For flattened machines:
+        // - Root-level states: convert child targets to parent states
+        // - Child states: preserve full paths for child-to-child transitions
         if (target.includes('.')) {
-          finalTarget = target.split('.').pop() || target;
+          if (!parentKey) {
+            // Root-level state transitioning to child state - use parent
+            const targetParent = target.split('.').slice(0, -1).join('.');
+            finalTarget = targetParent || target;
+          } else {
+            // Child-to-child transition - preserve full path
+            finalTarget = target;
+          }
+        } else {
+          // Root-to-root transition, keep as is
+          finalTarget = target;
         }
         trans.set(String(eventKey), finalTarget);
       } else if (typeof target === "function") {
@@ -227,13 +239,23 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
           const result = machineFactory();
           const childMachine = result.machine || result;
 
-          // Mark current state as compound
+          // Get child machine's initial state
+          const childInitialState = childMachine.getState();
+          const childInitialKey = childInitialState?.key || 'Unknown';
+
+          // Mark current state as compound with initial child
           const stateNode = states.get(fullKey);
           if (stateNode) {
-            states.set(fullKey, { ...stateNode, isCompound: true });
+            const updatedNode = { 
+              ...stateNode, 
+              isCompound: true,
+              initial: childInitialKey 
+            };
+            states.set(fullKey, updatedNode);
           }
 
-          // Recursively walk child machine
+          // Recursively walk child machine with parent context
+          // This ensures child states are properly nested under the parent
           walkMachine(childMachine, fullKey);
         } catch (e) {
           // Skip if child machine fails to instantiate

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import type { CheckoutMachine } from "./machine";
-import type { CartData, PaymentData, ShippingData } from "./types";
 
 function getMissing(fields: Record<string, string>) {
   return Object.entries(fields)
@@ -9,23 +8,33 @@ function getMissing(fields: Record<string, string>) {
 }
 
 export function ShippingForm({
+  data,
   machine,
 }: {
+  data: any; // Store data
   machine: CheckoutMachine;
 }) {
-  const cart = machine.store.getState().cart;
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [zipCode, setZipCode] = useState("");
+  const {
+    cart,
+    shipping = { address: "", city: "", zipCode: "", error: null },
+  } = data;
+  const [address, setAddress] = useState(shipping.address || "");
+  const [city, setCity] = useState(shipping.city || "");
+  const [zipCode, setZipCode] = useState(shipping.zipCode || "");
+  React.useEffect(() => {
+    setAddress(shipping.address || "");
+    setCity(shipping.city || "");
+    setZipCode(shipping.zipCode || "");
+  }, [shipping.address, shipping.city, shipping.zipCode]);
 
   const missingFields = getMissing({ address, city, zipCode });
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
-      {machine.store.getState().error && (
+      {shipping.error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {machine.store.getState().error}
+          {shipping.error}
         </div>
       )}
       {missingFields.length > 0 && (
@@ -94,26 +103,32 @@ export function ShippingForm({
 }
 
 export function PaymentForm({
+  data,
   machine,
   handleAsyncProcessing,
 }: {
+  data: any; // Store data
   machine: CheckoutMachine;
-  handleAsyncProcessing: (data: PaymentData) => void;
+  handleAsyncProcessing: (data: any) => void;
 }) {
-  const cart = machine.store.getState().cart;
-  const shipping = machine.store.getState().shipping;
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvv, setCvv] = useState("");
+  const { cart, shipping, payment } = data;
+  const [cardNumber, setCardNumber] = useState(payment.cardNumber || "");
+  const [expiryDate, setExpiryDate] = useState(payment.expiryDate || "");
+  const [cvv, setCvv] = useState(payment.cvv || "");
+  React.useEffect(() => {
+    setCardNumber(payment.cardNumber || "");
+    setExpiryDate(payment.expiryDate || "");
+    setCvv(payment.cvv || "");
+  }, [payment.cardNumber, payment.expiryDate, payment.cvv]);
 
   const missingFields = getMissing({ cardNumber, expiryDate, cvv });
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
-      {machine.store.getState().error && (
+      {payment.error && (
         <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {machine.store.getState().error}
+          {payment.error}
         </div>
       )}
       {missingFields.length > 0 && (
@@ -172,7 +187,9 @@ export function PaymentForm({
       </div>
       <div className="flex space-x-4">
         <button
-          onClick={() => machine.backToShipping()}
+          onClick={() =>
+            machine.backToShipping()
+          }
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
         >
           Back to Shipping
@@ -197,30 +214,29 @@ export function PaymentForm({
 }
 
 export function CartForm({
+  data,
   machine,
 }: {
+  data: any; // Store data
   machine: CheckoutMachine;
 }) {
-  const [items, setItems] = useState(machine.store.getState().cart.items);
+  const [items, setItems] = useState(data.cart?.items || []);
 
   const handleQuantityChange = (id: string, quantity: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
+    setItems((prev: any) =>
+      prev.map((item: any) =>
         item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
       )
     );
   };
 
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const total = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
       <div className="space-y-4 mb-6">
-        {items.map((item) => (
+        {items.map((item: any) => (
           <div
             key={item.id}
             className="flex justify-between items-center p-4 border rounded border-current/10"

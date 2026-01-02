@@ -8,25 +8,27 @@
 
 **🚨 CRITICAL: AGENTS NEVER RUN DEV SCRIPTS - EVER**
 
-Dev scripts run forever and BLOCK agents from completing work. They waste resources and duplicate what the user is already running.
+**See [../AGENT_COMMANDS.md](../AGENT_COMMANDS.md) for complete command guidelines.**
 
-**🚫 FORBIDDEN - NEVER RUN AS AGENT:**
-```bash
-npm run dev             # Astro dev server at localhost:4321 (NEVER for agents)
-```
-
-**✅ AGENT-SAFE ALTERNATIVES:**
-```bash
-npm test                # Run tests to verify changes work
-npm run build           # Build to verify compilation
-npm run typecheck       # Fast type verification
-```
+**Quick summary:**
+- ✅ **Primary**: `npm test` 
+- 🚫 **Never**: `npm run dev*` (run forever)
+- ⚠️ **Builds**: Use sparingly, prefer tests
 
 **User runs these (agents assume they're already running):**
 ```bash
-npm run dev             # Astro dev server at localhost:4321 (USER RUNS)
-npm run build           # Build static site
-npm run deploy          # Deploy to GitHub Pages
+npm --workspace docs run dev    # Astro dev server
+npm run dev:docs              # Live dev server (human only)
+npm run build:docs            # Build docs (SLOW, VERBOSE - user runs when needed)
+npm run release                # Release process (user only)
+npm run publish                # Publish to npm (user only)
+npm run dry-run                # Dry run release (user only)
+```
+
+**Playwright for UI testing** (when needed):
+```bash
+npx playwright test --headed --timeout=5000    # Debug with console logs
+npx playwright test --reporter=line             # Clean CI output
 ```
 
 **Dev Server Hot Reloading:** The Astro dev server automatically picks up upstream library rebuilds. Restarting is usually NOT necessary for changes to the matchina library - only for changes to the docs configuration or major dependency changes.

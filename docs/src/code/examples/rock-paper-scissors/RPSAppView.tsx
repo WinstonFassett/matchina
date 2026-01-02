@@ -1,7 +1,6 @@
-import { createRPSMachine } from "./machine";
-import type { Move } from "./states";
+import type { Move, RPSMachine } from "./machine";
 
-const getIcon = (move: Move | undefined) => {
+const getIcon = (move: Move | null | undefined) => {
   switch (move) {
     case "rock":
       return "✊";
@@ -14,25 +13,22 @@ const getIcon = (move: Move | undefined) => {
   }
 };
 
-interface RPSAppViewProps {
-  machine: ReturnType<typeof createRPSMachine>;
-}
+export function RPSAppView({ machine }: { machine: RPSMachine }) {
+  const currentState = machine.getState();
+  const storeData = machine.store.getState();
 
-export function RPSAppView({ machine }: RPSAppViewProps) {
   return (
-    <div className="p-4 border rounded">
-      <h2 className="text-xl font-bold text-center mb-3">
-        Rock Paper Scissors
-      </h2>
-
-      {/* Score display */}
-      <div className="flex justify-between text-lg font-medium mb-6 px-4">
-        <div>Player: {machine.getState().data.playerScore}</div>
-        <div>Computer: {machine.getState().data.computerScore}</div>
+    <div className="max-w-md mx-auto p-6 bg-transparent rounded-lg border border-current/20">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold mb-2">Rock Paper Scissors</h1>
+        <div className="flex justify-around text-sm">
+          <div>Player: {storeData.playerScore}</div>
+          <div>Computer: {storeData.computerScore}</div>
+        </div>
       </div>
 
       {/* Game content based on state */}
-      {machine.getState().match({
+      {currentState.match({
         WaitingForPlayer: () => (
           <div className="text-center">
             <h3 className="text-lg mb-3">Choose your move:</h3>
@@ -58,100 +54,111 @@ export function RPSAppView({ machine }: RPSAppViewProps) {
             </div>
           </div>
         ),
-
-        PlayerChose: ({ playerMove }) => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">You chose {getIcon(playerMove)}</h3>
-            <p className="mb-4">Computer is choosing...</p>
-            <div className="flex justify-center gap-4 mb-4">
+        PlayerChose: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <h3 className="text-lg mb-3">You chose: {getIcon(storeData.playerMove)}</h3>
+              <div className="mb-4 text-2xl">VS</div>
+              <div className="text-2xl mb-4">🤖</div>
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={() => machine.computerSelectMove()}
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        ),
-        Judging: ({ playerMove, computerMove }) => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">Judging...</h3>
-            <p className="mb-4">
-              You chose {getIcon(playerMove)} vs Computer chose{" "}
-              {getIcon(computerMove)}
-            </p>
-            <div className="flex justify-center gap-4 mb-4">
-              <button
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => machine.judge()}
               >
-                See Result
+                Computer Move
               </button>
             </div>
-          </div>
-        ),
-        RoundComplete: (data: any) => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">Round Result:</h3>
-            <div className="flex justify-around items-center mb-4">
-              <div className="text-center">
-                <div className="text-4xl mb-2">{getIcon(data.playerMove)}</div>
-                <div>You</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl mb-2">vs</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl mb-2">
-                  {getIcon(data.computerMove)}
+          );
+        },
+        Judging: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <div className="flex justify-around items-center mb-4">
+                <div>
+                  <div className="text-4xl mb-2">{getIcon(storeData.playerMove)}</div>
+                  <div>You</div>
                 </div>
-                <div>Computer</div>
+                <div className="text-2xl">VS</div>
+                <div>
+                  <div className="text-4xl mb-2">{getIcon(storeData.computerMove)}</div>
+                  <div>Computer</div>
+                </div>
+              </div>
+              <button
+                onClick={() => machine.judge()}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Judge Round
+              </button>
+            </div>
+          );
+        },
+        RoundComplete: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <h3 className="text-lg mb-3">Round Result:</h3>
+              <div className="flex justify-around items-center mb-4">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">{getIcon(storeData.playerMove)}</div>
+                  <div>You</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl mb-2">vs</div>
+                  <div className="text-lg mb-2">{storeData.roundWinner || "Tie"}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl mb-2">{getIcon(storeData.computerMove)}</div>
+                  <div>Computer</div>
+                </div>
+              </div>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => machine.nextRound()}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Next Round
+                </button>
+                <button
+                  onClick={() => machine.newGame()}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  New Game
+                </button>
               </div>
             </div>
-            <p
-              className={`text-lg font-bold mb-4 ${
-                data.roundWinner === "player"
-                  ? "text-green-500"
-                  : data.roundWinner === "computer"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-              }`}
-            >
-              {data.roundWinner === "tie"
-                ? "It's a tie!"
-                : `${data.roundWinner === "player" ? "You" : "Computer"} won this round!`}
-            </p>
-            <div className="flex justify-center gap-4">
+          );
+        },
+        GameOver: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <h3 className="text-xl font-bold mb-3">Game Over!</h3>
+              <div className="mb-4">
+                <div className="text-lg mb-2">
+                  Final Score:
+                </div>
+                <div className="flex justify-around">
+                  <div>
+                    <div className="text-4xl mb-2">{storeData.playerScore}</div>
+                    <div>You</div>
+                  </div>
+                  <div>
+                    <div className="text-4xl mb-2">{storeData.computerScore}</div>
+                    <div>Computer</div>
+                  </div>
+                </div>
+              </div>
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => machine.nextRound()}
-              >
-                Next Round
-              </button>
-            </div>
-          </div>
-        ),
-
-        GameOver: (data: any) => (
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-3">Game Over!</h3>
-            <p
-              className={`text-lg font-bold mb-4 ${
-                data.winner === "player" ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {data.winner === "player" ? "You" : "Computer"} won the game!
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={() => machine.newGame()}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
-                Play Again
+                New Game
               </button>
             </div>
-          </div>
-        ),
+          );
+        },
       })}
     </div>
   );

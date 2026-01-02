@@ -27,27 +27,22 @@ export function createFlatCheckoutMachine() {
     // Parent Payment state - synthetic parent for all Payment.* states
     Payment: {
       back: "Shipping",
-      exit: "Shipping",
       "child.exit": "Review"
     },
     "Payment.MethodEntry": {
-      authorize: "Payment.Authorizing",
-      back: "Shipping"
+      authorize: "Payment.Authorizing"
     },
     "Payment.Authorizing": {
       authRequired: "Payment.AuthChallenge",
       authSucceeded: "Payment.Authorized",
-      authFailed: "Payment.AuthorizationError",
-      back: "Shipping"
+      authFailed: "Payment.AuthorizationError"
     },
     "Payment.AuthChallenge": {
       authSucceeded: "Payment.Authorized",
-      authFailed: "Payment.AuthorizationError",
-      back: "Shipping"
+      authFailed: "Payment.AuthorizationError"
     },
     "Payment.AuthorizationError": {
-      retry: "Payment.MethodEntry",
-      back: "Shipping"
+      retry: "Payment.MethodEntry"
     },
     "Payment.Authorized": {
       // Final state - no transitions

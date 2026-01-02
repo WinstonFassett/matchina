@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  reporter: 'html',
+  reporter: 'line', // REQUIRED: Use line reporter for agents, never HTML (starts server)
   timeout: 10000, // 10 seconds per test for verification
   expect: {
     timeout: 5000, // 5 seconds per assertion

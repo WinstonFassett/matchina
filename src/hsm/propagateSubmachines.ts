@@ -138,6 +138,12 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   
   // Flag to prevent recursion in handleReservedEvents
   let isHandlingReservedEvent = false;
+  
+  // Flag to prevent recursion in resolveExit during HSM operations
+  let isResolvingExit = false;
+  
+  // Flag to prevent recursion in sendHook final state detection
+  let isProcessingFinalState = false;
 
   // Install a send hook on any discovered machine to re-route non-root sends to root
   function hookMachine(m: OptionalDuckTypedMachine): void {
@@ -150,26 +156,28 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
         return innerSend(type, ...params);
       }
       
+      // Skip final state detection during HSM operations to prevent recursion
+      if (isProcessingFinalState) {
+        return innerSend(type, ...params);
+      }
+      
       // First, let the machine handle its own event
       const result = innerSend(type, ...params);
       
       // Check if the machine has reached a final state after handling the event
       const state = m.getState?.();
       if (state && isChildFinal(m as DuckTypedMachine, state)) {
-        let current: DuckTypedMachine | null = rootMachine;
-        while (current) {
-          const currentState = current.getState?.();
-          if (!currentState) break;
-          const child = getChildFromParentState(currentState);
-          if (!child) break;
-          current = child;
-        }
-        if (current) {
-          current.send?.('child.exit');
+        try {
+          isProcessingFinalState = true;
+          // Send child.exit to the ROOT machine so it can handle the transition
+          // The root has the transition handler for child.exit (e.g., Payment -> Review)
+          rootMachine.send?.('child.exit');
           // Skip hooking during reserved event handling to prevent recursion
           if (!isHandlingReservedEvent) {
             hookCurrentChain(true); // Notify on child.exit
           }
+        } finally {
+          isProcessingFinalState = false;
         }
       } else if (state && !type.startsWith('child.')) {
         // Use _internal flag to avoid infinite recursion but ensure notification happens
@@ -324,8 +332,14 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return;
     }
     
+    // Prevent recursion in resolveExit during HSM operations
+    if (isResolvingExit) {
+      return;
+    }
+    
     try {
       isHandlingReservedEvent = true;
+      isResolvingExit = true;
       
       // Handle child.change events - only process if targeting root
       if (type === 'child.change') {
@@ -349,6 +363,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       return ev;
     } finally {
       isHandlingReservedEvent = false;
+      isResolvingExit = false;
     }
   }
 

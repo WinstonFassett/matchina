@@ -14,9 +14,9 @@
   "exports": {
     ".": {
       "node": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.ts",
-        "require": "./dist/index.ts"
+        "types": "./src/index.ts",
+        "import": "./src/index.ts",
+        "require": "./src/index.ts"
       },
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
@@ -25,9 +25,9 @@
     },
     "./react": {
       "node": {
-        "types": "./dist/integrations/react.d.ts",
-        "import": "./dist/integrations/react.ts",
-        "require": "./dist/integrations/react.ts"
+        "types": "./src/integrations/react.ts",
+        "import": "./src/integrations/react.ts",
+        "require": "./src/integrations/react.ts"
       },
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
@@ -36,9 +36,9 @@
     },
     "./zod": {
       "node": {
-        "types": "./dist/integrations/zod.d.ts",
-        "import": "./dist/integrations/zod.ts",
-        "require": "./dist/integrations/zod.ts"
+        "types": "./src/integrations/zod.ts",
+        "import": "./src/integrations/zod.ts",
+        "require": "./src/integrations/zod.ts"
       },
       "types": "./dist/integrations/zod.d.ts",
       "import": "./dist/integrations/zod.mjs",
@@ -47,9 +47,9 @@
     },
     "./valibot": {
       "node": {
-        "types": "./dist/integrations/valibot.d.ts",
-        "import": "./dist/integrations/valibot.ts",
-        "require": "./dist/integrations/valibot.ts"
+        "types": "./src/integrations/valibot.ts",
+        "import": "./src/integrations/valibot.ts",
+        "require": "./src/integrations/valibot.ts"
       },
       "types": "./dist/integrations/valibot.d.ts",
       "import": "./dist/integrations/valibot.mjs",
@@ -58,9 +58,9 @@
     },
     "./inspect": {
       "node": {
-        "types": "./dist/inspect/index.d.ts",
-        "import": "./dist/inspect/index.ts",
-        "require": "./dist/inspect/index.ts"
+        "types": "./src/inspect/index.ts",
+        "import": "./src/inspect/index.ts",
+        "require": "./src/inspect/index.ts"
       },
       "types": "./dist/inspect/index.d.ts",
       "import": "./dist/inspect/index.mjs",
@@ -69,9 +69,9 @@
     },
     "./viz": {
       "node": {
-        "types": "./dist/viz/index.d.ts",
-        "import": "./dist/viz/index.ts",
-        "require": "./dist/viz/index.ts"
+        "types": "./src/viz/index.ts",
+        "import": "./src/viz/index.ts",
+        "require": "./src/viz/index.ts"
       },
       "types": "./dist/viz/index.d.ts",
       "import": "./dist/viz/index.mjs",
@@ -80,9 +80,9 @@
     },
     "./hsm": {
       "node": {
-        "types": "./dist/hsm/index.d.ts",
-        "import": "./dist/hsm/index.ts",
-        "require": "./dist/hsm/index.ts"
+        "types": "./src/hsm/index.ts",
+        "import": "./src/hsm/index.ts",
+        "require": "./src/hsm/index.ts"
       },
       "types": "./dist/hsm/index.d.ts",
       "import": "./dist/hsm/index.mjs",

@@ -8,7 +8,7 @@ export const TrafficLightView = ({
 }) => {
   useMachine(machine);
   const currentState = machine.getState();
-  const stateMessage = currentState.data.message;
+  const stateMessage = currentState.key;
   return (
     <div className="flex flex-col items-center">
       <div className="bg-gray-800 p-4 rounded-lg mb-4">

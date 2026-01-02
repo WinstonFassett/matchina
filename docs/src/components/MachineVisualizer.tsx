@@ -6,16 +6,16 @@
 import type { FactoryMachine } from "matchina";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
+import {
+  ForceGraphInspector,
+  HSMReactFlowInspector,
+  MermaidInspector,
+  SketchInspector
+} from 'matchina/viz';
 import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import {
-  MermaidInspector,
-  HSMReactFlowInspector,
-  ForceGraphInspector,
-  SketchInspector,
-} from 'matchina/viz';
 import { VizPicker, type VisualizerType } from './VizPicker';
-import { selectBestVisualizer, getPresetConfig } from './vizAutoSelect';
+import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
 
 export interface MachineVisualizerProps {
   // Core props
@@ -218,8 +218,9 @@ function renderVisualizer({
       );
 
     case 'forcegraph':
+      // ForceGraph needs explicit height constraint - it doesn't respect h-full well
       return (
-        <div className={commonClasses}>
+        <div className={commonClasses} style={{ height: '100%', maxHeight: '400px' }}>
           <ForceGraphInspector
             value={activeStatePath}
             definition={machine as any}

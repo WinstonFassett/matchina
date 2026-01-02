@@ -1,37 +1,30 @@
-import { useMachine } from "matchina/react";
 import { CartForm, PaymentForm, ShippingForm } from "./forms";
 import type { CheckoutMachine } from "./machine";
 
-export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
-  useMachine(machine);
+export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
   const currentState = machine.getState();
+  const storeData = machine.store.getState();
 
-  // Simulate async processing for payment
-  const handleAsyncProcessing = async (data: any) => {
-    machine.placeOrder(data);
-    setTimeout(() => {
-      if (Math.random() > 0.3) {
-        const orderId =
-          "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
-        machine.success({ ...data, orderId });
-      } else {
-        machine.failure({
-          ...data,
-          error: "Payment failed. Please try again.",
-        });
-      }
-    }, 2000);
+  const handlePlaceOrder = async () => {
+    if (Math.random() > 0.3) {
+      const orderId =
+        "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      machine.success({ orderId });
+    } else {
+      machine.failure("Payment failed. Please try again.");
+    }
   };
 
   return (
     <div className="max-w-2xl mx-auto rounded-lg border border-current/20 p-6">
       {currentState.match({
-        Cart: () => <CartForm machine={machine} />,
-        Shipping: () => <ShippingForm machine={machine} />,
+        Cart: () => <CartForm data={storeData} machine={machine} />,
+        Shipping: () => <ShippingForm data={storeData} machine={machine} />,
         Payment: () => (
           <PaymentForm
+            data={storeData}
             machine={machine}
-            handleAsyncProcessing={handleAsyncProcessing}
+            handleAsyncProcessing={handlePlaceOrder}
           />
         ),
         Processing: (_data) => (
@@ -43,83 +36,62 @@ export const CheckoutView = ({ machine }: { machine: CheckoutMachine }) => {
             </p>
           </div>
         ),
-        Success: (data) => (
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500">
-                <svg
-                  className="w-8 h-8 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+        Success: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-green-600 mb-2">
+                  Order Successful!
+                </h2>
+                <p className="opacity-70 mb-4">Order ID: {storeData.orderId}</p>
               </div>
-              <h2 className="text-2xl font-bold text-green-600 mb-2">
-                Order Successful!
-              </h2>
-              <p className="opacity-70 mb-4">Order ID: {data.orderId}</p>
-            </div>
-            <div className="border border-green-200 rounded p-4 mb-6">
-              <p className="text-green-800">
-                Your order has been placed successfully. You will receive a
-                confirmation email shortly.
-              </p>
-            </div>
-            <button
-              onClick={() => machine.newOrder()}
-              className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-            >
-              Place Another Order
-            </button>
-          </div>
-        ),
-        Failed: (data) => (
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500">
-                <svg
-                  className="w-8 h-8 text-red-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+              <div className="border border-green-200 rounded p-4 mb-6">
+                <p className="text-green-800">
+                  Your order has been placed successfully. You will receive a
+                  confirmation email shortly.
+                </p>
               </div>
-              <h2 className="text-2xl font-bold text-red-600 mb-2">
-                Order Failed
-              </h2>
-              <p className="opacity-70 mb-4">{data.error}</p>
-            </div>
-            <div className="flex space-x-4 justify-center">
               <button
-                onClick={() => machine.retry(data)}
+                onClick={() => machine.newOrder()}
+                className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
+              >
+                Place Another Order
+              </button>
+            </div>
+          );
+        },
+        Failed: () => {
+          const storeData = machine.store.getState();
+          return (
+            <div className="text-center">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-red-600 mb-2">
+                  Order Failed
+                </h2>
+                <p className="opacity-70 mb-4">{storeData.error}</p>
+              </div>
+              <div className="border border-red-200 rounded p-4 mb-6">
+                <p className="text-red-800">
+                  There was an error processing your order. Please try again.
+                </p>
+              </div>
+              <button
+                onClick={() => machine.retry()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
                 Try Again
               </button>
               <button
-                onClick={() => machine.backToCart(data.cart)}
+                onClick={() => machine.backToCart()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
                 Back to Cart
               </button>
             </div>
-          </div>
-        ),
+          );
+        },
       })}
     </div>
   );
-};
+}

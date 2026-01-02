@@ -31,7 +31,7 @@ export function StopwatchView({ machine }: { machine: StopwatchMachine }) {
             <button
               className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
               key={event}
-              onClick={() => machine.send(event)}
+              onClick={() => machine.send(event as any)}
             >
               {event}
             </button>

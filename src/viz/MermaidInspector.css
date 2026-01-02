@@ -60,13 +60,24 @@ g[class*="state"] p {
   color: var(--sl-color-text) !important;
 }
 
-/* Active state text styling - override with theme bg */
-.state-highlight span.nodeLabel,
-.state-highlight span.nodeLabel p,
-.state-highlight .state p,
-.state-highlight .state-diagram-v2 p,
-.state-highlight g[class*="state"] p,
-.state-highlight span > p {
+/* ACTIVE STATE FILL - higher specificity to override transparent rule */
+div[id^="mermaid-"] .state-highlight path,
+div[id^="mermaid-"] .state-highlight rect,
+div[id^="mermaid-"] .mermaid-active-state path,
+div[id^="mermaid-"] .mermaid-active-state rect {
+  fill: var(--sl-color-text-accent) !important;
+  stroke: var(--sl-color-text-accent) !important;
+}
+
+/* Active state text styling - override with theme bg - HIGH SPECIFICITY */
+div[id^="mermaid-"] .state-highlight span.nodeLabel,
+div[id^="mermaid-"] .state-highlight span.nodeLabel p,
+div[id^="mermaid-"] .state-highlight .state p,
+div[id^="mermaid-"] .state-highlight .state-diagram-v2 p,
+div[id^="mermaid-"] .state-highlight g[class*="state"] p,
+div[id^="mermaid-"] .state-highlight span > p,
+div[id^="mermaid-"] .state-highlight foreignObject p,
+div[id^="mermaid-"] .state-highlight text {
   color: var(--sl-color-bg) !important;
   fill: var(--sl-color-bg) !important;
 }
@@ -131,8 +142,12 @@ html[data-theme="dark"] .edgeLabel rect {
   stroke: var(--sl-color-gray-6) !important;
 }
 
-html[data-theme="dark"] .edgeLabel text {
-  fill: #e5e7eb !important;  /* Lighter gray for better contrast */
+#mermaid-1 html[data-theme="dark"] .edgeLabel text,
+#mermaid-1 html[data-theme="dark"] .edgeLabel p,
+div[id^="mermaid-"] html[data-theme="dark"] .edgeLabel text,
+div[id^="mermaid-"] html[data-theme="dark"] .edgeLabel p {
+  fill: var(--sl-color-text) !important;  /* Use theme text color for consistency */
+  color: var(--sl-color-text) !important;
 }
 
 /* Flowchart cluster styling removed - handled in mermaid.css */

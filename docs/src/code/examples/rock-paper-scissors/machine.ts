@@ -1,4 +1,4 @@
-import { createMachine, createStoreMachine, addStoreApi, withSubscribe, setup, effect } from "matchina";
+import { createMachine, createStoreMachine, setup, effect } from "matchina";
 import { states, type Move } from "./states";
 import { randomMove, determineWinner } from "./game-utils";
 
@@ -11,7 +11,16 @@ interface GameState {
   gameWinner: "player" | "computer" | null;
 }
 
-const createGameStore = (initialState: GameState) => {
+export function createRPSMachine() {
+  const initialState: GameState = {
+    playerMove: null,
+    computerMove: null,
+    playerScore: 0,
+    computerScore: 0,
+    roundWinner: null,
+    gameWinner: null,
+  };
+
   const store = createStoreMachine<GameState>(initialState, {
     setPlayerMove: (move: Move) => (change) => ({ ...change.from, playerMove: move }),
     setComputerMove: (move: Move) => (change) => ({ ...change.from, computerMove: move }),
@@ -35,20 +44,6 @@ const createGameStore = (initialState: GameState) => {
     reset: () => () => initialState,
     clearRound: () => (change) => ({ ...change.from, playerMove: null, computerMove: null, roundWinner: null }),
   });
-  return addStoreApi(withSubscribe(store));
-};
-
-export function createRPSMachine() {
-  const initialState: GameState = {
-    playerMove: null,
-    computerMove: null,
-    playerScore: 0,
-    computerScore: 0,
-    roundWinner: null,
-    gameWinner: null,
-  };
-
-  const store = createGameStore(initialState);
 
   const machine = createMachine(
     states,
@@ -76,27 +71,72 @@ export function createRPSMachine() {
   setup(machine)(
     effect((ev) => {
       if (ev.type === "selectMove" && ev.params[0]) {
-        store.api.setPlayerMove(ev.params[0] as Move);
+        store.dispatch("setPlayerMove", ev.params[0] as Move);
       }
       if (ev.type === "computerSelectMove") {
-        store.api.setComputerMove(randomMove());
+        store.dispatch("setComputerMove", randomMove());
       }
       if (ev.type === "judge") {
-        store.api.judgeRound();
-        store.api.checkGameOver();
+        const playerMove = store.getState().playerMove;
+        const computerMove = store.getState().computerMove;
+        if (playerMove && computerMove) {
+          const result = determineWinner(playerMove, computerMove);
+          store.dispatch("setResult", result);
+          if (result === "player") {
+            store.dispatch("incrementPlayerScore");
+          } else if (result === "computer") {
+            store.dispatch("incrementComputerScore");
+          }
+        }
+        machine.send("judge");
       }
       if (ev.type === "nextRound") {
-        store.api.clearRound();
-        const { gameWinner } = store.getState();
-        if (gameWinner) {
-          machine.send("gameOver");
-        }
+        store.dispatch("clearMoves");
+        machine.send("nextRound");
       }
       if (ev.type === "newGame") {
-        store.api.reset();
+        store.dispatch("reset");
+        machine.send("newGame");
       }
     })
   );
 
-  return Object.assign(machine, { store, randomMove });
+  const enhancedMachine = Object.assign(machine, {
+    store,
+    selectMove: (move: Move) => {
+      store.dispatch("setPlayerMove", move);
+      machine.send("selectMove");
+    },
+    computerSelectMove: () => {
+      store.dispatch("setComputerMove", randomMove());
+      machine.send("computerSelectMove");
+    },
+    judge: () => {
+      const playerMove = store.getState().playerMove;
+      const computerMove = store.getState().computerMove;
+      if (playerMove && computerMove) {
+        const result = determineWinner(playerMove, computerMove);
+        store.dispatch("setResult", result);
+        if (result === "player") {
+          store.dispatch("incrementPlayerScore");
+        } else if (result === "computer") {
+          store.dispatch("incrementComputerScore");
+        }
+      }
+      machine.send("judge");
+    },
+    nextRound: () => {
+      store.dispatch("clearMoves");
+      machine.send("nextRound");
+    },
+    newGame: () => {
+      store.dispatch("reset");
+      machine.send("newGame");
+    }
+  });
+
+  return enhancedMachine;
 }
+
+export type RPSMachine = ReturnType<typeof createRPSMachine>;
+export type { Move };

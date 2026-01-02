@@ -26,14 +26,18 @@ Matchina is a TypeScript-first library for building type-safe state machines wit
 ### Development (What Matters)
 ```bash
 npm run dev              # Vitest watch mode - use this most of the time
-npm test                 # Run all tests - verify before finishing
+npm test                 # Run all tests with coverage - verify before finishing
 npx vitest run test/file.test.ts              # Run specific test
 npx vitest run test/file.test.ts -t "pattern" # Run matching tests
 ```
 
+**Note**: Coverage is automatically included in `npm test`. If tests fail, fix them first - coverage won't report properly until tests pass.
+
 ### Other Commands (User Usually Runs)
+**See [AGENT_COMMANDS.md](./AGENT_COMMANDS.md) for complete command guidelines.**
 ```bash
-npm run build            # Build library + docs
+npm run build:lib       # Build library only (rarely needed)
+npm run build:all       # Build library + docs (SLOW, user runs when needed)
 npm run lint:fix         # Auto-fix linting
 npm run release          # Full release process
 ```

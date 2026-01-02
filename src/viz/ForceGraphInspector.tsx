@@ -272,9 +272,8 @@ export default function ForceGraphInspector({
         
         // Get the ACTUAL rendered dimensions from the container's CSS layout
         const containerWidth = ref.current.offsetWidth || 400;
-        const containerHeight = ref.current.offsetHeight || 300;
-        
-        console.log('ForceGraph: Honoring container CSS dimensions:', containerWidth, 'x', containerHeight);
+        // Cap height to prevent unbounded growth - ForceGraph is zoomable so doesn't need huge canvas
+        const containerHeight = Math.min(ref.current.offsetHeight || 300, 400);
         
         // ForceGraph should match its container, not override layout
         Graph.height(containerHeight)
@@ -617,17 +616,13 @@ export default function ForceGraphInspector({
     };
   }, [definition, diagram]);
 
-  // Update graph data and highlight on value change
+  // Update graph data on diagram change (but NOT on value change - that causes annoying re-zoom)
   useEffect(() => {
     if (graphInstance.current) {
       graphInstance.current.graphData(diagram);
-      
-      // Fit view when data updates
-      setTimeout(() => {
-        graphInstance.current?.zoomToFit(400, 50);
-      }, 100);
+      // Only zoomToFit on initial diagram load, not on every state change
     }
-  }, [diagram, valueFromProp]);
+  }, [diagram]);
 
   // Emit particle on state change
   useEffect(() => {
@@ -644,5 +639,5 @@ export default function ForceGraphInspector({
     }
   }, [lastEvent, prevState, diagram]);
 
-  return <div ref={ref} className="w-full h-full overflow-hidden max-w-full">{/* ForceGraph will render here */}</div>;
+  return <div ref={ref} className="w-full h-full overflow-hidden max-w-full" style={{ maxHeight: '100%' }}>{/* ForceGraph will render here */}</div>;
 }

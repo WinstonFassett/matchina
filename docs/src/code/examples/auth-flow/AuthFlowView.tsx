@@ -3,8 +3,13 @@ import { type AuthMachine } from "./machine";
 import React, { useState } from "react";
 
 function LoginFormView({ machine, handleAutoSuccess }: any) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const storeData = machine.store.getState();
+  const [email, setEmail] = useState(storeData.email || "");
+  const [password, setPassword] = useState(storeData.password || "");
+  React.useEffect(() => {
+    setEmail(storeData.email || "");
+    setPassword(storeData.password || "");
+  }, [storeData.email, storeData.password]);
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Log In</h2>
@@ -28,9 +33,9 @@ function LoginFormView({ machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {machine.store.getState().error && (
+        {storeData.error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{machine.store.getState().error}</p>
+            <p className="text-sm">{storeData.error}</p>
           </div>
         )}
         <button
@@ -70,8 +75,13 @@ function LoginFormView({ machine, handleAutoSuccess }: any) {
 }
 
 function RegisterFormView({ machine, handleAutoSuccess }: any) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const storeData = machine.store.getState();
+  const [name, setName] = useState(storeData.name || "");
+  const [email, setEmail] = useState(storeData.email || "");
+  React.useEffect(() => {
+    setName(storeData.name || "");
+    setEmail(storeData.email || "");
+  }, [storeData.name, storeData.email]);
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Register</h2>
@@ -95,9 +105,9 @@ function RegisterFormView({ machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {machine.store.getState().error && (
+        {storeData.error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{machine.store.getState().error}</p>
+            <p className="text-sm">{storeData.error}</p>
           </div>
         )}
         <button
@@ -133,7 +143,11 @@ function RegisterFormView({ machine, handleAutoSuccess }: any) {
 }
 
 function PasswordResetFormView({ machine, handleAutoSuccess }: any) {
-  const [email, setEmail] = useState("");
+  const storeData = machine.store.getState();
+  const [email, setEmail] = useState(storeData.email || "");
+  React.useEffect(() => {
+    setEmail(storeData.email || "");
+  }, [storeData.email]);
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
@@ -148,9 +162,9 @@ function PasswordResetFormView({ machine, handleAutoSuccess }: any) {
           />
         </div>
         {/* Show error if exists */}
-        {machine.store.getState().error && (
+        {storeData.error && (
           <div className="text-red-500 mb-4">
-            <p className="text-sm">{machine.store.getState().error}</p>
+            <p className="text-sm">{storeData.error}</p>
           </div>
         )}
         <button
@@ -192,25 +206,28 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
     setTimeout(() => {
       const state = machine.getState();
       if (state.is("LoggingIn")) {
+        const storeData = machine.store.getState();
         machine.success({
           user: {
             id: "user-123",
             name: "Demo User",
-            email: "demo@example.com",
+            email: storeData.email,
             avatar: "https://i.pravatar.cc/150?u=demo",
           },
         });
       } else if (state.is("Registering")) {
+        const storeData = machine.store.getState();
         machine.success({
           user: {
             id: "user-123",
-            name: "Demo User",
-            email: "demo@example.com",
-            avatar: "https://i.pravatar.cc/150?u=demo",
+            name: storeData.name,
+            email: storeData.email,
+            avatar: "https://i.pravatar.cc/150?u=" + storeData.email,
           },
         });
       } else if (state.is("RequestingPasswordReset")) {
-        machine.success({ email: "demo@example.com" });
+        const storeData = machine.store.getState();
+        machine.success({ email: storeData.email });
       }
     }, 1500);
   };
@@ -238,32 +255,35 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        LoginForm: () => (
+        LoginForm: (data) => (
           <LoginFormView
+            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />
         ),
 
-        RegisterForm: () => (
+        RegisterForm: (data) => (
           <RegisterFormView
+            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />
         ),
 
-        PasswordResetForm: () => (
+        PasswordResetForm: (data) => (
           <PasswordResetFormView
+            data={data}
             machine={machine}
             handleAutoSuccess={handleAutoSuccess}
           />
         ),
 
-        LoggingIn: (data) => (
+        LoggingIn: () => (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Logging In...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Authenticating...</p>
+            <p className="mb-6 opacity-70">Authenticating {machine.store.getState().email}</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
@@ -274,8 +294,8 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                     machine.success({
                       user: {
                         id: "user-123",
-                        name: "Demo User",
-                        email: "demo@example.com",
+                        name: machine.store.getState().name,
+                        email: machine.store.getState().email,
                         avatar: "https://i.pravatar.cc/150?u=demo",
                       },
                     })
@@ -299,7 +319,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Creating Account...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Creating account...</p>
+            <p className="mb-6 opacity-70">Registering {machine.store.getState().email}</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
@@ -310,9 +330,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                     machine.success({
                       user: {
                         id: "user-123",
-                        name: "Demo User",
-                        email: "demo@example.com",
-                        avatar: "https://i.pravatar.cc/150?u=demo",
+                        name: machine.store.getState().name,
+                        email: machine.store.getState().email,
+                        avatar: "https://i.pravatar.cc/150?u=" + machine.store.getState().email,
                       },
                     })
                   }
@@ -335,14 +355,14 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Sending Reset Link...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Sending reset link...</p>
+            <p className="mb-6 opacity-70">Sending to {machine.store.getState().email}</p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
               <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => machine.success({ email: "demo@example.com" })}
+                  onClick={() => machine.success({ email: machine.store.getState().email })}
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                 >
                   Reset Success
@@ -358,13 +378,15 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           </div>
         ),
 
-        PasswordResetSent: () => (
+        PasswordResetSent: () => {
+          const storeData = machine.store.getState();
+          return (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4 text-blue-600">
               Reset Link Sent!
             </h2>
             <p className="mb-6 opacity-70">
-              We've sent a password reset link to demo@example.com.
+              We've sent a password reset link to {storeData.email}.
             </p>
             <button
               onClick={() => machine.goToLogin()}
@@ -372,25 +394,26 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
             >
               Back to Log In
             </button>
-          </div>
-        ),
+            </div>
+          );
+        },
 
         LoggedIn: () => {
-          const user = machine.store.getState().user;
+          const storeData = machine.store.getState();
           return (
           <div className="text-center">
             <div className="mb-4">
-              {user?.avatar && (
+              {storeData.user?.avatar && (
                 <img
-                  src={user.avatar}
-                  alt={user.name}
+                  src={storeData.user.avatar}
+                  alt={storeData.user.name || "User"}
                   className="w-16 h-16 rounded-full mx-auto mb-4"
                 />
               )}
               <h2 className="text-2xl font-bold text-green-600">
-                Welcome, {user?.name}!
+                Welcome, {storeData.user?.name || "User"}!
               </h2>
-              <p className="opacity-70">{user?.email}</p>
+              <p className="opacity-70">{storeData.user?.email}</p>
             </div>
             <div className="bg-green-500/10 border border-green-500/20 rounded p-4 mb-4">
               <p className="text-green-600">You are successfully logged in!</p>

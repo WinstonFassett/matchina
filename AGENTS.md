@@ -260,78 +260,166 @@ This project uses a **two-tier ticket structure** for managing complex, multi-br
 - Work tickets depend on each other based on implementation order
 - Don't block on perfect organization—refine as you go
 
-## 🚨 CRITICAL: AGENTS NEVER RUN DEV SERVER
+## 🚨 CRITICAL: Agent Commands
 
-**ABSOLUTELY NO DEV SCRIPTS - EVER**
+**See [AGENT_COMMANDS.md](./AGENT_COMMANDS.md) for complete command guidelines.**
 
-Dev scripts are designed for humans and are COMPLETELY UNSUITABLE for agents:
-
-- **They NEVER RETURN** - Run forever until killed, blocking the agent
-- **They DUPLICATE RESOURCES** - User already has dev server running
-- **They KILL MOMENTUM** - Agent sits waiting for a process that never ends
-- **THEY WASTE RESOURCES** - Multiple dev servers running simultaneously
-
-**NEVER, EVER, UNDER ANY CIRCUMSTANCES RUN THESE COMMANDS:**
-```bash
-# ❌ FORBIDDEN - These run forever and block agents
-npm run dev              # Vitest watch (NEVER for agents)
-npm run dev:docs         # Live dev server (NEVER for agents)
-npm run dev:all          # Both servers (NEVER for agents)
-```
-
-**IF YOU NEED TO TEST:**
-```bash
-# ✅ AGENT-SAFE - These run and complete
-npm test                 # Run all tests with coverage
-npm run build            # Build core library only
-npm run build:all        # Build library + docs (when needed)
-npm run typecheck        # Type checking only
-```
-
-**User runs these (agents assume they're already running):**
-```bash
-npm run dev              # Vitest watch (human runs this)
-npm run dev:docs         # Live TypeScript development + docs server (human runs this)
-```
-
-**Live Development:**
-- `npm run dev:docs` provides live TypeScript development with automatic updates
-- No manual rebuild required when editing source files
-- Uses unbuild --stub with mkdist builder for browser compatibility
-- Full TypeScript support during development
-- **HUMAN ONLY** - Agents use `npm test` and `npm run build`
+**Quick summary:**
+- ✅ **Primary**: `npm test` 
+- ✅ **Type check**: `npm run test:types`
+- 🚫 **Never**: `npm run dev*` (run forever)
+- ⚠️ **Builds**: Use sparingly, prefer tests
 
 ## Testing Requirements
 
-**All bugs and features REQUIRE testing for completion:**
+**ALL WORK REQUIRES TESTING - NO EXCEPTIONS**
+
+### 🚨 MANDATORY: Visual Testing for UI Changes
+
+**For ANY UI component changes (including visualizers):**
+
+1. **BEFORE State Evidence** - MUST capture the broken state with:
+   - Browser screenshots showing the issue
+   - Console logs demonstrating the problem
+   - Clear reproduction steps
+
+2. **AFTER State Evidence** - MUST prove the fix with:
+   - Browser screenshots showing the corrected state  
+   - Console logs showing proper behavior
+   - Verification that the specific issue is resolved
+
+3. **Visual Comparison** - MUST compare before/after to prove the fix works
+
+**NO UI WORK IS COMPLETE WITHOUT VISUAL EVIDENCE**
+
+### Testing Hierarchy (Required in order):
 
 1. **Unit tests (preferred)** - `/test` with Vitest
-   - If comprehensive unit tests exist, manual testing may not be required
    - Test both type inference and runtime behavior
+   - If comprehensive unit tests exist, manual testing may not be required
 
-2. **Interactive UX (requires manual or automated browser testing)**
-   - User must test manually in browser, OR
+2. **Integration tests** - For component interactions
    - Use playwright for automated screenshot/interaction review
+   - Required for visualizers and non-React components
 
-3. **Puppeteer setup (review/e2e, not test/e2e)**
-   - Available for screenshot-based review
-   - Started with specific examples, can be expanded
-   - Located in `review/` for visual review, not formal e2e tests
+3. **Manual browser testing** - ONLY when unit tests are insufficient
+   - AGENT must perform the testing, not "assume user tests"
+   - Must capture screenshots and console logs
+   - Must verify the specific fix works
 
-4. **React Testing Library (future)**
-   - Preferred for React component testing
-   - Not set up yet - track as potential improvement
+4. **Evidence Documentation** - Required for ALL UI fixes
+   - Before/after screenshots
+   - Console output showing the fix
+   - Reproduction steps and verification
 
-**Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use playwright.
+**Bottom line:** Work is not complete without PROPER testing evidence AND clean git status. For UI changes, VISUAL VERIFICATION IS MANDATORY.
 
-## Playwright Usage
+## Playwright Testing Guidelines
 
-**CRITICAL: When running Playwright directly (npx playwright), DO NOT run the HTTP report server.**
+### 🚨 CRITICAL: Playwright Best Practices
 
-- Use line reporter instead: `npx playwright test --reporter=line`
-- The HTML report server can conflict with other dev servers
-- Line reporter provides sufficient output for test results
-- Only use HTML report when explicitly needed and no other servers are running
+**DO NOT CREATE SHITTY TESTS** - Flaky tests waste everyone's time.
+
+#### ✅ Good Playwright Practices
+```bash
+# Fast failure for debugging
+npx playwright test --timeout=5000           # 5s timeout, fail fast
+npx playwright test --headed                 # See what's happening
+npx playwright test --debug                  # Step through debugging
+```
+
+#### 🎯 Smart Selectors (REQUIRED)
+```typescript
+// ✅ GOOD - Use test IDs or stable selectors
+page.getByTestId('submit-button')
+page.locator('[data-testid="machine-state"]')
+page.locator('button[type="submit"]')  // stable attributes
+
+// ❌ BAD - Fragile selectors
+page.locator('div > div > span')         // DOM structure changes
+page.locator('.text-blue-500')           // CSS classes change
+page.locator('nth-child(3)')             // Order changes
+```
+
+#### 🖥️ Headless vs Headed
+```bash
+# Default: headless:true (preferred for CI)
+npx playwright test
+
+# REQUIRED for console logs: headless:false
+npx playwright test --headed    # Captures browser console
+npx playwright test --debug     # Interactive debugging + console
+```
+
+**IMPORTANT**: Console logs are ONLY available in headed mode. Use `--headed` when debugging browser issues.
+
+#### ⏱️ Timeouts - Fail Fast
+```typescript
+// ✅ GOOD - Short timeouts for fast failure
+test.setTimeout(10000)           // 10s total test timeout
+await expect(page.locator('button')).toBeVisible({timeout: 3000})  // 3s wait
+
+// ❌ BAD - Long timeouts hide problems
+await expect(page.locator('button')).toBeVisible({timeout: 30000}) // 30s default
+```
+
+### 📋 Test Classification
+
+#### Real Tests (`/test/e2e/`)
+- **Purpose**: Verify functionality works
+- **Requirements**: Reliable, consistent, fast
+- **Location**: `test/e2e/*.spec.ts`
+- **CI**: Must pass consistently
+
+#### Diagnostic Tools (`/review/` or `/test/e2e/diagnostic/`)
+- **Purpose**: Debugging, screenshots, console logs
+- **Requirements**: Useful for development, not CI
+- **Location**: `review/` or separate diagnostic folder
+- **CI**: Should NOT run in CI
+
+**DO NOT COMMIT DIAGNOSTIC TOOLS AS REAL TESTS**
+
+### 🎨 Visual Testing Requirements
+
+**Required for non-React 3rd party libraries** (Mermaid, etc.):
+```typescript
+// ✅ GOOD - Visual regression with specific targets
+await expect(page).toHaveScreenshot('mermaid-diagram.png')
+
+// ✅ GOOD - Element-specific visual checks
+const diagram = page.locator('[data-testid="mermaid-diagram"]')
+await expect(diagram).toBeVisible()
+await expect(diagram).toHaveScreenshot('diagram-state.png')
+```
+
+### 🚫 Common Playwright Mistakes
+
+1. **Long timeouts** - Hide real problems, waste time
+2. **Fragile selectors** - Break when DOM changes
+3. **No test IDs** - Force brittle selector usage
+4. **Headless debugging** - Can't see console logs
+5. **Mixing diagnostics with real tests** - Pollutes CI
+6. **Accepting flaky tests** - Ruins developer experience
+
+### 📝 Playwright Command Reference
+
+```bash
+# Development
+npx playwright test --project=chromium test/e2e/mermaid*.spec.ts  # Specific tests
+npx playwright test --headed --timeout=5000                      # Fast debugging
+npx playwright test --debug                                       # Step debugger
+
+# CI/Production
+npx playwright test --reporter=line                              # Clean output
+npx playwright test --project=chromium                           # Single browser
+
+# 🚨 CRITICAL: NEVER use HTML reporter
+# ❌ FORBIDDEN: npx playwright test --reporter=html  (starts server)
+# ❌ FORBIDDEN: Default config with reporter: 'html' (starts server)
+# ✅ ALWAYS: Use --reporter=line or config with reporter: 'line'
+```
+
+**IMPORTANT**: HTML reporter starts a server at http://localhost:9323 which blocks agents. NEVER use HTML reporter for automated testing.
 
 ## Development Resources
 
@@ -345,43 +433,7 @@ npm run dev:docs         # Live TypeScript development + docs server (human runs
 
 ## Commands
 
-**🚨 AGENT-SAFE COMMANDS ONLY:**
-
-```bash
-npm test                 # Run all tests with coverage (PREFERRED for verification)
-npm run build            # Build core library only (fast, preferred)
-npm run build:all        # Build core library + docs (when full build needed)
-npm run typecheck        # Type checking only (fast verification)
-```
-
-**🚫 FORBIDDEN - NEVER RUN AS AGENT:**
-```bash
-npm run dev              # Vitest watch mode (runs forever, blocks agent)
-npm run dev:docs         # Live dev server (runs forever, blocks agent)
-npm run dev:all          # Both servers (runs forever, blocks agent)
-```
-
-**User runs (agents assume these are already running):**
-
-```bash
-npm --workspace docs run dev    # Astro dev server at localhost:4321
-npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
-npm run release                # Release process (user only)
-npm run publish                # Publish to npm (user only)
-npm run dry-run                # Dry run release (user only)
-```
-
-**Key points:**
-
-- **AGENTS NEVER RUN DEV SCRIPTS** - they run forever and block momentum
-- **NEVER run `npm run build:docs` as agent** - extremely slow and verbose
-- **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
-- **NEVER run `npm run release`, `npm run publish`, or `npm run dry-run` as agent** - user only
-- **Prefer `npm test` for verification** - tests run and complete
-- **Prefer `npm run build` (core only) over `npm run build:all`** - much faster
-- **`npm run build` now only builds the core library** - docs build moved to `build:all`
-- **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
-- **When running builds**: Limit output ingestion (see Quality Gates section)
+**See [AGENT_COMMANDS.md](./AGENT_COMMANDS.md) for complete command reference.**
 
 ## Session Completion
 
@@ -472,6 +524,20 @@ npm test            # Can flood context if tests have logging
 
 - Never destroy work (we have git)
 - Do NOT do hard resets
+
+## 🚨 CRITICAL: Work Completion Criteria
+
+**Work is NOT complete until ALL of the following are met:**
+
+1. **Code Changes Implemented** - The actual fix/feature is coded
+2. **Testing Performed** - Appropriate testing completed per Testing Requirements section
+3. **Evidence Gathered** - For UI changes: before/after screenshots, console logs, verification
+4. **Git Status Clean** - All changes staged and ready for commit
+5. **Ticket Updated** - Beads ticket updated with evidence and completion status
+
+**NEVER mark work as complete without testing evidence.**
+**NEVER assume user will test - AGENT is responsible for verification.**
+**NEVER close UI tickets without visual proof the fix works.**
 
 ## Landing the Plane (Session Completion)
 

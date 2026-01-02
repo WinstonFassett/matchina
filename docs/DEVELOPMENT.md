@@ -417,11 +417,14 @@ describe("createMachine", () => {
 **Run Tests:**
 ```bash
 npm test                # Type check + Vitest with coverage (AGENT-SAFE)
-npm run typecheck       # TypeScript type checking only (AGENT-SAFE)
-npm run coverage        # Coverage report
+npm run test:types      # TypeScript type checking only (AGENT-SAFE)
 ```
 
+**Note**: Coverage is automatically included in `npm test`. If tests fail, fix them first - coverage won't report properly until tests pass.
+
 **🚨 NOTE: `npm run dev` is FOR HUMANS ONLY** - it runs forever and blocks agents. Use `npm test` for verification.
+
+**For complete command guidelines, see [../AGENT_COMMANDS.md](../AGENT_COMMANDS.md).**
 
 **Test Single File:**
 ```bash
@@ -438,10 +441,13 @@ Examples serve as integration tests:
 
 ### Build Validation
 
+**For complete command guidelines, see [../AGENT_COMMANDS.md](../AGENT_COMMANDS.md).**
+
 ```bash
-npm run build           # Build lib + docs
-npm run build:lib       # Library only (includes size checks)
-npm run test-build      # Validate types + docs
+npm run build:lib       # Library only (includes size checks) - rarely needed for agents
+npm run build:all       # Library + docs - SLOW, avoid unless explicitly needed  
+npm run test-build      # Validate types + docs - PREFERRED for comprehensive validation
+npm run test:types      # Type checking only - fast verification
 ```
 
 ---
@@ -608,8 +614,8 @@ export const createCheckoutMachine = () => {
 - UI works in browser
 - State machine behaves correctly
 
-**What matters less** (unless requested):
-- Builds (user runs when needed)
+**What matters less** (unless explicitly requested):
+- Builds (see [../AGENT_COMMANDS.md](../AGENT_COMMANDS.md) for guidance)
 - Typechecking (unless explicitly asked)
 - Linting (usually auto-fixed)
 

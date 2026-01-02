@@ -171,7 +171,12 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
   }
 
-  return states[transition as keyof typeof states](...ev.params) as any;
+  // Check if transition is a string key to prevent recursion
+  if (typeof transition === "string") {
+    return states[transition](...ev.params) as any;
+  }
+
+  return undefined;
 }
 
 export {
