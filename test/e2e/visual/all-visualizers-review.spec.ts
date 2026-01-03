@@ -1,8 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { generateScreenshotPath, ensureScreenshotDir } from '../../src/utils/screenshot-paths.js';
 
 const BASE_URL = '/matchina/examples/hsm-combobox';
-const SCREENSHOT_DIR = generateScreenshotPath('review/screenshots', 'all-visualizers');
 
 type Theme = 'light' | 'dark';
 type MachineMode = 'flat' | 'nested';
@@ -40,8 +38,7 @@ async function getExampleContainer(page: Page) {
 }
 
 function screenshotName(parts: string[]): string {
-  const fullPath = `${SCREENSHOT_DIR}/${parts.join('-')}.png`;
-  ensureScreenshotDir(fullPath);
+  const fullPath = `review/screenshots/all-visualizers/${parts.join('-')}.png`;
   return fullPath;
 }
 

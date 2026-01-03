@@ -4,8 +4,8 @@ export default defineConfig({
   testDir: './test/e2e',
   testMatch: [
     // Include functional and visual tests for CI
-    './test/e2e/functional/**/*.spec.ts',
-    './test/e2e/visual/**/*.spec.ts',
+    'functional/**/*.spec.ts',
+    'visual/**/*.spec.ts',
     // Exclude debug tests (agent observation tools)
   ],
   fullyParallel: false,
