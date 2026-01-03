@@ -2,6 +2,7 @@
  * Shared E2E test utilities to eliminate duplication
  */
 
+import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 // Common selectors
