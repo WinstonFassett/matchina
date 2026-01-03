@@ -34,31 +34,24 @@ test.describe('All Visualizers Complete Review', () => {
           await page.locator('.visualizer-controls button').filter({ hasText: buttonText }).click();
           await page.waitForTimeout(400);
           
-          // Take screenshot
-          await page.screenshot({
-            path: `review/screenshots/all-visualizers-complete/${visualizer}-${theme}-${mode}-1-inactive.png`,
-            fullPage: false
-          });
+          // Visual regression test - initial state
+          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
           
           // Trigger some interactions
           const input = page.locator('input[placeholder*="Type"]');
           await input.fill('type');
           await page.waitForTimeout(400);
           
-          await page.screenshot({
-            path: `review/screenshots/all-visualizers-complete/${visualizer}-${theme}-${mode}-2-typing.png`,
-            fullPage: false
-          });
+          // Visual regression test - typing state
+          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
           
           // Select a suggestion
           await page.keyboard.press('ArrowDown');
           await page.keyboard.press('Enter');
           await page.waitForTimeout(400);
           
-          await page.screenshot({
-            path: `review/screenshots/all-visualizers-complete/${visualizer}-${theme}-${mode}-3-selected.png`,
-            fullPage: false
-          });
+          // Visual regression test - selected state
+          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
         });
       });
     });
