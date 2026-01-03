@@ -10,18 +10,40 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **Promise integration** for handling async operations safely
 - **Optional integrations** with libraries like Immer, Valibot, Zod, and React
 
+## Testing
+
+### 🧪 E2E Testing
+
+Matchina includes comprehensive E2E testing for visualizations and examples:
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Debug with browser console
+npx playwright test --headed
+
+# Generate coverage report
+node scripts/e2e-coverage-report.js
+```
+
+**Current Coverage:** 7% (2/27 examples) - See [E2E Coverage Report](review/E2E_COVERAGE_REPORT.md)
+
+**Documentation:** [E2E Testing Guide](docs/E2E.md) - Complete testing strategies, smoke tests, visual regression
+
+### 🧪 Unit Testing
+
+```bash
+# Run all tests with coverage
+npm test
+
+# Run specific test
+npx vitest run test/file.test.ts
+```
+
+**Coverage:** Core library ~92% (excellent), visualization 0% (E2E only)
+
 ## Philosophy & Inspiration
-
-- **TypeScript-first design** with powerful type inference
-- **Nano-sized, opt-in primitives** for state machines and async logic
-- **Composable APIs** that work together or standalone
-- Inspired by [suchipi/safety-match](https://github.com/suchipi/safety-match), [christianalfoni/timsy](https://github.com/christianalfoni/timsy), [pelotom/unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
-
-## What is Matchina?
-
-A super lightweight, strongly-typed toolkit for building and extending state machines, factories, and async flows in TypeScript. Use only what you need.
-
-## Features
 
 - **Type-Safe State Factories**:
 

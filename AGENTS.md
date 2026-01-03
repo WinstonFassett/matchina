@@ -4,13 +4,18 @@ This project uses **bd** (beads) for issue tracking. For development patterns, s
 
 ## Agent Documentation Map
 
-**All agent guidance documents:**
+**Core agent guidance (short, focused):**
+- **`AGENTS.md`** (this file) - Session workflow, beads usage, critical type rules
+- **`AGENT_COMMANDS.md`** - Complete command reference (38 lines)
 
-- **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, commands
-- **`CLAUDE.md`** - Project overview, architecture, build system
-- **`DEVELOPMENT.md`** - Development patterns, example structure, path aliases
-- **`FEATURE-CHECKLIST.md`** - Feature development reference
-- **[Playwright Testing Guide](docs/AGENTS.md)` - Specialized UI testing guidance
+**Project documentation (referenced as needed):**
+- **`CLAUDE.md`** - Project overview, architecture, essential commands
+- **`DEVELOPMENT.md`** - Development patterns, example structure, testing
+- **`FEATURE-CHECKLIST.md`** - Feature development workflow
+
+**Testing documentation (when needed):**
+- **`docs/E2E.md`** - E2E testing guide, strategies, Playwright usage
+- **`AGENT_COMMANDS.md`** - Referenced for detailed command guidance
 
 ## ⚠️ CRITICAL: Type Inference Principles
 

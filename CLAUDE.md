@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Navigation
 
-- **`AGENTS.md`** - Session workflow, beads usage, commit patterns
+- **`AGENTS.md`** - Session workflow, beads usage, critical type rules
 - **`docs/DEVELOPMENT.md`** - Comprehensive development patterns, example structure, testing
 - **`docs/FEATURE-CHECKLIST.md`** - Step-by-step checklist for adding features
-- **`docs/AGENTS.md`** - Docs-specific patterns (Astro, MDX, examples)
+- **`docs/E2E.md`** - E2E testing guide, strategies, Playwright usage
 
 ## Project Overview
 

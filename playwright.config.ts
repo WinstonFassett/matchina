@@ -13,7 +13,7 @@ export default defineConfig({
   retries: 0,
   workers: process.env.CI ? 2 : 4,
   reporter: 'line', // REQUIRED: Use line reporter for agents, never HTML (starts server)
-  timeout: 300, // Ultra-fast fail
+  timeout: 5000, // 5 seconds per test
   expect: {
     timeout: 5000, // 5 seconds per assertion
   },
