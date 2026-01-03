@@ -72,17 +72,21 @@ cat review/E2E_COVERAGE_REPORT.md
 ## Quick Start
 
 ```bash
-# Generate coverage report
-node scripts/e2e-coverage-report.js
-
-# Run all e2e tests (functional + visual)
+# Run all E2E tests (functional + visual)
 npm run test:e2e
 
-# Run with UI for debugging
-npm run test:e2e:ui
+# SMOKE TESTS - Visual verification of all examples
+npm run test:e2e:smoke
 
-# Debug specific test
+# Smoke tests with browser (see what renders)
+npm run test:e2e:smoke:headed
+
+# Debug with browser console
+npm run test:e2e:ui
 npm run test:e2e:debug
+
+# Generate coverage report
+node scripts/e2e-coverage-report.js
 ```
 
 ## Test Structure
@@ -98,6 +102,8 @@ test/e2e/
 
 ### Core Commands
 - `npm run test:e2e` - Run all e2e tests (parallel)
+- `npm run test:e2e:smoke` - **🚨 SMOKE TESTS** - Visual verification of all examples
+- `npm run test:e2e:smoke:headed` - Smoke tests with browser (see what renders)
 - `npm run test:e2e:ui` - Run with Playwright UI
 - `npm run test:e2e:debug` - Run with step debugger
 - `npm run test:e2e:file` - Run single file

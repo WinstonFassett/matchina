@@ -230,25 +230,31 @@ export function setupTest(exampleName: keyof typeof EXAMPLES) {
 }
 
 /**
- * Smoke test template
+ * REAL Smoke test template - tests visual rendering
  */
 export async function runSmokeTest(page: Page, exampleName: keyof typeof EXAMPLES) {
   const config = await gotoExample(page, exampleName);
   
-  // Test light mode
-  await expect(page.locator(SELECTORS.pageContainer)).toBeVisible();
+  // Test light mode - VISUAL verification
+  await expect(page.locator('.space-y-4')).toBeVisible();
+  // Take screenshot to verify visual rendering
+  await expect(page.locator('.space-y-4')).toHaveScreenshot(`${exampleName}-light-initial.png`);
   
-  // Test dark mode
+  // Test dark mode - VISUAL verification  
   await setTheme(page, 'dark');
-  await expect(page.locator(SELECTORS.pageContainer)).toBeVisible();
+  await expect(page.locator('.space-y-4')).toBeVisible();
+  // Take screenshot to verify dark mode rendering
+  await expect(page.locator('.space-y-4')).toHaveScreenshot(`${exampleName}-dark-initial.png`);
   
-  // Test mode switching if available
+  // Test mode switching if available - VISUAL verification
   if (exampleName === 'hsm-combobox') {
     await setMode(page, 'flat');
-    await expect(page.locator(SELECTORS.pageContainer)).toBeVisible();
+    await expect(page.locator('.space-y-4')).toBeVisible();
+    await expect(page.locator('.space-y-4')).toHaveScreenshot(`${exampleName}-flat-initial.png`);
     
     await setMode(page, 'nested');
-    await expect(page.locator(SELECTORS.pageContainer)).toBeVisible();
+    await expect(page.locator('.space-y-4')).toBeVisible();
+    await expect(page.locator('.space-y-4')).toHaveScreenshot(`${exampleName}-nested-initial.png`);
   }
   
   return config;
