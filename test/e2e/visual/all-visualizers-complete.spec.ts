@@ -20,20 +20,24 @@ test.describe('All Visualizers Complete Review', () => {
           await selectVisualizer(page, visualizer, config.preset);
           await waitForVisualizer(page, visualizer);
           
-          await takeScreenshot(page, `${visualizer}-${theme}-${mode}-1-inactive`);
+          // Visual regression - initial state
+          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
           
           // Trigger interactions
           const input = page.locator('input[placeholder*="Type"]');
           await input.fill('type');
           await page.waitForTimeout(400);
           
-          await takeScreenshot(page, `${visualizer}-${theme}-${mode}-2-typing`);
+          // Visual regression - typing state
+          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
           
+          // Select a suggestion
           await page.keyboard.press('ArrowDown');
           await page.keyboard.press('Enter');
           await page.waitForTimeout(400);
           
-          await takeScreenshot(page, `${visualizer}-${theme}-${mode}-3-selected`);
+          // Visual regression - selected state
+          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
         });
       });
     });

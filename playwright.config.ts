@@ -13,9 +13,9 @@ export default defineConfig({
   retries: 0,
   workers: process.env.CI ? 2 : 4,
   reporter: 'line', // REQUIRED: Use line reporter for agents, never HTML (starts server)
-  timeout: 10000, // 10 seconds per test (8x average runtime)
+  timeout: 5000, // 5 seconds per test (reasonable buffer)
   expect: {
-    timeout: 5000, // 5 seconds per assertion
+    timeout: 2000, // 2 seconds per assertion (fail fast on bad selectors)
   },
   use: {
     baseURL: 'http://localhost:4321',

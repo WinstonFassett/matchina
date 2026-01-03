@@ -2,7 +2,7 @@
  * Shared E2E test utilities to eliminate duplication
  */
 
-import type { Page, Test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 // Common selectors
 export const SELECTORS = {
@@ -45,16 +45,54 @@ export const EXAMPLES = {
     preset: 'simple' as const,
     defaultViz: 'mermaid-statechart' as const,
     url: '/matchina/examples/counter'
+  },
+  'checkout': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/checkout'
+  },
+  'auth-flow': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/auth-flow'
+  },
+  'stopwatch': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch'
+  },
+  'rock-paper-scissors': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/rock-paper-scissors'
   }
 } as const;
 
 /**
- * Navigate to example and wait for load
+ * Fast-fail selector validation to prevent wasted time
+ */
+export async function validateSelector(page: Page, selector: string, timeout: number = 1000) {
+  try {
+    await page.waitForSelector(selector, { timeout });
+    return true;
+  } catch (error) {
+    // Fast fail - don't waste time on bad selectors
+    throw new Error(`Selector "${selector}" not found within ${timeout}ms. Check if element exists or selector is correct.`);
+  }
+}
+
+/**
+ * Navigate to example and wait for load with fast validation
  */
 export async function gotoExample(page: Page, exampleName: keyof typeof EXAMPLES) {
   const config = EXAMPLES[exampleName];
+  
+  // Navigate first
   await page.goto(config.url);
-  await page.waitForSelector(SELECTORS.pageContainer);
+  
+  // Fast validation - fail immediately if page structure is wrong
+  await validateSelector(page, SELECTORS.pageContainer, 2000);
+  
   return config;
 }
 
@@ -87,30 +125,32 @@ export async function selectVisualizer(page: Page, visualizer: string, preset: k
     throw new Error(`Visualizer "${visualizer}" not available for preset "${preset}". Available: ${availableViz.join(', ')}`);
   }
 
+  // Fast validation - check if picker exists first
+  await validateSelector(page, SELECTORS.visualizerPicker, 1000);
+
   const picker = page.locator(SELECTORS.visualizerPicker);
-  if (await picker.isVisible()) {
-    await picker.selectOption(visualizer);
-    await page.waitForTimeout(400);
-  } else {
-    throw new Error(`Visualizer picker not found for preset "${preset}"`);
-  }
+  await picker.selectOption(visualizer);
+  await page.waitForTimeout(400);
 }
 
 /**
- * Wait for visualizer to be ready
+ * Wait for visualizer to be ready with fast validation
  */
 export async function waitForVisualizer(page: Page, visualizer: string) {
+  // Fast timeout for visualizer detection
+  const visualizerTimeout = 2000;
+  
   switch (visualizer) {
     case 'forcegraph':
-      await page.waitForSelector('canvas', { timeout: 3000 });
+      await validateSelector(page, 'canvas', visualizerTimeout);
       break;
     case 'reactflow':
-      await page.waitForSelector('.react-flow__node', { timeout: 3000 });
+      await validateSelector(page, '.react-flow__node', visualizerTimeout);
       break;
     case 'sketch':
     case 'mermaid-statechart':
     case 'mermaid-flowchart':
-      await page.waitForSelector('svg', { timeout: 3000 });
+      await validateSelector(page, 'svg', visualizerTimeout);
       break;
     default:
       await page.waitForTimeout(1000); // Fallback
@@ -126,11 +166,20 @@ export async function typeInCombobox(page: Page, text: string) {
   await page.waitForTimeout(400);
 }
 
+/**
+ * Wait for suggestions with fast validation
+ */
 export async function waitForSuggestions(page: Page) {
-  await page.waitForSelector('.absolute.top-full button', { timeout: 2000 });
+  await validateSelector(page, '.absolute.top-full button', 2000);
 }
 
+/**
+ * Select first suggestion with validation
+ */
 export async function selectFirstSuggestion(page: Page) {
+  // Validate dropdown exists first
+  await validateSelector(page, '.absolute.top-full button', 1000);
+  
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await page.waitForTimeout(400);
@@ -155,7 +204,8 @@ export function generateTestMatrix<T extends string[]>(...arrays: T[]) {
  * Visual regression helper
  */
 export async function takeScreenshot(page: Page, name: string, selector: string = SELECTORS.pageContainer) {
-  await expect(page.locator(selector)).toHaveScreenshot(`${name}.png`);
+  // Note: expect() should be called in test files, not utilities
+  page.locator(selector).screenshot({ path: `review/screenshots/${name}.png` });
 }
 
 /**
@@ -171,7 +221,7 @@ export function captureConsole(page: Page) {
  * Test fixture setup
  */
 export function setupTest(exampleName: keyof typeof EXAMPLES) {
-  return async ({ page }: { page: Page }, use: (fixtures: any) => void, testInfo: Test) => {
+  return async ({ page }: { page: Page }, use: (fixtures: any) => void) => {
     captureConsole(page);
     const config = await gotoExample(page, exampleName);
     use({ config, exampleName });
