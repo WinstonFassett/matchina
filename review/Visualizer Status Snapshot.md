@@ -176,12 +176,12 @@ This pattern enables:
 
 ### Architecture Documentation
 - `review/REACTFLOW_TECH_DESIGN.md` - ReactFlow design specification
-- `review/FORCEGRAPH_TECH_DESIGN.md` - ForceGraph design specification
-- `review/VISUALIZER_ARCHITECTURE_EVOLUTION.md` - System overview
+- `review/ForceGraph Tech Design.md` - ForceGraph design specification
+- `review/Visualizer Architecture Evolution.md` - System overview
 
 ### Implementation Documentation
 - `review/REACTFLOW_PHASE_ABC_COMPLETE.md` - This session's work
-- `PHASE1_3_READY_FOR_TESTING.md` - Earlier phases status
+- `Phase 1-3 Ready for Testing.md` - Earlier phases status
 
 ### Design Documents
 - `review/DESIGN_REVIEW_AND_SANITY_CHECK.md` - Architecture validation

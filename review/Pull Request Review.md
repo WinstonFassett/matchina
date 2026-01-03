@@ -148,10 +148,10 @@ This is a **major platform-level release** that fundamentally transforms matchin
 
 | Document | Purpose |
 |----------|---------|
-| `COMMIT_ANALYSIS_REPORT.md` | Root cause analysis of Mermaid regression |
-| `MERMAID_INSPECTOR_800_LINE_ANALYSIS.md` | Complexity analysis |
-| `SHAPE_SYSTEM_ANALYSIS.md` | Shape protocol design |
-| `VISUALIZER_ARCHITECTURE_EVOLUTION.md` | Architecture decisions |
+| `Commit Analysis Report.md` | Root cause analysis of Mermaid regression |
+| `Mermaid Inspector 800 Line Analysis.md` | Complexity analysis |
+| `Shape System Analysis.md` | Shape protocol design |
+| `Visualizer Architecture Evolution.md` | Architecture decisions |
 | `TYPE_INFERENCE_GUIDE.md` | Type inference patterns |
 
 ---

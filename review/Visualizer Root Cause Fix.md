@@ -100,7 +100,7 @@ All were blocked by the `.shape` issue and are now unblocked.
 
 ## Files Modified
 - `src/factory-machine.ts` - Always attach shape (1 commit)
-- `review/SHAPE_SYSTEM_ANALYSIS.md` - Documentation of the issue and fix
+- `review/Shape System Analysis.md` - Documentation of the issue and fix
 
 ## Cleanup Done
 - Removed duplicate files: `src/viz/ReactFlowInspector/useStateMachineEdges.ts` and `useStateMachineNodes.ts` (they were in `/hooks` already)

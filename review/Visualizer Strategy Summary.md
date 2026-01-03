@@ -258,13 +258,13 @@ return <MermaidInspector config={config} />;
 ## Documentation Location
 
 ### Architecture Overview
-- `review/VISUALIZER_ARCHITECTURE_EVOLUTION.md` - Full evolution story
+- `review/Visualizer Architecture Evolution.md` - Full evolution story
 
 ### Action Plan
 - `review/REACTFLOW_ADAPTATION_PLAN.md` - Detailed debugging and fix plan
 
 ### This Document
-- `review/VISUALIZER_STRATEGY_SUMMARY.md` - Strategic context and next steps
+- `review/Visualizer Strategy Summary.md` - Strategic context and next steps
 
 ---
 
@@ -293,6 +293,6 @@ This is now codified in working implementations (Sketch, Mermaid). ReactFlow and
 
 ## References
 
-- `review/VISUALIZER_ARCHITECTURE_EVOLUTION.md` - Full evolution history and patterns
+- `review/Visualizer Architecture Evolution.md` - Full evolution history and patterns
 - `review/REACTFLOW_ADAPTATION_PLAN.md` - Detailed debugging plan for ReactFlow
 - `review/PHASE1_ELK_DEBUG_TRACE.md` - Specific ELK layout debugging steps (when created)

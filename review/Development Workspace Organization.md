@@ -70,8 +70,8 @@ graph TD
 
 ### Cross-Reference Example
 - **Source Code**: See [atom.ts implementation](../src/atom.ts)
-- **Related Analysis**: [Mermaid CSS Architecture](./MERMAID_CSS_ARCHITECTURE_ANALYSIS.md)
-- **Archive Reference**: [Previous design discussion](./archive/20251230-DESIGN_REVIEW_AND_SANITY_CHECK.md)
+- **Related Analysis**: [Mermaid CSS Architecture](./Mermaid CSS Architecture Analysis.md)
+- **Archive Reference**: [Previous design discussion](./archive/20251230-Design Review and Sanity Check.md)
 
 ## 🗂️ Naming Convention Discussion
 

@@ -52,7 +52,7 @@ All documentation is in `review/` directory with clear naming:
 - `PHASE1_2_3_COMPLETE.md` - Comprehensive overview of all three phases
 - `VISUALIZER_*` - Architecture and strategy docs
 - `REACTFLOW_TECH_DESIGN.md` - Design specification for Phase 4-5
-- `FORCEGRAPH_TECH_DESIGN.md` - Design specification for ForceGraph
+- `ForceGraph Tech Design.md` - Design specification for ForceGraph
 - `DESIGN_REVIEW_AND_SANITY_CHECK.md` - Validation of designs
 
 ## Parallel Work
@@ -168,4 +168,4 @@ You have everything needed to:
 - **Phase 2 Testing**: `review/PHASE2_PORTAL_DEBUG_TRACE.md`
 - **Phase 3 Testing**: `review/PHASE3_HSM_HIGHLIGHT_DEBUG_TRACE.md`
 - **Phase 4-5 Design**: `review/REACTFLOW_TECH_DESIGN.md`
-- **Architecture Context**: `review/VISUALIZER_ARCHITECTURE_EVOLUTION.md`
+- **Architecture Context**: `review/Visualizer Architecture Evolution.md`
