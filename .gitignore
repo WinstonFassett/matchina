@@ -18,10 +18,18 @@ types
 test-output-*.txt
 bun.lockb
 review/screenshots/
-review/.archive/
+review/archive/
 test-results/
 .astro/
 playwright-report/
+
+# Obsidian
+.obsidian/
+review/.obsidian/
+
+# VitePress cache and build
+.vitepress/cache/
+.vitepress/dist/
 
 # Beads archive - local storage for completed issues
 .beads/

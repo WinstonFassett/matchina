@@ -1,16 +1,16 @@
 # Agent Instructions for Matchina
 
-This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
+This project uses **bd** (beads) for issue tracking. For development patterns, see `DEVELOPMENT.md`.
 
 ## Agent Documentation Map
 
 **All agent guidance documents:**
 
-- **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, dev servers
+- **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, commands
 - **`CLAUDE.md`** - Project overview, architecture, build system
-- **`docs/DEVELOPMENT.md`** - Development patterns, example structure, path aliases
-- **`docs/FEATURE-CHECKLIST.md`** - Feature development reference
-- **`docs/AGENTS.md`** - Docs-specific patterns (Astro, MDX)
+- **`DEVELOPMENT.md`** - Development patterns, example structure, path aliases
+- **`FEATURE-CHECKLIST.md`** - Feature development reference
+- **[Playwright Testing Guide](docs/AGENTS.md)` - Specialized UI testing guidance
 
 ## ⚠️ CRITICAL: Type Inference Principles
 
@@ -71,204 +71,60 @@ git add .            # Stage changes
 git commit -m "..."  # Commit work before moving to next ticket
 ```
 
-### Finding Work (Task-Oriented)
-
-**CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
-
-- **NEVER ask user for priority decisions**
-- Work tickets in dependency order first, then by priority
-- Use `bd ready` output order - it's already sorted correctly
-- If multiple items are ready, start with the first one listed
-- Dependencies should be set up in beads, not guessed
-- **If dependency order is unclear, create a ticket to determine order** or find existing context/plan epic to organize
-
-## Stacked Branches & Propagation
-
-**Problem:** Long-running feature branches need to stay synchronized with `main` as PRs land.
-
-### Strategy: Merge-Based Propagation (Recommended)
-
-For long-running branches that diverged before establishing parent relationships, use **merge-based propagation** instead of rebasing:
-
-```bash
-# Step 1: Update primary feature branch from main
-git checkout feat/primary-feature
-git merge main
-# Resolve conflicts if any (usually documentation/config)
-git push origin feat/primary-feature -f
-
-# Step 2: Update downstream branches from their parent
-git checkout feat/downstream-feature
-git merge feat/primary-feature
-git push origin feat/downstream-feature -f
-```
-
-**Why merges work better:**
-- Preserves long-running branch identity (no history rewriting)
-- Conflicts isolated to single merge operations (not cascading)
-- Easier to recover if merge fails (can reset and retry)
-- Cleaner for branches that have diverged significantly
-
-### Future Branches: Git-Town Setup
-
-When creating NEW stacked branches, use git-town parent relationships from the start:
-
-```bash
-# Create with explicit parent chain
-git-town new-branch <feature> --parent main
-git-town new-branch <downstream> --parent <feature>
-
-# Keep synchronized
-git-town sync
-```
-
-**This prevents retrofit problems and makes synchronization automatic.**
-
-### Reference
-
-For detailed stacking strategy analysis, see `review/STACKING.md`.
-
-## 🚨 CRITICAL: TICKETS FIRST, THEN WORK - WITH EVIDENCE
-
-**ALWAYS CREATE TICKETS BEFORE STARTING WORK**
-
-**MANDATORY: ALL BUG AND FEATURE WORK MUST HAVE A TICKET**
-
-- **MUST** create a beads ticket before writing ANY code for bugs or features
-- **MUST** keep the ticket updated throughout development
-- **MUST** update ticket with findings, progress, and completion status
-- **NEVER** write bug fixes or feature code without a corresponding ticket
-
-1. **ASSESS** - Identify what needs to be done
-2. **CREATE TICKETS** - Create beads tickets for each piece of work
-3. **ORGANIZE** - Set up dependencies and priorities
-4. **THEN WORK** - Only after tickets exist and are organized
-5. **UPDATE WITH FINDINGS** - As you investigate, update tickets with analysis/plan BEFORE coding
-6. **GATHER EVIDENCE** - UI tickets must include evidence of the fix (screenshots, test results)
-
-### Why This Matters:
-
-- Prevents "I forgot to create a ticket for that"
-- Ensures work is tracked and visible
-- Allows proper dependency management
-- Provides clear work history
-- Prevents scope creep and forgotten tasks
-- Documents analysis and decisions for future reference
-
-### Ticket Creation Pattern:
-
-```bash
-# Before starting any work:
-bd create "Fix ReactFlow edges missing" type=bug priority=P2
-bd create "Add hierarchical support to ForceGraph" type=feature priority=P2
-bd create "Investigate rock paper scissors viz picker" type=task priority=P3
-
-# Then organize dependencies:
-bd update <ticket-id> --depends=<other-ticket-id>
-
-# Then mark as in progress and analyze:
-bd update <first-ticket-id> --status=in_progress
-
-# IMPORTANT: Update ticket with findings BEFORE coding
-bd update <first-ticket-id> --description "Investigation results: [root cause, plan, evidence]"
-```
-
-### Ticket Field Structure:
-
-Beads tickets have dedicated fields for proper organization:
-
-- **`--description`**: Concise problem statement and current state
-- **`--acceptance`**: Clear, actionable checklist of completion criteria
-- **`--design`**: Implementation plan and technical approach
-- **`--notes`**: Additional context, current state details, success metrics
-
-**Example structured update:**
-
-```bash
-bd update <id> \
-  --description "### Problem: X is broken because Y" \
-  --acceptance "- [ ] X works correctly\n- [ ] No regressions in Z" \
-  --design "### Plan: 1. Fix Y 2. Test X 3. Verify Z" \
-  --notes "### Current state: A, B, C examples affected"
-```
-
-### Evidence Requirements for UI Tickets:
-
-- **NEVER close UI tickets without evidence** that the user will accept
-- Evidence types: browser screenshots, test results, working examples
-- Document the before/after state
-- Include reproduction steps if applicable
-- For bugs: prove the issue is fixed in the actual UI
-- For features: demonstrate the functionality works as intended
-
-```bash
-# See what's ready to work on (with JSON for parsing)
-bd ready --json | jq '.[0]'
-
-# Get issue details (with JSON for parsing)
-bd show <issue-id> --json
-
-# List all open issues
-bd list --status=open
-```
-
-## Beads Ticket Organization
-
-### Methodology
-
-This project uses a **two-tier ticket structure** for managing complex, multi-branch work:
-
-**Long-running ancestor tickets** - Persist across branches for continuity:
-
-- **Context/Plan tickets** (label: `plan`, type: `epic`) - Branch organization, work stream mapping
-- **Review tickets** (label: `review`, type: `task`) - Detailed findings, cross-cutting concerns
-- **Documentation tickets** (label: `doc`) - Persistent reference material
-
-**Shorter-lived work tickets** - Scoped to specific implementations:
-
-- **Epics** (type: `epic`, optional label: `v2` for breaking changes) - Major feature areas
-- **Features/Tasks/Bugs** (type: `feature|task|bug`) - Concrete work items
-
-### Branch Planning Reference
-
-**System of record**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
-
-- Catchall for branch organization context
-- Contains work stream dependency graph
-- Living document updated as branches are created/merged
-- **Use `bd show matchina-19` for current branch planning context**
-
-**Filesystem artifact**: `review/BRANCH_PLAN.md`
-
-- Historical artifact, may not exist
-- Used as draft area before syncing to bd
-- Beads ticket is source of truth, not this file
-
-### Labeling Strategy
-
-- `v2` - Breaking release work (HSM is primary driver)
-- `plan` - Branch/work stream planning
-- `review` - Cross-cutting review findings
-- `doc` - Reference documentation
-
-### Dependency Pattern
-
-**Work items usually link to organizing areas** (epics, plans) but this is NOT a blocker:
-
-- Can create work tickets independently and groom dependencies iteratively
-- Long-running tickets (plan/review) typically depend on work epics
-- Work tickets depend on each other based on implementation order
-- Don't block on perfect organization—refine as you go
-
 ## 🚨 CRITICAL: Agent Commands
 
-**See [AGENT_COMMANDS.md](./AGENT_COMMANDS.md) for complete command guidelines.**
+### ✅ Agent-Preferred Commands
+```bash
+npm test                 # Primary verification (runs tests with coverage)
+npm run test:types       # Fast type checking only  
+npm run test-build       # Comprehensive validation (types + docs)
+```
 
-**Quick summary:**
-- ✅ **Primary**: `npm test` 
-- ✅ **Type check**: `npm run test:types`
-- 🚫 **Never**: `npm run dev*` (run forever)
-- ⚠️ **Builds**: Use sparingly, prefer tests
+**Note**: Coverage is automatically included in `npm test`. If tests fail, fix them first - coverage won't report properly until tests pass.
+
+### 🎭 Playwright (UI Testing)
+```bash
+# Fast failure debugging
+npx playwright test --timeout=5000           # 5s timeout, fail fast
+npx playwright test --headed                 # Console logs + visible
+npx playwright test --debug                  # Step through debugging
+
+# Production
+npx playwright test --reporter=line          # Clean CI output
+```
+
+**🚨 CRITICAL**: Console logs ONLY available in `--headed` mode. Use short timeouts to fail fast.
+
+### ⚠️ Build Scripts (Use Sparingly)
+```bash
+npm run build            # Build core library only (rarely needed)
+npm run build:all        # Build library + docs (SLOW, avoid unless needed)
+```
+
+### 🚨 FORBIDDEN - NEVER RUN AS AGENT:
+```bash
+npm run dev              # Vitest watch (runs forever, blocks agent)
+npm run dev:docs         # Live dev server (runs forever, blocks agent)
+npm run dev:all          # Both servers (runs forever, blocks agent)
+```
+
+## Key Principles
+- **Prefer tests over builds** - `npm test` for verification, NOT builds
+- **`npm run build` only builds core library** - doesn't validate examples/docs
+- **Never run dev scripts** - they run forever and block momentum
+- **Use `npm run test:types` for fast type checking**
+- **Use `npm run test-build` for comprehensive validation**
+- **Playwright: Use test IDs, short timeouts, headed mode for console logs**
+- **Separate real tests from diagnostic tools** - don't commit diagnostics as tests
+
+## User-Only Commands
+(Agents assume these are already running)
+```bash
+npm --workspace docs run dev    # Astro dev server
+npm run dev:docs              # Live dev server (human only)
+npm run build:docs            # Build docs (user runs when needed)
+npm run release/publish       # Release process (user only)
+```
 
 ## Testing Requirements
 
