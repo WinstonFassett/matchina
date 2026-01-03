@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setTheme, setMode, selectVisualizer, waitForVisualizer, takeScreenshot, EXAMPLES } from '../utils/test-helpers';
+import { setTheme, setMode, selectVisualizer, waitForVisualizer, gotoExample, EXAMPLES } from '../utils/test-helpers';
 
 test.describe('All Visualizers Complete Review', () => {
   const themes = ['light', 'dark'] as const;
@@ -11,8 +11,7 @@ test.describe('All Visualizers Complete Review', () => {
     themes.forEach(theme => {
       modes.forEach(mode => {
         test(`${theme} - ${mode} - ${visualizer}`, async ({ page }) => {
-          await page.goto(config.url);
-          await page.waitForSelector('.space-y-4');
+          await gotoExample(page, 'hsm-combobox');
           
           await setTheme(page, theme);
           await setMode(page, mode);
@@ -21,7 +20,7 @@ test.describe('All Visualizers Complete Review', () => {
           await waitForVisualizer(page, visualizer);
           
           // Visual regression - initial state
-          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
+          await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
           
           // Trigger interactions
           const input = page.locator('input[placeholder*="Type"]');
@@ -29,7 +28,7 @@ test.describe('All Visualizers Complete Review', () => {
           await page.waitForTimeout(400);
           
           // Visual regression - typing state
-          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
+          await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
           
           // Select a suggestion
           await page.keyboard.press('ArrowDown');
@@ -37,7 +36,7 @@ test.describe('All Visualizers Complete Review', () => {
           await page.waitForTimeout(400);
           
           // Visual regression - selected state
-          await expect(page.locator('.space-y-4')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
+          await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
         });
       });
     });

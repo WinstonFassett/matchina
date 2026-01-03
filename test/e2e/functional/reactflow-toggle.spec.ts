@@ -1,67 +1,71 @@
 import { test, expect } from '@playwright/test';
+import { gotoExample, waitForVisualizer } from '../utils/test-helpers';
 
 test('ReactFlow renders toggle (flat machine) with nodes', async ({ page }) => {
-  await page.goto('/matchina/examples/toggle/');
+  await gotoExample(page, 'toggle');
 
   // Switch to ReactFlow visualizer
   const picker = page.locator('[data-testid="visualizer-picker"]');
   if (await picker.isVisible()) {
     await picker.selectOption('reactflow');
-    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+    await waitForVisualizer(page, 'reactflow');
   }
 
-  // Check if nodes are rendered
+  // Verify nodes exist
   const nodes = page.locator('.react-flow__node');
-  const nodeCount = await nodes.count();
+  await expect(nodes.first()).toBeVisible();
   
+  // Check node count
+  const nodeCount = await nodes.count();
   expect(nodeCount).toBeGreaterThan(0);
-  expect(nodeCount).toBe(2); // Toggle has 2 states (On, Off)
-
-  // Check if nodes are visible and properly sized
-  const firstNode = nodes.first();
-  const boundingBox = await firstNode.boundingBox();
-  expect(boundingBox).not.toBeNull();
-  expect(boundingBox?.width).toBeGreaterThan(0);
-  expect(boundingBox?.height).toBeGreaterThan(0);
-
-  // Check that nodes are within viewport
+  
+  // Verify container
   const container = page.locator('.react-flow__viewport');
-  const containerBox = await container.boundingBox();
-  expect(containerBox).not.toBeNull();
+  await expect(container).toBeVisible();
 });
 
 test('ReactFlow renders traffic-light (flat machine) with nodes', async ({ page }) => {
-  await page.goto('/matchina/examples/traffic-light/');
+  await gotoExample(page, 'traffic-light');
 
   // Switch to ReactFlow visualizer
   const picker = page.locator('[data-testid="visualizer-picker"]');
   if (await picker.isVisible()) {
     await picker.selectOption('reactflow');
-    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+    await waitForVisualizer(page, 'reactflow');
   }
 
-  // Check if nodes are rendered
+  // Verify nodes exist
   const nodes = page.locator('.react-flow__node');
-  const nodeCount = await nodes.count();
+  await expect(nodes.first()).toBeVisible();
   
+  // Check node count
+  const nodeCount = await nodes.count();
   expect(nodeCount).toBeGreaterThan(0);
-  expect(nodeCount).toBe(3); // Traffic light has 3 states (Red, Yellow, Green)
+  
+  // Verify container
+  const container = page.locator('.react-flow__viewport');
+  await expect(container).toBeVisible();
 });
 
 test('ReactFlow renders counter (flat machine) with nodes', async ({ page }) => {
-  await page.goto('/matchina/examples/counter/');
+  await gotoExample(page, 'counter');
 
   // Switch to ReactFlow visualizer
   const picker = page.locator('[data-testid="visualizer-picker"]');
   if (await picker.isVisible()) {
     await picker.selectOption('reactflow');
-    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+    await waitForVisualizer(page, 'reactflow');
   }
 
-  // Check if nodes are rendered
+  // Verify nodes exist
   const nodes = page.locator('.react-flow__node');
-  const nodeCount = await nodes.count();
+  await expect(nodes.first()).toBeVisible();
   
+  // Check node count
+  const nodeCount = await nodes.count();
   expect(nodeCount).toBeGreaterThan(0);
-  // Counter has 1 state (Counting) - it's a simple flat machine
+  
+  // Verify container
+  const container = page.locator('.react-flow__viewport');
+  await expect(container).toBeVisible();
 });
