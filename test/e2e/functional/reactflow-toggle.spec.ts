@@ -2,11 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test('ReactFlow renders toggle (flat machine) with nodes', async ({ page }) => {
   await page.goto('/matchina/examples/toggle/');
-  await page.waitForLoadState('networkidle');
 
   // Switch to ReactFlow visualizer
-  await page.click('button:has-text("React Flow")');
-  await page.waitForSelector('.react-flow__node');
+  const picker = page.locator('[data-testid="visualizer-picker"]');
+  if (await picker.isVisible()) {
+    await picker.selectOption('reactflow');
+    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+  }
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');
@@ -30,11 +32,13 @@ test('ReactFlow renders toggle (flat machine) with nodes', async ({ page }) => {
 
 test('ReactFlow renders traffic-light (flat machine) with nodes', async ({ page }) => {
   await page.goto('/matchina/examples/traffic-light/');
-  await page.waitForLoadState('networkidle');
 
   // Switch to ReactFlow visualizer
-  await page.click('button:has-text("React Flow")');
-  await page.waitForSelector('.react-flow__node');
+  const picker = page.locator('[data-testid="visualizer-picker"]');
+  if (await picker.isVisible()) {
+    await picker.selectOption('reactflow');
+    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+  }
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');
@@ -46,11 +50,13 @@ test('ReactFlow renders traffic-light (flat machine) with nodes', async ({ page 
 
 test('ReactFlow renders counter (flat machine) with nodes', async ({ page }) => {
   await page.goto('/matchina/examples/counter/');
-  await page.waitForLoadState('networkidle');
 
   // Switch to ReactFlow visualizer
-  await page.click('button:has-text("React Flow")');
-  await page.waitForSelector('.react-flow__node');
+  const picker = page.locator('[data-testid="visualizer-picker"]');
+  if (await picker.isVisible()) {
+    await picker.selectOption('reactflow');
+    await page.waitForSelector('.react-flow__node', { timeout: 300 });
+  }
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');

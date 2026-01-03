@@ -13,7 +13,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'line', // REQUIRED: Use line reporter for agents, never HTML (starts server)
-  timeout: 10000, // 10 seconds per test for verification
+  timeout: 500, // Fail fast for debugging
   expect: {
     timeout: 5000, // 5 seconds per assertion
   },

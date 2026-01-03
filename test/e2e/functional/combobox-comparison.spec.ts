@@ -8,8 +8,6 @@ test.describe('Combobox Comparison - Flat vs Nested', () => {
     });
     
     await page.goto('/matchina/examples/hsm-combobox');
-    // Wait for page to load
-    await page.waitForLoadState('networkidle');
   });
 
   test('nested combobox shows suggestions correctly', async ({ page }) => {

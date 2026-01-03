@@ -12,7 +12,7 @@ test.describe('All Visualizers Complete Review', () => {
           await page.goto('/matchina/examples/hsm-combobox');
           
           // Wait for page to load
-          await page.waitForSelector('.hsm-visualizer-demo');
+          await page.waitForSelector('.machine-visualizer');
           
           // Set theme
           if (theme === 'dark') {
@@ -26,16 +26,16 @@ test.describe('All Visualizers Complete Review', () => {
           await page.waitForTimeout(400);
           
           // Select visualizer
-          const buttonText = visualizer === 'sketch' ? 'Sketch Systems Style' :
-                           visualizer === 'mermaid' ? 'Mermaid Diagram' :
-                           visualizer === 'reactflow' ? 'React Flow' :
-                           'Force Graph';
+          const visualizerValue = visualizer === 'sketch' ? 'sketch' :
+                             visualizer === 'mermaid' ? 'mermaid-statechart' :
+                             visualizer === 'reactflow' ? 'reactflow' :
+                             'forcegraph';
           
-          await page.locator('.visualizer-controls button').filter({ hasText: buttonText }).click();
+          await page.locator('[data-testid="visualizer-picker"]').selectOption(visualizerValue);
           await page.waitForTimeout(400);
           
           // Visual regression test - initial state
-          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
+          await expect(page.locator('.machine-visualizer')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-1-inactive.png`);
           
           // Trigger some interactions
           const input = page.locator('input[placeholder*="Type"]');
@@ -43,7 +43,7 @@ test.describe('All Visualizers Complete Review', () => {
           await page.waitForTimeout(400);
           
           // Visual regression test - typing state
-          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
+          await expect(page.locator('.machine-visualizer')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-2-typing.png`);
           
           // Select a suggestion
           await page.keyboard.press('ArrowDown');
@@ -51,7 +51,7 @@ test.describe('All Visualizers Complete Review', () => {
           await page.waitForTimeout(400);
           
           // Visual regression test - selected state
-          await expect(page.locator('.hsm-visualizer-demo')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
+          await expect(page.locator('.machine-visualizer')).toHaveScreenshot(`${visualizer}-${theme}-${mode}-3-selected.png`);
         });
       });
     });

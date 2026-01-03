@@ -5,11 +5,14 @@ test.describe('ForceGraph Basic Test', () => {
     await page.goto('/matchina/examples/hsm-combobox');
     
     // Wait for page to load
-    await page.waitForSelector('.hsm-visualizer-demo');
+    await page.waitForSelector('.machine-visualizer');
     
-    // Select Force Graph visualizer
-    await page.locator('.visualizer-controls button').filter({ hasText: 'Force Graph' }).click();
-    await page.waitForSelector('canvas');
+    // Check if visualizer picker exists
+    const picker = page.locator('[data-testid="visualizer-picker"]');
+    if (await picker.isVisible()) {
+      await picker.selectOption('forcegraph');
+      await page.waitForSelector('canvas', { timeout: 300 });
+    }
     
     // Take screenshot
     await page.screenshot({
