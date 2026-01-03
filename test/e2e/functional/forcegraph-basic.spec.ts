@@ -9,7 +9,7 @@ test.describe('ForceGraph Basic Test', () => {
     
     // Select Force Graph visualizer
     await page.locator('.visualizer-controls button').filter({ hasText: 'Force Graph' }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('canvas');
     
     // Take screenshot
     await page.screenshot({

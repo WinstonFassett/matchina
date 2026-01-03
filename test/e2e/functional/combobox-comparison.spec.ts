@@ -23,7 +23,7 @@ test.describe('Combobox Comparison - Flat vs Nested', () => {
     await page.fill('input[placeholder="Type to add tags..."]', 'typ');
     
     // Wait for suggestions to appear
-    await page.waitForTimeout(200);
+    await page.waitForSelector('.absolute.top-full button', { timeout: 2000 });
     
     // Debug: Check current state
     const stateDisplay = page.locator('.font-mono');
@@ -60,7 +60,7 @@ test.describe('Combobox Comparison - Flat vs Nested', () => {
     await page.fill('input[placeholder="Type to add tags..."]', 'typ');
     
     // Wait for suggestions to appear
-    await page.waitForTimeout(200);
+    await page.waitForSelector('.absolute.top-full button', { timeout: 2000 });
     
     // Debug: Check current state
     const stateDisplay = page.locator('.font-mono');

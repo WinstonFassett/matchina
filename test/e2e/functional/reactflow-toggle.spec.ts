@@ -6,7 +6,7 @@ test('ReactFlow renders toggle (flat machine) with nodes', async ({ page }) => {
 
   // Switch to ReactFlow visualizer
   await page.click('button:has-text("React Flow")');
-  await page.waitForTimeout(1000);
+  await page.waitForSelector('.react-flow__node');
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');
@@ -34,7 +34,7 @@ test('ReactFlow renders traffic-light (flat machine) with nodes', async ({ page 
 
   // Switch to ReactFlow visualizer
   await page.click('button:has-text("React Flow")');
-  await page.waitForTimeout(1000);
+  await page.waitForSelector('.react-flow__node');
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');
@@ -50,7 +50,7 @@ test('ReactFlow renders counter (flat machine) with nodes', async ({ page }) => 
 
   // Switch to ReactFlow visualizer
   await page.click('button:has-text("React Flow")');
-  await page.waitForTimeout(1000);
+  await page.waitForSelector('.react-flow__node');
 
   // Check if nodes are rendered
   const nodes = page.locator('.react-flow__node');
