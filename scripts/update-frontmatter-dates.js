@@ -6,50 +6,53 @@ import { execSync } from 'child_process';
 
 /**
  * Update markdown files with modification date frontmatter
- * Usage: node update-frontmatter-dates.js [--dry-run] [--git|--fs] [directory]
+ * Usage: node update-frontmatter-dates.js [--dry-run] [directory]
  * 
  * --dry-run: Show what would be changed without modifying files
- * --git: Use git commit date (default)
- * --fs: Use filesystem modification time
  * directory: Directory to scan (default: review)
  */
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
-const useGit = !args.includes('--fs');
 const targetDir = args.find(arg => !arg.startsWith('--')) || 'review';
 
 function getFileModTime(filePath) {
-  if (useGit) {
+  // Git dates when available, filesystem dates when not in git
+  try {
+    // Check if file is tracked in git
+    execSync(`git ls-files "${filePath}"`, { encoding: 'utf8', stdio: 'pipe' });
+    // If we get here, file is tracked in git
     try {
-      // Get git commit date (last commit that modified the file)
       const gitDate = execSync(`git log -1 --format="%ci" "${filePath}"`, { encoding: 'utf8' }).trim();
       return gitDate ? new Date(gitDate).toISOString().split('T')[0] : null;
-    } catch (error) {
-      // Fallback to filesystem time if git fails
+    } catch (gitError) {
+      // Git tracked but no commit history
       const stats = fs.statSync(filePath);
       return stats.mtime.toISOString().split('T')[0];
     }
-  } else {
-    // Use filesystem modification time
+  } catch (notTrackedError) {
+    // File not in git, use filesystem date
     const stats = fs.statSync(filePath);
     return stats.mtime.toISOString().split('T')[0];
   }
 }
 
 function getFileCreateTime(filePath) {
-  if (useGit) {
+  // Git creation date when available, filesystem dates when not in git
+  try {
+    // Check if file is tracked in git
+    execSync(`git ls-files "${filePath}"`, { encoding: 'utf8', stdio: 'pipe' });
+    // If we get here, file is tracked in git
     try {
-      // Get git creation date (first commit that created the file)
       const gitDate = execSync(`git log --follow --format="%ci" "${filePath}" | tail -1`, { encoding: 'utf8' }).trim();
       return gitDate ? new Date(gitDate).toISOString().split('T')[0] : null;
-    } catch (error) {
-      // Fallback to filesystem time if git fails
+    } catch (gitError) {
+      // Git tracked but no commit history
       const stats = fs.statSync(filePath);
       return stats.birthtime.toISOString().split('T')[0];
     }
-  } else {
-    // Use filesystem creation time
+  } catch (notTrackedError) {
+    // File not in git, use filesystem date
     const stats = fs.statSync(filePath);
     return stats.birthtime.toISOString().split('T')[0];
   }
@@ -66,6 +69,10 @@ function updateFileFrontmatter(filePath) {
     let newContent = content;
     const hasFrontmatter = content.startsWith('---');
     
+    // Extract H1 title for consistency
+    const h1Match = content.match(/^#\s+(.+)$/m);
+    const h1Title = h1Match ? h1Match[1].trim() : null;
+    
     if (hasFrontmatter) {
       // File already has frontmatter
       const frontmatterEnd = content.indexOf('---', 3);
@@ -77,12 +84,14 @@ function updateFileFrontmatter(filePath) {
       // Check if dates already exist and are current
       const existingDate = frontmatter.match(/date:\s*(.+)/)?.[1]?.trim();
       const existingCreated = frontmatter.match(/created:\s*(.+)/)?.[1]?.trim();
+      const existingTitle = frontmatter.match(/title:\s*(.+)/)?.[1]?.trim();
       
       const needsDateUpdate = existingDate !== modDate;
       const needsCreatedUpdate = !existingCreated || existingCreated !== createDate;
+      const needsTitleUpdate = h1Title && existingTitle !== h1Title;
       
-      if (!needsDateUpdate && !needsCreatedUpdate) {
-        return { updated: false, reason: 'Dates already current' };
+      if (!needsDateUpdate && !needsCreatedUpdate && !needsTitleUpdate) {
+        return { updated: false, reason: 'Dates and title already current' };
       }
       
       // Update frontmatter
@@ -104,10 +113,18 @@ function updateFileFrontmatter(filePath) {
         }
       }
       
+      if (needsTitleUpdate && h1Title) {
+        if (frontmatter.includes('title:')) {
+          updatedFrontmatter = updatedFrontmatter.replace(/title:\s*.*/m, `title: "${h1Title}"`);
+        } else {
+          updatedFrontmatter = updatedFrontmatter.trim() + `\ntitle: "${h1Title}"`;
+        }
+      }
+      
       newContent = `---${updatedFrontmatter}---${body}`;
     } else {
       // No frontmatter, add it
-      const title = path.basename(filePath, '.md')
+      const title = h1Title || path.basename(filePath, '.md')
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase());
       
@@ -133,7 +150,7 @@ function scanDirectory(dir) {
   }
   
   console.log(`🔍 Scanning ${dir} for markdown files...`);
-  console.log(`📅 Using ${useGit ? 'git commit' : 'filesystem'} dates`);
+  console.log(`📅 Using git dates when tracked, filesystem dates when not in git`);
   if (dryRun) console.log(`🔍 DRY RUN MODE - No files will be modified`);
   
   const results = [];

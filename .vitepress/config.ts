@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
 import { generateSidebar } from 'vitepress-sidebar'
+import { withMermaid } from '@intevel/vitepress-plugin-mermaid'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "Matchina Development",
   description: "Development workspace for the Matchina state machine library",
   
@@ -33,4 +34,4 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/WinstonFassett/matchina' }
     ]
   }
-})
+}))
