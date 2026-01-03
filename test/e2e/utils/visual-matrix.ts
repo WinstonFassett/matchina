@@ -9,26 +9,27 @@ import { generateTestMatrix, setTheme, setMode, selectVisualizer, waitForVisuali
  * Creates visual regression tests for all combinations
  */
 export function createVisualMatrixTests(exampleName: keyof typeof EXAMPLES) {
-  const themes = ['light', 'dark'] as const;
-  const modes = ['flat', 'nested'] as const;
+  const themes: string[] = ['light', 'dark'];
+  const modes: string[] = ['flat', 'nested'];
   const config = EXAMPLES[exampleName];
   
   // Generate all combinations
-  const combinations = generateTestMatrix(themes, modes, VISUALIZERS[config.preset]);
+  const combinations = generateTestMatrix(themes, modes, [...VISUALIZERS[config.preset]]);
   
   test.describe(`${exampleName} Visual Matrix`, () => {
-    combinations.forEach(([theme, mode, visualizer]: [string, string, string]) => {
+    combinations.forEach((combination) => {
+      const [theme, mode, visualizer] = combination;
       test(`${theme} - ${mode} - ${visualizer}`, async ({ page }) => {
         // Navigate and setup
         await page.goto(config.url);
         await page.waitForSelector('.space-y-4');
         
         // Set theme
-        await setTheme(page, theme);
+        await setTheme(page, theme as 'light' | 'dark');
         
         // Set mode (if example supports it)
         if (exampleName === 'hsm-combobox') {
-          await setMode(page, mode);
+          await setMode(page, mode as 'flat' | 'nested');
         }
         
         // Select visualizer
