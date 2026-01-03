@@ -8,7 +8,11 @@ import type { Page } from '@playwright/test';
 // Common selectors
 export const SELECTORS = {
   pageContainer: '.space-y-4',
+  visualizerControls: '[data-testid="visualizer-controls"]',
   visualizerPicker: '[data-testid="visualizer-picker"]',
+  visualizerContainer: '.viz-container',
+  appContainer: '.app-container',
+  mainContent: '.space-y-4 > div:nth-last-child(2)', // The main content area (visualizer + app)
   themeToggle: 'button[aria-label="Toggle dark mode"]',
   comboboxInput: 'input[placeholder*="Type"]',
   modeButtons: {
@@ -202,9 +206,24 @@ export function generateTestMatrix<T extends string[]>(...arrays: T[]) {
 }
 
 /**
- * Visual regression helper
+ * Focused screenshot - captures only the interactive example area
+ * Excludes documentation chrome, sidebar, header, footer, code tabs
  */
-export async function takeScreenshot(page: Page, name: string, selector: string = SELECTORS.pageContainer) {
+export async function takeFocusedScreenshot(page: Page, name: string) {
+  // Focus on the main content area (visualizer + app controls)
+  const contentArea = page.locator(SELECTORS.mainContent);
+  
+  // Wait for content to be visible and stable
+  await expect(contentArea.first()).toBeVisible();
+  
+  // Take screenshot of just the interactive area
+  await expect(contentArea.first()).toHaveScreenshot(`${name}.png`);
+}
+
+/**
+ * Visual regression helper - uses focused screenshots
+ */
+export async function takeScreenshot(page: Page, name: string, selector: string = SELECTORS.mainContent) {
   // Note: expect() should be called in test files, not utilities
   page.locator(selector).screenshot({ path: `review/screenshots/${name}.png` });
 }
@@ -230,24 +249,23 @@ export function setupTest(exampleName: keyof typeof EXAMPLES) {
 }
 
 /**
- * REAL Smoke test template - tests visual rendering
+ * REAL Smoke test template - tests visual rendering with focused screenshots
  */
 export async function runSmokeTest(page: Page, exampleName: keyof typeof EXAMPLES) {
   const config = await gotoExample(page, exampleName);
   
-  // Test light mode - VISUAL verification
-  // Use .first() to handle multiple .space-y-4 elements
-  await expect(page.locator('.space-y-4').first()).toBeVisible();
-  // Take screenshot to verify visual rendering
-  await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${exampleName}-light-initial.png`);
+  // Test light mode - VISUAL verification (focused on interactive area)
+  await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
+  // Take focused screenshot of just the interactive example area
+  await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-light-initial.png`);
   
   // Test dark mode - VISUAL verification (if theme toggle exists)
   const themeToggle = page.locator(SELECTORS.themeToggle);
   if (await themeToggle.isVisible()) {
     await setTheme(page, 'dark');
-    await expect(page.locator('.space-y-4').first()).toBeVisible();
-    // Take screenshot to verify dark mode rendering
-    await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${exampleName}-dark-initial.png`);
+    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
+    // Take focused screenshot of dark mode
+    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-dark-initial.png`);
   } else {
     console.log(`Theme toggle not found for ${exampleName}, skipping dark mode test`);
   }
@@ -255,12 +273,12 @@ export async function runSmokeTest(page: Page, exampleName: keyof typeof EXAMPLE
   // Test mode switching if available - VISUAL verification
   if (exampleName === 'hsm-combobox') {
     await setMode(page, 'flat');
-    await expect(page.locator('.space-y-4').first()).toBeVisible();
-    await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${exampleName}-flat-initial.png`);
+    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
+    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-flat-initial.png`);
     
     await setMode(page, 'nested');
-    await expect(page.locator('.space-y-4').first()).toBeVisible();
-    await expect(page.locator('.space-y-4').first()).toHaveScreenshot(`${exampleName}-nested-initial.png`);
+    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
+    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-nested-initial.png`);
   }
   
   return config;
