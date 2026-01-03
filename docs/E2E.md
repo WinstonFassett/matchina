@@ -1,8 +1,80 @@
 # E2E Testing Guide
 
+## 🚨 CRITICAL: Example Coverage Gap
+
+**Current Coverage: 7% (2/27 examples)**
+
+We have a **massive coverage gap** - only testing 2 examples out of 27 available examples.
+
+## Coverage Strategy
+
+### Level 1: Smoke Tests (Every PR) - **Priority: HIGH**
+- ✅ Every example in dark mode
+- ✅ Default visualizer auto-selection  
+- ✅ Basic load verification
+
+### Level 2: Basic Tests (Weekly) - **Priority: MEDIUM**
+- ✅ State transitions for critical examples
+- ✅ Light mode verification
+- ✅ Core functionality
+
+### Level 3: Full Tests (Release) - **Priority: LOW**
+- ✅ All visualizers for critical examples
+- ✅ All themes
+- ✅ Deep interaction testing
+
+## Current Coverage
+
+### ✅ Tested Examples (2/27)
+- `hsm-combobox` - Matrix testing (16 tests)
+- `hsm-traffic-light` - Basic functionality
+
+### ❌ Missing Examples (25/27)
+**Critical Missing:**
+- `checkout` - Complex HSM with payment flow
+- `auth-flow` - Authentication state machine  
+- `stopwatch` - Classic example with effects
+- `rock-paper-scissors` - Game logic example
+
+**Advanced Missing:**
+- `hsm-checkout` - Hierarchical checkout
+- `async-calculator` - Async state management
+- `promise-machine-fetcher` - Promise integration
+
+**Simple Missing:**
+- `toggle`, `counter`, `traffic-light` - Basic examples
+- All `fetcher-*` examples - Data fetching
+- All `stopwatch-*` variations - Different patterns
+
+## Automated Coverage Report
+
+Generate current coverage analysis:
+```bash
+node scripts/e2e-coverage-report.js
+```
+
+View detailed report:
+```bash
+cat review/E2E_COVERAGE_REPORT.md
+```
+
+## Test Priority Matrix
+
+| Priority | Examples | Visualizers | Themes | Depth | Frequency |
+|----------|----------|------------|--------|-------|-----------|
+| **1** | All 27 | Auto | Dark | Smoke | Every PR |
+| **2** | Critical 6 | Auto | Light | Basic | Weekly |  
+| **3** | Critical 6 | All 4 | Both | Full | Release |
+| **4** | All 27 | All 4 | Both | Deep | Major |
+
+**Critical 6 Examples:** checkout, auth-flow, stopwatch, rock-paper-scissors, hsm-combobox, hsm-traffic-light
+
 ## Quick Start
 
 ```bash
+# Generate coverage report
+node scripts/e2e-coverage-report.js
+
 # Run all e2e tests (functional + visual)
 npm run test:e2e
 
@@ -28,51 +100,64 @@ test/e2e/
 - `npm run test:e2e` - Run all e2e tests (parallel)
 - `npm run test:e2e:ui` - Run with Playwright UI
 - `npm run test:e2e:debug` - Run with step debugger
+- `npm run test:e2e:file` - Run single file
 
-### Legacy Scripts (Deprecated)
-- `test:e2e:visual` - **Broken** (files deleted)
-- `test:e2e:mermaid` - **Broken** (files deleted)  
-- `test:e2e:reactflow` - **Broken** (files deleted)
-- `test:e2e:forcegraph` - **Broken** (files deleted)
-- `test:e2e:file` - Run single file
-
-## Current Test Coverage
-
-### Functional Tests (14 files)
-- `combobox-comparison.spec.ts` - Flat vs nested behavior
-- `reactflow-toggle.spec.ts` - ReactFlow node rendering
-- `forcegraph-basic.spec.ts` - ForceGraph canvas rendering
-- `edge-interactivity-*.spec.ts` - Edge interactions
-- `hsm-traffic-light-*.spec.ts` - Traffic light examples
-
-### Visual Tests (11 files)
-- `all-visualizers-complete.spec.ts` - Matrix testing (16 tests)
-- Other visual tests for specific scenarios
+### Coverage Analysis
+- `node scripts/e2e-coverage-report.js` - Generate coverage report
 
 ## Running Specific Tests
 
-### By Category
+### By Coverage Level
 ```bash
-# Functional only
-npx playwright test test/e2e/functional/
+# Smoke tests (all examples, dark mode)
+npx playwright test --grep "dark mode"
 
-# Visual only  
-npx playwright test test/e2e/visual/
+# Basic tests (critical examples)
+npx playwright test --grep "checkout|auth-flow|stopwatch"
 
-# Single test file
-npx playwright test test/e2e/functional/combobox-comparison.spec.ts
+# Full tests (all visualizers)
+npx playwright test --grep "all-visualizers"
 ```
 
 ### By Example
 ```bash
-# Combobox tests
-npx playwright test --grep "combobox"
+# Specific example
+npx playwright test --grep "checkout"
 
-# Traffic light tests
-npx playwright test --grep "traffic-light"
+# HSM examples
+npx playwright test --grep "hsm-"
 
-# ReactFlow tests
-npx playwright test --grep "reactflow"
+# Simple examples  
+npx playwright test --grep "toggle|counter|traffic-light"
+```
+
+## Writing Smoke Tests (Level 1)
+
+### Template for New Examples
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('ExampleName Smoke Tests', () => {
+  test('loads in light mode', async ({ page }) => {
+    await page.goto('/matchina/examples/example-name');
+    await page.waitForSelector('.machine-visualizer');
+    
+    // Basic smoke check
+    await expect(page.locator('.machine-visualizer')).toBeVisible();
+  });
+
+  test('loads in dark mode', async ({ page }) => {
+    await page.goto('/matchina/examples/example-name');
+    await page.waitForSelector('.machine-visualizer');
+    
+    // Switch to dark mode
+    await page.click('button[aria-label="Toggle dark mode"]');
+    await page.waitForTimeout(200);
+    
+    // Dark mode smoke check
+    await expect(page.locator('.machine-visualizer')).toBeVisible();
+  });
+});
 ```
 
 ## Configuration
@@ -87,86 +172,36 @@ npx playwright test --grep "reactflow"
 - **Headless** by default
 - **Viewport**: 1280×900
 
-## Writing Tests
-
-### Test Structure
-```typescript
-import { test, expect } from '@playwright/test';
-
-test('descriptive test name', async ({ page }) => {
-  await page.goto('/matchina/examples/example-name');
-  
-  // Wait for component
-  await page.waitForSelector('.machine-visualizer');
-  
-  // Test functionality
-  await expect(page.locator('button')).toBeVisible();
-});
-```
-
-### Best Practices
-1. **Use relative URLs** - `/matchina/examples/...`
-2. **Wait for selectors** - Not arbitrary timeouts
-3. **Use data-testid** - Not CSS classes
-4. **Test outcomes** - Not implementation details
-5. **Keep tests fast** - 300ms timeout
-
-## Debugging
-
-### UI Mode
-```bash
-npm run test:e2e:ui
-```
-- Interactive test runner
-- Click to run specific tests
-- See live browser
-
-### Debug Mode  
-```bash
-npm run test:e2e:debug
-```
-- Step through test execution
-- Inspect page state
-- Console debugging
-
-### Headed Mode
-```bash
-npx playwright test --headed
-```
-- See browser actions
-- Access DevTools
-- Screenshot debugging
-
 ## CI Integration
 
 ### GitHub Actions
 ```yaml
+- name: Generate Coverage Report
+  run: node scripts/e2e-coverage-report.js
+
 - name: Run E2E Tests
   run: npm run test:e2e
 ```
 
-### Local Testing
-```bash
-# Start dev server first
-npm run dev:docs
-
-# Then run tests
-npm run test:e2e
+### Smoke Tests in CI
+```yaml
+- name: Smoke Tests (All Examples)
+  run: npx playwright test --grep "dark mode"
 ```
 
 ## Troubleshooting
 
+### Coverage Gaps
+1. Run coverage report: `node scripts/e2e-coverage-report.js`
+2. Identify missing examples
+3. Add smoke tests for critical examples first
+
 ### Tests Not Found
 - Check dev server is running
-- Verify baseURL in playwright.config.ts
+- Verify example path in URL
 - Check testMatch patterns
 
 ### Timeouts
-- Increase timeout in playwright.config.ts
+- Increase timeout for complex examples
 - Check for slow network requests
 - Verify element selectors
-
-### Flaky Tests
-- Use proper waits instead of timeouts
-- Add retry logic
-- Check for race conditions
