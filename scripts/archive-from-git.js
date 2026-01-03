@@ -10,7 +10,7 @@ import path from 'path';
  */
 
 const today = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-const archiveDir = 'review/.archive';
+const archiveDir = 'review/archive';
 
 function archiveFile(filePath) {
   if (!fs.existsSync(filePath)) {
