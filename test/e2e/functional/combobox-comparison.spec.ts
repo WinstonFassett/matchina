@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { gotoExample, setMode, typeInCombobox, waitForSuggestions, selectFirstSuggestion, EXAMPLES } from '../utils/test-helpers';
 
 test.describe('Combobox Comparison - Flat vs Nested', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,144 +8,104 @@ test.describe('Combobox Comparison - Flat vs Nested', () => {
       console.log('Browser console:', msg.text());
     });
     
-    await page.goto('/matchina/examples/hsm-combobox');
+    await gotoExample(page, 'hsm-combobox');
   });
 
   test('nested combobox shows suggestions correctly', async ({ page }) => {
-    // Switch to nested mode - use more specific selector
-    await page.click('button:has-text("Nested (Hierarchical)")');
+    // Switch to nested mode
+    await setMode(page, 'nested');
     
     // Focus the combobox
     await page.click('input[placeholder="Type to add tags..."]');
     
     // Type something that should trigger suggestions
-    await page.fill('input[placeholder="Type to add tags..."]', 'typ');
+    await typeInCombobox(page, 'typ');
     
     // Wait for suggestions to appear
-    await page.waitForSelector('.absolute.top-full button', { timeout: 2000 });
+    await waitForSuggestions(page);
     
-    // Debug: Check current state
-    const stateDisplay = page.locator('.font-mono');
-    const stateText = await stateDisplay.first().textContent();
+    // Verify suggestions are visible
+    const typescriptSuggestion = page.locator('button').filter({ hasText: 'typescript' });
+    await expect(typescriptSuggestion).toBeVisible();
+    
+    // Verify suggestions count
+    const suggestions = page.locator('.absolute.top-full button');
+    const suggestionCount = await suggestions.count();
+    expect(suggestionCount).toBeGreaterThan(0);
+    
+    // Log state for debugging
+    const stateDisplay = page.locator('.state-display');
+    const stateText = await stateDisplay.textContent();
     console.log('Nested mode state:', stateText);
     
-    // Check if suggestions dropdown exists
-    const dropdown = page.locator('.absolute.top-full').first();
-    const dropdownVisible = await dropdown.isVisible();
-    console.log('Nested dropdown visible:', dropdownVisible);
-    
-    if (dropdownVisible) {
-      const suggestions = await dropdown.locator('button').count();
-      console.log('Nested suggestions count:', suggestions);
-      
-      // Should see "typescript" in suggestions
-      const typescriptSuggestion = dropdown.locator('button:has-text("typescript")');
-      await expect(typescriptSuggestion).toBeVisible();
-    } else {
-      // Take screenshot for debugging
-      await page.screenshot({ path: 'nested-no-suggestions.png' });
-      console.log('Nested mode: No suggestions dropdown visible');
-    }
+    // Log suggestions for debugging
+    console.log('Nested dropdown visible:', await typescriptSuggestion.isVisible());
+    console.log('Nested suggestions count:', suggestionCount);
   });
 
   test('flat combobox shows suggestions correctly', async ({ page }) => {
     // Switch to flat mode
-    await page.click('button:has-text("Flattened")');
+    await setMode(page, 'flat');
     
     // Focus the combobox
     await page.click('input[placeholder="Type to add tags..."]');
     
     // Type something that should trigger suggestions
-    await page.fill('input[placeholder="Type to add tags..."]', 'typ');
+    await typeInCombobox(page, 'typ');
     
     // Wait for suggestions to appear
-    await page.waitForSelector('.absolute.top-full button', { timeout: 2000 });
+    await waitForSuggestions(page);
     
-    // Debug: Check current state
-    const stateDisplay = page.locator('.font-mono');
-    const stateText = await stateDisplay.first().textContent();
+    // Verify suggestions are visible
+    const typescriptSuggestion = page.locator('button').filter({ hasText: 'typescript' });
+    await expect(typescriptSuggestion).toBeVisible();
+    
+    // Verify suggestions count
+    const suggestions = page.locator('.absolute.top-full button');
+    const suggestionCount = await suggestions.count();
+    expect(suggestionCount).toBeGreaterThan(0);
+    
+    // Log state for debugging
+    const stateDisplay = page.locator('.state-display');
+    const stateText = await stateDisplay.textContent();
     console.log('Flat mode state:', stateText);
     
-    // Check if suggestions dropdown exists
-    const dropdown = page.locator('.absolute.top-full').first();
-    const dropdownVisible = await dropdown.isVisible();
-    console.log('Flat dropdown visible:', dropdownVisible);
-    
-    if (dropdownVisible) {
-      const suggestions = await dropdown.locator('button').count();
-      console.log('Flat suggestions count:', suggestions);
-      
-      // Should see "typescript" in suggestions
-      const typescriptSuggestion = dropdown.locator('button:has-text("typescript")');
-      await expect(typescriptSuggestion).toBeVisible();
-    } else {
-      // Take screenshot for debugging
-      await page.screenshot({ path: 'flat-no-suggestions.png' });
-      console.log('Flat mode: No suggestions dropdown visible');
-      
-      // Check if we're in the right state at least
-      expect(stateText).toContain('Suggesting');
-    }
+    // Log suggestions for debugging
+    console.log('Flat dropdown visible:', await typescriptSuggestion.isVisible());
+    console.log('Flat suggestions count:', suggestionCount);
   });
 
   test('debug flat mode data thoroughly', async ({ page }) => {
     // Switch to flat mode
-    await page.click('button:has-text("Flattened")');
+    await setMode(page, 'flat');
     
     // Focus the combobox
     await page.click('input[placeholder="Type to add tags..."]');
     
     // Type something that should trigger suggestions
-    await page.fill('input[placeholder="Type to add tags..."]', 'typ');
+    await typeInCombobox(page, 'typ');
     
     // Wait for suggestions to appear
-    await page.waitForTimeout(200);
+    await waitForSuggestions(page);
     
-    // Debug: Check current state
-    const stateDisplay = page.locator('.font-mono');
-    const stateText = await stateDisplay.first().textContent();
-    console.log('Flat mode state:', stateText);
-    
-    // Debug: Check what's in the store by accessing component state
-    const storeData = await page.evaluate(() => {
-      // Try to access the machine store through React dev tools or global scope
-      const inputs = document.querySelectorAll('input');
-      const input = inputs[inputs.length - 1]; // Get the last input (should be our combobox)
-      
-      // Try to find the React instance
-      const reactKey = Object.keys(input).find(key => key.startsWith('__react'));
-      if (reactKey) {
-        const reactInstance = input[reactKey];
-        const fiber = reactInstance._reactInternals || reactInstance.__reactInternalInstance;
-        if (fiber) {
-          // Try to traverse up to get the component instance
-          let current = fiber;
-          while (current) {
-            if (current.stateNode && current.stateNode.machine) {
-              const machine = current.stateNode.machine;
-              return {
-                storeState: machine.store.getState(),
-                machineState: machine.getState()
-              };
-            }
-            current = current.return;
-          }
-        }
-      }
-      
-      return { error: 'Could not access React component' };
+    // Get comprehensive state data
+    const stateData = await page.evaluate(() => {
+      const stateDisplay = document.querySelector('.state-display');
+      const storeData = (window as any).__MATCHINA_STORE__?.getState?.();
+      return {
+        stateText: stateDisplay?.textContent,
+        storeData: storeData
+      };
     });
     
-    console.log('Flat mode store data:', JSON.stringify(storeData, null, 2));
+    console.log('Flat mode state:', stateData.stateText);
+    console.log('Flat mode store data:', stateData.storeData);
     
-    // Check if suggestions dropdown exists
-    const dropdown = page.locator('.absolute.top-full').first();
-    const dropdownVisible = await dropdown.isVisible();
-    console.log('Flat dropdown visible:', dropdownVisible);
+    // Verify suggestions are visible
+    const typescriptSuggestion = page.locator('button').filter({ hasText: 'typescript' });
+    await expect(typescriptSuggestion).toBeVisible();
     
-    if (!dropdownVisible) {
-      // Take screenshot for debugging
-      await page.screenshot({ path: 'flat-debug-data.png' });
-    }
+    // Log suggestions for debugging
+    console.log('Flat dropdown visible:', await typescriptSuggestion.isVisible());
   });
 });
