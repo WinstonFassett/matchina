@@ -148,7 +148,6 @@
     "size-limit": "^10.0.1",
     "unbuild": "^3.6.1",
     "valibot": "^1.2.0",
-    "vitepress": "^2.0.0-alpha.15",
     "vitest": "^4.0.16",
     "zod": "^3.22.4"
   },
