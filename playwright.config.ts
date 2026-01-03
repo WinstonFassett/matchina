@@ -8,12 +8,12 @@ export default defineConfig({
     'visual/**/*.spec.ts',
     // Exclude debug tests (agent observation tools)
   ],
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 1,
+  workers: process.env.CI ? 2 : 4,
   reporter: 'line', // REQUIRED: Use line reporter for agents, never HTML (starts server)
-  timeout: 500, // Fail fast for debugging
+  timeout: 300, // Ultra-fast fail
   expect: {
     timeout: 5000, // 5 seconds per assertion
   },
