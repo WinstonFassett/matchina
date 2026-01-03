@@ -8,12 +8,14 @@ import type { Page } from '@playwright/test';
 // Common selectors
 export const SELECTORS = {
   pageContainer: '.space-y-4',
+  machineVisualizer: '.machine-visualizer',
   visualizerControls: '[data-testid="visualizer-controls"]',
   visualizerPicker: '[data-testid="visualizer-picker"]',
   visualizerContainer: '.viz-container',
   appContainer: '.app-container',
-  mainContent: '.space-y-4 > div:nth-last-child(2)', // The main content area (visualizer + app)
-  themeToggle: 'button[aria-label="Toggle dark mode"]',
+  mainContent: '.machine-visualizer > div:last-child', // The main content area (visualizer + app)
+  fullInteractiveArea: '.machine-visualizer', // Full interactive area including tabs for HSM examples
+  themeToggle: '#theme-toggle-wrapper .theme-toggle-checkbox',
   comboboxInput: 'input[placeholder*="Type"]',
   modeButtons: {
     flat: 'Flattened',
@@ -106,8 +108,14 @@ export async function gotoExample(page: Page, exampleName: keyof typeof EXAMPLES
  */
 export async function setTheme(page: Page, theme: 'light' | 'dark') {
   if (theme === 'dark') {
-    await page.click(SELECTORS.themeToggle);
+    // Use prefers-color-scheme: dark instead of clicking toggle
+    await page.emulateMedia({ colorScheme: 'dark' });
     await page.waitForTimeout(200);
+    console.log('Set color scheme to dark');
+  } else {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.waitForTimeout(200);
+    console.log('Set color scheme to light');
   }
 }
 
@@ -157,18 +165,30 @@ export async function waitForVisualizer(page: Page, visualizer: string) {
     case 'mermaid-flowchart':
       await validateSelector(page, 'svg', visualizerTimeout);
       break;
-    default:
-      await page.waitForTimeout(1000); // Fallback
   }
 }
 
 /**
- * Combobox interaction helpers
+ * Wait for visualizer to be fully loaded and ready
+ */
+export async function waitForVisualizerLoaded(page: Page, timeout = 5000) {
+  // Wait for machine visualizer container
+  await expect(page.locator(SELECTORS.machineVisualizer)).toBeVisible({ timeout });
+  
+  // Wait for visualizer content to load (either viz-container or app-container)
+  await expect(page.locator(`${SELECTORS.visualizerContainer}, ${SELECTORS.appContainer}`)).toBeVisible({ timeout });
+  
+  // Additional wait for async visualizers like Mermaid
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Type in combobox input
  */
 export async function typeInCombobox(page: Page, text: string) {
   const input = page.locator(SELECTORS.comboboxInput);
   await input.fill(text);
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(200);
 }
 
 /**

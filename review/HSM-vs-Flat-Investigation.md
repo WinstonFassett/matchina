@@ -195,44 +195,192 @@ The ReactFlow visualizer is confused because:
 
 ---
 
-## Mermaid Diagram: Two Strategies
+## Strategy 1: Nested HSM (True Hierarchical)
 
 ```mermaid
 graph TB
-    subgraph "Strategy 1: True Hierarchical HSM"
-        A[Parent Machine] --> B[Child Machine 1]
-        A --> C[Child Machine 2]
-        B --> D[Grandchild Machine]
-        
-        style A fill:#ff9999
-        style B fill:#99ccff
-        style C fill:#99ccff
-        style D fill:#ccffcc
-    end
+    A[Parent Machine] --> B[Child Machine 1]
+    A --> C[Child Machine 2]
+    B --> D[Grandchild Machine]
     
-    subgraph "Strategy 2: Flattened HSM"
-        E[Single Machine] --> F[Dot Notation States]
-        F --> G["Parent.Child"]
-        F --> H["Parent.Child2"]
-        F --> I["Parent.Child.Grandchild"]
-        
-        style E fill:#ffcc99
-        style F fill:#cccccc
-        style G fill:#ffffcc
-        style H fill:#ffffcc
-        style I fill:#ffffcc
-    end
+    style A fill:#ff9999
+    style B fill:#99ccff
+    style C fill:#99ccff
+    style D fill:#ccffcc
+```
+
+**Semantic Meaning:**
+- **Actual machine composition** - Parent contains child machines as real objects
+- **Event propagation** - Events flow between parent and child machines
+- **Independent state** - Each machine manages its own state and transitions
+- **True nesting** - Like Russian dolls, machines inside machines
+
+**API Pattern:**
+```typescript
+const parentMachine = createMachine(states, transitions, "Parent");
+const childMachine = createMachine(childStates, childTransitions, "Child");
+
+const nestedMachine = makeHierarchical(parentMachine, {
+  Active: submachine(childMachine, options)
+});
+```
+
+---
+
+## Strategy 2: Flat HSM (Flattened)
+
+```mermaid
+graph TB
+    E[Single Machine] --> F[Dot Notation States]
+    F --> G["Parent.Child"]
+    F --> H["Parent.Child2"]
+    F --> I["Parent.Child.Grandchild"]
     
-    subgraph "Current Implementation"
-        J[describeHSM] --> K[Flattened Machine]
-        L["Hierarchical" Example] --> J
-        M["Flat" Example] --> J
-        
-        style J fill:#ff6666
-        style K fill:#ff6666
-        style L fill:#ffcccc
-        style M fill:#ffcccc
-    end
+    style E fill:#ffcc99
+    style F fill:#cccccc
+    style G fill:#ffffcc
+    style H fill:#ffffcc
+    style I fill:#ffffcc
+```
+
+**Semantic Meaning:**
+- **Hierarchical syntax, flat reality** - Looks nested but becomes dot notation
+- **Single machine** - Only one actual state machine instance
+- **Synthetic parents** - Parent states are generated for convenience
+- **Flattened structure** - All states are top-level with dot-notation keys
+
+**API Pattern:**
+```typescript
+const flatMachine = describeHSM({
+  initial: 'Parent',
+  states: {
+    Parent: {
+      initial: 'Child',
+      states: {
+        Child: {},
+        Child2: {}
+      }
+    }
+  }
+});
+// Becomes: 'Parent.Child', 'Parent.Child2' states
+```
+
+---
+
+## Current Implementation Problem
+
+```mermaid
+graph TB
+    J[describeHSM] --> K[Flattened Machine]
+    L["Nested" Example] --> J
+    M["Flat" Example] --> J
+    
+    style J fill:#ff6666
+    style K fill:#ff6666
+    style L fill:#ffcccc
+    style M fill:#ffcccc
+```
+
+**The Issue:**
+- Both examples claim to show different strategies
+- Both use `describeHSM` which only creates flat HSMs
+- No actual nested HSM implementation exists
+- False naming creates confusion
+
+---
+
+## Terminology Remediation Plan
+
+### Current Problematic Terms
+- **"Hierarchical HSM"** - Used incorrectly for flattened machines
+- **"Flat HSM"** - Ambiguous (flat vs flattened?)
+- **"describeHSM"** - Suggests hierarchical but creates flattened
+
+### Proposed Standardized Terminology
+
+#### **Nested HSM** (True Hierarchical)
+- **Meaning**: Actual machine composition with parent-child relationships
+- **Characteristics**: 
+  - Multiple machine instances
+  - Event propagation between machines
+  - `submachine` and `makeHierarchical` APIs
+- **File Naming**: `nested-hsm-*`, `hierarchical-*`
+- **Documentation**: "Nested HSM (True Hierarchical)"
+
+#### **Flat HSM** (Flattened)
+- **Meaning**: Hierarchical syntax flattened to dot notation
+- **Characteristics**:
+  - Single machine instance
+  - Dot-notation state keys
+  - `describeHSM` and `createFlatMachine` APIs
+- **File Naming**: `flat-hsm-*`, `flattened-*`
+- **Documentation**: "Flat HSM (Flattened)"
+
+### API Naming Clarification
+
+#### **Keep Current Names (Technical Accuracy)**
+- `describeHSM` - Accurate (describes HSM structure, then flattens)
+- `createFlatMachine` - Accurate (creates flat machine)
+- `makeHierarchical` - Accurate (makes nested/hierarchical)
+- `submachine` - Accurate (creates submachine for nesting)
+
+#### **Documentation Language Updates**
+- Replace "hierarchical" with "nested" when referring to true composition
+- Replace "flat" with "flat" (not "flattened") for dot-notation machines
+- Clarify that `describeHSM` creates flat HSMs with hierarchical syntax
+
+### File and Example Renaming
+
+#### **Current Examples to Fix**
+```bash
+# Current (confusing)
+docs/src/code/examples/hsm-combobox/machine.ts          # "Hierarchical" (actually flat)
+docs/src/code/examples/hsm-combobox/machine-flat.ts     # "Flat" (actually flat)
+docs/src/code/examples/hsm-combobox/ComboboxView.tsx    # "Hierarchical" view
+docs/src/code/examples/hsm-combobox/ComboboxViewFlat.tsx # "Flat" view
+
+# Proposed (clear)
+docs/src/code/examples/hsm-combobox/machine-flat.ts      # Flat HSM (describeHSM)
+docs/src/code/examples/hsm-combobox/machine-nested.ts   # Nested HSM (submachine)
+docs/src/code/examples/hsm-combobox/ComboboxViewFlat.tsx    # Flat HSM view
+docs/src/code/examples/hsm-combobox/ComboboxViewNested.tsx  # Nested HSM view
+```
+
+#### **Documentation Updates Needed**
+- **README.md** - Update HSM terminology
+- **docs/DEVELOPMENT.md** - Fix hierarchical vs flat references
+- **docs/AGENTS.md** - Update agent guidance terminology
+- **Example documentation** - Clarify which approach each example uses
+- **API documentation** - Explicitly state what each API creates
+
+### Code Comments and Type Names
+
+#### **Type Comments to Update**
+```typescript
+// Before (confusing)
+interface HierarchicalMachineConfig  // Used for flat machines
+
+// After (clear)
+interface FlatMachineConfig          // For describeHSM/createFlatMachine
+interface NestedMachineConfig        // For makeHierarchical/submachine
+```
+
+#### **JSDoc Updates**
+```typescript
+/**
+ * Creates a flat HSM from hierarchical syntax
+ * @description Describes HSM structure then flattens to dot notation
+ * @example Flat HSM with hierarchical-looking syntax
+ */
+export function describeHSM(config: DeclarativeFlatMachineConfig)
+
+/**
+ * Creates nested HSM composition
+ * @description Composes multiple machines with parent-child relationships
+ * @example True hierarchical machine composition
+ */
+export function makeHierarchical(...)
 ```
 
 ---

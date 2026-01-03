@@ -132,6 +132,12 @@
     "rename": "node scripts/rename-files.js review",
     "rename-dry": "node scripts/rename-files.js --dry-run review",
     "screenshots": "node scripts/screenshot-viewer.js",
+    "screenshots:gallery": "node scripts/screenshot-gallery.js",
+    "screenshots:html": "node scripts/html-report.js",
+    "screenshots:html:open": "node scripts/html-report.js && open playwright-report/index.html",
+    "test:dashboard": "node scripts/test-dashboard.js",
+    "test:visual:headed": "npx playwright test test/e2e/visual/visual-smoke.spec.ts --headed",
+    "test:smoke:headed": "npx playwright test test/e2e/functional/checkout-smoke.spec.ts --headed",
     "coverage:balance": "node scripts/coverage-balance-report.js"
   },
   "devDependencies": {
