@@ -24,16 +24,16 @@ function getFileModTime(filePath) {
     // If we get here, file is tracked in git
     try {
       const gitDate = execSync(`git log -1 --format="%ci" "${filePath}"`, { encoding: 'utf8' }).trim();
-      return gitDate ? new Date(gitDate).toISOString().split('T')[0] : null;
+      return gitDate ? new Date(gitDate).toISOString() : null; // ISO format: 2026-01-03T10:09:13.000Z
     } catch (gitError) {
       // Git tracked but no commit history
       const stats = fs.statSync(filePath);
-      return stats.mtime.toISOString().split('T')[0];
+      return stats.mtime.toISOString(); // ISO format: 2026-01-03T10:09:13.000Z
     }
   } catch (notTrackedError) {
     // File not in git, use filesystem date
     const stats = fs.statSync(filePath);
-    return stats.mtime.toISOString().split('T')[0];
+    return stats.mtime.toISOString(); // ISO format: 2026-01-03T10:09:13.000Z
   }
 }
 
@@ -45,16 +45,16 @@ function getFileCreateTime(filePath) {
     // If we get here, file is tracked in git
     try {
       const gitDate = execSync(`git log --follow --format="%ci" "${filePath}" | tail -1`, { encoding: 'utf8' }).trim();
-      return gitDate ? new Date(gitDate).toISOString().split('T')[0] : null;
+      return gitDate ? new Date(gitDate).toISOString() : null; // ISO format: 2026-01-03T10:09:13.000Z
     } catch (gitError) {
       // Git tracked but no commit history
       const stats = fs.statSync(filePath);
-      return stats.birthtime.toISOString().split('T')[0];
+      return stats.birthtime.toISOString(); // ISO format: 2026-01-03T10:09:13.000Z
     }
   } catch (notTrackedError) {
     // File not in git, use filesystem date
     const stats = fs.statSync(filePath);
-    return stats.birthtime.toISOString().split('T')[0];
+    return stats.birthtime.toISOString(); // ISO format: 2026-01-03T10:09:13.000Z
   }
 }
 
