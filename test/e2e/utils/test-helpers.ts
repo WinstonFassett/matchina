@@ -70,8 +70,98 @@ export const EXAMPLES = {
   },
   'rock-paper-scissors': {
     preset: 'simple' as const,
-    defaultViz: 'mermaid-statechart' as const,
+    defaultViz: 'reactflow' as const,
     url: '/matchina/examples/rock-paper-scissors'
+  },
+  'async-calculator': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/async-calculator'
+  },
+  'balanced-paren-checker': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/balanced-paren-checker'
+  },
+  'fetcher-advanced': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/fetcher-advanced'
+  },
+  'hsm-checkout': {
+    preset: 'hierarchical' as const,
+    defaultViz: 'sketch' as const,
+    url: '/matchina/examples/hsm-checkout'
+  },
+  'hsm-traffic-light': {
+    preset: 'hierarchical' as const,
+    defaultViz: 'sketch' as const,
+    url: '/matchina/examples/hsm-traffic-light'
+  },
+  'promise-machine-fetcher': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/promise-machine-fetcher'
+  },
+  'store-counter': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/store-counter'
+  },
+  'traffic-light-delayed': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/traffic-light-delayed'
+  },
+  'traffic-light-extended': {
+    preset: 'complex' as const,
+    defaultViz: 'reactflow' as const,
+    url: '/matchina/examples/traffic-light-extended'
+  },
+  'stopwatch-using-data-and-hooks': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-data-and-hooks'
+  },
+  'stopwatch-using-data-and-transition-functions': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-data-and-transition-functions'
+  },
+  'stopwatch-using-external-react-state-and-state-effects': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-external-react-state-and-state-effects'
+  },
+  'stopwatch-using-react-state-and-effects': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-react-state-and-effects'
+  },
+  'stopwatch-using-react-state-using-lifecycle-instead-of-useEffect': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect'
+  },
+  'stopwatch-using-react-state-using-transitionhooks': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/stopwatch-using-react-state-using-transitionhooks'
+  },
+  'teaser': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/teaser'
+  },
+  'matchbox': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/matchbox'
+  },
+  'matchbox-usage': {
+    preset: 'simple' as const,
+    defaultViz: 'mermaid-statechart' as const,
+    url: '/matchina/examples/matchbox-usage'
   }
 } as const;
 
@@ -213,15 +303,15 @@ export async function selectFirstSuggestion(page: Page) {
 /**
  * Test data generator for matrix testing
  */
-export function generateTestMatrix<T extends string[]>(...arrays: T[]) {
+export function generateTestMatrix(...arrays: string[][]): string[][] {
   if (arrays.length === 0) return [];
   
   const [first, ...rest] = arrays;
   if (rest.length === 0) return first.map(item => [item]);
   
-  const subMatrix = generateTestMatrix(...rest);
-  return first.flatMap(item => 
-    subMatrix.map(subItem => [item, ...subItem])
+  const subMatrix: string[][] = generateTestMatrix(...rest);
+  return first.flatMap((item) => 
+    subMatrix.map((subItem) => [item, ...subItem])
   );
 }
 
@@ -275,30 +365,32 @@ export async function runSmokeTest(page: Page, exampleName: keyof typeof EXAMPLE
   const config = await gotoExample(page, exampleName);
   
   // Test light mode - VISUAL verification (focused on interactive area)
-  await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.waitForTimeout(200);
+  await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toBeVisible();
   // Take focused screenshot of just the interactive example area
-  await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-light-initial.png`);
+  await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toHaveScreenshot(`${exampleName}-light-initial.png`);
   
-  // Test dark mode - VISUAL verification (if theme toggle exists)
-  const themeToggle = page.locator(SELECTORS.themeToggle);
-  if (await themeToggle.isVisible()) {
-    await setTheme(page, 'dark');
-    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
-    // Take focused screenshot of dark mode
-    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-dark-initial.png`);
-  } else {
-    console.log(`Theme toggle not found for ${exampleName}, skipping dark mode test`);
-  }
+  // Test dark mode - VISUAL verification (using prefers-color-scheme)
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.waitForTimeout(200);
+  await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toBeVisible();
+  // Take focused screenshot of dark mode
+  await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toHaveScreenshot(`${exampleName}-dark-initial.png`);
   
   // Test mode switching if available - VISUAL verification
-  if (exampleName === 'hsm-combobox') {
+  if (config.preset === 'hierarchical') {
+    // Test flat mode
     await setMode(page, 'flat');
-    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
-    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-flat-initial.png`);
+    await page.waitForTimeout(400);
+    await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toBeVisible();
+    await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toHaveScreenshot(`${exampleName}-flat-initial.png`);
     
+    // Test nested mode
     await setMode(page, 'nested');
-    await expect(page.locator(SELECTORS.mainContent).first()).toBeVisible();
-    await expect(page.locator(SELECTORS.mainContent).first()).toHaveScreenshot(`${exampleName}-nested-initial.png`);
+    await page.waitForTimeout(400);
+    await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toBeVisible();
+    await expect(page.locator(SELECTORS.fullInteractiveArea).first()).toHaveScreenshot(`${exampleName}-nested-initial.png`);
   }
   
   return config;
