@@ -2,6 +2,12 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './test/e2e',
+  testMatch: [
+    // Include functional and visual tests for CI
+    './test/e2e/functional/**/*.spec.ts',
+    './test/e2e/visual/**/*.spec.ts',
+    // Exclude debug tests (agent observation tools)
+  ],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
