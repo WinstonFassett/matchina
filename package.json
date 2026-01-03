@@ -130,7 +130,9 @@
     "dates": "node scripts/update-frontmatter-dates.js review",
     "dates-dry": "node scripts/update-frontmatter-dates.js --dry-run review",
     "rename": "node scripts/rename-files.js review",
-    "rename-dry": "node scripts/rename-files.js --dry-run review"
+    "rename-dry": "node scripts/rename-files.js --dry-run review",
+    "screenshots": "node scripts/screenshot-viewer.js",
+    "coverage:balance": "node scripts/coverage-balance-report.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
