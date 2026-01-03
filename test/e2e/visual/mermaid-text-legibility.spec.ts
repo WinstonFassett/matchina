@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:4321/matchina/examples/hsm-traffic-light';
+const BASE_URL = '/matchina/examples/hsm-traffic-light';
 
 test.describe('Mermaid Text Legibility in Dark Mode', () => {
   test('verify text colors are legible', async ({ page }) => {

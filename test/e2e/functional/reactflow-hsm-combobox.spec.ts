@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('ReactFlow renders HSM combobox with nodes', async ({ page }) => {
-  await page.goto('http://localhost:4321/matchina/examples/hsm-combobox/');
+  await page.goto('/matchina/examples/hsm-combobox/');
   await page.waitForLoadState('networkidle');
 
   // Switch to ReactFlow visualizer

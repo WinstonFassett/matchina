@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('ReactFlow Basic Tests', () => {
   test('toggle example renders nodes correctly', async ({ page }) => {
-    await page.goto('http://localhost:4321/matchina/examples/toggle/');
+    await page.goto('/matchina/examples/toggle/');
     await page.waitForLoadState('networkidle');
 
     // Check if the react-flow container is rendered
@@ -21,7 +21,7 @@ test.describe('ReactFlow Basic Tests', () => {
   });
 
   test('traffic-light example renders nodes correctly', async ({ page }) => {
-    await page.goto('http://localhost:4321/matchina/examples/traffic-light/');
+    await page.goto('/matchina/examples/traffic-light/');
     await page.waitForLoadState('networkidle');
 
     const rfViewport = page.locator('.react-flow__viewport');
@@ -33,7 +33,7 @@ test.describe('ReactFlow Basic Tests', () => {
   });
 
   test('hsm-combobox example renders hierarchical states', async ({ page }) => {
-    await page.goto('http://localhost:4321/matchina/examples/hsm-combobox/');
+    await page.goto('/matchina/examples/hsm-combobox/');
     await page.waitForLoadState('networkidle');
 
     // Click on "Nested (Hierarchical)" button to switch to HSM mode

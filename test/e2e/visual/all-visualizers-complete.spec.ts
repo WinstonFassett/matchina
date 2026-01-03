@@ -9,7 +9,7 @@ test.describe('All Visualizers Complete Review', () => {
     themes.forEach(theme => {
       modes.forEach(mode => {
         test(`${theme} - ${mode} - ${visualizer}`, async ({ page }) => {
-          await page.goto('http://localhost:4321/matchina/examples/hsm-combobox');
+          await page.goto('/matchina/examples/hsm-combobox');
           
           // Wait for page to load
           await page.waitForSelector('.hsm-visualizer-demo');

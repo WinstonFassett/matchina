@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:4321/matchina/examples/hsm-traffic-light';
+const BASE_URL = '/matchina/examples/hsm-traffic-light';
 
 test.describe('HSM Traffic Light Nested Mermaid Statechart', () => {
   test('verify statechart renders without errors', async ({ page }) => {

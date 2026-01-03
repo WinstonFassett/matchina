@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('hierarchical force graph renders correctly', async ({ page }) => {
   // Navigate to the hierarchical force graph page
-  await page.goto('http://localhost:4321/matchina/examples/hierarchical-force-graphs');
+  await page.goto('/matchina/examples/hierarchical-force-graphs');
   await page.waitForLoadState('networkidle');
   
   // Check that the page title is correct (use the more specific h1)

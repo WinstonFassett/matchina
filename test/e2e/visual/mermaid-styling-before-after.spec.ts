@@ -1,6 +1,6 @@
 import { test, Page, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:4321/matchina/examples/hsm-traffic-light';
+const BASE_URL = '/matchina/examples/hsm-traffic-light';
 
 test.describe('Mermaid Styling Before/After Comparison', () => {
   test.beforeEach(async ({ page }) => {

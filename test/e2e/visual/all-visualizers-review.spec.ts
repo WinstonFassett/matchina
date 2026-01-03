@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { generateScreenshotPath, ensureScreenshotDir } from '../../src/utils/screenshot-paths.js';
 
-const BASE_URL = 'http://localhost:4321/matchina/examples/hsm-combobox';
+const BASE_URL = '/matchina/examples/hsm-combobox';
 const SCREENSHOT_DIR = generateScreenshotPath('review/screenshots', 'all-visualizers');
 
 type Theme = 'light' | 'dark';

@@ -7,7 +7,7 @@ test.describe('Combobox Comparison - Flat vs Nested', () => {
       console.log('Browser console:', msg.text());
     });
     
-    await page.goto('http://localhost:4321/matchina/examples/hsm-combobox');
+    await page.goto('/matchina/examples/hsm-combobox');
     // Wait for page to load
     await page.waitForLoadState('networkidle');
   });
