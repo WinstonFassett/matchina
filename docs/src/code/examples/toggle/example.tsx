@@ -14,6 +14,7 @@ export default function ToggleExample() {
       defaultViz="auto"
       layout="split"
       interactive={true}
+      exampleName="toggle"
     />
   );
 }

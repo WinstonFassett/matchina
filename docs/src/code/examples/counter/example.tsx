@@ -13,6 +13,7 @@ export default function CounterExample() {
       AppView={CounterView}
       showRawState={true}
       defaultViz="reactflow"
+      exampleName="counter"
     />
   );
 }

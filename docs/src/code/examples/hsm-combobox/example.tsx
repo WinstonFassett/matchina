@@ -56,6 +56,7 @@ export default function ComboboxExample() {
         interactive={true}
         layout="stacked"
         preset="hierarchical"
+        exampleName="hsm-combobox"
         AppView={mode === "flat" ? ComboboxViewFlat : ComboboxView}
       />
     </div>

@@ -58,3 +58,10 @@ test/**/*.svg
 
 # Review/debug screenshots  
 review/screenshots/
+# Review/debug images  
+review/**/*.png
+review/**/*.jpg
+review/**/*.jpeg
+review/**/*.gif
+review/**/*.webp
+review/**/*.svg

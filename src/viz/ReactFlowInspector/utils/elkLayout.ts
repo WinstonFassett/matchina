@@ -20,6 +20,19 @@ export interface LayoutOptions {
   componentSpacing?: number;
 }
 
+export const getDefaultLayoutOptions = (): LayoutOptions => ({
+  direction: "DOWN",
+  algorithm: "layered", // CHANGE: "stress" -> "layered" (Best for HSM/Flowcharts)
+  nodeSpacing: 120,     // CHANGE: 100 -> 120 (Better horizontal separation)
+  layerSpacing: 180,    // CHANGE: 150 -> 180 (Clearer vertical flow)
+  edgeSpacing: 20,     // CHANGE: 15 -> 20 (More edge clearance)
+  thoroughness: 7,
+  compactComponents: false,
+  separateComponents: false,
+  edgeNodeSpacing: 30,  // CHANGE: 25 -> 30 (Better edge-node spacing)
+  componentSpacing: 60, // CHANGE: 50 -> 60 (More component separation)
+});
+
 // Get working algorithms from ELK
 export const getAvailableAlgorithms = (): string[] => {
   return [
@@ -49,7 +62,7 @@ const getElkOptions = (options: LayoutOptions) => {
     "elk.layered.considerModelOrder.hierarchy": "true",
     "elk.layered.thoroughness": "7", // Better layout quality
     // Compound node sizing
-    "elk.padding": "[top=20,left=20,bottom=20,right=20]",
+    "elk.padding": "[top=50,left=50,bottom=50,right=50]", // CHANGE: 40 -> 50 (More padding)
   };
 
   // Algorithm-specific options that actually work
@@ -172,7 +185,7 @@ export const getLayoutedElements = async (
 ): Promise<{ nodes: Node[]; edges: Edge[] }> => {
   const nodeWidth = 150;
   const nodeHeight = 50;
-  const groupPadding = 40; // Padding inside group nodes for children
+  const groupPadding = 50; // CHANGE: 40 -> 50 (More padding inside groups)
   const direction = layoutOptions.direction;
 
   const isHorizontal = direction === "RIGHT" || direction === "LEFT";
@@ -199,7 +212,7 @@ export const getLayoutedElements = async (
     if (node.type === 'group') {
       elkNode.layoutOptions = {
         ...elkOptions,
-        "elk.padding": `[top=${groupPadding + 20},left=${groupPadding},bottom=${groupPadding},right=${groupPadding}]`,
+        "elk.padding": `[top=${groupPadding + 25},left=${groupPadding + 10},bottom=${groupPadding + 25},right=${groupPadding + 10}]`, // More generous padding
       };
       elkNode.children = [];
     }
@@ -289,19 +302,6 @@ export const getLayoutedElements = async (
   }
 };
 
-export const getDefaultLayoutOptions = (): LayoutOptions => ({
-  direction: "DOWN", // Changed from RIGHT for better hierarchical visualization
-  algorithm: "layered",
-  nodeSpacing: 100, // Reduced for more compact layout
-  layerSpacing: 120, // Reduced for tighter vertical spacing
-  edgeSpacing: 20, // Reduced for cleaner edges
-  thoroughness: 7,
-  // aspectRatio removed as it doesn't work properly
-  compactComponents: false,
-  separateComponents: false, // Changed to false for better component integration
-  edgeNodeSpacing: 30, // Reduced for cleaner edges
-  componentSpacing: 60, // Reduced for more compact layout
-});
 
 // Algorithm metadata for UI - only working algorithms
 export const getAlgorithmInfo = (algorithm: string) => {

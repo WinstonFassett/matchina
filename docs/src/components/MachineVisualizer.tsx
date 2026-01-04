@@ -16,6 +16,7 @@ import { useMemo, useState, type ComponentType } from "react";
 import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
+import { getReactFlowPreset } from '../../../src/viz/ReactFlowInspector/presets';
 
 export interface MachineVisualizerProps {
   // Core props
@@ -44,6 +45,9 @@ export interface MachineVisualizerProps {
   // Preset configurations
   preset?: 'simple' | 'hierarchical' | 'complex' | 'minimal';
 
+  // Example identification for optimizations
+  exampleName?: string;
+
   // Additional
   className?: string;
 }
@@ -64,6 +68,7 @@ export function MachineVisualizer({
   showRawState = false,
   title,
   preset,
+  exampleName,
   className = '',
 }: MachineVisualizerProps) {
   // Apply preset configuration if provided
@@ -73,7 +78,18 @@ export function MachineVisualizer({
   const resolvedDefaultViz = presetConfig?.defaultViz ?? defaultViz;
   const resolvedAvailableViz = availableViz ?? presetConfig?.availableViz;
   const resolvedShowPicker = showPicker ?? presetConfig?.showPicker ?? true;
-  const resolvedLayout = presetConfig?.layout ?? layout;
+  
+  // Use example-specific preset for layout if available
+  let resolvedLayout = layout;
+  let resolvedMinVizHeight = minVizHeight;
+  
+  if (exampleName) {
+    const preset = getReactFlowPreset(exampleName);
+    resolvedLayout = preset.pageLayout.layout;
+    resolvedMinVizHeight = preset.pageLayout.minVizHeight;
+  } else {
+    resolvedLayout = presetConfig?.layout ?? layout;
+  }
 
   // Initialize visualizer selection
   const initialViz = resolvedDefaultViz === 'auto'
@@ -106,8 +122,8 @@ export function MachineVisualizer({
   const containerClasses = [
     'machine-visualizer',
     className,
-    isSplit ? 'flex flex-col md:flex-row gap-4' : 'flex flex-col gap-4',
-    isSplit && !isVizLeft ? 'md:flex-row-reverse' : '',
+    isSplit ? 'flex flex-row gap-4' : 'flex flex-col gap-4',
+    isSplit && !isVizLeft ? 'flex-row-reverse' : '',
   ].filter(Boolean).join(' ');
 
   const vizContainerClasses = [
@@ -123,9 +139,9 @@ export function MachineVisualizer({
   // Height styling
   // For split layout, use explicit height so flex children can use h-full
   // For stacked layout, use min-height to allow content to grow
-  const heightStyle = isSplit
-    ? { height: `${minVizHeight}px` }
-    : { minHeight: `${minVizHeight}px` };
+  const heightStyle = resolvedLayout === 'split'
+    ? { height: `${Math.max(resolvedMinVizHeight, 500)}px` } // Ensure minimum height for side-by-side
+    : { minHeight: `${resolvedMinVizHeight}px` };
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -154,6 +170,7 @@ export function MachineVisualizer({
             config,
             actions,
             interactive,
+            exampleName,
           })}
         </div>
 
@@ -196,6 +213,7 @@ function renderVisualizer({
   config,
   actions,
   interactive,
+  exampleName,
 }: {
   type: VisualizerType;
   machine: FactoryMachine<any>;
@@ -203,6 +221,7 @@ function renderVisualizer({
   config: any;
   actions: Record<string, any>;
   interactive: boolean;
+  exampleName?: string;
 }) {
   const commonClasses = "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
 
@@ -213,6 +232,7 @@ function renderVisualizer({
           <HSMReactFlowInspector
             machine={machine as any}
             interactive={interactive}
+            exampleName={exampleName}
           />
         </div>
       );

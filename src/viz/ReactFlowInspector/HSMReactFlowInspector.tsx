@@ -15,6 +15,7 @@ interface HSMReactFlowInspectorProps {
   };
   layoutOptions?: LayoutOptions;
   interactive?: boolean;
+  exampleName?: string; // For example-specific optimizations
 }
 
 /**
@@ -33,6 +34,7 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   machine,
   layoutOptions,
   interactive = true,
+  exampleName,
 }) => {
   // Step 1: Extract shape from machine
   const shape = useMemo(() => machine.shape?.getState(), [machine]);
@@ -118,6 +120,7 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
       dispatch={dispatch}
       layoutOptions={layoutOptions}
       interactive={interactive}
+      exampleName={exampleName}
     />
   );
 };
