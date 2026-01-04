@@ -172,54 +172,32 @@ export const distributeOutgoingEdges = (
         return angleA - angleB;
       });
 
-      // Assign terminals based on target position relative to source
-      for (const edge of sortedEdges) {
+      // Assign terminals based on target position - DISTRIBUTE different terminals for multiple edges
+      for (let i = 0; i < sortedEdges.length; i++) {
+        const edge = sortedEdges[i];
         const dx = edge.toPos.x - edge.fromPos.x;
         const dy = edge.toPos.y - edge.fromPos.y;
-        const absDx = Math.abs(dx);
-        const absDy = Math.abs(dy);
 
-        // Determine best source and target terminals for straight connections
+        // For multiple outgoing edges, use the DIRECTION to the target as source terminal
+        // This naturally spreads edges: right target → exit right, left target → exit left, etc.
         let sourceHandle: string;
         let targetHandle: string;
 
-        // Prefer straight connections when possible
-        if (absDy > absDx * 2) {
-          // Primarily vertical - use bottom/top for straight line
-          if (dy > 0) {
-            sourceHandle = "bottom";
-            targetHandle = "top";
-          } else {
-            sourceHandle = "top";
-            targetHandle = "bottom";
-          }
-        } else if (absDx > absDy * 2) {
-          // Primarily horizontal - use right/left for straight line
-          if (dx > 0) {
-            sourceHandle = "right";
-            targetHandle = "left";
-          } else {
-            sourceHandle = "left";
-            targetHandle = "right";
-          }
+        // Use the primary direction to the target
+        if (Math.abs(dx) > Math.abs(dy)) {
+          // Primarily horizontal
+          sourceHandle = dx > 0 ? "right" : "left";
+          targetHandle = dx > 0 ? "left" : "right";
         } else {
-          // Diagonal - use quadrant-based assignment
-          if (dx > 0 && dy > 0) {
-            // Lower-right: bottom->top or right->left
-            sourceHandle = "bottom";
+          // Primarily vertical - but for multiple edges, split left/right based on dx
+          if (dy > 0) {
+            // Going down - use left for left-side targets, right for right-side
+            sourceHandle = dx < 0 ? "left" : dx > 0 ? "right" : "bottom";
             targetHandle = "top";
-          } else if (dx < 0 && dy > 0) {
-            // Lower-left: bottom->top or left->right
-            sourceHandle = "bottom";
-            targetHandle = "top";
-          } else if (dx > 0 && dy < 0) {
-            // Upper-right: top->bottom or right->left
-            sourceHandle = "right";
-            targetHandle = "left";
           } else {
-            // Upper-left: top->bottom or left->right
-            sourceHandle = "left";
-            targetHandle = "right";
+            // Going up - use left for left-side targets, right for right-side
+            sourceHandle = dx < 0 ? "left" : dx > 0 ? "right" : "top";
+            targetHandle = "bottom";
           }
         }
 
