@@ -7,6 +7,7 @@ export interface ReactFlowPreset {
   name: string;
   description: string;
   layoutOptions: {
+    direction: "DOWN" | "RIGHT" | "UP" | "LEFT";
     algorithm: string;
     nodeSpacing: number;
     layerSpacing: number;
@@ -41,6 +42,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     name: 'Traffic Light',
     description: 'Simple 3-state cycle - needs clear spacing and centered view',
     layoutOptions: {
+      direction: 'DOWN',
       algorithm: 'layered',
       nodeSpacing: 140,
       layerSpacing: 120,
@@ -70,6 +72,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     name: 'HSM Combobox',
     description: 'Complex hierarchy with nested states - ReactFlow for better visualization',
     layoutOptions: {
+      direction: 'DOWN',
       algorithm: 'layered',
       nodeSpacing: 100,
       layerSpacing: 100,
@@ -96,29 +99,30 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
 
   'hsm-checkout': {
     name: 'HSM Checkout',
-    description: 'Multi-step process with parallel states - ReactFlow with optimized stacked layout',
+    description: 'Multi-step process with parallel states - ReactFlow with horizontal layout for better flow',
     layoutOptions: {
       algorithm: 'layered',
-      nodeSpacing: 110,
-      layerSpacing: 100,
-      edgeSpacing: 16,
+      direction: 'RIGHT',  // Horizontal layout for better checkout flow
+      nodeSpacing: 120,   // Horizontal spacing between nodes
+      layerSpacing: 150,  // Vertical spacing between layers
+      edgeSpacing: 20,    // Edge clearance
       thoroughness: 7,
       compactComponents: false,
       separateComponents: false,
-      edgeNodeSpacing: 26,
-      componentSpacing: 42,
+      edgeNodeSpacing: 35,
+      componentSpacing: 50,
     },
     fitViewOptions: {
-      padding: 0.2,
+      padding: 0.25,     // More padding around the whole graph
       duration: 1100,
     },
     constraints: {
-      minWidth: 750,
-      minHeight: 520,
+      minWidth: 800,      // Wider minimum width
+      minHeight: 600,     // Taller minimum height
     },
     pageLayout: {
       layout: 'stacked',
-      minVizHeight: 450,
+      minVizHeight: 500,  // More height for the complex diagram
     },
   },
 
@@ -127,6 +131,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     name: 'Toggle',
     description: 'Simple on/off - side-by-side for consistency',
     layoutOptions: {
+      direction: 'DOWN',
       algorithm: 'layered',
       nodeSpacing: 80,
       layerSpacing: 80,
@@ -155,6 +160,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     name: 'Counter',
     description: 'Simple counter - side-by-side for consistency',
     layoutOptions: {
+      direction: 'DOWN',
       algorithm: 'layered',
       nodeSpacing: 80,
       layerSpacing: 80,
@@ -184,6 +190,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     name: 'Default',
     description: 'Balanced settings for most examples',
     layoutOptions: {
+      direction: 'DOWN',
       algorithm: 'layered',
       nodeSpacing: 120,
       layerSpacing: 180,

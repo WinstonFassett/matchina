@@ -9,7 +9,7 @@ import {
 import type { LayoutOptions } from "../utils/elkLayout";
 import {
   saveNodePositions,
-  loadNodePositions,
+  loadNodePositionsSafe,
   clearNodePositions,
 } from "../utils/layoutStorage";
 
@@ -155,7 +155,7 @@ export const useStateMachineNodes = (
     if (!hasInitialized.current && states.length > 0 && !isLayouting) {
       // Try to load saved positions first
       const machineId = `machine-${states.join('-')}` || "unknown";
-      const savedPositions = loadNodePositions(machineId);
+      const savedPositions = loadNodePositionsSafe(machineId);
 
       if (savedPositions && savedPositions.length === states.length) {
         // Use saved positions
