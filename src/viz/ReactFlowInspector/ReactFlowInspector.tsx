@@ -127,6 +127,16 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     saveLayoutSettings(newOptions);
     // Force immediate re-layout
     setForceLayoutKey((prev) => prev + 1);
+    
+    // Zoom to fit after layout change to ensure everything is visible
+    setTimeout(() => {
+      if (reactFlowInstanceRef.current) {
+        reactFlowInstanceRef.current.fitView({ 
+          padding: 0.3, 
+          duration: 800 
+        });
+      }
+    }, 100); // Small delay to allow layout to complete
   }, []);
 
   // Use a key to force remount when nodes/edges change
