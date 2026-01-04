@@ -9,11 +9,40 @@ interface CustomEdgeData {
   isSelfTransition?: boolean;
   selfLoopOffset?: number;
   selfLoopIndex?: number;
-  curvature?: number; // For parallel edge separation
+  edgeOffset?: number; // Perpendicular offset for parallel edge separation
 }
 
 interface CustomEdgeProps extends ReactFlowEdgeProps {
   data: CustomEdgeData;
+}
+
+// Generate a special path for bidirectional edges (like ReactFlow's BiDirectionalEdge example)
+// Uses a Quadratic Bezier with offset control point at center, perpendicular to the line
+function getSpecialPath(
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  offset: number
+): string {
+  const centerX = (sourceX + targetX) / 2;
+  const centerY = (sourceY + targetY) / 2;
+
+  // Calculate perpendicular direction to offset the control point
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const length = Math.sqrt(dx * dx + dy * dy);
+
+  if (length === 0) {
+    return `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+  }
+
+  // Perpendicular offset: rotate 90 degrees
+  const perpX = (-dy / length) * offset;
+  const perpY = (dx / length) * offset;
+
+  // Use Quadratic Bezier (Q) with control point offset perpendicular to the line
+  return `M ${sourceX} ${sourceY} Q ${centerX + perpX} ${centerY + perpY} ${targetX} ${targetY}`;
 }
 
 // Helper function to get edge label styling based on state and theme
@@ -183,19 +212,37 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     );
   }
 
-  // For regular edges between different nodes - use curvature from data for parallel edges
-  // Vary the curvature slightly based on the edge ID to distinguish multiple edges
-  const curvature = data?.curvature ?? (id.includes("-") && id.split("-")[2]?.charCodeAt(0) % 2 === 0 ? 0.3 : 0.2);
+  // For regular edges between different nodes
+  const edgeOffset = data?.edgeOffset ?? 0;
 
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-    curvature,
-  });
+  let edgePath: string;
+  let labelX: number;
+  let labelY: number;
+
+  if (edgeOffset !== 0) {
+    // Use ReactFlow's BiDirectional approach: Quadratic Bezier with offset control point
+    edgePath = getSpecialPath(sourceX, sourceY, targetX, targetY, edgeOffset);
+
+    // Label at center, offset perpendicular to edge direction
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const perpX = length > 0 ? (-dy / length) * edgeOffset * 0.5 : 0;
+    const perpY = length > 0 ? (dx / length) * edgeOffset * 0.5 : 0;
+    labelX = (sourceX + targetX) / 2 + perpX;
+    labelY = (sourceY + targetY) / 2 + perpY;
+  } else {
+    // Standard bezier path for non-offset edges
+    [edgePath, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      curvature: 0.25,
+    });
+  }
 
   return (
     <>

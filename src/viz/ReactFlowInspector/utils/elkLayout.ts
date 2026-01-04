@@ -81,16 +81,15 @@ const getElkOptions = (options: LayoutOptions) => {
           ? "SIMPLE"
           : "NETWORK_SIMPLEX",
 
-        // Crossing minimization - thoroughness equivalent
-        "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
-        "elk.layered.crossingMinimization.semiInteractive": "true",
-
         // Cycle breaking
         "elk.layered.cycleBreaking.strategy": "DEPTH_FIRST",
 
-        // Edge routing
+        // Edge routing - ADD PARALLEL EDGE ROUTING
         "elk.layered.edgeRouting.selfLoopDistribution": "EQUALLY",
         "elk.layered.edgeRouting.selfLoopOrdering": "SEQUENCED",
+        "elk.layered.edgeRouting.strategy": "ORTHOGONAL", // Use orthogonal routing for parallel edges
+        "elk.layered.spacing.edgeNodeSpacing": "20", // More space for parallel edges
+        "elk.layered.spacing.edgeEdgeSpacing": "15", // Space between parallel edges
 
         // Compaction
         "elk.layered.compaction.postCompaction.strategy":

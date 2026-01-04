@@ -3,9 +3,9 @@
 /**
  * Adversarial Visual Comparison Agent
  * 
+ * Uses shared test infrastructure for proper visualizer switching
  * Compares ReactFlow vs ForceGraph visualizers on the same example
  * Focus: Edge routing, parallel edges, onion-layer effect
- * Scoring system: 0-1 scale with detailed feedback
  * Target example: http://localhost:4321/matchina/examples/toggle
  */
 
@@ -19,11 +19,60 @@ const SCREENSHOT_DIR = path.join(__dirname, '../review/screenshots');
 const FEEDBACK_DIR = path.join(__dirname, '../review/visual-agent/toggle');
 const OLLAMA_MODEL = 'llava';
 
-// Visualizers to compare - using visualizer picker approach
+// Visualizers to compare - using complex preset for ReactFlow/ForceGraph availability
 const VISUALIZERS = [
-  { name: 'reactflow', action: 'click [data-testid="reactflow-option"]' },
-  { name: 'forcegraph', action: 'click [data-testid="forcegraph-option"]' }
+  { name: 'reactflow', preset: 'complex' },
+  { name: 'forcegraph', preset: 'complex' }
 ];
+
+// Playwright script for visualizer switching
+const PLAYWRIGHT_SWITCH_SCRIPT = `
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  
+  try {
+    // Navigate to toggle example
+    await page.goto('${TOGGLE_URL}');
+    await page.waitForSelector('[data-testid="visualizer-picker"]', { timeout: 5000 });
+    
+    // Wait for page to load
+    await page.waitForTimeout(1000);
+    
+    // Get the visualizer picker
+    const picker = await page.$('[data-testid="visualizer-picker"]');
+    if (!picker) {
+      throw new Error('Visualizer picker not found');
+    }
+    
+    // Select the specified visualizer
+    await picker.selectOption('${VISUALIZERS[0].name}');
+    await page.waitForTimeout(500);
+    
+    // Wait for visualizer to load
+    const vizType = '${VISUALIZERS[0].name}';
+    if (vizType === 'forcegraph') {
+      await page.waitForSelector('canvas', { timeout: 3000 });
+    } else if (vizType === 'reactflow') {
+      await page.waitForSelector('.react-flow__node', { timeout: 3000 });
+    }
+    
+    // Take screenshot of the main content area
+    const contentArea = await page.$('.machine-visualizer > div:last-child');
+    if (contentArea) {
+      await contentArea.screenshot({ path: '${SCREENSHOT_DIR}/toggle-${VISUALIZERS[0].name}-${process.argv[2]}.png' });
+    }
+    
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
+})();
+`;
 
 // Timing tracking
 class ComparisonTiming {

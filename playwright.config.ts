@@ -6,7 +6,8 @@ export default defineConfig({
     // Include functional and visual tests for CI
     'functional/**/*.spec.ts',
     'visual/**/*.spec.ts',
-    // Exclude debug tests (agent observation tools)
+    // Include debug tests for development
+    'debug/**/*.spec.ts',
   ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

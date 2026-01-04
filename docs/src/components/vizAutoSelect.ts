@@ -97,7 +97,7 @@ export function getPresetConfig(preset: 'simple' | 'hierarchical' | 'complex' | 
 
     case 'hierarchical':
       return {
-        defaultViz: 'sketch' as VisualizerType,
+        defaultViz: 'reactflow' as VisualizerType,
         availableViz: ['sketch', 'reactflow', 'mermaid-statechart', 'mermaid-flowchart'] as VisualizerType[],
         layout: 'split' as const,
         showPicker: true,
