@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2026-01-04T14:51:00.000Z",
+    "lastUpdated": "2026-01-04T14:54:22.421Z",
+    "model": "llava",
+    "focusExample": "toggle",
+    "focusArea": "edge-routing-comparison",
+    "totalAnalyses": 1,
+    "totalTimeMs": 42498.137041
+  },
+  "visualizers": {
+    "reactflow": {
+      "analyses": [
+        {
+          "timestamp": "2026-01-04T14:54:22.421Z",
+          "overall": 0.83,
+          "edgeRouting": 0.5,
+          "parallelEdges": 1,
+          "strengths": [
+            "Clear and legible state machine representation",
+            "Easy to read and understand"
+          ],
+          "weaknesses": [
+            "Inconsistent edge placement which can lead to confusion for the viewer",
+            "Limited visual hierarchy, as some elements may not be prominent enough"
+          ],
+          "recommendations": [
+            "Enhance edge routing consistency and clarity for better understanding of connections",
+            "Consider adding a more defined visual hierarchy through color-coding or size variation"
+          ],
+          "screenshot": "toggle-reactflow-2026-01-04T14-53-39-914Z.png"
+        }
+      ],
+      "latestScore": 0.83,
+      "issues": [
+        "Inconsistent edge placement which can lead to confusion for the viewer",
+        "Limited visual hierarchy, as some elements may not be prominent enough"
+      ],
+      "timingStats": {
+        "averageTime": 0,
+        "fastest": null,
+        "slowest": null
+      }
+    },
+    "forcegraph": {
+      "analyses": [
+        {
+          "timestamp": "2026-01-04T14:54:22.421Z",
+          "overall": 0.67,
+          "edgeRouting": 0.8,
+          "parallelEdges": 1,
+          "strengths": [
+            "Clear and legible state machine representation",
+            "Easy to read and understand"
+          ],
+          "weaknesses": [
+            "Parallel edges are not clearly separated with onion-like layering, which could obscure the state machine",
+            "Some visual hierarchy elements may not be as prominent as others"
+          ],
+          "recommendations": [
+            "Enhance edge routing to ensure that all connections and relationships are easily understood",
+            "Increase visual hierarchy effectiveness by emphasizing key elements"
+          ],
+          "screenshot": "toggle-forcegraph-2026-01-04T14-53-39-914Z.png"
+        }
+      ],
+      "latestScore": 0.67,
+      "issues": [
+        "Parallel edges are not clearly separated with onion-like layering, which could obscure the state machine",
+        "Some visual hierarchy elements may not be as prominent as others"
+      ],
+      "timingStats": {
+        "averageTime": 0,
+        "fastest": null,
+        "slowest": null
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "timestamp": "2026-01-04T14:54:22.421Z",
+      "winner": "reactflow|forcegraph|tie",
+      "margin": 0.16,
+      "keyDifference": "Reactflow has a more consistent edge routing approach which improves clarity and understanding of the state machine",
+      "improvementOpportunity": "Forcegraph should consider improving edge separation and visual hierarchy to match or surpass Reactflow's current level of performance",
+      "screenshots": {
+        "reactflow": {
+          "filename": "toggle-reactflow-2026-01-04T14-53-39-914Z.png",
+          "outputPath": "/Users/winston/dev/personal/matchina/review/screenshots/toggle-reactflow-2026-01-04T14-53-39-914Z.png"
+        },
+        "forcegraph": {
+          "filename": "toggle-forcegraph-2026-01-04T14-53-39-914Z.png",
+          "outputPath": "/Users/winston/dev/personal/matchina/review/screenshots/toggle-forcegraph-2026-01-04T14-53-39-914Z.png"
+        }
+      }
+    }
+  ],
+  "scoringEvolution": [
+    {
+      "timestamp": "2026-01-04T14:54:22.421Z",
+      "reactflow": 0.83,
+      "forcegraph": 0.67,
+      "winner": "reactflow|forcegraph|tie"
+    }
+  ],
+  "currentLeader": "reactflow|forcegraph|tie"
+}
