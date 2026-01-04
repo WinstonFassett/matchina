@@ -549,10 +549,10 @@ export default function ForceGraphInspector({
 
         Graph.d3Force("center");
       }
-      // Assign curvature for self-loops and parallel edges
+      // Assign curvature for self-loops and parallel edges with enhanced onion-like layering
       let selfLoopLinks: Record<string, any[]> = {};
       let sameNodesLinks: Record<string, any[]> = {};
-      const curvatureMinMax = 0.5;
+      const curvatureMinMax = 0.8; // Increased from 0.5 for better separation
       diagram.links.forEach((link) => {
         const nodePairId =
           link.source <= link.target
@@ -577,15 +577,44 @@ export default function ForceGraphInspector({
           let links = sameNodesLinks[nodePairId];
           let lastIndex = links.length - 1;
           let lastLink = links[lastIndex];
-          lastLink.curvature = curvatureMinMax;
-          let delta = (2 * curvatureMinMax) / lastIndex;
-          for (let i = 0; i < lastIndex; i++) {
-            links[i].curvature = -curvatureMinMax + i * delta;
-            links[i].offset = i;
-            if (lastLink.source !== links[i].source) {
-              links[i].curvature *= -1;
-              links[i].flipped = true;
-            }
+          
+          // Enhanced onion-like layering with better separation
+          const maxCurvature = curvatureMinMax; // 0.8 for more dramatic curves
+          const minCurvature = 0.2; // Minimum curvature for inner layer
+          
+          // Create onion-like layers: outermost edge has max curvature, innermost has min
+          if (links.length === 2) {
+            // Special case for 2 parallel edges - maximize separation
+            links[0].curvature = -maxCurvature;
+            links[1].curvature = maxCurvature;
+            links[0].layer = 'outer';
+            links[1].layer = 'outer';
+          } else {
+            // Multiple parallel edges - create layered effect
+            const curvatureRange = maxCurvature - minCurvature;
+            const curvatureStep = curvatureRange / (links.length - 1);
+            
+            links.forEach((link, i) => {
+              if (i === 0) {
+                // Outermost layer - maximum negative curvature
+                link.curvature = -maxCurvature;
+                link.layer = 'outer';
+              } else if (i === links.length - 1) {
+                // Innermost layer - maximum positive curvature
+                link.curvature = maxCurvature;
+                link.layer = 'inner';
+              } else {
+                // Middle layers - distributed curvature
+                link.curvature = -maxCurvature + (i * curvatureStep * 2);
+                link.layer = 'middle';
+              }
+              
+              link.offset = i;
+              if (lastLink.source !== link.source) {
+                link.curvature *= -1;
+                link.flipped = true;
+              }
+            });
           }
         });
       Graph.graphData(diagram);
