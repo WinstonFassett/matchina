@@ -129,12 +129,12 @@ export const useStateMachineEdges = (
               // from (upper) → to (lower): exit right side of upper, enter right side of lower
               sourceHandle = "right";
               targetHandle = "right";
-              edgeOffset = 80 + (index * 40); // Positive = bow rightward
+              edgeOffset = 80 + (index * 60); // Increased from 40 to 60 for better label separation
             } else {
               // from (lower) → to (upper): exit left side of lower, enter left side of upper  
               sourceHandle = "left";
               targetHandle = "left";
-              edgeOffset = -80 - (index * 40); // Negative = bow leftward
+              edgeOffset = -(80 + (index * 60)); // Increased from 40 to 60 for better label separation
             }
           } else {
             // Horizontal layout: left node exits top, right node exits bottom (clockwise)

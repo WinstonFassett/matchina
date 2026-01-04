@@ -223,34 +223,39 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
   const edgeOffset = data?.edgeOffset ?? 0;
 
   let edgePath: string;
-  let labelX: number;
-  let labelY: number;
+
+  // Label at center, offset perpendicular to edge direction
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  
+  // Initialize label positions
+  let labelX: number = (sourceX + targetX) / 2;
+  let labelY: number = (sourceY + targetY) / 2;
 
   if (edgeOffset !== 0) {
     // Use ReactFlow's BiDirectional approach: Quadratic Bezier with offset control point
     edgePath = getSpecialPath(sourceX, sourceY, targetX, targetY, edgeOffset);
 
-    // Label at center, offset perpendicular to edge direction
-    const dx = targetX - sourceX;
-    const dy = targetY - sourceY;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    let perpX = length > 0 ? (-dy / length) * edgeOffset * 0.5 : 0;
-    let perpY = length > 0 ? (dx / length) * edgeOffset * 0.5 : 0;
-    
-    // Fix for downward flow: flip the sign to match curve direction
-    if (dy > 0) { // Going downward
-      perpX = -perpX; // Flip to match outward curve
+    // Working label positioning - use edge offset magnitude for proper separation
+    if (dy > 0) { // Going downward - curve to right
+      const offsetMagnitude = Math.abs(edgeOffset);
+      labelX = (sourceX + targetX) / 2 + (offsetMagnitude === 80 ? 15 : 55); // 15px for first, 55px for second
+      labelY = (sourceY + targetY) / 2;
+    } else if (dy < 0) { // Going upward - curve to left  
+      const offsetMagnitude = Math.abs(edgeOffset);
+      labelX = (sourceX + targetX) / 2 - (offsetMagnitude === 200 ? 5 : 45); // 5px for first, 45px for second (keep in viewport)
+      labelY = (sourceY + targetY) / 2;
+    } else { // Horizontal layout
+      labelX = (sourceX + targetX) / 2;
+      labelY = (sourceY + targetY) / 2;
     }
-    
-    labelX = (sourceX + targetX) / 2 + perpX;
-    labelY = (sourceY + targetY) / 2 + perpY;
     
     // LOG EDGE LABEL POSITIONS FOR DEBUGGING
     console.log(`🏷️ Edge Label Position: ${data?.event || 'unknown'}`);
     console.log(`  Source: (${sourceX.toFixed(1)}, ${sourceY.toFixed(1)}) → Target: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
     console.log(`  Direction: dy=${dy.toFixed(1)} (dy > 0 = downward, dy < 0 = upward)`);
     console.log(`  Edge Offset: ${edgeOffset}px`);
-    console.log(`  Perpendicular: perpX=${perpX.toFixed(1)}, perpY=${perpY.toFixed(1)}`);
     console.log(`  Final Label Position: (${labelX.toFixed(1)}, ${labelY.toFixed(1)})`);
     
     // LOG NODE POSITIONS FOR LAYOUT DEBUGGING
@@ -259,7 +264,7 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     console.log(`  Target Node: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
     console.log(`  Node Distance: ${length.toFixed(1)}px`);
     console.log(`  Label Distance from Source: ${Math.sqrt(Math.pow(labelX - sourceX, 2) + Math.pow(labelY - sourceY, 2)).toFixed(1)}px`);
-    console.log(`  Label Distance from Target: ${Math.sqrt(Math.pow(labelX - targetX, 2) + Math.pow(labelY - targetY, 2)).toFixed(1)}px`);
+    console.log(`  Label Distance from Target: ${Math.sqrt(Math.pow(targetX - labelX, 2) + Math.pow(targetY - labelY, 2)).toFixed(1)}px`);
     console.log(`  ---`);
   } else {
     // Standard bezier path for non-offset edges
