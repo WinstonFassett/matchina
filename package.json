@@ -139,7 +139,8 @@
     "score:visualizers": "node scripts/score-visualizers.cjs && open docs/visualizer-scoring-report.md",
     "test:visual:headed": "npx playwright test test/e2e/visual/visual-smoke.spec.ts --headed",
     "test:smoke:headed": "npx playwright test test/e2e/functional/checkout-smoke.spec.ts --headed",
-    "coverage:balance": "node scripts/coverage-balance-report.js"
+    "coverage:balance": "node scripts/coverage-balance-report.js",
+    "report:beads": "node scripts/beads-task-report.cjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
