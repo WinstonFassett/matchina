@@ -31,6 +31,7 @@ import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
 import type { LayoutOptions } from "./utils/elkLayout";
 import { getDefaultLayoutOptions } from "./utils/elkLayout";
 import { loadLayoutSettings, saveLayoutSettings } from "./utils/layoutStorage";
+import { getReactFlowPreset, applyReactFlowPreset } from "./presets";
 
 // Add CSS for edge animations
 const edgeAnimationStyles = `
@@ -52,6 +53,7 @@ interface ReactFlowInspectorProps {
   dispatch: (event: { type: string }) => void;
   layoutOptions?: LayoutOptions;
   interactive?: boolean; // Controls whether edges can be clicked to trigger transitions
+  exampleName?: string; // For example-specific optimizations
 }
 
 const nodeTypes: NodeTypes = {
@@ -71,14 +73,23 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   dispatch,
   layoutOptions: initialLayoutOptions,
   interactive = true,
+  exampleName,
 }) => {
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
   const [buttonPosition, setButtonPosition] = useState<{ x: number; y: number } | null>(null);
   const layoutButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Load saved layout settings or use defaults, allowing prop override
+  // Load saved layout settings or use example-specific preset, allowing prop override
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(() => {
     if (initialLayoutOptions) return initialLayoutOptions;
+    
+    // Try example-specific preset first
+    if (exampleName) {
+      const preset = getReactFlowPreset(exampleName);
+      return { ...getDefaultLayoutOptions(), ...preset.layoutOptions };
+    }
+    
+    // Fallback to saved settings or defaults
     const saved = loadLayoutSettings();
     return saved || getDefaultLayoutOptions();
   });
@@ -147,15 +158,20 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   // Fit view when layout is complete
   useEffect(() => {
     if (isLayoutComplete && reactFlowInstanceRef.current) {
+      // Get example-specific fitView options
+      const preset = exampleName ? getReactFlowPreset(exampleName) : null;
+      const fitViewOptions = preset?.fitViewOptions || {
+        padding: 0.3,
+        minZoom: 0.01,
+        maxZoom: 3,
+        duration: 1200,
+      };
+      
       setTimeout(() => {
-        reactFlowInstanceRef.current?.fitView({
-          padding: 0.3,
-          includeHiddenNodes: false,
-          duration: 800, // Animate the zoom/pan over 800ms
-        });
-      }, 50); // Small delay to ensure nodes are properly positioned
+        reactFlowInstanceRef.current?.fitView(fitViewOptions);
+      }, 200);
     }
-  }, [isLayoutComplete]);
+  }, [isLayoutComplete, exampleName]);
 
   // Smooth zoom to active state when it changes
   useEffect(() => {
@@ -210,7 +226,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
 
   return (
     <>
-      <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative overflow-hidden" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+      <div className="w-full h-full border border-gray-200 dark:border-gray-700 rounded relative" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
         <style>{edgeAnimationStyles}</style>
         <ReactFlowProvider>
           <ReactFlow
@@ -226,8 +242,10 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
               type: "custom",
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
+            minZoom={0.1}   // More reasonable - still allows zoom out
+            maxZoom={2.5}   // Slightly higher than default
             fitView
-            fitViewOptions={{ padding: 0.2, includeHiddenNodes: true, minZoom: 0.5, maxZoom: 2 }}
+            fitViewOptions={{ padding: 0.3, includeHiddenNodes: true, minZoom: 0.1, maxZoom: 2.5 }}
             style={{ width: '100%', flex: 1 }}
           >
             <Controls
