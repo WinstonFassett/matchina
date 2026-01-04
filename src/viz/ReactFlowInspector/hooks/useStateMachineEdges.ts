@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from "react";
 import { MarkerType, useEdgesState } from "reactflow";
 import type { Edge, Node } from "reactflow";
-import { optimizeEdgeConnections } from "../utils/layoutCalculator";
+import { optimizeEdgeConnectionsWithDirectionality, distributeOutgoingEdges, type EdgeInfo } from "../utils/curveDirectionality";
 
 interface Transition {
   from: string;
@@ -174,6 +174,29 @@ export const useStateMachineEdges = (
         });
       }
     });
+    // Pre-compute terminal distribution for non-bidirectional edges
+    // This ensures edges from the same source node are distributed to different terminals
+    const nonBidirectionalEdges: EdgeInfo[] = [];
+    edgeGroupMap.forEach((groupTransitions, key) => {
+      const [from, to] = key.split("-");
+      const pairKey = [from, to].sort().join("-");
+      
+      // Only collect non-bidirectional, single-event edges for distribution
+      if (!bidirectionalPairs.has(pairKey) && groupTransitions.length === 1) {
+        const fromPos = nodePositions.get(from);
+        const toPos = nodePositions.get(to);
+        if (fromPos && toPos) {
+          nonBidirectionalEdges.push({ from, to, fromPos, toPos });
+        }
+      }
+    });
+    
+    // Distribute terminals for edges sharing the same source node
+    const distributedEdges = distributeOutgoingEdges(nonBidirectionalEdges);
+    const distributedEdgeMap = new Map(
+      distributedEdges.map(e => [`${e.from}-${e.to}`, { source: e.sourceHandle, target: e.targetHandle }])
+    );
+
     edgeGroupMap.forEach((groupTransitions, key) => {
       const [from, to] = key.split("-");
       const pairKey = [from, to].sort().join("-");
@@ -188,7 +211,9 @@ export const useStateMachineEdges = (
 
       if (!fromPos || !toPos) return;
 
-      const connectionPoints = optimizeEdgeConnections(fromPos, toPos);
+      // Use pre-computed distribution if available, otherwise fall back to individual optimization
+      const distributedConnection = distributedEdgeMap.get(key);
+      const connectionPoints = distributedConnection || optimizeEdgeConnectionsWithDirectionality(fromPos, toPos);
 
       // For multiple transitions between the same nodes, distribute them evenly
       groupTransitions.forEach((transition, index) => {
