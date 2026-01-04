@@ -222,9 +222,71 @@ if (links.length === 2) {
 3. [ ] Document final approach
 4. [ ] Prepare for production use
 
+## 🚨 CRITICAL FAILURE ANALYSIS
+
+### The Problem: Massive Visual Testing Failure
+
+**What Happened**: Our adversarial comparison was fundamentally broken:
+- ❌ Capturing entire document frame instead of focused visualizer area
+- ❌ Not verifying which visualizer was actually selected  
+- ❌ AI analyzing wrong content (document chrome vs actual visualizer)
+- ❌ No validation that target visualizers actually loaded
+
+**Root Cause**: Not using existing shared test infrastructure that already solves these problems.
+
 ---
 
-*This document focuses on **qualitative visual improvements**. Scores are experimental reference points only.*
+## ✅ SOLUTION: Using Shared Infrastructure
+
+### What Works Now (Verification Test Results):
+```
+📋 Current visualizer: null
+📸 Screenshot saved: verification-current-visualizer.png
+🔄 Attempting to switch to ReactFlow...
+✅ ReactFlow loaded successfully
+📸 ReactFlow screenshot saved: verification-reactflow.png  
+🔄 Attempting to switch to ForceGraph...
+✅ ForceGraph loaded successfully
+📸 ForceGraph screenshot saved: verification-forcegraph.png
+```
+
+### Key Infrastructure Components:
+- ✅ **`SELECTORS.mainContent`** - `.machine-visualizer > div:last-child` (focused visualizer area)
+- ✅ **`selectVisualizer()`** - Proper visualizer selection with validation
+- ✅ **`waitForVisualizer()`** - Validates ReactFlow (`.react-flow__node`) and ForceGraph (`canvas`)
+- ✅ **Focused screenshots** - Captures only the visualizer, not documentation chrome
+
+### Available Visualizers for Toggle:
+From test-helpers.ts: `simple: ['mermaid-statechart', 'mermaid-flowchart', 'sketch']`
+- ❌ **ReactFlow and ForceGraph NOT available in 'simple' preset**
+- ✅ **Available in 'complex' preset**: `['reactflow', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart', 'sketch']`
+
+---
+
+## Next Steps: Fix Adversarial Comparison
+
+1. **Use 'complex' preset** for ReactFlow/ForceGraph availability
+2. **Implement proper visualizer switching** using `selectVisualizer()`
+3. **Add visualizer validation** using `waitForVisualizer()`
+4. **Use focused screenshots** with `SELECTORS.mainContent`
+5. **Add visualizer confirmation** in AI prompts
+
+---
+
+## Philosophy: Quality Over Scores - CORRECTED
+
+**⚠️ CRITICAL INSIGHT**: Visual quality assessment is meaningless without proper visual capture. The AI was analyzing documentation chrome instead of actual visualizer content.
+
+**✅ PROPER APPROACH**:
+1. Verify visualizer selection
+2. Capture focused visualizer area  
+3. Validate visualizer-specific elements
+4. Provide visual context to AI (what visualizer, what elements visible)
+5. Focus on qualitative improvements, not experimental scores
+
+---
+
+*This section documents the massive failure and the path forward using proper shared infrastructure.*
 
 **Last Updated**: January 4, 2026, 9:00 AM  
 **Focus**: Visual quality over experimental scores  
