@@ -566,7 +566,7 @@ export default function ForceGraphInspector({
       // Assign curvature for self-loops and parallel edges with enhanced onion-like layering
       let selfLoopLinks: Record<string, any[]> = {};
       let sameNodesLinks: Record<string, any[]> = {};
-      const curvatureMinMax = 0.8; // Increased from 0.5 for better separation
+      const curvatureMinMax = 0.5; // Original curvature value
       diagram.links.forEach((link) => {
         const nodePairId =
           link.source <= link.target

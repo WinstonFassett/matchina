@@ -42,13 +42,59 @@ function getSpecialPath(
   let perpX = (-dy / length) * offset;
   let perpY = (dx / length) * offset;
   
-  // Fix for downward flow: flip the sign to curve outward to right
-  if (dy > 0) { // Going downward
-    perpX = -perpX; // Flip to curve outward to right
+  // Add "stem" curvature for perfectly aligned nodes to prevent straight lines
+  // This ensures organic flow even when terminals are at same x/y coordinates
+  const alignmentThreshold = 5; // pixels threshold for "perfect alignment"
+  const stemCurvature = 15; // minimum curvature for organic appearance
+  
+  if (Math.abs(dx) < alignmentThreshold) {
+    // Perfect vertical alignment - add horizontal stem curvature
+    perpX = perpX === 0 ? (offset > 0 ? stemCurvature : -stemCurvature) : perpX;
+  } else if (Math.abs(dy) < alignmentThreshold) {
+    // Perfect horizontal alignment - add vertical stem curvature  
+    perpY = perpY === 0 ? (offset > 0 ? stemCurvature : -stemCurvature) : perpY;
+  }
+  
+  // Determine if this is primarily vertical or horizontal flow
+  const isVerticalFlow = Math.abs(dy) > Math.abs(dx);
+  
+    
+  if (isVerticalFlow) {
+    // Vertical flow: flip for downward direction to curve outward to right
+    if (dy > 0) {
+      perpX = -perpX;
+    }
+  } else {
+    // Only apply diagonal logic for BUNDLED edges (offset != 0)
+    // For single edges, use standard horizontal behavior
+    if (offset !== 0) {
+      const isDiagonal = Math.abs(dx) > 10 && Math.abs(dy) > 10;
+      
+      if (isDiagonal) {
+        // Diagonal flow: ensure curves bow outward along the perpendicular axis
+        // For clockwise onion layering, we want edges to curve outward from the center
+        const shouldFlip = (dx > 0 && dy > 0) || (dx < 0 && dy < 0);
+        
+        if (shouldFlip) {
+          // Flip the perpendicular to point outward
+          perpX = -perpX;
+          perpY = -perpY;
+        }
+        
+        // Increase curvature for diagonal flow to make it more visible
+        const curvatureBoost = 1.3; // 30% more curvature for diagonal
+        perpX *= curvatureBoost;
+        perpY *= curvatureBoost;
+      } else {
+        // Pure horizontal flow: flip for bottom terminals to curve outward downward
+        if (offset > 0) {
+          perpY = -perpY;
+        }
+      }
+    }
   }
 
   // Use simple Quadratic Bezier like ForceGraph - single control point at center
-  // ForceGraph's elegance comes from simplicity, not complex control points
   return `M ${sourceX} ${sourceY} Q ${centerX + perpX} ${centerY + perpY} ${targetX} ${targetY}`;
 }
 
@@ -227,7 +273,6 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
   // Label at center, offset perpendicular to edge direction
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
-  const length = Math.sqrt(dx * dx + dy * dy);
   
   // Initialize label positions
   let labelX: number = (sourceX + targetX) / 2;
@@ -237,37 +282,83 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     // Use ReactFlow's BiDirectional approach: Quadratic Bezier with offset control point
     edgePath = getSpecialPath(sourceX, sourceY, targetX, targetY, edgeOffset);
 
-    // Working label positioning - use edge offset magnitude for proper separation
-    if (dy > 0) { // Going downward - curve to right
-      const offsetMagnitude = Math.abs(edgeOffset);
-      labelX = (sourceX + targetX) / 2 + (offsetMagnitude === 80 ? 15 : 55); // 15px for first, 55px for second
-      labelY = (sourceY + targetY) / 2;
-    } else if (dy < 0) { // Going upward - curve to left  
-      const offsetMagnitude = Math.abs(edgeOffset);
-      labelX = (sourceX + targetX) / 2 - (offsetMagnitude === 200 ? 5 : 45); // 5px for first, 45px for second (keep in viewport)
-      labelY = (sourceY + targetY) / 2;
-    } else { // Horizontal layout
-      labelX = (sourceX + targetX) / 2;
-      labelY = (sourceY + targetY) / 2;
+    // Symmetrical label positioning based on edge offset magnitude
+    const offsetMagnitude = Math.abs(edgeOffset);
+    
+    const centerX = (sourceX + targetX) / 2;
+    const centerY = (sourceY + targetY) / 2;
+    
+    // Determine if this is the first or second edge (based on offset magnitude)
+    const isSecondEdge = offsetMagnitude > 100; // 140px > 100, 80px < 100
+    
+    // Use consistent label offsets for both sides
+    // First edge: 25px offset, Second edge: 55px offset
+    const labelOffset = isSecondEdge ? 55 : 25;
+    
+    // Determine if this is primarily vertical or horizontal flow
+    const isVerticalFlow = Math.abs(dy) > Math.abs(dx);
+    
+    if (isVerticalFlow) {
+      if (dy > 0) { // Going downward - curve to right, label on right
+        labelX = centerX + labelOffset;
+        labelY = centerY;
+      } else { // Going upward - curve to left, label on left
+        labelX = centerX - labelOffset;
+        // Stack labels vertically when they would be clamped to same position
+        labelY = centerY + (isSecondEdge ? 20 : -20);
+      }
+      // Only clamp right-side labels to stay within viewport
+      // Left-side labels should be positioned naturally
+      if (dy > 0) {
+        labelX = Math.max(50, labelX);
+      }
+    } else {
+      // Only apply special diagonal logic for BUNDLED edges
+      // For single edges, use standard ReactFlow behavior
+      if (edgeOffset !== 0) {
+        // Check if this is diagonal flow for bundled edges only
+        const isDiagonal = Math.abs(dx) > 10 && Math.abs(dy) > 10;
+        
+        if (isDiagonal) {
+          // Diagonal flow: position labels perpendicular to edge direction
+          // Calculate perpendicular direction for label placement
+          const edgeLength = Math.sqrt(dx * dx + dy * dy);
+          const perpX = (-dy / edgeLength) * labelOffset;
+          const perpY = (dx / edgeLength) * labelOffset;
+          
+          // For diagonal flow, stack labels along the perpendicular axis
+          const stackOffset = isSecondEdge ? 15 : -15;
+          labelX = centerX + perpX + (stackOffset * dx / edgeLength);
+          labelY = centerY + perpY + (stackOffset * dy / edgeLength);
+        } else {
+          // Pure horizontal flow for bundled edges: labels above/below the edges
+          labelX = centerX;
+          if (dx > 0) { // Going rightward - top edges bow up, label above
+            labelY = centerY - labelOffset;
+          } else { // Going leftward - bottom edges bow down, label below
+            labelY = centerY + labelOffset;
+          }
+        }
+      } else {
+        // Single edges: use standard ReactFlow label positioning
+        labelX = centerX;
+        labelY = centerY;
+      }
+    }
+  } else {
+    // Standard bezier path for non-offset edges with stem curvature
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    
+    // Add stem curvature for perfectly aligned nodes
+    const alignmentThreshold = 5;
+    const stemCurvature = 0.15; // curvature multiplier for organic appearance
+    
+    let curvature = 0.25;
+    if (Math.abs(dx) < alignmentThreshold || Math.abs(dy) < alignmentThreshold) {
+      curvature = Math.max(curvature, stemCurvature);
     }
     
-    // LOG EDGE LABEL POSITIONS FOR DEBUGGING
-    console.log(`🏷️ Edge Label Position: ${data?.event || 'unknown'}`);
-    console.log(`  Source: (${sourceX.toFixed(1)}, ${sourceY.toFixed(1)}) → Target: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
-    console.log(`  Direction: dy=${dy.toFixed(1)} (dy > 0 = downward, dy < 0 = upward)`);
-    console.log(`  Edge Offset: ${edgeOffset}px`);
-    console.log(`  Final Label Position: (${labelX.toFixed(1)}, ${labelY.toFixed(1)})`);
-    
-    // LOG NODE POSITIONS FOR LAYOUT DEBUGGING
-    console.log(`📍 Node Positions for Layout Analysis:`);
-    console.log(`  Source Node: (${sourceX.toFixed(1)}, ${sourceY.toFixed(1)})`);
-    console.log(`  Target Node: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
-    console.log(`  Node Distance: ${length.toFixed(1)}px`);
-    console.log(`  Label Distance from Source: ${Math.sqrt(Math.pow(labelX - sourceX, 2) + Math.pow(labelY - sourceY, 2)).toFixed(1)}px`);
-    console.log(`  Label Distance from Target: ${Math.sqrt(Math.pow(targetX - labelX, 2) + Math.pow(targetY - labelY, 2)).toFixed(1)}px`);
-    console.log(`  ---`);
-  } else {
-    // Standard bezier path for non-offset edges
     [edgePath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
@@ -275,7 +366,7 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
       targetX,
       targetY,
       targetPosition,
-      curvature: 0.25,
+      curvature,
     });
   }
 

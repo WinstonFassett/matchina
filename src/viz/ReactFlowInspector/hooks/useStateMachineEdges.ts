@@ -91,15 +91,14 @@ export const useStateMachineEdges = (
     });
 
     // Process bidirectional edge groups with proper direction-based grouping
-    bidirectionalEdgeGroups.forEach((allTransitions, pairKey) => {
+    bidirectionalEdgeGroups.forEach((allTransitions) => {
       if (allTransitions.length > 1) {
-        // Get node pair for direction determination
-        const [nodeA, nodeB] = pairKey.split("-");
-        
-        console.log(`🔧 Direction Grouping ${pairKey}: ${allTransitions.length} total edges`);
+        // Track index per direction for symmetrical offsets
+        let downwardIndex = 0;
+        let upwardIndex = 0;
         
         // Process all edges together, determining direction per edge
-        allTransitions.forEach(({ transition, from, to }, index) => {
+        allTransitions.forEach(({ transition, from, to }) => {
           const fromPos = nodePositions.get(from);
           const toPos = nodePositions.get(to);
           
@@ -109,15 +108,11 @@ export const useStateMachineEdges = (
           // For clockwise flow: upper node exits right, lower node exits left
           const isVerticalLayout = Math.abs(fromPos.y - toPos.y) > Math.abs(fromPos.x - toPos.x);
           
-          // Determine if this edge is A→B or B→A based on actual from/to
-          const isFromA = from === nodeA;
-
-          // LOG NODE POSITIONS FOR DEBUGGING
-          console.log(`🔧 Processing Edge: ${transition.from}→${transition.to} (${transition.event})`);
-          console.log(`  Node Positions: ${from}=(${fromPos.x.toFixed(1)}, ${fromPos.y.toFixed(1)}), ${to}=(${toPos.x.toFixed(1)}, ${toPos.y.toFixed(1)})`);
-          console.log(`  Layout: ${isVerticalLayout ? 'VERTICAL' : 'HORIZONTAL'}`);
-          console.log(`  Direction: ${isFromA ? 'A→B' : 'B→A'}`);
-          console.log(`  Index: ${index}`);
+          // Determine direction based on actual positions
+          const isGoingDown = fromPos.y < toPos.y;
+          
+          // Get the direction-specific index for symmetrical offsets
+          const directionIndex = isGoingDown ? downwardIndex++ : upwardIndex++;
           
           let sourceHandle: string;
           let targetHandle: string;
@@ -129,12 +124,12 @@ export const useStateMachineEdges = (
               // from (upper) → to (lower): exit right side of upper, enter right side of lower
               sourceHandle = "right";
               targetHandle = "right";
-              edgeOffset = 80 + (index * 60); // Increased from 40 to 60 for better label separation
+              edgeOffset = 80 + (directionIndex * 60); // Use direction-specific index for symmetry
             } else {
               // from (lower) → to (upper): exit left side of lower, enter left side of upper  
               sourceHandle = "left";
               targetHandle = "left";
-              edgeOffset = -(80 + (index * 60)); // Increased from 40 to 60 for better label separation
+              edgeOffset = -(80 + (directionIndex * 60)); // Use direction-specific index for symmetry
             }
           } else {
             // Horizontal layout: left node exits top, right node exits bottom (clockwise)
@@ -142,12 +137,12 @@ export const useStateMachineEdges = (
               // from (left) → to (right): exit top side of left, enter top side of right
               sourceHandle = "top";
               targetHandle = "top";
-              edgeOffset = -80 - (index * 40); // Negative = bow upward
+              edgeOffset = -(80 + (directionIndex * 60)); // Use direction-specific index for symmetry
             } else {
               // from (right) → to (left): exit bottom side of right, enter bottom side of left
               sourceHandle = "bottom";
               targetHandle = "bottom";
-              edgeOffset = 80 + (index * 40); // Positive = bow downward
+              edgeOffset = 80 + (directionIndex * 60); // Use direction-specific index for symmetry
             }
           }
           
@@ -240,9 +235,19 @@ export const useStateMachineEdges = (
           edgeOffset = layer * 20 * (index % 2 === 0 ? 1 : -1);
         }
 
-        // Use left/right handles based on side assignment
-        const sourceHandle = side;
-        const targetHandle = side;
+        // Use optimized connection points for single edges, side-based for bundled
+        let sourceHandle: string;
+        let targetHandle: string;
+        
+        if (isBidirectional || groupTransitions.length > 1) {
+          // Bundled edges: use side-based handles for onion layering
+          sourceHandle = side;
+          targetHandle = side;
+        } else {
+          // Single edges: use optimized connection points for clockwise flow
+          sourceHandle = connectionPoints.source;
+          targetHandle = connectionPoints.target;
+        }
 
         newEdges.push({
           id: `${transition.from}-${transition.to}-${transition.event}`,
