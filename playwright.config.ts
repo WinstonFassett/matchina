@@ -24,6 +24,7 @@ export default defineConfig({
     screenshot: 'on',
     headless: true, // Run in background by default
     actionTimeout: 2000, // 2 seconds for actions like click/fill
+    colorScheme: 'dark', // Global default: dark mode for all tests
   },
   projects: [
     {
@@ -31,6 +32,7 @@ export default defineConfig({
       use: { 
         browserName: 'chromium',
         viewport: { width: 1280, height: 900 },
+        colorScheme: 'dark', // Explicit dark mode for chromium project
       },
     },
   ],

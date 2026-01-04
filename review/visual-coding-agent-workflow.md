@@ -176,5 +176,13 @@ From memory: ReactFlow-based visualizers with known issues:
 
 ---
 
+## 🔗 **Related Documentation**
+
+- **[VISUAL_CODING_AGENT.md](./VISUAL_CODING_AGENT.md)** - Complete visual-first development methodology for coding agents
+- **[AGENT_COMMANDS.md](./AGENT_COMMANDS.md)** - Agent-safe command guidelines  
+- **[reactflow-parallel-edge-gallery.md](./reactflow-parallel-edge-gallery.md)** - Live visual progress tracking
+
+---
+
 **Last Updated**: 2026-01-04 (Comprehensive audit complete)
 **Next Review**: After Ollama model assessment

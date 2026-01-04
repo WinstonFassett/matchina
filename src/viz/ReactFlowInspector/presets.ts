@@ -129,10 +129,10 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
   // Simple examples - side-by-side for consistency
   'toggle': {
     name: 'Toggle',
-    description: 'Simple on/off - force graph layout',
+    description: 'Simple on/off - layered layout for clean vertical stacking',
     layoutOptions: {
       direction: 'DOWN',
-      algorithm: 'force',  // Force-directed layout
+      algorithm: 'layered',  // Sugiyama layout for clean vertical stacking
       nodeSpacing: 80,
       layerSpacing: 80,
       edgeSpacing: 10,

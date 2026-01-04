@@ -90,9 +90,104 @@ export const useStateMachineEdges = (
       }
     });
 
-    // Process regular transitions
+    // Process bidirectional edge groups with proper direction-based grouping
+    bidirectionalEdgeGroups.forEach((allTransitions, pairKey) => {
+      if (allTransitions.length > 1) {
+        // Get node pair for direction determination
+        const [nodeA, nodeB] = pairKey.split("-");
+        
+        console.log(`🔧 Direction Grouping ${pairKey}: ${allTransitions.length} total edges`);
+        
+        // Process all edges together, determining direction per edge
+        allTransitions.forEach(({ transition, from, to }, index) => {
+          const fromPos = nodePositions.get(from);
+          const toPos = nodePositions.get(to);
+          
+          if (!fromPos || !toPos) return;
+
+          // Detect layout: vertical (above/below) vs horizontal (side-by-side)
+          // For clockwise flow: upper node exits right, lower node exits left
+          const isVerticalLayout = Math.abs(fromPos.y - toPos.y) > Math.abs(fromPos.x - toPos.x);
+          
+          // Determine if this edge is A→B or B→A based on actual from/to
+          const isFromA = from === nodeA;
+
+          // LOG NODE POSITIONS FOR DEBUGGING
+          console.log(`🔧 Processing Edge: ${transition.from}→${transition.to} (${transition.event})`);
+          console.log(`  Node Positions: ${from}=(${fromPos.x.toFixed(1)}, ${fromPos.y.toFixed(1)}), ${to}=(${toPos.x.toFixed(1)}, ${toPos.y.toFixed(1)})`);
+          console.log(`  Layout: ${isVerticalLayout ? 'VERTICAL' : 'HORIZONTAL'}`);
+          console.log(`  Direction: ${isFromA ? 'A→B' : 'B→A'}`);
+          console.log(`  Index: ${index}`);
+          
+          let sourceHandle: string;
+          let targetHandle: string;
+          let edgeOffset: number;
+          
+          if (isVerticalLayout) {
+            // Vertical layout: upper node exits right, lower node exits left (clockwise)
+            if (fromPos.y < toPos.y) {
+              // from (upper) → to (lower): exit right side of upper, enter right side of lower
+              sourceHandle = "right";
+              targetHandle = "right";
+              edgeOffset = 80 + (index * 40); // Positive = bow rightward
+            } else {
+              // from (lower) → to (upper): exit left side of lower, enter left side of upper  
+              sourceHandle = "left";
+              targetHandle = "left";
+              edgeOffset = -80 - (index * 40); // Negative = bow leftward
+            }
+          } else {
+            // Horizontal layout: left node exits top, right node exits bottom (clockwise)
+            if (fromPos.x < toPos.x) {
+              // from (left) → to (right): exit top side of left, enter top side of right
+              sourceHandle = "top";
+              targetHandle = "top";
+              edgeOffset = -80 - (index * 40); // Negative = bow upward
+            } else {
+              // from (right) → to (left): exit bottom side of right, enter bottom side of left
+              sourceHandle = "bottom";
+              targetHandle = "bottom";
+              edgeOffset = 80 + (index * 40); // Positive = bow downward
+            }
+          }
+          
+          const edge: Edge = {
+            id: `${transition.from}-${transition.to}-${transition.event}`,
+            source: transition.from,
+            target: transition.to,
+            sourceHandle,
+            targetHandle,
+            type: "custom",
+            label: transition.event,
+            data: {
+              event: transition.event,
+              isClickable: true,
+              isEnabled: transition.from === currentState,
+              edgeOffset,
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: from === currentState ? "#1e40af" : "#6b7280",
+            },
+            style: {
+              stroke: from === currentState ? "#1e40af" : "#6b7280",
+              strokeWidth: from === currentState ? 3 : 2,
+            },
+          };
+
+          newEdges.push(edge);
+        });
+      }
+    });
     edgeGroupMap.forEach((groupTransitions, key) => {
       const [from, to] = key.split("-");
+      const pairKey = [from, to].sort().join("-");
+      
+      // Skip if this was already processed as bidirectional
+      if (bidirectionalPairs.has(pairKey)) {
+        return;
+      }
+      
       const fromPos = nodePositions.get(from);
       const toPos = nodePositions.get(to);
 

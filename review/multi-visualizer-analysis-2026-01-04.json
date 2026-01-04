@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-01-04T15:42:00.000Z",
+  "example": "toggle",
+  "visualizers": ["reactflow", "forcegraph", "mermaid-statechart"],
+  "screenshots": {
+    "reactflow": "multi-comparison-reactflow-2026-01-04T15-41-59-794Z.png",
+    "forcegraph": "multi-comparison-forcegraph-2026-01-04T15-42-00-360Z.png",
+    "mermaid-statechart": "multi-comparison-mermaid-statechart-2026-01-04T15-42-00-922Z.png"
+  },
+  "visualAnalysis": {
+    "reactflow": {
+      "edgeQuality": {
+        "score": 3,
+        "details": "Poor parallel edge handling - edges overlap significantly, no clear separation between parallel transitions. The toggle->off and toggle->on edges are completely overlapping, making it impossible to distinguish between different transitions."
+      },
+      "nodeStyling": {
+        "score": 8,
+        "details": "Excellent node styling with consistent theme integration. Clean, professional appearance with good color contrast and modern design. Node labels are clear and well-positioned."
+      },
+      "visibility": {
+        "score": 9,
+        "details": "No clipping issues, all content fully visible. Good spacing and margins. Responsive layout handles the simple toggle machine well."
+      },
+      "overallAesthetics": {
+        "score": 7,
+        "details": "Professional appearance but edge quality significantly impacts overall visual quality. Good layout structure but poor edge routing detracts from user experience."
+      },
+      "crossPollination": {
+        "strengthsToShare": ["Professional node styling", "Theme consistency", "Clean layout structure", "Modern design language"],
+        "weaknessesToFix": ["Parallel edge overlapping", "Edge routing algorithms", "Transition clarity"],
+        "inspirationFor": ["ForceGraph", "Mermaid"]
+      },
+      "priorityIssues": [
+        "Parallel edges completely overlap making transitions indistinguishable",
+        "Edge routing needs fundamental improvement for parallel transitions"
+      ],
+      "recommendations": [
+        "Implement curved edge routing for parallel transitions",
+        "Learn edge separation algorithms from ForceGraph/Mermaid",
+        "Add edge labels or visual distinction for parallel transitions"
+      ]
+    }
+  },
+  "rankings": {
+    "edgeQuality": [
+      {"visualizer": "ForceGraph", "score": 8, "reason": "Best parallel edge separation with organic routing"},
+      {"visualizer": "Mermaid", "score": 7, "reason": "Clean structured routing with good separation"},
+      {"visualizer": "ReactFlow", "score": 3, "reason": "Poor parallel edge handling with significant overlap"}
+    ]
+  },
+  "crossPollinationOpportunities": {
+    "reactflowImprovements": [
+      "Learn parallel edge separation from ForceGraph/Mermaid",
+      "Implement curved edge routing algorithms",
+      "Add edge distinction for parallel transitions"
+    ]
+  }
+}

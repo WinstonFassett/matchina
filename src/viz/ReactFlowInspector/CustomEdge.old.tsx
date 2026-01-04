@@ -16,8 +16,8 @@ interface CustomEdgeProps extends ReactFlowEdgeProps {
   data: CustomEdgeData;
 }
 
-// Generate ForceGraph-style symmetric curves for elegant parallel edges
-// Uses simple symmetric control points like ForceGraph's linkCurvature
+// Generate a special path for bidirectional edges (like ReactFlow's BiDirectionalEdge example)
+// Uses a Quadratic Bezier with offset control point at center, perpendicular to the line
 function getSpecialPath(
   sourceX: number,
   sourceY: number,
@@ -38,17 +38,10 @@ function getSpecialPath(
   }
 
   // Perpendicular offset: rotate 90 degrees
-  // For clockwise onion layer, we need to flip the sign for certain directions
-  let perpX = (-dy / length) * offset;
-  let perpY = (dx / length) * offset;
-  
-  // Fix for downward flow: flip the sign to curve outward to right
-  if (dy > 0) { // Going downward
-    perpX = -perpX; // Flip to curve outward to right
-  }
+  const perpX = (-dy / length) * offset;
+  const perpY = (dx / length) * offset;
 
-  // Use simple Quadratic Bezier like ForceGraph - single control point at center
-  // ForceGraph's elegance comes from simplicity, not complex control points
+  // Use Quadratic Bezier (Q) with control point offset perpendicular to the line
   return `M ${sourceX} ${sourceY} Q ${centerX + perpX} ${centerY + perpY} ${targetX} ${targetY}`;
 }
 
@@ -234,33 +227,10 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     const dx = targetX - sourceX;
     const dy = targetY - sourceY;
     const length = Math.sqrt(dx * dx + dy * dy);
-    let perpX = length > 0 ? (-dy / length) * edgeOffset * 0.5 : 0;
-    let perpY = length > 0 ? (dx / length) * edgeOffset * 0.5 : 0;
-    
-    // Fix for downward flow: flip the sign to match curve direction
-    if (dy > 0) { // Going downward
-      perpX = -perpX; // Flip to match outward curve
-    }
-    
+    const perpX = length > 0 ? (-dy / length) * edgeOffset * 0.5 : 0;
+    const perpY = length > 0 ? (dx / length) * edgeOffset * 0.5 : 0;
     labelX = (sourceX + targetX) / 2 + perpX;
     labelY = (sourceY + targetY) / 2 + perpY;
-    
-    // LOG EDGE LABEL POSITIONS FOR DEBUGGING
-    console.log(`🏷️ Edge Label Position: ${data?.event || 'unknown'}`);
-    console.log(`  Source: (${sourceX.toFixed(1)}, ${sourceY.toFixed(1)}) → Target: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
-    console.log(`  Direction: dy=${dy.toFixed(1)} (dy > 0 = downward, dy < 0 = upward)`);
-    console.log(`  Edge Offset: ${edgeOffset}px`);
-    console.log(`  Perpendicular: perpX=${perpX.toFixed(1)}, perpY=${perpY.toFixed(1)}`);
-    console.log(`  Final Label Position: (${labelX.toFixed(1)}, ${labelY.toFixed(1)})`);
-    
-    // LOG NODE POSITIONS FOR LAYOUT DEBUGGING
-    console.log(`📍 Node Positions for Layout Analysis:`);
-    console.log(`  Source Node: (${sourceX.toFixed(1)}, ${sourceY.toFixed(1)})`);
-    console.log(`  Target Node: (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
-    console.log(`  Node Distance: ${length.toFixed(1)}px`);
-    console.log(`  Label Distance from Source: ${Math.sqrt(Math.pow(labelX - sourceX, 2) + Math.pow(labelY - sourceY, 2)).toFixed(1)}px`);
-    console.log(`  Label Distance from Target: ${Math.sqrt(Math.pow(labelX - targetX, 2) + Math.pow(labelY - targetY, 2)).toFixed(1)}px`);
-    console.log(`  ---`);
   } else {
     // Standard bezier path for non-offset edges
     [edgePath, labelX, labelY] = getBezierPath({
