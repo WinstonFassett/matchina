@@ -202,8 +202,8 @@ export const getLayoutedElements = async (
       id: node.id,
       targetPosition: isHorizontal ? "left" : "top",
       sourcePosition: isHorizontal ? "right" : "bottom",
-      width: node.type === 'group' ? nodeWidth * 2 : nodeWidth,
-      height: node.type === 'group' ? nodeHeight * 3 : nodeHeight,
+      width: node.type === 'group' ? nodeWidth * 3 : nodeWidth, // Wider groups for hierarchical content
+      height: node.type === 'group' ? nodeHeight * 4 : nodeHeight, // Taller groups for hierarchical content
       // Preserve original data for later
       _originalNode: node,
     };
@@ -212,7 +212,7 @@ export const getLayoutedElements = async (
     if (node.type === 'group') {
       elkNode.layoutOptions = {
         ...elkOptions,
-        "elk.padding": `[top=${groupPadding + 25},left=${groupPadding + 10},bottom=${groupPadding + 25},right=${groupPadding + 10}]`, // More generous padding
+        "elk.padding": `[top=${groupPadding + 35},left=${groupPadding + 20},bottom=${groupPadding + 35},right=${groupPadding + 20}]`, // Even more generous padding for hierarchical content
       };
       elkNode.children = [];
     }

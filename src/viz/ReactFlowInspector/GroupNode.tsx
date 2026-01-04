@@ -25,24 +25,26 @@ export const GroupNode: React.FC<GroupNodeProps> = ({ data }) => {
     <div style={{
       width: '100%',
       height: '100%',
-      backgroundColor: 'rgba(147, 112, 219, 0.1)',
+      backgroundColor: 'rgba(147, 112, 219, 0.08)', // Lighter background
       border: getBorderStyle(),
-      borderRadius: '8px',
-      padding: '10px',
-      minWidth: '150px',
-      minHeight: '100px',
+      borderRadius: '12px', // More rounded
+      padding: '20px', // More padding inside group
+      minWidth: '200px', // Wider minimum
+      minHeight: '150px', // Taller minimum
+      position: 'relative',
     }}>
       {/* Label at top of group */}
       <div style={{
         position: 'absolute',
-        top: '-10px',
-        left: '10px',
+        top: '-12px',
+        left: '15px',
         backgroundColor: 'rgb(147, 112, 219)',
         color: 'white',
-        padding: '2px 8px',
-        borderRadius: '4px',
-        fontSize: '12px',
+        padding: '4px 12px',
+        borderRadius: '6px',
+        fontSize: '13px',
         fontWeight: 'bold',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
       }}>
         {data.label}
       </div>

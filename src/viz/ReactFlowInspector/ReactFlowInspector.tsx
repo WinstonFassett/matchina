@@ -30,11 +30,11 @@ import { useStateMachineEdges } from "./hooks/useStateMachineEdges";
 import { useStateMachineNodes } from "./hooks/useStateMachineNodes";
 import type { LayoutOptions } from "./utils/elkLayout";
 import { getDefaultLayoutOptions } from "./utils/elkLayout";
-import { loadLayoutSettingsSafe, saveLayoutSettings, disablePersistence, enablePersistence } from "./utils/layoutStorage";
+import { loadLayoutSettings, saveLayoutSettings } from "./utils/layoutStorage";
 
 // Disable persistence during development to prevent cached layouts
 // Comment this out for production
-disablePersistence();
+// disablePersistence();
 import { getReactFlowPreset, applyReactFlowPreset } from "./presets";
 
 // Add CSS for edge animations
@@ -96,7 +96,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     }
     
     // Fallback to saved settings or defaults
-    const saved = loadLayoutSettingsSafe();
+    const saved = loadLayoutSettings();
     return saved || getDefaultLayoutOptions();
   });
 
