@@ -46,3 +46,15 @@ review/.obsidian/
 
 # Test scripts in docs
 docs/test-*.mjs
+
+# E2E test snapshots and screenshots
+test/**/*-snapshots/
+test/**/*.png
+test/**/*.jpg
+test/**/*.jpeg
+test/**/*.gif
+test/**/*.webp
+test/**/*.svg
+
+# Review/debug screenshots  
+review/screenshots/
