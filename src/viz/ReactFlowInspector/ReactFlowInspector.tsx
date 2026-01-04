@@ -54,6 +54,7 @@ interface ReactFlowInspectorProps {
   layoutOptions?: LayoutOptions;
   interactive?: boolean; // Controls whether edges can be clicked to trigger transitions
   exampleName?: string; // For example-specific optimizations
+  zoomBehavior?: 'none' | 'center-on-active' | 'fit-on-active'; // How to handle zoom on state changes
 }
 
 const nodeTypes: NodeTypes = {
@@ -74,6 +75,7 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
   layoutOptions: initialLayoutOptions,
   interactive = true,
   exampleName,
+  zoomBehavior = 'center-on-active',
 }) => {
   const [showLayoutDialog, setShowLayoutDialog] = useState(false);
   const [buttonPosition, setButtonPosition] = useState<{ x: number; y: number } | null>(null);
@@ -173,29 +175,37 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
     }
   }, [isLayoutComplete, exampleName]);
 
-  // Smooth zoom to active state when it changes
+  // Handle zoom behavior when active state changes
   useEffect(() => {
-    if (!reactFlowInstanceRef.current || !isInitialized || !value) return;
+    if (!reactFlowInstanceRef.current || !isInitialized || !value || zoomBehavior === 'none') return;
 
     const activeNode = nodes.find((node) => node.id === value);
     if (!activeNode) return;
 
-    // Smooth pan/zoom to the active node with a little padding
-    reactFlowInstanceRef.current.fitBounds(
-      {
-        x: activeNode.position.x,
-        y: activeNode.position.y,
-        width: activeNode.width || 120,
-        height: activeNode.height || 80,
-      },
-      {
-        padding: 0.4,
-        duration: 500, // Smooth 500ms animation
-        minZoom: 0.5,
-        maxZoom: 2,
-      }
-    );
-  }, [value, nodes, isInitialized]);
+    if (zoomBehavior === 'center-on-active') {
+      // Center on active node without changing zoom level
+      reactFlowInstanceRef.current.setCenter(
+        activeNode.position.x + (activeNode.width || 120) / 2,
+        activeNode.position.y + (activeNode.height || 80) / 2,
+        { duration: 500 }
+      );
+    } else if (zoomBehavior === 'fit-on-active') {
+      // Fit to active node with extreme zoom limits
+      reactFlowInstanceRef.current.fitBounds(
+        {
+          x: activeNode.position.x,
+          y: activeNode.position.y,
+          width: activeNode.width || 120,
+          height: activeNode.height || 80,
+        },
+        {
+          padding: 0.4,
+          duration: 500,
+          // No zoom constraints - let global limits handle it
+        }
+      );
+    }
+  }, [value, nodes, isInitialized, zoomBehavior]);
 
   const { edges, onEdgesChange, updateEdges } = useStateMachineEdges(
     initialEdges,
@@ -242,10 +252,10 @@ const ReactFlowInspector: React.FC<ReactFlowInspectorProps> = ({
               type: "custom",
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
-            minZoom={0.1}   // More reasonable - still allows zoom out
-            maxZoom={2.5}   // Slightly higher than default
+            minZoom={0.001}  // Extreme zoom out for huge diagrams
+            maxZoom={10}      // Extreme zoom in for detailed inspection
             fitView
-            fitViewOptions={{ padding: 0.3, includeHiddenNodes: true, minZoom: 0.1, maxZoom: 2.5 }}
+            fitViewOptions={{ padding: 0.3, includeHiddenNodes: true }}
             style={{ width: '100%', flex: 1 }}
           >
             <Controls

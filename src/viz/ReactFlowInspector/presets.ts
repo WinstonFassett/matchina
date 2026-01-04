@@ -19,8 +19,8 @@ export interface ReactFlowPreset {
   };
   fitViewOptions: {
     padding: number;
-    minZoom: number;
-    maxZoom: number;
+    minZoom?: number;
+    maxZoom?: number;
     duration: number;
   };
   constraints: {
@@ -53,8 +53,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.25,
-      minZoom: 0.5,
-      maxZoom: 2.5,
       duration: 1000,
     },
     constraints: {
@@ -84,8 +82,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.2,
-      minZoom: 0.3,
-      maxZoom: 2,
       duration: 1200,
     },
     constraints: {
@@ -114,8 +110,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.22,
-      minZoom: 0.4,
-      maxZoom: 2.2,
       duration: 1100,
     },
     constraints: {
@@ -145,8 +139,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.15,
-      minZoom: 0.6,
-      maxZoom: 2,
       duration: 800,
     },
     constraints: {
@@ -175,8 +167,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.15,
-      minZoom: 0.6,
-      maxZoom: 2,
       duration: 800,
     },
     constraints: {
@@ -206,8 +196,6 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
     fitViewOptions: {
       padding: 0.3,
-      minZoom: 0.01,
-      maxZoom: 3,
       duration: 1200,
     },
     constraints: {
