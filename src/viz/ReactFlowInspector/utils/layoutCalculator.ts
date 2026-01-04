@@ -15,42 +15,31 @@ export const optimizeEdgeConnections = (
   const dx = targetPos.x - sourcePos.x;
   const dy = targetPos.y - sourcePos.y;
 
-  // For single edges, ALWAYS use different terminals for cleaner routing
+  // Determine the best connection points based on relative positions
   let sourceHandle: string;
   let targetHandle: string;
 
-  // Determine primary direction
-  const isHorizontalPrimary = Math.abs(dx) > Math.abs(dy);
-  
-  if (isHorizontalPrimary) {
-    // Horizontal flow - use top/bottom terminals
-    if (dy > 0) {
-      // Target is below - source exits bottom, target enters top
-      sourceHandle = "bottom";
-      targetHandle = "top";
-    } else if (dy < 0) {
-      // Target is above - source exits top, target enters bottom
-      sourceHandle = "top";
-      targetHandle = "bottom";
-    } else {
-      // Perfectly horizontal - use different terminals
-      sourceHandle = "top";
-      targetHandle = "bottom";
-    }
-  } else {
-    // Vertical flow - use left/right terminals
+  // If nodes are more horizontally separated
+  if (Math.abs(dx) > Math.abs(dy)) {
     if (dx > 0) {
-      // Target is to the right - source exits right, target enters left
+      // Target is to the right of source
       sourceHandle = "right";
       targetHandle = "left";
-    } else if (dx < 0) {
-      // Target is to the left - source exits left, target enters right
-      sourceHandle = "left";
-      targetHandle = "right";
     } else {
-      // Perfectly vertical - use different terminals
+      // Target is to the left of source
       sourceHandle = "left";
       targetHandle = "right";
+    }
+  } else {
+    // Nodes are more vertically separated
+    if (dy > 0) {
+      // Target is below source
+      sourceHandle = "bottom";
+      targetHandle = "top";
+    } else {
+      // Target is above source
+      sourceHandle = "top";
+      targetHandle = "bottom";
     }
   }
 
