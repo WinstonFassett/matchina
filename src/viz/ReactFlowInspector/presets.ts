@@ -121,7 +121,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
       minHeight: 600,
     },
     pageLayout: {
-      layout: 'split',     // Changed from stacked to side-by-side
+      layout: 'stacked',   // Top-bottom layout with checkout flow above/below
       minVizHeight: 500,
     },
   },

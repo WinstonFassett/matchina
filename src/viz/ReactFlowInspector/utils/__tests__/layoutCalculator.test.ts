@@ -108,15 +108,15 @@ describe('optimizeEdgeConnectionsWithDirectionality', () => {
       expect(result.target).toBe('right');    // enters right
     });
 
-    it('should prefer simple clockwise curves for upper-right to lower-right', () => {
+    it('should prefer straight vertical for upper-right to lower-right', () => {
       const source = { x: 300, y: 100 };
       const target = { x: 300, y: 300 };
       
       const result = optimizeEdgeConnectionsWithDirectionality(source, target);
       
-      // Source is above target - use right->left for clockwise flow
-      expect(result.source).toBe('right');
-      expect(result.target).toBe('left');
+      // Source is above target - use bottom->top for straight vertical
+      expect(result.source).toBe('bottom');
+      expect(result.target).toBe('top');
     });
 
     it('should prefer simple clockwise curves for lower-right to lower-left', () => {
@@ -130,15 +130,15 @@ describe('optimizeEdgeConnectionsWithDirectionality', () => {
       expect(result.target).toBe('bottom');
     });
 
-    it('should prefer simple clockwise curves for lower-left to upper-left', () => {
+    it('should prefer straight vertical for lower-left to upper-left', () => {
       const source = { x: 100, y: 300 };
       const target = { x: 100, y: 100 };
       
       const result = optimizeEdgeConnectionsWithDirectionality(source, target);
       
-      // Source is below target - use left->right for clockwise flow
-      expect(result.source).toBe('left');
-      expect(result.target).toBe('right');
+      // Source is below target - use top->bottom for straight vertical
+      expect(result.source).toBe('top');
+      expect(result.target).toBe('bottom');
     });
   });
 
@@ -182,9 +182,9 @@ describe('optimizeEdgeConnectionsWithDirectionality', () => {
       
       const result = optimizeEdgeConnectionsWithDirectionality(source, target);
       
-      // Source is above target - use right->left for clockwise flow
-      expect(result.source).toBe('right');
-      expect(result.target).toBe('left');
+      // Source is above target - use bottom->top for straight vertical
+      expect(result.source).toBe('bottom');
+      expect(result.target).toBe('top');
     });
   });
 });

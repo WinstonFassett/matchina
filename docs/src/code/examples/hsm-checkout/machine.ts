@@ -14,24 +14,26 @@ export const paymentStates = defineStates({
 function createPayment() {
   const m = matchina(paymentStates, {
     MethodEntry: { 
-      authorize: "Authorizing"
+      authorize: "Authorizing",
+      exit: "MethodEntry" // Exit resets to initial state
     },
     Authorizing: {
       authRequired: "AuthChallenge",
       authSucceeded: "Authorized",
       authFailed: "AuthorizationError",
-      retry: "MethodEntry"
+      exit: "MethodEntry" // Exit from any payment state goes back to MethodEntry
     },
     AuthChallenge: {
       authSucceeded: "Authorized",
       authFailed: "AuthorizationError",
-      retry: "MethodEntry"
+      exit: "MethodEntry"
     },
     AuthorizationError: { 
-      retry: "MethodEntry"
+      retry: "MethodEntry",
+      exit: "MethodEntry"
     },
     Authorized: {
-      // No exit - this is the final state
+      exit: "MethodEntry"
     },
   }, paymentStates.MethodEntry());
 
@@ -58,6 +60,7 @@ export function createCheckoutMachine() {
     },
     Payment: {
       back: "Shipping",
+      exit: "Shipping",
       "child.exit": "Review"
     },
     Review: {

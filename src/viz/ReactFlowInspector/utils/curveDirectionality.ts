@@ -116,20 +116,18 @@ export const optimizeEdgeConnectionsWithDirectionality = (
       return { source: "top", target: "bottom" };
     }
   } else {
-    // Vertical flow - use left/right terminals
-    if (dx > 0) {
-      return { source: "right", target: "left" };
-    } else if (dx < 0) {
-      return { source: "left", target: "right" };
+    // Vertical flow - prefer straight vertical connection (bottom/top)
+    if (dy > 0) {
+      // Target is below source - go straight down
+      return { source: "bottom", target: "top" };
+    } else if (dy < 0) {
+      // Target is above source - go straight up
+      return { source: "top", target: "bottom" };
     } else {
-      // Perfectly vertical - use alternating terminals for aligned nodes
-      // This handles cases like Red ↔ Yellow where both nodes have same x position
-      // Use source node's y position to determine terminal assignment
-      if (sourcePos.y < targetPos.y) {
-        // Source is above target - use right->left (clockwise flow)
+      // Perfectly horizontal edge that somehow got here - use side terminals
+      if (dx > 0) {
         return { source: "right", target: "left" };
       } else {
-        // Source is below target - use left->right (clockwise flow)
         return { source: "left", target: "right" };
       }
     }

@@ -84,12 +84,12 @@ const getElkOptions = (options: LayoutOptions) => {
         // Cycle breaking
         "elk.layered.cycleBreaking.strategy": "DEPTH_FIRST",
 
-        // Edge routing - ADD PARALLEL EDGE ROUTING
+        // Edge routing - Basic orthogonal routing
         "elk.layered.edgeRouting.selfLoopDistribution": "EQUALLY",
         "elk.layered.edgeRouting.selfLoopOrdering": "SEQUENCED",
-        "elk.layered.edgeRouting.strategy": "ORTHOGONAL", // Use orthogonal routing for parallel edges
-        "elk.layered.spacing.edgeNodeSpacing": "20", // More space for parallel edges
-        "elk.layered.spacing.edgeEdgeSpacing": "15", // Space between parallel edges
+        "elk.layered.edgeRouting.strategy": "ORTHOGONAL",
+        "elk.layered.spacing.edgeNodeSpacing": "20",
+        "elk.layered.spacing.edgeEdgeSpacing": "15",
 
         // Compaction
         "elk.layered.compaction.postCompaction.strategy":
@@ -228,7 +228,11 @@ export const getLayoutedElements = async (
 
   const graph = {
     id: "root",
-    layoutOptions: elkOptions,
+    layoutOptions: {
+      ...elkOptions,
+      // Enable edge routing at the graph level
+      "elk.edgeRouting": "ORTHOGONAL",
+    },
     children: rootChildren,
     edges: edges.map((edge) => ({
       ...edge,
@@ -273,6 +277,9 @@ export const getLayoutedElements = async (
       return result;
     };
 
+    
+    
+    
     return {
       nodes: extractNodes(layoutedGraph.children || []),
       edges: edges,
