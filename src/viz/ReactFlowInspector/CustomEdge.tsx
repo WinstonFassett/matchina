@@ -9,6 +9,7 @@ interface CustomEdgeData {
   isSelfTransition?: boolean;
   selfLoopOffset?: number;
   selfLoopIndex?: number;
+  curvature?: number; // For parallel edge separation
 }
 
 interface CustomEdgeProps extends ReactFlowEdgeProps {
@@ -80,8 +81,8 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     // Get the index of this self-transition to distribute around the node
     const loopIndex = data.selfLoopIndex || 0;
 
-    // Use larger offset for better visibility
-    const offset = 60;
+    // Use larger offset for better visibility and avoid node overlap
+    const offset = 80; // Increased from 60 to avoid overlap
 
     // Node dimensions - use actual node size
     const nodeWidth = 150;
@@ -89,43 +90,43 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     const halfWidth = nodeWidth / 2;
     const halfHeight = nodeHeight / 2;
 
-    // Calculate actual connection points at the node edges
-    // This ensures self-transitions connect properly to node boundaries
+    // Calculate actual connection points at the node edges with padding
+    // This ensures self-transitions connect properly to node boundaries without overlap
     const positions = [
-      // Top
+      // Top - position above the node
       {
         x: sourceX,
-        y: sourceY - halfHeight,
+        y: sourceY - halfHeight - 5, // Add 5px padding to avoid touching node
         offsetX: 0,
         offsetY: -offset,
         labelOffsetX: 0,
-        labelOffsetY: -offset - 15,
+        labelOffsetY: -offset - 20, // More space for label
       },
-      // Right
+      // Right - position to the right of the node
       {
-        x: sourceX + halfWidth,
+        x: sourceX + halfWidth + 5, // Add 5px padding
         y: sourceY,
         offsetX: offset,
         offsetY: 0,
-        labelOffsetX: offset + 15,
+        labelOffsetX: offset + 20,
         labelOffsetY: 0,
       },
-      // Bottom
+      // Bottom - position below the node
       {
         x: sourceX,
-        y: sourceY + halfHeight,
+        y: sourceY + halfHeight + 5, // Add 5px padding
         offsetX: 0,
         offsetY: offset,
         labelOffsetX: 0,
-        labelOffsetY: offset + 15,
+        labelOffsetY: offset + 20,
       },
-      // Left
+      // Left - position to the left of the node
       {
-        x: sourceX - halfWidth,
+        x: sourceX - halfWidth - 5, // Add 5px padding
         y: sourceY,
         offsetX: -offset,
         offsetY: 0,
-        labelOffsetX: -offset - 15,
+        labelOffsetX: -offset - 20,
         labelOffsetY: 0,
       },
     ];
@@ -182,10 +183,9 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     );
   }
 
-  // For regular edges between different nodes - always use bezier curves
+  // For regular edges between different nodes - use curvature from data for parallel edges
   // Vary the curvature slightly based on the edge ID to distinguish multiple edges
-  const curvature =
-    id.includes("-") && id.split("-")[2]?.charCodeAt(0) % 2 === 0 ? 0.3 : 0.2;
+  const curvature = data?.curvature ?? (id.includes("-") && id.split("-")[2]?.charCodeAt(0) % 2 === 0 ? 0.3 : 0.2);
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,

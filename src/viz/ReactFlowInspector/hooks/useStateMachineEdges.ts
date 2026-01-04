@@ -79,32 +79,20 @@ export const useStateMachineEdges = (
         if (isPossibleExit) zIndex = 10; // Clickable edges on top
         if (isTransitionFromPrevious) zIndex = 20; // Recent transition highest
 
-        // Handle multiple edges between same nodes with better distribution
-        let sourceHandle = connectionPoints.source;
-        let targetHandle = connectionPoints.target;
-
+        // Handle multiple edges between same nodes with parallel curvature
+        // Similar to ForceGraph approach - use opposite curvatures for parallel edges
+        let curvature = 0.2; // Default curvature
+        
         if (groupTransitions.length > 1) {
-          // Distribute edges evenly around the connection points
-          const handles = ["top", "right", "bottom", "left"];
-
-          // For 2 transitions, use opposite sides
+          // For parallel edges (A↔B), assign opposite curvatures
+          const curvatureMinMax = 0.5;
           if (groupTransitions.length === 2) {
-            const sourceIndex = handles.indexOf(connectionPoints.source);
-            const targetIndex = handles.indexOf(connectionPoints.target);
-            sourceHandle =
-              index === 0
-                ? connectionPoints.source
-                : handles[(sourceIndex + 2) % 4];
-            targetHandle =
-              index === 0
-                ? connectionPoints.target
-                : handles[(targetIndex + 2) % 4];
+            // Two parallel edges - one curves up, one curves down
+            curvature = index === 0 ? curvatureMinMax : -curvatureMinMax;
           } else {
-            // For 3+ transitions, distribute around all sides
-            const sourceIndex = handles.indexOf(connectionPoints.source);
-            const targetIndex = handles.indexOf(connectionPoints.target);
-            sourceHandle = handles[(sourceIndex + index) % 4];
-            targetHandle = handles[(targetIndex + index) % 4];
+            // Multiple parallel edges - distribute curvatures
+            const delta = (2 * curvatureMinMax) / (groupTransitions.length - 1);
+            curvature = -curvatureMinMax + (index * delta);
           }
         }
 
@@ -112,8 +100,8 @@ export const useStateMachineEdges = (
           id: `${transition.from}-${transition.to}-${transition.event}`,
           source: transition.from,
           target: transition.to,
-          sourceHandle,
-          targetHandle,
+          sourceHandle: connectionPoints.source,
+          targetHandle: connectionPoints.target,
           type: "custom", // Use custom edge type for proper rendering
           label: transition.event,
 
@@ -154,10 +142,12 @@ export const useStateMachineEdges = (
             fontWeight: 500,
           },
           zIndex,
+          // Store curvature for CustomEdge to use
           data: {
             event: transition.event,
             isClickable: interactive,
             isEnabled: transition.from === currentState,
+            curvature, // Pass calculated curvature to CustomEdge
           },
         });
       });
