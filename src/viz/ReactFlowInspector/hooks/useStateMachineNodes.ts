@@ -379,16 +379,27 @@ export const useStateMachineNodes = (
         layoutOptions || getDefaultLayoutOptions()
       )
         .then(({ nodes: layoutedNodes }) => {
-          setNodes(layoutedNodes);
+          // Apply active state highlighting to layouted nodes
+          const highlightedNodes = layoutedNodes.map((node) => ({
+            ...node,
+            data: {
+              ...node.data,
+              isActive: currentState === node.id,
+              isPrevious: previousState === node.id,
+            },
+          }));
+          setNodes(highlightedNodes);
           setHasManualChanges(false);
           setIsLayouting(false);
           setIsLayoutComplete(true); // Signal that layout is complete
+          // Reset the flag after a short delay to allow for re-triggering
+          setTimeout(() => setIsLayoutComplete(false), 1000);
         })
         .catch((error) => {
           setIsLayouting(false);
         });
     }
-  }, [forceLayoutKey, nodes, transitions, layoutOptions]); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceLayoutKey, nodes, transitions, layoutOptions, currentState, previousState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     nodes,

@@ -11,7 +11,8 @@ export default function AuthFlowExample() {
       AppView={AuthFlowView}
       showRawState={true}
       defaultViz="reactflow"
-      interactive={false}
+      interactive={true}
+      layout="split"
     />
   );
 }

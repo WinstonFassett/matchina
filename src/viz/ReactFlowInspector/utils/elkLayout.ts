@@ -40,7 +40,6 @@ export const getAvailableAlgorithms = (): string[] => {
     "stress", // Works, responds to spacing
     "mrtree", // Works, good for trees
     "force", // Works, organic layout
-    "sporeOverlap", // Works, good for overlap removal
   ];
 };
 
@@ -163,15 +162,6 @@ const getElkOptions = (options: LayoutOptions) => {
           : "false",
       };
 
-    case "sporeOverlap":
-      return {
-        ...baseOptions,
-        // Spore overlap options
-        "elk.sporeOverlap.overlapRemovalStrategy": "SCAN_LINE",
-        "elk.sporeOverlap.spillOverToParentHierarchyLevel": "false",
-        // Node spacing is critical for overlap removal
-        "elk.spacing.nodeNode": (options.nodeSpacing * 1.5).toString(), // Override base option
-      };
 
     default:
       return baseOptions;
@@ -350,15 +340,6 @@ export const getAlgorithmInfo = (algorithm: string) => {
       description: "Organic layout using physical simulation",
       supportsDirection: false,
       hasLayerSpacing: true, // Used as repulsion strength
-      hasThoroughness: false,
-      hasAspectRatio: true,
-      hasEdgeNodeSpacing: false,
-    },
-    sporeOverlap: {
-      name: "Spore Overlap Removal",
-      description: "Removes overlaps while preserving relative positions",
-      supportsDirection: false,
-      hasLayerSpacing: false,
       hasThoroughness: false,
       hasAspectRatio: true,
       hasEdgeNodeSpacing: false,

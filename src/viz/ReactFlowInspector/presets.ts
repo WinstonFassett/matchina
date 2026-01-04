@@ -99,13 +99,13 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
 
   'hsm-checkout': {
     name: 'HSM Checkout',
-    description: 'Multi-step process with parallel states - ReactFlow with horizontal layout for better flow',
+    description: 'Multi-step process with parallel states - side-by-side with tree layout vertical',
     layoutOptions: {
-      algorithm: 'layered',
-      direction: 'RIGHT',  // Horizontal layout for better checkout flow
-      nodeSpacing: 120,   // Horizontal spacing between nodes
-      layerSpacing: 150,  // Vertical spacing between layers
-      edgeSpacing: 20,    // Edge clearance
+      algorithm: 'mrtree',  // Tree layout vertical
+      direction: 'DOWN',    // Vertical layout
+      nodeSpacing: 120,    // Horizontal spacing between nodes
+      layerSpacing: 100,   // Vertical spacing between layers (reduced from 150)
+      edgeSpacing: 20,     // Edge clearance
       thoroughness: 7,
       compactComponents: false,
       separateComponents: false,
@@ -113,26 +113,26 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
       componentSpacing: 50,
     },
     fitViewOptions: {
-      padding: 0.25,     // More padding around the whole graph
+      padding: 0.25,
       duration: 1100,
     },
     constraints: {
-      minWidth: 800,      // Wider minimum width
-      minHeight: 600,     // Taller minimum height
+      minWidth: 800,
+      minHeight: 600,
     },
     pageLayout: {
-      layout: 'stacked',
-      minVizHeight: 500,  // More height for the complex diagram
+      layout: 'split',     // Changed from stacked to side-by-side
+      minVizHeight: 500,
     },
   },
 
   // Simple examples - side-by-side for consistency
   'toggle': {
     name: 'Toggle',
-    description: 'Simple on/off - side-by-side for consistency',
+    description: 'Simple on/off - force graph layout',
     layoutOptions: {
       direction: 'DOWN',
-      algorithm: 'layered',
+      algorithm: 'force',  // Force-directed layout
       nodeSpacing: 80,
       layerSpacing: 80,
       edgeSpacing: 10,
@@ -158,17 +158,17 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
 
   'counter': {
     name: 'Counter',
-    description: 'Simple counter - side-by-side for consistency',
+    description: 'Simple counter - improved edge routing for parallel edges',
     layoutOptions: {
       direction: 'DOWN',
       algorithm: 'layered',
-      nodeSpacing: 80,
-      layerSpacing: 80,
-      edgeSpacing: 10,
+      nodeSpacing: 100,    // Increased spacing for better edge routing
+      layerSpacing: 100,   // Increased spacing for better edge routing
+      edgeSpacing: 15,      // Increased edge spacing
       thoroughness: 5,
       compactComponents: false,
       separateComponents: false,
-      edgeNodeSpacing: 20,
+      edgeNodeSpacing: 25,
       componentSpacing: 30,
     },
     fitViewOptions: {
@@ -185,7 +185,215 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
     },
   },
 
-  // Default fallback for unknown examples
+  // Traffic light with sugiyama layout and layer spacing 100px
+  'hsm-traffic-light': {
+    name: 'HSM Traffic Light',
+    description: 'Traffic light with side-by-side layout and sugiyama vertical, layer spacing 100px',
+    layoutOptions: {
+      algorithm: 'layered',  // Sugiyama layout
+      direction: 'DOWN',     // Vertical layout
+      nodeSpacing: 120,
+      layerSpacing: 100,     // Layer spacing 100px as requested
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',     // Side-by-side with app portion
+      minVizHeight: 500,
+    },
+  },
+
+  // Authentication flow with sugiyama layout
+  'auth-flow': {
+    name: 'Authentication Flow',
+    description: 'Authentication flow with ReactFlow sugiyama layout',
+    layoutOptions: {
+      algorithm: 'layered',  // Sugiyama layout
+      direction: 'DOWN',     // Vertical layout
+      nodeSpacing: 120,
+      layerSpacing: 150,
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',
+      minVizHeight: 500,
+    },
+  },
+
+  // Advanced fetcher with sugiyama vertical layout
+  'fetcher-advanced': {
+    name: 'Advanced Fetcher',
+    description: 'Advanced fetcher with sugiyama vertical layout',
+    layoutOptions: {
+      algorithm: 'layered',  // Sugiyama vertical layout
+      direction: 'DOWN',     // Vertical layout
+      nodeSpacing: 120,
+      layerSpacing: 150,
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',
+      minVizHeight: 500,
+    },
+  },
+
+  // Promise Machine Factory with tree layout vertical
+  'promise-machine-fetcher': {
+    name: 'Promise Machine Factory',
+    description: 'Promise machine factory with ReactFlow tree layout vertical',
+    layoutOptions: {
+      algorithm: 'mrtree',  // Tree layout vertical
+      direction: 'DOWN',    // Vertical layout
+      nodeSpacing: 120,
+      layerSpacing: 100,
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',
+      minVizHeight: 500,
+    },
+  },
+
+  // Async calculator with tree layout vertical
+  'async-calculator': {
+    name: 'Async Calculator',
+    description: 'Async calculator with ReactFlow tree layout vertical',
+    layoutOptions: {
+      algorithm: 'mrtree',  // Tree layout vertical
+      direction: 'DOWN',    // Vertical layout
+      nodeSpacing: 120,
+      layerSpacing: 100,
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',
+      minVizHeight: 500,
+    },
+  },
+
+  // Rock paper scissors with side-by-side and force directed
+  'rock-paper-scissors': {
+    name: 'Rock Paper Scissors',
+    description: 'Rock paper scissors with side-by-side layout, force directed',
+    layoutOptions: {
+      algorithm: 'force',  // Force directed layout
+      direction: 'DOWN',
+      nodeSpacing: 200,    // Distance 200 as requested
+      layerSpacing: 200,   // Distance 200 as requested
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',     // Side-by-side layout
+      minVizHeight: 500,
+    },
+  },
+
+  // Stopwatch examples with force directed layout
+  'stopwatch': {
+    name: 'Stopwatch',
+    description: 'Stopwatch examples with ReactFlow force directed layout',
+    layoutOptions: {
+      algorithm: 'force',  // Force directed layout for triangle arrangement
+      direction: 'DOWN',
+      nodeSpacing: 150,
+      layerSpacing: 150,
+      edgeSpacing: 20,
+      thoroughness: 7,
+      compactComponents: false,
+      separateComponents: false,
+      edgeNodeSpacing: 30,
+      componentSpacing: 50,
+    },
+    fitViewOptions: {
+      padding: 0.25,
+      duration: 1000,
+    },
+    constraints: {
+      minWidth: 600,
+      minHeight: 400,
+    },
+    pageLayout: {
+      layout: 'split',
+      minVizHeight: 500,
+    },
+  },
   'default': {
     name: 'Default',
     description: 'Balanced settings for most examples',
@@ -225,13 +433,31 @@ export function getReactFlowPreset(exampleName: string): ReactFlowPreset {
   
   // Direct matches
   if (normalizedName.includes('trafficlight')) {
-    return REACTFLOW_PRESETS['traffic-light'];
+    return REACTFLOW_PRESETS['hsm-traffic-light'];
   }
   if (normalizedName.includes('combobox')) {
     return REACTFLOW_PRESETS['hsm-combobox'];
   }
   if (normalizedName.includes('checkout')) {
     return REACTFLOW_PRESETS['hsm-checkout'];
+  }
+  if (normalizedName.includes('auth')) {
+    return REACTFLOW_PRESETS['auth-flow'];
+  }
+  if (normalizedName.includes('fetcher') && normalizedName.includes('advanced')) {
+    return REACTFLOW_PRESETS['fetcher-advanced'];
+  }
+  if (normalizedName.includes('promise') && normalizedName.includes('machine')) {
+    return REACTFLOW_PRESETS['promise-machine-fetcher'];
+  }
+  if (normalizedName.includes('async') && normalizedName.includes('calculator')) {
+    return REACTFLOW_PRESETS['async-calculator'];
+  }
+  if (normalizedName.includes('rock') && normalizedName.includes('paper') && normalizedName.includes('scissors')) {
+    return REACTFLOW_PRESETS['rock-paper-scissors'];
+  }
+  if (normalizedName.includes('stopwatch')) {
+    return REACTFLOW_PRESETS['stopwatch'];
   }
   if (normalizedName.includes('toggle')) {
     return REACTFLOW_PRESETS['toggle'];

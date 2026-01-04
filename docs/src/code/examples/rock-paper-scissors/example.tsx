@@ -16,8 +16,9 @@ export default function RockPaperScissorsExample() {
         machine={machine}
         title="State Machine Visualizer"
         defaultViz="reactflow"
-        interactive={false}
-        layout="stacked"
+        interactive={true}
+        layout="split"
+        exampleName="rock-paper-scissors"
         AppView={RPSAppView}
       />
     </div>

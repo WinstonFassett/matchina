@@ -122,6 +122,7 @@ export function buildReactFlowGraph(
           data: {
             event: eventName,
             isClickable: false, // Will be updated by component
+            isSelfTransition: fromState === toState, // Mark self-transitions
           },
         };
 

@@ -25,7 +25,10 @@ export default function FetcherExample() {
         machine={fetcher as any}
         AppView={FetcherAppView}
         showRawState={true}
-        defaultViz="mermaid-statechart"
+        defaultViz="reactflow"
+        interactive={true}
+        layout="split"
+        exampleName="fetcher-advanced"
       />
     </div>
   );

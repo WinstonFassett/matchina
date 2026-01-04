@@ -10,8 +10,10 @@ export default function AsyncCalculatorExample() {
       machine={calculator}
       AppView={AsyncCalculatorView}
       showRawState={true}
-      defaultViz="mermaid-statechart"
-      interactive={false}
+      defaultViz="reactflow"
+      interactive={true}
+      layout="split"
+      exampleName="async-calculator"
     />
   );
 }

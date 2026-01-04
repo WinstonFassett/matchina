@@ -49,9 +49,10 @@ export default function TrafficLightComparisonExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz={mode === "flat" ? "mermaid-flowchart" : "mermaid-statechart"}
+        defaultViz="reactflow"
         interactive={true}
-        layout="stacked"
+        layout="split"
+        exampleName="hsm-traffic-light"
         AppView={mode === "flat" ? TrafficLightViewFlat : TrafficLightViewNested}
       />
     </div>
