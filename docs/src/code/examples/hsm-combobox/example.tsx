@@ -52,9 +52,9 @@ export default function ComboboxExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="mermaid-statechart"
+        defaultViz="reactflow"
         interactive={true}
-        layout="stacked"
+        layout="split"
         preset="hierarchical"
         exampleName="hsm-combobox"
         AppView={mode === "flat" ? ComboboxViewFlat : ComboboxView}

@@ -68,7 +68,7 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
   // Complex hierarchical examples
   'hsm-combobox': {
     name: 'HSM Combobox',
-    description: 'Complex hierarchy with nested states - needs careful spacing',
+    description: 'Complex hierarchy with nested states - ReactFlow for better visualization',
     layoutOptions: {
       algorithm: 'layered',
       nodeSpacing: 100,
@@ -96,36 +96,36 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
 
   'hsm-checkout': {
     name: 'HSM Checkout',
-    description: 'Multi-step process with parallel states - needs balanced layout',
+    description: 'Multi-step process with parallel states - ReactFlow with optimized stacked layout',
     layoutOptions: {
       algorithm: 'layered',
-      nodeSpacing: 120,
-      layerSpacing: 110,
-      edgeSpacing: 18,
+      nodeSpacing: 110,
+      layerSpacing: 100,
+      edgeSpacing: 16,
       thoroughness: 7,
       compactComponents: false,
       separateComponents: false,
-      edgeNodeSpacing: 28,
-      componentSpacing: 45,
+      edgeNodeSpacing: 26,
+      componentSpacing: 42,
     },
     fitViewOptions: {
-      padding: 0.22,
+      padding: 0.2,
       duration: 1100,
     },
     constraints: {
-      minWidth: 700,
-      minHeight: 500,
+      minWidth: 750,
+      minHeight: 520,
     },
     pageLayout: {
-      layout: 'split',
-      minVizHeight: 550,
+      layout: 'stacked',
+      minVizHeight: 450,
     },
   },
 
-  // Simple examples - better stacked
+  // Simple examples - side-by-side for consistency
   'toggle': {
     name: 'Toggle',
-    description: 'Simple on/off - better stacked for compact view',
+    description: 'Simple on/off - side-by-side for consistency',
     layoutOptions: {
       algorithm: 'layered',
       nodeSpacing: 80,
@@ -146,14 +146,14 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
       minHeight: 300,
     },
     pageLayout: {
-      layout: 'stacked',
-      minVizHeight: 300,
+      layout: 'split',
+      minVizHeight: 400,
     },
   },
 
   'counter': {
     name: 'Counter',
-    description: 'Simple counter - better stacked for compact view',
+    description: 'Simple counter - side-by-side for consistency',
     layoutOptions: {
       algorithm: 'layered',
       nodeSpacing: 80,
@@ -174,8 +174,8 @@ export const REACTFLOW_PRESETS: Record<string, ReactFlowPreset> = {
       minHeight: 300,
     },
     pageLayout: {
-      layout: 'stacked',
-      minVizHeight: 300,
+      layout: 'split',
+      minVizHeight: 400,
     },
   },
 
