@@ -176,31 +176,51 @@ export const distributeOutgoingEdges = (
       for (const edge of sortedEdges) {
         const dx = edge.toPos.x - edge.fromPos.x;
         const dy = edge.toPos.y - edge.fromPos.y;
-        const angle = calculateAngle(edge.fromPos, edge.toPos);
-        const normalizedAngle = (angle + 360) % 360;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
 
-        // Determine best source terminal based on target direction
+        // Determine best source and target terminals for straight connections
         let sourceHandle: string;
         let targetHandle: string;
 
-        // Use quadrant-based assignment for source terminal
-        // This spreads edges around the source node
-        if (normalizedAngle >= 315 || normalizedAngle < 45) {
-          // Target is to the right
-          sourceHandle = "right";
-          targetHandle = dy > 20 ? "top" : dy < -20 ? "bottom" : "left";
-        } else if (normalizedAngle >= 45 && normalizedAngle < 135) {
-          // Target is below
-          sourceHandle = "bottom";
-          targetHandle = dx > 20 ? "left" : dx < -20 ? "right" : "top";
-        } else if (normalizedAngle >= 135 && normalizedAngle < 225) {
-          // Target is to the left
-          sourceHandle = "left";
-          targetHandle = dy > 20 ? "top" : dy < -20 ? "bottom" : "right";
+        // Prefer straight connections when possible
+        if (absDy > absDx * 2) {
+          // Primarily vertical - use bottom/top for straight line
+          if (dy > 0) {
+            sourceHandle = "bottom";
+            targetHandle = "top";
+          } else {
+            sourceHandle = "top";
+            targetHandle = "bottom";
+          }
+        } else if (absDx > absDy * 2) {
+          // Primarily horizontal - use right/left for straight line
+          if (dx > 0) {
+            sourceHandle = "right";
+            targetHandle = "left";
+          } else {
+            sourceHandle = "left";
+            targetHandle = "right";
+          }
         } else {
-          // Target is above
-          sourceHandle = "top";
-          targetHandle = dx > 20 ? "left" : dx < -20 ? "right" : "bottom";
+          // Diagonal - use quadrant-based assignment
+          if (dx > 0 && dy > 0) {
+            // Lower-right: bottom->top or right->left
+            sourceHandle = "bottom";
+            targetHandle = "top";
+          } else if (dx < 0 && dy > 0) {
+            // Lower-left: bottom->top or left->right
+            sourceHandle = "bottom";
+            targetHandle = "top";
+          } else if (dx > 0 && dy < 0) {
+            // Upper-right: top->bottom or right->left
+            sourceHandle = "right";
+            targetHandle = "left";
+          } else {
+            // Upper-left: top->bottom or left->right
+            sourceHandle = "left";
+            targetHandle = "right";
+          }
         }
 
         result.push({
