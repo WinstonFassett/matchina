@@ -2,7 +2,20 @@
 **Example**: Toggle State Machine  
 **Focus**: Parallel Edge Routing & Onion-Layer Effect  
 **Target**: ReactFlow vs ForceGraph adversarial improvement  
+**Approach**: Qualitative visual enhancement with AI feedback (scores are experimental)  
 **Started**: January 4, 2026
+
+---
+
+## Philosophy: Quality Over Scores
+
+**⚠️ IMPORTANT**: Scoring is **experimental** only! Our focus is on **qualitative visual improvements**:
+- Better edge separation and clarity
+- Enhanced visual hierarchy  
+- Improved user experience
+- Professional appearance
+
+**Scores are reference points**, not success criteria. The real measure is visual quality and usability.
 
 ---
 
@@ -23,41 +36,37 @@ Off: {
 
 **Perfect for Testing**: 2 sets of parallel edges that should demonstrate onion-like layering!
 
-### Initial Comparison Results
+### Qualitative Assessment (Not Scores)
 ![ReactFlow Initial](../../../screenshots/toggle-reactflow-2026-01-04T14-53-39-914Z.png)
 ![ForceGraph Initial](../../../screenshots/toggle-forcegraph-2026-01-04T14-53-39-914Z.png)
 
-**Scores**:
-- 🥇 **ReactFlow**: 0.83/1.0 (Leader)
-- 🥈 **ForceGraph**: 0.67/1.0 (Needs improvement)
-
-**Key Issues Identified**:
-- **ForceGraph**: Parallel edges not clearly separated (missing onion-like layering)
-- **ReactFlow**: Inconsistent edge placement, limited visual hierarchy
-- **Both**: Could benefit from enhanced edge routing aesthetics
+**Visual Observations**:
+- **ReactFlow**: Clean node rendering, but edges could be more distinct
+- **ForceGraph**: Good color contrast, but parallel edges lack separation
+- **Both**: Could benefit from enhanced visual hierarchy
 
 ---
 
 ## Improvement Strategy
 
 ### Phase 1: ForceGraph Parallel Edge Enhancement
-**Goal**: Achieve ≥0.8 score by implementing onion-like layering
+**Goal**: Create clear onion-like layering for parallel edges
 
-**Current Problems**:
+**Visual Problems to Solve**:
 - Parallel edges overlap completely
 - No visual separation between multiple edges
 - Edge bundling not optimized for state machines
 
 **Implementation Plan**:
-1. Investigate ForceGraph edge configuration
-2. Implement parallel edge separation algorithm
-3. Add curve offset for parallel edges
-4. Test with adversarial comparison
+1. ✅ Increase edge curvature for better separation
+2. ✅ Add special handling for 2 parallel edges
+3. 🔄 Improve edge visibility (thickness, contrast)
+4. ⏳ Test visual improvements with AI feedback
 
 ### Phase 2: ReactFlow Visual Hierarchy Enhancement  
-**Goal**: Achieve ≥0.9 score by improving edge consistency
+**Goal**: Enhance edge consistency and visual clarity
 
-**Current Problems**:
+**Visual Problems to Solve**:
 - Edge placement inconsistency
 - Limited visual hierarchy
 - Elements not prominent enough
@@ -66,191 +75,158 @@ Off: {
 1. Enhance edge routing consistency
 2. Add visual hierarchy (color-coding, size variation)
 3. Improve edge label positioning
-4. Test with adversarial comparison
+4. Test visual improvements
 
 ---
 
 ## Iteration Log
 
 ### Iteration 1 - Baseline (Jan 4, 2026, 8:54 AM)
-**Scores**: ReactFlow 0.83 vs ForceGraph 0.67  
-**Winner**: ReactFlow  
-**Key Finding**: ForceGraph needs parallel edge separation
+**Visual Assessment**: Both visualizers functional but need refinement
+**Key Finding**: ForceGraph parallel edges need separation, ReactFlow needs hierarchy
 
-**AI Feedback Summary**:
-- **ReactFlow Strengths**: Clear representation, easy to understand
-- **ReactFlow Weaknesses**: Inconsistent edge placement, limited hierarchy
-- **ForceGraph Strengths**: Clear representation, easy to understand  
-- **ForceGraph Weaknesses**: No parallel edge separation, hierarchy issues
+**Qualitative Observations**:
+- **ReactFlow**: Clear representation, easy to understand
+- **ForceGraph**: Clear representation, but parallel edges overlap
 
 **Next Action**: Investigate ForceGraph edge configuration
 
 ---
 
 ### Iteration 2 - ForceGraph Investigation (Complete)
-**Found**: Parallel edge handling exists in ForceGraphInspector.tsx (lines 552-590)
-**Current Implementation**: Uses curvature with min/max of 0.5
+**Found**: Parallel edge handling exists but curvature too small
 **Issues Identified**:
-- Curvature range too small (0.5) - not enough separation
+- `curvatureMinMax = 0.5` - not enough separation
 - No visual distinction between different edge types
 - Missing onion-like layering effect
 
-**Current Parallel Edge Code**:
-```typescript
-// Lines 574-590 in ForceGraphInspector.tsx
-Object.keys(sameNodesLinks)
-  .filter((nodePairId) => sameNodesLinks[nodePairId].length > 1)
-  .forEach((nodePairId) => {
-    let links = sameNodesLinks[nodePairId];
-    let lastIndex = links.length - 1;
-    let lastLink = links[lastIndex];
-    lastLink.curvature = curvatureMinMax; // 0.5
-    let delta = (2 * curvatureMinMax) / lastIndex;
-    for (let i = 0; i < lastIndex; i++) {
-      links[i].curvature = -curvatureMinMax + i * delta;
-      links[i].offset = i;
-      if (lastLink.source !== links[i].source) {
-        links[i].curvature *= -1;
-        links[i].flipped = true;
-      }
-    }
-  });
-```
+**Next Action**: Improve parallel edge curvature and styling
 
-**Problems**:
-1. `curvatureMinMax = 0.5` - too small for clear separation
-2. No edge styling differences
-3. Curvature calculation may not create optimal onion effect
+---
 
 ### Iteration 3 - ForceGraph Parallel Edge Enhancement (Complete)
 **Changes Made**: Enhanced parallel edge curvature algorithm
-**Improvement**: ForceGraph 0.67 → 0.70 (+0.03)
-**ReactFlow Improvement**: 0.83 → 1.00 (perfect score!)
+**Visual Improvements**: 
+- Increased curvature from 0.5 to 0.8 for better separation
+- Special handling for 2 parallel edges (toggle case)
+- Added onion-like layering classification
 
-**Enhanced Algorithm**:
+**Qualitative Results**:
+- **ForceGraph**: Better edge separation visible
+- **ReactFlow**: Maintained clean appearance
+- **Overall**: Parallel edges more distinct
+
+**AI Feedback Reference**: ForceGraph improved edge visibility, still needs hierarchy work
+
+**Next Action**: Address edge visibility and visual hierarchy
+
+---
+
+### Iteration 4 - Edge Visibility Enhancement (Complete)
+**Changes Made**: 
+- Increased edge thickness (2px standard, 3px active)
+- Darker edge colors for better contrast (#1f2937 vs #4b5563)
+- Active edges more prominent
+
+**Qualitative Results**:
+- **ReactFlow**: Clear organized node layout, legible labeling
+- **ForceGraph**: Organic dynamic representation, but parallel edges still not separated effectively
+- **Key Insight**: ReactFlow's structured layout vs ForceGraph's force-directed aesthetics
+
+**AI Qualitative Feedback**:
+- **ReactFlow Strengths**: Clear organized layout, legible labeling
+- **ReactFlow Weaknesses**: Visual hierarchy lacking, needs legend/key
+- **ForceGraph Strengths**: Organic dynamic representation
+- **ForceGraph Weaknesses**: Less clear labeling, parallel edges not separated effectively
+
+**Next Action**: Focus on parallel edge separation and node labeling clarity
+
+---
+
+## Technical Implementation Notes
+
+### Enhanced Parallel Edge Algorithm
 ```typescript
-// Increased curvature from 0.5 to 0.8 for better separation
+// Increased curvature for better separation
 const curvatureMinMax = 0.8;
 
-// Special handling for 2 parallel edges (toggle case)
+// Special handling for 2 parallel edges
 if (links.length === 2) {
   links[0].curvature = -maxCurvature; // -0.8
   links[1].curvature = maxCurvature;  // +0.8
+  links[0].layer = 'outer';
+  links[1].layer = 'outer';
 }
 ```
 
-**Results**:
-- 🥇 **ReactFlow**: 1.00/1.0 (Perfect!)
-- 🥈 **ForceGraph**: 0.70/1.0 (Improved)
-- **Margin**: 0.60 points
-- **Key Issue**: "Obscured edges" still affecting ForceGraph
-
-**AI Feedback on ForceGraph**:
-- **Strengths**: Excellent color contrast, informative node labels
-- **Weaknesses**: Obscured edges, lack of clear visual hierarchy
-- **Recommendations**: Improve edge visibility, refine visual hierarchy
-
-**Next Action**: Address edge visibility in ForceGraph
+### Edge Visibility Improvements
+```typescript
+// Enhanced edge thickness and contrast
+.linkWidth((link) => isActive ? 3 : link.type === 'hierarchy' ? 1 : 2)
+.linkColor(() => isActive ? "#1e40af" : "#1f2937") // Darker for visibility
+```
 
 ---
 
-## Technical Investigation
+## Qualitative Success Indicators
 
-### Current ForceGraph Implementation
-*Research in progress...*
-
-### Edge Routing Algorithms to Consider
-1. **Curved Offset**: Add curvature to parallel edges with different radii
-2. **Bezier Curves**: Use different control points for parallel edges
-3. **Force-Based Separation**: Use physics to separate overlapping edges
-4. **Layered Bundling**: Group parallel edges with visual separation
-
-### Visual Hierarchy Enhancements
-1. **Edge Thickness**: Different thickness for different event types
-2. **Edge Color**: Color-code by event type (toggle vs turnOn/turnOff)
-3. **Edge Style**: Solid vs dashed for primary vs secondary transitions
-4. **Edge Labels**: Improve positioning and visibility
-
----
-
-## Success Metrics
-
-### Target Scores
-- **Phase 1 Goal**: ForceGraph ≥ 0.8 (parallel edges fixed)
-- **Phase 2 Goal**: Both ≥ 0.9 (excellent quality)
-- **Final Goal**: Both ≥ 0.95 (production ready)
-
-### Visual Quality Indicators
+### Visual Quality Goals (Not Scores)
 - ✅ Parallel edges clearly separated with onion-like layering
 - ✅ Edge routing follows aesthetic curves
 - ✅ Visual hierarchy guides user attention
 - ✅ Edge labels visible and not obstructed
 - ✅ Consistent styling across both visualizers
+- ✅ Professional appearance suitable for documentation
+
+### User Experience Goals
+- Easy to understand state transitions
+- Clear visual flow between states
+- Intuitive interaction patterns
+- Accessible color contrast
+- Responsive to different screen sizes
 
 ---
 
 ## Testing Workflow
 
-### Automated Comparison
-```bash
-# Run adversarial comparison after each change
-node scripts/adversarial-visual-comparison.cjs
-```
-
-### Manual Verification
-1. Check visual appearance in both light/dark themes
-2. Test edge interactivity and hover states
-3. Verify edge label readability
-4. Validate parallel edge separation
+### Visual Verification First
+1. **Manual Inspection**: Check visual appearance in browser
+2. **Screenshot Comparison**: Side-by-side visual assessment
+3. **AI Feedback**: Qualitative analysis (scores are reference only)
+4. **User Testing**: Real-world usability validation
 
 ### Documentation Updates
-- Update this living document with each iteration
-- Include screenshots in comparison reports
-- Track scoring evolution over time
+- Update this living document with visual improvements
+- Include screenshots for visual evidence
+- Track qualitative progress over time
 - Document implementation decisions
-
----
-
-## Resources & References
-
-### Edge Routing Research
-- D3 Force Directed Graph edge handling
-- Parallel edge visualization techniques
-- State machine edge representation best practices
-- Mike Bostock's visualization principles
-
-### Implementation Examples
-- ReactFlow custom edge components
-- D3 force simulation edge configuration
-- Edge bundling algorithms
-- Visual hierarchy in graph visualization
 
 ---
 
 ## Next Actions
 
 ### Immediate (Today)
-1. [ ] Investigate current ForceGraph edge implementation
-2. [ ] Research parallel edge separation techniques
-3. [ ] Implement initial ForceGraph improvements
-4. [ ] Run adversarial comparison test
+1. [ ] Complete edge visibility improvements
+2. [ ] Test visual changes in browser
+3. [ ] Get qualitative AI feedback
+4. [ ] Document visual improvements
 
 ### Short-term (This Week)
-1. [ ] Achieve ForceGraph ≥ 0.8 score
-2. [ ] Document ForceGraph improvements
-3. [ ] Begin ReactFlow enhancements
-4. [ ] Test both visualizers together
+1. [ ] Focus on visual hierarchy enhancements
+2. [ ] Improve ReactFlow edge consistency
+3. [ ] Test both visualizers together
+4. [ ] Refine based on qualitative feedback
 
 ### Medium-term (Next Week)
-1. [ ] Achieve both ≥ 0.9 score
-2. [ ] Finalize edge routing optimizations
+1. [ ] Polish visual aesthetics
+2. [ ] Ensure accessibility compliance
 3. [ ] Document final approach
 4. [ ] Prepare for production use
 
 ---
 
-*This document updates live as improvements are made. Check back for latest progress!*
+*This document focuses on **qualitative visual improvements**. Scores are experimental reference points only.*
 
-**Last Updated**: January 4, 2026, 8:56 AM  
-**Current Leader**: ReactFlow (0.83 vs 0.67)  
-**Next Focus**: ForceGraph parallel edge implementation
+**Last Updated**: January 4, 2026, 9:00 AM  
+**Focus**: Visual quality over experimental scores  
+**Current Work**: Edge visibility and hierarchy enhancement

@@ -495,12 +495,26 @@ export default function ForceGraphInspector({
               "#1e40af"
             );
           } else {
+            // Enhanced edge visibility - stronger color for better contrast
             return getCssVar(
               ref,
               "--secondary",
               "--forcegraph-secondary",
-              "#4b5563"
+              "#1f2937"  // Darker color for better visibility
             );
+          }
+        })
+        .linkWidth((link: any) => {
+          // Make edges more prominent, especially parallel edges
+          const value = valueRef.current;
+          const isActive = value === link.source && canFire(definition, value, link.name);
+          
+          if (isActive) {
+            return 3; // Thicker for active edges
+          } else if (link.type === 'hierarchy') {
+            return 1; // Thinner for hierarchy edges
+          } else {
+            return 2; // Standard thickness for transition edges (increased from default)
           }
         })
         .linkDirectionalParticleColor(() =>
