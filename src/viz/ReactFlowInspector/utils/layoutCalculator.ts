@@ -15,7 +15,7 @@ export const optimizeEdgeConnections = (
   const dx = targetPos.x - sourcePos.x;
   const dy = targetPos.y - sourcePos.y;
 
-  // For single edges, use nearest/best terminals (not same-terminal logic)
+  // For single edges, ALWAYS use different terminals for cleaner routing
   let sourceHandle: string;
   let targetHandle: string;
 
@@ -33,14 +33,9 @@ export const optimizeEdgeConnections = (
       sourceHandle = "top";
       targetHandle = "bottom";
     } else {
-      // Perfectly horizontal - use top for left->right, bottom for right->left
-      if (dx > 0) {
-        sourceHandle = "top";
-        targetHandle = "top";
-      } else {
-        sourceHandle = "bottom";
-        targetHandle = "bottom";
-      }
+      // Perfectly horizontal - use different terminals
+      sourceHandle = "top";
+      targetHandle = "bottom";
     }
   } else {
     // Vertical flow - use left/right terminals
@@ -53,14 +48,9 @@ export const optimizeEdgeConnections = (
       sourceHandle = "left";
       targetHandle = "right";
     } else {
-      // Perfectly vertical - use right for top->bottom, left for bottom->top
-      if (dy > 0) {
-        sourceHandle = "right";
-        targetHandle = "right";
-      } else {
-        sourceHandle = "left";
-        targetHandle = "left";
-      }
+      // Perfectly vertical - use different terminals
+      sourceHandle = "left";
+      targetHandle = "right";
     }
   }
 
