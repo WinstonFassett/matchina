@@ -65,3 +65,6 @@ review/**/*.jpeg
 review/**/*.gif
 review/**/*.webp
 review/**/*.svg
+
+# temp ignore
+# test-selfloop-working - REMOVED to commit floating edges work

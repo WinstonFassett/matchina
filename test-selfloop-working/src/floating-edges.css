@@ -1,0 +1,26 @@
+/* Hide default ReactFlow handles for floating edges */
+.react-flow__handle {
+  display: none !important;
+}
+
+/* Style the floating edges container */
+.floating-edges {
+  width: 100vw;
+  height: 100vh;
+}
+
+.react-flow__edge-path {
+  stroke: #222;
+  stroke-width: 2;
+}
+
+.react-flow__edge.animated path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
