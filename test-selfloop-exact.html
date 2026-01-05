@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Self-Loop Exact ReactFlow Example</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        #root { width: 100vw; height: 100vh; }
+    </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@xyflow/react@12.10.0/dist/umd/index.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useCallback } = React;
+        const { 
+            ReactFlow, 
+            useNodesState, 
+            useEdgesState, 
+            addEdge, 
+            Controls, 
+            Background, 
+            Position, 
+            ConnectionMode, 
+            MarkerType,
+            BaseEdge,
+            BezierEdge
+        } = ReactFlow;
+
+        // Exact SelfConnectingEdge from ReactFlow docs
+        function SelfConnectingEdge(props) {
+            // we are using the default bezier edge when source and target ids are different
+            if (props.source !== props.target) {
+                return React.createElement(BezierEdge, props);
+            }
+
+            const { sourceX, sourceY, targetX, targetY, id, markerEnd } = props;
+            const radiusX = (sourceX - targetX) * 0.6;
+            const radiusY = 50;
+            const edgePath = `M ${sourceX - 5} ${sourceY} A ${radiusX} ${radiusY} 0 1 0 ${
+                targetX + 2
+            } ${targetY}`;
+
+            console.log('SelfConnectingEdge exact:', {
+                source: props.source,
+                target: props.target,
+                sourceX, sourceY, targetX, targetY,
+                radiusX, radiusY, edgePath
+            });
+
+            return React.createElement(BaseEdge, {
+                path: edgePath,
+                markerEnd: markerEnd
+            });
+        }
+
+        // Exact setup from ReactFlow docs
+        const initialNodes = [
+            {
+                id: 'self-1',
+                data: { label: 'Self Connecting' },
+                position: { x: 125, y: 250 },
+                sourcePosition: Position.Right,
+                targetPosition: Position.Left,
+            },
+        ];
+
+        const initialEdges = [
+            {
+                id: 'edge-self',
+                source: 'self-1',
+                target: 'self-1',
+                type: 'selfconnecting',
+                markerEnd: { type: MarkerType.Arrow },
+            },
+        ];
+
+        const edgeTypes = {
+            selfconnecting: SelfConnectingEdge,
+        };
+
+        function App() {
+            const [nodes, , onNodesChange] = useNodesState(initialNodes);
+            const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+            const onConnect = useCallback(
+                (params) => setEdges((eds) => addEdge(params, eds)),
+                [],
+            );
+
+            return (
+                <div style={{ width: '100vw', height: '100vh' }}>
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        edgeTypes={edgeTypes}
+                        fitView
+                        attributionPosition="top-right"
+                        connectionMode={ConnectionMode.Loose}
+                    >
+                        <Controls />
+                        <Background />
+                    </ReactFlow>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
