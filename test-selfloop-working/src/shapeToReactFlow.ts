@@ -88,6 +88,8 @@ export function shapeToReactFlow(shape: StateMachineShape): { nodes: Node[], edg
         id: `${fromState}-${toState}-${event}`,
         source: fromState,
         target: targetState,
+        sourceHandle: null,
+        targetHandle: null,
         label: event,
         type: 'floating', // Use our floating edge type
         markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 },
