@@ -11,7 +11,7 @@ export default function TrafficLightExample() {
       machine={machine as any}
       AppView={TrafficLightView}
       showRawState={true}
-      defaultViz="reactflow"
+      defaultViz="reactflow-v2"
       exampleName="traffic-light"
     />
   );
