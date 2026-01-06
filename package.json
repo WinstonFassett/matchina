@@ -161,6 +161,7 @@
   },
   "dependencies": {
     "@astrojs/ts-plugin": "^1.10.4",
+    "@floating-ui/react": "^0.27.16",
     "@intevel/vitepress-plugin-mermaid": "^2.0.15",
     "marked": "^17.0.1",
     "marked-gfm-heading-id": "^4.1.3",
