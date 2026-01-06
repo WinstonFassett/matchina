@@ -1,78 +1,120 @@
-# ReactFlow V2 Handoff Prompt
+# ReactFlow V2 Handoff - Production Integration
 
-## Context
-We've been fighting ReactFlow like fucking dipshits instead of learning how it actually works. We've been reinventing the wheel and doing a shitty job of it. The whole point is to learn from the ReactFlow examples, understand what we did wrong, and rebuild properly.
+## Objective
+Update/rebuild the existing ReactFlowInspector to use self-loop edge rendering improvements, working incrementally in ReactFlowV2 folder while preserving original for before/after comparisons.
 
-## What We Need to Do
-1. **STOP FIGHTING THE LIBRARY** - Learn how ReactFlow actually works
-2. **LEARN FROM EXAMPLES** - Use the pristine ReactFlow examples as our guide
-3. **ADD EVERYTHING WE NEED** - Import all the working components from examples
-4. **REBUILD INCREMENTALLY** - One thing at a time so shit doesn't bug out
-5. **UNDERSTAND BEFORE IMPLEMENTING** - Learn why examples work, then apply
+## Session Accomplishments (PREVIOUS)
 
-## Current Status
-❌ **V2 implementation is broken** - We've been fighting ReactFlow instead of working with it
-❌ **Bidirectional never worked** - Because we didn't import the right components
-❌ **Missing components** - We only copied some parts, not the complete working setup
-❌ **Fighting the library** - Trying to reinvent instead of using ReactFlow properly
+### ✅ Phase 1: Self-Loop Visual Refinement (COMPLETED)
+- **Problem**: Self-loops had sharp corners, overlapping labels, poor visual quality
+- **Solution**: Optimized FloatingEdge.tsx with:
+  - Circular quarter-arc loops using proper bezier curves
+  - Layered stacking with increasing radii for multiple self-loops
+  - Repositioned labels with vertical spacing to prevent overlap
+  - Spread start/end points on different edges (top → right)
+- **Result**: Beautiful, round self-loops with clean label positioning
 
-## Your Mission
-1. **LEARN FROM REACTFLOW EXAMPLES** - Study the complete working example
-2. **IMPORT ALL NEEDED COMPONENTS** - SelfConnectingEdge, BiDirectionalEdge, BiDirectionalNode, ButtonEdge
-3. **REBUILD V2 PROPERLY** - Use ReactFlow the way it's designed to be used
-4. **WORK INCREMENTALLY** - Add one component at a time, test each step
-5. **STOP FIGHTING THE LIBRARY** - Use ReactFlow's patterns, don't reinvent
+### ✅ Phase 2: Dynamic Shape-to-ReactFlow Integration (COMPLETED)
+- **Problem**: Dynamic demos showed "Transitions zero self loops and zero bidirectional"
+- **Root Cause**: ReactFlow handle errors preventing edge rendering
+- **Solution**: 
+  - Fixed shape extraction using `machine.shape?.getState()` API
+  - Added hidden handles to SimpleNode for ReactFlow compatibility
+  - Fixed bidirectional counting logic with Set for unique pairs
+- **Result**: 
+  - Counter machine: 3 self-loops + 2 regular transitions
+  - Toggle machine: 4 bidirectional transitions
+  - All edges render correctly with no console errors
 
-## What to Import from Examples
-- **SelfConnectingEdge** - ✅ Already copied
-- **BiDirectionalEdge** - ✅ Already copied  
-- **BiDirectionalNode** - ❌ MISSING - Need this for bidirectional to work
-- **ButtonEdge** - ❌ MISSING - Need this for complete example
-- **Complete edgeTypes setup** - ❌ MISSING - Need all edge types
-- **Complete nodeTypes setup** - ❌ MISSING - Need all node types
+## Critical Technical Discoveries
 
-## Incremental Approach
-1. **Add BiDirectionalNode** - Test bidirectional edges work
-2. **Add ButtonEdge** - Test button edges work  
-3. **Complete edgeTypes** - Test all edge types work
-4. **Complete nodeTypes** - Test all node types work
-5. **Verify against ReactFlow example** - Make sure it matches exactly
-6. **THEN pivot to machine data** - Only after V2 works perfectly
+### ReactFlow Handle Requirements
+- **Issue**: `Couldn't create edge for source handle id: "null"` errors
+- **Fix**: Nodes must have handles even for floating edges
+- **Implementation**: Add hidden handles with `visibility: hidden` (not `display: none`)
+- **Code**: SimpleNode.tsx now includes 8 hidden handles (4 source + 4 target)
 
-## Key Files to Focus On
-- `/src/viz/ReactFlowVisualizerV2/TestVisualizer.tsx` - Main component
-- `/src/viz/ReactFlowVisualizerV2/SelfConnectingEdge.tsx` - Self-loop edge
-- `/docs/src/components/ReactFlowV2Test.tsx` - Docs integration
+### Shape Extraction API
+- **Correct**: `machine.shape?.getState()` returns MachineShape
+- **MachineShape Structure**:
+  ```typescript
+  {
+    states: Map<string, StateNode>,
+    transitions: Map<string, Map<string, string>>,
+    hierarchy: Map<string, string>,
+    initialKey: string
+  }
+  ```
 
-## What to Investigate
-- Why ReactFlow calculates different sourceX/targetX in working example
-- What prevents proper handle position calculation in our setup
-- Whether the issue is node data structure, edge data structure, or ReactFlow configuration
+### Edge Creation Pattern
+- **Floating edges need**: `type: 'floating'` + no sourceHandle/targetHandle properties
+- **Labels**: Use `label` property for edge labels
+- **Markers**: `markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 }`
 
-## Success Criteria ✅ ACHIEVED
-- **✅ Handle-based system working** - SelfConnecting, BiDirectional edges with separation
-- **✅ Floating edges system working** - Clean visualization without handles
-- **✅ Self-loops working** - Proper curved loops on nodes
-- **✅ Bidirectional edges working** - Curved paths with proper separation
-- **✅ Multi-edge separation working** - 3+ parallel edges between same nodes
-- **✅ Edge labels working** - Positioned correctly along curves
-- **✅ Clean visual presentation** - No handle clutter for visualizer use case
-- **✅ Ready to integrate** - Both approaches mastered for state machine visualization
+## Working Implementation Location
+**Sandbox**: `/test-selfloop-working/` - Fully functional demo environment
+- `src/FloatingEdge.tsx` - Optimized self-loop rendering
+- `src/shapeToReactFlow.ts` - Dynamic shape conversion
+- `src/SimpleNode.tsx` - Node with hidden handles
+- `src/ComprehensiveDemoApp.tsx` - Multi-machine demo interface
 
-## Key Achievements
-- **Handle-based approach**: Perfect for interactive editors with precise connection points
-- **Floating edges approach**: Ideal for state machine visualizers - clean, no handle clutter
-- **Dynamic edge positioning**: Edges compute optimal connection points automatically
-- **Multi-edge algorithms**: Proper separation for parallel edges with unique offsets
-- **Self-loop rendering**: Consistent curved loops above nodes
-- **Label positioning**: Smart label placement along edge curves
+## Phase 3: Production Integration Strategy
 
-## Previous Failures to Avoid
-- **STOP FIGHTING REACTFLOW** - Use it as designed, don't reinvent
-- **DON'T SKIP COMPONENTS** - Import everything from the working example
-- **DON'T RUSH** - Work incrementally, test each step
-- **DON'T ASSUME** - Learn from examples before implementing
-- **DON'T COMPROMISE** - Make it exactly like the ReactFlow example
+### Incremental Porting Approach
+1. **Create ReactFlowV2 folder structure** - Preserve original for comparison
+2. **Port core FloatingEdge improvements** - Self-loop rendering optimizations
+3. **Add V2 option to MachineVisualizer** - Side-by-side comparison capability
+4. **Port SimpleNode with hidden handles** - ReactFlow compatibility fix
+5. **Port shapeToReactFlow utilities** - Dynamic shape conversion
+6. **Test incrementally** - Each component verified before moving to next
 
-## Starting Point
-**IMPORT MISSING COMPONENTS** - Add BiDirectionalNode and ButtonEdge from ReactFlow examples. Test each component individually. Build up to the complete working example incrementally.
+### Key Files to Port
+
+#### From Sandbox (`/test-selfloop-working/src/`):
+- `FloatingEdge.tsx` - Core self-loop rendering improvements
+- `SimpleNode.tsx` - Hidden handle pattern
+- `shapeToReactFlow.ts` - Dynamic shape conversion
+- `ComprehensiveDemoApp.tsx` - Multi-machine interface
+
+#### From Development (`/src/viz/ReactFlowInspector/`):
+- `SelfLoopEdge.tsx` - Advanced self-loop components
+- `BiDirectionalEdge.tsx` - Bidirectional edge handling
+- `utils/edgeBoundsCalculator.ts` - Edge positioning utilities
+- `utils/enhancedFitView.ts` - Viewport management
+
+### Testing Strategy for Production Integration
+
+#### What We (Windsurf IDE agents) Actually Did (Previous Session)
+- Used `mcp1_browser_navigate` to check the page (other agents should use their available tools or request them)
+- Looked at console logs to identify ReactFlow handle errors
+- Verified edges were rendering by checking page snapshots
+- Confirmed counter machine showed 3 self-loops + 2 transitions
+- Confirmed toggle machine showed 4 bidirectional transitions
+- Verified no more ReactFlow handle errors in console
+
+#### Testing Strategy for V2 Integration
+- **Visual Comparison**: Side-by-side original vs V2 rendering
+- **Machine Coverage**: Test counter (self-loops), toggle (bidirectional), traffic-light
+- **Edge Cases**: Multiple self-loops, overlapping edges, complex layouts
+- **Console Monitoring**: Ensure no ReactFlow handle errors
+
+## Next Session Priorities
+1. **Create ReactFlowV2 folder structure**
+2. **Port core FloatingEdge improvements**
+3. **Add V2 option to MachineVisualizer for toggle example**
+4. **Verify side-by-side comparison works**
+5. **Incrementally add more examples**
+
+## Success Criteria
+- [ ] Self-loops render as smooth circular arcs
+- [ ] Multiple self-loops stack without overlap
+- [ ] Bidirectional edges render correctly
+- [ ] No ReactFlow handle errors in console
+- [ ] Side-by-side comparison shows clear improvement
+- [ ] All existing examples work with V2
+
+## Technical Notes
+- ReactFlow version migration (@xyflow/react) stashed - handle separately
+- Focus on edge rendering improvements, not version migration
+- Preserve original ReactFlowInspector for regression testing
+- Use incremental additive approach to minimize risk
