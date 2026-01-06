@@ -74,7 +74,9 @@ export function shapeToReactFlow(shape: StateMachineShape): { nodes: Node[], edg
   });
 
   // Create edges from transitions
+  console.log('DEBUG: Creating edges from transitions:', shape.transitions);
   Object.entries(shape.transitions).forEach(([fromState, transitions]) => {
+    console.log(`DEBUG: Processing transitions from ${fromState}:`, transitions);
     Object.entries(transitions).forEach(([event, toState]) => {
       // Handle special syntax like '^Inactive' (exit to parent)
       let targetState = toState;
@@ -82,7 +84,7 @@ export function shapeToReactFlow(shape: StateMachineShape): { nodes: Node[], edg
         targetState = toState.substring(1);
       }
 
-      edges.push({
+      const edge = {
         id: `${fromState}-${toState}-${event}`,
         source: fromState,
         target: targetState,
@@ -93,17 +95,34 @@ export function shapeToReactFlow(shape: StateMachineShape): { nodes: Node[], edg
           event,
           isSelfTransition: fromState === toState,
         },
-      });
+      };
+      
+      console.log('DEBUG: Creating edge:', edge);
+      edges.push(edge);
     });
   });
 
+  console.log('DEBUG: Final result - nodes:', nodes.length, 'edges:', edges.length);
+  console.log('DEBUG: Final edges:', edges);
   return { nodes, edges };
 }
 
 // Test machines for dynamic loading
 export const testMachines = {
-  counter: () => extractShape(createCounterMachine()),
-  toggle: () => extractShape(createToggleMachine()),
+  counter: () => {
+    console.log('DEBUG: Creating counter machine...');
+    const machine = createCounterMachine();
+    console.log('DEBUG: Counter machine created:', machine);
+    console.log('DEBUG: Counter machine.shape:', machine.shape);
+    return extractShape(machine);
+  },
+  toggle: () => {
+    console.log('DEBUG: Creating toggle machine...');
+    const machine = createToggleMachine();
+    console.log('DEBUG: Toggle machine created:', machine);
+    console.log('DEBUG: Toggle machine.shape:', machine.shape);
+    return extractShape(machine);
+  },
 };
 
 // Example usage
