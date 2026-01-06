@@ -7,21 +7,21 @@ const path = require('path');
 const BEADS_DB_PATH = path.join(process.cwd(), '.beads', 'issues.jsonl');
 const OUTPUT_PATH = path.join(process.cwd(), 'review', 'beads-report.md');
 
-// Color mapping for Mermaid with soft pastel colors and rounded corners
+// Color mapping for Mermaid with intuitive, status-appropriate colors
 const STATUS_COLORS = {
-  'open': '#FFE5CC',    // Soft peach
-  'in_progress': '#E8F5E8',  // Light mint green
-  'blocked': '#FFE5F1',   // Soft pink
-  'closed': '#E5F3FF',   // Light sky blue
-  'ready': '#FFF9E5'     // Soft lemon
+  'open': '#FFF3CD',      // Light yellow - needs work, ready to start
+  'in_progress': '#CCE5FF', // Light blue - actively being worked on
+  'blocked': '#F8D7DA',   // Light red - problem, needs attention
+  'closed': '#E5F3FF',    // Light sky blue - completed (not shown in report)
+  'ready': '#D4EDDA'      // Light green - ready for review, positive state
 };
 
 const BORDER_COLORS = {
-  'open': '#FFB366',    // Peach border
-  'in_progress': '#90EE90',  // Mint border
-  'blocked': '#FFB6C1',   // Pink border
-  'closed': '#87CEEB',   // Sky blue border
-  'ready': '#F0E68C'     // Lemon border
+  'open': '#FFC107',      // Yellow border - needs work
+  'in_progress': '#007BFF', // Blue border - active work
+  'blocked': '#DC3545',   // Red border - problem
+  'closed': '#87CEEB',    // Sky blue border - completed (not shown in report)
+  'ready': '#28A745'      // Green border - ready state
 };
 
 // Status emojis
@@ -49,13 +49,8 @@ function getOpenTasks() {
   return allTasks.filter(task => 
     task.status === 'open' || 
     task.status === 'in_progress' || 
-    task.status === 'blocked' ||
-    task.status === 'ready'
+    task.status === 'deferred'
   );
-}
-
-function getAllTasks() {
-  return loadBeadsData();
 }
 
 function getTaskShortTitle(title, maxLength = 40) {
@@ -162,22 +157,24 @@ function formatTitleForMermaid(title, maxLength = 15) {
 }
 
 function buildDependencyGraph(tasks) {
-  const allTasks = getAllTasks(); // Include completed tasks
+  // Only work with open tasks, not all tasks
+  const openTasks = tasks; // tasks is already filtered by getOpenTasks()
   const taskMap = new Map();
   const tasksWithDeps = new Set();
   
-  // Create map of all tasks
-  allTasks.forEach(task => {
+  // Create map of only open tasks
+  openTasks.forEach(task => {
     taskMap.set(task.id, { ...task, children: [], dependencies: [] });
   });
   
-  // Build dependency relationships
-  allTasks.forEach(task => {
+  // Build dependency relationships only between open tasks
+  openTasks.forEach(task => {
     const taskWithDeps = taskMap.get(task.id);
     
     // Parse dependencies from JSON data (what this task depends on - points down)
     if (task.dependencies && Array.isArray(task.dependencies)) {
       task.dependencies.forEach(dep => {
+        // Only include dependencies that are also open tasks
         if (dep.depends_on_id && taskMap.has(dep.depends_on_id)) {
           const depTask = taskMap.get(dep.depends_on_id);
           taskWithDeps.dependencies.push(depTask);
@@ -191,19 +188,9 @@ function buildDependencyGraph(tasks) {
     // We handle this separately, not as dependencies of this task
   });
   
-  // Filter to only tasks with dependency relationships, but prioritize open/in-progress tasks
+  // Filter to only open tasks with dependency relationships
   const filteredTasks = Array.from(taskMap.values()).filter(task => 
-    tasksWithDeps.has(task.id) && (
-      task.status === 'open' || 
-      task.status === 'in_progress' || 
-      task.status === 'blocked' ||
-      task.status === 'ready' ||
-      // Include completed tasks if they're dependencies of open tasks
-      Array.from(taskMap.values()).some(openTask => 
-        (openTask.status === 'open' || openTask.status === 'in_progress' || openTask.status === 'blocked' || openTask.status === 'ready') &&
-        openTask.dependencies.some(dep => dep.id === task.id)
-      )
-    )
+    tasksWithDeps.has(task.id)
   );
   
   return filteredTasks;
@@ -214,9 +201,8 @@ function generateMermaidDiagram(tasks) {
   
   let mermaid = '```mermaid\ngraph TD\n';
   mermaid += '    %% Task Dependency Overview - Birds Eye View\n';
-  mermaid += '    %% Top-to-Bottom: Big things up top, arrows point down to dependencies\n';
-  mermaid += '    %% Soft pastel colors with rounded corners for readability\n';
-  mermaid += '    %% Parent-child relationships shown as nested subgraphs\n\n';
+  mermaid += '    %% Top-to-Down: Big things at top, arrows point down to dependents\n';
+  mermaid += '    %% Soft pastel colors with rounded corners for readability\n\n';
   
   if (dependencyTasks.length === 0) {
     mermaid += '    Open["Open Tasks\\lNo dependencies found"]\n';
@@ -225,120 +211,34 @@ function generateMermaidDiagram(tasks) {
     return mermaid;
   }
   
-  // Group tasks by top-level dependencies
-  const rootTasks = dependencyTasks.filter(task => 
-    !dependencyTasks.some(other => 
-      other.dependencies.some(dep => dep.id === task.id)
-    )
-  );
-  
-  // Track which tasks are children of parents
-  const childTasks = new Set();
-  const parentChildMap = new Map();
-  const subgraphDefinitions = new Map();
-  
-  // Identify parent-child relationships - ONLY for actual epics
-  dependencyTasks.forEach(task => {
-    if (task.issue_type === 'epic') {
-      // Find tasks that depend on this epic
-      const children = dependencyTasks.filter(other => 
-        other.dependencies.some(dep => dep.id === task.id) &&
-        other.id !== task.id
-      );
-      if (children.length > 0) {
-        parentChildMap.set(task.id, children);
-        children.forEach(child => {
-          childTasks.add(child.id);
-        });
-        
-        // Store subgraph definition for later
-        const taskId = getTaskIdShort(task.id);
-        const shortTitle = getTaskShortTitle(task.title, 20);
-        const cleanTitle = cleanTitleForMermaid(shortTitle);
-        const color = STATUS_COLORS[task.status] || STATUS_COLORS.open;
-        const borderColor = BORDER_COLORS[task.status] || BORDER_COLORS.open;
-        
-        let subgraphDef = `    subgraph ${taskId}["${cleanTitle}"]\n`;
-        subgraphDef += `        ${taskId}_parent["${cleanTitle}"]\n`;
-        subgraphDef += `        style ${taskId}_parent fill:${color},stroke:${borderColor},stroke-width:2px,color:#495057,rx:8,ry:8\n\n`;
-        
-        children.forEach(child => {
-          const childId = getTaskIdShort(child.id);
-          const childTitle = getTaskShortTitle(child.title, 12);
-          const childCleanTitle = cleanTitleForMermaid(childTitle);
-          const childColor = STATUS_COLORS[child.status] || STATUS_COLORS.open;
-          const childBorderColor = BORDER_COLORS[child.status] || BORDER_COLORS.open;
-          
-          subgraphDef += `        ${childId}_child["${childCleanTitle}"]\n`;
-          subgraphDef += `        style ${childId}_child fill:${childColor},stroke:${childBorderColor},stroke-width:2px,color:#495057,rx:8,ry:8\n\n`;
-        });
-        
-        subgraphDef += `    end\n\n`;
-        subgraphDefinitions.set(task.id, subgraphDef);
-      }
-    }
-  });
-  
+  // Simple approach: just add all tasks and their dependencies
   const visited = new Set();
   
-  function addTaskToDiagram(task, visitedLocal, insideSubgraph = false, parentTitle = '') {
-    if (visitedLocal.has(task.id)) return;
-    visitedLocal.add(task.id);
+  function addTaskToDiagram(task, level = 0) {
+    if (visited.has(task.id)) return;
+    visited.add(task.id);
     
     const taskId = getTaskIdShort(task.id);
-    const shortTitle = getTaskShortTitle(task.title, 20);
+    const shortTitle = getTaskShortTitle(task.title, 25);
+    const cleanTitle = cleanTitleForMermaid(shortTitle);
     const color = STATUS_COLORS[task.status] || STATUS_COLORS.open;
     const borderColor = BORDER_COLORS[task.status] || BORDER_COLORS.open;
     
-    // Clean title for mermaid (remove problematic chars)
-    const cleanTitle = cleanTitleForMermaid(shortTitle);
+    // Add node
+    mermaid += `    ${taskId}["${cleanTitle}"]\n`;
+    mermaid += `    style ${taskId} fill:${color},stroke:${borderColor},stroke-width:2px,color:#495057,rx:8,ry:8\n\n`;
     
-    // Check if this is a parent with children
-    const children = parentChildMap.get(task.id);
-    if (children && children.length > 0 && !insideSubgraph) {
-      // Subgraph already defined above, just add dependencies
-      task.dependencies.forEach(depTask => {
-        if (!children.some(child => child.id === depTask.id)) {
-          const depId = getTaskIdShort(depTask.id);
-          const depNodeId = parentChildMap.has(depTask.id) ? `${depId}_parent` : depId;
-          mermaid += `    ${taskId}_parent --> ${depNodeId}\n`;
-          addTaskToDiagram(depTask, visitedLocal);
-        }
-      });
-    } else {
-      // Regular task (child or standalone)
-      const nodeId = insideSubgraph ? `${taskId}_child` : taskId;
-      
-      mermaid += `${insideSubgraph ? '        ' : '    '}${nodeId}["${cleanTitle}"]\n`;
-      mermaid += `${insideSubgraph ? '        ' : '    '}style ${nodeId} fill:${color},stroke:${borderColor},stroke-width:2px,color:#495057,rx:8,ry:8\n\n`;
-      
-      // Add dependency edges (dependent --> dependency, pointing down to parent)
-      task.dependencies.forEach(depTask => {
-        const depId = getTaskIdShort(depTask.id);
-        const depNodeId = parentChildMap.has(depTask.id) ? `${depId}_parent` : depId;
-        mermaid += `${insideSubgraph ? '        ' : '    '}${nodeId} --> ${depNodeId}\n`;
-        addTaskToDiagram(depTask, visitedLocal);
-      });
-    }
+    // Add dependency edges (dependent --> dependency, pointing down in TD layout)
+    task.dependencies.forEach(depTask => {
+      const depId = getTaskIdShort(depTask.id);
+      mermaid += `    ${taskId} --> ${depId}\n`;
+      addTaskToDiagram(depTask);
+    });
   }
   
-  // First, add all subgraph definitions
-  Array.from(subgraphDefinitions.values()).forEach(def => {
-    mermaid += def;
-  });
-  
-  // Then add all root tasks (will cascade to dependencies)
-  rootTasks.forEach(task => {
-    if (!childTasks.has(task.id)) { // Skip if it's already handled as a child
-      addTaskToDiagram(task, visited);
-    }
-  });
-  
-  // Add any remaining dependencies that weren't handled in subgraphs
+  // Add all tasks
   dependencyTasks.forEach(task => {
-    if (!visited.has(task.id)) {
-      addTaskToDiagram(task, visited);
-    }
+    addTaskToDiagram(task);
   });
   
   mermaid += '```\n\n';
@@ -558,38 +458,107 @@ function generateMarkdownTree(tasks) {
 }
 
 function generateSummaryStats(tasks) {
-  const stats = {
-    total: tasks.length,
-    open: tasks.filter(t => t.status === 'open').length,
-    in_progress: tasks.filter(t => t.status === 'in_progress').length,
-    blocked: tasks.filter(t => t.status === 'blocked').length,
-    byPriority: {
-      P0: tasks.filter(t => t.priority === 0).length,
-      P1: tasks.filter(t => t.priority === 1).length,
-      P2: tasks.filter(t => t.priority === 2).length,
-      P3: tasks.filter(t => t.priority === 3).length,
-    }
-  };
+  // Use the actual beads command logic
+  const { execSync } = require('child_process');
   
-  let summary = '## Summary Statistics\n\n';
-  
-  // Status table
-  summary += '| Status | Count |\n';
-  summary += '|--------|-------|\n';
-  summary += `| 📋 Open | ${stats.open} |\n`;
-  summary += `| 🔄 In Progress | ${stats.in_progress} |\n`;
-  summary += `| 🚫 Blocked | ${stats.blocked} |\n`;
-  summary += `| **Total Active** | **${stats.total}** |\n\n`;
-  
-  // Priority table
-  summary += '| Priority | Count |\n';
-  summary += '|----------|-------|\n';
-  summary += `| 🔴 P0 (Critical) | ${stats.byPriority.P0} |\n`;
-  summary += `| 🟠 P1 (High) | ${stats.byPriority.P1} |\n`;
-  summary += `| 🟡 P2 (Medium) | ${stats.byPriority.P2} |\n`;
-  summary += `| 🟢 P3 (Low) | ${stats.byPriority.P3} |\n\n`;
-  
-  return summary;
+  try {
+    // Get ready tasks count (use --limit to get all)
+    const readyOutput = execSync('bd ready --limit 50', { encoding: 'utf8', cwd: process.cwd() });
+    const readyCount = readyOutput.includes('issues with no blockers') ? 
+      parseInt(readyOutput.match(/(\d+)\s+issues with no blockers/)?.[1] || '0') : 0;
+    
+    // Get blocked tasks count (leave blocked alone since it doesn't support limit)
+    const blockedOutput = execSync('bd blocked', { encoding: 'utf8', cwd: process.cwd() });
+    const blockedCount = blockedOutput.includes('Blocked issues') ? 
+      parseInt(blockedOutput.match(/Blocked issues\s*\((\d+)\)/)?.[1] || '0') : 0;
+    
+    // Extract unique task IDs from ready and blocked lists
+    const readyTaskIds = [];
+    const readyLines = readyOutput.split('\n').filter(line => line.includes('['));
+    readyLines.forEach(line => {
+      const match = line.match(/\[(.+?)\]/);
+      if (match) readyTaskIds.push(match[1]);
+    });
+    
+    const blockedTaskIds = [];
+    const blockedLines = blockedOutput.split('\n').filter(line => line.includes('['));
+    blockedLines.forEach(line => {
+      const match = line.match(/\[(.+?)\]/);
+      if (match) blockedTaskIds.push(match[1]);
+    });
+    
+    // Calculate unique counts (no double counting)
+    const openTasks = tasks.filter(t => t.status === 'open');
+    const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
+    
+    // Ready tasks are subset of open tasks
+    const openNotReady = openTasks.filter(t => !readyTaskIds.includes(t.id));
+    
+    // Blocked tasks can be from both open and in_progress
+    const inProgressNotBlocked = inProgressTasks.filter(t => !blockedTaskIds.includes(t.id));
+    
+    const stats = {
+      total: readyCount + inProgressNotBlocked.length + blockedCount,
+      open: openNotReady.length,
+      in_progress: inProgressNotBlocked.length,
+      ready: readyCount,
+      blocked: blockedCount,
+      byPriority: {
+        P0: tasks.filter(t => t.priority === 0).length,
+        P1: tasks.filter(t => t.priority === 1).length,
+        P2: tasks.filter(t => t.priority === 2).length,
+        P3: tasks.filter(t => t.priority === 3).length,
+      }
+    };
+    
+    let summary = '## Summary Statistics\n\n';
+    
+    // Status table
+    summary += '| Status | Count |\n';
+    summary += '|--------|-------|\n';
+    summary += `| 📋 Open | ${stats.open} |\n`;
+    summary += `| 📋 Ready | ${stats.ready} |\n`;
+    summary += `| 🔄 In Progress | ${stats.in_progress} |\n`;
+    summary += `| 🚫 Blocked | ${stats.blocked} |\n`;
+    summary += '| **Total Active** | **' + stats.total + '** |\n\n';
+    
+    // Priority table
+    summary += '| Priority | Count |\n';
+    summary += '|----------|-------|\n';
+    summary += `| 🔴 P0 (Critical) | ${stats.byPriority.P0} |\n`;
+    summary += `| 🟠 P1 (High) | ${stats.byPriority.P1} |\n`;
+    summary += `| 🟡 P2 (Medium) | ${stats.byPriority.P2} |\n`;
+    summary += `| 🟢 P3 (Low) | ${stats.byPriority.P3} |\n\n`;
+    
+    return summary;
+  } catch (error) {
+    console.error('Error getting beads stats:', error.message);
+    // Fallback to simple counts
+    const stats = {
+      total: tasks.length,
+      open: tasks.filter(t => t.status === 'open').length,
+      in_progress: tasks.filter(t => t.status === 'in_progress').length,
+      ready: 0,
+      blocked: 0,
+      byPriority: {
+        P0: tasks.filter(t => t.priority === 0).length,
+        P1: tasks.filter(t => t.priority === 1).length,
+        P2: tasks.filter(t => t.priority === 2).length,
+        P3: tasks.filter(t => t.priority === 3).length,
+      }
+    };
+    
+    let summary = '## Summary Statistics\n\n';
+    summary += '| Status | Count |\n';
+    summary += '|--------|-------|\n';
+    summary += `| 📋 Open | ${stats.open} |\n`;
+    summary += `| 📋 Ready | ${stats.ready} |\n`;
+    summary += `| 🔄 In Progress | ${stats.in_progress} |\n`;
+    summary += `| 🚫 Blocked | ${stats.blocked} |\n`;
+    summary += `| **Total Active** | **${stats.total}** |\n\n`;
+    
+    return summary;
+  }
 }
 
 function generateReport() {
