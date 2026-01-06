@@ -89,11 +89,21 @@ function MachineDemo({
   );
 
   const selfLoops = edges.filter(e => e.source === e.target).length;
-  const bidirectional = edges.filter(e => {
-    return edges.some(other => 
-      other.source === e.target && other.target === e.source && other.id !== e.id
-    );
-  }).length / 2; // Divide by 2 since each pair is counted twice
+  
+  // Count bidirectional pairs correctly
+  const bidirectionalPairs = new Set<string>();
+  edges.forEach(e => {
+    if (e.source !== e.target) {
+      const pairKey = [e.source, e.target].sort().join('-');
+      const hasReverse = edges.some(other => 
+        other.source === e.target && other.target === e.source && other.id !== e.id
+      );
+      if (hasReverse) {
+        bidirectionalPairs.add(pairKey);
+      }
+    }
+  });
+  const bidirectional = bidirectionalPairs.size;
 
   return (
     <div style={{ border: '1px solid #dee2e6', borderRadius: '8px', overflow: 'hidden' }}>

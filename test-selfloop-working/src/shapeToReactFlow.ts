@@ -1,5 +1,6 @@
 import type { Node, Edge } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
+import type { MachineShape } from '../../src/hsm/shape-types';
 import { createCounterMachine } from '../../docs/src/code/examples/counter/machine';
 import { createToggleMachine } from '../../docs/src/code/examples/toggle/machine';
 
@@ -10,24 +11,42 @@ interface StateMachineShape {
   initial: string;
 }
 
-// Extract shape from matchina machine
-function extractShape(machine: { states?: Record<string, unknown>; initial?: string }): StateMachineShape {
+// Extract shape from matchina machine using proper shape API
+function extractShape(machine: { shape?: { getState(): MachineShape } }): StateMachineShape {
+  const machineShape = machine.shape?.getState();
+  console.log('DEBUG: MachineShape:', machineShape);
+  
+  if (!machineShape) {
+    console.error('DEBUG: No shape found on machine');
+    return {
+      states: {},
+      transitions: {},
+      initial: 'initial'
+    };
+  }
+
   const shape: StateMachineShape = {
     states: {},
     transitions: {},
-    initial: machine.initial || 'initial'
+    initial: machineShape.initialKey
   };
 
-  // Extract states and transitions
-  Object.entries(machine.states || {}).forEach(([stateName, stateConfig]) => {
-    const config = stateConfig as { on?: Record<string, string> };
-    shape.states[stateName] = config;
-    
-    if (config.on) {
-      shape.transitions[stateName] = config.on;
-    }
+  // Extract states from MachineShape
+  machineShape.states.forEach((stateNode, fullKey) => {
+    console.log(`DEBUG: Processing state ${fullKey}:`, stateNode);
+    shape.states[fullKey] = {}; // StateNode doesn't have 'on', transitions are separate
   });
 
+  // Extract transitions from MachineShape
+  machineShape.transitions.forEach((transitions, fromState) => {
+    console.log(`DEBUG: Found transitions for ${fromState}:`, transitions);
+    shape.transitions[fromState] = {};
+    transitions.forEach((toState, event) => {
+      shape.transitions[fromState][event] = toState;
+    });
+  });
+
+  console.log('DEBUG: Final extracted shape:', shape);
   return shape;
 }
 
