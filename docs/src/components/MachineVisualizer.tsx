@@ -9,11 +9,12 @@ import { useMachine } from "matchina/react";
 import {
   ForceGraphInspector,
   HSMReactFlowInspector,
+  HSMReactFlowInspectorV2,
   MermaidInspector,
   SketchInspector
 } from 'matchina/viz';
 import { useMemo, useState, type ComponentType } from "react";
-import { buildVisualizerTree, getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
+import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
 import { getReactFlowPreset } from '../../../src/viz/ReactFlowInspector/presets';
@@ -106,8 +107,8 @@ export function MachineVisualizer({
   const currentState = machine.getState();
   // Explicitly depend on 'change' to ensure activeStatePath updates when state changes
   const activeStatePath = useMemo(() => getActiveStatePath(machine), [machine, change]);
-  // Explicitly depend on 'change' to ensure visualizer config updates when state changes
-  const config = useMemo(() => buildVisualizerTree(machine), [machine, change]);
+  // Get shape for visualizers - all visualizers should use MachineShape
+  const shape = useMemo(() => (machine as any).shape?.getState(), [machine, change]);
   const actions = useMemo(() => eventApi(machine), [machine]);
 
   // Determine if we should show the picker
@@ -167,7 +168,7 @@ export function MachineVisualizer({
             type: currentViz,
             machine,
             activeStatePath,
-            config,
+            shape,
             actions,
             interactive,
             exampleName,
@@ -210,7 +211,7 @@ function renderVisualizer({
   type,
   machine,
   activeStatePath,
-  config,
+  shape,
   actions,
   interactive,
   exampleName,
@@ -218,7 +219,7 @@ function renderVisualizer({
   type: VisualizerType;
   machine: FactoryMachine<any>;
   activeStatePath: string;
-  config: any;
+  shape: any;
   actions: Record<string, any>;
   interactive: boolean;
   exampleName?: string;
@@ -233,6 +234,16 @@ function renderVisualizer({
             machine={machine as any}
             interactive={interactive}
             exampleName={exampleName}
+          />
+        </div>
+      );
+
+    case 'reactflow-v2':
+      return (
+        <div className={commonClasses}>
+          <HSMReactFlowInspectorV2
+            machine={machine as any}
+            interactive={interactive}
           />
         </div>
       );
@@ -269,12 +280,11 @@ function renderVisualizer({
       return (
         <div className={commonClasses} data-testid="mermaid-statechart-container">
           <MermaidInspector
-            config={config}
-            stateKey={activeStatePath}
+            shape={shape}
+            currentStateKey={activeStatePath}
             actions={actions}
             interactive={interactive}
             diagramType="statechart"
-            machine={machine}
           />
         </div>
       );
@@ -283,12 +293,11 @@ function renderVisualizer({
       return (
         <div className={commonClasses}>
           <MermaidInspector
-            config={config}
-            stateKey={activeStatePath}
+            shape={shape}
+            currentStateKey={activeStatePath}
             actions={actions}
             interactive={interactive}
             diagramType="flowchart"
-            machine={machine}
           />
         </div>
       );

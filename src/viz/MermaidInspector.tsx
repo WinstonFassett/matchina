@@ -3,6 +3,20 @@ import mermaid from 'mermaid';
 import './MermaidInspector.css';
 import type { MachineShape, StateNode } from '../hsm/shape-types';
 
+// XState-style tree interface (what buildVisualizerTree returns)
+interface XStateTree {
+  initial: string;
+  states: Record<string, XStateNode>;
+}
+
+interface XStateNode {
+  key: string;
+  fullKey: string;
+  on: Record<string, string>;
+  states?: Record<string, XStateNode>;
+  initial?: string;
+}
+
 // Pure diagram generators that use shapes instead of walking
 export function generateStateChart(shape: MachineShape): string {
   if (!shape) {
