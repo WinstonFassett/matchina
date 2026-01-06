@@ -5,7 +5,6 @@ import {
   BackgroundVariant,
   Controls,
   MarkerType,
-  ReactFlowProvider,
   useNodesState,
   useEdgesState,
   useReactFlow,
@@ -175,9 +174,7 @@ function ReactFlowInspectorInner({
 export default function ReactFlowInspectorV2(props: ReactFlowInspectorV2Props) {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: 400 }}>
-      <ReactFlowProvider>
-        <ReactFlowInspectorInner {...props} />
-      </ReactFlowProvider>
+      <ReactFlowInspectorInner {...props} />
     </div>
   );
 }
