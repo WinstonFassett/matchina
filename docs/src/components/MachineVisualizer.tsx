@@ -14,6 +14,7 @@ import {
   SketchInspector
 } from 'matchina/viz';
 import { useMemo, useState, type ComponentType } from "react";
+import { ReactFlowProvider } from '@xyflow/react';
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
@@ -241,10 +242,12 @@ function renderVisualizer({
     case 'reactflow-v2':
       return (
         <div className={commonClasses}>
-          <HSMReactFlowInspectorV2
-            machine={machine as any}
-            interactive={interactive}
-          />
+          <ReactFlowProvider>
+            <HSMReactFlowInspectorV2
+              machine={machine as any}
+              interactive={interactive}
+            />
+          </ReactFlowProvider>
         </div>
       );
 
