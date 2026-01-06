@@ -12,7 +12,7 @@ export default function CounterExample() {
       machine={machine as any}
       AppView={CounterView}
       showRawState={true}
-      defaultViz="reactflow"
+      defaultViz="reactflow-v2"
       exampleName="counter"
     />
   );
