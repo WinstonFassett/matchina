@@ -89,10 +89,8 @@ export default function DynamicFloatingApp() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        connectionLineComponent={FloatingConnectionLine}
         fitView
       >
         <Controls />

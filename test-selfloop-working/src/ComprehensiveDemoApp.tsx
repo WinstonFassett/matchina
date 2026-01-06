@@ -129,13 +129,12 @@ function MachineDemo({
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            connectionLineComponent={FloatingConnectionLine}
             fitView
             minZoom={0.5}
             maxZoom={2}
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           >
             <Controls />
             <Background />
