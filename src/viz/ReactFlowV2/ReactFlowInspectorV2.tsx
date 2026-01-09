@@ -103,21 +103,29 @@ function ReactFlowInspectorInner({
     });
   }, [initialEdges, value, previousState, interactive]);
 
-  // Initialize with processed nodes, but only update highlighting without recreating
+  // Initialize with processed nodes
   const [nodes, setNodes, onNodesChange] = useNodesState(processedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(processedEdges);
 
+  // Update nodes when initial nodes change (layout changes)
+  useEffect(() => {
+    // Add layout key to force ReactFlow to re-render when positions change
+    const nodesWithKeys = processedNodes.map(node => ({
+      ...node,
+      key: `${node.id}-${node.position.x}-${node.position.y}` // Force re-render on position change
+    }));
+    
+    setNodes(nodesWithKeys);
+  }, [processedNodes, setNodes]);
+
   // Update highlighting without recreating node objects
   useEffect(() => {
-    console.log('🔄 Updating highlighting only:', {
-      nodeCount: nodes.length,
-      activeCount: nodes.filter(n => n.id === value).length
-    });
-    
-    // Update only the data properties, preserve node references
+    // Update only the data properties, preserve positions and references
     setNodes(currentNodes => 
       currentNodes.map(node => ({
         ...node,
+        // CRITICAL: Preserve position from current node (layout changes)
+        position: node.position,
         data: {
           ...node.data,
           isActive: node.id === value,
@@ -125,14 +133,10 @@ function ReactFlowInspectorInner({
         },
       }))
     );
-  }, [value, previousState, setNodes, nodes.length]);
+  }, [value, previousState, setNodes]);
 
   // Update edges when processed edges change
   useEffect(() => {
-    console.log('🔄 Updating ReactFlow edges:', {
-      edgeCount: processedEdges.length,
-      activeEdges: processedEdges.filter(e => e.data.isActive).length
-    });
     setEdges(processedEdges);
   }, [processedEdges, setEdges]);
 
@@ -145,13 +149,8 @@ function ReactFlowInspectorInner({
       .join('|');
   }, [processedNodes]);
 
+  // Fit view on first render and when layout changes (not when highlighting changes)
   useEffect(() => {
-    console.log('🎯 Fit view triggered:', {
-      nodeCount: processedNodes.length,
-      layoutKey: layoutKey.substring(0, 50) + '...',
-      isFirstRender: isFirstRender.current
-    });
-    
     if (processedNodes.length > 0) {
       // Small delay to allow layout to settle
       const duration = isFirstRender.current ? 500 : 300;

@@ -51,13 +51,11 @@ async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, set
 
   // Step 1: Identify compound states (states that have children)
   const compoundStates = new Set<string>();
-  console.log('🔍 Hierarchy entries:', Array.from(shape.hierarchy.entries()));
   for (const [_childKey, parentKey] of shape.hierarchy.entries()) {
     if (parentKey) {
       compoundStates.add(parentKey);
     }
   }
-  console.log('🔍 Compound states:', Array.from(compoundStates));
 
   // Step 2: Create nodes with hierarchy information
   for (const [fullKey, stateNode] of shape.states.entries()) {
@@ -153,6 +151,7 @@ async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, set
     });
   }
   
+    
   return {
     nodes: validNodes as Node<NodeData>[],
     edges: validEdges as Edge<EdgeData>[],
@@ -195,16 +194,6 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
   // Track machine shape changes (not state changes)
   useEffect(() => {
     const shape = machine.shape?.getState();
-    console.log('🔍 Shape change detected:', {
-      shapeRef: shape,
-      shapeKey,
-      hasShape: !!shape,
-      machineShapeRef: machine.shape,
-      machineShapeChanged: machine.shape !== (machine.shape as any)._lastShape
-    });
-    
-    // Store reference for next comparison
-    (machine.shape as any)._lastShape = machine.shape;
     
     if (shape) {
       // Create a stable key based on the shape's structure (states and transitions)
@@ -212,14 +201,6 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
       const stateIds = Array.from(shape.states.keys()).sort().join(',');
       const transitionIds = Array.from(shape.transitions.keys()).sort().join(',');
       const newKey = `${stateIds}|${transitionIds}`;
-      
-      console.log('🔍 Shape key comparison:', {
-        oldKey: shapeKey,
-        newKey,
-        keyChanged: newKey !== shapeKey,
-        stateKeys: Array.from(shape.states.keys()),
-        transitionKeys: Array.from(shape.transitions.keys())
-      });
       
       if (newKey !== shapeKey) {
         setShapeKey(newKey);
@@ -235,13 +216,16 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
   const [graphData, setGraphData] = useState<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } | null>(null);
   const layoutRef = useRef<{ startTime: number }>({ startTime: 0 });
   
+  // Create a layout key that changes when layout parameters change
+  const layoutKey = useMemo(() => {
+    const shape = machine.shape?.getState();
+    if (!shape) return '';
+    const stateIds = Array.from(shape.states.keys()).sort().join(',');
+    const settingsStr = JSON.stringify(layoutSettings);
+    return `${stateIds}-${layoutType}-${settingsStr}`;
+  }, [machine.shape, layoutType, layoutSettings]);
+  
   useEffect(() => {
-    console.log('🔧 Layout effect triggered:', {
-      hasMachineShape: !!machineShape,
-      layoutType,
-      layoutSettingsChanged: !!layoutSettings
-    });
-    
     if (!machineShape) {
       setGraphData(null);
       return;
@@ -254,12 +238,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     shapeToReactFlow(machineShape, layoutType, layoutSettings)
       .then(result => {
         if (!cancelled && startTime === layoutRef.current.startTime) {
-          console.log('✅ Layout calculation completed - applying result');
           setGraphData(result);
-        } else if (cancelled) {
-          console.log('🚫 Layout cancelled');
-        } else {
-          console.log('🚫 Layout result ignored (newer layout started)');
         }
       })
       .catch(error => {
@@ -272,7 +251,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     return () => {
       cancelled = true;
     };
-  }, [machineShape, layoutType, layoutSettings]);
+  }, [layoutKey, machineShape, layoutType, layoutSettings]);
 
   // Step 3: Subscribe to state changes for highlighting
   const deepestMachine = (() => {
