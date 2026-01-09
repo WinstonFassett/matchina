@@ -9,7 +9,8 @@ import { z } from 'zod';
 // Layout types that actually work and are useful
 export enum LayoutType {
   GRID = 'grid',               // Simple grid (current baseline)
-  HIERARCHICAL = 'hierarchical',  // Top-down state machine layout
+  HIERARCHICAL = 'hierarchical',  // Sugiyama layered layout (best for state machines)
+  TREE = 'tree',                   // Tree layout (mrtree algorithm)
   FORCE_DIRECTED = 'force',        // Physics-based clustering
   CIRCULAR = 'circular',           // Radial arrangement
   ORGANIC = 'organic'              // Natural clustering
@@ -63,13 +64,23 @@ export const OrganicLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
   organicity: z.number().min(0).max(1).default(0.8),
 });
 
+// Export inferred types
+export type GridLayoutSettings = z.infer<typeof GridLayoutSettingsSchema>;
+export type HierarchicalLayoutSettings = z.infer<typeof HierarchicalLayoutSettingsSchema>;
+export type ForceDirectedLayoutSettings = z.infer<typeof ForceDirectedLayoutSettingsSchema>;
+export type CircularLayoutSettings = z.infer<typeof CircularLayoutSettingsSchema>;
+export type OrganicLayoutSettings = z.infer<typeof OrganicLayoutSettingsSchema>;
+
+// Base layout settings for type constraints
+export type BaseLayoutSettings = z.infer<typeof BaseLayoutSettingsSchema>;
+
 // Union type for all layout settings
-export type LayoutSettings = 
-  | z.infer<typeof GridLayoutSettingsSchema>
-  | z.infer<typeof HierarchicalLayoutSettingsSchema>
-  | z.infer<typeof ForceDirectedLayoutSettingsSchema>
-  | z.infer<typeof CircularLayoutSettingsSchema>
-  | z.infer<typeof OrganicLayoutSettingsSchema>;
+export type LayoutSettings =
+  | GridLayoutSettings
+  | HierarchicalLayoutSettings
+  | ForceDirectedLayoutSettings
+  | CircularLayoutSettings
+  | OrganicLayoutSettings;
 
 // Layout result
 export interface LayoutResult {
@@ -90,27 +101,23 @@ export interface LayoutResult {
   };
 }
 
-// Layout engine interface
-export interface LayoutEngine<T extends LayoutSettings = LayoutSettings> {
+// Layout engine interface - accepts any settings object
+export interface LayoutEngine<T = Record<string, unknown>> {
   readonly type: LayoutType;
   readonly name: string;
   readonly description: string;
-  
-  calculateLayout(
-    nodes: Node[],
-    edges: Edge[],
-    settings: T
-  ): LayoutResult;
-  
+
+  calculateLayout(nodes: Node[], edges: Edge[], settings: T): LayoutResult | Promise<LayoutResult>;
+
   getDefaultSettings(): T;
-  
+
   validateSettings(settings: Partial<T>): T;
-  
+
   getSettingsSchema(): z.AnyZodObject;
 }
 
-// Preset system
-export interface LayoutPreset<T extends LayoutSettings = LayoutSettings> {
+// Preset system - uses any for settings since presets are layout-type specific
+export interface LayoutPreset<T = Record<string, unknown>> {
   id: string;
   name: string;
   description: string;
@@ -140,35 +147,38 @@ export interface MachineAnalysis {
 // Layout manager interface
 export interface LayoutManager {
   // Engine management
-  registerEngine<T extends LayoutSettings>(engine: LayoutEngine<T>): void;
+  registerEngine(engine: LayoutEngine): void;
   getEngine(type: LayoutType): LayoutEngine | undefined;
   getAvailableEngines(): LayoutEngine[];
-  
+
   // Layout calculation
-  calculateLayout<T extends LayoutSettings>(
+  calculateLayout(
     type: LayoutType,
     nodes: Node[],
     edges: Edge[],
-    settings: Partial<T>
-  ): LayoutResult;
-  
+    settings: Record<string, unknown>
+  ): LayoutResult | Promise<LayoutResult>;
+
   // Preset management
-  registerPreset<T extends LayoutSettings>(preset: LayoutPreset<T>): void;
+  registerPreset(preset: LayoutPreset): void;
   getPresets(type?: LayoutType): LayoutPreset[];
   getPreset(id: string): LayoutPreset | undefined;
 }
 
+// Generic settings type for UI components - accepts any layout settings
+export type AnyLayoutSettings = Record<string, unknown>;
+
 // UI Control types
 export interface LayoutControlsState {
   layoutType: LayoutType;
-  settings: LayoutSettings;
+  settings: AnyLayoutSettings;
   selectedPreset: string | null;
   isPanelOpen: boolean;
 }
 
 export interface LayoutControlsActions {
   setLayoutType: (type: LayoutType) => void;
-  updateSettings: (settings: Partial<LayoutSettings>) => void;
+  updateSettings: (settings: Partial<AnyLayoutSettings>) => void;
   applyPreset: (presetId: string) => void;
   resetToDefault: () => void;
   saveAsPreset: (name: string, description: string) => void;

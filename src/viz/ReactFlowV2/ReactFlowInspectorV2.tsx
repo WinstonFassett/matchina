@@ -17,15 +17,16 @@ import '@xyflow/react/dist/style.css';
 
 import FloatingEdge from './FloatingEdge';
 import SimpleNode from './SimpleNode';
+import GroupNode from './GroupNode';
 
-interface NodeData {
+interface NodeData extends Record<string, unknown> {
   label: string;
   isActive?: boolean;
   isPrevious?: boolean;
   isCompound?: boolean;
 }
 
-interface EdgeData {
+interface EdgeData extends Record<string, unknown> {
   event?: string;
   isClickable?: boolean;
   isActive?: boolean;
@@ -42,6 +43,7 @@ export interface ReactFlowInspectorV2Props {
 
 const nodeTypes: NodeTypes = {
   simple: SimpleNode as any,
+  group: GroupNode as any,
 };
 
 const edgeTypes: EdgeTypes = {
@@ -113,20 +115,21 @@ function ReactFlowInspectorInner({
     setEdges(processedEdges);
   }, [processedEdges, setEdges]);
 
-  // Fit view on first render
+  // Fit view on first render and when layout changes
   useEffect(() => {
-    if (isFirstRender.current && nodes.length > 0) {
-      isFirstRender.current = false;
+    if (processedNodes.length > 0) {
       // Small delay to allow layout to settle
+      const duration = isFirstRender.current ? 500 : 300;
+      isFirstRender.current = false;
       setTimeout(() => {
-        fitView({ padding: 0.2, duration: 500 });
+        fitView({ padding: 0.2, duration });
       }, 100);
     }
-  }, [nodes.length, fitView]);
+  }, [processedNodes, fitView]);
 
   // Handle edge click for triggering transitions
   const handleEdgeClick = useCallback(
-    (_event: React.MouseEvent, edge: Edge<EdgeData>) => {
+    (_event: React.MouseEvent, edge: Edge<EdgeData & Record<string, unknown>>) => {
       if (!dispatch) return;
       const eventType = edge.data?.event || (edge.label as string);
       const isClickable = edge.data?.isClickable;

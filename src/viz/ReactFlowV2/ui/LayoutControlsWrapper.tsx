@@ -4,15 +4,15 @@
  */
 
 import React from 'react';
-import type { LayoutSettings, LayoutManager } from '../layout/types';
+import type { AnyLayoutSettings, LayoutManager } from '../layout/types';
 import { LayoutType } from '../layout/types';
 import { LayoutControls } from './LayoutControls';
 
 interface LayoutControlsWrapperProps {
   layoutManager: LayoutManager;
-  onLayoutChange: (type: LayoutType, settings: LayoutSettings) => void;
+  onLayoutChange: (type: LayoutType, settings: AnyLayoutSettings) => void;
   currentLayoutType: LayoutType;
-  currentSettings: LayoutSettings;
+  currentSettings: AnyLayoutSettings;
 }
 
 export function LayoutControlsWrapper({

@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { type NodeProps, Handle, Position } from '@xyflow/react';
 
-interface SimpleNodeData {
+interface SimpleNodeData extends Record<string, unknown> {
   label: string;
   isActive?: boolean;
   isPrevious?: boolean;
@@ -14,7 +14,7 @@ interface SimpleNodeData {
  * ReactFlow requires handles on nodes even when using floating edges.
  * These handles are invisible but necessary to prevent console errors.
  */
-const SimpleNode = ({ data }: NodeProps<SimpleNodeData>) => {
+const SimpleNode = ({ data }: NodeProps<any>) => {
   const getNodeStyle = () => {
     if (data?.isActive) {
       return {
@@ -67,8 +67,6 @@ const SimpleNode = ({ data }: NodeProps<SimpleNodeData>) => {
           padding: '10px 20px',
           border: `2px solid ${nodeStyle.borderColor}`,
           borderRadius: 8,
-          background: nodeStyle.background,
-          color: nodeStyle.color,
           minWidth: 100,
           textAlign: 'center',
           fontSize: 14,

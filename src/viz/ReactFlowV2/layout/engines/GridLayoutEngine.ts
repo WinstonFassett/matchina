@@ -18,6 +18,7 @@ const GridLayoutSettings = z.object({
   animationDuration: z.number().min(0).max(2000).default(300),
   compactness: z.number().min(0).max(1).default(0.7),
   cols: z.number().min(1).max(20).optional(),
+  columns: z.number().min(1).max(20).optional(), // Alias for cols (from UI)
   alignment: z.enum(['start', 'center', 'end']).default('center'),
   direction: z.enum(['row', 'column']).default('row'),
 });
@@ -41,7 +42,8 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
     
     // Calculate grid dimensions
     const nodeCount = nodes.length;
-    const cols = validatedSettings.cols || this.calculateOptimalCols(nodeCount);
+    // Support both 'cols' and 'columns' (UI sends 'columns')
+    const cols = validatedSettings.cols || validatedSettings.columns || this.calculateOptimalCols(nodeCount);
     const rows = Math.ceil(nodeCount / cols);
     
     // Apply compactness to spacing

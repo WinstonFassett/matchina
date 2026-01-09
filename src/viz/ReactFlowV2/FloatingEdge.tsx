@@ -10,7 +10,7 @@ import {
 } from '@xyflow/react';
 import { getEdgeParams } from './floatingUtils';
 
-interface FloatingEdgeData {
+interface FloatingEdgeData extends Record<string, unknown> {
   event?: string;
   isClickable?: boolean;
   isActive?: boolean;
@@ -32,12 +32,29 @@ export default function FloatingEdge({
   label,
   style,
   data,
-}: EdgeProps<FloatingEdgeData>) {
-  const sourceNode = useInternalNode(source);
-  const targetNode = useInternalNode(target);
+}: EdgeProps<any>) {
+  const sourceNode = useInternalNode(source as string);
+  const targetNode = useInternalNode(target as string);
 
   if (!sourceNode || !targetNode) {
+    console.warn('🚨 FloatingEdge: Missing nodes', { id, source, target, sourceNode: !!sourceNode, targetNode: !!targetNode });
     return null;
+  }
+
+  // Debug logging for node positions
+  const sourcePositionAbsolute = sourceNode.internals.positionAbsolute;
+  const targetPositionAbsolute = targetNode.internals.positionAbsolute;
+  
+  if (Number.isNaN(sourcePositionAbsolute.x) || Number.isNaN(sourcePositionAbsolute.y) || Number.isNaN(targetPositionAbsolute.x) || Number.isNaN(targetPositionAbsolute.y)) {
+    console.error('🚨 FloatingEdge NaN coordinates:', {
+      id,
+      source,
+      target,
+      sourcePositionAbsolute,
+      targetPositionAbsolute,
+      sourceNodeMeasured: sourceNode.measured,
+      targetNodeMeasured: targetNode.measured
+    });
   }
 
   // Get base edge parameters - with fallback for self-loops
@@ -46,8 +63,11 @@ export default function FloatingEdge({
   if (source === target) {
     // Self-loop fallback: use node center coordinates
     const measured = sourceNode.measured || { width: 100, height: 40 };
-    sx = sourceNode.internals.positionAbsolute.x + measured.width / 2;
-    sy = sourceNode.internals.positionAbsolute.y + measured.height / 2;
+    const posX = sourceNode.internals.positionAbsolute.x;
+    const posY = sourceNode.internals.positionAbsolute.y;
+    // Guard against NaN positions
+    sx = (Number.isNaN(posX) ? 0 : posX) + ((measured.width || 100) / 2);
+    sy = (Number.isNaN(posY) ? 0 : posY) + ((measured.height || 40) / 2);
     tx = sx;
     ty = sy;
     sourcePos = 'right';
@@ -100,8 +120,8 @@ export default function FloatingEdge({
     });
 
     const measured = sourceNode.measured || { width: 100, height: 40 };
-    const nodeWidth = measured.width;
-    const nodeHeight = measured.height;
+    const nodeWidth = measured.width!;
+    const nodeHeight = measured.height!;
     const halfWidth = nodeWidth / 2;
     const halfHeight = nodeHeight / 2;
 
@@ -144,6 +164,13 @@ export default function FloatingEdge({
       const dy = ty - sy;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
+      // Guard against division by zero when nodes are at same position
+      // This can happen during initial layout before ELK positions nodes
+      if (distance === 0) {
+        edgePath = path;
+        labelX = sx;
+        labelY = sy;
+      } else {
       // Calculate perpendicular direction (normalized)
       const perpX = -dy / distance;
       const perpY = dx / distance;
@@ -195,6 +222,7 @@ export default function FloatingEdge({
       edgePath = `M ${sx} ${sy} Q ${midX} ${midY} ${tx} ${ty}`;
       labelX = midX;
       labelY = midY;
+      }
     } else {
       edgePath = path;
       labelX = (sx + tx) / 2;
@@ -204,10 +232,10 @@ export default function FloatingEdge({
 
   // Edge styling based on active state
   const isActive = data?.isActive;
-  const edgeStyle = {
-    ...style,
-    stroke: isActive ? '#3b82f6' : (style?.stroke || '#64748b'),
-    strokeWidth: isActive ? 2 : (style?.strokeWidth || 1.5),
+  const edgeStyle: React.CSSProperties = {
+    ...(style as React.CSSProperties || {}),
+    stroke: isActive ? '#3b82f6' : ((style as React.CSSProperties)?.stroke || '#64748b'),
+    strokeWidth: isActive ? 2 : ((style as React.CSSProperties)?.strokeWidth || 1.5),
   };
 
   return (
@@ -219,14 +247,20 @@ export default function FloatingEdge({
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              background: isActive ? '#dbeafe' : '#fff',
               padding: '2px 6px',
               borderRadius: 4,
               fontSize: 10,
               fontWeight: 600,
               pointerEvents: 'all',
-              border: isActive ? '1px solid #3b82f6' : '1px solid #e2e8f0',
               cursor: data?.isClickable ? 'pointer' : 'default',
+              // Active edges use link-like blue styling, clickable edges show hover effect
+              background: isActive ? 'rgb(30 58 138)' : 'rgb(31 41 55)',
+              border: isActive ? '2px solid rgb(59 130 246)' : '1px solid rgb(75 85 99)',
+              color: isActive ? 'rgb(147 197 253)' : 'rgb(229 231 235)',
+              // Ensure labels are above edge lines
+              zIndex: isActive ? 1000 : 100,
+              // Make clickable labels more prominent
+              boxShadow: data?.isClickable ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
             }}
             className="nodrag nopan"
           >

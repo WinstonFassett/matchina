@@ -6,3 +6,4 @@ export { FloatingPanel } from './FloatingPanel';
 export { LayoutControls } from './LayoutControls';
 export { LayoutControlsWrapper } from './LayoutControlsWrapper';
 export { SimpleLayoutControls } from './SimpleLayoutControls';
+export { HSMLayoutControls } from './HSMLayoutControls';

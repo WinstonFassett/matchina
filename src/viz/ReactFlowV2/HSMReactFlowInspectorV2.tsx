@@ -5,13 +5,12 @@ import type { StateNode, MachineShape } from '../../hsm/shape-types';
 import type { Node, Edge } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
 import ReactFlowInspectorV2 from './ReactFlowInspectorV2';
-import { 
-  layoutManager, 
-  LayoutType, 
-  LayoutSettings,
-  MachineAnalysis 
+import {
+  layoutManager,
+  LayoutType,
+  type AnyLayoutSettings,
 } from './layout';
-import { SimpleLayoutControls } from './ui';
+import { HSMLayoutControls } from './ui/HSMLayoutControls';
 
 interface HSMReactFlowInspectorV2Props {
   machine: {
@@ -39,29 +38,59 @@ interface EdgeData extends Record<string, unknown> {
 
 /**
  * Convert machine shape to ReactFlow nodes and edges using layout system
+ * 
+ * Key hierarchy handling:
+ * 1. Identify compound states (states that have children via shape.hierarchy)
+ * 2. Mark compound states with type: 'group' for visual container rendering
+ * 3. Set parentId + extent: 'parent' on child nodes to constrain them inside parents
  */
-function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, settings: LayoutSettings): { nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } {
+async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, settings: AnyLayoutSettings): Promise<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] }> {
   const nodes: Node<NodeData>[] = [];
   const edges: Edge<EdgeData>[] = [];
+  const nodeIds = new Set<string>();
 
-  // Extract state names for layout
-  const stateNames: string[] = [];
-  shape.states.forEach((_stateNode, fullKey) => {
-    stateNames.push(fullKey);
-  });
+  // Step 1: Identify compound states (states that have children)
+  const compoundStates = new Set<string>();
+  console.log('🔍 Hierarchy entries:', Array.from(shape.hierarchy.entries()));
+  for (const [_childKey, parentKey] of shape.hierarchy.entries()) {
+    if (parentKey) {
+      compoundStates.add(parentKey);
+    }
+  }
+  console.log('🔍 Compound states:', Array.from(compoundStates));
 
-  // Create basic nodes (layout will be applied by layout engine)
-  stateNames.forEach((stateName) => {
-    // Convert dots to underscores for node IDs (ReactFlow compatibility)
-    const nodeId = stateName.replace(/\./g, '_');
+  // Step 2: Create nodes with hierarchy information
+  for (const [fullKey, stateNode] of shape.states.entries()) {
+    const parentKey = shape.hierarchy.get(fullKey);
+    const isCompound = compoundStates.has(fullKey);
 
-    nodes.push({
+    // Convert dots to underscores for ReactFlow compatibility
+    const nodeId = fullKey.replace(/\./g, '_');
+    const parentNodeId = parentKey?.replace(/\./g, '_');
+
+    // Use 'group' type for compound states, 'simple' for leaf states
+    const nodeType = isCompound ? 'group' : 'simple';
+
+    const node: Node<NodeData> = {
       id: nodeId,
-      type: 'simple',
-      data: { label: stateName },
+      type: nodeType,
+      data: {
+        label: stateNode.key, // Display leaf name only
+        stateKey: fullKey,    // Store full key for matching
+        isCompound,
+      },
       position: { x: 0, y: 0 }, // Layout engine will position
-    });
-  });
+    };
+
+    // Assign parent relationship for child nodes
+    if (parentNodeId) {
+      (node as any).parentId = parentNodeId;
+      (node as any).extent = 'parent'; // Constrain child inside parent bounds
+    }
+
+    nodes.push(node);
+    nodeIds.add(nodeId);
+  }
 
   // Create edges from transitions
   shape.transitions.forEach((transitions, fromState) => {
@@ -74,7 +103,17 @@ function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, settings:
 
       // Convert dots to underscores for edge source/target
       const sourceId = fromState.replace(/\./g, '_');
-      const targetId = targetState.replace(/\./g, '_');
+      let targetId = targetState.replace(/\./g, '_');
+      
+      // For flattened mode, target might not have parent prefix
+      // Try to find the full target ID if the simple one doesn't exist
+      if (!nodes.find(n => n.id === targetId)) {
+        // Look for a node that ends with the target name
+        const fullTargetNode = nodes.find(n => n.id.endsWith(`_${targetId}`));
+        if (fullTargetNode) {
+          targetId = fullTargetNode.id;
+        }
+      }
 
       edges.push({
         id: `${fromState}-${toState}-${event}`,
@@ -90,12 +129,33 @@ function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, settings:
     });
   });
 
-  // Apply layout
-  const layoutResult = layoutManager.calculateLayout(layoutType, nodes, edges, settings as any);
+  // Apply layout - handle async ELK engines
+  const layoutResult = await layoutManager.calculateLayout(layoutType, nodes, edges, settings as any);
+  
+  // Safety check: Filter out any nodes with NaN positions
+  const validNodes = layoutResult.nodes.filter(node => 
+    Number.isFinite(node.position.x) && Number.isFinite(node.position.y)
+  );
+  
+  // Safety check: Filter out any edges that reference invalid nodes
+  const validNodeIds = new Set(validNodes.map(n => n.id));
+  const validEdges = layoutResult.edges.filter(edge => 
+    validNodeIds.has(edge.source) && validNodeIds.has(edge.target)
+  );
+  
+  // Log if we filtered anything
+  if (validNodes.length !== layoutResult.nodes.length || validEdges.length !== layoutResult.edges.length) {
+    console.warn('🚨 Filtered invalid nodes/edges:', {
+      originalNodes: layoutResult.nodes.length,
+      validNodes: validNodes.length,
+      originalEdges: layoutResult.edges.length,
+      validEdges: validEdges.length
+    });
+  }
   
   return {
-    nodes: layoutResult.nodes as Node<NodeData>[],
-    edges: layoutResult.edges as Edge<EdgeData>[],
+    nodes: validNodes as Node<NodeData>[],
+    edges: validEdges as Edge<EdgeData>[],
   };
 }
 
@@ -114,26 +174,49 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
 }) => {
   // Layout state
   const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.GRID);
-  const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>(() => {
+  const [layoutSettings, setLayoutSettings] = useState<AnyLayoutSettings>(() => {
     const engine = layoutManager.getEngine(LayoutType.GRID);
-    return engine ? engine.getDefaultSettings() : {
+    return engine?.getDefaultSettings() ?? {
       nodeSpacing: 120,
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
       compactness: 0.7,
-      alignment: 'center' as const,
-      direction: 'row' as const,
+      alignment: 'center',
+      direction: 'row',
     };
   });
 
   // Step 1: Extract shape from machine
   const shape = useMemo(() => machine.shape?.getState(), [machine]);
 
-  // Step 2: Convert to ReactFlow format with layout
-  const graphData = useMemo(() => {
-    if (!shape) return null;
-    return shapeToReactFlow(shape, layoutType, layoutSettings);
+  // Step 2: Convert to ReactFlow format with layout (async)
+  const [graphData, setGraphData] = useState<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } | null>(null);
+  
+  useEffect(() => {
+    if (!shape) {
+      setGraphData(null);
+      return;
+    }
+    
+    let cancelled = false;
+    
+    shapeToReactFlow(shape, layoutType, layoutSettings)
+      .then(result => {
+        if (!cancelled) {
+          setGraphData(result);
+        }
+      })
+      .catch(error => {
+        console.error('Layout calculation failed:', error);
+        if (!cancelled) {
+          setGraphData(null);
+        }
+      });
+      
+    return () => {
+      cancelled = true;
+    };
   }, [shape, layoutType, layoutSettings]);
 
   // Step 3: Subscribe to state changes for highlighting
@@ -192,18 +275,18 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     [machine]
   );
 
-  // Step 6: Initialize with simple grid layout (no auto-selection)
+  // Step 6: Initialize with hierarchical layout for HSM (handles parent-child grouping)
   useEffect(() => {
-    // Just use grid-simple preset - no analysis
-    const simplePreset = layoutManager.getPreset('grid-simple');
-    if (simplePreset) {
-      setLayoutType(simplePreset.layoutType);
-      setLayoutSettings(simplePreset.settings);
+    // Use hierarchical layout by default for HSM - properly handles group nodes
+    const hsmPreset = layoutManager.getPreset('hierarchical-topdown');
+    if (hsmPreset) {
+      setLayoutType(hsmPreset.layoutType);
+      setLayoutSettings(hsmPreset.settings);
     }
   }, []);
 
   // Handle layout changes
-  const handleLayoutChange = useCallback((type: LayoutType, settings: LayoutSettings) => {
+  const handleLayoutChange = useCallback((type: LayoutType, settings: AnyLayoutSettings) => {
     setLayoutType(type);
     setLayoutSettings(settings);
   }, []);
@@ -216,7 +299,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     <div className="relative w-full h-full">
       {/* Layout Controls - positioned consistently */}
       <div className="absolute top-4 right-4 z-10" data-testid="layout-controls-wrapper" style={{ top: '16px', right: '16px' }}>
-        <SimpleLayoutControls
+        <HSMLayoutControls
           layoutManager={layoutManager}
           onLayoutChange={handleLayoutChange}
           currentLayoutType={layoutType}

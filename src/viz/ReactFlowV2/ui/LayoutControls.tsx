@@ -4,20 +4,16 @@
  */
 
 import React, { useRef, useState } from 'react';
-import type { 
-  LayoutSettings, 
-  LayoutPreset,
-  LayoutManager 
-} from '../layout/types';
+import type { LayoutPreset, LayoutManager, AnyLayoutSettings } from '../layout/types';
 import { LayoutType } from '../layout/types';
 import { layoutManager } from '../layout/LayoutManager';
 import { FloatingPanel } from './FloatingPanel';
 
 interface LayoutControlsProps {
   layoutManager: LayoutManager;
-  onLayoutChange: (type: LayoutType, settings: LayoutSettings) => void;
+  onLayoutChange: (type: LayoutType, settings: AnyLayoutSettings) => void;
   currentLayoutType: LayoutType;
-  currentSettings: LayoutSettings;
+  currentSettings: AnyLayoutSettings;
 }
 
 export function LayoutControls({
@@ -28,7 +24,7 @@ export function LayoutControls({
 }: LayoutControlsProps) {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  
+
   const availableEngines = layoutManager.getAvailableEngines();
   const availablePresets = layoutManager.getPresets();
   const currentEngine = layoutManager.getEngine(currentLayoutType);
@@ -45,9 +41,21 @@ export function LayoutControls({
     onLayoutChange(preset.layoutType, preset.settings);
   };
 
-  const handleSettingChange = (key: keyof LayoutSettings, value: any) => {
+  const handleSettingChange = (key: string, value: unknown) => {
     const updatedSettings = { ...currentSettings, [key]: value };
     onLayoutChange(currentLayoutType, updatedSettings);
+  };
+
+  // Helper to safely get numeric settings
+  const getNumeric = (key: string, defaultValue: number): number => {
+    const value = currentSettings[key];
+    return typeof value === 'number' ? value : defaultValue;
+  };
+
+  // Helper to safely get string settings
+  const getString = (key: string, defaultValue: string): string => {
+    const value = currentSettings[key];
+    return typeof value === 'string' ? value : defaultValue;
   };
 
   const handleReset = () => {
@@ -158,13 +166,13 @@ export function LayoutControls({
               {/* Universal Settings */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Node Spacing: {currentSettings.nodeSpacing}px
+                  Node Spacing: {getNumeric('nodeSpacing', 120)}px
                 </label>
                 <input
                   type="range"
                   min="20"
                   max="500"
-                  value={currentSettings.nodeSpacing}
+                  value={getNumeric('nodeSpacing', 120)}
                   onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
                   className="w-full"
                 />
@@ -172,13 +180,13 @@ export function LayoutControls({
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Edge Spacing: {currentSettings.edgeSpacing}px
+                  Edge Spacing: {getNumeric('edgeSpacing', 20)}px
                 </label>
                 <input
                   type="range"
                   min="10"
                   max="100"
-                  value={currentSettings.edgeSpacing}
+                  value={getNumeric('edgeSpacing', 20)}
                   onChange={(e) => handleSettingChange('edgeSpacing', Number(e.target.value))}
                   className="w-full"
                 />
@@ -186,14 +194,14 @@ export function LayoutControls({
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Compactness: {Math.round(currentSettings.compactness * 100)}%
+                  Compactness: {Math.round(getNumeric('compactness', 0.7) * 100)}%
                 </label>
                 <input
                   type="range"
                   min="0"
                   max="1"
                   step="0.1"
-                  value={currentSettings.compactness}
+                  value={getNumeric('compactness', 0.7)}
                   onChange={(e) => handleSettingChange('compactness', Number(e.target.value))}
                   className="w-full"
                 />
@@ -201,13 +209,13 @@ export function LayoutControls({
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  View Padding: {currentSettings.fitPadding}px
+                  View Padding: {getNumeric('fitPadding', 20)}px
                 </label>
                 <input
                   type="range"
                   min="0"
                   max="100"
-                  value={currentSettings.fitPadding}
+                  value={getNumeric('fitPadding', 20)}
                   onChange={(e) => handleSettingChange('fitPadding', Number(e.target.value))}
                   className="w-full"
                 />
@@ -221,7 +229,7 @@ export function LayoutControls({
                       Alignment
                     </label>
                     <select
-                      value={(currentSettings as any).alignment || 'center'}
+                      value={getString('alignment', 'center')}
                       onChange={(e) => handleSettingChange('alignment', e.target.value)}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                     >
@@ -236,7 +244,7 @@ export function LayoutControls({
                       Direction
                     </label>
                     <select
-                      value={(currentSettings as any).direction || 'row'}
+                      value={getString('direction', 'row')}
                       onChange={(e) => handleSettingChange('direction', e.target.value)}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                     >

@@ -11,13 +11,13 @@ function getNodeIntersection(intersectionNode: InternalNode, targetNode: Interna
   const targetPosition = targetNode.internals.positionAbsolute;
   const targetMeasured = targetNode.measured || { width: 100, height: 40 };
 
-  const w = intersectionNodeWidth / 2;
-  const h = intersectionNodeHeight / 2;
+  const w = (intersectionNodeWidth || 100) / 2;
+  const h = (intersectionNodeHeight || 40) / 2;
 
   const x2 = intersectionNodePosition.x + w;
   const y2 = intersectionNodePosition.y + h;
-  const x1 = targetPosition.x + targetMeasured.width / 2;
-  const y1 = targetPosition.y + targetMeasured.height / 2;
+  const x1 = targetPosition.x + ((targetMeasured.width || 100) / 2);
+  const y1 = targetPosition.y + ((targetMeasured.height || 40) / 2);
 
   const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h);
   const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h);
@@ -44,13 +44,13 @@ function getEdgePosition(node: InternalNode, intersectionPoint: { x: number; y: 
   if (px <= nx + 1) {
     return Position.Left;
   }
-  if (px >= nx + measured.width - 1) {
+  if (px >= nx + (measured.width || 100) - 1) {
     return Position.Right;
   }
   if (py <= ny + 1) {
     return Position.Top;
   }
-  if (py >= n.y + measured.height - 1) {
+  if (py >= n.y + (measured.height || 40) - 1) {
     return Position.Bottom;
   }
 
@@ -61,18 +61,44 @@ function getEdgePosition(node: InternalNode, intersectionPoint: { x: number; y: 
  * Returns the parameters needed to create a floating edge between two nodes
  */
 export function getEdgeParams(source: InternalNode, target: InternalNode) {
+  const sourcePos = source.internals.positionAbsolute;
+  const targetPos = target.internals.positionAbsolute;
+  const sourceMeasured = source.measured || { width: 100, height: 40 };
+  const targetMeasured = target.measured || { width: 100, height: 40 };
+  
+  // Guard against NaN positions (can happen before layout runs)
+  if (Number.isNaN(sourcePos.x) || Number.isNaN(sourcePos.y) || 
+      Number.isNaN(targetPos.x) || Number.isNaN(targetPos.y)) {
+    // Return center of nodes as fallback
+    const sx = (sourcePos.x || 0) + (sourceMeasured.width || 100) / 2;
+    const sy = (sourcePos.y || 0) + (sourceMeasured.height || 40) / 2;
+    const tx = (targetPos.x || 0) + (targetMeasured.width || 100) / 2;
+    const ty = (targetPos.y || 0) + (targetMeasured.height || 40) / 2;
+    return { sx: sx || 0, sy: sy || 0, tx: tx || 0, ty: ty || 0, sourcePos: Position.Bottom, targetPos: Position.Top };
+  }
+
   const sourceIntersectionPoint = getNodeIntersection(source, target);
   const targetIntersectionPoint = getNodeIntersection(target, source);
 
-  const sourcePos = getEdgePosition(source, sourceIntersectionPoint);
-  const targetPos = getEdgePosition(target, targetIntersectionPoint);
+  // Guard against NaN from intersection calculation (nodes at same position)
+  if (Number.isNaN(sourceIntersectionPoint.x) || Number.isNaN(sourceIntersectionPoint.y) ||
+      Number.isNaN(targetIntersectionPoint.x) || Number.isNaN(targetIntersectionPoint.y)) {
+    const sx = sourcePos.x + (sourceMeasured.width || 100) / 2;
+    const sy = sourcePos.y + (sourceMeasured.height || 40) / 2;
+    const tx = targetPos.x + (targetMeasured.width || 100) / 2;
+    const ty = targetPos.y + (targetMeasured.height || 40) / 2;
+    return { sx, sy, tx, ty, sourcePos: Position.Bottom, targetPos: Position.Top };
+  }
+
+  const sourceEdgePos = getEdgePosition(source, sourceIntersectionPoint);
+  const targetEdgePos = getEdgePosition(target, targetIntersectionPoint);
 
   return {
     sx: sourceIntersectionPoint.x,
     sy: sourceIntersectionPoint.y,
     tx: targetIntersectionPoint.x,
     ty: targetIntersectionPoint.y,
-    sourcePos,
-    targetPos,
+    sourcePos: sourceEdgePos,
+    targetPos: targetEdgePos,
   };
 }
