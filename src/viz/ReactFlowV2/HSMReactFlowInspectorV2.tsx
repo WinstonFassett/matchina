@@ -187,21 +187,43 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     };
   });
 
-  // Step 1: Extract shape from machine
-  const shape = useMemo(() => machine.shape?.getState(), [machine]);
+  // Step 1: Extract shape structure (nodes/edges) - only when machine shape changes
+  // Use a stable key based on shape structure, not state
+  const [machineShape, setMachineShape] = useState<MachineShape | null>(null);
+  const [shapeKey, setShapeKey] = useState<string>('');
+  
+  // Track machine shape changes (not state changes)
+  useEffect(() => {
+    const shape = machine.shape?.getState();
+    if (shape) {
+      // Create a stable key based on the shape's structure (states and transitions)
+      // This should only change when the actual machine structure changes, not state
+      const stateIds = Array.from(shape.states.keys()).sort().join(',');
+      const transitionIds = Array.from(shape.transitions.keys()).sort().join(',');
+      const newKey = `${stateIds}|${transitionIds}`;
+      
+      if (newKey !== shapeKey) {
+        setShapeKey(newKey);
+        setMachineShape(shape);
+      }
+    } else {
+      setMachineShape(null);
+      setShapeKey('');
+    }
+  }, [machine.shape, shapeKey]);
 
   // Step 2: Convert to ReactFlow format with layout (async)
   const [graphData, setGraphData] = useState<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } | null>(null);
   
   useEffect(() => {
-    if (!shape) {
+    if (!machineShape) {
       setGraphData(null);
       return;
     }
     
     let cancelled = false;
     
-    shapeToReactFlow(shape, layoutType, layoutSettings)
+    shapeToReactFlow(machineShape, layoutType, layoutSettings)
       .then(result => {
         if (!cancelled) {
           setGraphData(result);
@@ -217,7 +239,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     return () => {
       cancelled = true;
     };
-  }, [shape, layoutType, layoutSettings]);
+  }, [machineShape, layoutType, layoutSettings]);
 
   // Step 3: Subscribe to state changes for highlighting
   const deepestMachine = (() => {
