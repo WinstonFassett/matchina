@@ -65,6 +65,7 @@ function ReactFlowInspectorInner({
   const isFirstRender = useRef(true);
 
   // Process nodes with active/previous state highlighting
+  // Use useMemo to avoid recreating nodes unnecessarily
   const processedNodes = useMemo(() => {
     return initialNodes.map((node) => ({
       ...node,
@@ -102,21 +103,55 @@ function ReactFlowInspectorInner({
     });
   }, [initialEdges, value, previousState, interactive]);
 
+  // Initialize with processed nodes, but only update highlighting without recreating
   const [nodes, setNodes, onNodesChange] = useNodesState(processedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(processedEdges);
 
-  // Update nodes when processed nodes change
+  // Update highlighting without recreating node objects
   useEffect(() => {
-    setNodes(processedNodes);
-  }, [processedNodes, setNodes]);
+    console.log('🔄 Updating highlighting only:', {
+      nodeCount: nodes.length,
+      activeCount: nodes.filter(n => n.id === value).length
+    });
+    
+    // Update only the data properties, preserve node references
+    setNodes(currentNodes => 
+      currentNodes.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          isActive: node.id === value,
+          isPrevious: node.id === previousState,
+        },
+      }))
+    );
+  }, [value, previousState, setNodes, nodes.length]);
 
   // Update edges when processed edges change
   useEffect(() => {
+    console.log('🔄 Updating ReactFlow edges:', {
+      edgeCount: processedEdges.length,
+      activeEdges: processedEdges.filter(e => e.data.isActive).length
+    });
     setEdges(processedEdges);
   }, [processedEdges, setEdges]);
 
-  // Fit view on first render and when layout changes
+  // Fit view on first render and when layout changes (not when highlighting changes)
+  // Create a stable key based on node positions, not highlighting state
+  const layoutKey = useMemo(() => {
+    return processedNodes
+      .map(n => `${n.id}:${n.position.x}:${n.position.y}`)
+      .sort()
+      .join('|');
+  }, [processedNodes]);
+
   useEffect(() => {
+    console.log('🎯 Fit view triggered:', {
+      nodeCount: processedNodes.length,
+      layoutKey: layoutKey.substring(0, 50) + '...',
+      isFirstRender: isFirstRender.current
+    });
+    
     if (processedNodes.length > 0) {
       // Small delay to allow layout to settle
       const duration = isFirstRender.current ? 500 : 300;
@@ -125,7 +160,7 @@ function ReactFlowInspectorInner({
         fitView({ padding: 0.2, duration });
       }, 100);
     }
-  }, [processedNodes, fitView]);
+  }, [layoutKey, processedNodes.length, fitView]);
 
   // Handle edge click for triggering transitions
   const handleEdgeClick = useCallback(
@@ -153,8 +188,7 @@ function ReactFlowInspectorInner({
         type: 'floating',
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
       }}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
+      // Remove fitView to prevent auto-fit on node updates
       minZoom={0.1}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}

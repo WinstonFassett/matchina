@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { useMachine } from '../../integrations/react';
 import type { TransitionEvent } from '../../state-machine';
 import type { StateNode, MachineShape } from '../../hsm/shape-types';
@@ -195,12 +195,31 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
   // Track machine shape changes (not state changes)
   useEffect(() => {
     const shape = machine.shape?.getState();
+    console.log('🔍 Shape change detected:', {
+      shapeRef: shape,
+      shapeKey,
+      hasShape: !!shape,
+      machineShapeRef: machine.shape,
+      machineShapeChanged: machine.shape !== (machine.shape as any)._lastShape
+    });
+    
+    // Store reference for next comparison
+    (machine.shape as any)._lastShape = machine.shape;
+    
     if (shape) {
       // Create a stable key based on the shape's structure (states and transitions)
       // This should only change when the actual machine structure changes, not state
       const stateIds = Array.from(shape.states.keys()).sort().join(',');
       const transitionIds = Array.from(shape.transitions.keys()).sort().join(',');
       const newKey = `${stateIds}|${transitionIds}`;
+      
+      console.log('🔍 Shape key comparison:', {
+        oldKey: shapeKey,
+        newKey,
+        keyChanged: newKey !== shapeKey,
+        stateKeys: Array.from(shape.states.keys()),
+        transitionKeys: Array.from(shape.transitions.keys())
+      });
       
       if (newKey !== shapeKey) {
         setShapeKey(newKey);
@@ -214,24 +233,38 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
 
   // Step 2: Convert to ReactFlow format with layout (async)
   const [graphData, setGraphData] = useState<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } | null>(null);
+  const layoutRef = useRef<{ startTime: number }>({ startTime: 0 });
   
   useEffect(() => {
+    console.log('🔧 Layout effect triggered:', {
+      hasMachineShape: !!machineShape,
+      layoutType,
+      layoutSettingsChanged: !!layoutSettings
+    });
+    
     if (!machineShape) {
       setGraphData(null);
       return;
     }
     
     let cancelled = false;
+    const startTime = Date.now();
+    layoutRef.current.startTime = startTime;
     
     shapeToReactFlow(machineShape, layoutType, layoutSettings)
       .then(result => {
-        if (!cancelled) {
+        if (!cancelled && startTime === layoutRef.current.startTime) {
+          console.log('✅ Layout calculation completed - applying result');
           setGraphData(result);
+        } else if (cancelled) {
+          console.log('🚫 Layout cancelled');
+        } else {
+          console.log('🚫 Layout result ignored (newer layout started)');
         }
       })
       .catch(error => {
         console.error('Layout calculation failed:', error);
-        if (!cancelled) {
+        if (!cancelled && startTime === layoutRef.current.startTime) {
           setGraphData(null);
         }
       });
