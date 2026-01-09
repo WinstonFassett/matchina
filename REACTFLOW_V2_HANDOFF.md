@@ -1,134 +1,69 @@
-# ReactFlow V2 - Implementation Complete
+todo# ReactFlow V2 - Actual Status
 
-## 🎯 **CURRENT STATUS**
+## 🚨 **THIS IS NOT COMPLETE**
 
-ReactFlow V2 is **fully complete** with all 5 layout engines implemented and integrated.
+## ❌ **WHAT IS BROKEN**
 
-### ✅ **Completed Work**:
-- **Grid Layout Engine** - Simple grid arrangement with spacing, direction, alignment
-- **Hierarchical Layout Engine (ELK)** - Layer-based layout with direction, edge routing
-- **Circular Layout Engine** - Radial arrangement with start angle and direction
-- **Force-Directed Layout Engine** - Physics-based with repulsion, attraction, gravity
-- **Organic Layout Engine** - Natural clustering with connected component detection
-- **FloatingPanel UI** - Sophisticated popover with smart positioning
-- **SimpleLayoutControls** - Complete controls for all 5 layout types
-- **Cross-example Consistency** - All examples use reactflow-v2
-- **Type Safety** - Full TypeScript and Zod validation
+**Hierarchical Layout - FUNDAMENTALLY BROKEN**
+- ELK hierarchical layout produces flat visual result
+- All nodes render in single horizontal line (y: 683.9)
+- No parent-child visual relationships
+- Expected: Working should be parent container with child states inside
+- Actual: All nodes are siblings in flat layout
 
-### 📊 **Completion**: ~95% complete
+**Layout Settings UX - BROKEN**
+- Layout type list fills entire settings box vertically
+- Have to scroll down to get to other settings
+- Should be horizontal radio buttons or dropdown, not vertical list
 
-## 🔄 **OPTIONAL REMAINING WORK**
+**State Changes Reset Layout - BROKEN**
+- Any UI state change causes ReactFlow layout to completely reset
+- Happens every time state changes
 
-### **Performance & Polish** (Low Priority)
-- Add layout calculation caching for large graphs (100+ nodes)
-- Add smooth transitions between layouts
-- Fix minor lint warnings in UI components
+**Layout Engine Confusion - UNCLEAR**
+- V1 had "tree layout" vs V2 "hierarchical" - are these the same?
+- All layouts use ELK but different options available
+- Need to verify V2 layouts are comparable/better than V1
 
-## 📁 **KEY FILES**
+**Missing Testing Infrastructure**
+- No hash routes for direct visualizer/layout configuration
+- Multi-step Playwright process to test different configurations
+- Hard to test all layout types and settings efficiently
 
-### **Layout Engines** (all in `src/viz/ReactFlowV2/layout/engines/`):
-- `GridLayoutEngine.ts` - Simple grid arrangement
-- `ELKLayoutEngine.ts` - Hierarchical layout using ELK.js
-- `CircularLayoutEngine.ts` - Radial arrangement
-- `ForceDirectedLayoutEngine.ts` - Physics-based layout
-- `OrganicLayoutEngine.ts` - Natural clustering
+## 🎯 **DEFINITION OF COMPLETE**
 
-### **Core Architecture**:
-- `src/viz/ReactFlowV2/layout/types.ts` - Core interfaces and types
-- `src/viz/ReactFlowV2/layout/LayoutManager.ts` - Central coordinator (registers all 5 engines)
-- `src/viz/ReactFlowV2/layout/index.ts` - Public exports
+**Feature works in the browser:**
+1. **It functions** - Interactive elements work
+2. **It visually renders** - Hierarchical layout shows parent-child relationships
 
-### **UI Components**:
-- `src/viz/ReactFlowV2/ui/FloatingPanel.tsx` - Smart popover component
-- `src/viz/ReactFlowV2/ui/SimpleLayoutControls.tsx` - Controls for all 5 layout types
-- `src/viz/ReactFlowV2/HSMReactFlowInspectorV2.tsx` - Main visualizer integration
+## 📋 **EVIDENCE REQUIREMENTS**
 
-### **Research**:
-- `src/viz/ReactFlowV2/layout/elk-options-reference.json` - ELK options research
-- `src/viz/ReactFlowV2/layout/working-settings-research.md` - Working settings analysis
+**No claims without visual proof:**
+- Screenshots showing parent states visually contain child states
+- Interactive testing showing clicking transitions works
+- Console logs showing correct behavior
 
-## 🏗️ **ARCHITECTURE PATTERNS**
+## 🎯 **CURRENT STATUS: 20% COMPLETE**
 
-### **Layout Engine Pattern**:
-```typescript
-export class ExampleLayoutEngine implements LayoutEngine<ExampleLayoutSettings> {
-  readonly type = LayoutType.EXAMPLE;
-  readonly name = 'Example Layout';
-  readonly description = 'Description of what this does';
+**What's Done (20%)**: Code infrastructure exists, basic rendering works
+**What's Missing (80%)**: Hierarchical visual rendering (0%), interactive functionality (0%)
 
-  calculateLayout(nodes: Node[], edges: Edge[], settings: ExampleLayoutSettings): LayoutResult {
-    // 1. Validate settings with Zod
-    // 2. Calculate positions
-    // 3. Return LayoutResult
-    return {
-      nodes: positionedNodes,
-      edges: edges, // Edges usually unchanged
-      bounds: { x, y, width, height }
-    };
-  }
+## 📝 **NEXT TASKS**
 
-  getDefaultSettings(): ExampleLayoutSettings {
-    return defaultSettings;
-  }
+**High Priority:**
+1. **Fix ELK hierarchical rendering** - Make parent-child relationships visible
+2. **Fix layout reset on state changes** - Prevent layout from resetting every interaction
+3. **Fix layout settings UX** - Make layout type horizontal radio buttons or dropdown
+4. **Add hash route configuration** - Allow direct URL configuration of visualizer/layout
 
-  validateSettings(settings: unknown): ExampleLayoutSettings {
-    return ExampleLayoutSettings.parse(settings);
-  }
-}
-```
+**Medium Priority:**
+5. **Test all 5 layout types** - Grid, Hierarchical, Circular, Force, Organic
+6. **Compare V2 vs V1 layouts** - Verify V2 is comparable/better for all examples
+7. **Validate layout settings** - Test ranges and visual impact for each layout type
+8. **Test edge interactions** - Prove clicking transitions works without layout reset
 
-### **Settings Pattern**:
-```typescript
-const ExampleLayoutSettings = z.object({
-  // Only include settings that ACTUALLY work
-  workingSetting: z.number().min(10).max(200).default(100),
-  anotherWorkingSetting: z.enum(['option1', 'option2']).default('option1'),
-});
+**Testing Infrastructure:**
+9. **Implement hash route parsing** - Visualizer type, layout type, settings from URL
+10. **Create direct test URLs** - Enable efficient testing without multi-step Playwright
 
-type ExampleLayoutSettings = z.infer<typeof ExampleLayoutSettings>;
-```
-
-### **UI Integration Pattern**:
-```typescript
-// Add to SimpleLayoutControls.tsx
-{/* Example Setting - ACTUALLY WORKS */}
-<div>
-  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-    Example Setting: {currentSettings.exampleSetting}
-  </label>
-  <input
-    type="range"
-    min="10"
-    max="200"
-    value={currentSettings.exampleSetting || 100}
-    onChange={(e) => handleSettingChange('exampleSetting', Number(e.target.value))}
-    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-  />
-</div>
-```
-
-## ✅ **COMPLETED SUCCESS CRITERIA**
-
-### **Layout Engines** ✅
-- [x] Grid, Hierarchical, Circular, Force-Directed, Organic layouts
-- [x] Uses researched ELK options that actually work
-- [x] Integrates seamlessly with existing UI
-- [x] Full type safety and Zod validation
-
-### **UI Controls** ✅
-- [x] Layout type selector (5 options with icons)
-- [x] Layout-specific settings for each engine
-- [x] Smart floating panel with edge-aware positioning
-
-## 🧪 **TESTING**
-
-All layout engines pass TypeScript checks. Tests pass (216 passed).
-
-## 🎉 **IMPLEMENTATION COMPLETE**
-
-The ReactFlow V2 layout system is now fully implemented with:
-
-- **5 Layout Engines**: Grid, Hierarchical (ELK), Circular, Force-Directed, Organic
-- **Complete UI**: Layout type selector + per-engine settings controls
-- **Type Safety**: Full TypeScript + Zod validation
-- **Architecture**: Extensible engine pattern for easy future additions
+**Only when ALL of these work visually should we claim any progress.**
