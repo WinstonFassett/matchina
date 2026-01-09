@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { CheckoutMachine } from "./machine";
-import type { CartData, PaymentData, ShippingData } from "./types";
+import type { PaymentData } from "./types";
 
 function getMissing(fields: Record<string, string>) {
   return Object.entries(fields)
@@ -70,7 +70,7 @@ export function ShippingForm({
       </div>
       <div className="flex space-x-4">
         <button
-          onClick={() => machine.backToCart(cart)}
+          onClick={() => machine.backToCart()}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
         >
           Back to Cart
@@ -78,10 +78,7 @@ export function ShippingForm({
         <button
           onClick={() => {
             if (missingFields.length > 0) return;
-            machine.proceedToPayment({
-              cart,
-              shipping: { address, city, zipCode },
-            });
+            machine.proceedToPayment();
           }}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
           disabled={missingFields.length > 0}
@@ -258,7 +255,7 @@ export function CartForm({
         </div>
       ) : (
         <button
-          onClick={() => machine.proceedToShipping({ cart: { items, total } })}
+          onClick={() => machine.proceedToShipping()}
           className="w-full px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
           disabled={total <= 0}
         >

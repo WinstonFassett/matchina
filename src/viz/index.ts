@@ -3,7 +3,7 @@ export { default as SketchInspector } from './SketchInspector';
 export { HSMReactFlowInspector } from './ReactFlowInspector/HSMReactFlowInspector';
 export { default as ReactFlowInspector } from './ReactFlowInspector/ReactFlowInspector';
 export { HSMForceGraphInspector } from './ForceGraphInspector/HSMForceGraphInspector';
-export { MermaidInspector } from './MermaidInspector';
+export { MermaidInspector, MermaidInspectorWithSettings } from './MermaidInspector';
 export { default as Mermaid } from './Mermaid';
 export { default as ForceGraphInspector } from './ForceGraphInspector';
 export type { InspectorTheme } from './theme';

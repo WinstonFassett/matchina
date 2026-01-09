@@ -9,20 +9,19 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
     if (Math.random() > 0.3) {
       const orderId =
         "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
-      machine.success({ orderId });
+      machine.success();
     } else {
-      machine.failure("Payment failed. Please try again.");
+      machine.failure();
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto rounded-lg border border-current/20 p-6">
       {currentState.match({
-        Cart: () => <CartForm data={storeData} machine={machine} />,
-        Shipping: () => <ShippingForm data={storeData} machine={machine} />,
+        Cart: () => <CartForm machine={machine} />,
+        Shipping: () => <ShippingForm machine={machine} />,
         Payment: () => (
           <PaymentForm
-            data={storeData}
             machine={machine}
             handleAsyncProcessing={handlePlaceOrder}
           />

@@ -1,4 +1,4 @@
-import { MermaidInspector } from "matchina/viz";
+import { MermaidInspectorWithSettings } from "matchina/viz";
 import { eventApi } from "matchina";
 import { useMemo } from "react";
 import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
@@ -19,7 +19,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
     <div style={{ width: "100%", display: "flex", gap: "1em" }}>
       <div style={{ flex: 2 }}>
         <StopwatchView stopwatch={stopwatch} />
-        <MermaidInspector
+        <MermaidInspectorWithSettings
           config={config}
           stateKey={stopwatch.getState().key}
           actions={actions}

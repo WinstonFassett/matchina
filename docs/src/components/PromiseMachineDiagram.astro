@@ -1,5 +1,5 @@
 ---
-import { MermaidInspector } from "matchina/viz";
+import { MermaidInspectorWithSettings } from "matchina/viz";
 import { buildVisualizerTree } from "@code/examples/lib/matchina-machine-to-xstate-definition";
 import { eventApi, createPromiseMachine, delay, type FactoryMachine } from "matchina";
 
@@ -8,4 +8,4 @@ const config = buildVisualizerTree(machine as FactoryMachine<any>)
 const actions = eventApi(machine)
 ---
 
-<MermaidInspector config={config} stateKey={machine.getState().key} client:only="react" actions={actions} />
+<MermaidInspectorWithSettings config={config} stateKey={machine.getState().key} client:only="react" actions={actions} />
