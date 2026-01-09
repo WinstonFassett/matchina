@@ -130,8 +130,11 @@ export function MachineVisualizer({
 
   const vizContainerClasses = [
     'visualizer-container',
-    isSplit ? 'flex-1 h-full' : 'w-full',
+    isSplit ? 'flex-1 h-full' : `w-full`,
   ].filter(Boolean).join(' ');
+  
+  // For stacked layout, ReactFlow needs explicit height on the viz container
+  const vizContainerStyle = !isSplit ? { height: `${resolvedMinVizHeight}px` } : undefined;
 
   const appContainerClasses = [
     'app-container',
@@ -164,7 +167,7 @@ export function MachineVisualizer({
       {/* Main content area */}
       <div className={containerClasses} style={heightStyle}>
         {/* Visualizer */}
-        <div className={vizContainerClasses}>
+        <div className={vizContainerClasses} style={vizContainerStyle}>
           {renderVisualizer({
             type: currentViz,
             machine,

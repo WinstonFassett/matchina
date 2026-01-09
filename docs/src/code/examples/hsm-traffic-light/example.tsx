@@ -49,7 +49,7 @@ export default function TrafficLightComparisonExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="reactflow"
+        defaultViz="reactflow-v2"
         interactive={true}
         layout="split"
         exampleName="hsm-traffic-light"

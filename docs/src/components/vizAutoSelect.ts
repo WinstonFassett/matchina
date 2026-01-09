@@ -97,24 +97,24 @@ export function getPresetConfig(preset: 'simple' | 'hierarchical' | 'complex' | 
 
     case 'hierarchical':
       return {
-        defaultViz: 'reactflow' as VisualizerType,
-        availableViz: ['sketch', 'reactflow', 'mermaid-statechart', 'mermaid-flowchart'] as VisualizerType[],
+        defaultViz: 'reactflow-v2' as VisualizerType,
+        availableViz: ['reactflow', 'reactflow-v2', 'sketch', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart'] as VisualizerType[],
         layout: 'split' as const,
         showPicker: true,
       };
 
     case 'complex':
       return {
-        defaultViz: 'reactflow' as VisualizerType,
-        availableViz: ['reactflow', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart', 'sketch'] as VisualizerType[],
+        defaultViz: 'reactflow-v2' as VisualizerType,
+        availableViz: ['reactflow', 'reactflow-v2', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart', 'sketch'] as VisualizerType[],
         layout: 'split' as const,
         showPicker: true,
       };
 
     case 'minimal':
       return {
-        defaultViz: 'auto' as const,
-        availableViz: ['reactflow', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart', 'sketch'] as VisualizerType[],
+        defaultViz: 'reactflow-v2' as VisualizerType,
+        availableViz: ['reactflow', 'reactflow-v2', 'forcegraph', 'mermaid-statechart', 'mermaid-flowchart', 'sketch'] as VisualizerType[],
         layout: 'stacked' as const,
         showPicker: false,
       };
