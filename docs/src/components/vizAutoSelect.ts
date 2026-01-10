@@ -78,8 +78,8 @@ export function selectBestVisualizer(machine: FactoryMachine<any>): VisualizerTy
     return 'forcegraph';
   }
 
-  // Default to ReactFlow for complex flat machines
-  return 'reactflow';
+  // Default to ReactFlow V2 for complex flat machines
+  return 'reactflow-v2';
 }
 
 /**

@@ -201,15 +201,26 @@ export default function FloatingEdge({
       const perpX = -dy / distance;
       const perpY = dx / distance;
 
-      // ORIENTATION-AWARE spacing: more separation for vertical orientation
-      let spacing: number;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        // VERTICAL orientation - need MORE separation for label width
-        spacing = 35;
+      // SMOOTH INTERPOLATION for bi-directional spacing (no snapping!)
+      // Interpolate between horizontal and vertical spacing based on angle
+      const angle = Math.atan2(dy, dx);
+      const normalizedAngle = Math.abs(angle); // 0 to π
+      
+      // Calculate interpolation factor (0 = horizontal, π/2 = vertical, π = horizontal)
+      let verticalFactor: number;
+      if (normalizedAngle <= Math.PI / 2) {
+        // 0 to π/2: horizontal to vertical
+        verticalFactor = normalizedAngle / (Math.PI / 2);
       } else {
-        // HORIZONTAL or diagonal orientation - normal spacing
-        spacing = 25;
+        // π/2 to π: vertical to horizontal
+        verticalFactor = (Math.PI - normalizedAngle) / (Math.PI / 2);
       }
+      
+      // Smooth interpolation between horizontal (40px) and vertical (120px) spacing
+      const horizontalSpacing = 40;
+      const verticalSpacing = 120;
+      const spacing = horizontalSpacing + (verticalSpacing - horizontalSpacing) * verticalFactor;
+      
       const maxOffset = ((totalBidirectional - 1) * spacing) / 2;
 
       // Calculate global edge index (considering both directions)
@@ -219,14 +230,17 @@ export default function FloatingEdge({
             (e.source === source && e.target === target) ||
             (e.source === target && e.target === source)
         );
-
+        
+        // Find position of this edge among all bidirectional edges
+        // Edges going same direction come first, then opposite direction (mirroring)
         const sameDirectionEdges = allBidirectionalEdges.filter(
-          (e) => e.source === source && e.target === target
+          (e) => e.source === source && e.target === target,
         );
         const oppositeDirectionEdges = allBidirectionalEdges.filter(
-          (e) => e.source === target && e.target === source
+          (e) => e.source === target && e.target === source,
         );
-
+        
+        // This edge's global index
         if (sameDirectionEdges.some((e) => e.id === id)) {
           return sameDirectionEdges.findIndex((e) => e.id === id);
         } else {
@@ -237,17 +251,20 @@ export default function FloatingEdge({
       // Calculate offset for this specific edge (centered spread)
       const edgeOffset = globalEdgeIndex * spacing - maxOffset;
 
-      // Apply perpendicular offset
+      // Apply perpendicular offset - this creates the mirroring effect
       const offsetX = perpX * edgeOffset;
       const offsetY = perpY * edgeOffset;
 
-      // Create curved path with offset
+      // Create curved path with offset - each edge curves away from center
       const midX = (sx + tx) / 2 + offsetX;
       const midY = (sy + ty) / 2 + offsetY;
 
       edgePath = `M ${sx} ${sy} Q ${midX} ${midY} ${tx} ${ty}`;
-      labelX = midX;
-      labelY = midY;
+      // Position label ON the actual curve at t=0.5 (midpoint of the curve)
+      // For quadratic Bezier: B(t) = (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
+      const t = 0.5;
+      labelX = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * midX + t * t * tx;
+      labelY = (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * midY + t * t * ty;
       }
     } else {
       edgePath = path;

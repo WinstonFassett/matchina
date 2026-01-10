@@ -38,55 +38,96 @@ html[data-theme="dark"] .react-flow__node {
 1. **CSS overrides only target dark theme**
 2. **No light theme CSS** - ReactFlow defaults take over
 3. **Component styling incomplete** - custom nodes/edges not themed
+4. **HARDCODED THEME DETECTION EVERYWHERE** - Anti-pattern found in multiple components
 
-## Solution Strategy
+## Theme Detection Anti-Pattern
 
-### Option 1: Complete CSS Overrides
-Add light theme CSS rules for all components:
+**Found hardcoded theme detection in:**
+- `SimpleNode.tsx`: `document.documentElement.getAttribute('data-theme') === 'dark'`
+- `FloatingEdge.tsx`: `document.documentElement.getAttribute('data-theme') === 'dark'`  
+- `MermaidInspector.tsx`: `document.documentElement.getAttribute('data-theme') === 'dark'`
+- `ReactFlowInspectorV2.tsx`: `document.documentElement.getAttribute('data-theme') === 'dark'`
 
-```css
-/* Light theme nodes */
-html[data-theme="light"] .react-flow__node {
-  background: #ffffff !important;
-  color: #111827 !important;
-  border: 1px solid #e5e7eb !important;
-}
+**This is wrong because:**
+1. Duplicates theme logic in every component
+2. Breaks when theme system changes
+3. Not using the existing `viz/theme.ts` system
+4. Hard to maintain and test
 
-/* Light theme edges */
-html[data-theme="light"] .react-flow__edge-path {
-  stroke: #6b7280 !important;
-}
+## Existing Theme System (Ignored)
 
-/* Light theme edge labels */
-html[data-theme="light"] .react-flow__edge-text {
-  fill: #374151 !important;
+The project has a proper theme system at `src/viz/theme.ts`:
+- Uses CSS variables with `--matchina-inspector-*` prefix
+- Integrates with Starlight theme variables (`--sl-color-*`)
+- Provides `InspectorTheme` interface and `defaultTheme`
+- Has `generateCSSVariables()` and `applyTheme()` utilities
+- Supports both CSS variables and CSS classes
+
+**But NO components actually use it!**
+
+## Proper Solution Strategy
+
+### PROPER APPROACH: Use Existing Theme System
+
+1. **Create a theme hook** that uses the existing `viz/theme.ts` system
+2. **Remove all hardcoded theme detection** from components
+3. **Use CSS variables** that automatically follow Starlight theme
+4. **Apply theme via CSS classes** instead of inline styles
+
+### Implementation Plan
+
+1. **Create `useTheme()` hook** that returns theme-aware values
+2. **Update SimpleNode** to use theme hook instead of hardcoded detection
+3. **Update FloatingEdge** to use theme hook instead of hardcoded detection  
+4. **Update ReactFlowInspectorV2** to use theme hook instead of MutationObserver
+5. **Remove all `document.documentElement.getAttribute('data-theme')` calls**
+
+### Theme Hook Design
+
+```typescript
+// New hook at viz/useTheme.ts
+export function useTheme() {
+  return {
+    isDark: document.documentElement.classList.contains('dark'),
+    colors: {
+      nodeBg: 'var(--sl-color-bg)',
+      nodeText: 'var(--sl-color-text)',
+      nodeBorder: 'var(--sl-color-gray-5)',
+      edgeStroke: 'var(--sl-color-gray-6)',
+      // etc...
+    }
+  };
 }
 ```
 
-### Option 2: Remove CSS Overrides
-Let ReactFlow handle theming completely with `colorMode` prop.
+### CSS Variables Approach
 
-### Option 3: Hybrid Approach
-Use ReactFlow's `colorMode` for base styling + CSS for custom components.
+Instead of inline styles, use CSS that automatically follows theme:
 
-## Recommended Fix
+```css
+.simple-node {
+  background: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  border: 1px solid var(--sl-color-gray-5);
+}
 
-Use **Option 3** - ReactFlow handles base theming, CSS only for custom components:
+.simple-node.active {
+  background: var(--sl-color-accent);
+  color: var(--sl-color-accent-contrast);
+}
+```
 
-1. Keep `colorMode={colorMode}` in ReactFlow component
-2. Remove most CSS overrides 
-3. Only override custom components (SimpleNode, FloatingEdge)
-4. Add theme-aware styling to custom components
+## Custom Components Needing Refactor
 
-## Custom Components Needing Theme Support
+- **SimpleNode.tsx** - Remove hardcoded theme detection, use CSS classes
+- **FloatingEdge.tsx** - Remove hardcoded theme detection, use CSS classes  
+- **ReactFlowInspectorV2.tsx** - Remove MutationObserver, let ReactFlow handle theme
+- **MermaidInspector.tsx** - Remove hardcoded theme detection
 
-- SimpleNode.tsx - node background, text, border
-- FloatingEdge.tsx - edge stroke, label colors
-- GroupNode.tsx - group styling
+## Benefits of Proper Approach
 
-## Implementation Plan
-
-1. Update SimpleNode to detect theme
-2. Update FloatingEdge to detect theme  
-3. Remove unnecessary CSS overrides
-4. Test both themes thoroughly
+1. **Single source of truth** - Theme logic in one place
+2. **Automatic theme following** - CSS variables update with Starlight
+3. **Maintainable** - Easy to change theme system
+4. **Testable** - Can mock theme hook
+5. **Consistent** - All components use same theme system
