@@ -180,8 +180,8 @@ export function HSMLayoutControls({
                   />
                 </div>
 
-                {/* Experimental: Alternating Direction for Hierarchical Layouts */}
-                {currentLayoutType === LayoutType.HIERARCHICAL && (
+                {/* Experimental: Alternating Direction for Hierarchical and Tree Layouts */}
+                {(currentLayoutType === LayoutType.HIERARCHICAL || currentLayoutType === LayoutType.TREE) && (
                   <div>
                     <label 
                       htmlFor="alternating-direction-toggle"
