@@ -17,10 +17,21 @@ const GridLayoutSettings = z.object({
   fitPadding: z.number().min(0).max(100).default(20),
   animationDuration: z.number().min(0).max(2000).default(300),
   compactness: z.number().min(0).max(1).default(0.7),
+  
+  // Grid dimensions - support both cols and rows
   cols: z.number().min(1).max(20).optional(),
   columns: z.number().min(1).max(20).optional(), // Alias for cols (from UI)
+  rows: z.number().min(1).max(20).optional(),
+  maxCols: z.number().min(1).max(20).default(6), // Maximum columns before wrapping
+  maxRows: z.number().min(1).max(20).default(6), // Maximum rows before wrapping
+  
+  // Layout behavior
   alignment: z.enum(['start', 'center', 'end']).default('center'),
   direction: z.enum(['row', 'column']).default('row'),
+  
+  // Auto-sizing options
+  autoFit: z.boolean().default(true), // Auto-calculate optimal dimensions
+  preferSquare: z.boolean().default(true), // Prefer roughly square grids
 });
 
 type GridLayoutSettings = z.infer<typeof GridLayoutSettings>;
@@ -97,8 +108,14 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
       animationDuration: 300,
       compactness: 0.7,
       cols: undefined, // Auto-calculate
+      columns: undefined, // Auto-calculate
+      rows: undefined, // Auto-calculate
+      maxCols: 6,
+      maxRows: 6,
       alignment: 'center',
       direction: 'row',
+      autoFit: true,
+      preferSquare: true,
     };
   }
 
@@ -113,9 +130,44 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
     return GridLayoutSettings;
   }
 
-  private calculateOptimalCols(nodeCount: number): number {
-    // Aim for roughly square grid
-    return Math.ceil(Math.sqrt(nodeCount));
+  private calculateOptimalDimensions(nodeCount: number, settings: GridLayoutSettings): { cols: number; rows: number } {
+    if (!settings.autoFit) {
+      // Use explicit dimensions if provided
+      const cols = settings.cols || settings.columns || Math.ceil(Math.sqrt(nodeCount));
+      const rows = settings.rows || Math.ceil(nodeCount / cols);
+      return { cols: Math.min(cols, settings.maxCols), rows: Math.min(rows, settings.maxRows) };
+    }
+
+    // Auto-calculate optimal dimensions
+    let cols: number;
+    let rows: number;
+
+    if (settings.preferSquare) {
+      // Aim for roughly square grid
+      cols = Math.ceil(Math.sqrt(nodeCount));
+      rows = Math.ceil(nodeCount / cols);
+    } else {
+      // Prefer wider grids (more columns than rows)
+      cols = Math.min(settings.maxCols, Math.ceil(Math.sqrt(nodeCount * 1.5)));
+      rows = Math.ceil(nodeCount / cols);
+    }
+
+    // Respect max dimensions
+    cols = Math.min(cols, settings.maxCols);
+    rows = Math.min(rows, settings.maxRows);
+
+    // Ensure all nodes fit
+    while (cols * rows < nodeCount) {
+      if (cols < settings.maxCols) {
+        cols++;
+      } else if (rows < settings.maxRows) {
+        rows++;
+      } else {
+        break; // Can't fit more nodes within constraints
+      }
+    }
+
+    return { cols, rows };
   }
 
   private separateHierarchy(nodes: Node[]): { rootNodes: Node[]; childNodesMap: Map<string, Node[]> } {
@@ -140,11 +192,9 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
   }
 
   private layoutNodes(nodes: Node[], settings: GridLayoutSettings, offset: { x: number; y: number }): Node[] {
-    // Calculate grid dimensions
+    // Calculate optimal grid dimensions
     const nodeCount = nodes.length;
-    // Support both 'cols' and 'columns' (UI sends 'columns')
-    const cols = settings.cols || settings.columns || this.calculateOptimalCols(nodeCount);
-    const rows = Math.ceil(nodeCount / cols);
+    const { cols, rows } = this.calculateOptimalDimensions(nodeCount, settings);
     
     // Apply compactness to spacing
     const nodeSpacing = settings.nodeSpacing * (1 - settings.compactness * 0.5);
