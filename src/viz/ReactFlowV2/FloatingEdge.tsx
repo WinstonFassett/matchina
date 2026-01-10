@@ -278,7 +278,8 @@ export default function FloatingEdge({
   const isActive = data?.isActive; // Possible exits from current state
   const isExactTransition = data?.isExactTransition; // The exact transition taken
   const isPossibleExit = isActive; // Possible exits from current state
-  const isActuallyActive = isExactTransition; // Only the exact transition is active
+  // FIXED: All outgoing edges from active states are "active edges" with button styling
+  const isActuallyActive = isPossibleExit; // All possible exits get button style
   
   const edgeStyle: React.CSSProperties = {
     ...(style as React.CSSProperties || {}),
@@ -310,8 +311,9 @@ export default function FloatingEdge({
               fontWeight: 600,
               pointerEvents: 'all',
               cursor: isClickable ? 'pointer' : 'default',
-              // Active edges: filled button style matching nodes (only the exact transition)
-              ...(isActuallyActive ? {
+              // Active edges: filled button style matching nodes (all possible exits from current state)
+              // BUT NOT the exact transition - that should look like inactive edges
+              ...(isActuallyActive && !isExactTransition ? {
                 background: '#2563eb', // Same blue as active nodes
                 color: '#fff', // White text like active nodes
                 border: 'none', // No border like nodes
@@ -324,13 +326,13 @@ export default function FloatingEdge({
                 ':active': {
                   background: '#1e40af', // Even darker blue
                 },
-              } : isPossibleExit ? {
-                // Possible exits: subtle exit styling (not active)
+              } : isExactTransition ? {
+                // Exact transition: style like inactive edges (no button styling)
                 background: isDarkTheme 
-                  ? 'rgba(59, 130, 246, 0.1)'  // Very subtle blue background
-                  : 'rgba(59, 130, 246, 0.08)', // Very subtle blue background
-                color: 'rgb(59, 130, 246)', // Blue text to indicate it's an exit
-                border: '1px solid rgba(59, 130, 246, 0.3)', // Subtle blue border
+                  ? 'rgb(31, 41, 55)'  // Dark theme background
+                  : 'rgb(255, 255, 255)', // Light theme background
+                color: isDarkTheme ? 'rgb(209, 213, 219)' : 'rgb(31, 41 55)', // Theme text color
+                border: 'none', // No border to differentiate from nodes
               } : {
                 // Inactive edges: theme background color, no border
                 background: isDarkTheme 

@@ -82,9 +82,14 @@ function ReactFlowInspectorInner({
   const processedEdges = useMemo(() => {
     return initialEdges.map((edge) => {
       // FIXED: Use exact transition instead of all edges from previous to current
+      // Only consider it an exact transition if it's not the initialization event
+      // For hierarchical states, check if the edge source is a parent of the previous state
+      // and edge target is a parent of the current state
       const isExactTransition = currentTransition && 
-        edge.source === previousState && 
-        edge.target === value && 
+        currentTransition !== '__initialize' &&
+        previousState &&
+        (edge.source === previousState || previousState.startsWith(edge.source + '_')) && 
+        (edge.target === value || value.startsWith(edge.target + '_')) && 
         (edge.data?.event === currentTransition || edge.label === currentTransition);
       
       const isPossibleExit = edge.source === value; // Current state to any target
