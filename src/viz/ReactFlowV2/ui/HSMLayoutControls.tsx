@@ -279,6 +279,115 @@ export function HSMLayoutControls({
                     <span>Quality</span>
                   </div>
                 </div>
+
+                {/* NEW: Critical missing settings */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Hierarchy Handling</label>
+                  <select
+                    value={currentSettings?.hierarchyHandling || 'INCLUDE_CHILDREN'}
+                    onChange={(e) => handleSettingChange('hierarchyHandling', e.target.value)}
+                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                  >
+                    <option value="INCLUDE_CHILDREN">Include Children (HSM)</option>
+                    <option value="SEPARATE_CHILDREN">Separate Children</option>
+                    <option value="INHERIT">Inherit</option>
+                  </select>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    How to handle parent-child relationships in layout
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Container Padding</label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <div>
+                      <label className="text-xs text-gray-500">Top</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={currentSettings?.paddingTop || 50}
+                        onChange={(e) => handleSettingChange('paddingTop', Number(e.target.value))}
+                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Bottom</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={currentSettings?.paddingBottom || 50}
+                        onChange={(e) => handleSettingChange('paddingBottom', Number(e.target.value))}
+                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Left</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={currentSettings?.paddingLeft || 50}
+                        onChange={(e) => handleSettingChange('paddingLeft', Number(e.target.value))}
+                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Right</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={currentSettings?.paddingRight || 50}
+                        onChange={(e) => handleSettingChange('paddingRight', Number(e.target.value))}
+                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Padding around container nodes for child spacing
+                  </p>
+                </div>
+
+                {/* Algorithm-specific performance controls */}
+                {currentLayoutType === LayoutType.HIERARCHICAL && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      Iteration Limit (Stress): {currentSettings?.iterationLimit || 150}
+                    </label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="500"
+                      value={currentSettings?.iterationLimit || 150}
+                      onChange={(e) => handleSettingChange('iterationLimit', Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Maximum iterations for stress algorithm convergence
+                    </p>
+                  </div>
+                )}
+
+                {(currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      Force Iterations: {currentSettings?.forceIterations || 300}
+                    </label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="1000"
+                      value={currentSettings?.forceIterations || 300}
+                      onChange={(e) => handleSettingChange('forceIterations', Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Number of iterations for force-directed layout
+                    </p>
+                  </div>
+                )}
               </>
             )}
 

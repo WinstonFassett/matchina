@@ -40,14 +40,26 @@ const ELKLayoutSettings = z.object({
   edgeNodeSpacing: z.number().min(5).max(100).default(30),
   edgeEdgeSpacing: z.number().min(5).max(100).default(20),
   
+  // CRITICAL MISSING SETTINGS - Phase 1 Remediations
+  // Hierarchy handling - essential for HSM
+  hierarchyHandling: z.enum(['INCLUDE_CHILDREN', 'SEPARATE_CHILDREN', 'INHERIT']).default('INCLUDE_CHILDREN'),
+  
+  // Padding for containers - important for ReactFlow
+  paddingTop: z.number().min(0).max(100).default(50),
+  paddingLeft: z.number().min(0).max(100).default(50),
+  paddingBottom: z.number().min(0).max(100).default(50),
+  paddingRight: z.number().min(0).max(100).default(50),
+  
+  // Algorithm-specific performance controls
+  thoroughness: z.number().min(1).max(20).default(7), // For layered algorithm
+  iterationLimit: z.number().min(50).max(500).default(150), // For stress algorithm
+  forceIterations: z.number().min(50).max(1000).default(300), // For force algorithm
+  
   // Component handling (V1 parity)
   compactComponents: z.boolean().default(false),
   separateComponents: z.boolean().default(false),
   componentSpacing: z.number().min(20).max(200).default(60),
 
-  // Layout quality (affects crossing minimization iterations)
-  thoroughness: z.number().min(1).max(20).default(7),
-  
   // Feedback edges (cycle handling)
   feedbackEdges: z.boolean().default(true),
   
@@ -134,81 +146,114 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     nodeSpacing: number,
     layerSpacing: number
   ): Record<string, string> {
-    // Build options EXACTLY matching V1's getElkOptions()
-    const layoutOptions: Record<string, string> = {
-      // V1 base options - EXACT copy
-      'elk.algorithm': algorithm,
-      'elk.direction': settings.direction,
-      'elk.spacing.nodeNode': String(nodeSpacing),
-      'elk.spacing.edgeEdge': String(settings.edgeEdgeSpacing), // V1: edgeSpacing
-      'elk.spacing.edgeNode': String(settings.edgeNodeSpacing),
-      'elk.spacing.componentComponent': String(settings.componentSpacing),
-      'elk.separateConnectedComponents': String(settings.separateComponents),
-      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-      'elk.layered.considerModelOrder.hierarchy': 'true',
-      'elk.layered.thoroughness': '7',
-      'elk.padding': '[top=50,left=50,bottom=50,right=50]',
+    // Use EXACT working code from V1's getElkOptions()
+    const baseOptions = {
+      "elk.algorithm": algorithm,
+      "elk.direction": settings.direction,
+      "elk.spacing.nodeNode": nodeSpacing.toString(),
+      "elk.spacing.edgeEdge": settings.edgeSpacing.toString(),
+      "elk.spacing.edgeNode": (settings.edgeNodeSpacing || 20).toString(),
+      "elk.spacing.componentComponent": (settings.componentSpacing || 40).toString(),
+      "elk.separateConnectedComponents": settings.separateComponents ? "true" : "false",
+      // HIERARCHICAL LAYOUT OPTIONS - Important for compound nodes
+      "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+      "elk.layered.considerModelOrder.hierarchy": "true",
+      "elk.layered.thoroughness": "7", // Better layout quality
+      // Compound node sizing
+      "elk.padding": "[top=50,left=50,bottom=50,right=50]",
     };
 
-    // Algorithm-specific options - EXACT copy of V1's switch statement
+    // Algorithm-specific options that actually work (EXACT copy from V1)
     switch (algorithm) {
-      case 'layered':
-        Object.assign(layoutOptions, {
+      case "layered":
+        return {
+          ...baseOptions,
           // Layer spacing - this actually works
-          'elk.layered.spacing.nodeNodeBetweenLayers': String(layerSpacing),
-          'elk.layered.spacing.edgeNodeBetweenLayers': String(settings.edgeNodeSpacing),
-          
-          // Node placement strategy - affects layout quality
-          'elk.layered.nodePlacement.strategy': settings.compactComponents ? 'SIMPLE' : 'NETWORK_SIMPLEX',
-          
-          // Cycle breaking
-          'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
-          
-          // Edge routing - Basic orthogonal routing (V1 hardcodes these!)
-          'elk.layered.edgeRouting.selfLoopDistribution': 'EQUALLY',
-          'elk.layered.edgeRouting.selfLoopOrdering': 'SEQUENCED',
-          'elk.layered.edgeRouting.strategy': 'ORTHOGONAL',
-          'elk.layered.spacing.edgeNodeSpacing': '20', // V1 hardcodes to 20
-          'elk.layered.spacing.edgeEdgeSpacing': '15', // V1 hardcodes to 15
-          
-          // Compaction
-          'elk.layered.compaction.postCompaction.strategy': settings.compactComponents ? 'EDGE_LENGTH' : 'NONE',
-          'elk.layered.compaction.postCompaction.constraints': 'SEQUENCE',
-          
-          // Thoroughness - affects crossing minimization iterations
-          'elk.layered.thoroughness': String(Math.max(1, Math.min(20, settings.thoroughness))),
-          
-          // Consider model order
-          'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-        });
-        break;
-      case 'mrtree':
-        Object.assign(layoutOptions, {
-          'elk.mrtree.searchOrder': 'DFS',
-          'elk.mrtree.weighting': 'DESCENDANTS',
-          'elk.layered.spacing.nodeNodeBetweenLayers': String(layerSpacing),
-          'elk.mrtree.compaction': String(settings.compactComponents),
-        });
-        break;
-      case 'stress':
-        Object.assign(layoutOptions, {
-          'elk.stress.iterationLimit': '500',
-          'elk.stress.epsilon': '0.0001',
-          'elk.stress.desiredEdgeLength': String(layerSpacing),
-          'elk.stress.dimension': 'XY',
-        });
-        break;
-      case 'force':
-        Object.assign(layoutOptions, {
-          'elk.force.iterations': '300',
-          'elk.force.repulsion': String(nodeSpacing / 10),
-          'elk.force.attraction': String(layerSpacing / 300),
-          'elk.force.model': 'FRUCHTERMAN_REINGOLD',
-        });
-        break;
-    }
+          "elk.layered.spacing.nodeNodeBetweenLayers": layerSpacing.toString(),
+          "elk.layered.spacing.edgeNodeBetweenLayers": (settings.edgeNodeSpacing || 20).toString(),
 
-    return layoutOptions;
+          // Node placement strategy - affects layout quality
+          "elk.layered.nodePlacement.strategy": settings.compactComponents
+            ? "SIMPLE"
+            : "NETWORK_SIMPLEX",
+
+          // Cycle breaking
+          "elk.layered.cycleBreaking.strategy": "DEPTH_FIRST",
+
+          // Edge routing - Basic orthogonal routing
+          "elk.layered.edgeRouting.selfLoopDistribution": "EQUALLY",
+          "elk.layered.edgeRouting.selfLoopOrdering": "SEQUENCED",
+          "elk.layered.edgeRouting.strategy": "ORTHOGONAL",
+          "elk.layered.spacing.edgeNodeSpacing": "20",
+          "elk.layered.spacing.edgeEdgeSpacing": "15",
+
+          // Compaction
+          "elk.layered.compaction.postCompaction.strategy":
+            settings.compactComponents ? "EDGE_LENGTH" : "NONE",
+          "elk.layered.compaction.postCompaction.constraints": "SEQUENCE",
+
+          // Thoroughness - affects crossing minimization iterations
+          "elk.layered.thoroughness": Math.max(
+            1,
+            Math.min(20, settings.thoroughness || 7)
+          ).toString(),
+
+          // Consider model order
+          "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+        };
+
+      case "stress":
+        return {
+          ...baseOptions,
+          // Stress-specific options that work
+          "elk.stress.iterationLimit": "500",
+          "elk.stress.epsilon": "0.0001",
+          // Use both nodeSpacing and layerSpacing for better control
+          "elk.stress.desiredEdgeLength": layerSpacing.toString(),
+          "elk.spacing.nodeNode": nodeSpacing.toString(), // Override base option
+          "elk.stress.dimension": "XY",
+          // Thoroughness affects quality
+          "elk.stress.quality": Math.max(
+            1,
+            Math.min(10, settings.thoroughness || 7)
+          ).toString(),
+        };
+
+      case "mrtree":
+        return {
+          ...baseOptions,
+          // Tree-specific options
+          "elk.mrtree.searchOrder": "DFS",
+          "elk.mrtree.weighting": "DESCENDANTS",
+          // Layer spacing affects tree levels
+          "elk.layered.spacing.nodeNodeBetweenLayers": layerSpacing.toString(),
+          // Compact components affects tree layout
+          "elk.mrtree.compaction": settings.compactComponents ? "true" : "false",
+        };
+
+      case "force":
+        return {
+          ...baseOptions,
+          // Force-directed options with better controls
+          "elk.force.iterations": "300",
+          // Node repulsion based on node spacing
+          "elk.force.repulsion": (nodeSpacing / 10).toString(),
+          // Edge attraction based on layer spacing
+          "elk.force.attraction": (layerSpacing / 300).toString(),
+          // Temperature affects convergence
+          "elk.force.temperature": (
+            (settings.thoroughness || 7) / 1000
+          ).toString(),
+          "elk.force.model": "FRUCHTERMAN_REINGOLD",
+          // Compact components affects force layout
+          "elk.force.useCoarseGraining": settings.compactComponents
+            ? "true"
+            : "false",
+        };
+
+      default:
+        return baseOptions;
+    }
   }
 
   private toElkGraph(
@@ -570,6 +615,16 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       alignment: 'CENTER',
       edgeNodeSpacing: 30,
       edgeEdgeSpacing: 15,
+      
+      // NEW: Critical missing settings
+      hierarchyHandling: 'INCLUDE_CHILDREN',
+      paddingTop: 50,
+      paddingLeft: 50,
+      paddingBottom: 50,
+      paddingRight: 50,
+      iterationLimit: 150,
+      forceIterations: 300,
+      
       compactComponents: false,
       separateComponents: false,
       componentSpacing: 60,

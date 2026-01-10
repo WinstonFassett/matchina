@@ -11,8 +11,8 @@ export const createTrafficLightMachine = () => {
     states,
     {
       Red: { next: "Green" },
-      Yellow: { next: "Red" },
       Green: { next: "Yellow" },
+      Yellow: { next: "Red" },
     },
     "Red"
   );
