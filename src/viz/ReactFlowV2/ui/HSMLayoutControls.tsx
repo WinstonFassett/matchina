@@ -181,45 +181,47 @@ export function HSMLayoutControls({
                 </div>
 
                 {/* Experimental: Alternating Direction for Hierarchical and Tree Layouts */}
-                {(currentLayoutType === LayoutType.HIERARCHICAL || currentLayoutType === LayoutType.TREE) && (
-                  <div>
-                    <label 
-                      htmlFor="alternating-direction-toggle"
-                      className="text-xs font-medium text-gray-600 dark:text-gray-400"
+                <div>
+                  <label 
+                    htmlFor="alternating-direction-toggle"
+                    className="text-xs font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    <span className="flex items-center gap-1">
+                      Alternating Direction
+                      <span className="text-xs text-gray-400 dark:text-gray-500">(Experimental)</span>
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      id="alternating-direction-toggle"
+                      type="button"
+                      onClick={() => handleSettingChange('alternatingDirection', !currentSettings?.alternatingDirection)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        currentSettings?.alternatingDirection
+                          ? 'bg-blue-500'
+                          : 'bg-gray-200 dark:bg-gray-600'
+                      }`}
                     >
-                      <span className="flex items-center gap-1">
-                        Alternating Direction
-                        <span className="text-xs text-gray-400 dark:text-gray-500">(Experimental)</span>
-                      </span>
-                    </label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <button
-                        id="alternating-direction-toggle"
-                        type="button"
-                        onClick={() => handleSettingChange('alternatingDirection', !currentSettings?.alternatingDirection)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          currentSettings?.alternatingDirection
-                            ? 'bg-blue-500'
-                            : 'bg-gray-200 dark:bg-gray-600'
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          currentSettings?.alternatingDirection ? 'translate-x-6' : 'translate-x-1'
                         }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            currentSettings?.alternatingDirection ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {currentSettings?.alternatingDirection ? 'ON' : 'OFF'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Alternates direction between hierarchy levels for more compact layouts
-                    </p>
+                      />
+                    </button>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {currentSettings?.alternatingDirection ? 'ON' : 'OFF'}
+                    </span>
                   </div>
-                )}
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Alternates direction between hierarchy levels for more compact layouts
+                  </p>
+                </div>
+              </>
+            )}
 
-                {/* Advanced ELK options for fine-tuning */}
+            {/* Advanced ELK options for all ELK-based layouts */}
+            {(currentLayoutType === LayoutType.HIERARCHICAL || currentLayoutType === LayoutType.TREE || currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
+              <>
                 <div>
                   <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Edge Routing</label>
                   <select
