@@ -211,11 +211,11 @@ function ReactFlowInspectorInner({
   useEffect(() => {
     if (layoutNodes.length > 0) {
       // Small delay to allow layout to settle
-      const duration = isFirstRender.current ? 500 : 300;
+      const duration = isFirstRender.current ? 300 : 200;
       isFirstRender.current = false;
       setTimeout(() => {
-        fitView({ padding: 0.3, duration });
-      }, 100);
+        fitView({ padding: 0.1, duration });
+      }, 50);
     }
   }, [layoutKey, layoutNodes.length, fitView]);
 
