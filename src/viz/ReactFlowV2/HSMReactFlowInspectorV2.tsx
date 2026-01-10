@@ -412,7 +412,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
   return (
     <div className="relative w-full h-full">
       {/* Layout Controls - positioned consistently */}
-      <div className="absolute top-4 right-4 z-10" data-testid="layout-controls-wrapper" style={{ top: '16px', right: '16px' }}>
+      <div className="absolute top-0 right-0 z-10" data-testid="layout-controls-wrapper" style={{ top: '0px', right: '0px' }}>
         <HSMLayoutControls
           layoutManager={layoutManager}
           onLayoutChange={handleLayoutChange}
