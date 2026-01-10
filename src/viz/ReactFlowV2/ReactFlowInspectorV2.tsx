@@ -37,6 +37,7 @@ export interface ReactFlowInspectorV2Props {
   nodes: Node<NodeData>[];
   edges: Edge<EdgeData>[];
   previousState?: string;
+  currentTransition?: string; // Add the exact transition type that was taken
   dispatch?: (event: { type: string }) => void;
   interactive?: boolean;
 }
@@ -58,6 +59,7 @@ function ReactFlowInspectorInner({
   nodes: initialNodes,
   edges: initialEdges,
   previousState,
+  currentTransition,
   dispatch,
   interactive = true,
 }: ReactFlowInspectorV2Props) {
@@ -79,19 +81,23 @@ function ReactFlowInspectorInner({
   // Process edges with active state highlighting and clickability (V1 parity)
   const processedEdges = useMemo(() => {
     return initialEdges.map((edge) => {
-      // V1 logic: Three types of edge highlighting
-      const isTransitionFromPrevious = edge.source === previousState && edge.target === value;
+      // FIXED: Use exact transition instead of all edges from previous to current
+      const isExactTransition = currentTransition && 
+        edge.source === previousState && 
+        edge.target === value && 
+        (edge.data?.event === currentTransition || edge.label === currentTransition);
+      
       const isPossibleExit = edge.source === value; // Current state to any target
-      const isClickable = interactive && isPossibleExit;
+      const isClickable = interactive; // ALL edges are clickable for convenience
 
-      // Determine edge style based on V1 priority system
+      // Determine edge style based on exact transition priority system
       let strokeColor = '#94a3b8'; // Default inactive (gray)
       let strokeWidth = 2;
       let strokeDasharray = undefined;
       let opacity = 0.8;
       
-      if (isTransitionFromPrevious) {
-        // Previous → Current: animated dashed blue (highest priority)
+      if (isExactTransition) {
+        // EXACT transition taken: animated dashed blue (highest priority)
         strokeColor = '#60a5fa';
         strokeWidth = 3;
         strokeDasharray = '5,5';
@@ -128,14 +134,14 @@ function ReactFlowInspectorInner({
           ...edge.data,
           isActive: isPossibleExit, // For compatibility with existing logic
           isClickable,
-          isTransitionFromPrevious, // New: for V1-style highlighting
+          isExactTransition, // New: exact transition highlighting
         },
         // Add data attributes for CSS targeting
         'data-is-clickable': isClickable ? 'true' : 'false',
-        'data-is-transition-from-previous': isTransitionFromPrevious ? 'true' : 'false',
+        'data-is-exact-transition': isExactTransition ? 'true' : 'false',
       };
     });
-  }, [initialEdges, value, previousState, interactive]);
+  }, [initialEdges, value, previousState, currentTransition, interactive]);
 
   // Initialize with layout nodes (stable)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);

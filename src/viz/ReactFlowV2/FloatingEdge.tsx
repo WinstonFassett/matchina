@@ -274,8 +274,11 @@ export default function FloatingEdge({
   }
 
   // Edge styling based on V1 highlighting logic
-  const isActive = data?.isActive;
-  const isTransitionFromPrevious = data?.isTransitionFromPrevious;
+  const isClickable = data?.isClickable;
+  const isActive = data?.isActive; // Possible exits from current state
+  const isExactTransition = data?.isExactTransition; // The exact transition taken
+  const isPossibleExit = isActive; // Possible exits from current state
+  const isActuallyActive = isExactTransition; // Only the exact transition is active
   
   const edgeStyle: React.CSSProperties = {
     ...(style as React.CSSProperties || {}),
@@ -285,8 +288,8 @@ export default function FloatingEdge({
     strokeDasharray: (style as React.CSSProperties)?.strokeDasharray,
     opacity: (style as React.CSSProperties)?.opacity,
     cursor: (style as React.CSSProperties)?.cursor,
-    // Add animation for previous→current transitions
-    ...(isTransitionFromPrevious && {
+    // Add animation for exact transitions (from ReactFlowInspectorV2)
+    ...(data?.isExactTransition && {
       animation: 'dash 1s linear infinite',
     }),
   };
@@ -296,29 +299,86 @@ export default function FloatingEdge({
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={edgeStyle} />
       {label && (
         <EdgeLabelRenderer>
-          <div
+          <button
+            type="button"
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              padding: '2px 6px',
-              borderRadius: 4,
+              padding: '4px 8px',
+              borderRadius: 6,
               fontSize: 10,
               fontWeight: 600,
               pointerEvents: 'all',
-              cursor: data?.isClickable ? 'pointer' : 'default',
-              // Theme-aware label styling
-              background: isActive ? 'rgb(30 58 138)' : (isDarkTheme ? 'rgb(31 41 55)' : 'rgb(255 255 255)'),
-              border: isActive ? '2px solid rgb(59 130 246)' : `1px solid ${isDarkTheme ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}`,
-              color: isActive ? 'rgb(147 197 253)' : (isDarkTheme ? 'rgb(229 231 235)' : 'rgb(31 41 55)'),
+              cursor: isClickable ? 'pointer' : 'default',
+              // Active edges: filled button style matching nodes (only the exact transition)
+              ...(isActuallyActive ? {
+                background: '#2563eb', // Same blue as active nodes
+                color: '#fff', // White text like active nodes
+                border: 'none', // No border like nodes
+                transition: 'all 150ms ease',
+                // Hover state: darker blue
+                ':hover': {
+                  background: '#1d4ed8', // Darker blue on hover
+                },
+                // Active state: even darker blue
+                ':active': {
+                  background: '#1e40af', // Even darker blue
+                },
+              } : isPossibleExit ? {
+                // Possible exits: subtle exit styling (not active)
+                background: isDarkTheme 
+                  ? 'rgba(59, 130, 246, 0.1)'  // Very subtle blue background
+                  : 'rgba(59, 130, 246, 0.08)', // Very subtle blue background
+                color: 'rgb(59, 130, 246)', // Blue text to indicate it's an exit
+                border: '1px solid rgba(59, 130, 246, 0.3)', // Subtle blue border
+              } : {
+                // Inactive edges: theme background color, no border
+                background: isDarkTheme 
+                  ? 'rgb(31, 41, 55)'  // Dark theme background
+                  : 'rgb(255, 255, 255)', // Light theme background
+                color: isDarkTheme ? 'rgb(209, 213, 219)' : 'rgb(31, 41 55)', // Theme text color
+                border: 'none', // No border to differentiate from nodes
+              }),
               // Ensure labels are above edge lines
-              zIndex: isActive ? 1000 : 100,
-              // Make clickable labels more prominent
-              boxShadow: data?.isClickable ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+              zIndex: isActuallyActive ? 1000 : (isPossibleExit ? 900 : 100),
+              // No shadows for clean flat design
+              boxShadow: 'none',
+              // Prevent layout shifts
+              transformOrigin: 'center',
             }}
             className="nodrag nopan"
+            disabled={!isClickable}
+            onMouseEnter={(e) => {
+              if (isActuallyActive) {
+                e.currentTarget.style.background = '#1d4ed8'; // Darker blue on hover
+              } else if (isPossibleExit) {
+                e.currentTarget.style.background = isDarkTheme 
+                  ? 'rgba(59, 130, 246, 0.2)'  // Slightly more blue on hover
+                  : 'rgba(59, 130, 246, 0.15)'; // Slightly more blue on hover
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (isActuallyActive) {
+                e.currentTarget.style.background = '#2563eb'; // Back to normal blue
+              } else if (isPossibleExit) {
+                e.currentTarget.style.background = isDarkTheme 
+                  ? 'rgba(59, 130, 246, 0.1)'  // Back to subtle blue
+                  : 'rgba(59, 130, 246, 0.08)'; // Back to subtle blue
+              }
+            }}
+            onMouseDown={(e) => {
+              if (isActuallyActive) {
+                e.currentTarget.style.background = '#1e40af'; // Even darker blue on active
+              }
+            }}
+            onMouseUp={(e) => {
+              if (isActuallyActive) {
+                e.currentTarget.style.background = '#2563eb'; // Back to normal blue
+              }
+            }}
           >
             {label}
-          </div>
+          </button>
         </EdgeLabelRenderer>
       )}
     </>

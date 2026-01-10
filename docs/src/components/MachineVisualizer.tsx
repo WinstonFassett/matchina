@@ -249,6 +249,7 @@ function renderVisualizer({
             <HSMReactFlowInspectorV2
               machine={machine as any}
               interactive={interactive}
+              exampleName={exampleName}
             />
           </ReactFlowProvider>
         </div>
