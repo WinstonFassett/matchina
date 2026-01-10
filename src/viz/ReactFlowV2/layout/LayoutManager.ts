@@ -334,6 +334,44 @@ export class LayoutManager implements ILayoutManager {
       },
       tags: ['organic', 'cluster', 'natural'],
     });
+
+    // Experimental: Alternating Direction Hierarchical
+    this.registerPreset({
+      id: 'alternating-direction-experiment',
+      name: 'Alternating Direction (Experimental)',
+      description: 'Experimental layout that alternates directions between hierarchy levels',
+      layoutType: LayoutType.HIERARCHICAL,
+      settings: {
+        nodeSpacing: 120,
+        edgeSpacing: 20,
+        fitPadding: 20,
+        animationDuration: 300,
+        compactness: 0,
+        algorithm: 'layered',
+        direction: 'DOWN',
+        layerSpacing: 180,
+        edgeRouting: 'ORTHOGONAL',
+        alignment: 'CENTER',
+        edgeNodeSpacing: 30,
+        edgeEdgeSpacing: 20,
+        compactComponents: false,
+        separateComponents: false,
+        componentSpacing: 60,
+        thoroughness: 7,
+        feedbackEdges: true,
+        alternatingDirection: true,
+        primaryDirection: 'DOWN',
+        secondaryDirection: 'RIGHT',
+        nodePlacementStrategy: 'NETWORK_SIMPLEX',
+        edgeRoutingStrategy: 'ORTHOGONAL',
+        compactionStrategy: 'NONE',
+        cycleBreakingStrategy: 'DEPTH_FIRST',
+      },
+      constraints: {
+        suitableFor: ['deep-hierarchy', 'experimental', 'compact'],
+      },
+      tags: ['experimental', 'alternating', 'hierarchical', 'compact'],
+    });
   }
 }
 

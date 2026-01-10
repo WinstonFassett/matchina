@@ -13,7 +13,7 @@ export enum LayoutType {
   TREE = 'tree',                   // Tree layout (mrtree algorithm)
   FORCE_DIRECTED = 'force',        // Physics-based clustering
   CIRCULAR = 'circular',           // Radial arrangement
-  ORGANIC = 'organic'              // Natural clustering
+  ORGANIC = 'organic',              // Natural clustering
 }
 
 // Universal settings that work across all layouts

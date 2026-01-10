@@ -51,6 +51,10 @@ const ELKLayoutSettings = z.object({
   // Feedback edges (cycle handling)
   feedbackEdges: z.boolean().default(true),
   
+  // Alternating direction - ALWAYS ON for hierarchical layouts
+  primaryDirection: z.enum(['DOWN', 'RIGHT']).default('DOWN'),
+  secondaryDirection: z.enum(['DOWN', 'RIGHT']).default('RIGHT'),
+  
   // Advanced ELK options for fine-tuning (V1 parity)
   nodePlacementStrategy: z.enum(['SIMPLE', 'NETWORK_SIMPLEX', 'BRANDES_KOEPF']).default('NETWORK_SIMPLEX'),
   edgeRoutingStrategy: z.enum(['ORTHOGONAL', 'POLYLINE', 'SPLINES', 'STRAIGHT']).default('ORTHOGONAL'),
@@ -238,6 +242,8 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
         targetPosition: isHorizontal ? 'left' : 'top',
         sourcePosition: isHorizontal ? 'right' : 'bottom',
         _originalNode: node, // Preserve for later
+        // Store hierarchy level for alternating direction
+        _hierarchyLevel: this.calculateHierarchyLevel(node, nodes, edges),
       };
 
       // Group nodes need padding and layout options for children
@@ -246,9 +252,34 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       if (isGroup) {
         // V1 passes ALL elkOptions to groups, not a subset
         // This is critical for consistent nested layouts
+        const groupLayoutOptions = this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing);
+        
+        // Apply alternating direction - ALWAYS ON for hierarchical layouts
+        const level = elkNode._hierarchyLevel;
+        const childDirection = (level % 2 === 0) ? settings.secondaryDirection : settings.primaryDirection;
+        
+        // Override the direction in the layout options
+        groupLayoutOptions['elk.direction'] = childDirection;
+        
+        // CRITICAL: For layered algorithm, try using tree algorithm for nested groups
+        if (algorithm === 'layered') {
+          // For layered, try switching to tree algorithm for nested groups to enable alternation
+          groupLayoutOptions['elk.algorithm'] = 'mrtree';
+          groupLayoutOptions['elk.layered.considerModelOrder.hierarchy'] = 'true';
+          groupLayoutOptions['elk.hierarchyHandling'] = 'INCLUDE_CHILDREN';
+        }
+        
+        // DEBUG: Log what direction we're applying
+        console.log(`[ALTERNATING] Level ${level} (${node.id}) using direction: ${childDirection} for algorithm ${algorithm}`);
+        console.log(`[ALTERNATING] Group layoutOptions:`, JSON.stringify(groupLayoutOptions, null, 2));
+        
         elkNode.layoutOptions = {
-          ...this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing), // SPREAD ALL OPTIONS LIKE V1
+          ...groupLayoutOptions,
           'elk.padding': `[top=${groupPadding + 35},left=${groupPadding + 20},bottom=${groupPadding + 35},right=${groupPadding + 20}]`,
+          // Enable dynamic sizing around children
+          'elk.nodeSize.fixedSize': 'false',
+          'elk.nodeSize.constraints': 'MINIMUM_SIZE',
+          'elk.nodeSize.minimum': '[width=150,height=50]',
         };
         elkNode.children = [];
       }
@@ -282,6 +313,14 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     // Use the same layout options for root graph (like V1)
     const layoutOptions = this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing);
 
+    // Apply alternating direction to root - use primary direction
+    layoutOptions['elk.direction'] = settings.primaryDirection;
+    
+    // CRITICAL: For layered algorithm, ensure proper hierarchy handling for nested groups
+    if (algorithm === 'layered') {
+      layoutOptions['elk.hierarchyHandling'] = 'INCLUDE_CHILDREN';
+    }
+
     // V1 adds elk.edgeRouting at graph level
     return {
       id: 'root',
@@ -292,6 +331,38 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       children: rootChildren,
       edges: elkEdges,
     };
+  }
+
+  private calculateHierarchyLevel(node: Node, allNodes: Node[], edges: Edge[]): number {
+    // Calculate hierarchy level based on parent-child relationships, not graph traversal
+    // This follows the actual nesting structure: root=0, children=1, grandchildren=2, etc.
+  
+    let level = 0;
+    let currentNode = node;
+  
+    // Walk up the parent chain to calculate depth
+    while (true) {
+      const parentId = (currentNode as any).parentId;
+      if (!parentId) {
+        break; // Reached root level
+      }
+      
+      // Find the parent node
+      const parentNode = allNodes.find(n => n.id === parentId);
+      if (!parentNode) {
+        break; // Parent not found, treat as root
+      }
+      
+      level++;
+      currentNode = parentNode;
+      
+      // Prevent infinite loops in malformed data
+      if (level > 10) {
+        break;
+      }
+    }
+  
+    return level;
   }
 
   private extractNodePositions(nodes: Node[], elkGraph: ElkNode): Node[] {
@@ -499,6 +570,8 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       componentSpacing: 60,
       thoroughness: 7,
       feedbackEdges: true,
+      primaryDirection: 'DOWN',
+      secondaryDirection: 'RIGHT',
       nodePlacementStrategy: 'NETWORK_SIMPLEX',
       edgeRoutingStrategy: 'ORTHOGONAL',
       compactionStrategy: 'NONE',
