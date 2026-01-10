@@ -61,6 +61,9 @@ Changed from 20 to 50 to match V1.
 ### V2 Layout (Final) 
 ![V2 Final](./screenshots/v2-final.png)
 
+### V2 Theme Fix
+![V2 Theme Fixed](./screenshots/v2-theme-fixed.png)
+
 ### Console Logs Confirm Identical Options
 
 ```

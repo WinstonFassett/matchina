@@ -63,6 +63,27 @@ function ReactFlowInspectorInner({
 }: ReactFlowInspectorV2Props) {
   const { fitView } = useReactFlow();
   const isFirstRender = useRef(true);
+  
+  // Track page theme for ReactFlow
+  const [colorMode, setColorMode] = useState<'light' | 'dark' | 'system'>('system');
+  
+  useEffect(() => {
+    const updateTheme = () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      setColorMode(isDark ? 'dark' : 'light');
+    };
+    
+    updateTheme();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   // Process nodes with active/previous state highlighting
   // Use useMemo to avoid recreating nodes unnecessarily
@@ -227,7 +248,7 @@ function ReactFlowInspectorInner({
       minZoom={0.1}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
-      colorMode="dark"
+      colorMode={colorMode}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
       <Controls showInteractive={false} />
