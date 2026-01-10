@@ -124,21 +124,22 @@ export function MachineVisualizer({
   const containerClasses = [
     'machine-visualizer',
     className,
-    isSplit ? 'flex flex-row gap-4' : 'flex flex-col gap-4',
+    isSplit ? 'flex flex-row gap-4 items-center' : 'flex flex-col gap-4',
     isSplit && !isVizLeft ? 'flex-row-reverse' : '',
   ].filter(Boolean).join(' ');
 
   const vizContainerClasses = [
     'visualizer-container',
-    isSplit ? 'flex-1 h-full' : `w-full`,
+    isSplit ? 'flex-1' : `w-full`,
   ].filter(Boolean).join(' ');
   
+  // For split layout, ReactFlow needs explicit height on the viz container
   // For stacked layout, ReactFlow needs explicit height on the viz container
-  const vizContainerStyle = !isSplit ? { height: `${resolvedMinVizHeight}px` } : undefined;
+  const vizContainerStyle = { height: `${resolvedMinVizHeight}px` };
 
   const appContainerClasses = [
     'app-container',
-    isSplit ? 'flex-1 h-full' : 'w-full',
+    isSplit ? 'flex-1' : 'w-full',
   ].filter(Boolean).join(' ');
 
   // Height styling
@@ -344,7 +345,7 @@ function DefaultAppView({
       <div className="flex flex-wrap gap-2">
         {Object.keys(actions).map((action) =>
           !action.startsWith("_") && (
-            <button
+            <button type="button"
               key={action}
               className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
               onClick={() => machine.send(action)}
