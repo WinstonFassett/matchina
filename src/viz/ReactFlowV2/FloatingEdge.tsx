@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   getBezierPath,
   useInternalNode,
@@ -10,10 +10,29 @@ import {
 } from '@xyflow/react';
 import { getEdgeParams } from './floatingUtils';
 
+// Add CSS animation for dashed edges (client-side only)
+const addDashAnimation = () => {
+  if (typeof document === 'undefined') return;
+  
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -10;
+      }
+    }
+  `;
+  if (!document.head.querySelector('style[data-floating-edge-animation]')) {
+    style.setAttribute('data-floating-edge-animation', 'true');
+    document.head.appendChild(style);
+  }
+};
+
 interface FloatingEdgeData extends Record<string, unknown> {
   event?: string;
   isClickable?: boolean;
   isActive?: boolean;
+  isTransitionFromPrevious?: boolean;
 }
 
 /**
@@ -33,6 +52,10 @@ export default function FloatingEdge({
   style,
   data,
 }: EdgeProps<any>) {
+  // Add CSS animation for dashed edges (client-side only)
+  useEffect(() => {
+    addDashAnimation();
+  }, []);
   const sourceNode = useInternalNode(source as string);
   const targetNode = useInternalNode(target as string);
 
@@ -230,12 +253,22 @@ export default function FloatingEdge({
     }
   }
 
-  // Edge styling based on active state
+  // Edge styling based on V1 highlighting logic
   const isActive = data?.isActive;
+  const isTransitionFromPrevious = data?.isTransitionFromPrevious;
+  
   const edgeStyle: React.CSSProperties = {
     ...(style as React.CSSProperties || {}),
-    stroke: isActive ? '#3b82f6' : ((style as React.CSSProperties)?.stroke || '#64748b'),
-    strokeWidth: isActive ? 2 : ((style as React.CSSProperties)?.strokeWidth || 1.5),
+    // Use the style passed from ReactFlowInspector (already has V1 colors)
+    stroke: (style as React.CSSProperties)?.stroke || '#64748b',
+    strokeWidth: (style as React.CSSProperties)?.strokeWidth || 1.5,
+    strokeDasharray: (style as React.CSSProperties)?.strokeDasharray,
+    opacity: (style as React.CSSProperties)?.opacity,
+    cursor: (style as React.CSSProperties)?.cursor,
+    // Add animation for previous→current transitions
+    ...(isTransitionFromPrevious && {
+      animation: 'dash 1s linear infinite',
+    }),
   };
 
   return (

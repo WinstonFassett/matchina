@@ -132,13 +132,13 @@ export function HSMLayoutControls({
             {/* Common spacing control for all layouts */}
             <div>
               <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Node Spacing: {currentSettings?.nodeSpacing || 100}
+                Node Spacing: {currentSettings?.nodeSpacing || 120}
               </label>
               <input
                 type="range"
                 min="50"
-                max="200"
-                value={currentSettings?.nodeSpacing || 100}
+                max="500"
+                value={currentSettings?.nodeSpacing || 120}
                 onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
                 className="w-full"
               />
@@ -168,16 +168,75 @@ export function HSMLayoutControls({
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Layer Spacing: {currentSettings?.layerSpacing || 100}
+                    Layer Spacing: {currentSettings?.layerSpacing || 180}
                   </label>
                   <input
                     type="range"
                     min="40"
-                    max="300"
-                    value={currentSettings?.layerSpacing || 100}
+                    max="400"
+                    value={currentSettings?.layerSpacing || 180}
                     onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
                     className="w-full"
                   />
+                </div>
+
+                {/* Advanced ELK options for fine-tuning */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Edge Routing</label>
+                  <select
+                    value={currentSettings?.edgeRoutingStrategy || 'ORTHOGONAL'}
+                    onChange={(e) => handleSettingChange('edgeRoutingStrategy', e.target.value)}
+                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                  >
+                    <option value="ORTHOGONAL">Orthogonal (Manhattan)</option>
+                    <option value="POLYLINE">Polyline</option>
+                    <option value="SPLINES">Curved</option>
+                    <option value="STRAIGHT">Straight</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Node Placement</label>
+                  <select
+                    value={currentSettings?.nodePlacementStrategy || 'NETWORK_SIMPLEX'}
+                    onChange={(e) => handleSettingChange('nodePlacementStrategy', e.target.value)}
+                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                  >
+                    <option value="NETWORK_SIMPLEX">Network Simplex (Best)</option>
+                    <option value="SIMPLE">Simple (Fast)</option>
+                    <option value="BRANDES_KOEPF">Brandes-Koepf</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Compaction</label>
+                  <select
+                    value={currentSettings?.compactionStrategy || 'NONE'}
+                    onChange={(e) => handleSettingChange('compactionStrategy', e.target.value)}
+                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
+                  >
+                    <option value="NONE">None (Spacious)</option>
+                    <option value="EDGE_LENGTH">Edge Length</option>
+                    <option value="NODE_DIMENSIONS">Node Dimensions</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Thoroughness: {currentSettings?.thoroughness || 7}
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={currentSettings?.thoroughness || 7}
+                    onChange={(e) => handleSettingChange('thoroughness', Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>Fast</span>
+                    <span>Quality</span>
+                  </div>
                 </div>
               </>
             )}

@@ -154,24 +154,24 @@ export class LayoutManager implements ILayoutManager {
       tags: ['grid', 'compact', 'medium'],
     });
 
-    // Hierarchical presets (ELK-based)
+    // Hierarchical presets (ELK-based) - V1 parity values
     this.registerPreset({
       id: 'hierarchical-topdown',
       name: 'Top-Down Flow',
       description: 'Hierarchical layout flowing downward',
       layoutType: LayoutType.HIERARCHICAL,
       settings: {
-        nodeSpacing: 100,
+        nodeSpacing: 120,
         edgeSpacing: 20,
         fitPadding: 20,
         animationDuration: 300,
-        compactness: 0.6,
+        compactness: 0,
         direction: 'DOWN',
-        layerSpacing: 80,
+        layerSpacing: 180,
         edgeRouting: 'ORTHOGONAL',
         alignment: 'CENTER',
-        edgeNodeSpacing: 15,
-        edgeEdgeSpacing: 10,
+        edgeNodeSpacing: 30,
+        edgeEdgeSpacing: 20,
         feedbackEdges: true,
       },
       constraints: {
@@ -186,17 +186,17 @@ export class LayoutManager implements ILayoutManager {
       description: 'Hierarchical layout flowing right',
       layoutType: LayoutType.HIERARCHICAL,
       settings: {
-        nodeSpacing: 80,
+        nodeSpacing: 120,
         edgeSpacing: 20,
         fitPadding: 20,
         animationDuration: 300,
-        compactness: 0.7,
+        compactness: 0,
         direction: 'RIGHT',
-        layerSpacing: 100,
+        layerSpacing: 180,
         edgeRouting: 'ORTHOGONAL',
         alignment: 'CENTER',
-        edgeNodeSpacing: 15,
-        edgeEdgeSpacing: 10,
+        edgeNodeSpacing: 30,
+        edgeEdgeSpacing: 20,
         feedbackEdges: true,
       },
       constraints: {
@@ -205,7 +205,7 @@ export class LayoutManager implements ILayoutManager {
       tags: ['hierarchical', 'leftright', 'flowchart'],
     });
 
-    // Tree presets (ELK-based with mrtree algorithm)
+    // Tree presets (ELK-based with mrtree algorithm) - V1 parity values
     this.registerPreset({
       id: 'tree-topdown',
       name: 'Tree Top-Down',
@@ -216,13 +216,13 @@ export class LayoutManager implements ILayoutManager {
         edgeSpacing: 20,
         fitPadding: 20,
         animationDuration: 300,
-        compactness: 0.7,
+        compactness: 0,
         direction: 'DOWN',
-        layerSpacing: 100,
+        layerSpacing: 180,
         edgeRouting: 'ORTHOGONAL',
         alignment: 'CENTER',
-        edgeNodeSpacing: 20,
-        edgeEdgeSpacing: 15,
+        edgeNodeSpacing: 30,
+        edgeEdgeSpacing: 20,
         compactComponents: false,
         separateComponents: false,
         componentSpacing: 60,
@@ -241,17 +241,17 @@ export class LayoutManager implements ILayoutManager {
       description: 'Tree layout flowing right',
       layoutType: LayoutType.TREE,
       settings: {
-        nodeSpacing: 100,
+        nodeSpacing: 120,
         edgeSpacing: 20,
         fitPadding: 20,
         animationDuration: 300,
-        compactness: 0.7,
+        compactness: 0,
         direction: 'RIGHT',
-        layerSpacing: 120,
+        layerSpacing: 180,
         edgeRouting: 'ORTHOGONAL',
         alignment: 'CENTER',
-        edgeNodeSpacing: 20,
-        edgeEdgeSpacing: 15,
+        edgeNodeSpacing: 30,
+        edgeEdgeSpacing: 20,
         compactComponents: false,
         separateComponents: false,
         componentSpacing: 60,

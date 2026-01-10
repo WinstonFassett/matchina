@@ -16,6 +16,8 @@ interface SimpleNodeData extends Record<string, unknown> {
  */
 const SimpleNode = ({ data }: NodeProps<any>) => {
   const getNodeStyle = () => {
+    const isDarkTheme = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+    
     if (data?.isActive) {
       return {
         background: '#3b82f6',
@@ -26,8 +28,8 @@ const SimpleNode = ({ data }: NodeProps<any>) => {
     }
     if (data?.isPrevious) {
       return {
-        background: '#f1f5f9',
-        color: '#475569',
+        background: isDarkTheme ? '#374151' : '#f1f5f9',
+        color: isDarkTheme ? '#d1d5db' : '#475569',
         borderColor: '#3b82f6',
         borderWidth: '2px',
         borderStyle: 'solid',
@@ -35,16 +37,16 @@ const SimpleNode = ({ data }: NodeProps<any>) => {
     }
     if (data?.isCompound) {
       return {
-        background: '#faf5ff',
-        color: '#1e293b',
-        borderColor: '#c4b5fd',
+        background: isDarkTheme ? 'rgba(139, 92, 246, 0.1)' : '#faf5ff',
+        color: isDarkTheme ? '#e9d5ff' : '#1e293b',
+        borderColor: isDarkTheme ? '#8b5cf6' : '#c4b5fd',
         borderStyle: 'dashed',
       };
     }
     return {
-      background: '#fff',
-      color: '#1e293b',
-      borderColor: '#e2e8f0',
+      background: isDarkTheme ? '#1f2937' : '#fff',
+      color: isDarkTheme ? '#f9fafb' : '#1e293b',
+      borderColor: isDarkTheme ? '#374151' : '#e2e8f0',
     };
   };
 

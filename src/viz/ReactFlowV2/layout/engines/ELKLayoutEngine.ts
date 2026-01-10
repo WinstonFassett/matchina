@@ -18,7 +18,7 @@ const ELKLayoutSettings = z.object({
   edgeSpacing: z.number().min(10).max(100).default(20),
   fitPadding: z.number().min(0).max(100).default(20),
   animationDuration: z.number().min(0).max(2000).default(300),
-  compactness: z.number().min(0).max(1).default(0.7),
+  compactness: z.number().min(0).max(1).default(0),
 
   // ELK algorithm - can be passed from LayoutManager for different layout types
   // Options: layered (Sugiyama), mrtree (Tree), force, stress
@@ -28,7 +28,7 @@ const ELKLayoutSettings = z.object({
   direction: z.enum(['DOWN', 'UP', 'LEFT', 'RIGHT']).default('DOWN'),
   
   // Layer/level spacing (between layers in layered/mrtree)
-  layerSpacing: z.number().min(40).max(300).default(100),
+  layerSpacing: z.number().min(40).max(400).default(180),
   
   // Edge routing style
   edgeRouting: z.enum(['ORTHOGONAL', 'POLYLINE', 'SPLINES']).default('ORTHOGONAL'),
@@ -37,8 +37,8 @@ const ELKLayoutSettings = z.object({
   alignment: z.enum(['CENTER', 'LEFT', 'RIGHT', 'TOP', 'BOTTOM']).default('CENTER'),
 
   // Edge-node spacing
-  edgeNodeSpacing: z.number().min(5).max(100).default(20),
-  edgeEdgeSpacing: z.number().min(5).max(100).default(15),
+  edgeNodeSpacing: z.number().min(5).max(100).default(30),
+  edgeEdgeSpacing: z.number().min(5).max(100).default(20),
   
   // Component handling (V1 parity)
   compactComponents: z.boolean().default(false),
@@ -50,6 +50,12 @@ const ELKLayoutSettings = z.object({
   
   // Feedback edges (cycle handling)
   feedbackEdges: z.boolean().default(true),
+  
+  // Advanced ELK options for fine-tuning (V1 parity)
+  nodePlacementStrategy: z.enum(['SIMPLE', 'NETWORK_SIMPLEX', 'BRANDES_KOEPF']).default('NETWORK_SIMPLEX'),
+  edgeRoutingStrategy: z.enum(['ORTHOGONAL', 'POLYLINE', 'SPLINES', 'STRAIGHT']).default('ORTHOGONAL'),
+  compactionStrategy: z.enum(['NONE', 'EDGE_LENGTH', 'NODE_DIMENSIONS']).default('NONE'),
+  cycleBreakingStrategy: z.enum(['GREEDY', 'DEPTH_FIRST', 'INTERACTIVE']).default('DEPTH_FIRST'),
 });
 
 type ELKLayoutSettings = z.infer<typeof ELKLayoutSettings>;
@@ -76,34 +82,14 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     try {
       const elkGraph = this.toElkGraph(nodes, edges, validatedSettings);
       
-      // Debug logging for ELK graph structure
-      console.log('🔧 ELK Graph structure:', {
-        nodeCount: nodes.length,
-        edgeCount: edges.length,
-        algorithm: (validatedSettings as any).algorithm || 'layered',
-        hasGroupNodes: nodes.some(n => n.type === 'group'),
-        elkGraphChildren: elkGraph.children?.length || 0,
-        elkGraphEdges: elkGraph.edges?.length || 0,
-        settings: validatedSettings
-      });
-
+      // DEBUG: Log V2 ELK options for comparison with V1
+      console.log('[V2 ELK] layoutOptions:', JSON.stringify(elkGraph.layoutOptions, null, 2));
+      console.log('[V2 ELK] node count:', elkGraph.children?.length);
+      console.log('[V2 ELK] first node dimensions:', elkGraph.children?.[0] ? { w: elkGraph.children[0].width, h: elkGraph.children[0].height } : 'none');
+      
       // Run ELK layout
       const layoutedGraph = await this.elk.layout(elkGraph);
       
-      // Debug logging for ELK results
-      console.log('🔍 ELK layout result:', {
-        hasChildren: !!layoutedGraph.children,
-        childCount: layoutedGraph.children?.length || 0,
-        firstChild: layoutedGraph.children?.[0] ? {
-          id: layoutedGraph.children[0].id,
-          x: layoutedGraph.children[0].x,
-          y: layoutedGraph.children[0].y,
-          width: layoutedGraph.children[0].width,
-          height: layoutedGraph.children[0].height,
-          hasChildren: !!layoutedGraph.children[0].children
-        } : null
-      });
-
       // Convert back to ReactFlow format
       const positionedNodes = this.extractNodePositions(nodes, layoutedGraph);
       const bounds = this.calculateBounds(positionedNodes, validatedSettings.fitPadding);
@@ -146,7 +132,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     const spacingMultiplier = 1 - settings.compactness * 0.3;
     const nodeSpacing = settings.nodeSpacing * spacingMultiplier;
     const layerSpacing = settings.layerSpacing * spacingMultiplier;
-    const groupPadding = 20;
+    const groupPadding = 50; // Match V1
     const isHorizontal = settings.direction === 'LEFT' || settings.direction === 'RIGHT';
     
     // Use algorithm from settings (now properly typed)
@@ -159,10 +145,13 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     // First pass: create all ELK nodes with hierarchy info
     for (const node of nodes) {
       const isGroup = node.type === 'group';
+      // V1 uses FIXED dimensions - this is critical for consistent layouts
+      const nodeWidth = 150;
+      const nodeHeight = 50;
       const elkNode: any = {
         id: node.id,
-        width: isGroup ? 300 : (node.measured?.width || node.width || 150),
-        height: isGroup ? 200 : (node.measured?.height || node.height || 40),
+        width: isGroup ? nodeWidth * 3 : nodeWidth, // Match V1: groups are 3x wider
+        height: isGroup ? nodeHeight * 4 : nodeHeight, // Match V1: groups are 4x taller
         targetPosition: isHorizontal ? 'left' : 'top',
         sourcePosition: isHorizontal ? 'right' : 'bottom',
         _originalNode: node, // Preserve for later
@@ -172,15 +161,10 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       // IMPORTANT: Group nodes must inherit the SAME algorithm as the root graph
       // This allows ALL layout types (force, stress, mrtree, etc.) to work with hierarchy
       if (isGroup) {
+        // V1 passes ALL elkOptions to groups, not a subset
+        // This is critical for consistent nested layouts
         elkNode.layoutOptions = {
-          // Inherit algorithm and hierarchy handling
-          'elk.algorithm': algorithm,
-          'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-          // Spacing inside groups - inherit from parent settings
-          'elk.spacing.nodeNode': String(nodeSpacing),
-          'elk.layered.spacing.nodeNodeBetweenLayers': String(layerSpacing),
-          // Extra top padding for group header label, generous side padding
-          'elk.padding': `[top=${groupPadding + 40},left=${groupPadding + 30},bottom=${groupPadding + 20},right=${groupPadding + 30}]`,
+          'elk.padding': `[top=${groupPadding + 35},left=${groupPadding + 20},bottom=${groupPadding + 35},right=${groupPadding + 20}]`,
         };
         elkNode.children = [];
       }
@@ -211,41 +195,51 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       targets: [edge.target],
     }));
 
-    // Build algorithm-specific options (matching V1 approach)
+    // Build options EXACTLY matching V1's getElkOptions()
     const layoutOptions: Record<string, string> = {
-      // Core algorithm
+      // V1 base options - EXACT copy
       'elk.algorithm': algorithm,
       'elk.direction': settings.direction,
-      
-      // Spacing
       'elk.spacing.nodeNode': String(nodeSpacing),
+      'elk.spacing.edgeEdge': String(settings.edgeEdgeSpacing), // V1: edgeSpacing
       'elk.spacing.edgeNode': String(settings.edgeNodeSpacing),
-      'elk.spacing.edgeEdge': String(settings.edgeEdgeSpacing),
       'elk.spacing.componentComponent': String(settings.componentSpacing),
-      
-      // Edge routing
-      'elk.edgeRouting': settings.edgeRouting,
-      
-      // Hierarchy handling
-      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-      
-      // Component handling (V1 parity)
       'elk.separateConnectedComponents': String(settings.separateComponents),
+      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+      'elk.layered.considerModelOrder.hierarchy': 'true',
+      'elk.layered.thoroughness': '7',
+      'elk.padding': '[top=50,left=50,bottom=50,right=50]',
     };
 
-    // Algorithm-specific options (matching V1's getElkOptions)
+    // Algorithm-specific options - EXACT copy of V1's switch statement
     switch (algorithm) {
       case 'layered':
         Object.assign(layoutOptions, {
+          // Layer spacing - this actually works
           'elk.layered.spacing.nodeNodeBetweenLayers': String(layerSpacing),
           'elk.layered.spacing.edgeNodeBetweenLayers': String(settings.edgeNodeSpacing),
+          
+          // Node placement strategy - affects layout quality
           'elk.layered.nodePlacement.strategy': settings.compactComponents ? 'SIMPLE' : 'NETWORK_SIMPLEX',
+          
+          // Cycle breaking
           'elk.layered.cycleBreaking.strategy': 'DEPTH_FIRST',
-          'elk.layered.edgeRouting.strategy': settings.edgeRouting,
-          'elk.layered.thoroughness': String(settings.thoroughness),
-          'elk.layered.feedbackEdges': String(settings.feedbackEdges),
-          'elk.layered.mergeEdges': 'true',
+          
+          // Edge routing - Basic orthogonal routing (V1 hardcodes these!)
+          'elk.layered.edgeRouting.selfLoopDistribution': 'EQUALLY',
+          'elk.layered.edgeRouting.selfLoopOrdering': 'SEQUENCED',
+          'elk.layered.edgeRouting.strategy': 'ORTHOGONAL',
+          'elk.layered.spacing.edgeNodeSpacing': '20', // V1 hardcodes to 20
+          'elk.layered.spacing.edgeEdgeSpacing': '15', // V1 hardcodes to 15
+          
+          // Compaction
           'elk.layered.compaction.postCompaction.strategy': settings.compactComponents ? 'EDGE_LENGTH' : 'NONE',
+          'elk.layered.compaction.postCompaction.constraints': 'SEQUENCE',
+          
+          // Thoroughness - affects crossing minimization iterations
+          'elk.layered.thoroughness': String(Math.max(1, Math.min(20, settings.thoroughness))),
+          
+          // Consider model order
           'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
         });
         break;
@@ -275,9 +269,13 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
         break;
     }
 
+    // V1 adds elk.edgeRouting at graph level
     return {
       id: 'root',
-      layoutOptions,
+      layoutOptions: {
+        ...layoutOptions,
+        'elk.edgeRouting': 'ORTHOGONAL', // V1 has this at graph level
+      },
       children: rootChildren,
       edges: elkEdges,
     };
@@ -296,11 +294,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
         const x = elkNode.x || 0;
         const y = elkNode.y || 0;
         
-        // Debug logging for NaN coordinates
-        if (Number.isNaN(x) || Number.isNaN(y)) {
-          console.error('🚨 ELK NaN coordinates for node:', elkNode.id, { x, y, elkNode });
-        }
-        
+                
         const rfNode: Node = {
           ...originalNode,
           position: { x, y },
@@ -479,19 +473,23 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
-      compactness: 0.7,
+      compactness: 0,
       algorithm: 'layered',
       direction: 'DOWN',
-      layerSpacing: 100,
+      layerSpacing: 180,
       edgeRouting: 'ORTHOGONAL',
       alignment: 'CENTER',
-      edgeNodeSpacing: 20,
+      edgeNodeSpacing: 30,
       edgeEdgeSpacing: 15,
       compactComponents: false,
       separateComponents: false,
       componentSpacing: 60,
       thoroughness: 7,
       feedbackEdges: true,
+      nodePlacementStrategy: 'NETWORK_SIMPLEX',
+      edgeRoutingStrategy: 'ORTHOGONAL',
+      compactionStrategy: 'NONE',
+      cycleBreakingStrategy: 'DEPTH_FIRST',
     };
   }
 

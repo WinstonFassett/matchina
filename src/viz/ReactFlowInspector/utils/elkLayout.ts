@@ -241,6 +241,11 @@ export const getLayoutedElements = async (
     })),
   };
 
+  // DEBUG: Log V1 ELK options for comparison
+  console.log('[V1 ELK] layoutOptions:', JSON.stringify(graph.layoutOptions, null, 2));
+  console.log('[V1 ELK] node count:', rootChildren.length);
+  console.log('[V1 ELK] first node dimensions:', rootChildren[0] ? { w: rootChildren[0].width, h: rootChildren[0].height } : 'none');
+
   try {
     const layoutedGraph = await elk.layout(graph);
 

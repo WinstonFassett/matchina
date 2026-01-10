@@ -297,6 +297,143 @@ html:not([data-theme="dark"]) .node.active polygon {
   stroke: rgb(147, 112, 219) !important;
 }
 
+/* ReactFlow V1 & V2 Dark Theme Controls Fix */
+html[data-theme="dark"] .react-flow__controls-button {
+  background: #1f2937 !important;
+  border-bottom: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+html[data-theme="dark"] .react-flow__controls-button:hover {
+  background: #374151 !important;
+  color: #f9fafb !important;
+}
+
+/* ReactFlow V1 & V2 Dark Theme Minimap */
+html[data-theme="dark"] .react-flow__minimap {
+  background: #1f2937 !important;
+}
+
+/* ReactFlow V1 & V2 Background Theme - Use CSS variables */
+html[data-theme="dark"] .react-flow {
+  --xy-background-pattern-dots-color: #4b5563;
+  --xy-background-pattern-line-color: #4b5563;
+  --xy-background-pattern-cross-color: #4b5563;
+}
+
+html[data-theme="light"] .react-flow {
+  --xy-background-pattern-dots-color: #9ca3af;
+  --xy-background-pattern-line-color: #9ca3af;
+  --xy-background-pattern-cross-color: #9ca3af;
+}
+
+/* ReactFlow V1 & V2 Dark Theme Attribution */
+html[data-theme="dark"] .react-flow__attribution {
+  background: rgba(31, 41, 55, 0.8) !important;
+}
+
+/* ReactFlow V1 & V2 Dark Theme Selection */
+html[data-theme="dark"] .react-flow__selection {
+  background: rgba(59, 130, 246, 0.08) !important;
+  border: 1px dotted rgba(59, 130, 246, 0.8) !important;
+}
+
+/* ReactFlow V1 & V2 Dark Theme Resize Handle */
+html[data-theme="dark"] .react-flow__resize {
+  background: #4b5563 !important;
+}
+
+/* ReactFlow V1 & V2 Dark Theme Handles */
+html[data-theme="dark"] .react-flow__handle {
+  background: #374151 !important;
+  border: 1px solid #6b7280 !important;
+}
+
+/* ReactFlow V1 & V2 Node Theming */
+html[data-theme="dark"] .react-flow__node {
+  background: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+html[data-theme="light"] .react-flow__node {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+
+/* ReactFlow V1 & V2 Edge Label Theming */
+html[data-theme="dark"] .react-flow__edge-text {
+  fill: #d1d5db !important;
+}
+
+html[data-theme="light"] .react-flow__edge-text {
+  fill: #374151 !important;
+}
+
+/* Active edge labels - blue like hyperlinks */
+html[data-theme="dark"] .react-flow__edge[data-is-clickable="true"] .react-flow__edge-text {
+  fill: #60a5fa !important;
+  cursor: pointer !important;
+  transition: fill 0.2s ease !important;
+}
+
+html[data-theme="light"] .react-flow__edge[data-is-clickable="true"] .react-flow__edge-text {
+  fill: #2563eb !important;
+  cursor: pointer !important;
+  transition: fill 0.2s ease !important;
+}
+
+/* Hover states for clickable edge labels - button-like */
+html[data-theme="dark"] .react-flow__edge[data-is-clickable="true"]:hover .react-flow__edge-text {
+  fill: #93c5fd !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .react-flow__edge[data-is-clickable="true"]:hover .react-flow__edge-text {
+  fill: #1d4ed8 !important;
+  font-weight: 600 !important;
+}
+
+/* Hover states for clickable edges - highlight both edge and label */
+html[data-theme="dark"] .react-flow__edge[data-is-clickable="true"]:hover {
+  stroke: #60a5fa !important;
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.4)) !important;
+  transition: all 0.2s ease !important;
+}
+
+html[data-theme="light"] .react-flow__edge[data-is-clickable="true"]:hover {
+  stroke: #2563eb !important;
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.4)) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Previous->Current transition edges - enhanced hover */
+html[data-theme="dark"] .react-flow__edge[data-is-transition-from-previous="true"]:hover {
+  stroke: #60a5fa !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 12px rgba(96, 165, 250, 0.6)) !important;
+}
+
+html[data-theme="light"] .react-flow__edge[data-is-transition-from-previous="true"]:hover {
+  stroke: #2563eb !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 12px rgba(37, 99, 235, 0.6)) !important;
+}
+
+/* Previous->Current transition edge labels - animated blue */
+html[data-theme="dark"] .react-flow__edge[data-is-transition-from-previous="true"] .react-flow__edge-text {
+  fill: #60a5fa !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .react-flow__edge[data-is-transition-from-previous="true"] .react-flow__edge-text {
+  fill: #2563eb !important;
+  font-weight: 600 !important;
+}
+
 /* Flowchart active container (parent highlighting) */
 .node.active-container path,
 .node.active-container rect {
