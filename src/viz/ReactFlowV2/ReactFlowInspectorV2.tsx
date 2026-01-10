@@ -239,9 +239,9 @@ function ReactFlowInspectorInner({
         type: 'floating',
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
       }}
-      // Remove fitView to prevent auto-fit on node updates
-      minZoom={0.1}
-      maxZoom={2}
+      // Match V1 zoom range for better legibility
+      minZoom={0.001}
+      maxZoom={10}
       proOptions={{ hideAttribution: true }}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
@@ -261,7 +261,7 @@ function ReactFlowInspectorInner({
  */
 export default function ReactFlowInspectorV2(props: ReactFlowInspectorV2Props) {
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: 400 }}>
+    <div style={{ width: '100%', height: '100%', minHeight: 400, display: 'flex' }}>
       <ReactFlowInspectorInner {...props} />
     </div>
   );
