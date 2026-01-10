@@ -51,7 +51,8 @@ const ELKLayoutSettings = z.object({
   // Feedback edges (cycle handling)
   feedbackEdges: z.boolean().default(true),
   
-  // Alternating direction - ALWAYS ON for hierarchical layouts
+  // Alternating direction - EXPERIMENTAL FEATURE
+  alternatingDirection: z.boolean().default(false), // OFF by default
   primaryDirection: z.enum(['DOWN', 'RIGHT']).default('DOWN'),
   secondaryDirection: z.enum(['DOWN', 'RIGHT']).default('RIGHT'),
   
@@ -254,24 +255,26 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
         // This is critical for consistent nested layouts
         const groupLayoutOptions = this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing);
         
-        // Apply alternating direction - ALWAYS ON for hierarchical layouts
-        const level = elkNode._hierarchyLevel;
-        const childDirection = (level % 2 === 0) ? settings.secondaryDirection : settings.primaryDirection;
-        
-        // Override the direction in the layout options
-        groupLayoutOptions['elk.direction'] = childDirection;
-        
-        // CRITICAL: For layered algorithm, try using tree algorithm for nested groups
-        if (algorithm === 'layered') {
-          // For layered, try switching to tree algorithm for nested groups to enable alternation
-          groupLayoutOptions['elk.algorithm'] = 'mrtree';
-          groupLayoutOptions['elk.layered.considerModelOrder.hierarchy'] = 'true';
-          groupLayoutOptions['elk.hierarchyHandling'] = 'INCLUDE_CHILDREN';
+        // Apply alternating direction - EXPERIMENTAL FEATURE
+        if (settings.alternatingDirection) {
+          const level = elkNode._hierarchyLevel;
+          const childDirection = (level % 2 === 0) ? settings.secondaryDirection : settings.primaryDirection;
+          
+          // Override the direction in the layout options
+          groupLayoutOptions['elk.direction'] = childDirection;
+          
+          // CRITICAL: For layered algorithm, try using tree algorithm for nested groups
+          if (algorithm === 'layered') {
+            // For layered, try switching to tree algorithm for nested groups to enable alternation
+            groupLayoutOptions['elk.algorithm'] = 'mrtree';
+            groupLayoutOptions['elk.layered.considerModelOrder.hierarchy'] = 'true';
+            groupLayoutOptions['elk.hierarchyHandling'] = 'INCLUDE_CHILDREN';
+          }
+          
+          // DEBUG: Log what direction we're applying
+          console.log(`[ALTERNATING] Level ${level} (${node.id}) using direction: ${childDirection} for algorithm ${algorithm}`);
+          console.log(`[ALTERNATING] Group layoutOptions:`, JSON.stringify(groupLayoutOptions, null, 2));
         }
-        
-        // DEBUG: Log what direction we're applying
-        console.log(`[ALTERNATING] Level ${level} (${node.id}) using direction: ${childDirection} for algorithm ${algorithm}`);
-        console.log(`[ALTERNATING] Group layoutOptions:`, JSON.stringify(groupLayoutOptions, null, 2));
         
         elkNode.layoutOptions = {
           ...groupLayoutOptions,
@@ -313,8 +316,10 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     // Use the same layout options for root graph (like V1)
     const layoutOptions = this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing);
 
-    // Apply alternating direction to root - use primary direction
-    layoutOptions['elk.direction'] = settings.primaryDirection;
+    // Apply alternating direction to root - EXPERIMENTAL FEATURE
+    if (settings.alternatingDirection) {
+      layoutOptions['elk.direction'] = settings.primaryDirection;
+    }
     
     // CRITICAL: For layered algorithm, ensure proper hierarchy handling for nested groups
     if (algorithm === 'layered') {
@@ -570,6 +575,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       componentSpacing: 60,
       thoroughness: 7,
       feedbackEdges: true,
+      alternatingDirection: false, // OFF by default
       primaryDirection: 'DOWN',
       secondaryDirection: 'RIGHT',
       nodePlacementStrategy: 'NETWORK_SIMPLEX',
