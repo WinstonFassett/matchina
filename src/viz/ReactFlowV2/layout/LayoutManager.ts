@@ -155,11 +155,12 @@ export class LayoutManager implements ILayoutManager {
     });
 
     // Hierarchical presets (ELK-based) - V1 parity values
+    // Use TREE layout type (mrtree algorithm) to match V1 behavior for hierarchical layouts
     this.registerPreset({
       id: 'hierarchical-topdown',
       name: 'Top-Down Flow',
       description: 'Hierarchical layout flowing downward',
-      layoutType: LayoutType.HIERARCHICAL,
+      layoutType: LayoutType.TREE, // Use TREE (mrtree) like V1, not HIERARCHICAL (layered)
       settings: {
         nodeSpacing: 120,
         edgeSpacing: 20,

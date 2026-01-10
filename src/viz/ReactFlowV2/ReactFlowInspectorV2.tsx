@@ -208,7 +208,7 @@ function ReactFlowInspectorInner({
       const duration = isFirstRender.current ? 500 : 300;
       isFirstRender.current = false;
       setTimeout(() => {
-        fitView({ padding: 0.2, duration });
+        fitView({ padding: 0.3, duration });
       }, 100);
     }
   }, [layoutKey, layoutNodes.length, fitView]);
