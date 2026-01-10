@@ -123,78 +123,12 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     return this.calculateLayoutAsync(nodes, edges, this.validateSettings(settings));
   }
 
-  private toElkGraph(
-    nodes: Node[],
-    edges: Edge[],
-    settings: ELKLayoutSettings
-  ): ElkNode {
-    // Apply compactness to spacing
-    const spacingMultiplier = 1 - settings.compactness * 0.3;
-    const nodeSpacing = settings.nodeSpacing * spacingMultiplier;
-    const layerSpacing = settings.layerSpacing * spacingMultiplier;
-    const groupPadding = 50; // Match V1
-    const isHorizontal = settings.direction === 'LEFT' || settings.direction === 'RIGHT';
-    
-    // Use algorithm from settings (now properly typed)
-    const algorithm = settings.algorithm;
-
-    // Build hierarchy - children must be nested inside parents for ELK to handle sizing
-    const nodeMap = new Map<string, any>();
-    const rootChildren: any[] = [];
-
-    // First pass: create all ELK nodes with hierarchy info
-    for (const node of nodes) {
-      const isGroup = node.type === 'group';
-      // V1 uses FIXED dimensions - this is critical for consistent layouts
-      const nodeWidth = 150;
-      const nodeHeight = 50;
-      const elkNode: any = {
-        id: node.id,
-        width: isGroup ? nodeWidth * 3 : nodeWidth, // Match V1: groups are 3x wider
-        height: isGroup ? nodeHeight * 4 : nodeHeight, // Match V1: groups are 4x taller
-        targetPosition: isHorizontal ? 'left' : 'top',
-        sourcePosition: isHorizontal ? 'right' : 'bottom',
-        _originalNode: node, // Preserve for later
-      };
-
-      // Group nodes need padding and layout options for children
-      // IMPORTANT: Group nodes must inherit the SAME algorithm as the root graph
-      // This allows ALL layout types (force, stress, mrtree, etc.) to work with hierarchy
-      if (isGroup) {
-        // V1 passes ALL elkOptions to groups, not a subset
-        // This is critical for consistent nested layouts
-        elkNode.layoutOptions = {
-          'elk.padding': `[top=${groupPadding + 35},left=${groupPadding + 20},bottom=${groupPadding + 35},right=${groupPadding + 20}]`,
-        };
-        elkNode.children = [];
-      }
-
-      nodeMap.set(node.id, elkNode);
-    }
-
-    // Second pass: build hierarchy by nesting children inside parents
-    for (const node of nodes) {
-      const elkNode = nodeMap.get(node.id);
-      const parentId = (node as any).parentId;
-
-      if (parentId && nodeMap.has(parentId)) {
-        // This is a child - add to parent's children array
-        const parentNode = nodeMap.get(parentId);
-        if (parentNode.children) {
-          parentNode.children.push(elkNode);
-        }
-      } else {
-        // This is a root-level node
-        rootChildren.push(elkNode);
-      }
-    }
-
-    const elkEdges: ElkExtendedEdge[] = edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    }));
-
+  private buildLayoutOptions(
+    algorithm: string,
+    settings: ELKLayoutSettings,
+    nodeSpacing: number,
+    layerSpacing: number
+  ): Record<string, string> {
     // Build options EXACTLY matching V1's getElkOptions()
     const layoutOptions: Record<string, string> = {
       // V1 base options - EXACT copy
@@ -268,6 +202,85 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
         });
         break;
     }
+
+    return layoutOptions;
+  }
+
+  private toElkGraph(
+    nodes: Node[],
+    edges: Edge[],
+    settings: ELKLayoutSettings
+  ): ElkNode {
+    // Apply compactness to spacing
+    const spacingMultiplier = 1 - settings.compactness * 0.3;
+    const nodeSpacing = settings.nodeSpacing * spacingMultiplier;
+    const layerSpacing = settings.layerSpacing * spacingMultiplier;
+    const groupPadding = 50; // Match V1
+    const isHorizontal = settings.direction === 'LEFT' || settings.direction === 'RIGHT';
+    
+    // Use algorithm from settings (now properly typed)
+    const algorithm = settings.algorithm;
+
+    // Build hierarchy - children must be nested inside parents for ELK to handle sizing
+    const nodeMap = new Map<string, any>();
+    const rootChildren: any[] = [];
+
+    // First pass: create all ELK nodes with hierarchy info
+    for (const node of nodes) {
+      const isGroup = node.type === 'group';
+      // V1 uses FIXED dimensions - this is critical for consistent layouts
+      const nodeWidth = 150;
+      const nodeHeight = 50;
+      const elkNode: any = {
+        id: node.id,
+        width: isGroup ? nodeWidth * 3 : nodeWidth, // Match V1: groups are 3x wider
+        height: isGroup ? nodeHeight * 4 : nodeHeight, // Match V1: groups are 4x taller
+        targetPosition: isHorizontal ? 'left' : 'top',
+        sourcePosition: isHorizontal ? 'right' : 'bottom',
+        _originalNode: node, // Preserve for later
+      };
+
+      // Group nodes need padding and layout options for children
+      // IMPORTANT: Group nodes must inherit the SAME algorithm as the root graph
+      // This allows ALL layout types (force, stress, mrtree, etc.) to work with hierarchy
+      if (isGroup) {
+        // V1 passes ALL elkOptions to groups, not a subset
+        // This is critical for consistent nested layouts
+        elkNode.layoutOptions = {
+          ...this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing), // SPREAD ALL OPTIONS LIKE V1
+          'elk.padding': `[top=${groupPadding + 35},left=${groupPadding + 20},bottom=${groupPadding + 35},right=${groupPadding + 20}]`,
+        };
+        elkNode.children = [];
+      }
+
+      nodeMap.set(node.id, elkNode);
+    }
+
+    // Second pass: build hierarchy by nesting children inside parents
+    for (const node of nodes) {
+      const elkNode = nodeMap.get(node.id);
+      const parentId = (node as any).parentId;
+
+      if (parentId && nodeMap.has(parentId)) {
+        // This is a child - add to parent's children array
+        const parentNode = nodeMap.get(parentId);
+        if (parentNode.children) {
+          parentNode.children.push(elkNode);
+        }
+      } else {
+        // This is a root-level node
+        rootChildren.push(elkNode);
+      }
+    }
+
+    const elkEdges: ElkExtendedEdge[] = edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    }));
+
+    // Use the same layout options for root graph (like V1)
+    const layoutOptions = this.buildLayoutOptions(algorithm, settings, nodeSpacing, layerSpacing);
 
     // V1 adds elk.edgeRouting at graph level
     return {
