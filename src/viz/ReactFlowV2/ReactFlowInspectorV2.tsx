@@ -174,6 +174,24 @@ function ReactFlowInspectorInner({
     setEdges(processedEdges);
   }, [processedEdges, setEdges]);
 
+  // CRITICAL: Re-apply highlighting when nodes change (layout changes)
+  // This ensures highlighting is preserved during layout transitions
+  useEffect(() => {
+    // When nodes change due to layout, re-apply highlighting
+    setNodes(currentNodes => 
+      currentNodes.map(node => ({
+        ...node,
+        // Preserve position from current node (layout changes)
+        position: node.position,
+        data: {
+          ...node.data,
+          isActive: node.id === value,
+          isPrevious: node.id === previousState,
+        },
+      }))
+    );
+  }, [layoutNodes, value, previousState, setNodes]);
+
   // Fit view on first render and when layout changes (not when highlighting changes)
   // Create a stable key based on node positions, not highlighting state
   const layoutKey = useMemo(() => {
