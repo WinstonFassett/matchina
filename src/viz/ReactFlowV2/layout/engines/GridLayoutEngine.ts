@@ -40,63 +40,51 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
     // Validate settings
     const validatedSettings = this.validateSettings(settings);
     
-    // Calculate grid dimensions
-    const nodeCount = nodes.length;
-    // Support both 'cols' and 'columns' (UI sends 'columns')
-    const cols = validatedSettings.cols || validatedSettings.columns || this.calculateOptimalCols(nodeCount);
-    const rows = Math.ceil(nodeCount / cols);
+    // Separate nodes by hierarchy
+    const { rootNodes, childNodesMap } = this.separateHierarchy(nodes);
     
-    // Apply compactness to spacing
-    const nodeSpacing = validatedSettings.nodeSpacing * (1 - validatedSettings.compactness * 0.5);
+    // Layout root nodes first
+    const positionedRootNodes = this.layoutNodes(rootNodes, validatedSettings, { x: 0, y: 0 });
     
-    // Calculate positions
-    const positionedNodes = nodes.map((node, index) => {
-      const row = Math.floor(index / cols);
-      const col = index % cols;
-      
-      let x = col * nodeSpacing;
-      let y = row * nodeSpacing;
-      
-      // Apply alignment
-      if (validatedSettings.direction === 'row') {
-        // For row direction, align horizontally
-        const gridWidth = (cols - 1) * nodeSpacing;
-        if (validatedSettings.alignment === 'center') {
-          x -= gridWidth / 2;
-        } else if (validatedSettings.alignment === 'end') {
-          x -= gridWidth;
-        }
-      } else {
-        // For column direction, align vertically
-        const gridHeight = (rows - 1) * nodeSpacing;
-        if (validatedSettings.alignment === 'center') {
-          y -= gridHeight / 2;
-        } else if (validatedSettings.alignment === 'end') {
-          y -= gridHeight;
-        }
+    // Layout child nodes relative to their parents
+    const positionedChildNodes: Node[] = [];
+    for (const [parentId, children] of childNodesMap.entries()) {
+      const parentNode = positionedRootNodes.find(n => n.id === parentId);
+      if (parentNode) {
+        const positionedChildren = this.layoutNodes(children, validatedSettings, parentNode.position);
+        positionedChildNodes.push(...positionedChildren);
+        
+        // Update parent size to contain children
+        const parentBounds = this.calculateBounds(positionedChildren, 20); // 20px padding
+        const updatedParent = {
+          ...parentNode,
+          style: {
+            ...parentNode.style,
+            width: Math.max(150, parentBounds.width + 40), // Min width + padding
+            height: Math.max(50, parentBounds.height + 40), // Min height + padding
+          },
+        };
+        // Replace in positionedRootNodes
+        const parentIndex = positionedRootNodes.findIndex(n => n.id === parentId);
+        positionedRootNodes[parentIndex] = updatedParent;
       }
-      
-      return {
-        ...node,
-        position: { x, y },
-      };
-    });
-
+    }
+    
+    const allPositionedNodes = [...positionedRootNodes, ...positionedChildNodes];
+    
     // Calculate bounds
-    const bounds = this.calculateBounds(positionedNodes, validatedSettings.fitPadding);
+    const bounds = this.calculateBounds(allPositionedNodes, validatedSettings.fitPadding);
     
     const endTime = performance.now();
     
     return {
-      nodes: positionedNodes,
+      nodes: allPositionedNodes,
       edges: edges, // Grid layout doesn't modify edges
       bounds,
       metadata: {
         layoutType: this.type,
-        nodeCount,
-        edgeCount: edges.length,
-        calculationTime: endTime - startTime,
-        converged: true, // Grid layout always converges
+        nodeCount: nodes.length,
+        duration: endTime - startTime,
       },
     };
   }
@@ -130,7 +118,72 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
     return Math.ceil(Math.sqrt(nodeCount));
   }
 
-  private calculateBounds(nodes: Node[], padding: number) {
+  private separateHierarchy(nodes: Node[]): { rootNodes: Node[]; childNodesMap: Map<string, Node[]> } {
+    const childNodesMap = new Map<string, Node[]>();
+    const rootNodes: Node[] = [];
+
+    for (const node of nodes) {
+      const parentId = (node as any).parentId;
+      if (parentId) {
+        // This is a child node
+        if (!childNodesMap.has(parentId)) {
+          childNodesMap.set(parentId, []);
+        }
+        childNodesMap.get(parentId)!.push(node);
+      } else {
+        // This is a root node
+        rootNodes.push(node);
+      }
+    }
+
+    return { rootNodes, childNodesMap };
+  }
+
+  private layoutNodes(nodes: Node[], settings: GridLayoutSettings, offset: { x: number; y: number }): Node[] {
+    // Calculate grid dimensions
+    const nodeCount = nodes.length;
+    // Support both 'cols' and 'columns' (UI sends 'columns')
+    const cols = settings.cols || settings.columns || this.calculateOptimalCols(nodeCount);
+    const rows = Math.ceil(nodeCount / cols);
+    
+    // Apply compactness to spacing
+    const nodeSpacing = settings.nodeSpacing * (1 - settings.compactness * 0.5);
+    
+    // Calculate positions
+    return nodes.map((node, index) => {
+      const row = Math.floor(index / cols);
+      const col = index % cols;
+      
+      let x = col * nodeSpacing + offset.x;
+      let y = row * nodeSpacing + offset.y;
+      
+      // Apply alignment
+      if (settings.direction === 'row') {
+        // For row direction, align horizontally
+        const gridWidth = (cols - 1) * nodeSpacing;
+        if (settings.alignment === 'center') {
+          x -= gridWidth / 2;
+        } else if (settings.alignment === 'end') {
+          x -= gridWidth;
+        }
+      } else {
+        // For column direction, align vertically
+        const gridHeight = (rows - 1) * nodeSpacing;
+        if (settings.alignment === 'center') {
+          y -= gridHeight / 2;
+        } else if (settings.alignment === 'end') {
+          y -= gridHeight;
+        }
+      }
+      
+      return {
+        ...node,
+        position: { x, y },
+      };
+    });
+  }
+
+  private calculateBounds(nodes: Node[], padding: number): { x: number; y: number; width: number; height: number } {
     if (nodes.length === 0) {
       return { x: 0, y: 0, width: 0, height: 0 };
     }
