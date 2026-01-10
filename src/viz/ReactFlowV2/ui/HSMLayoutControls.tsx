@@ -138,7 +138,7 @@ export function HSMLayoutControls({
                 type="range"
                 min="50"
                 max="500"
-                value={currentSettings?.nodeSpacing || 120}
+                value={currentSettings?.nodeSpacing || 400}
                 onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
                 className="w-full"
               />
@@ -174,7 +174,7 @@ export function HSMLayoutControls({
                     type="range"
                     min="40"
                     max="400"
-                    value={currentSettings?.layerSpacing || 180}
+                    value={currentSettings?.layerSpacing || 300}
                     onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
                     className="w-full"
                   />

@@ -20,6 +20,8 @@
 
 ### Round 3 - Making Non-Hierarchical Layouts do Hierarchical Layout
 
+NO YOU ARE NOT DONE YET!!!
+
 We have some layout that don't really do hierarchy. YET.
 
 Sugiyama, Tree, Force all layout nested descendants and their container to contain its children.
@@ -30,7 +32,19 @@ The others do not. Also their defaults are terrible. They have not gotten as muc
 		- [ ] organic 
 			- [ ] lays out child node internally but does not layout that as a node alongside its peers. 
 			- [ ] is jumbled.
-		- [ ] circular does not lay out children, does not remotely have enough spacing between nodes, is a mess.
+		- [ ] circular 
+			- [ ] does not lay out children, 
+			- [ ] does not remotely have enough spacing between nodes, is a mess. is jumbled
+		- [ ] grid
+			- [ ] does not lay out children, 
+			- [ ] does not remotely have enough spacing between nodes, is a mess. is jumb
+
+Do you remember what I said about spacing? 
+- [ ] We need to consider spacing between nodes that allows for roughly a 75-100% of an average node width between them to accommodate EDGE labels!
+
+
+
+
 
 - [x] Also, the settings should, like our other defaults for better working layouts, be configured for use with ReactFlow nodes and our expected default sizes ie of nodes and of labels being about half height and half width of nodes. 
 - [x] Grid layout options could be better. I thought there was a way to specify rows or cols and have a max or something. 

@@ -603,27 +603,27 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
 
   getDefaultSettings(): ELKLayoutSettings {
     return {
-      // Based on actual ReactFlow node dimensions (~132px × 50px)
-      // User formula: 0.5 node + spacing + 0.25 node + spacing + 0.5 node
-      nodeSpacing: 150,    // ~1.1x node width for comfortable horizontal spacing
+      // CRITICAL: Spacing for edge labels (75-100% of node width)
+      // For 132px nodes: 99-132px for edge labels + nodes = 363-396px center-to-center
+      nodeSpacing: 400,    // ~3.0x node width for edge labels (was 150)
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
       compactness: 0,
       algorithm: 'layered',
       direction: 'DOWN',
-      layerSpacing: 200,    // ~4.0x node height for clear vertical separation
+      layerSpacing: 300,    // Increased for edge labels between layers (was 200)
       edgeRouting: 'ORTHOGONAL',
       alignment: 'CENTER',
-      edgeNodeSpacing: 40,    // Clear edge-to-node clearance for labels
-      edgeEdgeSpacing: 20,    // Minimum edge-to-edge spacing
+      edgeNodeSpacing: 60,    // Increased for edge label clearance (was 40)
+      edgeEdgeSpacing: 30,    // Increased for multiple edge labels (was 20)
       
       // Hierarchy settings for HSM support
       hierarchyHandling: 'INCLUDE_CHILDREN',
-      paddingTop: 60,        // Increased padding for larger nodes
-      paddingLeft: 60,
-      paddingBottom: 60,
-      paddingRight: 60,
+      paddingTop: 80,        // Increased for larger spacing (was 60)
+      paddingLeft: 80,
+      paddingBottom: 80,
+      paddingRight: 80,
       
       // Algorithm-specific settings (keep for completeness)
       iterationLimit: 150,
@@ -631,7 +631,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       
       compactComponents: false,
       separateComponents: false,
-      componentSpacing: 60,
+      componentSpacing: 80,   // Increased for edge labels (was 60)
       thoroughness: 7,
       feedbackEdges: true,
       alternatingDirection: false, // OFF by default
