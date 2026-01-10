@@ -52,6 +52,9 @@ export default function FloatingEdge({
   style,
   data,
 }: EdgeProps<any>) {
+  // Detect theme for styling
+  const isDarkTheme = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+  
   // Add CSS animation for dashed edges (client-side only)
   useEffect(() => {
     addDashAnimation();
@@ -286,10 +289,10 @@ export default function FloatingEdge({
               fontWeight: 600,
               pointerEvents: 'all',
               cursor: data?.isClickable ? 'pointer' : 'default',
-              // Active edges use link-like blue styling, clickable edges show hover effect
-              background: isActive ? 'rgb(30 58 138)' : 'rgb(31 41 55)',
-              border: isActive ? '2px solid rgb(59 130 246)' : '1px solid rgb(75 85 99)',
-              color: isActive ? 'rgb(147 197 253)' : 'rgb(229 231 235)',
+              // Theme-aware label styling
+              background: isActive ? 'rgb(30 58 138)' : (isDarkTheme ? 'rgb(31 41 55)' : 'rgb(255 255 255)'),
+              border: isActive ? '2px solid rgb(59 130 246)' : `1px solid ${isDarkTheme ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}`,
+              color: isActive ? 'rgb(147 197 253)' : (isDarkTheme ? 'rgb(229 231 235)' : 'rgb(31 41 55)'),
               // Ensure labels are above edge lines
               zIndex: isActive ? 1000 : 100,
               // Make clickable labels more prominent
