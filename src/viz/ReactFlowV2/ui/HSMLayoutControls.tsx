@@ -219,193 +219,43 @@ export function HSMLayoutControls({
               </>
             )}
 
-            {/* Advanced ELK options for all ELK-based layouts */}
-            {(currentLayoutType === LayoutType.HIERARCHICAL || currentLayoutType === LayoutType.TREE || currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
+            {/* Force/Organic - layer spacing controls distance */}
+            {(currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
               <>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Edge Routing</label>
-                  <select
-                    value={currentSettings?.edgeRoutingStrategy || 'ORTHOGONAL'}
-                    onChange={(e) => handleSettingChange('edgeRoutingStrategy', e.target.value)}
-                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <option value="ORTHOGONAL">Orthogonal (Manhattan)</option>
-                    <option value="POLYLINE">Polyline</option>
-                    <option value="SPLINES">Curved</option>
-                    <option value="STRAIGHT">Straight</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Node Placement</label>
-                  <select
-                    value={currentSettings?.nodePlacementStrategy || 'NETWORK_SIMPLEX'}
-                    onChange={(e) => handleSettingChange('nodePlacementStrategy', e.target.value)}
-                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <option value="NETWORK_SIMPLEX">Network Simplex (Best)</option>
-                    <option value="SIMPLE">Simple (Fast)</option>
-                    <option value="BRANDES_KOEPF">Brandes-Koepf</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Compaction</label>
-                  <select
-                    value={currentSettings?.compactionStrategy || 'NONE'}
-                    onChange={(e) => handleSettingChange('compactionStrategy', e.target.value)}
-                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <option value="NONE">None (Spacious)</option>
-                    <option value="EDGE_LENGTH">Edge Length</option>
-                    <option value="NODE_DIMENSIONS">Node Dimensions</option>
-                  </select>
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Node Spacing: {currentSettings?.nodeSpacing || 150}
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="300"
+                    value={currentSettings?.nodeSpacing || 150}
+                    onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Horizontal spacing between nodes (~1.1x node width)
+                  </p>
                 </div>
 
                 <div>
                   <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Thoroughness: {currentSettings?.thoroughness || 7}
+                    Layer Spacing: {currentSettings?.layerSpacing || 200}
                   </label>
                   <input
                     type="range"
-                    min="1"
-                    max="20"
-                    value={currentSettings?.thoroughness || 7}
-                    onChange={(e) => handleSettingChange('thoroughness', Number(e.target.value))}
+                    min="50"
+                    max="400"
+                    value={currentSettings?.layerSpacing || 200}
+                    onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>Fast</span>
-                    <span>Quality</span>
-                  </div>
-                </div>
-
-                {/* NEW: Critical missing settings */}
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Hierarchy Handling</label>
-                  <select
-                    value={currentSettings?.hierarchyHandling || 'INCLUDE_CHILDREN'}
-                    onChange={(e) => handleSettingChange('hierarchyHandling', e.target.value)}
-                    className="w-full mt-1 px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                  >
-                    <option value="INCLUDE_CHILDREN">Include Children (HSM)</option>
-                    <option value="SEPARATE_CHILDREN">Separate Children</option>
-                    <option value="INHERIT">Inherit</option>
-                  </select>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    How to handle parent-child relationships in layout
+                    Vertical spacing between layers (~4.0x node height)
                   </p>
                 </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Container Padding</label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <div>
-                      <label className="text-xs text-gray-500">Top</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={currentSettings?.paddingTop || 50}
-                        onChange={(e) => handleSettingChange('paddingTop', Number(e.target.value))}
-                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">Bottom</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={currentSettings?.paddingBottom || 50}
-                        onChange={(e) => handleSettingChange('paddingBottom', Number(e.target.value))}
-                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">Left</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={currentSettings?.paddingLeft || 50}
-                        onChange={(e) => handleSettingChange('paddingLeft', Number(e.target.value))}
-                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">Right</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={currentSettings?.paddingRight || 50}
-                        onChange={(e) => handleSettingChange('paddingRight', Number(e.target.value))}
-                        className="w-full px-2 py-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Padding around container nodes for child spacing
-                  </p>
-                </div>
-
-                {/* Algorithm-specific performance controls */}
-                {currentLayoutType === LayoutType.HIERARCHICAL && (
-                  <div>
-                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                      Iteration Limit (Stress): {currentSettings?.iterationLimit || 150}
-                    </label>
-                    <input
-                      type="range"
-                      min="50"
-                      max="500"
-                      value={currentSettings?.iterationLimit || 150}
-                      onChange={(e) => handleSettingChange('iterationLimit', Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Maximum iterations for stress algorithm convergence
-                    </p>
-                  </div>
-                )}
-
-                {(currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
-                  <div>
-                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                      Force Iterations: {currentSettings?.forceIterations || 300}
-                    </label>
-                    <input
-                      type="range"
-                      min="50"
-                      max="1000"
-                      value={currentSettings?.forceIterations || 300}
-                      onChange={(e) => handleSettingChange('forceIterations', Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Number of iterations for force-directed layout
-                    </p>
-                  </div>
-                )}
               </>
-            )}
-
-            {/* Force/Organic - layer spacing controls distance */}
-            {(currentLayoutType === LayoutType.FORCE_DIRECTED || currentLayoutType === LayoutType.ORGANIC) && (
-              <div>
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  Edge Length: {currentSettings?.layerSpacing || 100}
-                </label>
-                <input
-                  type="range"
-                  min="40"
-                  max="300"
-                  value={currentSettings?.layerSpacing || 100}
-                  onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
             )}
 
             {/* Grid-specific settings */}

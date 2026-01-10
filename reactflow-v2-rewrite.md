@@ -25,7 +25,12 @@ We have some layout that don't really do hierarchy. YET.
 Sugiyama, Tree, Force all layout nested descendants and their container to contain its children.
 
 The others do not. Also their defaults are terrible. They have not gotten as much attention as the hierarchical ones. But they are options and need to be made to work correctly. 
-- [x] They should basically manage their own recursive layout and sizing of descendants when present. 
+- [ ] They should basically manage their own recursive layout and sizing of descendants when present. 
+	- [ ] FAILED for these layouts:
+		- [ ] organic 
+			- [ ] lays out child node internally but does not layout that as a node alongside its peers. 
+			- [ ] is jumbled.
+		- [ ] circular does not lay out children, does not remotely have enough spacing between nodes, is a mess.
 
 - [x] Also, the settings should, like our other defaults for better working layouts, be configured for use with ReactFlow nodes and our expected default sizes ie of nodes and of labels being about half height and half width of nodes. 
 - [x] Grid layout options could be better. I thought there was a way to specify rows or cols and have a max or something. 

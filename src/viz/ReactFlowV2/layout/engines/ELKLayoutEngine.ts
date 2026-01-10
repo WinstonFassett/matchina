@@ -603,25 +603,29 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
 
   getDefaultSettings(): ELKLayoutSettings {
     return {
-      nodeSpacing: 120,
+      // Based on actual ReactFlow node dimensions (~132px × 50px)
+      // User formula: 0.5 node + spacing + 0.25 node + spacing + 0.5 node
+      nodeSpacing: 150,    // ~1.1x node width for comfortable horizontal spacing
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
       compactness: 0,
       algorithm: 'layered',
       direction: 'DOWN',
-      layerSpacing: 180,
+      layerSpacing: 200,    // ~4.0x node height for clear vertical separation
       edgeRouting: 'ORTHOGONAL',
       alignment: 'CENTER',
-      edgeNodeSpacing: 30,
-      edgeEdgeSpacing: 15,
+      edgeNodeSpacing: 40,    // Clear edge-to-node clearance for labels
+      edgeEdgeSpacing: 20,    // Minimum edge-to-edge spacing
       
-      // NEW: Critical missing settings
+      // Hierarchy settings for HSM support
       hierarchyHandling: 'INCLUDE_CHILDREN',
-      paddingTop: 50,
-      paddingLeft: 50,
-      paddingBottom: 50,
-      paddingRight: 50,
+      paddingTop: 60,        // Increased padding for larger nodes
+      paddingLeft: 60,
+      paddingBottom: 60,
+      paddingRight: 60,
+      
+      // Algorithm-specific settings (keep for completeness)
       iterationLimit: 150,
       forceIterations: 300,
       
@@ -633,6 +637,8 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       alternatingDirection: false, // OFF by default
       primaryDirection: 'DOWN',
       secondaryDirection: 'RIGHT',
+      
+      // Advanced settings (kept for potential future use)
       nodePlacementStrategy: 'NETWORK_SIMPLEX',
       edgeRoutingStrategy: 'ORTHOGONAL',
       compactionStrategy: 'NONE',
