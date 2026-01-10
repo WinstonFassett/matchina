@@ -327,12 +327,12 @@ export default function FloatingEdge({
                   background: '#1e40af', // Even darker blue
                 },
               } : isExactTransition ? {
-                // Exact transition: style like inactive edges (no button styling)
+                // Exact transition: style like inactive edges but with colored border
                 background: isDarkTheme 
                   ? 'rgb(31, 41, 55)'  // Dark theme background
                   : 'rgb(255, 255, 255)', // Light theme background
                 color: isDarkTheme ? 'rgb(209, 213, 219)' : 'rgb(31, 41 55)', // Theme text color
-                border: 'none', // No border to differentiate from nodes
+                border: '2px solid #60a5fa', // Blue border matching edge color
               } : {
                 // Inactive edges: theme background color, no border
                 background: isDarkTheme 
