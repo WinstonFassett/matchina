@@ -97,6 +97,12 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     const startTime = performance.now();
     const validatedSettings = this.validateSettings(settings);
     
+    console.log('🔍 DEBUG: ELKLayoutEngine.calculateLayout', { 
+      algorithm: validatedSettings.algorithm,
+      nodeCount: nodes.length,
+      edgeCount: edges.length 
+    });
+
     try {
       const elkGraph = this.toElkGraph(nodes, edges, validatedSettings);
       

@@ -8,7 +8,6 @@ export * from './types';
 // Layout engines
 export { GridLayoutEngine } from './engines/GridLayoutEngine';
 export { ELKLayoutEngine } from './engines/ELKLayoutEngine';
-export { CircularLayoutEngine } from './engines/CircularLayoutEngine';
 export { ForceDirectedLayoutEngine } from './engines/ForceDirectedLayoutEngine';
 export { OrganicLayoutEngine } from './engines/OrganicLayoutEngine';
 

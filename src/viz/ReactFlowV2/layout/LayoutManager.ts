@@ -67,10 +67,12 @@ export class LayoutManager implements ILayoutManager {
     // Route through ELK if this layout type has an ELK algorithm mapping
     // This matches V1 behavior where ALL these layouts use ELK
     if (elkAlgorithm) {
+      console.log('🔍 DEBUG: Using ELK algorithm', { type, elkAlgorithm });
       const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
       if (elkEngine) {
         // Transform settings to match ELK schema requirements
         const elkSettings: Record<string, unknown> = { ...settings, algorithm: elkAlgorithm };
+        console.log('🔍 DEBUG: ELK settings', { elkSettings });
         
         const validatedSettings = elkEngine.validateSettings(elkSettings);
         return elkEngine.calculateLayout(nodes, edges, validatedSettings);
