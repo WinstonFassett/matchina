@@ -3,7 +3,6 @@ import type { CheckoutMachine } from "./machine";
 
 export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
   const currentState = machine.getState();
-  const storeData = machine.store.getState();
 
   const handlePlaceOrder = async () => {
     if (Math.random() > 0.3) {
@@ -51,7 +50,7 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
                   confirmation email shortly.
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => machine.newOrder()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
@@ -75,13 +74,13 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
                   There was an error processing your order. Please try again.
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => machine.retry()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
                 Try Again
               </button>
-              <button
+              <button type="button"
                 onClick={() => machine.backToCart()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >

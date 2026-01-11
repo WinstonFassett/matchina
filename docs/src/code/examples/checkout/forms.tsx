@@ -13,7 +13,7 @@ export function ShippingForm({
 }: {
   machine: CheckoutMachine;
 }) {
-  const cart = machine.store.getState().cart;
+  // const cart = machine.store.getState().cart;
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState("");

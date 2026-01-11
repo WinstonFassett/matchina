@@ -68,7 +68,7 @@ const initialEdges: Edge[] = [
 ];
 
 export default function ExactReactFlowSubflow() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
