@@ -340,6 +340,33 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
 
   // Step 6: Initialize with example-specific layout for V1 parity
   useEffect(() => {
+    // Check URL parameters first for layout override
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLayout = urlParams.get('layout');
+    
+    if (urlLayout) {
+      // URL parameter takes precedence
+      const layoutType = urlLayout as LayoutType;
+      
+      // Map URL layout parameter to preset ID
+      const presetId = layoutType === 'circular' ? 'circular-standard' :
+                      layoutType === 'hierarchical' ? 'hierarchical-topdown' :
+                      layoutType === 'tree' ? 'tree-vertical' :
+                      layoutType === 'force' ? 'force-directed' :
+                      layoutType === 'organic' ? 'organic-natural' :
+                      layoutType === 'grid' ? 'grid-standard' :
+                      null;
+      
+      if (presetId) {
+        const preset = layoutManager.getPreset(presetId);
+        if (preset) {
+          setLayoutType(preset.layoutType);
+          setLayoutSettings(preset.settings);
+          return;
+        }
+      }
+    }
+    
     // Try example-specific preset first (V1 parity)
     if (exampleName) {
       const preset = getReactFlowPreset(exampleName);
@@ -347,47 +374,32 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
         // Convert V1 preset to V2 layout
         const v1Options = preset.layoutOptions;
         
-        // Map V1 algorithm to V2 layout type
-        let layoutType: LayoutType;
-        switch (v1Options.algorithm) {
-          case 'layered':
-            layoutType = LayoutType.HIERARCHICAL; // V2's ELK layered
-            break;
-          case 'mrtree':
-            layoutType = LayoutType.TREE;
-            break;
-          case 'force':
-            layoutType = LayoutType.FORCE_DIRECTED;
-            break;
-          case 'stress':
-            layoutType = LayoutType.ORGANIC; // Closest to stress
-            break;
-          default:
-            layoutType = LayoutType.HIERARCHICAL;
-        }
+        const layoutType = v1Options.algorithm === 'layered' ? LayoutType.HIERARCHICAL :
+                          v1Options.algorithm === 'mrtree' ? LayoutType.TREE :
+                          v1Options.algorithm === 'force' ? LayoutType.FORCE_DIRECTED :
+                          v1Options.algorithm === 'stress' ? LayoutType.ORGANIC :
+                          v1Options.algorithm === 'radial' ? LayoutType.CIRCULAR :
+                          LayoutType.HIERARCHICAL;
         
         const engine = layoutManager.getEngine(layoutType);
-        if (engine) {
-          const defaultSettings = engine.getDefaultSettings();
-          const settings = {
-            ...defaultSettings,
-            // Map V1 options to V2 settings
-            nodeSpacing: v1Options.nodeSpacing || defaultSettings.nodeSpacing,
-            edgeSpacing: v1Options.edgeSpacing || defaultSettings.edgeSpacing,
-            layerSpacing: v1Options.layerSpacing || defaultSettings.layerSpacing,
-            algorithm: v1Options.algorithm || 'layered',
-            direction: v1Options.direction || 'DOWN',
-            thoroughness: v1Options.thoroughness || defaultSettings.thoroughness,
-            compactComponents: v1Options.compactComponents || defaultSettings.compactComponents,
-            separateComponents: v1Options.separateComponents || defaultSettings.separateComponents,
-            componentSpacing: v1Options.componentSpacing || defaultSettings.componentSpacing,
-            edgeNodeSpacing: v1Options.edgeNodeSpacing || defaultSettings.edgeNodeSpacing,
-          };
-          
-          setLayoutType(layoutType);
-          setLayoutSettings(settings);
-          return;
-        }
+        const defaultSettings = engine.getDefaultSettings();
+        const settings = {
+          nodeSpacing: v1Options.nodeSpacing || defaultSettings.nodeSpacing,
+          edgeSpacing: v1Options.edgeSpacing || defaultSettings.edgeSpacing,
+          layerSpacing: v1Options.layerSpacing || defaultSettings.layerSpacing,
+          direction: v1Options.direction || defaultSettings.direction,
+          edgeRouting: v1Options.edgeRouting || defaultSettings.edgeRouting,
+          alignment: v1Options.alignment || defaultSettings.alignment,
+          thoroughness: v1Options.thoroughness || defaultSettings.thoroughness,
+          compactComponents: v1Options.compactComponents || defaultSettings.compactComponents,
+          separateComponents: v1Options.separateComponents || defaultSettings.separateComponents,
+          componentSpacing: v1Options.componentSpacing || defaultSettings.componentSpacing,
+          edgeNodeSpacing: v1Options.edgeNodeSpacing || defaultSettings.edgeNodeSpacing,
+        };
+        
+        setLayoutType(layoutType);
+        setLayoutSettings(settings);
+        return;
       }
     }
     
@@ -397,7 +409,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
       setLayoutType(hsmPreset.layoutType);
       setLayoutSettings(hsmPreset.settings);
     }
-  }, [exampleName]);
+  }, [exampleName, window.location.search]);
 
   // Handle layout changes
   const handleLayoutChange = useCallback((type: LayoutType, settings: AnyLayoutSettings) => {
