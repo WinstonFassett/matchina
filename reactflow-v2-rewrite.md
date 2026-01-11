@@ -32,18 +32,18 @@ Sugiyama, Tree, Force all layout nested descendants and their container to conta
 
 The others do not. Also their defaults are terrible. They have not gotten as much attention as the hierarchical ones. But they are options and need to be made to work correctly. 
 
-- [ ] They should basically manage their own recursive layout and sizing of descendants when present. 
-	- [ ] FAILED for these layouts:
+- [x] They should basically manage their own recursive layout and sizing of descendants when present. 
+	- [x] FAILED for these layouts:
 		- [x] organic 
-			- [ ] fix that it lays out child node internally but does NOT layout that as a node alongside its peers. 
-			- [ ] fix that it is jumbled.
-        - [ ] children are laid out but Inactive node is VERY close to Active node, too close to read edge label, is basically adjacent.
-		- [ ] circular 
-			- [ ] does not lay out children, 
-			- [ ] does not remotely have enough spacing between nodes, is a mess. is jumbled
-		- [ ] grid
-			- [ ] does not lay out children, 
-			- [ ] does not remotely have enough spacing between nodes, is a mess. is jumb
+			- [x] fix that it lays out child node internally but does NOT layout that as a node alongside its peers. 
+			- [x] fix that it is jumbled.
+        - [x] children are laid out but Inactive node is VERY close to Active node, too close to read edge label, is basically adjacent.
+		- [x] circular 
+			- [x] does not lay out children, 
+			- [x] does not remotely have enough spacing between nodes, is a mess. is jumbled
+		- [x] grid
+			- [x] does not lay out children, 
+			- [x] does not remotely have enough spacing between nodes, is a mess. is jumb
 
 Do you remember what I said about spacing? 
 - [ ] We need to consider spacing between nodes that allows for roughly a 75-100% of an average node width between them to accommodate EDGE labels!

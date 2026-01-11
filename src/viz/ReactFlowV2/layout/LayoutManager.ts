@@ -13,14 +13,18 @@ import type {
 } from './types';
 import { LayoutType } from './types';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
+import { GridLayoutEngine } from './engines/GridLayoutEngine';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
   private presets = new Map<string, LayoutPreset>();
 
   constructor() {
-    // Register ELK engine only - it handles ALL layout types with proper hierarchy support
+    // Register ELK engine for hierarchical layouts
     this.registerEngine(new ELKLayoutEngine());
+    
+    // Register custom engines for layouts ELK doesn't support natively
+    this.registerEngine(new GridLayoutEngine());
 
     // Register built-in presets
     this.registerBuiltInPresets();
@@ -47,7 +51,7 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
     [LayoutType.CIRCULAR]: 'radial',       // Radial algorithm (ELK native!)
-    [LayoutType.GRID]: 'force',            // Use force for grid-like layouts with hierarchy
+    // Grid uses custom engine - ELK doesn't have native grid algorithm
   };
 
   // Layout calculation - supports async engines
@@ -68,18 +72,6 @@ export class LayoutManager implements ILayoutManager {
         // Transform settings to match ELK schema requirements
         const elkSettings: Record<string, unknown> = { ...settings, algorithm: elkAlgorithm };
         
-        // Handle Grid layout direction mapping: 'row'/'column' → 'RIGHT'/'DOWN'
-        if (type === LayoutType.GRID && 'direction' in settings) {
-          const gridDirection = (settings as { direction: string }).direction;
-          (elkSettings as { direction: string }).direction = gridDirection === 'row' ? 'RIGHT' : 'DOWN';
-          
-          // Remove Grid-specific settings that ELK doesn't support
-          delete elkSettings.alignment;
-          delete elkSettings.cols;
-          delete elkSettings.autoFit;
-          delete elkSettings.preferSquare;
-        }
-        
         // Handle Circular layout settings that ELK radial doesn't support
         if (type === LayoutType.CIRCULAR) {
           delete elkSettings.startAngle;
@@ -91,7 +83,17 @@ export class LayoutManager implements ILayoutManager {
       }
     }
 
-    throw new Error(`No ELK algorithm mapping found for layout type: ${type}`);
+    // Use custom engines for layouts without ELK mapping (Grid)
+    const engine = this.getEngine(type);
+    if (!engine) {
+      throw new Error(`No layout engine found for type: ${type}`);
+    }
+
+    const validatedSettings = engine.validateSettings(settings);
+    const result = engine.calculateLayout(nodes, edges, validatedSettings);
+    
+    // Handle both sync and async results
+    return result;
   }
 
   // Preset management
