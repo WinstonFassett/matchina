@@ -10,7 +10,7 @@ export default function AuthFlowExample() {
       machine={machine as any}
       AppView={AuthFlowView}
       showRawState={true}
-      defaultViz="reactflow-v2"
+      defaultViz="reactflow"
       interactive={true}
       layout="split"
     />

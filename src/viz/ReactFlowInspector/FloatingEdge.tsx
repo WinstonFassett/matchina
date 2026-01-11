@@ -289,7 +289,7 @@ export default function FloatingEdge({
     strokeDasharray: (style as React.CSSProperties)?.strokeDasharray,
     opacity: (style as React.CSSProperties)?.opacity,
     cursor: (style as React.CSSProperties)?.cursor,
-    // Add animation for exact transitions (from ReactFlowInspectorV2)
+    // Add animation for exact transitions
     ...(data?.isExactTransition && {
       animation: 'dash 1s linear infinite',
     }),

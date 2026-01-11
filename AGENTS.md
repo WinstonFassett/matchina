@@ -444,8 +444,8 @@ npx playwright screenshot --color-scheme=dark --viewport-size=1920,1080 --wait-f
 http://localhost:4321/matchina/examples/{example}?viz={visualizer}&layout={layout}&settings={encoded-settings}
 
 # Examples
-http://localhost:4321/matchina/examples/traffic-light?viz=reactflow-v2&layout=sugiyama
-http://localhost:4321/matchina/examples/hsm-combobox?viz=reactflow-v2&layout=grid&settings=%7B%22cols%22%3A4%7D
+http://localhost:4321/matchina/examples/traffic-light?viz=reactflow&layout=sugiyama
+http://localhost:4321/matchina/examples/hsm-combobox?viz=reactflow&layout=grid&settings=%7B%22cols%22%3A4%7D
 ```
 
 **Enhanced automation script**: `/scripts/capture-enhanced-screenshots.sh`

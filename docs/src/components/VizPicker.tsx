@@ -5,7 +5,6 @@
 
 export type VisualizerType =
   | 'reactflow'
-  | 'reactflow-v2'
   | 'sketch'
   | 'forcegraph'
   | 'mermaid-statechart'
@@ -18,7 +17,6 @@ export interface VisualizerOption {
 
 export const VISUALIZERS: readonly VisualizerOption[] = [
   { value: 'reactflow', label: 'ReactFlow' },
-  { value: 'reactflow-v2', label: 'ReactFlow V2' },
   { value: 'sketch', label: 'Sketch' },
   { value: 'forcegraph', label: 'ForceGraph' },
   { value: 'mermaid-statechart', label: 'Mermaid - Statechart' },

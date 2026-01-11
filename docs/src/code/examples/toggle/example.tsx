@@ -11,7 +11,7 @@ export default function ToggleExample() {
       machine={machine as any}
       AppView={ToggleView}
       showRawState={true}
-      defaultViz="reactflow-v2"
+      defaultViz="reactflow"
       layout="split"
       interactive={true}
       exampleName="toggle"

@@ -9,16 +9,15 @@ import { useMachine } from "matchina/react";
 import {
   ForceGraphInspector,
   HSMReactFlowInspector,
-  HSMReactFlowInspectorV2,
   MermaidInspector,
-  SketchInspector
+  SketchInspector,
+  getReactFlowPreset
 } from 'matchina/viz';
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from '@xyflow/react';
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { VizPicker, type VisualizerType } from './VizPicker';
 import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
-import { getReactFlowPreset } from '../../../src/viz/ReactFlowInspector/presets';
 
 export interface MachineVisualizerProps {
   // Core props
@@ -235,19 +234,8 @@ function renderVisualizer({
     case 'reactflow':
       return (
         <div className={commonClasses}>
-          <HSMReactFlowInspector
-            machine={machine as any}
-            interactive={interactive}
-            exampleName={exampleName}
-          />
-        </div>
-      );
-
-    case 'reactflow-v2':
-      return (
-        <div className={commonClasses}>
           <ReactFlowProvider>
-            <HSMReactFlowInspectorV2
+            <HSMReactFlowInspector
               machine={machine as any}
               interactive={interactive}
               exampleName={exampleName}
