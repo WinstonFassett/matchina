@@ -53,7 +53,7 @@ export function createRPSMachine() {
         },
         nextRound: store.clearRound,
         newGame: store.reset
-      });
+      }, false);
     })
   );
   return machine;
