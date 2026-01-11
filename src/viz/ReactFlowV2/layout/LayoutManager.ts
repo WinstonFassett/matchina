@@ -67,12 +67,10 @@ export class LayoutManager implements ILayoutManager {
     // Route through ELK if this layout type has an ELK algorithm mapping
     // This matches V1 behavior where ALL these layouts use ELK
     if (elkAlgorithm) {
-      console.log('🔍 DEBUG: Using ELK algorithm', { type, elkAlgorithm });
       const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
       if (elkEngine) {
         // Transform settings to match ELK schema requirements
         const elkSettings: Record<string, unknown> = { ...settings, algorithm: elkAlgorithm };
-        console.log('🔍 DEBUG: ELK settings', { elkSettings });
         
         const validatedSettings = elkEngine.validateSettings(elkSettings);
         return elkEngine.calculateLayout(nodes, edges, validatedSettings);
@@ -103,8 +101,7 @@ export class LayoutManager implements ILayoutManager {
     edges: Edge[],
     settings: Record<string, unknown>
   ): Promise<LayoutResult> {
-    console.log('🌳 ORGANIC LAYOUT: Starting depth-first hierarchical processing');
-    console.log(`🌳 Input: ${nodes.length} nodes, ${edges.length} edges`);
+    console.log('🌳 ORGANIC LAYOUT: Starting hierarchical processing');
     
     const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
     if (!elkEngine) {
@@ -112,19 +109,15 @@ export class LayoutManager implements ILayoutManager {
     }
 
     // STEP 1: Build hierarchy tree from flat node list
-    console.log('🌳 STEP 1: Building hierarchy tree');
     const { roots, nodeMap } = this.buildHierarchyTree(nodes);
-    console.log(`🌳 Found ${roots.length} root nodes`);
-
+    
     // STEP 2: Depth-first layout from leaves to root
-    console.log('🌳 STEP 2: Depth-first layout processing');
     await this.layoutHierarchyDepthFirst(roots, edges, settings, elkEngine);
-
+    
     // STEP 3: Assemble final result with proper positions and dimensions
-    console.log('🌳 STEP 3: Assembling final result');
     const result = this.assembleHierarchyResult(roots, nodeMap, edges);
     
-    console.log('🌳 ORGANIC LAYOUT: Complete');
+    console.log(`🌳 ORGANIC LAYOUT: Complete - ${result.nodes.length} nodes processed`);
     return result;
   }
 
@@ -162,21 +155,6 @@ export class LayoutManager implements ILayoutManager {
       }
     }
     
-    // Debug: log hierarchy structure
-    const logHierarchy = (hNode: HNode, depth: number = 0) => {
-      const indent = '  '.repeat(depth);
-      const isGroup = hNode.node.type === 'group';
-      console.log(`🌳 ${indent}${hNode.id} (${isGroup ? 'GROUP' : 'leaf'}, ${hNode.children.length} children)`);
-      for (const child of hNode.children) {
-        logHierarchy(child, depth + 1);
-      }
-    };
-    
-    console.log('🌳 Hierarchy structure:');
-    for (const root of roots) {
-      logHierarchy(root);
-    }
-    
     return { roots, nodeMap };
   }
 
@@ -192,13 +170,11 @@ export class LayoutManager implements ILayoutManager {
     for (const hNode of hNodes as HNode[]) {
       // RECURSIVE: Process children first (depth-first)
       if (hNode.children.length > 0) {
-        console.log(`🌳 Processing children of ${hNode.id} first...`);
         await this.layoutHierarchyDepthFirst(hNode.children, allEdges, settings, elkEngine);
         
         // After children are laid out, calculate this parent's dimensions
         const childDimensions = this.calculateChildrenBoundingBox(hNode.children);
         hNode.calculatedDimensions = childDimensions;
-        console.log(`🌳 Calculated dimensions for ${hNode.id}:`, childDimensions);
       } else {
         // Leaf node: use default dimensions
         const width = Number(hNode.node.style?.width) || 150;
@@ -241,7 +217,6 @@ export class LayoutManager implements ILayoutManager {
         const hNode = (hNodes as HNode[]).find(h => h.id === layoutedNode.id);
         if (hNode) {
           hNode.layoutedPosition = layoutedNode.position;
-          console.log(`🌳 Layouted ${hNode.id} at position:`, layoutedNode.position);
         }
       }
     }
@@ -319,8 +294,6 @@ export class LayoutManager implements ILayoutManager {
           y: (pos.y - minSiblingY) + paddingTop
         };
       }
-      
-      console.log(`🌳 Final position for ${hNode.id}:`, finalPosition);
       
       // Create the final node
       const finalNode: Node = {

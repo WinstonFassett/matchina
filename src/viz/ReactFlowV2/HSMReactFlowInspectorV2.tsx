@@ -130,14 +130,7 @@ async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, set
   });
 
   // Apply layout - handle async ELK engines
-  console.log('🔍 DEBUG: Applying layout', { layoutType, settings });
   const layoutResult = await layoutManager.calculateLayout(layoutType, nodes, edges, settings as any);
-  console.log('🔍 DEBUG: Layout result', { 
-    algorithm: layoutResult.algorithm || 'unknown', 
-    nodeCount: layoutResult.nodes.length,
-    edgeCount: layoutResult.edges.length,
-    firstNodePosition: layoutResult.nodes[0]?.position 
-  });
   
   // Safety check: Filter out any nodes with NaN positions
   const validNodes = layoutResult.nodes.filter(node => 
