@@ -65,27 +65,21 @@ export class LayoutManager implements ILayoutManager {
     if (elkAlgorithm) {
       const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
       if (elkEngine) {
-        // Merge the ELK algorithm into settings
-        const elkSettings = {
-          ...settings,
-          algorithm: elkAlgorithm,
-        };
+        // Transform settings to match ELK schema requirements
+        let elkSettings = { ...settings, algorithm: elkAlgorithm };
+        
+        // Handle Grid layout direction mapping: 'row'/'column' → 'RIGHT'/'DOWN'
+        if (type === LayoutType.GRID && 'direction' in settings) {
+          const gridDirection = (settings as any).direction;
+          elkSettings.direction = gridDirection === 'row' ? 'RIGHT' : 'DOWN';
+        }
+        
         const validatedSettings = elkEngine.validateSettings(elkSettings);
         return elkEngine.calculateLayout(nodes, edges, validatedSettings);
       }
     }
 
-    // Use custom engines for layouts without ELK mapping (Grid, Circular)
-    const engine = this.getEngine(type);
-    if (!engine) {
-      throw new Error(`No layout engine found for type: ${type}`);
-    }
-
-    const validatedSettings = engine.validateSettings(settings);
-    const result = engine.calculateLayout(nodes, edges, validatedSettings);
-    
-    // Handle both sync and async results
-    return result;
+    throw new Error(`No ELK algorithm mapping found for layout type: ${type}`);
   }
 
   // Preset management
