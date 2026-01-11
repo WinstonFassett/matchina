@@ -21,8 +21,9 @@ const ELKLayoutSettings = z.object({
   compactness: z.number().min(0).max(1).default(0),
 
   // ELK algorithm - can be passed from LayoutManager for different layout types
-  // Options: layered (Sugiyama), mrtree (Tree), force, stress, radial, disco, org.eclipse.elk.graphviz.circo
-  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial', 'disco', 'org.eclipse.elk.graphviz.circo']).default('layered'),
+  // Options: layered (Sugiyama), mrtree (Tree), force, stress, disco, org.eclipse.elk.graphviz.circo
+  // REMOVED: radial - causes "not a tree" errors, replaced with Graphviz circo
+  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'disco', 'org.eclipse.elk.graphviz.circo']).default('layered'),
 
   // Direction (works for layered and mrtree)
   direction: z.enum(['DOWN', 'UP', 'LEFT', 'RIGHT']).default('DOWN'),
@@ -249,17 +250,6 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.force.useCoarseGraining": settings.compactComponents
             ? "true"
             : "false",
-        };
-
-      case "radial":
-        return {
-          ...baseOptions,
-          // Radial layout options for circular arrangement
-          "elk.radial.radius": (settings.nodeSpacing * 2).toString(),
-          "elk.radial.wedge": "360", // Full circle
-          "elk.radial.sorting": "BY_ANGLE",
-          "elk.radial.edgeRouting": "POLAR_RECTILINEAR",
-          "elk.radial.compaction": "NONE",
         };
 
       case "disco":
