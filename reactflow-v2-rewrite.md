@@ -20,6 +20,10 @@
 
 ### Round 3 - Making Non-Hierarchical Layouts do Hierarchical Layout
 
+- [ ] styling fixes 
+  - [ ] fix: in both themes, there are unwanted gray bordered boxes around nodes - these are visual artifacts
+  - [ ] fix: in both themes, the grouping node has too many boxes and backgrounds. keep color, simplify 
+
 NO YOU ARE NOT DONE YET!!!
 
 We have some layout that don't really do hierarchy. YET.
@@ -30,8 +34,9 @@ The others do not. Also their defaults are terrible. They have not gotten as muc
 - [ ] They should basically manage their own recursive layout and sizing of descendants when present. 
 	- [ ] FAILED for these layouts:
 		- [ ] organic 
-			- [ ] lays out child node internally but does not layout that as a node alongside its peers. 
-			- [ ] is jumbled.
+			- [x] fix lays out child node internally but does not layout that as a node alongside its peers. 
+			- [x] fix is jumbled.
+        - [ ] children are laid out but Inactive node is VERY close to Active node, too close to read edge label, is basically adjacent.
 		- [ ] circular 
 			- [ ] does not lay out children, 
 			- [ ] does not remotely have enough spacing between nodes, is a mess. is jumbled
