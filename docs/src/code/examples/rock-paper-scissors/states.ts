@@ -1,10 +1,10 @@
 import { defineStates } from "matchina";
 
-export type Move = "rock" | "paper" | "scissors";
+import type { Move } from "./store";
 
 export const states = defineStates({
   WaitingForPlayer: undefined,
-  PlayerChose: undefined,
+  PlayerChose: (move: Move) => ({ move }),
   Judging: undefined,
   RoundComplete: undefined,
   GameOver: undefined,
