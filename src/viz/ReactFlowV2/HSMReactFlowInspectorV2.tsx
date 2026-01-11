@@ -378,7 +378,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
                           v1Options.algorithm === 'stress' ? LayoutType.ORGANIC :
                                                     LayoutType.HIERARCHICAL;
         
-        const engine = layoutManager.getEngine(layoutType) as any;
+        const engine = layoutManager.getEngine(layoutType);
         if (!engine) {
           console.warn('No engine found for layout type:', layoutType);
           return;
@@ -389,8 +389,8 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
           edgeSpacing: v1Options.edgeSpacing || defaultSettings.edgeSpacing,
           layerSpacing: v1Options.layerSpacing || defaultSettings.layerSpacing,
           direction: v1Options.direction || defaultSettings.direction,
-          edgeRouting: v1Options.edgeRouting || defaultSettings.edgeRouting,
-          alignment: v1Options.alignment || defaultSettings.alignment,
+          edgeRouting: (v1Options as any).edgeRouting || (defaultSettings as any).edgeRouting,
+          alignment: (v1Options as any).alignment || (defaultSettings as any).alignment,
           thoroughness: v1Options.thoroughness || defaultSettings.thoroughness,
           compactComponents: v1Options.compactComponents || defaultSettings.compactComponents,
           separateComponents: v1Options.separateComponents || defaultSettings.separateComponents,
