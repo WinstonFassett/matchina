@@ -379,6 +379,10 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
                                                     LayoutType.HIERARCHICAL;
         
         const engine = layoutManager.getEngine(layoutType);
+        if (!engine) {
+          console.warn('No engine found for layout type:', layoutType);
+          return;
+        }
         const defaultSettings = engine.getDefaultSettings();
         const settings = {
           nodeSpacing: v1Options.nodeSpacing || defaultSettings.nodeSpacing,
