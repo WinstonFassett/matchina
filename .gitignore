@@ -17,15 +17,14 @@ types
 *-output.txt
 test-output-*.txt
 bun.lockb
-review/screenshots/
-review/archive/
+# Local notes/working docs (not tracked)
+local/
 test-results/
 .astro/
 playwright-report/
 
 # Obsidian
 .obsidian/
-review/.obsidian/
 
 # VitePress cache and build
 .vitepress/cache/
@@ -56,15 +55,3 @@ test/**/*.gif
 test/**/*.webp
 test/**/*.svg
 
-# Review/debug screenshots  
-review/screenshots/
-# Review/debug images  
-review/**/*.png
-review/**/*.jpg
-review/**/*.jpeg
-review/**/*.gif
-review/**/*.webp
-review/**/*.svg
-
-# temp ignore
-# test-selfloop-working - REMOVED to commit floating edges work
