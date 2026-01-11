@@ -110,7 +110,7 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
     // Layout children in a compact organic arrangement around parent
     const childCount = children.length;
     if (childCount === 0) {
-      return { nodes: [], edges: [], bounds: { x: 0, y: 0, width: 0, height: 0 }, metadata: { layoutType: this.type, nodeCount: 0, edgeCount: 0, calculationTime: 0 } };
+      return { nodes: [], edges: [], bounds: { x: 0, y: 0, width: 0, height: 0 }, metadata: { layoutType: this.type, nodeCount: 0, edgeCount: 0, calculationTime: 0, converged: true } };
     }
 
     // Calculate spacing for edge labels (75-100% of node width)
@@ -143,6 +143,7 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
         nodeCount: childCount,
         edgeCount: 0,
         calculationTime: 0,
+        converged: true,
       },
     };
   }
@@ -152,12 +153,12 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
     const childNodesMap: Map<string, Node[]> = new Map();
 
     for (const node of nodes) {
-      if (!node.parent) {
+      if (!node.parentId) {
         rootNodes.push(node);
       } else {
-        const children = childNodesMap.get(node.parent) || [];
+        const children = childNodesMap.get(node.parentId) || [];
         children.push(node);
-        childNodesMap.set(node.parent, children);
+        childNodesMap.set(node.parentId, children);
       }
     }
 
@@ -205,6 +206,7 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
         nodeCount: nodes.length,
         edgeCount: edges.length,
         calculationTime: performance.now() - startTime,
+        converged: true,
       },
     };
   }

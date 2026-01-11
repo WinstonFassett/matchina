@@ -4,15 +4,16 @@
  * NO analysis system - just basic management
  */
 
-import type { Node, Edge } from '@xyflow/react';
-import type {
-  LayoutEngine,
-  LayoutResult,
-  LayoutPreset,
-  LayoutManager as ILayoutManager,
-} from './types';
-import { LayoutType } from './types';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
+import { 
+  LayoutEngine, 
+  LayoutPreset, 
+  LayoutType, 
+  LayoutResult,
+  LayoutManager as ILayoutManager,
+  AnyLayoutSettings
+} from './types';
+import type { Node, Edge } from '@xyflow/react';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
