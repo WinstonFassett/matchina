@@ -6,8 +6,8 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
 
   const handlePlaceOrder = async () => {
     if (Math.random() > 0.3) {
-      const orderId =
-        "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      // const orderId =
+        // "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
       machine.success();
     } else {
       machine.failure();
