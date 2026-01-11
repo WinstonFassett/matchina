@@ -21,10 +21,10 @@ const ELKLayoutSettings = z.object({
   compactness: z.number().min(0).max(1).default(0),
 
   // ELK algorithm - can be passed from LayoutManager for different layout types
-  // Options: layered (Sugiyama), mrtree (Tree), force, stress, disco
-  // REMOVED: radial - causes "not a tree" errors, replaced with working algorithms
-  // REMOVED: org.eclipse.elk.graphviz.circo - NOT AVAILABLE in ELK build
-  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'disco']).default('layered'),
+  // Options: layered (Sugiyama), mrtree (Tree), force, stress, radial, box
+  // REMOVED: disco - not available in ELK build
+  // REMOVED: org.eclipse.elk.graphviz.circo - not available in ELK build
+  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial']).default('layered'),
 
   // Direction (works for layered and mrtree)
   direction: z.enum(['DOWN', 'UP', 'LEFT', 'RIGHT']).default('DOWN'),
@@ -225,6 +225,11 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
             1,
             Math.min(10, settings.thoroughness || 7)
           ).toString(),
+          // CRITICAL: DISABLE hierarchy for organic layout - treat as non-hierarchical
+          "elk.hierarchyHandling": "NONE",
+          // OVERLAP REMOVAL: Enable to prevent nodes from overlapping
+          "elk.overlapRemoval.maxIterations": "100",
+          "elk.overlapRemoval.runScanline": "true",
         };
 
       case "mrtree":
@@ -267,6 +272,26 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.disco.compactionStrategy": "MAX_COMPACTION",
           "elk.disco.threshold": "4",
           "elk.disco.expandNodes": "false",
+        };
+
+      case "box":
+        return {
+          ...baseOptions,
+          // Box layout algorithm
+          "elk.box.spacing": nodeSpacing.toString(),
+          "elk.box.aspectRatio": "1.0",
+          "elk.box.expandNodes": "true",
+        };
+
+      case "radial":
+        return {
+          ...baseOptions,
+          // Radial layout algorithm for circular arrangement
+          "elk.radial.radius": layerSpacing.toString(),
+          "elk.radial.nodeSpacing": nodeSpacing.toString(),
+          "elk.radial.edgeRouting": settings.edgeRouting.toLowerCase(),
+          "elk.radial.sortByRadius": "true",
+          "elk.radial.wedge": "360",
         };
 
       default:
