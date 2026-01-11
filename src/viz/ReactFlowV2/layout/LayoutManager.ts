@@ -13,8 +13,6 @@ import type {
 } from './types';
 import { LayoutType } from './types';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
-import { GridLayoutEngine } from './engines/GridLayoutEngine';
-import { CircularLayoutEngine } from './engines/CircularLayoutEngine';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
@@ -25,8 +23,7 @@ export class LayoutManager implements ILayoutManager {
     this.registerEngine(new ELKLayoutEngine());
     
     // Register custom engines for layouts ELK doesn't support natively
-    this.registerEngine(new GridLayoutEngine());
-    this.registerEngine(new CircularLayoutEngine());
+    // GridLayoutEngine removed - using ELK force algorithm for grid layout with hierarchy support
 
     // Register built-in presets
     this.registerBuiltInPresets();
@@ -52,8 +49,8 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.TREE]: 'mrtree',            // Tree layout algorithm
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
-    // CIRCULAR uses custom engine - Graphviz circo not available in ELK build
-    // Grid uses custom engine - ELK doesn't have native grid algorithm
+    [LayoutType.GRID]: 'force',            // Use force algorithm for grid-like arrangement with hierarchy
+    // CIRCULAR - REMOVED - Graphviz circo not available in ELK.js
   };
 
   // Layout calculation - supports async engines
@@ -64,6 +61,11 @@ export class LayoutManager implements ILayoutManager {
     edges: Edge[],
     settings: Record<string, unknown>
   ): Promise<LayoutResult> {
+    // Special handling for ORGANIC layout - depth-first bottom-up approach
+    if (type === LayoutType.ORGANIC) {
+      return this.calculateOrganicLayoutDepthFirst(nodes, edges, settings);
+    }
+    
     const elkAlgorithm = LayoutManager.ELK_ALGORITHM_MAP[type];
     
     // Route through ELK if this layout type has an ELK algorithm mapping
@@ -92,6 +94,153 @@ export class LayoutManager implements ILayoutManager {
     
     // Handle both sync and async results
     return result;
+  }
+
+  // Depth-first bottom-up layout for ORGANIC layout
+  private async calculateOrganicLayoutDepthFirst(
+    nodes: Node[],
+    edges: Edge[],
+    settings: Record<string, unknown>
+  ): Promise<LayoutResult> {
+    console.log('🔍 DEBUG: Organic layout - recursive depth-first with stress algorithm');
+    
+    const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
+    if (!elkEngine) {
+      throw new Error('ELK engine not available for organic layout');
+    }
+
+    // Recursive depth-first layout
+    const result = await this.layoutDepthFirst(nodes, edges, settings, elkEngine);
+    
+    console.log('🔍 DEBUG: Organic layout depth-first complete');
+    return result;
+  }
+
+  // Recursive depth-first layout implementation
+  private async layoutDepthFirst(
+    nodes: Node[],
+    edges: Edge[],
+    settings: Record<string, unknown>,
+    elkEngine: any
+  ): Promise<LayoutResult> {
+    // Separate nodes by hierarchy level
+    const { rootNodes, childGroups } = this.separateByHierarchy(nodes);
+    
+    console.log(`🔍 DEBUG: Depth-first - ${rootNodes.length} roots, ${Object.keys(childGroups).length} child groups`);
+    
+    // First, recursively layout all child groups (depth-first)
+    const childResults = new Map<string, LayoutResult>();
+    for (const [parentId, childNodes] of Object.entries(childGroups)) {
+      console.log(`🔍 DEBUG: Layout child group ${parentId} with ${childNodes.length} nodes`);
+      const childResult = await this.layoutDepthFirst(childNodes, edges, settings, elkEngine);
+      childResults.set(parentId, childResult);
+    }
+    
+    // Apply child dimensions to parent nodes
+    const sizedRootNodes = this.applyChildDimensions(rootNodes, childResults);
+    
+    // Layout root nodes with stress algorithm (no hierarchy at this level)
+    const stressSettings: Record<string, unknown> = { 
+      ...settings, 
+      algorithm: 'stress',
+      'elk.hierarchyHandling': 'NONE'
+    };
+    
+    console.log('🔍 DEBUG: Layout root nodes with stress algorithm');
+    const validatedSettings = elkEngine.validateSettings(stressSettings);
+    const rootResult = await elkEngine.calculateLayout(sizedRootNodes, edges, validatedSettings);
+    
+    // Combine all results
+    const allNodes = [...rootResult.nodes];
+    const allEdges = [...rootResult.edges];
+    
+    // Add child results
+    for (const childResult of childResults.values()) {
+      allNodes.push(...childResult.nodes);
+      allEdges.push(...childResult.edges);
+    }
+    
+    return {
+      nodes: allNodes,
+      edges: allEdges,
+      bounds: rootResult.bounds,
+      metadata: rootResult.metadata,
+    };
+  }
+
+  // Separate nodes by hierarchy
+  private separateByHierarchy(nodes: Node[]): { rootNodes: Node[]; childGroups: Record<string, Node[]> } {
+    const rootNodes: Node[] = [];
+    const childGroups: Record<string, Node[]> = {};
+    
+    for (const node of nodes) {
+      const parentId = (node as any).parentId;
+      if (parentId) {
+        if (!childGroups[parentId]) {
+          childGroups[parentId] = [];
+        }
+        childGroups[parentId].push(node);
+      } else {
+        rootNodes.push(node);
+      }
+    }
+    
+    return { rootNodes, childGroups };
+  }
+
+  // Apply child dimensions to parent nodes
+  private applyChildDimensions(
+    rootNodes: Node[],
+    childResults: Map<string, LayoutResult>
+  ): Node[] {
+    return rootNodes.map(node => {
+      const childResult = childResults.get(node.id);
+      if (childResult && (node as any).data?.isCompound) {
+        // Calculate bounding box of all children
+        const childBounds = this.calculateChildBounds(childResult.nodes);
+        
+        console.log(`🔍 DEBUG: Apply child dimensions to ${node.id}:`, childBounds);
+        
+        return {
+          ...node,
+          style: {
+            ...node.style,
+            width: childBounds.width,
+            height: childBounds.height,
+          }
+        };
+      }
+      
+      return node;
+    });
+  }
+
+  // Calculate bounding box of child nodes
+  private calculateChildBounds(childNodes: Node[]): { width: number; height: number } {
+    if (childNodes.length === 0) {
+      return { width: 100, height: 50 }; // Default size
+    }
+    
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+    
+    for (const child of childNodes) {
+      const x = child.position.x;
+      const y = child.position.y;
+      const width = Number(child.style?.width || 100);
+      const height = Number(child.style?.height || 50);
+      
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + width);
+      maxY = Math.max(maxY, y + height);
+    }
+    
+    const padding = 40; // Add padding around children
+    return {
+      width: (maxX - minX) + padding,
+      height: (maxY - minY) + padding
+    };
   }
 
   // Preset management
@@ -264,28 +413,6 @@ export class LayoutManager implements ILayoutManager {
       tags: ['tree', 'leftright', 'flowchart'],
     });
 
-    // Circular presets
-    this.registerPreset({
-      id: 'circular-standard',
-      name: 'Circular',
-      description: 'Nodes arranged in a circle',
-      layoutType: LayoutType.CIRCULAR,
-      settings: {
-        nodeSpacing: 100,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0.7,
-        startAngle: 270,
-        clockwise: true,
-        sortByConnections: false,
-      },
-      constraints: {
-        suitableFor: ['cycle', 'ring', 'round-robin'],
-      },
-      tags: ['circular', 'radial'],
-    });
-
     // Force-directed presets
     this.registerPreset({
       id: 'force-balanced',
@@ -332,6 +459,30 @@ export class LayoutManager implements ILayoutManager {
         suitableFor: ['complex', 'modular', 'grouped'],
       },
       tags: ['organic', 'cluster', 'natural'],
+    });
+
+    // Grid presets
+    this.registerPreset({
+      id: 'grid-standard',
+      name: 'Grid',
+      description: 'Grid-like arrangement using force algorithm with hierarchy support',
+      layoutType: LayoutType.GRID,
+      settings: {
+        nodeSpacing: 120,
+        edgeSpacing: 20,
+        fitPadding: 20,
+        animationDuration: 300,
+        compactness: 0.5,
+        forceIterations: 300,
+        temperature: 0.007,
+        repulsion: 12,
+        attraction: 0.82,
+        useCoarseGraining: true,
+      },
+      constraints: {
+        suitableFor: ['any', 'hierarchy', 'grouped'],
+      },
+      tags: ['grid', 'force', 'hierarchy'],
     });
 
     // Experimental: Alternating Direction Hierarchical
