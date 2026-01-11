@@ -14,6 +14,7 @@ import {
   type EdgeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import './ReactFlowV2.css';
 
 import FloatingEdge from './FloatingEdge';
 import SimpleNode from './SimpleNode';

@@ -61,37 +61,7 @@ const GroupNode = ({ data }: GroupNodeProps) => {
   };
 
   return (
-    <div style={{
-      boxSizing: 'border-box',
-      width: '100%',
-      height: '100%',
-      backgroundColor: getContainerBackground(),
-      border: getBorderStyle(),
-      borderRadius: '8px',
-      padding: '8px', // Reduced from 16px to save space
-      minWidth: '150px',
-      minHeight: '80px', // Reduced from 100px to save space
-      position: 'relative',
-      // Ensure proper sizing sync
-      overflow: 'visible',
-    }}>
-      {/* Label at top of group - no weird background */}
-      <div style={{
-        position: 'absolute',
-        top: '-12px',
-        left: '15px',
-        backgroundColor: getLabelBackground(),
-        color: 'white',
-        padding: '4px 12px',
-        borderRadius: '6px',
-        fontSize: '13px',
-        fontWeight: 'bold',
-        // Remove shadow for cleaner look
-        boxShadow: 'none',
-      }}>
-        {data?.label}
-      </div>
-      
+    <>
       {/* Hidden handles for ReactFlow compatibility */}
       <Handle type="target" position={Position.Top} style={{ visibility: 'hidden' }} />
       <Handle type="target" position={Position.Right} style={{ visibility: 'hidden' }} />
@@ -101,7 +71,40 @@ const GroupNode = ({ data }: GroupNodeProps) => {
       <Handle type="source" position={Position.Right} style={{ visibility: 'hidden' }} />
       <Handle type="source" position={Position.Bottom} style={{ visibility: 'hidden' }} />
       <Handle type="source" position={Position.Left} style={{ visibility: 'hidden' }} />
-    </div>
+
+      {/* This div IS the group node - no wrapper needed */}
+      <div style={{
+        boxSizing: 'border-box',
+        width: '100%',
+        height: '100%',
+        backgroundColor: getContainerBackground(),
+        border: getBorderStyle(),
+        borderRadius: '8px',
+        padding: '8px', // Reduced from 16px to save space
+        minWidth: '150px',
+        minHeight: '80px', // Reduced from 100px to save space
+        position: 'relative',
+        // Ensure proper sizing sync
+        overflow: 'visible',
+      }}>
+        {/* Label at top of group - no weird background */}
+        <div style={{
+          position: 'absolute',
+          top: '-12px',
+          left: '15px',
+          backgroundColor: getLabelBackground(),
+          color: 'white',
+          padding: '4px 12px',
+          borderRadius: '6px',
+          fontSize: '13px',
+          fontWeight: 'bold',
+          // Remove shadow for cleaner look
+          boxShadow: 'none',
+        }}>
+          {data?.label}
+        </div>
+      </div>
+    </>
   );
 };
 
