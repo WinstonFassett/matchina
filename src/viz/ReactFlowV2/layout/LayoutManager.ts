@@ -66,12 +66,24 @@ export class LayoutManager implements ILayoutManager {
       const elkEngine = this.getEngine(LayoutType.HIERARCHICAL);
       if (elkEngine) {
         // Transform settings to match ELK schema requirements
-        let elkSettings = { ...settings, algorithm: elkAlgorithm };
+        const elkSettings: Record<string, unknown> = { ...settings, algorithm: elkAlgorithm };
         
         // Handle Grid layout direction mapping: 'row'/'column' → 'RIGHT'/'DOWN'
         if (type === LayoutType.GRID && 'direction' in settings) {
-          const gridDirection = (settings as any).direction;
-          elkSettings.direction = gridDirection === 'row' ? 'RIGHT' : 'DOWN';
+          const gridDirection = (settings as { direction: string }).direction;
+          (elkSettings as { direction: string }).direction = gridDirection === 'row' ? 'RIGHT' : 'DOWN';
+          
+          // Remove Grid-specific settings that ELK doesn't support
+          delete elkSettings.alignment;
+          delete elkSettings.cols;
+          delete elkSettings.autoFit;
+          delete elkSettings.preferSquare;
+        }
+        
+        // Handle Circular layout settings that ELK radial doesn't support
+        if (type === LayoutType.CIRCULAR) {
+          delete elkSettings.startAngle;
+          delete elkSettings.clockwise;
         }
         
         const validatedSettings = elkEngine.validateSettings(elkSettings);
