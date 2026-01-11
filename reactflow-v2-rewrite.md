@@ -20,17 +20,18 @@
 
 ### Round 3 - Making Non-Hierarchical Layouts do Hierarchical Layout
 
-- [ ] styling fixes 
-  - [ ] fix: in both themes, there are unwanted gray bordered boxes around nodes - these are visual artifacts
-  - [ ] fix: in both themes, the grouping node has too many boxes and backgrounds. keep color, simplify 
+- [x] styling fixes 
+  - [x] fix: in both themes, there are unwanted gray bordered boxes around nodes - these are visual artifacts
+  - [x] fix: in both themes, the grouping node has too many boxes and backgrounds. keep color, simplify 
 
-NO YOU ARE NOT DONE YET!!!
+#### Add hierarchy support to simple Elk layouts 
 
 We have some layout that don't really do hierarchy. YET.
 
 Sugiyama, Tree, Force all layout nested descendants and their container to contain its children.
 
 The others do not. Also their defaults are terrible. They have not gotten as much attention as the hierarchical ones. But they are options and need to be made to work correctly. 
+
 - [ ] They should basically manage their own recursive layout and sizing of descendants when present. 
 	- [ ] FAILED for these layouts:
 		- [ ] organic 

@@ -196,8 +196,11 @@ export class GridLayoutEngine implements LayoutEngine<GridLayoutSettings> {
     const nodeCount = nodes.length;
     const { cols, rows } = this.calculateOptimalDimensions(nodeCount, settings);
     
-    // Apply compactness to spacing
-    const nodeSpacing = settings.nodeSpacing * (1 - settings.compactness * 0.5);
+    // Calculate spacing for edge labels (75-100% of node width)
+    const nodeWidth = 150; // Average node width
+    const edgeLabelSpacing = nodeWidth * 0.875; // 87.5% = midpoint of 75-100%
+    const spacingMultiplier = 1 - settings.compactness * 0.5;
+    const nodeSpacing = Math.max(edgeLabelSpacing, settings.nodeSpacing) * spacingMultiplier;
     
     // Calculate positions
     return nodes.map((node, index) => {

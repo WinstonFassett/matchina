@@ -54,30 +54,147 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
       return this.emptyResult(startTime);
     }
 
+    // Separate nodes by hierarchy
+    const { rootNodes, childNodesMap } = this.separateHierarchy(nodes);
+    
+    // Layout root nodes first
+    const rootLayout = this.layoutRootNodes(rootNodes, edges, validatedSettings);
+    
+    // Layout child nodes relative to their parents
+    const positionedChildNodes: Node[] = [];
+    for (const [parentId, children] of childNodesMap.entries()) {
+      const parentNode = rootLayout.nodes.find(n => n.id === parentId);
+      if (parentNode) {
+        const childLayout = this.layoutChildNodes(children, parentNode, validatedSettings);
+        positionedChildNodes.push(...childLayout.nodes);
+        
+        // Update parent size to contain children
+        const childBounds = this.calculateBounds(childLayout.nodes, 20); // 20px padding
+        const parentIndex = rootLayout.nodes.findIndex(n => n.id === parentId);
+        if (parentIndex >= 0) {
+          rootLayout.nodes[parentIndex] = {
+            ...rootLayout.nodes[parentIndex],
+            style: {
+              ...rootLayout.nodes[parentIndex].style,
+              width: Math.max(150, childBounds.width + 40), // Min width + padding
+              height: Math.max(50, childBounds.height + 40), // Min height + padding
+            },
+          };
+        }
+      }
+    }
+    
+    const allPositionedNodes = [...rootLayout.nodes, ...positionedChildNodes];
+
+    const bounds = this.calculateBounds(allPositionedNodes, validatedSettings.fitPadding);
+
+    return {
+      nodes: allPositionedNodes,
+      edges,
+      bounds,
+      metadata: {
+        layoutType: this.type,
+        nodeCount: nodes.length,
+        edgeCount: edges.length,
+        calculationTime: performance.now() - startTime,
+        converged: true,
+      },
+    };
+  }
+
+  private layoutChildNodes(
+    children: Node[],
+    parentNode: Node,
+    settings: OrganicLayoutSettings
+  ): LayoutResult {
+    // Layout children in a compact organic arrangement around parent
+    const childCount = children.length;
+    if (childCount === 0) {
+      return { nodes: [], edges: [], bounds: { x: 0, y: 0, width: 0, height: 0 }, metadata: { layoutType: this.type, nodeCount: 0, edgeCount: 0, calculationTime: 0 } };
+    }
+
+    // Calculate spacing for edge labels (75-100% of node width)
+    const nodeWidth = 150; // Average node width
+    const edgeLabelSpacing = nodeWidth * 0.875; // 87.5% = midpoint of 75-100%
+    const spacingMultiplier = 1 - settings.compactness * 0.3;
+    const childSpacing = Math.max(edgeLabelSpacing, settings.nodeSpacing) * spacingMultiplier;
+
+    // Arrange children in a circle around parent
+    const radius = Math.max(childSpacing * 2, 100); // Minimum radius for visibility
+    const positionedChildren = children.map((child, index) => {
+      const angle = (2 * Math.PI * index) / childCount;
+      const x = parentNode.position.x + radius * Math.cos(angle);
+      const y = parentNode.position.y + radius * Math.sin(angle);
+      
+      return {
+        ...child,
+        position: { x, y },
+      };
+    });
+
+    const bounds = this.calculateBounds(positionedChildren, 0);
+
+    return {
+      nodes: positionedChildren,
+      edges: [],
+      bounds,
+      metadata: {
+        layoutType: this.type,
+        nodeCount: childCount,
+        edgeCount: 0,
+        calculationTime: 0,
+      },
+    };
+  }
+
+  private separateHierarchy(nodes: Node[]): { rootNodes: Node[], childNodesMap: Map<string, Node[]> } {
+    const rootNodes: Node[] = [];
+    const childNodesMap: Map<string, Node[]> = new Map();
+
+    for (const node of nodes) {
+      if (!node.parent) {
+        rootNodes.push(node);
+      } else {
+        const children = childNodesMap.get(node.parent) || [];
+        children.push(node);
+        childNodesMap.set(node.parent, children);
+      }
+    }
+
+    return { rootNodes, childNodesMap };
+  }
+
+  private layoutRootNodes(
+    nodes: Node[],
+    edges: Edge[],
+    settings: OrganicLayoutSettings
+  ): LayoutResult {
+    const startTime = performance.now();
     // Build adjacency list
     const adjacency = this.buildAdjacency(nodes, edges);
 
     // Find clusters using connected components
-    const clusters = validatedSettings.clustering
+    const clusters = settings.clustering
       ? this.findClusters(nodes, adjacency)
       : new Map(nodes.map((n, i) => [n.id, i]));
 
     // Initialize nodes with cluster-aware positions
-    const clusterNodes = this.initializeWithClusters(nodes, clusters, validatedSettings);
+    const clusterNodes = this.initializeWithClusters(nodes, clusters, settings);
 
     // Run organic simulation
-    this.runOrganicSimulation(clusterNodes, adjacency, validatedSettings);
+    this.runOrganicSimulation(clusterNodes, adjacency, settings);
 
     // Convert back to ReactFlow nodes
     const positionedNodes = nodes.map((node) => {
       const clusterNode = clusterNodes.find((cn) => cn.id === node.id);
+      if (!clusterNode) return node;
       return {
         ...node,
-        position: clusterNode ? { x: clusterNode.x, y: clusterNode.y } : node.position,
+        position: { x: clusterNode.x, y: clusterNode.y },
       };
     });
 
-    const bounds = this.calculateBounds(positionedNodes, validatedSettings.fitPadding);
+    const bounds = this.calculateBounds(positionedNodes, settings.fitPadding);
 
     return {
       nodes: positionedNodes,
@@ -88,7 +205,6 @@ export class OrganicLayoutEngine implements LayoutEngine<OrganicLayoutSettings> 
         nodeCount: nodes.length,
         edgeCount: edges.length,
         calculationTime: performance.now() - startTime,
-        converged: true,
       },
     };
   }
