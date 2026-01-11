@@ -251,9 +251,10 @@ function ReactFlowInspectorInner({
         type: 'floating',
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
       }}
-      // Match V1 zoom range for better legibility
-      minZoom={0.001}
-      maxZoom={10}
+      // Limit zoom to 100% (1.0) for better appearance and usability
+      minZoom={0.1}
+      maxZoom={1.0}
+      defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       proOptions={{ hideAttribution: true }}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
