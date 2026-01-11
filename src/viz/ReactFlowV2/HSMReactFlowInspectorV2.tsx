@@ -378,7 +378,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
                           v1Options.algorithm === 'stress' ? LayoutType.ORGANIC :
                                                     LayoutType.HIERARCHICAL;
         
-        const engine = layoutManager.getEngine(layoutType);
+        const engine = layoutManager.getEngine(layoutType) as any;
         if (!engine) {
           console.warn('No engine found for layout type:', layoutType);
           return;
