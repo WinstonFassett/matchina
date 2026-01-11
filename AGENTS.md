@@ -397,6 +397,108 @@ npm test            # Can flood context if tests have logging
 5. **Ticket Updated** - Beads ticket updated with evidence and completion status
 
 **NEVER mark work as complete without testing evidence.**
+
+## 📸 Screenshot Automation
+
+### Direct Method (Preferred)
+Use Playwright CLI for direct screenshots to target location:
+
+```bash
+npx playwright screenshot --color-scheme=dark --viewport-size=1920,1080 --wait-for-selector="selector" <url> <output-path>
+```
+
+**Key Options:**
+- `--color-scheme=dark` - Automatic dark mode
+- `--viewport-size=1920,1080` - Proper dimensions
+- `--wait-for-selector="selector"` - Wait for element before capture
+- `--full-page` - Full page screenshots (optional)
+
+**Examples:**
+```bash
+# Layout screenshot
+npx playwright screenshot --color-scheme=dark --viewport-size=1920,1080 --wait-for-selector="button[data-testid='hsm-layout-trigger']" http://localhost:4321/matchina/examples/traffic-light /Users/winston/dev/personal/matchina/review/screenshots/sugiyama-traffic-light.png
+
+# Batch capture script
+./scripts/capture-layout-screenshots.sh
+```
+
+### MCP Method (Limited)
+- MCP Playwright tool restricted to temp directory
+- Requires manual copying: `cp temp/file.png target/location.png`
+- Use only when interactive browser control needed
+- Less efficient for batch operations
+
+### Automation Script
+**Location**: `/scripts/capture-layout-screenshots.sh`
+**Usage**: `./scripts/capture-layout-screenshots.sh [--verbose]`
+**Features**: 
+- Batch capture all layouts and examples
+- Automatic dark mode and proper sizing
+- Progress tracking and error handling
+- Direct output to target directory
+
+### URL-Based Visualizer Control (NEW!)
+**Direct URL control** - No manual clicking required:
+```bash
+# Format
+http://localhost:4321/matchina/examples/{example}?viz={visualizer}&layout={layout}&settings={encoded-settings}
+
+# Examples
+http://localhost:4321/matchina/examples/traffic-light?viz=reactflow-v2&layout=sugiyama
+http://localhost:4321/matchina/examples/hsm-combobox?viz=reactflow-v2&layout=grid&settings=%7B%22cols%22%3A4%7D
+```
+
+**Enhanced automation script**: `/scripts/capture-enhanced-screenshots.sh`
+```bash
+# Multiple capture modes
+./scripts/capture-enhanced-screenshots.sh basic      # Basic layouts with app defaults
+./scripts/capture-enhanced-screenshots.sh all         # All layouts with app defaults
+
+# Target specific configurations
+./scripts/capture-enhanced-screenshots.sh -e traffic-light -l grid
+```
+
+**Features:**
+- Captures all visualizers × layouts × examples
+- Tests app's default settings (no hardcoded presets)
+- Automatic dark mode and proper sizing
+- Progress tracking and error handling
+- Direct output to target directory
+
+**URL builder utility**: `/scripts/build-visualizer-urls.sh`
+```bash
+./scripts/build-visualizer-urls.sh  # Generate example URLs
+```
+
+**Requirements:**
+- Playwright installed: `npx playwright install`
+- Dev server running: `npm run dev:docs`
+- jq installed for JSON encoding (URL-based control)
+- Output directory writable
+
+### 🖼️ Fast Example Gallery Capture (NEW!)
+**Quick visual overview of all examples**:
+```bash
+# Capture all examples with defaults (FAST!)
+./scripts/capture-example-gallery.sh
+
+# Auto-generates: review/EXAMPLE_GALLERY.md
+```
+
+**Features:**
+- **Lightning fast** - Captures 13 examples with defaults
+- **No layout switching** - Uses each example's default visualizer
+- **Auto documentation** - Generates markdown gallery with all images
+- **Visual overview** - See every example at a glance
+- **Quick updates** - Re-run to refresh entire gallery
+- **Proper auto-zoom** - Waits for ReactFlow V2 auto-zoom to complete
+- **MachineVisualizer only** - Only captures actual visualizer components
+
+**Perfect for:**
+- Quick visual verification of all examples
+- Documentation updates
+- Review meetings
+- Portfolio/showcase
 **NEVER assume user will test - AGENT is responsible for verification.**
 **NEVER close UI tickets without visual proof the fix works.**
 
