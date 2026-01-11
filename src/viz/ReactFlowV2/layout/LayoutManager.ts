@@ -47,7 +47,7 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
     [LayoutType.CIRCULAR]: 'radial',       // Radial algorithm (ELK native!)
-    [LayoutType.GRID]: 'disco',            // DisCo algorithm (ELK native!)
+    [LayoutType.GRID]: 'force',            // Use force for grid-like layouts with hierarchy
   };
 
   // Layout calculation - supports async engines

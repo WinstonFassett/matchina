@@ -21,8 +21,8 @@ const ELKLayoutSettings = z.object({
   compactness: z.number().min(0).max(1).default(0),
 
   // ELK algorithm - can be passed from LayoutManager for different layout types
-  // Options: layered (Sugiyama), mrtree (Tree), force, stress
-  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial']).default('layered'),
+  // Options: layered (Sugiyama), mrtree (Tree), force, stress, radial, disco
+  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial', 'disco']).default('layered'),
 
   // Direction (works for layered and mrtree)
   direction: z.enum(['DOWN', 'UP', 'LEFT', 'RIGHT']).default('DOWN'),
