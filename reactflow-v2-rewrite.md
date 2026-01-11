@@ -34,9 +34,9 @@ The others do not. Also their defaults are terrible. They have not gotten as muc
 
 - [ ] They should basically manage their own recursive layout and sizing of descendants when present. 
 	- [ ] FAILED for these layouts:
-		- [ ] organic 
-			- [x] fix lays out child node internally but does not layout that as a node alongside its peers. 
-			- [x] fix is jumbled.
+		- [x] organic 
+			- [ ] fix that it lays out child node internally but does NOT layout that as a node alongside its peers. 
+			- [ ] fix that it is jumbled.
         - [ ] children are laid out but Inactive node is VERY close to Active node, too close to read edge label, is basically adjacent.
 		- [ ] circular 
 			- [ ] does not lay out children, 

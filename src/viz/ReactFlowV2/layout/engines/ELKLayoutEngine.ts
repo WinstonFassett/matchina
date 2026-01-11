@@ -251,6 +251,27 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
             : "false",
         };
 
+      case "radial":
+        return {
+          ...baseOptions,
+          // Radial layout options for circular arrangement
+          "elk.radial.radius": (settings.nodeSpacing * 2).toString(),
+          "elk.radial.wedge": "360", // Full circle
+          "elk.radial.sorting": "BY_ANGLE",
+          "elk.radial.edgeRouting": "POLAR_RECTILINEAR",
+          "elk.radial.compaction": "NONE",
+        };
+
+      case "disco":
+        return {
+          ...baseOptions,
+          // DisCo (Disjoint Component) layout for grid-like arrangement
+          "elk.disco.compaction": "COMPACTION_ON",
+          "elk.disco.compactionStrategy": "MAX_COMPACTION",
+          "elk.disco.threshold": "4",
+          "elk.disco.expandNodes": "false",
+        };
+
       default:
         return baseOptions;
     }

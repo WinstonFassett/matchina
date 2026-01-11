@@ -12,23 +12,15 @@ import type {
   LayoutManager as ILayoutManager,
 } from './types';
 import { LayoutType } from './types';
-import { GridLayoutEngine } from './engines/GridLayoutEngine';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
-import { CircularLayoutEngine } from './engines/CircularLayoutEngine';
-import { ForceDirectedLayoutEngine } from './engines/ForceDirectedLayoutEngine';
-import { OrganicLayoutEngine } from './engines/OrganicLayoutEngine';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
   private presets = new Map<string, LayoutPreset>();
 
   constructor() {
-    // Register built-in engines
-    this.registerEngine(new GridLayoutEngine());
+    // Register ELK engine only - it handles ALL layout types with proper hierarchy support
     this.registerEngine(new ELKLayoutEngine());
-    this.registerEngine(new CircularLayoutEngine());
-    this.registerEngine(new ForceDirectedLayoutEngine());
-    this.registerEngine(new OrganicLayoutEngine());
 
     // Register built-in presets
     this.registerBuiltInPresets();
@@ -52,9 +44,10 @@ export class LayoutManager implements ILayoutManager {
   private static readonly ELK_ALGORITHM_MAP: Partial<Record<LayoutType, string>> = {
     [LayoutType.HIERARCHICAL]: 'layered',  // Sugiyama layered algorithm
     [LayoutType.TREE]: 'mrtree',            // Tree layout algorithm
-    [LayoutType.FORCE_DIRECTED]: 'force',
-    [LayoutType.ORGANIC]: 'stress',
-    // Circular and Grid use custom engines (no hierarchy support needed for flat layouts)
+    [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
+    [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
+    [LayoutType.CIRCULAR]: 'radial',       // Radial algorithm (ELK native!)
+    [LayoutType.GRID]: 'disco',            // DisCo algorithm (ELK native!)
   };
 
   // Layout calculation - supports async engines
