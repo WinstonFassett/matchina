@@ -14,6 +14,7 @@ import type {
 import { LayoutType } from './types';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
 import { GridLayoutEngine } from './engines/GridLayoutEngine';
+import { CircularLayoutEngine } from './engines/CircularLayoutEngine';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
@@ -25,6 +26,7 @@ export class LayoutManager implements ILayoutManager {
     
     // Register custom engines for layouts ELK doesn't support natively
     this.registerEngine(new GridLayoutEngine());
+    this.registerEngine(new CircularLayoutEngine());
 
     // Register built-in presets
     this.registerBuiltInPresets();
@@ -50,7 +52,7 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.TREE]: 'mrtree',            // Tree layout algorithm
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
-    [LayoutType.CIRCULAR]: 'org.eclipse.elk.graphviz.circo', // Graphviz circo algorithm (handles cycles!)
+    // CIRCULAR uses custom engine - Graphviz circo not available in ELK build
     // Grid uses custom engine - ELK doesn't have native grid algorithm
   };
 

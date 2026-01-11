@@ -1,6 +1,6 @@
 /**
- * Circular Layout Engine
- * Radial arrangement of nodes in a circle
+ * Circular Layout Engine with Hierarchy Support
+ * Circular arrangement with proper parent-child relationships
  */
 
 import type { Node, Edge } from '@xyflow/react';
@@ -29,15 +29,20 @@ type CircularLayoutSettings = z.infer<typeof CircularLayoutSettings>;
 export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings> {
   readonly type = LayoutType.CIRCULAR;
   readonly name = 'Circular Layout';
-  readonly description = 'Radial arrangement around a center point';
+  readonly description = 'Circular arrangement with hierarchy support';
 
-  calculateLayout(
+  async calculateLayout(
     nodes: Node[],
     edges: Edge[],
     settings: CircularLayoutSettings
-  ): LayoutResult {
+  ): Promise<LayoutResult> {
     const startTime = performance.now();
     const validatedSettings = this.validateSettings(settings);
+
+    console.log('🔍 DEBUG: CircularLayoutEngine.calculateLayout', { 
+      nodeCount: nodes.length,
+      edgeCount: edges.length 
+    });
 
     if (nodes.length === 0) {
       return this.emptyResult(startTime);
@@ -49,59 +54,50 @@ export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings
     // Layout root nodes first
     const rootLayout = this.layoutRootNodes(rootNodes, validatedSettings);
     
-    // Layout child nodes relative to their parents
-    const positionedChildNodes: Node[] = [];
-    for (const [parentId, children] of childNodesMap.entries()) {
-      const parentNode = rootLayout.nodes.find(n => n.id === parentId);
-      if (parentNode) {
-        const childLayout = this.layoutChildNodes(children, parentNode, validatedSettings);
-        positionedChildNodes.push(...childLayout.nodes);
-        
-        // Update parent size to contain children
-        const childBounds = this.calculateBounds(childLayout.nodes, 20); // 20px padding
-        const parentIndex = rootLayout.nodes.findIndex(n => n.id === parentId);
-        if (parentIndex >= 0) {
-          rootLayout.nodes[parentIndex] = {
-            ...rootLayout.nodes[parentIndex],
-            style: {
-              ...rootLayout.nodes[parentIndex].style,
-              width: Math.max(150, childBounds.width + 40), // Min width + padding
-              height: Math.max(50, childBounds.height + 40), // Min height + padding
-            },
-          };
-        }
-      }
+    // Layout child nodes inside their parents
+    const childLayouts = new Map<string, LayoutResult>();
+    for (const [parentId, childNodes] of childNodesMap.entries()) {
+      const childLayout = this.layoutChildNodes(childNodes, nodes.find(n => n.id === parentId)!, validatedSettings);
+      childLayouts.set(parentId, childLayout);
     }
-    
-    const allPositionedNodes = [...rootLayout.nodes, ...positionedChildNodes];
 
-    const bounds = this.calculateBounds(allPositionedNodes, validatedSettings.fitPadding);
+    // Combine all layouts
+    const allNodes = [...rootLayout.nodes];
+    const allEdges = [...rootLayout.edges];
+
+    // Add child layouts
+    for (const childLayout of childLayouts.values()) {
+      allNodes.push(...childLayout.nodes);
+      allEdges.push(...childLayout.edges);
+    }
+
+    const endTime = performance.now();
+    const duration = endTime - startTime;
 
     return {
-      nodes: allPositionedNodes,
-      edges,
-      bounds,
-      metadata: {
-        layoutType: this.type,
-        nodeCount: nodes.length,
-        edgeCount: edges.length,
-        calculationTime: performance.now() - startTime,
-        converged: true,
-      },
+      nodes: allNodes,
+      edges: allEdges,
+      duration,
+      algorithm: 'circular-hierarchy',
     };
   }
 
-  private separateHierarchy(nodes: Node[]): { rootNodes: Node[], childNodesMap: Map<string, Node[]> } {
+  private separateHierarchy(nodes: Node[]): { rootNodes: Node[]; childNodesMap: Map<string, Node[]> } {
     const rootNodes: Node[] = [];
-    const childNodesMap: Map<string, Node[]> = new Map();
+    const childNodesMap = new Map<string, Node[]>();
 
     for (const node of nodes) {
-      if (!node.parent) {
-        rootNodes.push(node);
+      // Check if node has a parent
+      const parentId = node.parentNode;
+      if (parentId) {
+        // This is a child node
+        if (!childNodesMap.has(parentId)) {
+          childNodesMap.set(parentId, []);
+        }
+        childNodesMap.get(parentId)!.push(node);
       } else {
-        const children = childNodesMap.get(node.parent) || [];
-        children.push(node);
-        childNodesMap.set(node.parent, children);
+        // This is a root node
+        rootNodes.push(node);
       }
     }
 
@@ -110,33 +106,24 @@ export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings
 
   private layoutRootNodes(nodes: Node[], settings: CircularLayoutSettings): LayoutResult {
     const startTime = performance.now();
+    
     // Optionally sort nodes by connection count
     let orderedNodes = [...nodes];
     if (settings.sortByConnections) {
-      const connectionCount = this.countConnections(nodes, []); // Simplified for root nodes
-      orderedNodes = orderedNodes.sort(
-        (a, b) => (connectionCount.get(b.id) || 0) - (connectionCount.get(a.id) || 0)
-      );
+      // This would require edge information, for now keep original order
     }
 
-    // Calculate radius based on node count and spacing with edge label consideration
-    const nodeWidth = 150; // Average node width
-    const edgeLabelSpacing = nodeWidth * 0.875; // 87.5% = midpoint of 75-100%
-    const spacingMultiplier = 1 - settings.compactness * 0.3;
-    const effectiveSpacing = Math.max(edgeLabelSpacing, settings.nodeSpacing) * spacingMultiplier;
-    const circumference = orderedNodes.length * effectiveSpacing;
-    const autoRadius = circumference / (2 * Math.PI);
-    const radius = settings.radius || Math.max(autoRadius, 100);
-
-    // Calculate positions
+    const nodeCount = orderedNodes.length;
+    const radius = settings.radius || (Math.max(100, nodeCount * settings.nodeSpacing / 2));
+    
+    const angleStep = (2 * Math.PI) / nodeCount;
     const startAngleRad = (settings.startAngle * Math.PI) / 180;
-    const angleStep = (2 * Math.PI) / orderedNodes.length;
     const direction = settings.clockwise ? 1 : -1;
 
-    const positionedNodes = orderedNodes.map((node, index) => {
+    const layoutedNodes = orderedNodes.map((node, index) => {
       const angle = startAngleRad + direction * index * angleStep;
-      const x = radius * Math.cos(angle);
-      const y = radius * Math.sin(angle);
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
 
       return {
         ...node,
@@ -144,19 +131,14 @@ export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings
       };
     });
 
-    const bounds = this.calculateBounds(positionedNodes, settings.fitPadding);
+    const endTime = performance.now();
+    const duration = endTime - startTime;
 
     return {
-      nodes: positionedNodes,
-      edges: [],
-      bounds,
-      metadata: {
-        layoutType: this.type,
-        nodeCount: nodes.length,
-        edgeCount: 0,
-        calculationTime: performance.now() - startTime,
-        converged: true,
-      },
+      nodes: layoutedNodes,
+      edges: [], // Root layout doesn't handle edges
+      duration,
+      algorithm: 'circular-root',
     };
   }
 
@@ -165,97 +147,57 @@ export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings
     parentNode: Node,
     settings: CircularLayoutSettings
   ): LayoutResult {
-    const childCount = children.length;
-    if (childCount === 0) {
-      return { nodes: [], edges: [], bounds: { x: 0, y: 0, width: 0, height: 0 }, metadata: { layoutType: this.type, nodeCount: 0, edgeCount: 0, calculationTime: 0 } };
+    const startTime = performance.now();
+    
+    if (children.length === 0) {
+      return {
+        nodes: [],
+        edges: [],
+        duration: 0,
+        algorithm: 'circular-empty',
+      };
     }
 
-    // Calculate spacing for edge labels
-    const nodeWidth = 150;
-    const edgeLabelSpacing = nodeWidth * 0.875;
-    const spacingMultiplier = 1 - settings.compactness * 0.3;
-    const childSpacing = Math.max(edgeLabelSpacing, settings.nodeSpacing) * spacingMultiplier;
-
-    // Arrange children in a smaller circle around parent
-    const circumference = childCount * childSpacing;
-    const radius = Math.max(circumference / (2 * Math.PI), 60); // Minimum radius for children
-
-    const startAngleRad = (settings.startAngle * Math.PI) / 180;
+    // Layout children in a smaller circle inside the parent
+    const childCount = children.length;
+    const parentRadius = 50; // Approximate parent node radius
+    const childRadius = Math.max(20, (parentRadius - 20) / 2);
+    
     const angleStep = (2 * Math.PI) / childCount;
-    const direction = settings.clockwise ? 1 : -1;
+    const startAngleRad = 0; // Start from top for children
+    const direction = 1; // Always clockwise for children
 
-    const positionedChildren = children.map((child, index) => {
+    const layoutedNodes = children.map((child, index) => {
       const angle = startAngleRad + direction * index * angleStep;
-      const x = parentNode.position.x + radius * Math.cos(angle);
-      const y = parentNode.position.y + radius * Math.sin(angle);
+      const x = Math.cos(angle) * childRadius;
+      const y = Math.sin(angle) * childRadius;
 
       return {
         ...child,
         position: { x, y },
+        // Ensure child is properly parented
+        parentNode: parentNode.id,
+        extent: 'parent' as const,
       };
     });
 
-    const bounds = this.calculateBounds(positionedChildren, 0);
+    const endTime = performance.now();
+    const duration = endTime - startTime;
 
     return {
-      nodes: positionedChildren,
-      edges: [],
-      bounds,
-      metadata: {
-        layoutType: this.type,
-        nodeCount: childCount,
-        edgeCount: 0,
-        calculationTime: 0,
-        converged: true,
-      },
+      nodes: layoutedNodes,
+      edges: [], // Child layout doesn't handle edges
+      duration,
+      algorithm: 'circular-children',
     };
-  }
-
-  private countConnections(nodes: Node[], edges: Edge[]): Map<string, number> {
-    const counts = new Map<string, number>();
-    for (const node of nodes) {
-      counts.set(node.id, 0);
-    }
-    for (const edge of edges) {
-      counts.set(edge.source, (counts.get(edge.source) || 0) + 1);
-      counts.set(edge.target, (counts.get(edge.target) || 0) + 1);
-    }
-    return counts;
   }
 
   private emptyResult(startTime: number): LayoutResult {
     return {
       nodes: [],
       edges: [],
-      bounds: { x: 0, y: 0, width: 0, height: 0 },
-      metadata: {
-        layoutType: this.type,
-        nodeCount: 0,
-        edgeCount: 0,
-        calculationTime: performance.now() - startTime,
-        converged: true,
-      },
-    };
-  }
-
-  private calculateBounds(nodes: Node[], padding: number) {
-    if (nodes.length === 0) {
-      return { x: 0, y: 0, width: 0, height: 0 };
-    }
-
-    const xs = nodes.map((n) => n.position.x);
-    const ys = nodes.map((n) => n.position.y);
-
-    const minX = Math.min(...xs) - padding;
-    const minY = Math.min(...ys) - padding;
-    const maxX = Math.max(...xs) + padding;
-    const maxY = Math.max(...ys) + padding;
-
-    return {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
+      duration: performance.now() - startTime,
+      algorithm: 'circular-empty',
     };
   }
 
@@ -266,7 +208,7 @@ export class CircularLayoutEngine implements LayoutEngine<CircularLayoutSettings
       fitPadding: 20,
       animationDuration: 300,
       compactness: 0.7,
-      radius: undefined, // Auto-calculate
+      radius: undefined,
       startAngle: 0,
       clockwise: true,
       sortByConnections: false,
