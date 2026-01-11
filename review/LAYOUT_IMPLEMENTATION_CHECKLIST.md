@@ -2,23 +2,17 @@
 
 ## 🚨 Phase 1: Fix What's Broken (Critical)
 
-### 1.1 Fix Circular Layout
-- [ ] **Add Graphviz algorithms to ELK schema**
-  - [ ] Add `graphviz.circo` to algorithm enum
-  - [ ] Add `graphviz.twopi` to algorithm enum  
-  - [ ] Add `graphviz.dot` to algorithm enum
-  - [ ] Update ELKLayoutSettings schema validation
-- [ ] **Add Graphviz Circo options to ELKLayoutEngine**
-  - [ ] Add case for `graphviz.circo` in getElkOptions()
-  - [ ] Research circo-specific settings
-  - [ ] Add circo configuration options
-- [ ] **Update LayoutManager algorithm mapping**
-  - [ ] Change Circular layout from `radial` to `graphviz.circo`
-  - [ ] Test circular layout with traffic light
-  - [ ] Verify no more "not a tree" errors
-- [ ] **Update UI and documentation**
-  - [ ] Update layout control labels/descriptions
-  - [ ] Document circo vs radial difference
+### 1.1 Fix Circular Layout ✅ COMPLETED
+- [x] **Replace ELK radial with Graphviz circo**
+  - [x] Add `org.eclipse.elk.graphviz.circo` to ELK algorithm enum
+  - [x] Add Graphviz circo algorithm options to ELKLayoutEngine
+  - [x] Update LayoutManager to map CIRCULAR to Graphviz circo
+  - [x] Remove ELK radial workarounds (startAngle, clockwise deletion)
+  - [x] Test circular layout with cyclic graphs
+- [x] **Update documentation**
+  - [x] Document Graphviz circo algorithm usage
+  - [x] Update LAYOUT_ENGINE_ANALYSIS.md with circo information
+  - [x] Remove references to broken ELK radial
 
 ### 1.2 Clarify Radial Layout
 - [ ] **Determine radial layout approach**

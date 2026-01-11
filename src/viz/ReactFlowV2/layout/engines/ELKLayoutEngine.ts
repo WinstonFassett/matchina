@@ -21,8 +21,8 @@ const ELKLayoutSettings = z.object({
   compactness: z.number().min(0).max(1).default(0),
 
   // ELK algorithm - can be passed from LayoutManager for different layout types
-  // Options: layered (Sugiyama), mrtree (Tree), force, stress, radial, disco
-  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial', 'disco']).default('layered'),
+  // Options: layered (Sugiyama), mrtree (Tree), force, stress, radial, disco, org.eclipse.elk.graphviz.circo
+  algorithm: z.enum(['layered', 'force', 'stress', 'mrtree', 'box', 'radial', 'disco', 'org.eclipse.elk.graphviz.circo']).default('layered'),
 
   // Direction (works for layered and mrtree)
   direction: z.enum(['DOWN', 'UP', 'LEFT', 'RIGHT']).default('DOWN'),
@@ -270,6 +270,17 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.disco.compactionStrategy": "MAX_COMPACTION",
           "elk.disco.threshold": "4",
           "elk.disco.expandNodes": "false",
+        };
+
+      case "org.eclipse.elk.graphviz.circo":
+        return {
+          ...baseOptions,
+          // Graphviz circo algorithm for circular layout
+          "org.eclipse.elk.graphviz.circo.ranksep": layerSpacing.toString(),
+          "org.eclipse.elk.graphviz.circo.nodesep": nodeSpacing.toString(),
+          "org.eclipse.elk.graphviz.circo.margin": "16",
+          "org.eclipse.elk.graphviz.circo.smoothing": "spring",
+          "org.eclipse.elk.graphviz.circo.splines": "true",
         };
 
       default:

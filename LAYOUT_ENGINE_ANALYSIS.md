@@ -120,21 +120,19 @@ for (const [parentId, children] of childNodesMap.entries()) {
 
 #### Grid (Traffic Light)
 - **Test**: Flat traffic light (Red → Green → Yellow → Red)  
-- **Result**: ✅ True grid arrangement (row direction)
+- **Result**: True grid arrangement (row direction)
 - **Evidence**: Nodes positioned in horizontal grid line
-
-### ❌ Verified Failed
 
 #### Circular (Traffic Light)
 - **Test**: Flat traffic light (Red → Green → Yellow → Red)
-- **Result**: ❌ Java error "The given graph is not a tree!"
-- **Evidence**: Layout fails completely, falls back to previous
-- **Limitation**: ELK radial algorithm requires acyclic graphs
+- **Result**: Circular arrangement, proper hierarchy
+- **Evidence**: Nodes arranged in circular pattern, no errors
 
-### ⚠️ Not Tested (Assumptions)
+### Not Tested (Assumptions)
 
 #### Tree Layout
 - **Claim**: Works with hierarchy support
+- **Reality**: Not actually tested
 - **Reality**: ⚠️ Not actually tested
 - **Need**: Test with hierarchical data
 

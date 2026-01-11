@@ -50,7 +50,7 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.TREE]: 'mrtree',            // Tree layout algorithm
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
-    [LayoutType.CIRCULAR]: 'radial',       // Radial algorithm (ELK native!)
+    [LayoutType.CIRCULAR]: 'org.eclipse.elk.graphviz.circo', // Graphviz circo algorithm (handles cycles!)
     // Grid uses custom engine - ELK doesn't have native grid algorithm
   };
 
@@ -71,12 +71,6 @@ export class LayoutManager implements ILayoutManager {
       if (elkEngine) {
         // Transform settings to match ELK schema requirements
         const elkSettings: Record<string, unknown> = { ...settings, algorithm: elkAlgorithm };
-        
-        // Handle Circular layout settings that ELK radial doesn't support
-        if (type === LayoutType.CIRCULAR) {
-          delete elkSettings.startAngle;
-          delete elkSettings.clockwise;
-        }
         
         const validatedSettings = elkEngine.validateSettings(elkSettings);
         return elkEngine.calculateLayout(nodes, edges, validatedSettings);
