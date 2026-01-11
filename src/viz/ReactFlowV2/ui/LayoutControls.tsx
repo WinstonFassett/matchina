@@ -221,39 +221,6 @@ export function LayoutControls({
                 />
               </div>
 
-              {/* Layout-specific settings would go here */}
-              {currentLayoutType === LayoutType.GRID && (
-                <>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                      Alignment
-                    </label>
-                    <select
-                      value={getString('alignment', 'center')}
-                      onChange={(e) => handleSettingChange('alignment', e.target.value)}
-                      className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-                    >
-                      <option value="start">Start</option>
-                      <option value="center">Center</option>
-                      <option value="end">End</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                      Direction
-                    </label>
-                    <select
-                      value={getString('direction', 'row')}
-                      onChange={(e) => handleSettingChange('direction', e.target.value)}
-                      className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-                    >
-                      <option value="row">Row</option>
-                      <option value="column">Column</option>
-                    </select>
-                  </div>
-                </>
-              )}
             </div>
           </div>
 

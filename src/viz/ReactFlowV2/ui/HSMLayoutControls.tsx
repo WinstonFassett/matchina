@@ -21,8 +21,6 @@ const HSM_LAYOUT_TYPES = [
   LayoutType.TREE,
   LayoutType.FORCE_DIRECTED,
   LayoutType.ORGANIC,
-  LayoutType.CIRCULAR,
-  LayoutType.GRID,
 ];
 
 // Layout type display info for HSM
@@ -36,16 +34,6 @@ const LAYOUT_INFO: Record<LayoutType, { name: string; icon: string; description:
     name: 'Tree',
     icon: '🌲',
     description: 'Tree layout (mrtree algorithm)',
-  },
-  [LayoutType.GRID]: {
-    name: 'Grid',
-    icon: '⊞',
-    description: 'Simple grid arrangement',
-  },
-  [LayoutType.CIRCULAR]: {
-    name: 'Circular',
-    icon: '◯',
-    description: 'Radial arrangement',
   },
   [LayoutType.FORCE_DIRECTED]: {
     name: 'Force',
@@ -258,168 +246,6 @@ export function HSMLayoutControls({
               </>
             )}
 
-            {/* Grid-specific settings */}
-            {currentLayoutType === LayoutType.GRID && (
-              <>
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Columns: {currentSettings?.columns || 3}
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={currentSettings?.columns || 3}
-                    onChange={(e) => handleSettingChange('columns', Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Max Columns: {currentSettings?.maxCols || 6}
-                  </label>
-                  <input
-                    type="range"
-                    min="2"
-                    max="12"
-                    value={currentSettings?.maxCols || 6}
-                    onChange={(e) => handleSettingChange('maxCols', Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Max Rows: {currentSettings?.maxRows || 6}
-                  </label>
-                  <input
-                    type="range"
-                    min="2"
-                    max="12"
-                    value={currentSettings?.maxRows || 6}
-                    onChange={(e) => handleSettingChange('maxRows', Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Grid Direction</label>
-                  <div className="flex gap-1 mt-1">
-                    {['row', 'column'].map(dir => (
-                      <button
-                        key={dir}
-                        type="button"
-                        onClick={() => handleSettingChange('direction', dir)}
-                        className={`px-2 py-1 text-xs rounded capitalize ${
-                          currentSettings?.direction === dir
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200'
-                        }`}
-                      >
-                        {dir}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Alignment</label>
-                  <div className="flex gap-1 mt-1">
-                    {['start', 'center', 'end'].map(align => (
-                      <button
-                        key={align}
-                        type="button"
-                        onClick={() => handleSettingChange('alignment', align)}
-                        className={`px-2 py-1 text-xs rounded capitalize ${
-                          currentSettings?.alignment === align
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200'
-                        }`}
-                      >
-                        {align}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Auto-fit Layout
-                  </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleSettingChange('autoFit', !currentSettings?.autoFit)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        currentSettings?.autoFit
-                          ? 'bg-blue-500'
-                          : 'bg-gray-200 dark:bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          currentSettings?.autoFit ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {currentSettings?.autoFit ? 'ON' : 'OFF'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Automatically calculate optimal grid dimensions
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Prefer Square Grid
-                  </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleSettingChange('preferSquare', !currentSettings?.preferSquare)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        currentSettings?.preferSquare
-                          ? 'bg-blue-500'
-                          : 'bg-gray-200 dark:bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          currentSettings?.preferSquare ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {currentSettings?.preferSquare ? 'ON' : 'OFF'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Create roughly square grids vs wider layouts
-                  </p>
-                </div>
-              </>
-            )}
-
-            {/* Circular-specific settings */}
-            {currentLayoutType === LayoutType.CIRCULAR && (
-              <div>
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  Start Angle: {currentSettings?.startAngle || 0}°
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  step="45"
-                  value={currentSettings?.startAngle || 0}
-                  onChange={(e) => handleSettingChange('startAngle', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-            )}
           </div>
         </FloatingPanel>
       )}

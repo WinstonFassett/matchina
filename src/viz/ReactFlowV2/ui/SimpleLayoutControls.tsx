@@ -17,11 +17,6 @@ interface SimpleLayoutControlsProps {
 
 // Layout type display info
 const LAYOUT_INFO: Record<LayoutType, { name: string; icon: string; description: string }> = {
-  [LayoutType.GRID]: {
-    name: 'Grid',
-    icon: '⊞',
-    description: 'Simple grid arrangement',
-  },
   [LayoutType.HIERARCHICAL]: {
     name: 'Sugiyama',
     icon: '⬎',
@@ -31,11 +26,6 @@ const LAYOUT_INFO: Record<LayoutType, { name: string; icon: string; description:
     name: 'Tree',
     icon: '🌲',
     description: 'Tree layout (mrtree)',
-  },
-  [LayoutType.CIRCULAR]: {
-    name: 'Circular',
-    icon: '◯',
-    description: 'Radial arrangement',
   },
   [LayoutType.FORCE_DIRECTED]: {
     name: 'Force',
@@ -74,7 +64,7 @@ export function SimpleLayoutControls({
     }
   };
 
-  const currentInfo = LAYOUT_INFO[currentLayoutType] || LAYOUT_INFO[LayoutType.GRID];
+  const currentInfo = LAYOUT_INFO[currentLayoutType] || LAYOUT_INFO[LayoutType.HIERARCHICAL];
 
   return (
     <>
@@ -130,14 +120,8 @@ export function SimpleLayoutControls({
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             {/* Layout-specific controls */}
-            {currentLayoutType === LayoutType.GRID && (
-              <GridControls settings={currentSettings} onChange={handleSettingChange} />
-            )}
             {currentLayoutType === LayoutType.HIERARCHICAL && (
               <HierarchicalControls settings={currentSettings} onChange={handleSettingChange} />
-            )}
-            {currentLayoutType === LayoutType.CIRCULAR && (
-              <CircularControls settings={currentSettings} onChange={handleSettingChange} />
             )}
             {currentLayoutType === LayoutType.FORCE_DIRECTED && (
               <ForceControls settings={currentSettings} onChange={handleSettingChange} />

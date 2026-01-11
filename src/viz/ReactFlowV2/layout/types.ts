@@ -8,11 +8,9 @@ import { z } from 'zod';
 
 // Layout types that actually work and are useful
 export enum LayoutType {
-  GRID = 'grid',               // Simple grid (current baseline)
   HIERARCHICAL = 'hierarchical',  // Sugiyama layered layout (best for state machines)
   TREE = 'tree',                   // Tree layout (mrtree algorithm)
   FORCE_DIRECTED = 'force',        // Physics-based clustering
-  CIRCULAR = 'circular',           // Radial arrangement
   ORGANIC = 'organic',              // Natural clustering
 }
 
@@ -31,12 +29,6 @@ export const BaseLayoutSettingsSchema = z.object({
 });
 
 // Layout-specific settings
-export const GridLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
-  cols: z.number().min(1).max(20).optional(),
-  alignment: z.enum(['start', 'center', 'end']).default('center'),
-  direction: z.enum(['row', 'column']).default('row'),
-});
-
 export const HierarchicalLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
   direction: z.enum(['TB', 'BT', 'LR', 'RL']).default('TB'),
   levelSpacing: z.number().min(50).max(300).default(180),
@@ -51,13 +43,6 @@ export const ForceDirectedLayoutSettingsSchema = BaseLayoutSettingsSchema.extend
   preventOverlap: z.boolean().default(true),
 });
 
-export const CircularLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
-  radius: z.number().min(100).max(1000).optional(),
-  startAngle: z.number().min(0).max(360).default(0),
-  clockwise: z.boolean().default(true),
-  sortBySize: z.boolean().default(false),
-});
-
 export const OrganicLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
   clustering: z.boolean().default(true),
   clusterStrength: z.number().min(0).max(1).default(0.7),
@@ -65,10 +50,8 @@ export const OrganicLayoutSettingsSchema = BaseLayoutSettingsSchema.extend({
 });
 
 // Export inferred types
-export type GridLayoutSettings = z.infer<typeof GridLayoutSettingsSchema>;
 export type HierarchicalLayoutSettings = z.infer<typeof HierarchicalLayoutSettingsSchema>;
 export type ForceDirectedLayoutSettings = z.infer<typeof ForceDirectedLayoutSettingsSchema>;
-export type CircularLayoutSettings = z.infer<typeof CircularLayoutSettingsSchema>;
 export type OrganicLayoutSettings = z.infer<typeof OrganicLayoutSettingsSchema>;
 
 // Base layout settings for type constraints
@@ -76,10 +59,8 @@ export type BaseLayoutSettings = z.infer<typeof BaseLayoutSettingsSchema>;
 
 // Union type for all layout settings
 export type LayoutSettings =
-  | GridLayoutSettings
   | HierarchicalLayoutSettings
   | ForceDirectedLayoutSettings
-  | CircularLayoutSettings
   | OrganicLayoutSettings;
 
 // Layout result
@@ -193,14 +174,6 @@ export function createLayoutValidator<T extends LayoutSettings>(schema: z.ZodSch
 }
 
 // Type guards
-export function isGridLayoutSettings(settings: LayoutSettings): settings is z.infer<typeof GridLayoutSettingsSchema> {
-  return BaseLayoutSettingsSchema.extend({
-    cols: z.number().optional(),
-    alignment: z.enum(['start', 'center', 'end']),
-    direction: z.enum(['row', 'column']),
-  }).safeParse(settings).success;
-}
-
 export function isHierarchicalLayoutSettings(settings: LayoutSettings): settings is z.infer<typeof HierarchicalLayoutSettingsSchema> {
   return BaseLayoutSettingsSchema.extend({
     direction: z.enum(['TB', 'BT', 'LR', 'RL']),
@@ -216,15 +189,6 @@ export function isForceDirectedLayoutSettings(settings: LayoutSettings): setting
     linkDistance: z.number(),
     iterations: z.number(),
     preventOverlap: z.boolean(),
-  }).safeParse(settings).success;
-}
-
-export function isCircularLayoutSettings(settings: LayoutSettings): settings is z.infer<typeof CircularLayoutSettingsSchema> {
-  return BaseLayoutSettingsSchema.extend({
-    radius: z.number().optional(),
-    startAngle: z.number(),
-    clockwise: z.boolean(),
-    sortBySize: z.boolean(),
   }).safeParse(settings).success;
 }
 

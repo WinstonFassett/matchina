@@ -182,7 +182,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
   exampleName,
 }) => {
   // Layout state
-  const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.GRID);
+  const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.HIERARCHICAL);
   const [layoutSettings, setLayoutSettings] = useState<AnyLayoutSettings>(() => {
     // Try example-specific preset first (V1 parity)
     if (exampleName) {
@@ -210,7 +210,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
     }
     
     // Fallback to default
-    const engine = layoutManager.getEngine(LayoutType.GRID);
+    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
     return engine?.getDefaultSettings() ?? {
       nodeSpacing: 120,
       edgeSpacing: 20,
@@ -356,13 +356,11 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
       const layoutType = urlLayout as LayoutType;
       
       // Map URL layout parameter to preset ID
-      const presetId = layoutType === 'circular' ? 'circular-standard' :
-                      layoutType === 'hierarchical' ? 'hierarchical-topdown' :
+      const presetId = layoutType === 'hierarchical' ? 'hierarchical-topdown' :
                       layoutType === 'tree' ? 'tree-vertical' :
-                      layoutType === 'force' ? 'force-directed' :
-                      layoutType === 'organic' ? 'organic-natural' :
-                      layoutType === 'grid' ? 'grid-standard' :
-                      null;
+                      layoutType === 'force' ? 'force-balanced' :
+                      layoutType === 'organic' ? 'organic-clustered' :
+                                            null;
       
       if (presetId) {
         const preset = layoutManager.getPreset(presetId);
@@ -385,8 +383,7 @@ export const HSMReactFlowInspectorV2: React.FC<HSMReactFlowInspectorV2Props> = (
                           v1Options.algorithm === 'mrtree' ? LayoutType.TREE :
                           v1Options.algorithm === 'force' ? LayoutType.FORCE_DIRECTED :
                           v1Options.algorithm === 'stress' ? LayoutType.ORGANIC :
-                          v1Options.algorithm === 'radial' ? LayoutType.CIRCULAR :
-                          LayoutType.HIERARCHICAL;
+                                                    LayoutType.HIERARCHICAL;
         
         const engine = layoutManager.getEngine(layoutType);
         const defaultSettings = engine.getDefaultSettings();

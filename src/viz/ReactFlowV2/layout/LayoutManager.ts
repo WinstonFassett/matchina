@@ -19,11 +19,8 @@ export class LayoutManager implements ILayoutManager {
   private presets = new Map<string, LayoutPreset>();
 
   constructor() {
-    // Register ELK engine for hierarchical layouts
+    // Register ELK engine for all layouts
     this.registerEngine(new ELKLayoutEngine());
-    
-    // Register custom engines for layouts ELK doesn't support natively
-    // GridLayoutEngine removed - using ELK force algorithm for grid layout with hierarchy support
 
     // Register built-in presets
     this.registerBuiltInPresets();
@@ -49,8 +46,6 @@ export class LayoutManager implements ILayoutManager {
     [LayoutType.TREE]: 'mrtree',            // Tree layout algorithm
     [LayoutType.FORCE_DIRECTED]: 'force',  // Force-directed algorithm
     [LayoutType.ORGANIC]: 'stress',        // Stress majorization algorithm
-    [LayoutType.GRID]: 'force',            // Use force algorithm for grid-like arrangement with hierarchy
-    // CIRCULAR - REMOVED - Graphviz circo not available in ELK.js
   };
 
   // Layout calculation - supports async engines
@@ -513,50 +508,6 @@ export class LayoutManager implements ILayoutManager {
   }
 
   private registerBuiltInPresets(): void {
-    // Grid presets
-    this.registerPreset({
-      id: 'grid-simple',
-      name: 'Simple Grid',
-      description: 'Basic grid layout for small machines',
-      layoutType: LayoutType.GRID,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0.7,
-        alignment: 'center',
-        direction: 'row',
-      },
-      constraints: {
-        maxNodes: 9,
-        suitableFor: ['simple', 'toggle', 'counter'],
-      },
-      tags: ['grid', 'simple', 'small'],
-    });
-
-    this.registerPreset({
-      id: 'grid-compact',
-      name: 'Compact Grid',
-      description: 'Dense grid layout for medium machines',
-      layoutType: LayoutType.GRID,
-      settings: {
-        nodeSpacing: 80,
-        edgeSpacing: 15,
-        fitPadding: 15,
-        animationDuration: 250,
-        compactness: 0.9,
-        alignment: 'center',
-        direction: 'row',
-      },
-      constraints: {
-        minNodes: 5,
-        maxNodes: 25,
-        suitableFor: ['medium', 'compact'],
-      },
-      tags: ['grid', 'compact', 'medium'],
-    });
-
     // Hierarchical presets (ELK-based) - V1 parity values
     // Use TREE layout type (mrtree algorithm) to match V1 behavior for hierarchical layouts
     this.registerPreset({
@@ -714,30 +665,6 @@ export class LayoutManager implements ILayoutManager {
         suitableFor: ['complex', 'modular', 'grouped'],
       },
       tags: ['organic', 'cluster', 'natural'],
-    });
-
-    // Grid presets
-    this.registerPreset({
-      id: 'grid-standard',
-      name: 'Grid',
-      description: 'Grid-like arrangement using force algorithm with hierarchy support',
-      layoutType: LayoutType.GRID,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0.5,
-        forceIterations: 300,
-        temperature: 0.007,
-        repulsion: 12,
-        attraction: 0.82,
-        useCoarseGraining: true,
-      },
-      constraints: {
-        suitableFor: ['any', 'hierarchy', 'grouped'],
-      },
-      tags: ['grid', 'force', 'hierarchy'],
     });
 
     // Experimental: Alternating Direction Hierarchical
