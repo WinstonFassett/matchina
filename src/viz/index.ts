@@ -1,6 +1,5 @@
 // Visualization components
 export { default as SketchInspector } from './SketchInspector';
-export { HSMReactFlowInspector, ReactFlowInspector, getReactFlowPreset } from './ReactFlowInspector';
 export { HSMForceGraphInspector } from './ForceGraphInspector/HSMForceGraphInspector';
 export { MermaidInspector, MermaidInspectorWithSettings } from './MermaidInspector';
 export { default as Mermaid } from './Mermaid';
