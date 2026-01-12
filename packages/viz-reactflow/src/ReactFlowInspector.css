@@ -1,0 +1,16 @@
+/* ReactFlow V2 styling - Minimal overrides
+   ReactFlow handles base theming with colorMode prop
+   Only override custom components that need specific styling */
+
+/* Remove ReactFlow's default node styling for custom components ONLY
+   ReactFlow applies unwanted gray backgrounds/borders to outer containers
+   Our custom nodes (SimpleNode, GroupNode) handle their own styling
+   IMPORTANT: Only target node containers, NOT edges or other ReactFlow elements */
+.react-flow__node.react-flow__node-simple,
+.react-flow__node.react-flow__node-group {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}

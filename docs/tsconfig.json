@@ -14,7 +14,8 @@
       "matchina": ["../src/index.ts"],
       "matchina/*": ["../src/*"],
       "matchina/react": ["../src/integrations/react"],
-      "matchina/hsm": ["../src/hsm/index.ts"]
+      "matchina/hsm": ["../src/hsm/index.ts"],
+      "@matchina/viz-reactflow": ["../packages/viz-reactflow/src/index.ts"]
     }
   }
 }

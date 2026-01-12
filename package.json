@@ -98,7 +98,8 @@
   ],
   "workspaces": [
     ".",
-    "docs"
+    "docs",
+    "packages/viz-reactflow"
   ],
   "scripts": {
     "build": "npm run build:lib",

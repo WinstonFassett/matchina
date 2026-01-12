@@ -8,11 +8,13 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import {
   ForceGraphInspector,
-  HSMReactFlowInspector,
   MermaidInspector,
   SketchInspector,
-  getReactFlowPreset
 } from 'matchina/viz';
+import {
+  HSMReactFlowInspector,
+  getReactFlowPreset
+} from '@matchina/viz-reactflow';
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from '@xyflow/react';
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
