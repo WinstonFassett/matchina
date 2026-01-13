@@ -659,25 +659,25 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     return {
       // CRITICAL: Spacing for edge labels (75-100% of node width)
       // For 132px nodes: 99-132px for edge labels + nodes = 363-396px center-to-center
-      nodeSpacing: 400,    // ~3.0x node width for edge labels (was 150)
+      nodeSpacing: 120,    // Normal spacing (was 400, too high)
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
       compactness: 0,
       algorithm: 'layered',
       direction: 'DOWN',
-      layerSpacing: 300,    // Increased for edge labels between layers (was 200)
+      layerSpacing: 180,    // Normal layer spacing (was 300, too high)
       edgeRouting: 'ORTHOGONAL',
       alignment: 'CENTER',
-      edgeNodeSpacing: 60,    // Increased for edge label clearance (was 40)
-      edgeEdgeSpacing: 30,    // Increased for multiple edge labels (was 20)
+      edgeNodeSpacing: 30,    // Normal edge-node spacing (was 60, too high)
+      edgeEdgeSpacing: 20,    // Normal edge-edge spacing (was 30, too high)
       
       // Hierarchy settings for HSM support
       hierarchyHandling: 'INCLUDE_CHILDREN',
-      paddingTop: 80,        // Increased for larger spacing (was 60)
-      paddingLeft: 80,
-      paddingBottom: 80,
-      paddingRight: 80,
+      paddingTop: 50,        // Normal padding (was 80, too high)
+      paddingLeft: 50,
+      paddingBottom: 50,
+      paddingRight: 50,
       
       // Algorithm-specific settings (keep for completeness)
       iterationLimit: 150,
@@ -685,7 +685,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       
       compactComponents: false,
       separateComponents: false,
-      componentSpacing: 80,   // Increased for edge labels (was 60)
+      componentSpacing: 60,   // Normal component spacing (was 80, too high)
       thoroughness: 7,
       feedbackEdges: true,
       alternatingDirection: false, // OFF by default

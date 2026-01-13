@@ -123,8 +123,8 @@ export function HSMLayoutControls({
               <input
                 type="range"
                 min="50"
-                max="500"
-                value={currentSettings?.nodeSpacing || 400}
+                max="300"
+                value={currentSettings?.nodeSpacing || 120}
                 onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
                 className="w-full"
               />
@@ -160,7 +160,7 @@ export function HSMLayoutControls({
                     type="range"
                     min="40"
                     max="400"
-                    value={currentSettings?.layerSpacing || 300}
+                    value={currentSettings?.layerSpacing || 180}
                     onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
                     className="w-full"
                   />
@@ -210,35 +210,18 @@ export function HSMLayoutControls({
               <>
                 <div>
                   <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Node Spacing: {currentSettings?.nodeSpacing || 150}
-                  </label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="300"
-                    value={currentSettings?.nodeSpacing || 150}
-                    onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Horizontal spacing between nodes (~1.1x node width)
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Layer Spacing: {currentSettings?.layerSpacing || 200}
+                    Layer Spacing: {currentSettings?.layerSpacing || 180}
                   </label>
                   <input
                     type="range"
                     min="50"
                     max="400"
-                    value={currentSettings?.layerSpacing || 200}
+                    value={currentSettings?.layerSpacing || 180}
                     onChange={(e) => handleSettingChange('layerSpacing', Number(e.target.value))}
                     className="w-full"
                   />
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Vertical spacing between layers (~4.0x node height)
+                    Vertical spacing between layers
                   </p>
                 </div>
               </>
