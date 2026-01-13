@@ -60,15 +60,6 @@ export function buildShapeTree<F extends FactoryMachine<any>>(
  * This is a fallback - prefer shapes when available.
  */
 function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
-  // Educational type definition for XState compatibility
-  void ({
-    key: "",
-    fullKey: "",
-    on: {} as Record<string, string>,
-    states: undefined as any,
-    initial: undefined as string | undefined
-  }); // _XStateNode - Educational type definition
-
   const initialState = machine.getState();
   const declaredInitial = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
 
@@ -117,18 +108,9 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
 
       // Try to get shape first (preferred for flat machines)
       const shape = (childMachine as any).shape?.getState();
-      let childDefinition;
-
-      if (shape) {
-        // Use shape-based visualization
-        childDefinition = buildShapeTreeFromShape(shape);
-      } else {
-        // Fallback to hierarchy-based visualization
-        childDefinition = buildShapeTreeFromHierarchy(
-          childMachine,
-          childFullKey
-        );
-      }
+      const childDefinition = shape
+        ? buildShapeTreeFromShape(shape)
+        : buildShapeTreeFromHierarchy(childMachine, childFullKey);
 
       if (!definition.states[stateKey]) {
         definition.states[stateKey] = { on: {} };

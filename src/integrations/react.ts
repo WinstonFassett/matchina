@@ -4,6 +4,7 @@ import { withSubscribe } from "../extras/with-subscribe";
 
 // Global no-op subscribe used when a machine is absent.
 // Signature matches useSyncExternalStore's expected subscribe shape.
+// eslint-disable-next-line unicorn/consistent-function-scoping
 const noopSubscribe: (onStoreChange: () => void) => () => void = () => () => {};
 
 /**

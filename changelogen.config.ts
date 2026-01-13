@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/named
 import { defineConfig } from 'changelogen';
 
 export default defineConfig({

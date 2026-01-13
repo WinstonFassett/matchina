@@ -20,16 +20,10 @@ export function t<S extends { key: string }>(
     | (() => S[])                    // Just returns possible states
 ) {
   if (discover) {
-    let results: S[];
-
     // Detect which form of discover we have
-    if (discover.length === 1) {
-      // Receives handler - call it
-      results = (discover as (f: typeof handler) => S[])(handler);
-    } else {
-      // No params - just returns states
-      results = (discover as () => S[])();
-    }
+    const results = discover.length === 1
+      ? (discover as (f: typeof handler) => S[])(handler)
+      : (discover as () => S[])();
 
     // Extract state keys for visualization
     const targets = results.map(r => r.key);

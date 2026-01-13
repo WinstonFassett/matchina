@@ -245,16 +245,12 @@ function flattenTransitions(
           } else if (target.includes('.')) {
             // Already fully qualified
             flattened[fullKey][event] = target;
+          } else if (config.states && target in config.states) {
+            // Target is a direct child state
+            flattened[fullKey][event] = `${fullKey}.${target}`;
           } else {
-            // Check if target is a child of this state
-            if (config.states && target in config.states) {
-              // Target is a direct child state
-              flattened[fullKey][event] = `${fullKey}.${target}`;
-            } else {
-              // Relative to parent of current state (not current state itself)
-              // For Payment.MethodEntry with 'Authorizing', resolves to Payment.Authorizing
-              flattened[fullKey][event] = parentKey ? `${parentKey}.${target}` : target;
-            }
+            // Relative to parent - target is a sibling state
+            flattened[fullKey][event] = parentKey ? `${parentKey}.${target}` : target;
           }
         } else {
           // Transition resolver function - pass through

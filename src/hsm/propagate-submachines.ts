@@ -222,6 +222,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
    * Descend to the deepest active child machine in the hierarchy.
    * Returns the chain of machines and states visited.
    */
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   function descendToDeepestActive(root: DuckTypedMachine): { machinesChain: DuckTypedMachine[]; statesChain: any[] } {
     const machinesChain: DuckTypedMachine[] = [];
     const statesChain: any[] = [];
@@ -265,6 +266,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
   /**
    * Handle duck-typed child machines (those with .send method).
    */
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   function handleDuckTypedChild(child: DuckTypedMachine, type: string, params: any[]): boolean {
     try {
       const before = child.getState?.();

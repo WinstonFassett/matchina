@@ -44,6 +44,7 @@ export class LayoutManager implements ILayoutManager {
 
   // Layout calculation - supports async engines
   // Routes ELK-based layouts through ELK engine (like V1 does for all layouts)
+  // eslint-disable-next-line require-await
   async calculateLayout(
     type: LayoutType,
     nodes: Node[],
@@ -129,6 +130,7 @@ export class LayoutManager implements ILayoutManager {
         id: node.id,
         node,
         children: [],
+        // eslint-disable-next-line unicorn/no-null
         parent: null,
       });
     }
@@ -259,7 +261,8 @@ export class LayoutManager implements ILayoutManager {
     const finalNodes: Node[] = [];
     
     // Recursive function to process nodes and transpose children
-    const processNode = (hNode: HNode, parentOffset: { x: number; y: number } = { x: 0, y: 0 }) => {
+    const defaultOffset = { x: 0, y: 0 };
+    const processNode = (hNode: HNode, parentOffset = defaultOffset) => {
       const pos = hNode.layoutedPosition || { x: 0, y: 0 };
       const dims = hNode.calculatedDimensions || { width: 150, height: 50 };
       
