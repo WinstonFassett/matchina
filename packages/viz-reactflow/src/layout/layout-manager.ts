@@ -4,7 +4,7 @@
  */
 
 import type { Node, Edge } from '@xyflow/react';
-import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
+import { ELKLayoutEngine } from './engines/elk-layout-engine';
 import {
   LayoutEngine,
   LayoutType,

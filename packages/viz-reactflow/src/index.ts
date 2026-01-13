@@ -6,7 +6,7 @@ export { default as ReactFlowInspector } from './ReactFlowInspector';
 export { default as FloatingEdge } from './FloatingEdge';
 export { default as SimpleNode } from './SimpleNode';
 export { default as GroupNode } from './GroupNode';
-export { getEdgeParams } from './floatingUtils';
+export { getEdgeParams } from './floating-utils';
 // Layout system
 export * from './layout';
 

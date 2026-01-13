@@ -8,7 +8,7 @@ import {
   type EdgeProps,
   type ReactFlowState,
 } from '@xyflow/react';
-import { getEdgeParams } from './floatingUtils';
+import { getEdgeParams } from './floating-utils';
 
 // Add CSS animation for dashed edges (client-side only)
 const addDashAnimation = () => {
