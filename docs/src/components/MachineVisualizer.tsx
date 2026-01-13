@@ -11,15 +11,11 @@ import {
   MermaidInspector,
   SketchInspector,
 } from 'matchina/viz';
-import {
-  HSMReactFlowInspector,
-  getReactFlowPreset
-} from '@matchina/viz-reactflow';
+import { HSMReactFlowInspector } from '@matchina/viz-reactflow';
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from '@xyflow/react';
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
 import { VizPicker, type VisualizerType } from './VizPicker';
-import { getPresetConfig, selectBestVisualizer } from './vizAutoSelect';
 
 export interface MachineVisualizerProps {
   // Core props
@@ -29,12 +25,12 @@ export interface MachineVisualizerProps {
   } & Record<string, any>>;
 
   // Visualizer configuration
-  defaultViz?: VisualizerType | 'auto';
+  defaultViz?: VisualizerType;
   availableViz?: VisualizerType[];
   showPicker?: boolean;
 
   // Layout configuration
-  layout?: 'split' | 'stacked' | 'auto';
+  layout?: 'split' | 'stacked';
   vizPosition?: 'left' | 'right' | 'top' | 'bottom';
   minVizHeight?: number;
 
@@ -44,12 +40,6 @@ export interface MachineVisualizerProps {
   // Display options
   showRawState?: boolean;
   title?: string;
-
-  // Preset configurations
-  preset?: 'simple' | 'hierarchical' | 'complex' | 'minimal';
-
-  // Example identification for optimizations
-  exampleName?: string;
 
   // Additional
   className?: string;
@@ -61,45 +51,18 @@ export interface MachineVisualizerProps {
 export function MachineVisualizer({
   machine,
   AppView,
-  defaultViz = 'auto',
+  defaultViz = 'reactflow',
   availableViz,
-  showPicker,
+  showPicker = true,
   layout = 'split',
   vizPosition = 'left',
   minVizHeight = 400,
   interactive = true,
   showRawState = false,
   title,
-  preset,
-  exampleName,
   className = '',
 }: MachineVisualizerProps) {
-  // Apply preset configuration if provided
-  const presetConfig = preset ? getPresetConfig(preset) : null;
-
-  // Resolve configuration with preset fallbacks
-  const resolvedDefaultViz = presetConfig?.defaultViz ?? defaultViz;
-  const resolvedAvailableViz = availableViz ?? presetConfig?.availableViz;
-  const resolvedShowPicker = showPicker ?? presetConfig?.showPicker ?? true;
-  
-  // Use example-specific preset for layout if available
-  let resolvedLayout = layout;
-  let resolvedMinVizHeight = minVizHeight;
-  
-  if (exampleName) {
-    const preset = getReactFlowPreset(exampleName);
-    resolvedLayout = preset.pageLayout.layout;
-    resolvedMinVizHeight = preset.pageLayout.minVizHeight;
-  } else {
-    resolvedLayout = presetConfig?.layout ?? layout;
-  }
-
-  // Initialize visualizer selection
-  const initialViz = resolvedDefaultViz === 'auto'
-    ? selectBestVisualizer(machine)
-    : resolvedDefaultViz as VisualizerType;
-
-  const [currentViz, setCurrentViz] = useState<VisualizerType>(initialViz);
+  const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 
   // Machine state and actions
   // CRITICAL: useMachine must be called in MachineVisualizer to subscribe to state changes
@@ -114,12 +77,12 @@ export function MachineVisualizer({
   const actions = useMemo(() => eventApi(machine), [machine]);
 
   // Determine if we should show the picker
-  const effectiveShowPicker = resolvedShowPicker && (
-    resolvedAvailableViz ? resolvedAvailableViz.length > 1 : true
+  const effectiveShowPicker = showPicker && (
+    availableViz ? availableViz.length > 1 : true
   );
 
   // Responsive layout classes
-  const isSplit = resolvedLayout === 'split';
+  const isSplit = layout === 'split';
   const isVizLeft = vizPosition === 'left';
 
   const containerClasses = [
@@ -133,10 +96,9 @@ export function MachineVisualizer({
     'visualizer-container',
     isSplit ? 'flex-1' : `w-full`,
   ].filter(Boolean).join(' ');
-  
-  // For split layout, ReactFlow needs explicit height on the viz container
-  // For stacked layout, ReactFlow needs explicit height on the viz container
-  const vizContainerStyle = { height: `${resolvedMinVizHeight}px` };
+
+  // ReactFlow needs explicit height on the viz container
+  const vizContainerStyle = { height: `${minVizHeight}px` };
 
   const appContainerClasses = [
     'app-container',
@@ -144,11 +106,9 @@ export function MachineVisualizer({
   ].filter(Boolean).join(' ');
 
   // Height styling
-  // For split layout, use explicit height so flex children can use h-full
-  // For stacked layout, use min-height to allow content to grow
-  const heightStyle = resolvedLayout === 'split'
-    ? { height: `${Math.max(resolvedMinVizHeight, 500)}px` } // Ensure minimum height for side-by-side
-    : { minHeight: `${resolvedMinVizHeight}px` };
+  const heightStyle = layout === 'split'
+    ? { height: `${Math.max(minVizHeight, 500)}px` }
+    : { minHeight: `${minVizHeight}px` };
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -161,7 +121,7 @@ export function MachineVisualizer({
           <VizPicker
             value={currentViz}
             onChange={setCurrentViz}
-            availableViz={resolvedAvailableViz}
+            availableViz={availableViz}
           />
         </div>
       )}
@@ -177,7 +137,6 @@ export function MachineVisualizer({
             shape,
             actions,
             interactive,
-            exampleName,
           })}
         </div>
 
@@ -220,7 +179,6 @@ function renderVisualizer({
   shape,
   actions,
   interactive,
-  exampleName,
 }: {
   type: VisualizerType;
   machine: FactoryMachine<any>;
@@ -228,7 +186,6 @@ function renderVisualizer({
   shape: any;
   actions: Record<string, any>;
   interactive: boolean;
-  exampleName?: string;
 }) {
   const commonClasses = "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
 
@@ -240,7 +197,6 @@ function renderVisualizer({
             <HSMReactFlowInspector
               machine={machine as any}
               interactive={interactive}
-              exampleName={exampleName}
             />
           </ReactFlowProvider>
         </div>

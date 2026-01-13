@@ -97,34 +97,6 @@ export interface LayoutEngine<T = Record<string, unknown>> {
   getSettingsSchema(): z.AnyZodObject;
 }
 
-// Preset system - uses any for settings since presets are layout-type specific
-export interface LayoutPreset<T = Record<string, unknown>> {
-  id: string;
-  name: string;
-  description: string;
-  layoutType: LayoutType;
-  settings: T;
-  constraints?: {
-    maxNodes?: number;
-    minNodes?: number;
-    maxDepth?: number;
-    suitableFor: string[]; // example types, machine types
-  };
-  tags: string[]; // for filtering and search
-}
-
-// Machine analysis for preset selection
-export interface MachineAnalysis {
-  nodeCount: number;
-  edgeCount: number;
-  depth: number;
-  width: number;
-  edgeDensity: number;
-  hasCycles: boolean;
-  isHierarchical: boolean;
-  averageDegree: number;
-}
-
 // Layout manager interface
 export interface LayoutManager {
   // Engine management
@@ -139,11 +111,6 @@ export interface LayoutManager {
     edges: Edge[],
     settings: Record<string, unknown>
   ): LayoutResult | Promise<LayoutResult>;
-
-  // Preset management
-  registerPreset(preset: LayoutPreset): void;
-  getPresets(type?: LayoutType): LayoutPreset[];
-  getPreset(id: string): LayoutPreset | undefined;
 }
 
 // Generic settings type for UI components - accepts any layout settings
@@ -153,16 +120,13 @@ export type AnyLayoutSettings = Record<string, unknown>;
 export interface LayoutControlsState {
   layoutType: LayoutType;
   settings: AnyLayoutSettings;
-  selectedPreset: string | null;
   isPanelOpen: boolean;
 }
 
 export interface LayoutControlsActions {
   setLayoutType: (type: LayoutType) => void;
   updateSettings: (settings: Partial<AnyLayoutSettings>) => void;
-  applyPreset: (presetId: string) => void;
   resetToDefault: () => void;
-  saveAsPreset: (name: string, description: string) => void;
   togglePanel: () => void;
 }
 

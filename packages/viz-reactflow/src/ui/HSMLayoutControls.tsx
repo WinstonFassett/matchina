@@ -66,12 +66,10 @@ export function HSMLayoutControls({
   };
 
   const handleLayoutTypeChange = (type: LayoutType) => {
-    // Get the first preset for this layout type
-    const presets = layoutManager.getPresets(type);
-    const preset = presets.find((p: any) => p.tags?.includes('hsm')) || presets[0];
-    
-    if (preset) {
-      onLayoutChange(type, preset.settings);
+    // ELK engine handles all layout types - always use it for defaults
+    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
+    if (engine) {
+      onLayoutChange(type, engine.getDefaultSettings());
     }
   };
 

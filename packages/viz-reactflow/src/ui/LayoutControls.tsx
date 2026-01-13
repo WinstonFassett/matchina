@@ -4,9 +4,8 @@
  */
 
 import React, { useRef, useState } from 'react';
-import type { LayoutPreset, LayoutManager, AnyLayoutSettings } from '../layout/types';
+import type { LayoutManager, AnyLayoutSettings } from '../layout/types';
 import { LayoutType } from '../layout/types';
-import { layoutManager } from '../layout/LayoutManager';
 import { FloatingPanel } from './FloatingPanel';
 
 interface LayoutControlsProps {
@@ -26,19 +25,14 @@ export function LayoutControls({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const availableEngines = layoutManager.getAvailableEngines();
-  const availablePresets = layoutManager.getPresets();
   const currentEngine = layoutManager.getEngine(currentLayoutType);
 
   const handleLayoutTypeChange = (type: LayoutType) => {
-    const engine = layoutManager.getEngine(type);
+    // ELK engine handles all layout types - always use it for defaults
+    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
     if (engine) {
-      const defaultSettings = engine.getDefaultSettings();
-      onLayoutChange(type, defaultSettings);
+      onLayoutChange(type, engine.getDefaultSettings());
     }
-  };
-
-  const handlePresetApply = (preset: LayoutPreset) => {
-    onLayoutChange(preset.layoutType, preset.settings);
   };
 
   const handleSettingChange = (key: string, value: unknown) => {
@@ -115,35 +109,6 @@ export function LayoutControls({
                   <div className="text-xs opacity-75 mt-1">{engine.description}</div>
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Presets */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Presets
-            </label>
-            <div className="space-y-2">
-              {availablePresets
-                .filter(preset => preset.layoutType === currentLayoutType)
-                .map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handlePresetApply(preset)}
-                    className="w-full text-left p-2 text-xs rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{preset.name}</div>
-                    <div className="text-gray-600 dark:text-gray-400">{preset.description}</div>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {preset.tags.map(tag => (
-                        <span key={tag} className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                ))}
             </div>
           </div>
 

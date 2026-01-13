@@ -1,30 +1,23 @@
 /**
  * Layout Manager
- * Simplified coordinator for layout engines and presets
- * NO analysis system - just basic management
+ * Coordinator for layout engines - routes all layout types through ELK
  */
 
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
-import { 
-  LayoutEngine, 
-  LayoutPreset, 
-  LayoutType, 
+import {
+  LayoutEngine,
+  LayoutType,
   LayoutResult,
   LayoutManager as ILayoutManager,
-  AnyLayoutSettings
 } from './types';
 import type { Node, Edge } from '@xyflow/react';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
-  private presets = new Map<string, LayoutPreset>();
 
   constructor() {
     // Register ELK engine for all layouts
     this.registerEngine(new ELKLayoutEngine());
-
-    // Register built-in presets
-    this.registerBuiltInPresets();
   }
 
   // Engine management
@@ -467,218 +460,6 @@ export class LayoutManager implements ILayoutManager {
     };
   }
 
-  // Preset management
-  registerPreset(preset: LayoutPreset): void {
-    this.presets.set(preset.id, preset);
-  }
-
-  getPresets(type?: LayoutType): LayoutPreset[] {
-    const allPresets = Array.from(this.presets.values());
-    return type ? allPresets.filter((p) => p.layoutType === type) : allPresets;
-  }
-
-  getPreset(id: string): LayoutPreset | undefined {
-    return this.presets.get(id);
-  }
-
-  private registerBuiltInPresets(): void {
-    // Hierarchical presets (ELK-based) - V1 parity values
-    // Use TREE layout type (mrtree algorithm) to match V1 behavior for hierarchical layouts
-    this.registerPreset({
-      id: 'hierarchical-topdown',
-      name: 'Top-Down Flow',
-      description: 'Hierarchical layout flowing downward',
-      layoutType: LayoutType.TREE, // Use TREE (mrtree) like V1, not HIERARCHICAL (layered)
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0,
-        direction: 'DOWN',
-        layerSpacing: 180,
-        edgeRouting: 'ORTHOGONAL',
-        alignment: 'CENTER',
-        edgeNodeSpacing: 30,
-        edgeEdgeSpacing: 20,
-        feedbackEdges: true,
-      },
-      constraints: {
-        suitableFor: ['state-machine', 'flowchart', 'hsm'],
-      },
-      tags: ['hierarchical', 'topdown', 'state-machine'],
-    });
-
-    this.registerPreset({
-      id: 'hierarchical-leftright',
-      name: 'Left-to-Right Flow',
-      description: 'Hierarchical layout flowing right',
-      layoutType: LayoutType.HIERARCHICAL,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0,
-        direction: 'RIGHT',
-        layerSpacing: 180,
-        edgeRouting: 'ORTHOGONAL',
-        alignment: 'CENTER',
-        edgeNodeSpacing: 30,
-        edgeEdgeSpacing: 20,
-        feedbackEdges: true,
-      },
-      constraints: {
-        suitableFor: ['flowchart', 'workflow'],
-      },
-      tags: ['hierarchical', 'leftright', 'flowchart'],
-    });
-
-    // Tree presets (ELK-based with mrtree algorithm) - V1 parity values
-    this.registerPreset({
-      id: 'tree-topdown',
-      name: 'Tree Top-Down',
-      description: 'Tree layout flowing downward',
-      layoutType: LayoutType.TREE,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0,
-        direction: 'DOWN',
-        layerSpacing: 180,
-        edgeRouting: 'ORTHOGONAL',
-        alignment: 'CENTER',
-        edgeNodeSpacing: 30,
-        edgeEdgeSpacing: 20,
-        compactComponents: false,
-        separateComponents: false,
-        componentSpacing: 60,
-        thoroughness: 7,
-        feedbackEdges: true,
-      },
-      constraints: {
-        suitableFor: ['state-machine', 'hsm', 'tree'],
-      },
-      tags: ['tree', 'topdown', 'hsm'],
-    });
-
-    this.registerPreset({
-      id: 'tree-leftright',
-      name: 'Tree Left-to-Right',
-      description: 'Tree layout flowing right',
-      layoutType: LayoutType.TREE,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0,
-        direction: 'RIGHT',
-        layerSpacing: 180,
-        edgeRouting: 'ORTHOGONAL',
-        alignment: 'CENTER',
-        edgeNodeSpacing: 30,
-        edgeEdgeSpacing: 20,
-        compactComponents: false,
-        separateComponents: false,
-        componentSpacing: 60,
-        thoroughness: 7,
-        feedbackEdges: true,
-      },
-      constraints: {
-        suitableFor: ['tree', 'flowchart'],
-      },
-      tags: ['tree', 'leftright', 'flowchart'],
-    });
-
-    // Force-directed presets
-    this.registerPreset({
-      id: 'force-balanced',
-      name: 'Force Balanced',
-      description: 'Physics-based balanced layout',
-      layoutType: LayoutType.FORCE_DIRECTED,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0.7,
-        repulsionStrength: 150,
-        attractionStrength: 0.1,
-        linkDistance: 120,
-        iterations: 200,
-        preventOverlap: true,
-        gravity: 0.1,
-      },
-      constraints: {
-        suitableFor: ['network', 'graph', 'complex'],
-      },
-      tags: ['force', 'physics', 'balanced'],
-    });
-
-    // Organic presets
-    this.registerPreset({
-      id: 'organic-clustered',
-      name: 'Organic Clustered',
-      description: 'Natural clustering with organic spacing',
-      layoutType: LayoutType.ORGANIC,
-      settings: {
-        nodeSpacing: 100,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0.6,
-        clustering: true,
-        clusterSpacing: 150,
-        organicity: 0.8,
-        iterations: 150,
-      },
-      constraints: {
-        suitableFor: ['complex', 'modular', 'grouped'],
-      },
-      tags: ['organic', 'cluster', 'natural'],
-    });
-
-    // Experimental: Alternating Direction Hierarchical
-    this.registerPreset({
-      id: 'alternating-direction-experiment',
-      name: 'Alternating Direction (Experimental)',
-      description: 'Experimental layout that alternates directions between hierarchy levels',
-      layoutType: LayoutType.HIERARCHICAL,
-      settings: {
-        nodeSpacing: 120,
-        edgeSpacing: 20,
-        fitPadding: 20,
-        animationDuration: 300,
-        compactness: 0,
-        algorithm: 'layered',
-        direction: 'DOWN',
-        layerSpacing: 180,
-        edgeRouting: 'ORTHOGONAL',
-        alignment: 'CENTER',
-        edgeNodeSpacing: 30,
-        edgeEdgeSpacing: 20,
-        compactComponents: false,
-        separateComponents: false,
-        componentSpacing: 60,
-        thoroughness: 7,
-        feedbackEdges: true,
-        alternatingDirection: true,
-        primaryDirection: 'DOWN',
-        secondaryDirection: 'RIGHT',
-        nodePlacementStrategy: 'NETWORK_SIMPLEX',
-        edgeRoutingStrategy: 'ORTHOGONAL',
-        compactionStrategy: 'NONE',
-        cycleBreakingStrategy: 'DEPTH_FIRST',
-      },
-      constraints: {
-        suitableFor: ['deep-hierarchy', 'experimental', 'compact'],
-      },
-      tags: ['experimental', 'alternating', 'hierarchical', 'compact'],
-    });
-  }
 }
 
 // Singleton instance

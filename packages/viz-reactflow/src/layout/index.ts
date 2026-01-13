@@ -5,10 +5,8 @@
 // Core types and interfaces
 export * from './types';
 
-// Layout engines
+// Layout engines - ELK handles all layout types
 export { ELKLayoutEngine } from './engines/ELKLayoutEngine';
-export { ForceDirectedLayoutEngine } from './engines/ForceDirectedLayoutEngine';
-export { OrganicLayoutEngine } from './engines/OrganicLayoutEngine';
 
 // Layout manager
 export { LayoutManager, layoutManager } from './LayoutManager';

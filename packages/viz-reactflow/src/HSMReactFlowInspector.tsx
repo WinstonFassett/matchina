@@ -11,7 +11,6 @@ import {
   type AnyLayoutSettings,
 } from './layout';
 import { HSMLayoutControls } from './ui/HSMLayoutControls';
-import { getReactFlowPreset } from './presets';
 
 interface HSMReactFlowInspectorProps {
   machine: {
@@ -21,7 +20,6 @@ interface HSMReactFlowInspectorProps {
     getChange: () => TransitionEvent;
   };
   interactive?: boolean;
-  exampleName?: string; // Add exampleName for V1 parity
 }
 
 interface NodeData extends Record<string, unknown> {
@@ -172,46 +170,18 @@ async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, set
 export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   machine,
   interactive = true,
-  exampleName,
 }) => {
-  // Layout state
+  // Layout state - use engine defaults
   const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.HIERARCHICAL);
   const [layoutSettings, setLayoutSettings] = useState<AnyLayoutSettings>(() => {
-    // Try example-specific preset first (V1 parity)
-    if (exampleName) {
-      const preset = getReactFlowPreset(exampleName);
-      // Convert V1 preset to V2 layout settings
-      const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL); // V1 uses ELK which is hierarchical
-      if (engine && preset.layoutOptions) {
-        const v1Options = preset.layoutOptions;
-        const defaultSettings = engine.getDefaultSettings();
-        return {
-          ...defaultSettings,
-          // Map V1 ELK options to V2 settings
-          nodeSpacing: v1Options.nodeSpacing || defaultSettings.nodeSpacing,
-          edgeSpacing: v1Options.edgeSpacing || defaultSettings.edgeSpacing,
-          layerSpacing: v1Options.layerSpacing || defaultSettings.layerSpacing,
-          algorithm: v1Options.algorithm || 'layered',
-          direction: v1Options.direction || 'DOWN',
-          thoroughness: v1Options.thoroughness || defaultSettings.thoroughness,
-          compactComponents: v1Options.compactComponents || defaultSettings.compactComponents,
-          separateComponents: v1Options.separateComponents || defaultSettings.separateComponents,
-          componentSpacing: v1Options.componentSpacing || defaultSettings.componentSpacing,
-          edgeNodeSpacing: v1Options.edgeNodeSpacing || defaultSettings.edgeNodeSpacing,
-        };
-      }
-    }
-    
-    // Fallback to default
     const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
     return engine?.getDefaultSettings() ?? {
       nodeSpacing: 120,
       edgeSpacing: 20,
       fitPadding: 20,
       animationDuration: 300,
-      compactness: 0.7,
-      alignment: 'center',
-      direction: 'row',
+      compactness: 0,
+      direction: 'DOWN',
     };
   });
 
@@ -337,80 +307,6 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
     },
     [machine]
   );
-
-  // Step 6: Initialize with example-specific layout for V1 parity
-  useEffect(() => {
-    // Check URL parameters first for layout override
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlLayout = urlParams.get('layout');
-    
-    if (urlLayout) {
-      // URL parameter takes precedence
-      const layoutType = urlLayout as LayoutType;
-      
-      // Map URL layout parameter to preset ID
-      const presetId = layoutType === 'hierarchical' ? 'hierarchical-topdown' :
-                      layoutType === 'tree' ? 'tree-vertical' :
-                      layoutType === 'force' ? 'force-balanced' :
-                      layoutType === 'organic' ? 'organic-clustered' :
-                                            null;
-      
-      if (presetId) {
-        const preset = layoutManager.getPreset(presetId);
-        if (preset) {
-          setLayoutType(preset.layoutType);
-          setLayoutSettings(preset.settings);
-          return;
-        }
-      }
-    }
-    
-    // Try example-specific preset first (V1 parity)
-    if (exampleName) {
-      const preset = getReactFlowPreset(exampleName);
-      if (preset?.layoutOptions) {
-        // Convert V1 preset to V2 layout
-        const v1Options = preset.layoutOptions;
-        
-        const layoutType = v1Options.algorithm === 'layered' ? LayoutType.HIERARCHICAL :
-                          v1Options.algorithm === 'mrtree' ? LayoutType.TREE :
-                          v1Options.algorithm === 'force' ? LayoutType.FORCE_DIRECTED :
-                          v1Options.algorithm === 'stress' ? LayoutType.ORGANIC :
-                                                    LayoutType.HIERARCHICAL;
-        
-        const engine = layoutManager.getEngine(layoutType);
-        if (!engine) {
-          console.warn('No engine found for layout type:', layoutType);
-          return;
-        }
-        const defaultSettings = engine.getDefaultSettings();
-        const settings = {
-          nodeSpacing: v1Options.nodeSpacing || defaultSettings.nodeSpacing,
-          edgeSpacing: v1Options.edgeSpacing || defaultSettings.edgeSpacing,
-          layerSpacing: v1Options.layerSpacing || defaultSettings.layerSpacing,
-          direction: v1Options.direction || defaultSettings.direction,
-          edgeRouting: (v1Options as any).edgeRouting || (defaultSettings as any).edgeRouting,
-          alignment: (v1Options as any).alignment || (defaultSettings as any).alignment,
-          thoroughness: v1Options.thoroughness || defaultSettings.thoroughness,
-          compactComponents: v1Options.compactComponents || defaultSettings.compactComponents,
-          separateComponents: v1Options.separateComponents || defaultSettings.separateComponents,
-          componentSpacing: v1Options.componentSpacing || defaultSettings.componentSpacing,
-          edgeNodeSpacing: v1Options.edgeNodeSpacing || defaultSettings.edgeNodeSpacing,
-        };
-        
-        setLayoutType(layoutType);
-        setLayoutSettings(settings);
-        return;
-      }
-    }
-    
-    // Fallback to hierarchical layout for HSM - properly handles group nodes
-    const hsmPreset = layoutManager.getPreset('hierarchical-topdown');
-    if (hsmPreset) {
-      setLayoutType(hsmPreset.layoutType);
-      setLayoutSettings(hsmPreset.settings);
-    }
-  }, [exampleName, window.location.search]);
 
   // Handle layout changes
   const handleLayoutChange = useCallback((type: LayoutType, settings: AnyLayoutSettings) => {

@@ -7,8 +7,6 @@ export { default as FloatingEdge } from './FloatingEdge';
 export { default as SimpleNode } from './SimpleNode';
 export { default as GroupNode } from './GroupNode';
 export { getEdgeParams } from './floatingUtils';
-export { getReactFlowPreset, REACTFLOW_PRESETS } from './presets';
-
 // Layout system
 export * from './layout';
 

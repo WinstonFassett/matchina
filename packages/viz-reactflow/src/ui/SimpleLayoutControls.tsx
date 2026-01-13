@@ -58,7 +58,8 @@ export function SimpleLayoutControls({
   };
 
   const handleLayoutTypeChange = (type: LayoutType) => {
-    const engine = layoutManager.getEngine(type);
+    // ELK engine handles all layout types - always use it for defaults
+    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
     if (engine) {
       onLayoutChange(type, engine.getDefaultSettings());
     }
