@@ -9,7 +9,7 @@ import {
   LayoutEngine,
   LayoutType,
   LayoutResult,
-  LayoutManager as ILayoutManager,
+  ILayoutManager,
 } from './types';
 
 export class LayoutManager implements ILayoutManager {

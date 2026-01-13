@@ -98,7 +98,7 @@ export interface LayoutEngine<T = Record<string, unknown>> {
 }
 
 // Layout manager interface
-export interface LayoutManager {
+export interface ILayoutManager {
   // Engine management
   registerEngine(engine: LayoutEngine): void;
   getEngine(type: LayoutType): LayoutEngine | undefined;

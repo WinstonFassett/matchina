@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import type { LayoutManager, AnyLayoutSettings } from '../layout/types';
+import type { ILayoutManager as LayoutManager, AnyLayoutSettings } from '../layout/types';
 import { LayoutType } from '../layout/types';
 import { FloatingPanel } from './FloatingPanel';
 

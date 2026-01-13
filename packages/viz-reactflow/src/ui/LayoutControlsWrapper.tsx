@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import type { AnyLayoutSettings, LayoutManager } from '../layout/types';
+import type { AnyLayoutSettings, ILayoutManager as LayoutManager } from '../layout/types';
 import { LayoutType } from '../layout/types';
 import { LayoutControls } from './LayoutControls';
 

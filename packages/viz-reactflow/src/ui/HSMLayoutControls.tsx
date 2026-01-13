@@ -5,7 +5,7 @@
 
 import React, { useState, useRef } from 'react';
 import { FloatingPanel } from './FloatingPanel';
-import type { LayoutManager } from '../layout/types';
+import type { ILayoutManager as LayoutManager } from '../layout/types';
 import { LayoutType } from '../layout/types';
 
 interface HSMLayoutControlsProps {
