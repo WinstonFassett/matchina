@@ -49,6 +49,6 @@ export function hasTargets(transition: any): transition is { _targets: string[] 
 /**
  * Get possible target states from a transition
  */
-export function getTargets(transition: any): string[] | null {
-  return hasTargets(transition) ? transition._targets : null;
+export function getTargets(transition: any): string[] | undefined {
+  return hasTargets(transition) ? transition._targets : undefined;
 }

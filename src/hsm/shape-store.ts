@@ -36,7 +36,7 @@ export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeContr
       };
     },
 
-    notify(data: any): void {
+    notify(_data: any): void {
       // For static stores, this is a no-op (shape never changes)
     },
   };
@@ -50,7 +50,7 @@ export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeContr
  * but for most cases the shape is stable and we compute it lazily.
  */
 export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeController {
-  let cachedShape: MachineShape | null = null;
+  let cachedShape: MachineShape | undefined;
   const subscribers = new Set<(shape: MachineShape) => void>();
 
   function buildShape(): MachineShape {
@@ -71,9 +71,9 @@ export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeControl
       };
     },
 
-    notify(data: any): void {
+    notify(_data: any): void {
       // On hierarchy change, invalidate cache and notify
-      cachedShape = null;
+      cachedShape = undefined;
       for (const callback of subscribers) {
         callback(buildShape());
       }

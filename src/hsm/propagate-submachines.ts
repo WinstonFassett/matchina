@@ -400,11 +400,11 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(root: M): ()
       if (result.handled) {
         bubbleChildExitEvents(machinesChain);
         notifyHierarchyOfChange(result, type, params);
-        return result.event ?? null;
+        return result.event ?? undefined;
       }
     }
 
-    return null;
+    return undefined;
   }
 
   /**
