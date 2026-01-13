@@ -32,7 +32,7 @@ export function buildFlattenedShape(
     const parentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
 
     states.set(stateStr, {
-      key: parts.at(-1),
+      key: parts.at(-1) || stateStr,
       fullKey: stateStr,
       isFinal,
       isCompound: parentKey !== undefined, // leaf states in hierarchy are compound if they have a parent
@@ -130,7 +130,7 @@ export function buildFlattenedShape(
       const parts = parentKey.split(".");
       const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
       states.set(parentKey, {
-        key: parts.at(-1),
+        key: parts.at(-1) || parentKey,
         fullKey: parentKey,
         isFinal: false, // Parent states are never final (they have children)
         isCompound: true, // Parent states are compound because they have children

@@ -178,7 +178,7 @@ function buildShapeTreeFromShape(shape: MachineShape) {
       // Create a synthetic node for visualization purposes
       const parts = fullKey.split('.');
       const syntheticNode: XStateNode = {
-        key: parts.at(-1),
+        key: parts.at(-1) || fullKey,
         fullKey,
         on: {}
       };
