@@ -6,8 +6,8 @@
  */
 
 import type { FactoryMachine } from "../factory-machine";
-import type { MachineShape, StateNode } from "./shape-types";
 import { getTargets } from "../transition-helper";
+import type { MachineShape, StateNode } from "./shape-types";
 
 /**
  * Build shape from flattened machine
@@ -32,7 +32,7 @@ export function buildFlattenedShape(
     const parentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
 
     states.set(stateStr, {
-      key: parts[parts.length - 1],
+      key: parts.at(-1),
       fullKey: stateStr,
       isFinal,
       isCompound: parentKey !== undefined, // leaf states in hierarchy are compound if they have a parent
@@ -49,13 +49,13 @@ export function buildFlattenedShape(
         // - Root-level states: convert child targets to parent states
         // - Child states: preserve full paths for child-to-child transitions
         if (target.includes('.')) {
-          if (!parentKey) {
+          if (parentKey) {
+            // Child-to-child transition - preserve full path
+            finalTarget = target;
+          } else {
             // Root-level state transitioning to child state - use parent
             const targetParent = target.split('.').slice(0, -1).join('.');
             finalTarget = targetParent || target;
-          } else {
-            // Child-to-child transition - preserve full path
-            finalTarget = target;
           }
         } else {
           // Root-to-root transition, keep as is
@@ -78,7 +78,7 @@ export function buildFlattenedShape(
           // Try automatic discovery for simple transitions
           try {
             // Call with dummy params
-            const dummyParams = Array(target.length).fill(undefined);
+            const dummyParams = Array.from({ length: target.length }).fill(undefined);
             const result = target(...dummyParams);
 
             // Check if result is a state (simple form) or event handler (curried form)
@@ -101,7 +101,7 @@ export function buildFlattenedShape(
                 trans.set(String(eventKey), finalTarget);
               }
             }
-          } catch (e) {
+          } catch {
             // Can't auto-discover - transition won't show in visualization
             // Use t() helper for complex branching logic
           }
@@ -130,7 +130,7 @@ export function buildFlattenedShape(
       const parts = parentKey.split(".");
       const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
       states.set(parentKey, {
-        key: parts[parts.length - 1],
+        key: parts.at(-1),
         fullKey: parentKey,
         isFinal: false, // Parent states are never final (they have children)
         isCompound: true, // Parent states are compound because they have children
@@ -173,7 +173,7 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
       const fullKey = parentFullKey ? `${parentFullKey}.${stateKey}` : stateKey;
 
       // Prevent infinite loops
-      if (visited.has(fullKey)) continue;
+      if (visited.has(fullKey)) { continue; }
       visited.add(fullKey);
 
       // Add state to shape
@@ -206,7 +206,7 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
             // Try automatic discovery for simple transitions
             try {
               // Call with dummy params
-              const dummyParams = Array(target.length).fill(undefined);
+              const dummyParams = Array.from({ length: target.length }).fill(undefined);
               const result = target(...dummyParams);
 
               // Check if result is a state (simple form) or event handler (curried form)
@@ -221,7 +221,7 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
                   trans.set(event, state.key);
                 }
               }
-            } catch (e) {
+            } catch {
               // Can't auto-discover - transition won't show in visualization
               // Use t() helper for complex branching logic
             }
@@ -257,7 +257,7 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
           // Recursively walk child machine with parent context
           // This ensures child states are properly nested under the parent
           walkMachine(childMachine, fullKey);
-        } catch (e) {
+        } catch {
           // Skip if child machine fails to instantiate
         }
       }

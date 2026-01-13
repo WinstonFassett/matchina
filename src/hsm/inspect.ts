@@ -52,13 +52,13 @@ export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine
 
   while (current && guard++ < MAX_DEPTH) {
     const state: any = current.getState();
-    if (!state) break;
+    if (!state) { break; }
 
     chain.push({ machine: current, state });
 
     // Look for child machine
     const child: AnyMachine | undefined = state.data?.machine;
-    if (!child || typeof child.getState !== 'function') break;
+    if (!child || typeof child.getState !== 'function') { break; }
 
     current = child;
   }
@@ -74,7 +74,7 @@ export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine
 export function inspect(machine: AnyMachine) {
   const chain = getActiveChain(machine);
   const fullKey = chain.map(item => item.state.key).join('.');
-  const state = chain[chain.length - 1]?.state;
+  const state = chain.at(-1)?.state;
   const depth = chain.length - 1;
   const stack = chain.map(item => item.state);
 

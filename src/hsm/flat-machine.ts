@@ -12,8 +12,8 @@
 import type { FactoryMachineTransitions } from "../factory-machine-types";
 import type { KeysWithZeroRequiredArgs } from "../utility-types";
 import type { StateMatchboxFactory } from "../state-types";
-import type { ShapeController } from "./shape-types";
 import { createMachine } from "../factory-machine";
+import type { ShapeController } from "./shape-types";
 import { withParentTransitionFallback } from "./parent-transition-fallback";
 import { withFlattenedChildExit } from "./flattened-child-exit";
 import { createStaticShapeStore } from "./shape-store";

@@ -75,32 +75,32 @@ export const defaultTheme: InspectorTheme = {
  * Generate CSS variables string from theme values
  */
 export function generateCSSVariables(theme: InspectorTheme['values'] = defaultTheme.values): string {
-  if (!theme) return '';
+  if (!theme) { return ''; }
   
   let css = '';
   
   if (theme.colors) {
-    Object.entries(theme.colors).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(theme.colors)) {
       css += `  --matchina-inspector-color-${key}: ${value};\n`;
-    });
+    }
   }
   
   if (theme.spacing) {
-    Object.entries(theme.spacing).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(theme.spacing)) {
       css += `  --matchina-inspector-spacing-${key}: ${value};\n`;
-    });
+    }
   }
   
   if (theme.typography) {
-    Object.entries(theme.typography).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(theme.typography)) {
       css += `  --matchina-inspector-typography-${key}: ${value};\n`;
-    });
+    }
   }
   
   if (theme.borders) {
-    Object.entries(theme.borders).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(theme.borders)) {
       css += `  --matchina-inspector-border-${key}: ${value};\n`;
-    });
+    }
   }
   
   return css;
@@ -118,10 +118,10 @@ export function applyTheme(element: HTMLElement, theme: InspectorTheme): void {
   
   // Apply CSS classes
   if (theme.classes) {
-    Object.values(theme.classes).forEach(className => {
+    for (const className of Object.values(theme.classes)) {
       if (className) {
         element.classList.add(className);
       }
-    });
+    }
   }
 }

@@ -3,7 +3,7 @@ import { useMachine } from "../integrations/react";
 import type { InspectorTheme } from './theme';
 import { defaultTheme } from './theme';
 import { buildShapeTree } from "../inspect/build-visualizer-tree";
-import { buildForceGraphData } from './ForceGraphInspector/utils/shapeToForceGraph';
+import { buildForceGraphData } from './ForceGraphInspector/utils/shape-to-force-graph';
 
 interface Diagram {
   nodes: Array<{ 

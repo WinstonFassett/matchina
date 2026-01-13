@@ -37,7 +37,6 @@ export * from "./function-types";
 export * from "./match-change";
 export * from "./match-filters";
 
-export * from "./hsm";
 export * from "./is-machine";
 export * from "./transition-helper";
 export * from "./atom";

@@ -54,7 +54,7 @@ export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeControl
   const subscribers = new Set<(shape: MachineShape) => void>();
 
   function buildShape(): MachineShape {
-    if (cachedShape) return cachedShape;
+    if (cachedShape) { return cachedShape; }
     cachedShape = buildHierarchicalShape(machine);
     return cachedShape;
   }
@@ -74,7 +74,7 @@ export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeControl
     notify(data: any): void {
       // On hierarchy change, invalidate cache and notify
       cachedShape = null;
-      for (const callback of Array.from(subscribers)) {
+      for (const callback of subscribers) {
         callback(buildShape());
       }
     },

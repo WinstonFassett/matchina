@@ -3,6 +3,7 @@
  * Coordinator for layout engines - routes all layout types through ELK
  */
 
+import type { Node, Edge } from '@xyflow/react';
 import { ELKLayoutEngine } from './engines/ELKLayoutEngine';
 import {
   LayoutEngine,
@@ -10,7 +11,6 @@ import {
   LayoutResult,
   LayoutManager as ILayoutManager,
 } from './types';
-import type { Node, Edge } from '@xyflow/react';
 
 export class LayoutManager implements ILayoutManager {
   private engines = new Map<LayoutType, LayoutEngine>();
@@ -30,7 +30,7 @@ export class LayoutManager implements ILayoutManager {
   }
 
   getAvailableEngines(): LayoutEngine[] {
-    return Array.from(this.engines.values());
+    return [...this.engines.values()];
   }
 
   // Map layout types to ELK algorithms for hierarchy support
@@ -223,8 +223,8 @@ export class LayoutManager implements ILayoutManager {
       return { width: 150, height: 50 };
     }
     
-    let minX = Infinity, minY = Infinity;
-    let maxX = -Infinity, maxY = -Infinity;
+    let minX = Number.POSITIVE_INFINITY; let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY; let maxY = Number.NEGATIVE_INFINITY;
     
     for (const child of children) {
       const pos = child.layoutedPosition || { x: 0, y: 0 };
@@ -267,10 +267,7 @@ export class LayoutManager implements ILayoutManager {
       // For child nodes: position is relative to parent (ReactFlow handles this)
       let finalPosition: { x: number; y: number };
       
-      if (!hNode.parent) {
-        // Root node: absolute position
-        finalPosition = { x: pos.x, y: pos.y };
-      } else {
+      if (hNode.parent) {
         // Child node: transpose to be relative to parent's content area
         // Children need to be positioned inside the parent's padding area
         const paddingTop = 60;
@@ -286,6 +283,9 @@ export class LayoutManager implements ILayoutManager {
           x: (pos.x - minSiblingX) + paddingLeft,
           y: (pos.y - minSiblingY) + paddingTop
         };
+      } else {
+        // Root node: absolute position
+        finalPosition = { x: pos.x, y: pos.y };
       }
       
       // Create the final node
@@ -437,8 +437,8 @@ export class LayoutManager implements ILayoutManager {
     // Only consider root nodes for bounds calculation
     const rootNodes = nodes.filter(n => !(n as any).parentId);
     
-    let minX = Infinity, minY = Infinity;
-    let maxX = -Infinity, maxY = -Infinity;
+    let minX = Number.POSITIVE_INFINITY; let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY; let maxY = Number.NEGATIVE_INFINITY;
     
     for (const node of rootNodes) {
       const x = node.position.x;
@@ -459,7 +459,6 @@ export class LayoutManager implements ILayoutManager {
       height: (maxY - minY) + padding * 2
     };
   }
-
 }
 
 // Singleton instance

@@ -50,7 +50,7 @@ export function buildForceGraphData(
     const parentKey = shape.hierarchy.get(fullKey);
     
     // Determine if this is a compound state (has children)
-    const hasChildren = Array.from(shape.hierarchy.entries())
+    const hasChildren = [...shape.hierarchy.entries()]
       .some(([_, parent]) => parent === fullKey);
     
     const node: ForceGraphNode = {
@@ -133,7 +133,7 @@ export function buildForceGraphData(
  */
 function buildForceGraphNode(
   stateNode: StateNode,
-  isInitial: boolean = false
+  isInitial = false
 ): ForceGraphNode {
   return {
     id: stateNode.fullKey,

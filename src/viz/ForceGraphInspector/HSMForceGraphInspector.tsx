@@ -3,7 +3,7 @@ import { useMachine } from "../../integrations/react";
 import type { TransitionEvent } from "../../state-machine";
 import type { InspectorTheme } from '../theme';
 import { defaultTheme } from '../theme';
-import { buildForceGraphData, type ForceGraphData } from './utils/shapeToForceGraph';
+import { buildForceGraphData, type ForceGraphData } from './utils/shape-to-force-graph';
 import ForceGraphInspector from '../ForceGraphInspector';
 
 interface HSMForceGraphInspectorProps {

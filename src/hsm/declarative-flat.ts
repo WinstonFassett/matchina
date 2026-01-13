@@ -293,7 +293,7 @@ function resolveInitialChild(
     resolvedKey = resolvedKey ? `${resolvedKey}.${part}` : part;
     const stateConfig = current[part];
 
-    if (!stateConfig) break;
+    if (!stateConfig) { break; }
 
     // Only auto-resolve to initial child if this is the last part of the path
     // E.g., 'Payment' -> 'Payment.MethodEntry' (auto-resolve)
@@ -355,7 +355,7 @@ export function describeHSM(config: DeclarativeFlatMachineConfig) {
           if (resolved !== target) {
             flatTransitions[stateKey][event] = resolved;
           }
-        } catch (e) {
+        } catch {
           // If resolution fails, keep the original target
         }
       }

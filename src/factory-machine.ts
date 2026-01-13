@@ -121,8 +121,8 @@ export function createMachine<
       configurable: true,
       writable: true,
     });
-  } catch (e) {
-    console.error('[createMachine] Failed to attach shape:', e);
+  } catch (error) {
+    console.error('[createMachine] Failed to attach shape:', error);
   }
 
   return machine;

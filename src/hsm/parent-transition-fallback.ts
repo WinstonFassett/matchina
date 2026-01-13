@@ -42,7 +42,7 @@ export function withParentTransitionFallback(
         const parentKey = parts.join(delimiter);
         const parentTransitions = machine.transitions[parentKey];
         
-        if (!parentTransitions) continue;
+        if (!parentTransitions) { continue; }
         
         if (parentTransitions[ev.type]) {
           // Found a parent transition, resolve it manually

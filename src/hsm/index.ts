@@ -27,7 +27,7 @@ export {
   makeHierarchical,
   type HierarchicalMachine,
   type HierarchicalEvents 
-} from "./propagateSubmachines";
+} from "./propagate-submachines";
 export type { 
   StatesOf, 
   EventsOf, 

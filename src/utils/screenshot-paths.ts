@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import path from 'path';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
 
 /**
  * Generates auto-named screenshot directories with branch, date, and commit hash

@@ -33,7 +33,7 @@ export function useMachineMaybe<Change>(
 ): Change | undefined {
   const onSubscribe = useCallback(
     (listener: EffectFunc<Change>) => {
-      if (!machine) return () => {};
+      if (!machine) { return () => {}; }
 
       // Use withSubscribe to ensure notify is wrapped only once, even with multiple subscribers.
       // withSubscribe is idempotent - calling it multiple times is safe.

@@ -21,11 +21,11 @@ export function getActiveStatePath(machine: FactoryMachine<any>): string {
     let guard = 0;
     while (cursor && guard++ < 25) {
       const state = cursor.getState?.();
-      if (!state) break;
+      if (!state) { break; }
       parts.push(state.key);
       cursor = state?.data?.machine;
     }
-    return parts.length ? parts.join('.') : 'Unknown';
+    return parts.length > 0 ? parts.join('.') : 'Unknown';
   } catch {
     return 'Unknown';
   }
@@ -81,31 +81,31 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
   };
 
   // Build flat state list
-  Object.entries(machine.states ?? {}).forEach(([key, _state]) => {
+  for (const [key, _state] of Object.entries(machine.states ?? {})) {
     const fullKey = parentKey ? `${parentKey}.${key}` : key;
     definition.states[key] = {
       key,
       fullKey,
       on: {},
     };
-  });
+  }
 
   // Add transitions
-  Object.entries(machine.transitions ?? {}).forEach(([fromKey, events]) => {
-    Object.entries(events as object).forEach(([event, entry]) => {
+  for (const [fromKey, events] of Object.entries(machine.transitions ?? {})) {
+    for (const [event, entry] of Object.entries(events as object)) {
       // Skip function transitions - they can't be statically resolved
       if (typeof entry === 'function') {
-        return;
+        continue;
       }
       definition.states[fromKey].on[event] = entry;
-    });
-  });
+    }
+  }
 
   // Auto-discover nested machines from submachine markers
-  Object.entries(machine.states ?? {}).forEach(([stateKey, stateFactory]) => {
+  for (const [stateKey, stateFactory] of Object.entries(machine.states ?? {})) {
     const machineFactory = (stateFactory as any)?.machineFactory;
     if (!machineFactory) {
-      return;
+      continue;
     }
 
     try {
@@ -137,11 +137,11 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
         definition.states[stateKey].initial = childMachine.initialKey;
       }
       definition.states[stateKey].states = childDefinition.states;
-    } catch (e) {
+    } catch (error) {
       // Skip if nested machine inspection fails
-      console.error('Failed to inspect nested machine:', e);
+      console.error('Failed to inspect nested machine:', error);
     }
-  });
+  }
 
   // Fallback: check current state for inline nested machine
   try {
@@ -168,7 +168,7 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
         definition.states[currentKey].states = childDefinition.states;
       }
     }
-  } catch (e) {
+  } catch {
     // Don't break if nested machine inspection fails
   }
 
@@ -196,7 +196,7 @@ function buildShapeTreeFromShape(shape: MachineShape) {
       // Create a synthetic node for visualization purposes
       const parts = fullKey.split('.');
       const syntheticNode: XStateNode = {
-        key: parts[parts.length - 1],
+        key: parts.at(-1),
         fullKey,
         on: {}
       };
@@ -265,7 +265,7 @@ function buildShapeTreeFromShape(shape: MachineShape) {
 
   // Build all root-level states
   const rootStates: Record<string, XStateNode> = {};
-  const allHierarchyEntries = Array.from(shape.hierarchy.entries()) as [string, string | undefined][];
+  const allHierarchyEntries = [...shape.hierarchy.entries()] as [string, string | undefined][];
   
   for (const [fullKey, parentFullKey] of allHierarchyEntries) {
     if (parentFullKey === undefined) {

@@ -173,7 +173,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
 
     // Algorithm-specific options that actually work (EXACT copy from V1)
     switch (algorithm) {
-      case "layered":
+      case "layered": {
         return {
           ...baseOptions,
           // Layer spacing - this actually works
@@ -209,8 +209,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           // Consider model order
           "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
         };
+      }
 
-      case "stress":
+      case "stress": {
         return {
           ...baseOptions,
           // Stress-specific options that work
@@ -231,8 +232,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.overlapRemoval.maxIterations": "100",
           "elk.overlapRemoval.runScanline": "true",
         };
+      }
 
-      case "mrtree":
+      case "mrtree": {
         return {
           ...baseOptions,
           // Tree-specific options
@@ -243,8 +245,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           // Compact components affects tree layout
           "elk.mrtree.compaction": settings.compactComponents ? "true" : "false",
         };
+      }
 
-      case "force":
+      case "force": {
         return {
           ...baseOptions,
           // Force-directed options with better controls
@@ -263,8 +266,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
             ? "true"
             : "false",
         };
+      }
 
-      case "disco":
+      case "disco": {
         return {
           ...baseOptions,
           // DisCo (Disjoint Component) layout for grid-like arrangement
@@ -273,8 +277,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.disco.threshold": "4",
           "elk.disco.expandNodes": "false",
         };
+      }
 
-      case "box":
+      case "box": {
         return {
           ...baseOptions,
           // Box layout algorithm
@@ -282,8 +287,9 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.box.aspectRatio": "1.0",
           "elk.box.expandNodes": "true",
         };
+      }
 
-      case "radial":
+      case "radial": {
         return {
           ...baseOptions,
           // Radial layout algorithm for circular arrangement
@@ -293,9 +299,11 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
           "elk.radial.sortByRadius": "true",
           "elk.radial.wedge": "360",
         };
+      }
 
-      default:
+      default: {
         return baseOptions;
+      }
     }
   }
 
@@ -538,7 +546,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
 
     while (queue.length > 0) {
       const { id, level } = queue.shift()!;
-      if (visited.has(id)) continue;
+      if (visited.has(id)) { continue; }
       visited.add(id);
       levels.set(id, level);
 

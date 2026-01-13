@@ -61,7 +61,7 @@ function isChildFinal(machine: any, state: any): boolean {
   // Check if this is a leaf state (no further child states)
   const delimiter = '.';
   if (state.key.includes(delimiter)) {
-    const parentKey = state.key.substring(0, state.key.lastIndexOf(delimiter));
+    const parentKey = state.key.slice(0, Math.max(0, state.key.lastIndexOf(delimiter)));
     
     // Look for any child states of the same parent
     const childStates = Object.keys(machine.transitions).filter(key => 
