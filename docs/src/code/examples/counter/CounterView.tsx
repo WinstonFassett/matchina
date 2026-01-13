@@ -4,10 +4,10 @@ import { type CounterMachine } from "./machine";
 export const CounterView = ({ machine }: { machine: CounterMachine }) => {
   useMachine(machine);
   useMachine(machine.store);
-  
+
   const count = machine.getCount();
   const isActive = machine.getState().is("Active");
-  
+
   return (
     <div className="flex flex-col items-center">
       <div className="text-6xl font-bold mb-4">{count}</div>
@@ -38,7 +38,9 @@ export const CounterView = ({ machine }: { machine: CounterMachine }) => {
         </button>
         <button
           className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600"
-          onClick={() => isActive ? machine.send("deactivate") : machine.send("activate")}
+          onClick={() =>
+            isActive ? machine.send("deactivate") : machine.send("activate")
+          }
         >
           {isActive ? "Deactivate" : "Activate"}
         </button>

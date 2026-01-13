@@ -98,10 +98,6 @@ div[id^="mermaid-"] .state-highlight text {
   color: var(--sl-color-text) !important;
 }
 
-
-
-
-
 /* Fix state diagram groups/clusters - transparent on both themes */
 .statediagram-cluster rect,
 .statediagram-cluster.statediagram-cluster .inner rect,
@@ -123,8 +119,8 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
 }
 
 /* Edge labels with better contrast */
-.edgeLabel text { 
-  fill: var(--sl-color-text) !important; 
+.edgeLabel text {
+  fill: var(--sl-color-text) !important;
 }
 .edgeLabel rect {
   fill: var(--sl-color-gray-2) !important;
@@ -138,7 +134,9 @@ html[data-theme="dark"] #mermaid-1 .statediagram-cluster .inner rect {
 
 /* Dark mode edge label fixes */
 html[data-theme="dark"] .edgeLabel rect {
-  fill: var(--sl-color-gray-3) !important;  /* Lighter background for better contrast */
+  fill: var(
+    --sl-color-gray-3
+  ) !important; /* Lighter background for better contrast */
   stroke: var(--sl-color-gray-6) !important;
 }
 
@@ -146,7 +144,9 @@ html[data-theme="dark"] .edgeLabel rect {
 #mermaid-1 html[data-theme="dark"] .edgeLabel p,
 div[id^="mermaid-"] html[data-theme="dark"] .edgeLabel text,
 div[id^="mermaid-"] html[data-theme="dark"] .edgeLabel p {
-  fill: var(--sl-color-text) !important;  /* Use theme text color for consistency */
+  fill: var(
+    --sl-color-text
+  ) !important; /* Use theme text color for consistency */
   color: var(--sl-color-text) !important;
 }
 
@@ -201,8 +201,8 @@ html[data-theme="dark"] .edge-inactive {
 
 /* Dark mode improvements for edge labels */
 html[data-theme="dark"] .edge-inactive {
-  background-color: var(--sl-color-gray-3) !important;  /* Lighter background */
-  color: #e5e7eb !important;  /* Lighter text for better contrast */
+  background-color: var(--sl-color-gray-3) !important; /* Lighter background */
+  color: #e5e7eb !important; /* Lighter text for better contrast */
 }
 
 /* Dark mode hover improvements */
@@ -375,25 +375,33 @@ html[data-theme="light"] .react-flow__edge-text {
 }
 
 /* Active edge labels - blue like hyperlinks */
-html[data-theme="dark"] .react-flow__edge[data-is-clickable="true"] .react-flow__edge-text {
+html[data-theme="dark"]
+  .react-flow__edge[data-is-clickable="true"]
+  .react-flow__edge-text {
   fill: #60a5fa !important;
   cursor: pointer !important;
   transition: fill 0.2s ease !important;
 }
 
-html[data-theme="light"] .react-flow__edge[data-is-clickable="true"] .react-flow__edge-text {
+html[data-theme="light"]
+  .react-flow__edge[data-is-clickable="true"]
+  .react-flow__edge-text {
   fill: #2563eb !important;
   cursor: pointer !important;
   transition: fill 0.2s ease !important;
 }
 
 /* Hover states for clickable edge labels - button-like */
-html[data-theme="dark"] .react-flow__edge[data-is-clickable="true"]:hover .react-flow__edge-text {
+html[data-theme="dark"]
+  .react-flow__edge[data-is-clickable="true"]:hover
+  .react-flow__edge-text {
   fill: #93c5fd !important;
   font-weight: 600 !important;
 }
 
-html[data-theme="light"] .react-flow__edge[data-is-clickable="true"]:hover .react-flow__edge-text {
+html[data-theme="light"]
+  .react-flow__edge[data-is-clickable="true"]:hover
+  .react-flow__edge-text {
   fill: #1d4ed8 !important;
   font-weight: 600 !important;
 }
@@ -414,25 +422,31 @@ html[data-theme="light"] .react-flow__edge[data-is-clickable="true"]:hover {
 }
 
 /* Previous->Current transition edges - enhanced hover */
-html[data-theme="dark"] .react-flow__edge[data-is-transition-from-previous="true"]:hover {
+html[data-theme="dark"]
+  .react-flow__edge[data-is-transition-from-previous="true"]:hover {
   stroke: #60a5fa !important;
   stroke-width: 4px !important;
   filter: drop-shadow(0 0 12px rgba(96, 165, 250, 0.6)) !important;
 }
 
-html[data-theme="light"] .react-flow__edge[data-is-transition-from-previous="true"]:hover {
+html[data-theme="light"]
+  .react-flow__edge[data-is-transition-from-previous="true"]:hover {
   stroke: #2563eb !important;
   stroke-width: 4px !important;
   filter: drop-shadow(0 0 12px rgba(37, 99, 235, 0.6)) !important;
 }
 
 /* Previous->Current transition edge labels - animated blue */
-html[data-theme="dark"] .react-flow__edge[data-is-transition-from-previous="true"] .react-flow__edge-text {
+html[data-theme="dark"]
+  .react-flow__edge[data-is-transition-from-previous="true"]
+  .react-flow__edge-text {
   fill: #60a5fa !important;
   font-weight: 600 !important;
 }
 
-html[data-theme="light"] .react-flow__edge[data-is-transition-from-previous="true"] .react-flow__edge-text {
+html[data-theme="light"]
+  .react-flow__edge[data-is-transition-from-previous="true"]
+  .react-flow__edge-text {
   fill: #2563eb !important;
   font-weight: 600 !important;
 }

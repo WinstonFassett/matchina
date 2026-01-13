@@ -11,6 +11,7 @@ This refactor demonstrates a cleaner approach to state machines by:
 ## Before vs After
 
 ### Before (Transition Functions Everywhere)
+
 ```typescript
 // Verbose transition functions that just dispatch to store
 typed: (value: string) => {
@@ -24,6 +25,7 @@ removeTag: (tag: string) => {
 ```
 
 ### After (Clean State Transitions + Hook)
+
 ```typescript
 // Machine: Simple state transitions
 typed: "Active.Typing",

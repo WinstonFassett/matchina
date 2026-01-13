@@ -1,4 +1,12 @@
-import { createMachine, defineStates, setup, effect, createStoreMachine, addStoreApi, withSubscribe } from "matchina";
+import {
+  createMachine,
+  defineStates,
+  setup,
+  effect,
+  createStoreMachine,
+  addStoreApi,
+  withSubscribe,
+} from "matchina";
 
 export const createCounterMachine = () => {
   const states = defineStates({
@@ -6,11 +14,14 @@ export const createCounterMachine = () => {
     Inactive: undefined,
   });
 
-  const store = createStoreMachine({ count: 0 }, {
-    increment: () => (change) => ({ count: change.from.count + 1 }),
-    decrement: () => (change) => ({ count: change.from.count - 1 }),
-    reset: () => () => ({ count: 0 }),
-  });
+  const store = createStoreMachine(
+    { count: 0 },
+    {
+      increment: () => (change) => ({ count: change.from.count + 1 }),
+      decrement: () => (change) => ({ count: change.from.count - 1 }),
+      reset: () => () => ({ count: 0 }),
+    }
+  );
   const storeWithApi = addStoreApi(withSubscribe(store));
 
   const machine = createMachine(
@@ -38,7 +49,7 @@ export const createCounterMachine = () => {
   );
 
   // Encapsulate store and expose methods on machine
-  const enhancedMachine = Object.assign(machine, { 
+  const enhancedMachine = Object.assign(machine, {
     store: storeWithApi,
     increment: () => storeWithApi.api.increment(),
     decrement: () => storeWithApi.api.decrement(),

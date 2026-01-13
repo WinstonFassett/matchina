@@ -21,7 +21,7 @@ export interface MachineShape {
   readonly initialKey: string;
 
   // Optional metadata about HSM representation
-  readonly type?: 'nested' | 'flattened';
+  readonly type?: "nested" | "flattened";
 }
 
 /**

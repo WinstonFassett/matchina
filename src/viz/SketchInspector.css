@@ -1,6 +1,9 @@
 /* CORE LAYOUT - Sketch.systems style */
 .sketch-inspector {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   padding: 8px 0;
   font-size: 13px;
   line-height: 1.3;
@@ -76,12 +79,16 @@
 }
 
 /* Multi-level nesting transparency for better visual hierarchy */
-.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active) {
+.state-item.active-ancestor
+  .state-item.active-ancestor
+  .state-item:not(.active) {
   background: transparent;
   border-color: #e5e7eb;
 }
 
-.state-item.active-ancestor .state-item.active-ancestor .state-item:not(.active):hover {
+.state-item.active-ancestor
+  .state-item.active-ancestor
+  .state-item:not(.active):hover {
   background: var(--sl-color-gray-6, #f9fafb);
 }
 
@@ -143,7 +150,7 @@
   border: 1px solid transparent;
   padding: 2px 6px;
   border-radius: 3px;
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: "SF Mono", Monaco, monospace;
   font-style: italic;
   font-size: 13px;
   color: #9ca3af;
@@ -196,7 +203,7 @@
 }
 
 .transition-name {
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: "SF Mono", Monaco, monospace;
   font-style: italic;
   font-size: 13px;
 }
@@ -232,7 +239,7 @@
   background: #e5e7eb;
   padding: 2px 4px;
   border-radius: 2px;
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: "SF Mono", Monaco, monospace;
 }
 
 /* Full path label in active state */

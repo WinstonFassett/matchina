@@ -1,171 +1,171 @@
-import { describe, it, expect } from 'vitest';
-import { describeHSM } from '../src/hsm/declarative-flat';
+import { describe, it, expect } from "vitest";
+import { describeHSM } from "../src/hsm/declarative-flat";
 
-describe('describeHSM', () => {
-  it('should create a simple flat machine from declarative config', () => {
+describe("describeHSM", () => {
+  it("should create a simple flat machine from declarative config", () => {
     const machine = describeHSM({
-      initial: 'Idle',
+      initial: "Idle",
       states: {
         Idle: {
           data: () => ({}),
           on: {
-            start: 'Running'
-          }
+            start: "Running",
+          },
         },
         Running: {
           data: () => ({}),
           on: {
-            stop: 'Idle'
-          }
-        }
-      }
+            stop: "Idle",
+          },
+        },
+      },
     });
 
-    expect(machine.getState().key).toBe('Idle');
-    machine.send('start');
-    expect(machine.getState().key).toBe('Running');
-    machine.send('stop');
-    expect(machine.getState().key).toBe('Idle');
+    expect(machine.getState().key).toBe("Idle");
+    machine.send("start");
+    expect(machine.getState().key).toBe("Running");
+    machine.send("stop");
+    expect(machine.getState().key).toBe("Idle");
   });
 
-  it('should handle hierarchical states with auto-flattening', () => {
+  it("should handle hierarchical states with auto-flattening", () => {
     const machine = describeHSM({
-      initial: 'Cart',
+      initial: "Cart",
       states: {
         Cart: {
           data: () => ({}),
-          on: { proceed: 'Payment' }
+          on: { proceed: "Payment" },
         },
         Payment: {
-          initial: 'MethodEntry',
+          initial: "MethodEntry",
           states: {
             MethodEntry: {
               data: () => ({}),
-              on: { authorize: 'Authorizing' }
+              on: { authorize: "Authorizing" },
             },
             Authorizing: {
               data: () => ({}),
-              on: { 
-                authRequired: 'AuthChallenge',
-                authSucceeded: 'Authorized',
-                authFailed: 'AuthorizationError'
-              }
+              on: {
+                authRequired: "AuthChallenge",
+                authSucceeded: "Authorized",
+                authFailed: "AuthorizationError",
+              },
             },
             Authorized: {
               data: () => ({}),
-              final: true
-            }
+              final: true,
+            },
           },
           on: {
-            back: '^Cart'  // ^ means go to root level
-          }
+            back: "^Cart", // ^ means go to root level
+          },
         },
         Review: {
           data: () => ({}),
-          on: { submit: 'Confirmation' }
+          on: { submit: "Confirmation" },
         },
         Confirmation: {
-          data: () => ({})
-        }
-      }
+          data: () => ({}),
+        },
+      },
     });
 
     // Should start in Cart
-    expect(machine.getState().key).toBe('Cart');
+    expect(machine.getState().key).toBe("Cart");
 
     // Proceed to Payment (should enter Payment.MethodEntry due to initial)
-    machine.send('proceed');
-    expect(machine.getState().key).toBe('Payment.MethodEntry');
+    machine.send("proceed");
+    expect(machine.getState().key).toBe("Payment.MethodEntry");
 
     // Authorize should go to Payment.Authorizing
-    machine.send('authorize');
-    expect(machine.getState().key).toBe('Payment.Authorizing');
+    machine.send("authorize");
+    expect(machine.getState().key).toBe("Payment.Authorizing");
 
     // Success should go to Payment.Authorized
-    machine.send('authSucceeded');
-    expect(machine.getState().key).toBe('Payment.Authorized');
+    machine.send("authSucceeded");
+    expect(machine.getState().key).toBe("Payment.Authorized");
 
     // Back should use parent transition to go to Cart
-    machine.send('back');
-    expect(machine.getState().key).toBe('Cart');
+    machine.send("back");
+    expect(machine.getState().key).toBe("Cart");
   });
 
-  it('should support parameterized state constructors', () => {
+  it("should support parameterized state constructors", () => {
     const machine = describeHSM({
-      initial: 'Inactive',
+      initial: "Inactive",
       states: {
         Inactive: {
           data: (count?: number) => ({ count: count ?? 0 }),
           on: {
-            activate: 'Active'
-          }
+            activate: "Active",
+          },
         },
         Active: {
-          initial: 'Empty',
+          initial: "Empty",
           states: {
             Empty: {
-              data: (count: number) => ({ count, value: '' }),
+              data: (count: number) => ({ count, value: "" }),
               on: {
-                type: 'Typing'
-              }
+                type: "Typing",
+              },
             },
             Typing: {
               data: (count: number, value: string) => ({ count, value }),
               on: {
-                clear: 'Empty'
-              }
-            }
+                clear: "Empty",
+              },
+            },
           },
           on: {
-            deactivate: '^Inactive'
-          }
-        }
-      }
+            deactivate: "^Inactive",
+          },
+        },
+      },
     });
 
-    expect(machine.getState().key).toBe('Inactive');
+    expect(machine.getState().key).toBe("Inactive");
     expect(machine.getState().data).toEqual({ count: 0 });
   });
 
-  it('should handle parent transitions with child.exit', async () => {
+  it("should handle parent transitions with child.exit", async () => {
     const machine = describeHSM({
-      initial: 'First',
+      initial: "First",
       states: {
         First: {
           data: () => ({}),
-          on: { next: 'Second' }
+          on: { next: "Second" },
         },
         Second: {
-          initial: 'SubA',
+          initial: "SubA",
           states: {
             SubA: {
               data: () => ({}),
-              on: { proceed: 'SubB' }
+              on: { proceed: "SubB" },
             },
             SubB: {
               data: () => ({}),
-              final: true
-            }
+              final: true,
+            },
           },
           on: {
-            'child.exit': '^Third'
-          }
+            "child.exit": "^Third",
+          },
         },
         Third: {
-          data: () => ({})
-        }
-      }
+          data: () => ({}),
+        },
+      },
     });
 
-    expect(machine.getState().key).toBe('First');
-    machine.send('next');
-    expect(machine.getState().key).toBe('Second.SubA');
-    machine.send('proceed');
-    expect(machine.getState().key).toBe('Second.SubB');
+    expect(machine.getState().key).toBe("First");
+    machine.send("next");
+    expect(machine.getState().key).toBe("Second.SubA");
+    machine.send("proceed");
+    expect(machine.getState().key).toBe("Second.SubB");
 
     // Should auto-trigger child.exit and go to Third
     // Need to wait for the async child.exit event
-    await new Promise(resolve => setTimeout(resolve, 10));
-    expect(machine.getState().key).toBe('Third');
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(machine.getState().key).toBe("Third");
   });
 });

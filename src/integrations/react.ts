@@ -34,7 +34,9 @@ export function useMachineMaybe<Change>(
 ): Change | undefined {
   const onSubscribe = useCallback(
     (listener: EffectFunc<Change>) => {
-      if (!machine) { return () => {}; }
+      if (!machine) {
+        return () => {};
+      }
 
       // Use withSubscribe to ensure notify is wrapped only once, even with multiple subscribers.
       // withSubscribe is idempotent - calling it multiple times is safe.
@@ -58,12 +60,12 @@ export function useMachineMaybe<Change>(
 }
 
 /** Strict variant that requires a machine and never returns undefined. */
-export function useMachine<Change>(
-  machine: { notify: (ev: Change) => void; getChange: () => Change }
-): Change {
+export function useMachine<Change>(machine: {
+  notify: (ev: Change) => void;
+  getChange: () => Change;
+}): Change {
   if (!machine || !machine.getChange) {
     throw new Error("useMachine requires a machine instance");
   }
   return useMachineMaybe(machine) as Change;
 }
-

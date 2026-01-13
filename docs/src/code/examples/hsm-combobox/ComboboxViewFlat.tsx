@@ -10,12 +10,13 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   useMachine(machine);
   useMachine(machine.model);
   const { model } = machine;
-  const { input, selectedTags, suggestions, highlightedIndex } = model.getState();
+  const { input, selectedTags, suggestions, highlightedIndex } =
+    model.getState();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const state = machine.getState();
-  const isActive = state.key !== 'Inactive';
-  const isSuggesting = state.is('Active.Suggesting');
+  const isActive = state.key !== "Inactive";
+  const isSuggesting = state.is("Active.Suggesting");
 
   // Focus input when entering Active state
   useEffect(() => {
@@ -30,7 +31,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        machine.send('blur');
+        machine.send("blur");
         break;
       case "Backspace":
         if (!input && selectedTags.length > 0) {
@@ -40,11 +41,11 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
         break;
       case "ArrowDown":
         e.preventDefault();
-        if (isSuggesting) machine.highlight('next');
+        if (isSuggesting) machine.highlight("next");
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (isSuggesting) machine.highlight('prev');
+        if (isSuggesting) machine.highlight("prev");
         break;
       case "Enter":
         e.preventDefault();
@@ -60,14 +61,18 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   return (
     <div className="space-y-3">
       <div className="text-sm text-gray-600 dark:text-gray-400">
-        State: <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+        State:{" "}
+        <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
           {state.key}
         </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-900 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
         {selectedTags.map((tag: string) => (
-          <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium">
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium"
+          >
             {tag}
             <button
               onClick={() => machine.removeTag(tag)}
@@ -85,10 +90,10 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             value={input}
             onChange={(e) => {
               machine.model.api.setInput(e.target.value);
-              machine.send('type');
+              machine.send("type");
             }}
-            onFocus={() => machine.send('focus')}
-            onBlur={() => machine.send('blur')}
+            onFocus={() => machine.send("focus")}
+            onBlur={() => machine.send("blur")}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"

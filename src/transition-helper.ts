@@ -16,17 +16,18 @@
 export function t<S extends { key: string }>(
   handler: (...args: any[]) => (ev: any) => S,
   discover?:
-    | ((f: typeof handler) => S[])  // Receives handler, calls it with samples
-    | (() => S[])                    // Just returns possible states
+    | ((f: typeof handler) => S[]) // Receives handler, calls it with samples
+    | (() => S[]) // Just returns possible states
 ) {
   if (discover) {
     // Detect which form of discover we have
-    const results = discover.length === 1
-      ? (discover as (f: typeof handler) => S[])(handler)
-      : (discover as () => S[])();
+    const results =
+      discover.length === 1
+        ? (discover as (f: typeof handler) => S[])(handler)
+        : (discover as () => S[])();
 
     // Extract state keys for visualization
-    const targets = results.map(r => r.key);
+    const targets = results.map((r) => r.key);
     (handler as any)._targets = targets;
   }
 
@@ -36,8 +37,14 @@ export function t<S extends { key: string }>(
 /**
  * Check if a transition has inspection metadata
  */
-export function hasTargets(transition: any): transition is { _targets: string[] } {
-  return transition && typeof transition === 'function' && Array.isArray(transition._targets);
+export function hasTargets(
+  transition: any
+): transition is { _targets: string[] } {
+  return (
+    transition &&
+    typeof transition === "function" &&
+    Array.isArray(transition._targets)
+  );
 }
 
 /**

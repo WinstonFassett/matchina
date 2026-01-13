@@ -7,36 +7,36 @@ export function createFlatComboboxMachine() {
 
   // HSM: Inactive, Active.Empty, Active.Suggesting
   const machine = describeHSM({
-    initial: 'Inactive',
+    initial: "Inactive",
     states: {
       Inactive: {
         on: {
-          focus: 'Active'
-        }
+          focus: "Active",
+        },
       },
       Active: {
-        initial: 'Empty',
+        initial: "Empty",
         states: {
           Empty: {},
           Suggesting: {
             on: {
-              select: 'Empty'
-            }
-          }
+              select: "Empty",
+            },
+          },
         },
         on: {
-          type: 'Suggesting',
-          blur: '^Inactive'
-        }
-      }
-    }
+          type: "Suggesting",
+          blur: "^Inactive",
+        },
+      },
+    },
   });
 
   // Effects coordinate machine transitions with store updates
   setup(machine)(
     effect((ev: any) => {
-      if (ev.type === 'select') store.api.selectHighlighted();
-      if (ev.type === 'blur') store.api.clear();
+      if (ev.type === "select") store.api.selectHighlighted();
+      if (ev.type === "blur") store.api.clear();
     })
   );
 
@@ -48,14 +48,14 @@ export function createFlatComboboxMachine() {
     model: store,
 
     // Machine state transitions (exposed directly)
-    focus: () => machine.send('focus'),
-    blur: () => machine.send('blur'),
-    select: () => machine.send('select'),
+    focus: () => machine.send("focus"),
+    blur: () => machine.send("blur"),
+    select: () => machine.send("select"),
 
     // Store operations that update state and trigger machine events
     setInput: (input: string) => {
       store.api.setInput(input);
-      machine.send('type');
+      machine.send("type");
     },
 
     addTag: (tag: string) => {
@@ -70,11 +70,11 @@ export function createFlatComboboxMachine() {
     // Convenience methods that combine store + machine
     selectSuggestion: () => {
       store.api.selectHighlighted();
-      machine.send('select');
+      machine.send("select");
     },
 
     dismiss: () => {
-      machine.send('select');
+      machine.send("select");
     },
   });
 

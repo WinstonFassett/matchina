@@ -29,9 +29,9 @@ const manualMachine = createMachine(
   manualStates,
   {
     Idle: { start: "Loading" },
-    Loading: { 
+    Loading: {
       success: "Success",
-      error: "Error" 
+      error: "Error",
     },
     Error: { retry: "Idle" },
   },

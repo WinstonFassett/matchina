@@ -1,6 +1,6 @@
 /**
  * Hybrid theme API for matchina visualizers
- * 
+ *
  * Supports both CSS variables (for easy theming) and CSS classes (for full control)
  * CSS variables use --matchina-inspector-* prefix
  */
@@ -32,77 +32,81 @@ export const defaultTheme: InspectorTheme = {
   values: {
     colors: {
       // Use Starlight theme variables to match original docs styling
-      background: 'var(--sl-color-bg)',
-      surface: 'var(--sl-color-bg)',
-      border: 'var(--sl-color-gray-5)',
-      text: 'var(--sl-color-text)',
-      textSecondary: 'var(--sl-color-text-secondary)',
-      primary: 'var(--sl-color-blue)',
-      active: 'var(--sl-color-blue)',
-      activeBackground: 'var(--sl-color-blue-low)',
-      hover: 'var(--sl-color-gray-6)',
+      background: "var(--sl-color-bg)",
+      surface: "var(--sl-color-bg)",
+      border: "var(--sl-color-gray-5)",
+      text: "var(--sl-color-text)",
+      textSecondary: "var(--sl-color-text-secondary)",
+      primary: "var(--sl-color-blue)",
+      active: "var(--sl-color-blue)",
+      activeBackground: "var(--sl-color-blue-low)",
+      hover: "var(--sl-color-gray-6)",
     },
     spacing: {
-      xs: '0.25rem',
-      sm: '0.5rem',
-      md: '1rem',
-      lg: '1.5rem',
-      xl: '2rem',
+      xs: "0.25rem",
+      sm: "0.5rem",
+      md: "1rem",
+      lg: "1.5rem",
+      xl: "2rem",
     },
     typography: {
-      fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-      fontSize: '0.875rem',
-      fontWeight: '400',
-      lineHeight: '1.5',
+      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+      fontSize: "0.875rem",
+      fontWeight: "400",
+      lineHeight: "1.5",
     },
     borders: {
-      radius: '0.375rem',
-      width: '1px',
+      radius: "0.375rem",
+      width: "1px",
     },
   },
   classes: {
-    container: 'matchina-inspector',
-    activeState: 'matchina-inspector-state--active',
-    inactiveState: 'matchina-inspector-state--inactive',
-    transitionButton: 'matchina-inspector-transition',
-    nestedStates: 'matchina-inspector-nested',
-    stateContent: 'matchina-inspector-state-content',
-    stateName: 'matchina-inspector-state-name',
+    container: "matchina-inspector",
+    activeState: "matchina-inspector-state--active",
+    inactiveState: "matchina-inspector-state--inactive",
+    transitionButton: "matchina-inspector-transition",
+    nestedStates: "matchina-inspector-nested",
+    stateContent: "matchina-inspector-state-content",
+    stateName: "matchina-inspector-state-name",
   },
 };
 
 /**
  * Generate CSS variables string from theme values
  */
-export function generateCSSVariables(theme: InspectorTheme['values'] = defaultTheme.values): string {
-  if (!theme) { return ''; }
-  
-  let css = '';
-  
+export function generateCSSVariables(
+  theme: InspectorTheme["values"] = defaultTheme.values
+): string {
+  if (!theme) {
+    return "";
+  }
+
+  let css = "";
+
   if (theme.colors) {
     for (const [key, value] of Object.entries(theme.colors)) {
       css += `  --matchina-inspector-color-${key}: ${value};\n`;
     }
   }
-  
+
   if (theme.spacing) {
     for (const [key, value] of Object.entries(theme.spacing)) {
       css += `  --matchina-inspector-spacing-${key}: ${value};\n`;
     }
   }
-  
+
   if (theme.typography) {
     for (const [key, value] of Object.entries(theme.typography)) {
       css += `  --matchina-inspector-typography-${key}: ${value};\n`;
     }
   }
-  
+
   if (theme.borders) {
     for (const [key, value] of Object.entries(theme.borders)) {
       css += `  --matchina-inspector-border-${key}: ${value};\n`;
     }
   }
-  
+
   return css;
 }
 
@@ -115,7 +119,7 @@ export function applyTheme(element: HTMLElement, theme: InspectorTheme): void {
     const cssVars = generateCSSVariables(theme.values);
     element.style.cssText += cssVars;
   }
-  
+
   // Apply CSS classes
   if (theme.classes) {
     for (const className of Object.values(theme.classes)) {

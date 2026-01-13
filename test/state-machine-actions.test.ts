@@ -11,20 +11,24 @@ describe("getAvailableActions", () => {
       PAUSED: () => ({ key: "PAUSED" }),
     });
 
-    const machine = createMachine(states, {
-      IDLE: {
-        START: () => states.RUNNING(),
-        RESET: () => states.IDLE(),
+    const machine = createMachine(
+      states,
+      {
+        IDLE: {
+          START: () => states.RUNNING(),
+          RESET: () => states.IDLE(),
+        },
+        RUNNING: {
+          PAUSE: () => states.PAUSED(),
+          STOP: () => states.IDLE(),
+        },
+        PAUSED: {
+          RESUME: () => states.RUNNING(),
+          STOP: () => states.IDLE(),
+        },
       },
-      RUNNING: {
-        PAUSE: () => states.PAUSED(),
-        STOP: () => states.IDLE(),
-      },
-      PAUSED: {
-        RESUME: () => states.RUNNING(),
-        STOP: () => states.IDLE(),
-      },
-    }, "IDLE");
+      "IDLE"
+    );
 
     // Test IDLE state
     expect(getAvailableActions(machine.transitions, "IDLE")).toEqual([
@@ -51,13 +55,19 @@ describe("getAvailableActions", () => {
       RUNNING: () => ({ key: "RUNNING" }),
     });
 
-    const machine = createMachine(states, {
-      IDLE: {
-        START: () => states.RUNNING(),
+    const machine = createMachine(
+      states,
+      {
+        IDLE: {
+          START: () => states.RUNNING(),
+        },
       },
-    }, "IDLE");
+      "IDLE"
+    );
 
-    expect(getAvailableActions(machine.transitions, "UNKNOWN_STATE")).toEqual([]);
+    expect(getAvailableActions(machine.transitions, "UNKNOWN_STATE")).toEqual(
+      []
+    );
   });
 
   it("should work with empty transitions", () => {

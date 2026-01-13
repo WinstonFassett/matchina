@@ -26,7 +26,6 @@ export function defineEffects<EffectsConfig extends TaggedTypes>(
   return matchboxFactory(config, "effect");
 }
 
-
 /**
  * Handles an array of effect matchboxes by matching them against provided cases.
  *

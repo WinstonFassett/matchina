@@ -122,10 +122,10 @@ export type FactoryMachineEvent<FC extends FactoryMachineContext<any>> = {
 export type FactoryMachineTransitionEvent<
   FC extends FactoryMachineContext<any>,
   FromKey extends keyof FC["transitions"] = keyof FC["transitions"],
-  EventKey extends
-    keyof FC["transitions"][FromKey] = keyof FC["transitions"][FromKey],
-  ToKey extends
-    FC["transitions"][FromKey][EventKey] = FC["transitions"][FromKey][EventKey],
+  EventKey extends keyof FC["transitions"][FromKey] =
+    keyof FC["transitions"][FromKey],
+  ToKey extends FC["transitions"][FromKey][EventKey] =
+    FC["transitions"][FromKey][EventKey],
 > = TransitionEvent<FactoryKeyedState<FC["states"]>> &
   FactoryMachineEventApi<FC> & {
     from: FactoryKeyedState<

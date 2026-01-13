@@ -8,13 +8,13 @@ import type { MachineShape } from "matchina/hsm";
 export function getActiveStatePath(machine: FactoryMachine<any>): string {
   try {
     const currentState = machine.getState();
-    const stateKey = currentState?.key || '';
-    
+    const stateKey = currentState?.key || "";
+
     // For flattened machines, state key already contains the full path
-    if (stateKey.includes('.')) {
+    if (stateKey.includes(".")) {
       return stateKey;
     }
-    
+
     // For hierarchical machines, walk the nested machine chain
     const parts: string[] = [];
     let cursor: any = machine;
@@ -25,18 +25,18 @@ export function getActiveStatePath(machine: FactoryMachine<any>): string {
       parts.push(state.key);
       cursor = state?.data?.machine;
     }
-    return parts.length ? parts.join('.') : 'Unknown';
+    return parts.length ? parts.join(".") : "Unknown";
   } catch {
-    return 'Unknown';
+    return "Unknown";
   }
 }
 
 /**
  * Build a visualization tree from a machine's shape or hierarchical structure.
- * 
+ *
  * Prefer shape when available (flattened and nested machines with shape metadata).
  * Fall back to runtime introspection for hierarchical machines without shapes.
- * 
+ *
  * For best results, use createMachineFromFlat() to create flattened machines
  * which automatically get shape metadata attached.
  */
@@ -61,16 +61,17 @@ export function buildVisualizerTree<F extends FactoryMachine<any>>(
  */
 function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
   // Educational type definition for XState compatibility
-  void ({
+  void {
     key: "",
     fullKey: "",
     on: {} as Record<string, string>,
     states: undefined as any,
-    initial: undefined as string | undefined
-  }); // _XStateNode - Educational type definition
+    initial: undefined as string | undefined,
+  }; // _XStateNode - Educational type definition
 
   const initialState = machine.getState();
-  const declaredInitial = (machine as any).initialKey ?? initialState?.key ?? 'Unknown';
+  const declaredInitial =
+    (machine as any).initialKey ?? initialState?.key ?? "Unknown";
 
   const definition: {
     initial: string;
@@ -94,7 +95,7 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
   Object.entries(machine.transitions ?? {}).forEach(([fromKey, events]) => {
     Object.entries(events as object).forEach(([event, entry]) => {
       // Skip function transitions - they can't be statically resolved
-      if (typeof entry === 'function') {
+      if (typeof entry === "function") {
         return;
       }
       definition.states[fromKey].on[event] = entry;
@@ -139,7 +140,7 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
       definition.states[stateKey].states = childDefinition.states;
     } catch (e) {
       // Skip if nested machine inspection fails
-      console.error('Failed to inspect nested machine:', e);
+      console.error("Failed to inspect nested machine:", e);
     }
   });
 
@@ -152,8 +153,10 @@ function buildVisualizerTreeFromHierarchy(machine: any, parentKey?: string) {
       !definition.states[currentKey]?.states
     ) {
       const childMachine = initialState.data.machine;
-      if (childMachine && typeof childMachine.getState === 'function') {
-        const childFullKey = parentKey ? `${parentKey}.${currentKey}` : currentKey;
+      if (childMachine && typeof childMachine.getState === "function") {
+        const childFullKey = parentKey
+          ? `${parentKey}.${currentKey}`
+          : currentKey;
         const childDefinition = buildVisualizerTreeFromHierarchy(
           childMachine,
           childFullKey
@@ -194,13 +197,13 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
     if (!node) {
       // Handle synthetic parents that don't exist in shape (violation of shape spec)
       // Create a synthetic node for visualization purposes
-      const parts = fullKey.split('.');
+      const parts = fullKey.split(".");
       const syntheticNode: XStateNode = {
         key: parts[parts.length - 1],
         fullKey,
-        on: {}
+        on: {},
       };
-      
+
       // Find all direct children of this synthetic parent
       const children: string[] = [];
       for (const [stateFullKey, parentFullKey] of shape.hierarchy.entries()) {
@@ -208,27 +211,27 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
           children.push(stateFullKey);
         }
       }
-      
+
       // Build child states
       if (children.length > 0) {
         syntheticNode.states = {};
         for (const childFullKey of children) {
           const childNode = buildNode(childFullKey);
           // Use local key (not full key) for child state names
-          const localKey = childFullKey.split('.').pop() || childFullKey;
+          const localKey = childFullKey.split(".").pop() || childFullKey;
           syntheticNode.states[localKey] = childNode;
         }
         // Set initial to first child (simplified - could be enhanced to find actual initial)
-        syntheticNode.initial = children[0]?.split('.').pop();
+        syntheticNode.initial = children[0]?.split(".").pop();
       }
-      
+
       return syntheticNode;
     }
 
     const state: XStateNode = {
       key: node.key,
       fullKey,
-      on: {}
+      on: {},
     };
 
     // Get transitions from this state
@@ -253,11 +256,11 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
       for (const childFullKey of children) {
         const childNode = buildNode(childFullKey);
         // Use local key (not full key) for child state names
-        const localKey = childFullKey.split('.').pop() || childFullKey;
+        const localKey = childFullKey.split(".").pop() || childFullKey;
         state.states[localKey] = childNode;
       }
       // Set initial to first child (simplified - could be enhanced to find actual initial)
-      state.initial = children[0]?.split('.').pop();
+      state.initial = children[0]?.split(".").pop();
     }
 
     return state;
@@ -265,8 +268,11 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
 
   // Build all root-level states
   const rootStates: Record<string, XStateNode> = {};
-  const allHierarchyEntries = Array.from(shape.hierarchy.entries()) as [string, string | undefined][];
-  
+  const allHierarchyEntries = Array.from(shape.hierarchy.entries()) as [
+    string,
+    string | undefined,
+  ][];
+
   for (const [fullKey, parentFullKey] of allHierarchyEntries) {
     if (parentFullKey === undefined) {
       const node = buildNode(fullKey);
@@ -276,6 +282,6 @@ function buildVisualizerTreeFromShape(shape: MachineShape) {
 
   return {
     initial: shape.initialKey,
-    states: rootStates
+    states: rootStates,
   };
 }

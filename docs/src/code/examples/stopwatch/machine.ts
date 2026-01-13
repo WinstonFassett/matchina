@@ -17,15 +17,24 @@ interface StopwatchState {
 }
 
 const createStopwatchStore = () => {
-  const store = createStoreMachine<StopwatchState>({ elapsed: 0, at: 0 }, {
-    tick: () => (change) => ({
-      elapsed: change.from.elapsed + (Date.now() - change.from.at),
-      at: Date.now(),
-    }),
-    start: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
-    resume: () => (change) => ({ elapsed: change.from.elapsed, at: Date.now() }),
-    clear: () => () => ({ elapsed: 0, at: Date.now() }),
-  });
+  const store = createStoreMachine<StopwatchState>(
+    { elapsed: 0, at: 0 },
+    {
+      tick: () => (change) => ({
+        elapsed: change.from.elapsed + (Date.now() - change.from.at),
+        at: Date.now(),
+      }),
+      start: () => (change) => ({
+        elapsed: change.from.elapsed,
+        at: Date.now(),
+      }),
+      resume: () => (change) => ({
+        elapsed: change.from.elapsed,
+        at: Date.now(),
+      }),
+      clear: () => () => ({ elapsed: 0, at: Date.now() }),
+    }
+  );
   return addStoreApi(withSubscribe(store));
 };
 

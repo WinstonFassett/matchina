@@ -21,10 +21,17 @@ const initialState: GameState = {
 };
 export function createStore() {
   const baseStore = createStoreMachine<GameState>(initialState, {
-    setPlayerMove: (move: Move) => (change) => ({ ...change.from, playerMove: move }),
-    setComputerMove: (move: Move) => (change) => ({ ...change.from, computerMove: move }),
+    setPlayerMove: (move: Move) => (change) => ({
+      ...change.from,
+      playerMove: move,
+    }),
+    setComputerMove: (move: Move) => (change) => ({
+      ...change.from,
+      computerMove: move,
+    }),
     judgeRound: () => (change) => {
-      const { playerMove, computerMove, playerScore, computerScore } = change.from;
+      const { playerMove, computerMove, playerScore, computerScore } =
+        change.from;
       if (!playerMove || !computerMove) return change.from;
       const winner = determineWinner(playerMove, computerMove);
       return {
@@ -36,12 +43,19 @@ export function createStore() {
     },
     checkGameOver: () => (change) => {
       const { playerScore, computerScore } = change.from;
-      if (playerScore >= 5) return { ...change.from, gameWinner: "player" as const };
-      if (computerScore >= 5) return { ...change.from, gameWinner: "computer" as const };
+      if (playerScore >= 5)
+        return { ...change.from, gameWinner: "player" as const };
+      if (computerScore >= 5)
+        return { ...change.from, gameWinner: "computer" as const };
       return change.from;
     },
     reset: () => () => initialState,
-    clearRound: () => (change) => ({ ...change.from, playerMove: null, computerMove: null, roundWinner: null }),
+    clearRound: () => (change) => ({
+      ...change.from,
+      playerMove: null,
+      computerMove: null,
+      roundWinner: null,
+    }),
   });
 
   return Object.assign(baseStore, storeApi(baseStore));

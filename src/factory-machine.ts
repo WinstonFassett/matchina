@@ -100,7 +100,13 @@ export function createMachine<
       resolveExit: (ev: ResolveEvent<E>) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params, machine as E["machine"]) as E
+          ? (new FactoryMachineEventImpl(
+              ev.type,
+              ev.from,
+              to,
+              ev.params,
+              machine as E["machine"]
+            ) as E)
           : undefined;
       },
     } as unknown as Partial<FactoryMachine<FC>>,
@@ -115,14 +121,14 @@ export function createMachine<
   // This enables visualization for all machines created with createMachine()
   try {
     const shapeStore = createStaticShapeStore(machine);
-    Object.defineProperty(machine, 'shape', {
+    Object.defineProperty(machine, "shape", {
       value: shapeStore,
       enumerable: false,
       configurable: true,
       writable: true,
     });
   } catch (error) {
-    console.error('[createMachine] Failed to attach shape:', error);
+    console.error("[createMachine] Failed to attach shape:", error);
   }
 
   return machine;

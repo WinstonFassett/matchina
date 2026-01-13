@@ -6,15 +6,14 @@ export const StateData = {
   Suspended: (elapsed = 0) => ({ elapsed }),
 };
 
-export interface Stopwatch
-  extends FactoryMachine<{
-    states: StateMatchboxFactory<typeof StateData>;
-    transitions: {
-      Stopped: { start: "Ticking" };
-      Ticking: { stop: "Stopped"; suspend: "Suspended"; clear: "Ticking" };
-      Suspended: { stop: "Stopped"; resume: "Ticking"; clear: "Suspended" };
-    };
-  }> {
+export interface Stopwatch extends FactoryMachine<{
+  states: StateMatchboxFactory<typeof StateData>;
+  transitions: {
+    Stopped: { start: "Ticking" };
+    Ticking: { stop: "Stopped"; suspend: "Suspended"; clear: "Ticking" };
+    Suspended: { stop: "Stopped"; resume: "Ticking"; clear: "Suspended" };
+  };
+}> {
   elapsed: number;
   start(): void;
   stop(): void;

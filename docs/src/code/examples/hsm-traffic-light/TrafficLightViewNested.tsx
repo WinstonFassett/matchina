@@ -4,7 +4,9 @@ interface TrafficLightViewNestedProps {
   machine: any;
 }
 
-export function TrafficLightViewNested({ machine }: TrafficLightViewNestedProps) {
+export function TrafficLightViewNested({
+  machine,
+}: TrafficLightViewNestedProps) {
   const change = useMachine(machine) as { to: { key: string; data?: any } };
   const state = change.to;
   const send = (event: string) => machine.send(event);
@@ -32,7 +34,10 @@ export function TrafficLightViewNested({ machine }: TrafficLightViewNestedProps)
         <div className="inline-block bg-gray-800 p-4 rounded-lg shadow-lg">
           <div className="space-y-2">
             <Light color="red" active={isWorking && lightColor === "Red"} />
-            <Light color="yellow" active={isWorking && lightColor === "Yellow"} />
+            <Light
+              color="yellow"
+              active={isWorking && lightColor === "Yellow"}
+            />
             <Light color="green" active={isWorking && lightColor === "Green"} />
           </div>
         </div>

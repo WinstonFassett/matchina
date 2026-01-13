@@ -1,4 +1,10 @@
-import { matchina, defineStates, createStoreMachine, setup, effect } from "matchina";
+import {
+  matchina,
+  defineStates,
+  createStoreMachine,
+  setup,
+  effect,
+} from "matchina";
 
 interface User {
   id: string;
@@ -38,10 +44,17 @@ export const createAuthMachine = () => {
 
   const store = createStoreMachine<AuthFormState>(initialState, {
     setEmail: (email: string) => (change) => ({ ...change.from, email }),
-    setPassword: (password: string) => (change) => ({ ...change.from, password }),
+    setPassword: (password: string) => (change) => ({
+      ...change.from,
+      password,
+    }),
     setName: (name: string) => (change) => ({ ...change.from, name }),
     setError: (error: string | null) => (change) => ({ ...change.from, error }),
-    setUser: (user: User) => (change) => ({ ...change.from, user, error: null }),
+    setUser: (user: User) => (change) => ({
+      ...change.from,
+      user,
+      error: null,
+    }),
     clearError: () => (change) => ({ ...change.from, error: null }),
     reset: () => () => initialState,
   });
@@ -117,18 +130,18 @@ export const createAuthMachine = () => {
   // Add ergonomic methods that handle store updates
   const enhancedMachine = Object.assign(machine, {
     store,
-    
+
     success: (data: { user?: User; email?: string }) => {
       if (data.user) {
         store.dispatch("setUser", data.user);
       }
       machine.send("success");
     },
-    
+
     failure: (error: string) => {
       store.dispatch("setError", error);
       machine.send("failure");
-    }
+    },
   });
 
   return enhancedMachine;

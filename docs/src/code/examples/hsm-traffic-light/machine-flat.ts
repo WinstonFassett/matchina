@@ -2,47 +2,47 @@ import { describeHSM } from "matchina";
 
 export function createFlatTrafficLight() {
   return describeHSM({
-    initial: 'Working',
+    initial: "Working",
     states: {
       Broken: {
         on: {
-          repair: 'Working',
-          maintenance: 'Maintenance'
-        }
+          repair: "Working",
+          maintenance: "Maintenance",
+        },
       },
 
       // Working is a hierarchical state with light cycle substates
       Working: {
-        initial: 'Red',
+        initial: "Red",
         states: {
           Red: {
             on: {
-              tick: 'Green'
-            }
+              tick: "Green",
+            },
           },
           Green: {
             on: {
-              tick: 'Yellow'
-            }
+              tick: "Yellow",
+            },
           },
           Yellow: {
             on: {
-              tick: 'Red'
-            }
-          }
+              tick: "Red",
+            },
+          },
         },
         // Parent-level transitions apply to all child states
         on: {
-          break: '^Broken',
-          maintenance: '^Maintenance'
-        }
+          break: "^Broken",
+          maintenance: "^Maintenance",
+        },
       },
 
       Maintenance: {
         on: {
-          complete: 'Working'
-        }
-      }
-    }
+          complete: "Working",
+        },
+      },
+    },
   });
 }

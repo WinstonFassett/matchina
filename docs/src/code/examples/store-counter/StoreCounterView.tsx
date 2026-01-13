@@ -8,7 +8,7 @@ export function StoreCounterView({ store }: { store: CounterStore }) {
   return (
     <div className="flex flex-col items-center gap-4 p-6">
       <div className="text-6xl font-bold tabular-nums">{count}</div>
-      
+
       <div className="flex gap-2">
         <button
           onClick={() => store.dispatch("decrement")}

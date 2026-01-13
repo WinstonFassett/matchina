@@ -10,13 +10,16 @@ export function TrafficLightViewFlat({ machine }: TrafficLightViewFlatProps) {
   const send = (event: string) => machine.send(event);
 
   // Use pattern matching instead of parseFlatStateKey
-  const stateInfo = state.key.split('.').reduce((acc, part, index, parts) => {
-    if (index === 0) {
-      acc.parent = part;
-      acc.child = parts.length > 1 ? parts[1] : undefined;
-    }
-    return acc;
-  }, { parent: '', child: undefined as string | undefined });
+  const stateInfo = state.key.split(".").reduce(
+    (acc, part, index, parts) => {
+      if (index === 0) {
+        acc.parent = part;
+        acc.child = parts.length > 1 ? parts[1] : undefined;
+      }
+      return acc;
+    },
+    { parent: "", child: undefined as string | undefined }
+  );
 
   const parent = stateInfo.parent;
   const child = stateInfo.child;
@@ -33,7 +36,10 @@ export function TrafficLightViewFlat({ machine }: TrafficLightViewFlatProps) {
         <div className="inline-block bg-gray-800 p-4 rounded-lg shadow-lg">
           <div className="space-y-2">
             <Light color="red" active={isWorking && lightColor === "Red"} />
-            <Light color="yellow" active={isWorking && lightColor === "Yellow"} />
+            <Light
+              color="yellow"
+              active={isWorking && lightColor === "Yellow"}
+            />
             <Light color="green" active={isWorking && lightColor === "Green"} />
           </div>
         </div>

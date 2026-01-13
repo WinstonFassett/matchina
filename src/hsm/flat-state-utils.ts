@@ -4,7 +4,7 @@
 
 /**
  * Parse a flattened state key into parent and child components
- * 
+ *
  * @param key - Flattened state key (e.g., "Payment.MethodEntry")
  * @returns Object with parent, child, parts, and full properties
  */
@@ -14,6 +14,6 @@ export function parseFlatStateKey(key: string) {
     parent: parts[0],
     child: parts[1],
     parts,
-    full: key
+    full: key,
   };
 }

@@ -23,10 +23,10 @@ import { StateChangeEvent, ChangeEventKeyFilter } from "./match-change-types";
  */
 export function matchChange<
   E extends StateChangeEvent,
-  Type extends
-    ChangeEventKeyFilter<E>["type"] = ChangeEventKeyFilter<E>["type"],
-  From extends
-    ChangeEventKeyFilter<E>["from"] = ChangeEventKeyFilter<E>["from"],
+  Type extends ChangeEventKeyFilter<E>["type"] =
+    ChangeEventKeyFilter<E>["type"],
+  From extends ChangeEventKeyFilter<E>["from"] =
+    ChangeEventKeyFilter<E>["from"],
   To extends ChangeEventKeyFilter<E>["to"] = ChangeEventKeyFilter<E>["to"],
 >(
   changeEvent: E,

@@ -283,7 +283,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Logging In...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Authenticating {machine.store.getState().email}</p>
+            <p className="mb-6 opacity-70">
+              Authenticating {machine.store.getState().email}
+            </p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
@@ -319,7 +321,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Creating Account...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Registering {machine.store.getState().email}</p>
+            <p className="mb-6 opacity-70">
+              Registering {machine.store.getState().email}
+            </p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
@@ -332,7 +336,9 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                         id: "user-123",
                         name: machine.store.getState().name,
                         email: machine.store.getState().email,
-                        avatar: "https://i.pravatar.cc/150?u=" + machine.store.getState().email,
+                        avatar:
+                          "https://i.pravatar.cc/150?u=" +
+                          machine.store.getState().email,
                       },
                     })
                   }
@@ -355,14 +361,18 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Sending Reset Link...</h2>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">Sending to {machine.store.getState().email}</p>
+            <p className="mb-6 opacity-70">
+              Sending to {machine.store.getState().email}
+            </p>
 
             {/* Manual Controls */}
             <div className="space-y-2">
               <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => machine.success({ email: machine.store.getState().email })}
+                  onClick={() =>
+                    machine.success({ email: machine.store.getState().email })
+                  }
                   className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                 >
                   Reset Success
@@ -381,19 +391,19 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
         PasswordResetSent: () => {
           const storeData = machine.store.getState();
           return (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4 text-blue-600">
-              Reset Link Sent!
-            </h2>
-            <p className="mb-6 opacity-70">
-              We've sent a password reset link to {storeData.email}.
-            </p>
-            <button
-              onClick={() => machine.goToLogin()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Back to Log In
-            </button>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-4 text-blue-600">
+                Reset Link Sent!
+              </h2>
+              <p className="mb-6 opacity-70">
+                We've sent a password reset link to {storeData.email}.
+              </p>
+              <button
+                onClick={() => machine.goToLogin()}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Back to Log In
+              </button>
             </div>
           );
         },
@@ -401,29 +411,31 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
         LoggedIn: () => {
           const storeData = machine.store.getState();
           return (
-          <div className="text-center">
-            <div className="mb-4">
-              {storeData.user?.avatar && (
-                <img
-                  src={storeData.user.avatar}
-                  alt={storeData.user.name || "User"}
-                  className="w-16 h-16 rounded-full mx-auto mb-4"
-                />
-              )}
-              <h2 className="text-2xl font-bold text-green-600">
-                Welcome, {storeData.user?.name || "User"}!
-              </h2>
-              <p className="opacity-70">{storeData.user?.email}</p>
-            </div>
-            <div className="bg-green-500/10 border border-green-500/20 rounded p-4 mb-4">
-              <p className="text-green-600">You are successfully logged in!</p>
-            </div>
-            <button
-              onClick={() => machine.logout()}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Log Out
-            </button>
+            <div className="text-center">
+              <div className="mb-4">
+                {storeData.user?.avatar && (
+                  <img
+                    src={storeData.user.avatar}
+                    alt={storeData.user.name || "User"}
+                    className="w-16 h-16 rounded-full mx-auto mb-4"
+                  />
+                )}
+                <h2 className="text-2xl font-bold text-green-600">
+                  Welcome, {storeData.user?.name || "User"}!
+                </h2>
+                <p className="opacity-70">{storeData.user?.email}</p>
+              </div>
+              <div className="bg-green-500/10 border border-green-500/20 rounded p-4 mb-4">
+                <p className="text-green-600">
+                  You are successfully logged in!
+                </p>
+              </div>
+              <button
+                onClick={() => machine.logout()}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Log Out
+              </button>
             </div>
           );
         },

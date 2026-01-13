@@ -9,11 +9,11 @@ type Mode = "flat" | "nested";
 
 export default function TrafficLightComparisonExample() {
   const [mode, setMode] = useState<Mode>("nested");
-  
+
   // Re-create machine when mode changes
   const machine = useMemo(() => {
-    return mode === "flat" 
-      ? createFlatTrafficLight() 
+    return mode === "flat"
+      ? createFlatTrafficLight()
       : createPropagatingTrafficLight();
   }, [mode]);
 
@@ -44,7 +44,7 @@ export default function TrafficLightComparisonExample() {
           </button>
         </div>
       </div>
-      
+
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
@@ -53,7 +53,9 @@ export default function TrafficLightComparisonExample() {
         interactive={true}
         layout="split"
         exampleName="hsm-traffic-light"
-        AppView={mode === "flat" ? TrafficLightViewFlat : TrafficLightViewNested}
+        AppView={
+          mode === "flat" ? TrafficLightViewFlat : TrafficLightViewNested
+        }
       />
     </div>
   );

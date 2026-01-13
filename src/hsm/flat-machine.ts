@@ -33,12 +33,8 @@ import { createStaticShapeStore } from "./shape-store";
 export function createFlatMachine<
   SF extends StateMatchboxFactory<any>,
   T extends FactoryMachineTransitions<SF>,
-  I extends KeysWithZeroRequiredArgs<SF> | ReturnType<SF[keyof SF]>
->(
-  states: SF,
-  transitions: T,
-  initial: I
-) {
+  I extends KeysWithZeroRequiredArgs<SF> | ReturnType<SF[keyof SF]>,
+>(states: SF, transitions: T, initial: I) {
   // Create raw machine
   const machine = createMachine(states, transitions, initial);
 

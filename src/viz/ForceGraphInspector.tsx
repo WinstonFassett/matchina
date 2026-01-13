@@ -1,13 +1,13 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import { useMachine } from "../integrations/react";
-import type { InspectorTheme } from './theme';
-import { defaultTheme } from './theme';
+import type { InspectorTheme } from "./theme";
+import { defaultTheme } from "./theme";
 import { buildShapeTree } from "../inspect/build-visualizer-tree";
-import { buildForceGraphData } from './ForceGraphInspector/utils/shape-to-force-graph';
+import { buildForceGraphData } from "./ForceGraphInspector/utils/shape-to-force-graph";
 
 interface Diagram {
-  nodes: Array<{ 
-    id: string; 
+  nodes: Array<{
+    id: string;
     name: string;
     isGroup?: boolean;
     level?: number;
@@ -16,11 +16,11 @@ interface Diagram {
     color?: string;
     fullKey?: string;
   }>;
-  links: Array<{ 
-    name: string; 
-    source: any; 
+  links: Array<{
+    name: string;
+    source: any;
     target: any;
-    type?: 'transition' | 'hierarchy';
+    type?: "transition" | "hierarchy";
     value?: number;
   }>;
 }
@@ -62,10 +62,11 @@ function canFire(
   event: string
 ) {
   // Handle both Map and Object formats for states
-  const states = machine.states instanceof Map ? machine.states : machine.states;
+  const states =
+    machine.states instanceof Map ? machine.states : machine.states;
   const mode = states instanceof Map ? states.get(state) : states[state];
   if (!mode || !mode.on) return false;
-  
+
   // Handle both Map and Object formats for transitions
   const on = mode.on instanceof Map ? mode.on : mode.on;
   return on instanceof Map ? on.has(event) : !!on[event];
@@ -107,7 +108,7 @@ export default function ForceGraphInspector({
   prevState,
   dispatch,
   interactive = true,
-  theme = defaultTheme
+  theme = defaultTheme,
 }: ForceGraphInspectorProps) {
   const baseFontSize = 4;
   const ref = useRef<HTMLDivElement>(null);
@@ -116,28 +117,28 @@ export default function ForceGraphInspector({
   // Copy the exact working pattern from SketchInspector
   useMachine(definition);
   const currentState = definition.getState();
-  
-  console.log('ForceGraph: Machine type:', definition.shape ? 'HSM' : 'Legacy');
-  console.log('ForceGraph: Current state:', currentState?.key);
-  console.log('ForceGraph: Has notify:', typeof definition.notify);
-  
+
+  console.log("ForceGraph: Machine type:", definition.shape ? "HSM" : "Legacy");
+  console.log("ForceGraph: Current state:", currentState?.key);
+  console.log("ForceGraph: Has notify:", typeof definition.notify);
+
   const diagram: Diagram = useMemo(() => {
     // Handle both HSM machines (with shape) and legacy factory machines
     if (definition.shape?.getState) {
       // HSM Machine - use the new converter
       const shape = definition.shape.getState();
-      
+
       if (!shape?.states) {
         return { nodes: [], links: [] };
       }
-      
+
       // Use the new converter that properly handles string IDs and validation
       const graphData = buildForceGraphData(shape, { showHierarchy: true });
-      
+
       // Convert to the old Diagram format for compatibility with existing rendering code
       // But preserve new hierarchy information for enhanced rendering
       return {
-        nodes: graphData.nodes.map(node => ({
+        nodes: graphData.nodes.map((node) => ({
           id: node.id,
           name: node.name,
           // Pass through hierarchy info for rendering
@@ -146,102 +147,111 @@ export default function ForceGraphInspector({
           group: node.group,
           val: node.val,
           color: node.color,
-          fullKey: node.fullKey
+          fullKey: node.fullKey,
         })),
-        links: graphData.links.map(link => ({
+        links: graphData.links.map((link) => ({
           name: link.event,
-          source: link.source,  // String ID - this fixes the "node not found" error
-          target: link.target,  // String ID - this fixes the "node not found" error
+          source: link.source, // String ID - this fixes the "node not found" error
+          target: link.target, // String ID - this fixes the "node not found" error
           // Pass through link type for different styling
           type: link.type,
-          value: link.value
-        }))
+          value: link.value,
+        })),
       };
     } else {
       // Legacy Factory Machine - convert to ForceGraph format
       const currentState = definition.getState?.();
       const transitions = definition.transitions || {};
-      
+
       if (!currentState) {
         return { nodes: [], links: [] };
       }
-      
+
       // Extract states from transitions
       const stateNames = new Set<string>();
       stateNames.add(currentState.key);
-      
+
       // Add all target states from transitions
       Object.values(transitions).forEach((transitionMap: any) => {
-        if (typeof transitionMap === 'object') {
+        if (typeof transitionMap === "object") {
           Object.values(transitionMap).forEach((targetState: any) => {
-            if (typeof targetState === 'string') {
+            if (typeof targetState === "string") {
               stateNames.add(targetState);
             }
           });
         }
       });
-      
+
       // Create nodes
-      const nodes = Array.from(stateNames).map(stateName => ({
+      const nodes = Array.from(stateNames).map((stateName) => ({
         id: stateName,
         name: stateName,
         isGroup: false,
         level: 0,
         val: stateName === currentState.key ? 15 : 10,
-        color: stateName === currentState.key ? '#60a5fa' : '#8b5cf6',
-        fullKey: stateName
+        color: stateName === currentState.key ? "#60a5fa" : "#8b5cf6",
+        fullKey: stateName,
       }));
-      
+
       // Create links
       const links: any[] = [];
-      Object.entries(transitions).forEach(([sourceState, transitionMap]: [string, any]) => {
-        if (typeof transitionMap === 'object') {
-          Object.entries(transitionMap).forEach(([eventName, targetState]: [string, any]) => {
-            if (typeof targetState === 'string') {
-              links.push({
-                name: eventName,
-                source: sourceState,
-                target: targetState,
-                type: 'transition',
-                value: 1
-              });
-            }
-          });
+      Object.entries(transitions).forEach(
+        ([sourceState, transitionMap]: [string, any]) => {
+          if (typeof transitionMap === "object") {
+            Object.entries(transitionMap).forEach(
+              ([eventName, targetState]: [string, any]) => {
+                if (typeof targetState === "string") {
+                  links.push({
+                    name: eventName,
+                    source: sourceState,
+                    target: targetState,
+                    type: "transition",
+                    value: 1,
+                  });
+                }
+              }
+            );
+          }
         }
-      });
-      
+      );
+
       return { nodes, links };
     }
   }, [definition]);
-  
+
   // Handle value tracking using the working pattern from SketchInspector
   const currentValue = useMemo(() => {
-    console.log('ForceGraph: useMemo triggered, currentState:', currentState?.key, currentState?.fullKey);
-    
+    console.log(
+      "ForceGraph: useMemo triggered, currentState:",
+      currentState?.key,
+      currentState?.fullKey
+    );
+
     if (definition.shape?.getState) {
       // HSM Machine - use current state from machine
-      const result = currentState?.key || currentState?.fullKey || valueFromProp;
-      console.log('ForceGraph: HSM result:', result);
+      const result =
+        currentState?.key || currentState?.fullKey || valueFromProp;
+      console.log("ForceGraph: HSM result:", result);
       return result;
     } else {
       // Legacy Factory Machine - get current state from machine
       const result = currentState?.key || valueFromProp;
-      console.log('ForceGraph: Legacy result:', result);
+      console.log("ForceGraph: Legacy result:", result);
       return result;
     }
   }, [currentState, valueFromProp]);
-  
+
   const valueRef = useRef(currentValue);
   valueRef.current = currentValue;
-  
+
   // Update ForceGraph when state changes
   useEffect(() => {
-    console.log('ForceGraph: useEffect triggered, currentValue:', currentValue);
+    console.log("ForceGraph: useEffect triggered, currentValue:", currentValue);
     // Update the ref that node highlighting uses
     valueRef.current = currentValue;
-    
+
     if (graphInstance.current) {
-      console.log('ForceGraph: Calling graphData refresh');
+      console.log("ForceGraph: Calling graphData refresh");
       // Force a proper canvas redraw by resetting the graph data
       graphInstance.current.graphData(graphInstance.current.graphData());
       // Force canvas redraw by triggering resize
@@ -252,46 +262,44 @@ export default function ForceGraphInspector({
         }
       }, 10);
     } else {
-      console.log('ForceGraph: No graph instance yet');
+      console.log("ForceGraph: No graph instance yet");
     }
   }, [currentValue]);
-  
+
   // Setup ForceGraph once
   useEffect(() => {
     let mounted = true;
     let Graph: any;
     let resizeObserver: ResizeObserver;
-    
+
     import("force-graph").then((module) => {
       if (!mounted || !ref.current) return;
       Graph = new module.default(ref.current);
       graphInstance.current = Graph;
-      
+
       const updateDimensions = () => {
         if (!ref.current || !Graph) return;
-        
+
         // Get the ACTUAL rendered dimensions from the container's CSS layout
         const containerWidth = ref.current.offsetWidth || 400;
         // Cap height to prevent unbounded growth - ForceGraph is zoomable so doesn't need huge canvas
         const containerHeight = Math.min(ref.current.offsetHeight || 300, 400);
-        
+
         // ForceGraph should match its container, not override layout
-        Graph.height(containerHeight)
-          .width(containerWidth);
+        Graph.height(containerHeight).width(containerWidth);
       };
-      
+
       // Initial dimensions
       updateDimensions();
-      
+
       // Watch for container resize
       resizeObserver = new ResizeObserver(() => {
         updateDimensions();
       });
-      
+
       resizeObserver.observe(ref.current);
-      
-      Graph
-        .linkCurvature("curvature")
+
+      Graph.linkCurvature("curvature")
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
         .nodeCanvasObjectMode(() => "after")
@@ -314,19 +322,25 @@ export default function ForceGraphInspector({
 
             // Highlight active state
             const isActive = node.id === valueRef.current;
-            ctx.strokeStyle = getCssVar(ref, "--forcegraph-node-border", "--card-border", "#222");
-            ctx.lineWidth = node.isGroup ? 2 : 0.5;  // Thicker border for groups
-            
+            ctx.strokeStyle = getCssVar(
+              ref,
+              "--forcegraph-node-border",
+              "--card-border",
+              "#222"
+            );
+            ctx.lineWidth = node.isGroup ? 2 : 0.5; // Thicker border for groups
+
             // Different styling for group nodes
             let fillColor;
             if (isActive) {
               fillColor = getCssVar(ref, "--primary", "#1e40af");
             } else if (node.isGroup) {
-              fillColor = getCssVar(ref, "--accent", "#f59e0b");  // Orange for groups
+              fillColor = getCssVar(ref, "--accent", "#f59e0b"); // Orange for groups
             } else {
-              fillColor = node.color || getCssVar(ref, "--forcegraph-node-bg", "#8b5cf6");
+              fillColor =
+                node.color || getCssVar(ref, "--forcegraph-node-bg", "#8b5cf6");
             }
-            
+
             ctx.fillStyle = fillColor;
 
             // Different shapes for groups vs regular nodes
@@ -335,13 +349,13 @@ export default function ForceGraphInspector({
               const groupPadding = paddingX * 1.5;
               const groupWidth = textWidth + groupPadding * 2;
               const groupHeight = fontSize + paddingY * 3;
-              
+
               ctx.roundRect(
                 node.x - groupWidth / 2,
                 node.y - groupHeight / 2,
                 groupWidth,
                 groupHeight,
-                8  // More rounded for groups
+                8 // More rounded for groups
               );
             } else {
               // Regular rectangle for state nodes
@@ -472,20 +486,20 @@ export default function ForceGraphInspector({
         })
         .linkColor((link: any) => {
           const value = valueRef.current;
-          
+
           // Hierarchy links get different styling
-          if (link.type === 'hierarchy') {
+          if (link.type === "hierarchy") {
             return getCssVar(
               ref,
               "--accent",
               "--forcegraph-accent",
-              "#64748b"  // Muted gray for hierarchy
+              "#64748b" // Muted gray for hierarchy
             );
           }
-          
+
           // Transition links - highlight active transitions
           if (
-            value === link.source &&  // Use full key for flattened HSMs
+            value === link.source && // Use full key for flattened HSMs
             canFire(definition, value, link.name)
           ) {
             return getCssVar(
@@ -500,18 +514,19 @@ export default function ForceGraphInspector({
               ref,
               "--secondary",
               "--forcegraph-secondary",
-              "#1f2937"  // Darker color for better visibility
+              "#1f2937" // Darker color for better visibility
             );
           }
         })
         .linkWidth((link: any) => {
           // Make edges more prominent, especially parallel edges
           const value = valueRef.current;
-          const isActive = value === link.source && canFire(definition, value, link.name);
-          
+          const isActive =
+            value === link.source && canFire(definition, value, link.name);
+
           if (isActive) {
             return 3; // Thicker for active edges
-          } else if (link.type === 'hierarchy') {
+          } else if (link.type === "hierarchy") {
             return 1; // Thinner for hierarchy edges
           } else {
             return 2; // Standard thickness for transition edges (increased from default)
@@ -525,20 +540,20 @@ export default function ForceGraphInspector({
         .linkHoverPrecision(10)
         .onLinkClick(({ name }: { name: string }) => {
           if (interactive) {
-            console.log('ForceGraph: Link clicked:', name);
+            console.log("ForceGraph: Link clicked:", name);
             dispatch({ type: name });
           }
         })
         .onNodeClick((node: any) => {
           if (interactive) {
-            console.log('ForceGraph: Node clicked:', node.id);
+            console.log("ForceGraph: Node clicked:", node.id);
             // Find available transitions from this node and trigger the first one
             const shape = definition.shape?.getState();
             if (shape?.transitions.has(node.id)) {
               const transitions = shape.transitions.get(node.id);
               if (transitions && transitions.size > 0) {
                 const firstEvent = transitions.keys().next().value;
-                console.log('ForceGraph: Dispatching event:', firstEvent);
+                console.log("ForceGraph: Dispatching event:", firstEvent);
                 dispatch({ type: firstEvent });
               }
             }
@@ -591,38 +606,38 @@ export default function ForceGraphInspector({
           let links = sameNodesLinks[nodePairId];
           let lastIndex = links.length - 1;
           let lastLink = links[lastIndex];
-          
+
           // Enhanced onion-like layering with better separation
           const maxCurvature = curvatureMinMax; // 0.8 for more dramatic curves
           const minCurvature = 0.2; // Minimum curvature for inner layer
-          
+
           // Create onion-like layers: outermost edge has max curvature, innermost has min
           if (links.length === 2) {
             // Special case for 2 parallel edges - maximize separation
             links[0].curvature = -maxCurvature;
             links[1].curvature = maxCurvature;
-            links[0].layer = 'outer';
-            links[1].layer = 'outer';
+            links[0].layer = "outer";
+            links[1].layer = "outer";
           } else {
             // Multiple parallel edges - create layered effect
             const curvatureRange = maxCurvature - minCurvature;
             const curvatureStep = curvatureRange / (links.length - 1);
-            
+
             links.forEach((link, i) => {
               if (i === 0) {
                 // Outermost layer - maximum negative curvature
                 link.curvature = -maxCurvature;
-                link.layer = 'outer';
+                link.layer = "outer";
               } else if (i === links.length - 1) {
                 // Innermost layer - maximum positive curvature
                 link.curvature = maxCurvature;
-                link.layer = 'inner';
+                link.layer = "inner";
               } else {
                 // Middle layers - distributed curvature
-                link.curvature = -maxCurvature + (i * curvatureStep * 2);
-                link.layer = 'middle';
+                link.curvature = -maxCurvature + i * curvatureStep * 2;
+                link.layer = "middle";
               }
-              
+
               link.offset = i;
               if (lastLink.source !== link.source) {
                 link.curvature *= -1;
@@ -632,16 +647,16 @@ export default function ForceGraphInspector({
           }
         });
       Graph.graphData(diagram);
-      
+
       // Constrain canvas to respect container layout
-      const canvas = ref.current.querySelector('canvas');
+      const canvas = ref.current.querySelector("canvas");
       if (canvas) {
-        canvas.style.maxWidth = '100%';
-        canvas.style.maxHeight = '100%';
-        canvas.style.width = 'auto';
-        canvas.style.height = 'auto';
+        canvas.style.maxWidth = "100%";
+        canvas.style.maxHeight = "100%";
+        canvas.style.width = "auto";
+        canvas.style.height = "auto";
       }
-      
+
       // Fit view to show all nodes properly
       setTimeout(() => {
         Graph.zoomToFit(400, 50); // 400ms animation, 50px padding
@@ -682,5 +697,13 @@ export default function ForceGraphInspector({
     }
   }, [lastEvent, prevState, diagram]);
 
-  return <div ref={ref} className="w-full h-full overflow-hidden max-w-full" style={{ maxHeight: '100%' }}>{/* ForceGraph will render here */}</div>;
+  return (
+    <div
+      ref={ref}
+      className="w-full h-full overflow-hidden max-w-full"
+      style={{ maxHeight: "100%" }}
+    >
+      {/* ForceGraph will render here */}
+    </div>
+  );
 }

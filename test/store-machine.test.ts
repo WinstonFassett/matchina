@@ -173,7 +173,7 @@ describe("createStoreMachine", () => {
         filter: "all",
       },
       {
-      addTodo: (text: string) => (change) =>
+        addTodo: (text: string) => (change) =>
           produce(change.from, (draft) => {
             draft.todos.push({
               id: Date.now(),

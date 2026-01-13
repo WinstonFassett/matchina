@@ -9,7 +9,7 @@ type Mode = "flat" | "nested";
 
 export default function CheckoutExample() {
   const [mode, setMode] = useState<Mode>("nested");
-  
+
   // Create separate machines for each mode
   const flatMachine = useMemo(() => createFlatCheckoutMachine(), []);
   const nestedMachine = useMemo(() => createCheckoutMachine(), []);
@@ -42,7 +42,7 @@ export default function CheckoutExample() {
           </button>
         </div>
       </div>
-      
+
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}

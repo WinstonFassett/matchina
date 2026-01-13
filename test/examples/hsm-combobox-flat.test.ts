@@ -6,7 +6,7 @@ describe("HSM Combobox (Flat)", () => {
     const combobox = createFlatComboboxMachine();
     const { input, selectedTags, suggestions } = combobox.model.getState();
 
-    expect(combobox.getState().is('Inactive')).toBe(true);
+    expect(combobox.getState().is("Inactive")).toBe(true);
     expect(input).toBe("");
     expect(selectedTags).toEqual([]);
     expect(suggestions).toEqual([]);
@@ -16,7 +16,7 @@ describe("HSM Combobox (Flat)", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
 
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
   });
 
   it("should stay at Empty when typing with no suggestions", () => {
@@ -25,7 +25,7 @@ describe("HSM Combobox (Flat)", () => {
     combobox.setInput("zzz");
 
     // No guard - still transitions to Suggesting, but UI hides empty dropdown
-    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.getState().is("Active.Suggesting")).toBe(true);
     expect(combobox.model.getState().input).toBe("zzz");
     expect(combobox.model.getState().suggestions).toEqual([]);
   });
@@ -35,7 +35,7 @@ describe("HSM Combobox (Flat)", () => {
     combobox.focus();
     combobox.setInput("typ");
 
-    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.getState().is("Active.Suggesting")).toBe(true);
     expect(combobox.model.getState().input).toBe("typ");
     expect(combobox.model.getState().suggestions).toContain("typescript");
   });
@@ -46,7 +46,7 @@ describe("HSM Combobox (Flat)", () => {
     combobox.setInput("typ");
     combobox.selectSuggestion();
 
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
     expect(combobox.model.getState().selectedTags).toContain("typescript");
     expect(combobox.model.getState().input).toBe("");
   });
@@ -55,11 +55,11 @@ describe("HSM Combobox (Flat)", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
     combobox.setInput("typ");
-    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.getState().is("Active.Suggesting")).toBe(true);
 
     combobox.dismiss();
 
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
     expect(combobox.model.getState().input).toBe("");
   });
 
@@ -69,7 +69,7 @@ describe("HSM Combobox (Flat)", () => {
     combobox.setInput("typ");
     combobox.blur();
 
-    expect(combobox.getState().is('Inactive')).toBe(true);
+    expect(combobox.getState().is("Inactive")).toBe(true);
   });
 
   it("should add and remove tags", () => {
@@ -87,9 +87,9 @@ describe("HSM Combobox (Flat)", () => {
     combobox.setInput("a"); // matches angular
 
     expect(combobox.model.getState().highlightedIndex).toBe(0);
-    combobox.highlight('next');
+    combobox.highlight("next");
     expect(combobox.model.getState().highlightedIndex).toBe(1);
-    combobox.highlight('prev');
+    combobox.highlight("prev");
     expect(combobox.model.getState().highlightedIndex).toBe(0);
   });
 });

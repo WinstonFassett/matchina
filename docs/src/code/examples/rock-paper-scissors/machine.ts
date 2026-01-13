@@ -4,7 +4,6 @@ import { states } from "./states";
 import { createStore } from "./store";
 
 export function createRPSMachine() {
-
   const store = createStore();
 
   const baseMachine = createMachine(
@@ -30,30 +29,29 @@ export function createRPSMachine() {
     "WaitingForPlayer"
   );
 
-  const machine = Object.assign(
-    baseMachine,
-    { store },
-    eventApi(baseMachine),
-  );
+  const machine = Object.assign(baseMachine, { store }, eventApi(baseMachine));
 
   // bind machine to store
   setup(machine)(
     effect((ev) => {
-      ev.match({
-        selectMove: store.setPlayerMove,
-        computerSelectMove: () => {
-          store.setComputerMove(randomMove());
+      ev.match(
+        {
+          selectMove: store.setPlayerMove,
+          computerSelectMove: () => {
+            store.setComputerMove(randomMove());
+          },
+          judge: () => {
+            store.judgeRound();
+            store.checkGameOver();
+            if (store.getState().gameWinner) {
+              machine.gameOver();
+            }
+          },
+          nextRound: store.clearRound,
+          newGame: store.reset,
         },
-        judge: () => {
-          store.judgeRound();
-          store.checkGameOver();
-          if (store.getState().gameWinner) {
-            machine.gameOver();
-          }          
-        },
-        nextRound: store.clearRound,
-        newGame: store.reset
-      }, false);
+        false
+      );
     })
   );
   return machine;

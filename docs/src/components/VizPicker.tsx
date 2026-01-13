@@ -4,11 +4,11 @@
  */
 
 export type VisualizerType =
-  | 'reactflow'
-  | 'sketch'
-  | 'forcegraph'
-  | 'mermaid-statechart'
-  | 'mermaid-flowchart';
+  | "reactflow"
+  | "sketch"
+  | "forcegraph"
+  | "mermaid-statechart"
+  | "mermaid-flowchart";
 
 export interface VisualizerOption {
   value: VisualizerType;
@@ -16,11 +16,11 @@ export interface VisualizerOption {
 }
 
 export const VISUALIZERS: readonly VisualizerOption[] = [
-  { value: 'reactflow', label: 'ReactFlow' },
-  { value: 'sketch', label: 'Sketch' },
-  { value: 'forcegraph', label: 'ForceGraph' },
-  { value: 'mermaid-statechart', label: 'Mermaid - Statechart' },
-  { value: 'mermaid-flowchart', label: 'Mermaid - Flowchart' },
+  { value: "reactflow", label: "ReactFlow" },
+  { value: "sketch", label: "Sketch" },
+  { value: "forcegraph", label: "ForceGraph" },
+  { value: "mermaid-statechart", label: "Mermaid - Statechart" },
+  { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
 ] as const;
 
 export interface VizPickerProps {
@@ -38,11 +38,11 @@ export function VizPicker({
   value,
   onChange,
   availableViz,
-  className = '',
+  className = "",
 }: VizPickerProps) {
   // Filter visualizers if specific ones are requested
   const options = availableViz
-    ? VISUALIZERS.filter(v => availableViz.includes(v.value))
+    ? VISUALIZERS.filter((v) => availableViz.includes(v.value))
     : VISUALIZERS;
 
   // Don't show picker if only one option

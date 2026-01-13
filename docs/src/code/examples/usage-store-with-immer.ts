@@ -1,10 +1,6 @@
 import { produce } from "immer";
 import { effect, setup } from "matchina";
-import {
-  addStoreApi,
-  createStoreMachine,
-  storeApi,
-} from "matchina";
+import { addStoreApi, createStoreMachine, storeApi } from "matchina";
 
 // #region lib
 

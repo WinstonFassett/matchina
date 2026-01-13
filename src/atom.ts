@@ -5,7 +5,7 @@ import { withSubscribe } from "./extras/with-subscribe";
  * Atom - A simple single value store with get/set/update/subscribe.
  * Composed from createStoreMachine + withSubscribe.
  * Inspired by nanostores, designed for internal machine data.
- * 
+ *
  * @example
  * ```ts
  * const count = atom(0);
@@ -29,9 +29,9 @@ export function atom<T>(initialValue: T): Atom<T> {
     set: (value: T) => () => value,
     update: (fn: (current: T) => T) => (change) => fn(change.from),
   });
-  
+
   const enhanced = withSubscribe(store);
-  
+
   return {
     get: () => store.getState(),
     set: (value: T) => store.dispatch("set", value),

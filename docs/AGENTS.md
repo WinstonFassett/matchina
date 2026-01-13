@@ -11,11 +11,13 @@
 **See [../AGENT_COMMANDS.md](../AGENT_COMMANDS.md) for complete command guidelines.**
 
 **Quick summary:**
-- ✅ **Primary**: `npm test` 
+
+- ✅ **Primary**: `npm test`
 - 🚫 **Never**: `npm run dev*` (run forever)
 - ⚠️ **Builds**: Use sparingly, prefer tests
 
 **User runs these (agents assume they're already running):**
+
 ```bash
 npm --workspace docs run dev    # Astro dev server
 npm run dev:docs              # Live dev server (human only)
@@ -26,6 +28,7 @@ npm run dry-run                # Dry run release (user only)
 ```
 
 **Playwright for UI testing** (when needed):
+
 ```bash
 npx playwright test --headed --timeout=5000    # Debug with console logs
 npx playwright test --reporter=line             # Clean CI output
@@ -51,7 +54,7 @@ Every example in `src/code/examples/example-name/`:
 
 ```typescript
 import Example from "@code/examples/toggle/example";
-import machineCode from "@code/examples/toggle/machine.ts?raw";  // Note: ?raw
+import machineCode from "@code/examples/toggle/machine.ts?raw"; // Note: ?raw
 import { CodeTabs } from "@components/CodeTabs.astro";
 import { useMachine } from "matchina/react";
 ```

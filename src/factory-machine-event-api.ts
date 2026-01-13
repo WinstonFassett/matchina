@@ -1,5 +1,8 @@
 import { FactoryMachine } from "./factory-machine-types";
-import type { FactoryMachineApi, addEventApi as AddEventApiType } from "./factory-machine-api-types";
+import type {
+  FactoryMachineApi,
+  addEventApi as AddEventApiType,
+} from "./factory-machine-api-types";
 
 /**
  * Creates an API object for a FactoryMachine instance, providing event sender functions for each transition.

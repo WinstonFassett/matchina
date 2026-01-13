@@ -10,19 +10,21 @@ import {
   ForceGraphInspector,
   MermaidInspector,
   SketchInspector,
-} from 'matchina/viz';
-import { HSMReactFlowInspector } from '@matchina/viz-reactflow';
+} from "matchina/viz";
+import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
 import { useMemo, useState, type ComponentType } from "react";
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider } from "@xyflow/react";
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
-import { VizPicker, type VisualizerType } from './VizPicker';
+import { VizPicker, type VisualizerType } from "./VizPicker";
 
 export interface MachineVisualizerProps {
   // Core props
   machine: FactoryMachine<any>;
-  AppView?: ComponentType<{
-    machine: FactoryMachine<any> & any;
-  } & Record<string, any>>;
+  AppView?: ComponentType<
+    {
+      machine: FactoryMachine<any> & any;
+    } & Record<string, any>
+  >;
 
   // Visualizer configuration
   defaultViz?: VisualizerType;
@@ -30,8 +32,8 @@ export interface MachineVisualizerProps {
   showPicker?: boolean;
 
   // Layout configuration
-  layout?: 'split' | 'stacked';
-  vizPosition?: 'left' | 'right' | 'top' | 'bottom';
+  layout?: "split" | "stacked";
+  vizPosition?: "left" | "right" | "top" | "bottom";
   minVizHeight?: number;
 
   // Interactivity (prop, not UI toggle)
@@ -51,16 +53,16 @@ export interface MachineVisualizerProps {
 export function MachineVisualizer({
   machine,
   AppView,
-  defaultViz = 'reactflow',
+  defaultViz = "reactflow",
   availableViz,
   showPicker = true,
-  layout = 'split',
-  vizPosition = 'left',
+  layout = "split",
+  vizPosition = "left",
   minVizHeight = 400,
   interactive = true,
   showRawState = false,
   title,
-  className = '',
+  className = "",
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 
@@ -71,44 +73,53 @@ export function MachineVisualizer({
   const change = useMachine(machine);
   const currentState = machine.getState();
   // Explicitly depend on 'change' to ensure activeStatePath updates when state changes
-  const activeStatePath = useMemo(() => getActiveStatePath(machine), [machine, change]);
+  const activeStatePath = useMemo(
+    () => getActiveStatePath(machine),
+    [machine, change]
+  );
   // Get shape for visualizers - all visualizers should use MachineShape
-  const shape = useMemo(() => (machine as any).shape?.getState(), [machine, change]);
+  const shape = useMemo(
+    () => (machine as any).shape?.getState(),
+    [machine, change]
+  );
   const actions = useMemo(() => eventApi(machine), [machine]);
 
   // Determine if we should show the picker
-  const effectiveShowPicker = showPicker && (
-    availableViz ? availableViz.length > 1 : true
-  );
+  const effectiveShowPicker =
+    showPicker && (availableViz ? availableViz.length > 1 : true);
 
   // Responsive layout classes
-  const isSplit = layout === 'split';
-  const isVizLeft = vizPosition === 'left';
+  const isSplit = layout === "split";
+  const isVizLeft = vizPosition === "left";
 
   const containerClasses = [
-    'machine-visualizer',
+    "machine-visualizer",
     className,
-    isSplit ? 'flex flex-row gap-4 items-center' : 'flex flex-col gap-4',
-    isSplit && !isVizLeft ? 'flex-row-reverse' : '',
-  ].filter(Boolean).join(' ');
+    isSplit ? "flex flex-row gap-4 items-center" : "flex flex-col gap-4",
+    isSplit && !isVizLeft ? "flex-row-reverse" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const vizContainerClasses = [
-    'visualizer-container',
-    isSplit ? 'flex-1' : `w-full`,
-  ].filter(Boolean).join(' ');
+    "visualizer-container",
+    isSplit ? "flex-1" : `w-full`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // ReactFlow needs explicit height on the viz container
   const vizContainerStyle = { height: `${minVizHeight}px` };
 
-  const appContainerClasses = [
-    'app-container',
-    isSplit ? 'flex-1' : 'w-full',
-  ].filter(Boolean).join(' ');
+  const appContainerClasses = ["app-container", isSplit ? "flex-1" : "w-full"]
+    .filter(Boolean)
+    .join(" ");
 
   // Height styling
-  const heightStyle = layout === 'split'
-    ? { height: `${Math.max(minVizHeight, 500)}px` }
-    : { minHeight: `${minVizHeight}px` };
+  const heightStyle =
+    layout === "split"
+      ? { height: `${Math.max(minVizHeight, 500)}px` }
+      : { minHeight: `${minVizHeight}px` };
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -117,7 +128,10 @@ export function MachineVisualizer({
 
       {/* Controls header */}
       {effectiveShowPicker && (
-        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="visualizer-controls">
+        <div
+          className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+          data-testid="visualizer-controls"
+        >
           <VizPicker
             value={currentViz}
             onChange={setCurrentViz}
@@ -187,10 +201,11 @@ function renderVisualizer({
   actions: Record<string, any>;
   interactive: boolean;
 }) {
-  const commonClasses = "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
+  const commonClasses =
+    "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
 
   switch (type) {
-    case 'reactflow':
+    case "reactflow":
       return (
         <div className={commonClasses}>
           <ReactFlowProvider>
@@ -202,15 +217,18 @@ function renderVisualizer({
         </div>
       );
 
-    case 'forcegraph':
+    case "forcegraph":
       // ForceGraph needs explicit height constraint - it doesn't respect h-full well
       return (
-        <div className={commonClasses} style={{ height: '100%', maxHeight: '400px' }}>
+        <div
+          className={commonClasses}
+          style={{ height: "100%", maxHeight: "400px" }}
+        >
           <ForceGraphInspector
             value={activeStatePath}
             definition={machine as any}
             dispatch={(event: any) => {
-              const eventName = typeof event === 'string' ? event : event?.type;
+              const eventName = typeof event === "string" ? event : event?.type;
               if (eventName && actions[eventName]) {
                 machine.send(eventName);
               }
@@ -220,19 +238,19 @@ function renderVisualizer({
         </div>
       );
 
-    case 'sketch':
+    case "sketch":
       return (
         <div className={commonClasses}>
-          <SketchInspector
-            machine={machine}
-            interactive={interactive}
-          />
+          <SketchInspector machine={machine} interactive={interactive} />
         </div>
       );
 
-    case 'mermaid-statechart':
+    case "mermaid-statechart":
       return (
-        <div className={commonClasses} data-testid="mermaid-statechart-container">
+        <div
+          className={commonClasses}
+          data-testid="mermaid-statechart-container"
+        >
           <MermaidInspector
             shape={shape}
             currentStateKey={activeStatePath}
@@ -243,7 +261,7 @@ function renderVisualizer({
         </div>
       );
 
-    case 'mermaid-flowchart':
+    case "mermaid-flowchart":
       return (
         <div className={commonClasses}>
           <MermaidInspector
@@ -282,23 +300,27 @@ function DefaultAppView({
   return (
     <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg h-full flex flex-col">
       <div className="mb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400">Current State</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Current State
+        </p>
         <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
           {activeStatePath}
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {Object.keys(actions).map((action) =>
-          !action.startsWith("_") && (
-            <button type="button"
-              key={action}
-              className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
-              onClick={() => machine.send(action)}
-            >
-              {action}
-            </button>
-          )
+        {Object.keys(actions).map(
+          (action) =>
+            !action.startsWith("_") && (
+              <button
+                type="button"
+                key={action}
+                className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
+                onClick={() => machine.send(action)}
+              >
+                {action}
+              </button>
+            )
         )}
       </div>
     </div>

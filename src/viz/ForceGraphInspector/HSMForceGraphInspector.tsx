@@ -1,10 +1,13 @@
 import React, { useMemo, useCallback } from "react";
 import { useMachine } from "../../integrations/react";
 import type { TransitionEvent } from "../../state-machine";
-import type { InspectorTheme } from '../theme';
-import { defaultTheme } from '../theme';
-import { buildForceGraphData, type ForceGraphData } from './utils/shape-to-force-graph';
-import ForceGraphInspector from '../ForceGraphInspector';
+import type { InspectorTheme } from "../theme";
+import { defaultTheme } from "../theme";
+import {
+  buildForceGraphData,
+  type ForceGraphData,
+} from "./utils/shape-to-force-graph";
+import ForceGraphInspector from "../ForceGraphInspector";
 
 interface HSMForceGraphInspectorProps {
   machine: {
@@ -20,17 +23,14 @@ interface HSMForceGraphInspectorProps {
 export const HSMForceGraphInspector: React.FC<HSMForceGraphInspectorProps> = ({
   machine,
   theme = defaultTheme,
-  interactive = true
+  interactive = true,
 }) => {
   // Step 1: Extract shape from machine
-  const shape = useMemo(
-    () => machine.shape?.getState(),
-    [machine]
-  );
+  const shape = useMemo(() => machine.shape?.getState(), [machine]);
 
   // Step 2: Convert to ForceGraph format
   const graphData = useMemo(
-    () => shape ? buildForceGraphData(shape) : null,
+    () => (shape ? buildForceGraphData(shape) : null),
     [shape]
   );
 
@@ -48,7 +48,7 @@ export const HSMForceGraphInspector: React.FC<HSMForceGraphInspectorProps> = ({
   // Step 5: Pass all data to base ForceGraphInspector using existing interface
   return (
     <ForceGraphInspector
-      value={String(currentState?.to || '')}
+      value={String(currentState?.to || "")}
       definition={machine}
       dispatch={dispatch}
       interactive={interactive}

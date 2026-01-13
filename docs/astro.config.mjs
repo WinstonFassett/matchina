@@ -59,9 +59,7 @@ export default defineConfig({
               "@function",
               "@internal",
             ],
-            modifierTags: [
-              "@interface",
-            ],
+            modifierTags: ["@interface"],
             // blockTagsPreserveOrder: ["@example", "@source", "@deprecated"],
             excludePrivate: true,
             excludeInternal: true,
@@ -183,7 +181,7 @@ export default defineConfig({
             {
               label: "Type Inference",
               link: "/guides/machine-inference",
-            },            
+            },
             {
               label: "Promise Machines",
               link: "/guides/promises",
@@ -196,7 +194,7 @@ export default defineConfig({
               label: "Hierarchical Machines",
               link: "/guides/hierarchical-machines",
             },
-          ]
+          ],
         },
         {
           label: "Machine Setup",
@@ -208,15 +206,15 @@ export default defineConfig({
             {
               label: "Lifecycle Hooks",
               link: "/guides/lifecycle-hooks",
-            },            
+            },
             {
               label: "transitionHooks()",
               link: "/guides/transition-hooks",
-            },            
-{
+            },
+            {
               label: "onLifecycle()",
               link: "/guides/on-lifecycle",
-            },            
+            },
             { label: "Subscriptions", link: "/guides/subscriptions" },
             { label: "Declarative Effects", link: "/guides/effects" },
           ],
@@ -236,7 +234,7 @@ export default defineConfig({
         // },
         {
           label: "Frontend Integration",
-          items: [                        
+          items: [
             {
               label: "React",
               link: "/guides/react",
@@ -432,7 +430,7 @@ export default defineConfig({
     resolve: {
       // Use 'node' condition in dev to load .ts files from dist/ (unbuild --stub)
       // In production, use default conditions to load .mjs files
-      conditions: process.env.NODE_ENV === 'production' ? undefined : ['node']
-    }
+      conditions: process.env.NODE_ENV === "production" ? undefined : ["node"],
+    },
   },
 });

@@ -6,17 +6,17 @@ describe("Flat Combobox UI Integration", () => {
     const combobox = createFlatComboboxMachine();
 
     // Initial state should be Inactive
-    expect(combobox.getState().is('Inactive')).toBe(true);
+    expect(combobox.getState().is("Inactive")).toBe(true);
 
     // Focus to activate
     combobox.focus();
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
 
     // Type something that matches suggestions
     combobox.setInput("typ");
 
     // Should have transitioned to Suggesting
-    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.getState().is("Active.Suggesting")).toBe(true);
     expect(combobox.model.getState().input).toBe("typ");
     expect(combobox.model.getState().suggestions).toContain("typescript");
 
@@ -24,7 +24,7 @@ describe("Flat Combobox UI Integration", () => {
     combobox.selectSuggestion();
 
     // Should be back to Empty with tag added
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
     expect(combobox.model.getState().selectedTags).toContain("typescript");
     expect(combobox.model.getState().input).toBe("");
   });
@@ -33,13 +33,13 @@ describe("Flat Combobox UI Integration", () => {
     const combobox = createFlatComboboxMachine();
 
     combobox.focus();
-    expect(combobox.getState().is('Active.Empty')).toBe(true);
+    expect(combobox.getState().is("Active.Empty")).toBe(true);
 
     // Type something that won't match suggestions
     combobox.setInput("zzz");
 
     // No guard - transitions to Suggesting, UI hides empty dropdown
-    expect(combobox.getState().is('Active.Suggesting')).toBe(true);
+    expect(combobox.getState().is("Active.Suggesting")).toBe(true);
     expect(combobox.model.getState().input).toBe("zzz");
     expect(combobox.model.getState().suggestions).toEqual([]);
   });

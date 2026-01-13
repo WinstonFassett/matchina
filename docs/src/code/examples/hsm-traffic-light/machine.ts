@@ -1,7 +1,4 @@
-import {
-  defineStates,
-  matchina
-} from "matchina";
+import { defineStates, matchina } from "matchina";
 import { submachine, makeHierarchical } from "matchina/hsm";
 
 // 1. Define the Child Machine (Light Cycle)
@@ -12,15 +9,16 @@ const lightCycleStates = defineStates({
   Yellow: undefined,
 });
 
-const createLightCycle = () => matchina(
-  lightCycleStates,
-  {
-    Red: { tick: "Green" },
-    Green: { tick: "Yellow" },
-    Yellow: { tick: "Red" },
-  },
-  lightCycleStates.Red()
-);
+const createLightCycle = () =>
+  matchina(
+    lightCycleStates,
+    {
+      Red: { tick: "Green" },
+      Green: { tick: "Yellow" },
+      Yellow: { tick: "Red" },
+    },
+    lightCycleStates.Red()
+  );
 
 // 2. Define the Parent Machine (Controller)
 // We use `submachine` to embed the child machine factory
@@ -30,15 +28,16 @@ const controllerStates = defineStates({
   Maintenance: undefined,
 });
 
-const createController = () => matchina(
-  controllerStates,
-  {
-    Broken: { repair: "Working", maintenance: "Maintenance" },
-    Working: { break: "Broken", maintenance: "Maintenance" },
-    Maintenance: { complete: "Working" },
-  },
-  controllerStates.Working()
-);
+const createController = () =>
+  matchina(
+    controllerStates,
+    {
+      Broken: { repair: "Working", maintenance: "Maintenance" },
+      Working: { break: "Broken", maintenance: "Maintenance" },
+      Maintenance: { complete: "Working" },
+    },
+    controllerStates.Working()
+  );
 
 // 3. Create the Hierarchical Machine
 // This wraps the controller with propagation logic

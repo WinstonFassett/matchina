@@ -26,9 +26,9 @@ const manualMachine = createMachine(
   manualStates,
   {
     Idle: { start: "Loading" },
-    Loading: { 
+    Loading: {
       success: "Idle",
-      error: "Error" 
+      error: "Error",
     },
     Error: { retry: "Idle" },
   },
@@ -40,9 +40,9 @@ const zodMachine = createMachine(
   zodStates,
   {
     Idle: { start: "Loading" },
-    Loading: { 
+    Loading: {
       success: "Idle",
-      error: "Error" 
+      error: "Error",
     },
     Error: { retry: "Idle" },
   },
@@ -81,7 +81,9 @@ const validatedMachine = matchina(
   zodStates,
   {
     Idle: {
-      start: transitions.start.implement((progress) => zodStates.Loading(progress)),
+      start: transitions.start.implement((progress) =>
+        zodStates.Loading(progress)
+      ),
     },
     Loading: {
       success: transitions.success.implement(() => zodStates.Idle()),

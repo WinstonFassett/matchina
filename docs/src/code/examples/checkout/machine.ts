@@ -1,4 +1,11 @@
-import { matchina, createStoreMachine, addStoreApi, withSubscribe, setup, effect } from "matchina";
+import {
+  matchina,
+  createStoreMachine,
+  addStoreApi,
+  withSubscribe,
+  setup,
+  effect,
+} from "matchina";
 import { states } from "./states";
 import type { CartData, ShippingForm, PaymentForm } from "./types";
 
@@ -21,9 +28,19 @@ const defaultCart: CartData = {
 const createCheckoutStore = (initialState: CheckoutState) => {
   const store = createStoreMachine<CheckoutState>(initialState, {
     updateCart: (cart: CartData) => (change) => ({ ...change.from, cart }),
-    updateShipping: (shipping: ShippingForm) => (change) => ({ ...change.from, shipping }),
-    updatePayment: (payment: PaymentForm) => (change) => ({ ...change.from, payment }),
-    setOrderId: (orderId: string) => (change) => ({ ...change.from, orderId, error: null }),
+    updateShipping: (shipping: ShippingForm) => (change) => ({
+      ...change.from,
+      shipping,
+    }),
+    updatePayment: (payment: PaymentForm) => (change) => ({
+      ...change.from,
+      payment,
+    }),
+    setOrderId: (orderId: string) => (change) => ({
+      ...change.from,
+      orderId,
+      error: null,
+    }),
     setError: (error: string) => (change) => ({ ...change.from, error }),
     reset: () => () => initialState,
   });

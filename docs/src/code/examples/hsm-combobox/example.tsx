@@ -9,12 +9,12 @@ type Mode = "flat" | "nested";
 
 export default function ComboboxExample() {
   const [mode, setMode] = useState<Mode>("flat");
-  
+
   // Re-create machine when mode changes
   const { flatMachine, hierarchicalMachine } = useMemo(() => {
     return {
       flatMachine: createFlatComboboxMachine(),
-      hierarchicalMachine: createComboboxMachine()
+      hierarchicalMachine: createComboboxMachine(),
     };
   }, [mode]);
 
@@ -47,7 +47,7 @@ export default function ComboboxExample() {
           </button>
         </div>
       </div>
-      
+
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}

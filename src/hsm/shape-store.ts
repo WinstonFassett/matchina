@@ -16,7 +16,9 @@ import { buildFlattenedShape, buildHierarchicalShape } from "./shape-builders";
  * The shape is computed once at creation and never changes,
  * but still provides the subscribe interface for consistency.
  */
-export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeController {
+export function createStaticShapeStore(
+  machine: FactoryMachine<any>
+): ShapeController {
   const machineWithInitial = machine as { initialKey?: string };
   const shape = buildFlattenedShape(
     machine.transitions as Record<string, Record<string, any>>,
@@ -49,12 +51,16 @@ export function createStaticShapeStore(machine: FactoryMachine<any>): ShapeContr
  * Hierarchical machines can have dynamic shapes if submachines change,
  * but for most cases the shape is stable and we compute it lazily.
  */
-export function createLazyShapeStore(machine: FactoryMachine<any>): ShapeController {
+export function createLazyShapeStore(
+  machine: FactoryMachine<any>
+): ShapeController {
   let cachedShape: MachineShape | undefined;
   const subscribers = new Set<(shape: MachineShape) => void>();
 
   function buildShape(): MachineShape {
-    if (cachedShape) { return cachedShape; }
+    if (cachedShape) {
+      return cachedShape;
+    }
     cachedShape = buildHierarchicalShape(machine);
     return cachedShape;
   }

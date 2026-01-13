@@ -9,7 +9,7 @@ type Mode = "flat" | "nested";
 
 export default function HSMCheckoutIndex() {
   const [mode, setMode] = useState<Mode>("flat");
-  
+
   // Create separate machines for each mode
   const flatMachine = useMemo(() => createFlatCheckoutMachine(), []);
   const nestedMachine = useMemo(() => createCheckoutMachine(), []);
@@ -48,7 +48,7 @@ export default function HSMCheckoutIndex() {
       ) : (
         <CheckoutViewNested machine={nestedMachine} />
       )}
-      
+
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}

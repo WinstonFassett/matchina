@@ -144,9 +144,12 @@ import { createFlatMachine } from "./flat-machine";
 /**
  * State configuration in declarative format
  */
-export interface DeclarativeStateConfig<TData = any, TParams extends any[] = any[]> {
+export interface DeclarativeStateConfig<
+  TData = any,
+  TParams extends any[] = any[],
+> {
   /** State data constructor function - if omitted, state has empty data */
-  data?: ((...params: TParams) => TData);
+  data?: (...params: TParams) => TData;
 
   /** Initial child state (for parent states) */
   initial?: string;
@@ -181,9 +184,12 @@ export interface DeclarativeFlatMachineConfig {
  */
 function flattenStates(
   states: Record<string, DeclarativeStateConfig>,
-  prefix = ''
+  prefix = ""
 ): Record<string, { data: (...params: any[]) => any; final?: boolean }> {
-  const flattened: Record<string, { data: (...params: any[]) => any; final?: boolean }> = {};
+  const flattened: Record<
+    string,
+    { data: (...params: any[]) => any; final?: boolean }
+  > = {};
 
   for (const [key, config] of Object.entries(states)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -192,7 +198,7 @@ function flattenStates(
     if (config.data || !config.states) {
       flattened[fullKey] = {
         data: config.data || (() => ({})),
-        final: config.final
+        final: config.final,
       };
     }
 
@@ -215,10 +221,13 @@ function flattenStates(
  */
 function flattenTransitions(
   states: Record<string, DeclarativeStateConfig>,
-  prefix = '',
+  prefix = "",
   childKeys: Record<string, Set<string>> = {}
 ): Record<string, Record<string, string | ((...params: any[]) => any)>> {
-  const flattened: Record<string, Record<string, string | ((...params: any[]) => any)>> = {};
+  const flattened: Record<
+    string,
+    Record<string, string | ((...params: any[]) => any)>
+  > = {};
 
   // First pass: collect all child keys for each parent
   for (const [key, config] of Object.entries(states)) {
@@ -230,19 +239,19 @@ function flattenTransitions(
 
   for (const [key, config] of Object.entries(states)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
-    const parentKey = prefix || '';  // The parent state for resolving relative refs
+    const parentKey = prefix || ""; // The parent state for resolving relative refs
 
     // Add transitions for this state
     if (config.on) {
       flattened[fullKey] = {};
 
       for (const [event, target] of Object.entries(config.on)) {
-        if (typeof target === 'string') {
+        if (typeof target === "string") {
           // Resolve relative state references
-          if (target.startsWith('^')) {
+          if (target.startsWith("^")) {
             // ^ means go to parent level (strip prefix)
             flattened[fullKey][event] = target.slice(1);
-          } else if (target.includes('.')) {
+          } else if (target.includes(".")) {
             // Already fully qualified
             flattened[fullKey][event] = target;
           } else if (config.states && target in config.states) {
@@ -250,7 +259,9 @@ function flattenTransitions(
             flattened[fullKey][event] = `${fullKey}.${target}`;
           } else {
             // Relative to parent - target is a sibling state
-            flattened[fullKey][event] = parentKey ? `${parentKey}.${target}` : target;
+            flattened[fullKey][event] = parentKey
+              ? `${parentKey}.${target}`
+              : target;
           }
         } else {
           // Transition resolver function - pass through
@@ -262,7 +273,10 @@ function flattenTransitions(
     // Recursively flatten child transitions
     // The new parent key is the full key of the current state
     if (config.states) {
-      Object.assign(flattened, flattenTransitions(config.states, fullKey, childKeys));
+      Object.assign(
+        flattened,
+        flattenTransitions(config.states, fullKey, childKeys)
+      );
     }
   }
 
@@ -278,9 +292,9 @@ function resolveInitialChild(
   stateKey: string,
   config: Record<string, DeclarativeStateConfig>
 ): string {
-  const parts = stateKey.split('.');
+  const parts = stateKey.split(".");
   let current = config;
-  let resolvedKey = '';
+  let resolvedKey = "";
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
@@ -289,7 +303,9 @@ function resolveInitialChild(
     resolvedKey = resolvedKey ? `${resolvedKey}.${part}` : part;
     const stateConfig = current[part];
 
-    if (!stateConfig) { break; }
+    if (!stateConfig) {
+      break;
+    }
 
     // Only auto-resolve to initial child if this is the last part of the path
     // E.g., 'Payment' -> 'Payment.MethodEntry' (auto-resolve)
@@ -344,7 +360,7 @@ export function describeHSM(config: DeclarativeFlatMachineConfig) {
   // Resolve parent state targets to their initial children
   for (const [stateKey, transitions] of Object.entries(flatTransitions)) {
     for (const [event, target] of Object.entries(transitions)) {
-      if (typeof target === 'string') {
+      if (typeof target === "string") {
         // Check if this target is a parent state that needs resolution
         try {
           const resolved = resolveInitialChild(target, config.states);

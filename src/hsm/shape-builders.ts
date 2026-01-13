@@ -29,7 +29,8 @@ export function buildFlattenedShape(
     const stateStr = String(stateKey);
     const isFinal = Object.keys(stateTransitions).length === 0;
     const parts = stateStr.split(".");
-    const parentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+    const parentKey =
+      parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
 
     states.set(stateStr, {
       key: parts.at(-1) || stateStr,
@@ -48,13 +49,13 @@ export function buildFlattenedShape(
         // For flattened machines:
         // - Root-level states: convert child targets to parent states
         // - Child states: preserve full paths for child-to-child transitions
-        if (target.includes('.')) {
+        if (target.includes(".")) {
           if (parentKey) {
             // Child-to-child transition - preserve full path
             finalTarget = target;
           } else {
             // Root-level state transitioning to child state - use parent
-            const targetParent = target.split('.').slice(0, -1).join('.');
+            const targetParent = target.split(".").slice(0, -1).join(".");
             finalTarget = targetParent || target;
           }
         } else {
@@ -69,8 +70,8 @@ export function buildFlattenedShape(
           // Has metadata from t() helper - use all discovered targets
           for (const t of targets) {
             let finalTarget = t;
-            if (t.includes('.')) {
-              finalTarget = t.split('.').pop() || t;
+            if (t.includes(".")) {
+              finalTarget = t.split(".").pop() || t;
             }
             trans.set(String(eventKey), finalTarget);
           }
@@ -78,25 +79,27 @@ export function buildFlattenedShape(
           // Try automatic discovery for simple transitions
           try {
             // Call with dummy params
-            const dummyParams = Array.from({ length: target.length }).fill(undefined);
+            const dummyParams = Array.from({ length: target.length }).fill(
+              undefined
+            );
             const result = target(...dummyParams);
 
             // Check if result is a state (simple form) or event handler (curried form)
-            if (result && typeof result === 'object' && 'key' in result) {
+            if (result && typeof result === "object" && "key" in result) {
               // Simple form: (params) => state
               let finalTarget = result.key;
-              if (finalTarget.includes('.')) {
-                finalTarget = finalTarget.split('.').pop() || finalTarget;
+              if (finalTarget.includes(".")) {
+                finalTarget = finalTarget.split(".").pop() || finalTarget;
               }
               trans.set(String(eventKey), finalTarget);
-            } else if (typeof result === 'function') {
+            } else if (typeof result === "function") {
               // Curried form: (params) => (ev) => state
               const dummyEvent = { from: { data: {} }, to: { data: {} } };
               const state = result(dummyEvent);
-              if (state && typeof state === 'object' && 'key' in state) {
+              if (state && typeof state === "object" && "key" in state) {
                 let finalTarget = state.key;
-                if (finalTarget.includes('.')) {
-                  finalTarget = finalTarget.split('.').pop() || finalTarget;
+                if (finalTarget.includes(".")) {
+                  finalTarget = finalTarget.split(".").pop() || finalTarget;
                 }
                 trans.set(String(eventKey), finalTarget);
               }
@@ -121,14 +124,16 @@ export function buildFlattenedShape(
   for (const parentKey of parentStates) {
     if (!hierarchy.has(parentKey)) {
       const parts = parentKey.split(".");
-      const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+      const grandParentKey =
+        parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
       hierarchy.set(parentKey, grandParentKey);
     }
-    
+
     // Create parent state node if it doesn't exist
     if (!states.has(parentKey)) {
       const parts = parentKey.split(".");
-      const grandParentKey = parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+      const grandParentKey =
+        parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
       states.set(parentKey, {
         key: parts.at(-1) || parentKey,
         fullKey: parentKey,
@@ -153,7 +158,9 @@ export function buildFlattenedShape(
  * Used for nested machines that have submachines in state data.
  * Walks the hierarchy by inspecting actual machine instances.
  */
-export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineShape {
+export function buildHierarchicalShape(
+  machine: FactoryMachine<any>
+): MachineShape {
   const states = new Map<string, StateNode>();
   const transitionMap = new Map<string, Map<string, string>>();
   const hierarchy = new Map<string, string | undefined>();
@@ -161,10 +168,17 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
 
   const initialState = machine.getState();
   const machineWithInitial = machine as { initialKey?: string };
-  const initialKey = machineWithInitial.initialKey ?? initialState?.key ?? 'Unknown';
+  const initialKey =
+    machineWithInitial.initialKey ?? initialState?.key ?? "Unknown";
 
   // Recursively walk all states in machine hierarchy
-  function walkMachine(m: { states?: Record<string, any>; transitions?: Record<string, Record<string, any>> }, parentFullKey?: string): void {
+  function walkMachine(
+    m: {
+      states?: Record<string, any>;
+      transitions?: Record<string, Record<string, any>>;
+    },
+    parentFullKey?: string
+  ): void {
     // Iterate over ALL states in the machine, not just the current one
     const machineStates = m.states || {};
     const machineTransitions = m.transitions || {};
@@ -173,7 +187,9 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
       const fullKey = parentFullKey ? `${parentFullKey}.${stateKey}` : stateKey;
 
       // Prevent infinite loops
-      if (visited.has(fullKey)) { continue; }
+      if (visited.has(fullKey)) {
+        continue;
+      }
       visited.add(fullKey);
 
       // Add state to shape
@@ -191,10 +207,10 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
       // Collect transitions
       const trans = new Map<string, string>();
       for (const [event, target] of Object.entries(stateTransitions)) {
-        if (typeof target === 'string') {
+        if (typeof target === "string") {
           // Simple string transition
           trans.set(event, target);
-        } else if (typeof target === 'function') {
+        } else if (typeof target === "function") {
           // Check for t() helper metadata first
           const targets = getTargets(target);
           if (targets && targets.length > 0) {
@@ -206,18 +222,20 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
             // Try automatic discovery for simple transitions
             try {
               // Call with dummy params
-              const dummyParams = Array.from({ length: target.length }).fill(undefined);
+              const dummyParams = Array.from({ length: target.length }).fill(
+                undefined
+              );
               const result = target(...dummyParams);
 
               // Check if result is a state (simple form) or event handler (curried form)
-              if (result && typeof result === 'object' && 'key' in result) {
+              if (result && typeof result === "object" && "key" in result) {
                 // Simple form: (params) => state
                 trans.set(event, result.key);
-              } else if (typeof result === 'function') {
+              } else if (typeof result === "function") {
                 // Curried form: (params) => (ev) => state
                 const dummyEvent = { from: { data: {} }, to: { data: {} } };
                 const state = result(dummyEvent);
-                if (state && typeof state === 'object' && 'key' in state) {
+                if (state && typeof state === "object" && "key" in state) {
                   trans.set(event, state.key);
                 }
               }
@@ -231,7 +249,9 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
       transitionMap.set(fullKey, trans);
 
       // Check if state has a submachine
-      const stateFactoryWithMachine = stateFactory as { machineFactory?: () => { machine?: any; } };
+      const stateFactoryWithMachine = stateFactory as {
+        machineFactory?: () => { machine?: any };
+      };
       const machineFactory = stateFactoryWithMachine?.machineFactory;
       if (machineFactory) {
         try {
@@ -241,15 +261,15 @@ export function buildHierarchicalShape(machine: FactoryMachine<any>): MachineSha
 
           // Get child machine's initial state
           const childInitialState = childMachine.getState();
-          const childInitialKey = childInitialState?.key || 'Unknown';
+          const childInitialKey = childInitialState?.key || "Unknown";
 
           // Mark current state as compound with initial child
           const stateNode = states.get(fullKey);
           if (stateNode) {
-            const updatedNode = { 
-              ...stateNode, 
+            const updatedNode = {
+              ...stateNode,
               isCompound: true,
-              initial: childInitialKey 
+              initial: childInitialKey,
             };
             states.set(fullKey, updatedNode);
           }

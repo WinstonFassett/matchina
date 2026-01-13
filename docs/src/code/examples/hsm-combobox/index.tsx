@@ -9,12 +9,12 @@ type Mode = "flat" | "nested";
 
 export default function HSMComboboxIndex() {
   const [mode, setMode] = useState<Mode>("flat");
-  
+
   // Re-create machine when mode changes
   const { flatMachine, hierarchicalMachine } = useMemo(() => {
     return {
       flatMachine: createFlatComboboxMachine(),
-      hierarchicalMachine: createComboboxMachine()
+      hierarchicalMachine: createComboboxMachine(),
     };
   }, [mode]);
 
@@ -53,7 +53,7 @@ export default function HSMComboboxIndex() {
       ) : (
         <ComboboxView machine={hierarchicalMachine} />
       )}
-      
+
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}

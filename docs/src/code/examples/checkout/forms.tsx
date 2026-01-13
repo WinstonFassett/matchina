@@ -8,11 +8,7 @@ function getMissing(fields: Record<string, string>) {
     .map(([k]) => k);
 }
 
-export function ShippingForm({
-  machine,
-}: {
-  machine: CheckoutMachine;
-}) {
+export function ShippingForm({ machine }: { machine: CheckoutMachine }) {
   // const cart = machine.store.getState().cart;
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -36,7 +32,9 @@ export function ShippingForm({
       )}
       <div className="space-y-4 mb-6">
         <div>
-          <label htmlFor="address" className="block text-sm font-medium mb-1">Address</label>
+          <label htmlFor="address" className="block text-sm font-medium mb-1">
+            Address
+          </label>
           <input
             type="text"
             value={address}
@@ -47,7 +45,9 @@ export function ShippingForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="city" className="block text-sm font-medium mb-1">City</label>
+            <label htmlFor="city" className="block text-sm font-medium mb-1">
+              City
+            </label>
             <input
               type="text"
               value={city}
@@ -57,7 +57,9 @@ export function ShippingForm({
             />
           </div>
           <div>
-            <label htmlFor="zipCode" className="block text-sm font-medium mb-1">ZIP Code</label>
+            <label htmlFor="zipCode" className="block text-sm font-medium mb-1">
+              ZIP Code
+            </label>
             <input
               type="text"
               value={zipCode}
@@ -69,13 +71,15 @@ export function ShippingForm({
         </div>
       </div>
       <div className="flex space-x-4">
-        <button type="button"
+        <button
+          type="button"
           onClick={() => machine.backToCart()}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
         >
           Back to Cart
         </button>
-        <button type="button"
+        <button
+          type="button"
           onClick={() => {
             if (missingFields.length > 0) return;
             machine.proceedToPayment();
@@ -128,7 +132,12 @@ export function PaymentForm({
       </div>
       <div className="space-y-4 mb-6">
         <div>
-          <label htmlFor="cardNumber" className="block text-sm font-medium mb-1">Card Number</label>
+          <label
+            htmlFor="cardNumber"
+            className="block text-sm font-medium mb-1"
+          >
+            Card Number
+          </label>
           <input
             type="text"
             value={cardNumber}
@@ -139,7 +148,10 @@ export function PaymentForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="expiryDate" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="expiryDate"
+              className="block text-sm font-medium mb-1"
+            >
               Expiry Date
             </label>
             <input
@@ -151,7 +163,9 @@ export function PaymentForm({
             />
           </div>
           <div>
-            <label htmlFor="cvv" className="block text-sm font-medium mb-1">CVV</label>
+            <label htmlFor="cvv" className="block text-sm font-medium mb-1">
+              CVV
+            </label>
             <input
               type="text"
               value={cvv}
@@ -168,13 +182,15 @@ export function PaymentForm({
         </div>
       </div>
       <div className="flex space-x-4">
-        <button type="button"
+        <button
+          type="button"
           onClick={() => machine.backToShipping()}
           className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
         >
           Back to Shipping
         </button>
-        <button type="button"
+        <button
+          type="button"
           onClick={() => {
             if (missingFields.length > 0) return;
             handleAsyncProcessing({
@@ -193,11 +209,7 @@ export function PaymentForm({
   );
 }
 
-export function CartForm({
-  machine,
-}: {
-  machine: CheckoutMachine;
-}) {
+export function CartForm({ machine }: { machine: CheckoutMachine }) {
   const [items, setItems] = useState(machine.store.getState().cart.items);
 
   const handleQuantityChange = (id: string, quantity: number) => {
@@ -227,7 +239,9 @@ export function CartForm({
               <p className="opacity-70">${item.price.toFixed(2)} each</p>
             </div>
             <div className="flex items-center space-x-2">
-              <label htmlFor={item.id} className="mr-2">Qty:</label>
+              <label htmlFor={item.id} className="mr-2">
+                Qty:
+              </label>
               <input
                 type="number"
                 min={0}
@@ -254,7 +268,8 @@ export function CartForm({
           Your cart is empty. Add items to proceed.
         </div>
       ) : (
-        <button type="button"
+        <button
+          type="button"
           onClick={() => machine.proceedToShipping()}
           className="w-full px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
           disabled={total <= 0}

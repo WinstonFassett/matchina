@@ -14,7 +14,7 @@ type AnyMachine = { getState(): any };
  */
 export function getFullKey(machine: AnyMachine): string {
   const chain = getActiveChain(machine);
-  return chain.map(item => item.state.key).join('.');
+  return chain.map((item) => item.state.key).join(".");
 }
 
 /**
@@ -25,7 +25,7 @@ export function getFullKey(machine: AnyMachine): string {
  */
 export function getDepth(machine: AnyMachine, state: any): number {
   const chain = getActiveChain(machine);
-  const index = chain.findIndex(item => item.state === state);
+  const index = chain.findIndex((item) => item.state === state);
   return index >= 0 ? index : 0;
 }
 
@@ -36,7 +36,7 @@ export function getDepth(machine: AnyMachine, state: any): number {
  */
 export function getStack(machine: AnyMachine): any[] {
   const chain = getActiveChain(machine);
-  return chain.map(item => item.state);
+  return chain.map((item) => item.state);
 }
 
 /**
@@ -44,7 +44,9 @@ export function getStack(machine: AnyMachine): any[] {
  * @param machine - Root or any machine in hierarchy
  * @returns Array of {machine, state} objects
  */
-export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine; state: any }> {
+export function getActiveChain(
+  machine: AnyMachine
+): Array<{ machine: AnyMachine; state: any }> {
   const chain: Array<{ machine: AnyMachine; state: any }> = [];
   let current: AnyMachine | undefined = machine;
   let guard = 0;
@@ -52,13 +54,17 @@ export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine
 
   while (current && guard++ < MAX_DEPTH) {
     const state: any = current.getState();
-    if (!state) { break; }
+    if (!state) {
+      break;
+    }
 
     chain.push({ machine: current, state });
 
     // Look for child machine
     const child: AnyMachine | undefined = state.data?.machine;
-    if (!child || typeof child.getState !== 'function') { break; }
+    if (!child || typeof child.getState !== "function") {
+      break;
+    }
 
     current = child;
   }
@@ -73,10 +79,10 @@ export function getActiveChain(machine: AnyMachine): Array<{ machine: AnyMachine
  */
 export function inspect(machine: AnyMachine) {
   const chain = getActiveChain(machine);
-  const fullKey = chain.map(item => item.state.key).join('.');
+  const fullKey = chain.map((item) => item.state.key).join(".");
   const state = chain.at(-1)?.state;
   const depth = chain.length - 1;
-  const stack = chain.map(item => item.state);
+  const stack = chain.map((item) => item.state);
 
   return {
     fullKey,

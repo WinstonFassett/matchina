@@ -7,7 +7,7 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
   const handlePlaceOrder = async () => {
     if (Math.random() > 0.3) {
       // const orderId =
-        // "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      // "ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase();
       machine.success();
     } else {
       machine.failure();
@@ -50,7 +50,8 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
                   confirmation email shortly.
                 </p>
               </div>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => machine.newOrder()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
@@ -74,13 +75,15 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
                   There was an error processing your order. Please try again.
                 </p>
               </div>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => machine.retry()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
                 Try Again
               </button>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => machine.backToCart()}
                 className="px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
               >
