@@ -4,11 +4,11 @@
  * Research: elk-options-reference.json
  */
 
-import type { Node, Edge } from '@xyflow/react';
-import { z } from 'zod';
+import type { Edge, Node } from '@xyflow/react';
+import type { ElkExtendedEdge, ElkNode } from 'elkjs';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import type { ElkNode, ElkExtendedEdge } from 'elkjs';
-import type { LayoutEngine, LayoutResult, BaseLayoutSettings } from '../types';
+import { z } from 'zod';
+import type { LayoutEngine, LayoutResult } from '../types';
 import { LayoutType } from '../types';
 
 // ELK Layout Settings Schema - matches V1 options that actually work

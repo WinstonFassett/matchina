@@ -1,9 +1,6 @@
-import { createSetup } from "../ext/setup";
 import { MatchCases } from "../match-case-types";
 import { matchboxFactory } from "../matchbox-factory";
-import { TaggedTypes, MatchboxMember } from "../matchbox-factory-types";
-import { effect } from "../state-machine-hooks";
-import { Funcware } from "../function-types";
+import { MatchboxMember, TaggedTypes } from "../matchbox-factory-types";
 
 /**
  * EffectMatchbox is a type representing an effect matchbox member.

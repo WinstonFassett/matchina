@@ -1,4 +1,4 @@
-import { createDisposer, setup } from "../ext/setup";
+import { setup } from "../ext/setup";
 import { MatchCases } from "../match-case-types";
 import { TaggedTypes } from "../matchbox-factory-types";
 import { effect } from "../state-machine-hooks";

@@ -1,4 +1,3 @@
-import type { FactoryMachine } from "../factory-machine";
 
 // Minimal helper to declare a nested child machine inside a state factory.
 // FactoryMachine-only. This is syntactic sugar for embedding `{ machine }` in state data.

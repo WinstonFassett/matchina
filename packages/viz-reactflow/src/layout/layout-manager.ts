@@ -3,13 +3,13 @@
  * Coordinator for layout engines - routes all layout types through ELK
  */
 
-import type { Node, Edge } from '@xyflow/react';
+import type { Edge, Node } from '@xyflow/react';
 import { ELKLayoutEngine } from './engines/elk-layout-engine';
 import {
-  LayoutEngine,
-  LayoutType,
-  LayoutResult,
   ILayoutManager,
+  LayoutEngine,
+  LayoutResult,
+  LayoutType,
 } from './types';
 
 export class LayoutManager implements ILayoutManager {
