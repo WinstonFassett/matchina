@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildForceGraphData } from '../src/viz/ForceGraphInspector/utils/shapeToForceGraph';
+import { buildForceGraphData } from '../src/viz/ForceGraphInspector/utils/shape-to-force-graph';
 import type { MachineShape } from '../src/hsm/shape-types';
 
 // Helper to create a simple toggle machine shape
