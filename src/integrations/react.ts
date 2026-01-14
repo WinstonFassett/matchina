@@ -13,10 +13,6 @@ const noopSubscribe: (onStoreChange: () => void) => () => void = () => () => {};
  * This hook uses React's useSyncExternalStore to efficiently subscribe to changes
  * from a state machine and trigger re-renders when the machine's state changes.
  *
- * Handles multiple simultaneous subscriptions by using the library's built-in
- * withSubscribe pattern, which ensures notify is only wrapped once and maintains
- * multiple listeners via an emitter.
- *
  * @template Change - The type of change/event emitted by the machine.
  * @param machine - Optional machine with `notify` and `getChange` methods.
  *
