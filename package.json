@@ -85,7 +85,7 @@
     "@types/node": "^20.8.2",
     "@types/react": "^18.2.31",
     "@vitest/coverage-v8": "^4.0.16",
-    "changelogen": "^0.5.0",
+    "changelogen": "^0.6.2",
     "eslint": "^8.51.0",
     "eslint-config-unjs": "^0.2.1",
     "prettier": "^3.6.2",
