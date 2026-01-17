@@ -334,7 +334,7 @@ function BlockInspector({
   return (
     <div
       ref={containerRef}
-      className={`sketch-inspector ${className}`}
+      className={`block-inspector ${className}`}
       style={{
         ...getThemeStyles(theme, "container"),
         // Apply CSS variables

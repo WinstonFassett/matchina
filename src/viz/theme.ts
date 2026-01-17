@@ -26,7 +26,7 @@ export interface InspectorTheme {
 }
 
 /**
- * Default theme that matches the original SketchInspector styling
+ * Default theme that matches the original BlockInspector styling
  */
 export const defaultTheme: InspectorTheme = {
   values: {
