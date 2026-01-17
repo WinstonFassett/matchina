@@ -126,7 +126,7 @@
     "test:e2e:file": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "publish": "npm publish --access public",
-    "screenshots:dark": "playwright test --headed test/e2e/visual/proper-screenshots.spec.ts",
+    "screenshots:dark": "npx tsx scripts/dark-screenshots.ts",
     "screenshots": "node scripts/screenshot-viewer.js",
     "screenshots:gallery": "node scripts/screenshot-gallery.js",
     "screenshots:html": "node scripts/html-report.js",
