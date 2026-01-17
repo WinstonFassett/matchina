@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
-import { useMachine } from "../integrations/react";
-import type { InspectorTheme } from "./theme";
-import { defaultTheme } from "./theme";
-import { buildShapeTree } from "../inspect/build-visualizer-tree";
-import { buildForceGraphData } from "./ForceGraphInspector/utils/shape-to-force-graph";
+import { useMachine } from "matchina/react";
+import type { InspectorTheme } from "matchina/viz";
+import { defaultTheme } from "matchina/viz";
+import { buildShapeTree } from "matchina/inspect";
+import { buildForceGraphData } from "./utils/shape-to-force-graph";
 
 interface Diagram {
   nodes: Array<{

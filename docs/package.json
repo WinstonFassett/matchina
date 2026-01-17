@@ -32,6 +32,8 @@
     "js-yaml": "^4.1.1",
     "matchina": "file:..",
     "@matchina/viz-reactflow": "file:../packages/viz-reactflow",
+    "@matchina/viz-mermaid": "file:../packages/viz-mermaid",
+    "@matchina/viz-forcegraph": "file:../packages/viz-forcegraph",
     "mdast-util-to-hast": "^13.2.1",
     "mermaid": "^11.9.0",
     "react": "^19.2.3",

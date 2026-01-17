@@ -1,4 +1,4 @@
-import { MermaidInspectorWithSettings } from "matchina/viz";
+import { MermaidInspectorWithSettings } from "@matchina/viz-mermaid";
 import { eventApi } from "matchina";
 import { useMemo } from "react";
 import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";

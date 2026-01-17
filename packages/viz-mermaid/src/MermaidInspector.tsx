@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import mermaid from "mermaid";
 import "./MermaidInspector.css";
-import type { MachineShape, StateNode } from "../hsm/shape-types";
+import type { MachineShape, StateNode } from "matchina/hsm";
 
 // XState-style tree interface (what buildVisualizerTree returns)
 interface XStateTree {

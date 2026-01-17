@@ -11,5 +11,3 @@ export type {
   VisualizerOption,
   VizPickerProps,
 } from "./VizPicker";
-
-export { selectBestVisualizer, getPresetConfig } from "./vizAutoSelect";

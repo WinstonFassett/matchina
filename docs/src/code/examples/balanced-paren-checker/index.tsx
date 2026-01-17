@@ -1,7 +1,7 @@
 import { MachineVisualizer } from "@components/MachineVisualizer";
 import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MermaidInspectorWithSettings } from "matchina/viz";
+import { MermaidInspectorWithSettings } from "@matchina/viz-mermaid";
 import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
 
@@ -12,7 +12,7 @@ export function BalancedParenthesesDemo() {
       <MachineVisualizer
         machine={checker}
         showRawState={true}
-        defaultViz="forcegraph"
+        defaultViz="reactflow"
         AppView={BalancedParentheses}
       />
     </div>

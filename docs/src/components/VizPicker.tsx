@@ -18,7 +18,7 @@ export interface VisualizerOption {
 export const VISUALIZERS: readonly VisualizerOption[] = [
   { value: "reactflow", label: "ReactFlow" },
   { value: "sketch", label: "Sketch" },
-  { value: "forcegraph", label: "ForceGraph" },
+  { value: "forcegraph", label: "ForceGraph (Deprecated)" },
   { value: "mermaid-statechart", label: "Mermaid - Statechart" },
   { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
 ] as const;

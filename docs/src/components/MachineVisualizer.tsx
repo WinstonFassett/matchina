@@ -6,12 +6,10 @@
 import type { FactoryMachine } from "matchina";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import {
-  ForceGraphInspector,
-  MermaidInspector,
-  SketchInspector,
-} from "matchina/viz";
+import { SketchInspector } from "matchina/viz";
 import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
+import { MermaidInspector } from "@matchina/viz-mermaid";
+import { ForceGraphInspector } from "@matchina/viz-forcegraph";
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -45,6 +43,10 @@ export interface MachineVisualizerProps {
 
   // Additional
   className?: string;
+  
+  // Legacy/example props (ignored but accepted for compatibility)
+  exampleName?: string;
+  preset?: string;
 }
 
 /**
@@ -218,6 +220,12 @@ function renderVisualizer({
       );
 
     case "forcegraph":
+      // 🚡 DEPRECATED: ForceGraph Inspector is marked for retirement
+      // Consider using ReactFlow (default) or Mermaid visualizers instead
+      console.warn(
+        "ForceGraph Inspector is deprecated and will be removed in a future version. " +
+        "Consider using the ReactFlow visualizer (default) for better performance and features."
+      );
       // ForceGraph needs explicit height constraint - it doesn't respect h-full well
       return (
         <div
