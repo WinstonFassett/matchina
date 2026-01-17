@@ -1,4 +1,9 @@
-import React, { useMemo } from "react";
+import { 
+  useEffect, 
+  useLayoutEffect, 
+  useMemo, 
+  useRef 
+} from 'react';
 import { useMachine } from "matchina/react";
 import type { MachineShape, StateNode } from "matchina/hsm/shape-types";
 import type { InspectorTheme } from "matchina/viz";
@@ -19,6 +24,9 @@ function BlockInspector({
   className = "",
   theme = defaultTheme,
 }: BlockInspectorProps) {
+  const activeStateRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   // Step 1: Find deepest active machine to subscribe to for leaf-only transitions
   const deepestMachine = (() => {
     let cursor: any = machine;
@@ -39,6 +47,79 @@ function BlockInspector({
   // changes from the parent as well (since parent changes cause deepest to change)
   useMachine(deepestMachine || machine);
   const currentState = machine.getState();
+
+  // Track current animation frame to cancel it
+  const animationFrameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Scroll active state into view when it changes
+  useEffect(() => {
+    if (activeStateRef.current && containerRef.current) {
+      // Cancel any previous animation and timeout
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      
+      // Wait for React to finish ALL rendering before scrolling
+      timeoutRef.current = setTimeout(() => {
+        // Double-check refs still exist after timeout
+        if (activeStateRef.current && containerRef.current) {
+          // Get position relative to container
+          const containerRect = containerRef.current.getBoundingClientRect();
+          const elementRect = activeStateRef.current.getBoundingClientRect();
+          const relativeTop = elementRect.top - containerRect.top + containerRef.current.scrollTop;
+          const targetPosition = relativeTop - (containerRect.height / 2) + (elementRect.height / 2);
+          
+          // Implement our own consistent smooth scrolling
+          const startPosition = containerRef.current.scrollTop;
+          const distance = targetPosition - startPosition;
+          const duration = 150; // Faster than timer transitions to avoid jitter
+          const startTime = performance.now();
+          
+          const animateScroll = (currentTime: number) => {
+            // Double-check container still exists
+            if (containerRef.current) {
+              const elapsed = currentTime - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              
+              // Ease-in-out animation
+              const easeProgress = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2);
+              
+              const currentPosition = startPosition + (distance * easeProgress);
+              containerRef.current.scrollTo(0, currentPosition);
+              
+              if (progress < 1) {
+                animationFrameRef.current = requestAnimationFrame(animateScroll);
+              } else {
+                animationFrameRef.current = null;
+              }
+            }
+          };
+          
+          animationFrameRef.current = requestAnimationFrame(animateScroll);
+        }
+      }, 0); // Let React finish all rendering first
+    }
+    
+    // Cleanup function
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [currentState.key]);
 
   // Step 2: Get the shape directly from machine
   const shape = useMemo(() => {
@@ -72,11 +153,13 @@ function BlockInspector({
     isActive,
     isBranchActive = false,
     depth = 0,
+    ref,
   }: {
     stateNode: StateNode;
     isActive: boolean;
     isBranchActive?: boolean;
     depth?: number;
+    ref?: React.Ref<HTMLDivElement>;
   }) => {
     // Find children of this state
     const children = useMemo(() => {
@@ -101,6 +184,7 @@ function BlockInspector({
 
     return (
       <div
+        ref={isActive ? activeStateRef : ref}
         className={`state-item ${isActive ? "active" : isBranchActive ? "active-ancestor" : ""} depth-${depth}`}
         data-state-key={stateNode.key}
         style={{
@@ -205,6 +289,7 @@ function BlockInspector({
                   isActive={isMatch}
                   isBranchActive={childBranchActive}
                   depth={depth + 1}
+                  ref={isMatch ? activeStateRef : undefined}
                 />
               );
             })}
@@ -240,6 +325,7 @@ function BlockInspector({
           isActive={isActive}
           isBranchActive={branchActive}
           depth={0}
+          ref={isActive ? activeStateRef : undefined}
         />
       );
     });
@@ -247,6 +333,7 @@ function BlockInspector({
 
   return (
     <div
+      ref={containerRef}
       className={`sketch-inspector ${className}`}
       style={{
         ...getThemeStyles(theme, "container"),
