@@ -95,11 +95,11 @@ export const EXAMPLES = {
     defaultViz: "reactflow" as const,
     url: "/matchina/examples/async-calculator",
   },
-  "balanced-paren-checker": {
-    preset: "simple" as const,
-    defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/balanced-paren-checker",
-  },
+  // paren-checker: {
+  //   preset: "simple" as const,
+  //   defaultViz: "mermaid-statechart" as const,
+  //   url: "/matchina/examples/paren-checker",
+  // },
   "fetcher-advanced": {
     preset: "complex" as const,
     defaultViz: "reactflow" as const,
@@ -120,16 +120,8 @@ export const EXAMPLES = {
     defaultViz: "reactflow" as const,
     url: "/matchina/examples/promise-machine-fetcher",
   },
-  "store-counter": {
-    preset: "simple" as const,
-    defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/store-counter",
-  },
-  "traffic-light-delayed": {
-    preset: "simple" as const,
-    defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/traffic-light-delayed",
-  },
+  // Removed - doesn't exist
+  // Removed - doesn't exist
   "traffic-light-extended": {
     preset: "complex" as const,
     defaultViz: "reactflow" as const,
@@ -155,31 +147,27 @@ export const EXAMPLES = {
     defaultViz: "mermaid-statechart" as const,
     url: "/matchina/examples/stopwatch-using-react-state-and-effects",
   },
-  "stopwatch-using-react-state-using-lifecycle-instead-of-useEffect": {
+  "stopwatch-using-react-state-using-lifecycle-instead-of-useeffect": {
     preset: "simple" as const,
     defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect",
+    url: "/matchina/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
   },
-  "stopwatch-using-react-state-using-transitionhooks": {
+  "stopwatch-using-transition-hooks-instead-of-useeffect": {
     preset: "simple" as const,
     defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/stopwatch-using-react-state-using-transitionhooks",
+    url: "/matchina/examples/stopwatch-using-transition-hooks-instead-of-useeffect/",
   },
-  teaser: {
+  "stopwatch-overview": {
     preset: "simple" as const,
     defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/teaser",
+    url: "/matchina/examples/stopwatch-overview",
   },
-  matchbox: {
+  "color-scheme-explorer": {
     preset: "simple" as const,
     defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/matchbox",
+    url: "/matchina/examples/color-scheme-explorer",
   },
-  "matchbox-usage": {
-    preset: "simple" as const,
-    defaultViz: "mermaid-statechart" as const,
-    url: "/matchina/examples/matchbox-usage",
-  },
+  // Removed - doesn't exist
 } as const;
 
 /**

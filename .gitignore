@@ -19,6 +19,7 @@ test-output-*.txt
 bun.lockb
 # Local notes/working docs (not tracked)
 local/
+review/
 test-results/
 .astro/
 playwright-report/
