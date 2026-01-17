@@ -8,13 +8,13 @@ import type { Page } from "@playwright/test";
 // Common selectors
 export const SELECTORS = {
   pageContainer: ".space-y-4",
-  machineVisualizer: ".machine-visualizer",
+  machineVisualizer: '[data-testid="machine-visualizer"]',
   visualizerControls: '[data-testid="visualizer-controls"]',
   visualizerPicker: '[data-testid="visualizer-picker"]',
-  visualizerContainer: ".viz-container",
-  appContainer: ".app-container",
-  mainContent: ".machine-visualizer > div:last-child", // The main content area (visualizer + app)
-  fullInteractiveArea: ".machine-visualizer", // Full interactive area including tabs for HSM examples
+  visualizerContainer: '[data-testid="visualizer-container"]',
+  appContainer: '[data-testid="app-container"]',
+  mainContent: '[data-testid="machine-visualizer"] > div:last-child', // The main content area (visualizer + app)
+  fullInteractiveArea: '[data-testid="machine-visualizer"]', // Full interactive area including tabs for HSM examples
   themeToggle: "#theme-toggle-wrapper .theme-toggle-checkbox",
   comboboxInput: 'input[placeholder*="Type"]',
   modeButtons: {
@@ -209,13 +209,22 @@ export async function gotoExample(
   exampleName: keyof typeof EXAMPLES
 ) {
   const config = EXAMPLES[exampleName];
-
-  // Navigate first
+  
+  // Navigate to example
   await page.goto(config.url);
-
-  // Fast validation - fail immediately if page structure is wrong
-  await validateSelector(page, SELECTORS.pageContainer, 2000);
-
+  
+  // Wait for page to be fully loaded
+  await page.waitForLoadState('networkidle');
+  
+  // Wait for machine visualizer to be visible
+  await page.waitForSelector(SELECTORS.machineVisualizer, { state: 'visible' });
+  
+  // Wait for fonts to load
+  await page.waitForLoadState('domcontentloaded');
+  
+  // Small delay for any remaining animations
+  await page.waitForTimeout(200);
+  
   return config;
 }
 
@@ -410,10 +419,15 @@ export async function runSmokeTest(
 
   // Test light mode - VISUAL verification (focused on interactive area)
   await page.emulateMedia({ colorScheme: "light" });
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(300); // Increased wait for theme change
   await expect(
     page.locator(SELECTORS.fullInteractiveArea).first()
   ).toBeVisible();
+  
+  // Wait for visualizer to be stable
+  await page.waitForSelector(SELECTORS.visualizerContainer, { state: 'visible' });
+  await page.waitForTimeout(200);
+  
   // Take focused screenshot of just the interactive example area
   await expect(
     page.locator(SELECTORS.fullInteractiveArea).first()
@@ -421,10 +435,15 @@ export async function runSmokeTest(
 
   // Test dark mode - VISUAL verification (using prefers-color-scheme)
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(300); // Increased wait for theme change
   await expect(
     page.locator(SELECTORS.fullInteractiveArea).first()
   ).toBeVisible();
+  
+  // Wait for visualizer to be stable
+  await page.waitForSelector(SELECTORS.visualizerContainer, { state: 'visible' });
+  await page.waitForTimeout(200);
+  
   // Take focused screenshot of dark mode
   await expect(
     page.locator(SELECTORS.fullInteractiveArea).first()
@@ -434,7 +453,7 @@ export async function runSmokeTest(
   if (config.preset === "hierarchical") {
     // Test flat mode
     await setMode(page, "flat");
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(500); // Increased wait for mode change
     await expect(
       page.locator(SELECTORS.fullInteractiveArea).first()
     ).toBeVisible();
@@ -444,7 +463,7 @@ export async function runSmokeTest(
 
     // Test nested mode
     await setMode(page, "nested");
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(500); // Increased wait for mode change
     await expect(
       page.locator(SELECTORS.fullInteractiveArea).first()
     ).toBeVisible();
@@ -452,6 +471,4 @@ export async function runSmokeTest(
       page.locator(SELECTORS.fullInteractiveArea).first()
     ).toHaveScreenshot(`${exampleName}-nested-initial.png`);
   }
-
-  return config;
 }

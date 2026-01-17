@@ -124,7 +124,7 @@ export function MachineVisualizer({
       : { minHeight: `${minVizHeight}px` };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div data-testid="machine-visualizer" className={`space-y-4 ${className}`}>
       {/* Title */}
       {title && <h3 className="text-lg font-medium">{title}</h3>}
 
@@ -145,7 +145,7 @@ export function MachineVisualizer({
       {/* Main content area */}
       <div className={containerClasses} style={heightStyle}>
         {/* Visualizer */}
-        <div className={vizContainerClasses} style={vizContainerStyle}>
+        <div data-testid="visualizer-container" className={vizContainerClasses} style={vizContainerStyle}>
           {renderVisualizer({
             type: currentViz,
             machine,
@@ -157,7 +157,7 @@ export function MachineVisualizer({
         </div>
 
         {/* App View */}
-        <div className={appContainerClasses}>
+        <div data-testid="app-container" className={appContainerClasses}>
           {AppView ? (
             <AppView machine={machine} />
           ) : (
