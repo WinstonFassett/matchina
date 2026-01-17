@@ -357,15 +357,6 @@ export default defineConfig({
               ],
             },
             {
-              label: "Design & Theming",
-              items: [
-                {
-                  label: "Color Scheme Explorer",
-                  link: "/examples/color-scheme-explorer",
-                },
-              ],
-            },
-            {
               label: "Advanced",
               items: [
                 {
