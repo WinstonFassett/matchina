@@ -1,11 +1,11 @@
 # Agent Instructions for Matchina
 
-This project uses **bd** (beads) for issue tracking. For development patterns, see `DEVELOPMENT.md`.
+For development patterns, see `DEVELOPMENT.md`.
 
 ## Agent Documentation Map
 
 **Core agent guidance (short, focused):**
-- **`AGENTS.md`** (this file) - Session workflow, beads usage, critical type rules
+- **`AGENTS.md`** (this file) - Session workflow, task memory, critical type rules
 - **`AGENT_COMMANDS.md`** - Complete command reference (38 lines)
 
 **Project documentation (referenced as needed):**
@@ -55,16 +55,6 @@ This is a major version development - no need to maintain legacy APIs or depreca
 - Use new API names without aliasing old ones
 - Do not add "legacy" or "deprecated" comments unless specifically required
 - Focus on clean, current API design
-
-## Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync --flush-only  # Export to JSONL
-```
 
 ### Finding Work
 **CRITICAL: ALWAYS CHECK GIT STATUS BEFORE/AFTER WORK**
@@ -287,7 +277,7 @@ npx playwright test --project=chromium                           # Single browse
 - `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
 - `docs/FEATURE-CHECKLIST.md` - Feature addition reference
 - `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
-- `review/` - Living review and planning workspace
+- `local/` - Local living docs, review and planning workspace
 
 **Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
 **Focus:** Make things work. Tests pass, UI works (manually tested or playwright), AND git status is clean.
@@ -297,14 +287,6 @@ npx playwright test --project=chromium                           # Single browse
 **See [AGENT_COMMANDS.md](./AGENT_COMMANDS.md) for complete command reference.**
 
 ## Session Completion
-
-When finishing work on an issue:
-
-```bash
-# Update beads state
-bd close <id1> <id2> ...    # Close completed issues
-bd sync --flush-only         # Export to JSONL
-```
 
 **Note:** User manages git, staging, commits, and branches. Focus on making things work.
 
@@ -394,7 +376,7 @@ npm test            # Can flood context if tests have logging
 2. **Testing Performed** - Appropriate testing completed per Testing Requirements section
 3. **Evidence Gathered** - For UI changes: before/after screenshots, console logs, verification
 4. **Git Status Clean** - All changes staged and ready for commit
-5. **Ticket Updated** - Beads ticket updated with evidence and completion status
+5. **Task Memory Checked and Updated** - If using some form of task memory, todos, plan or other tracking, update with evidence and completion status
 
 **NEVER mark work as complete without testing evidence.**
 
