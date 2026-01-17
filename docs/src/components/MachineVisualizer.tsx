@@ -6,7 +6,7 @@
 import type { FactoryMachine } from "matchina";
 import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import { SketchInspector } from "matchina/viz";
+import { BlockInspector } from "@matchina/viz-react";
 import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
 import { MermaidInspector } from "@matchina/viz-mermaid";
 import { ForceGraphInspector } from "@matchina/viz-forcegraph";
@@ -249,7 +249,7 @@ function renderVisualizer({
     case "sketch":
       return (
         <div className={commonClasses}>
-          <SketchInspector machine={machine} interactive={interactive} />
+          <BlockInspector machine={machine} interactive={interactive} />
         </div>
       );
 
