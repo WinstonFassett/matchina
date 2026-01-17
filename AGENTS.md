@@ -53,14 +53,6 @@ Critical examples must work:
 - hsm-checkout ✓
 - rock-paper-scissors ✓
 
-## Agent-Tap Commands
-```bash
-./agent-tap context          # Get current task context
-./agent-tap claim <task-id>   # Claim active task
-./agent-tap status            # Show active hooks/tasks
-./agent-tap log               # Show task mirror log
-```
-
 ## Notes
 - All agents automatically work in backlog task context
 - TodoWrite items become acceptance criteria
