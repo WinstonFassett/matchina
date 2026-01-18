@@ -1,10 +1,10 @@
 ---
 id: task-47
 title: Investigate shape system inconsistencies across visualizers
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-18 23:04'
-updated_date: '2026-01-18 23:08'
+updated_date: '2026-01-18 23:37'
 labels: []
 dependencies: []
 ---
@@ -24,11 +24,11 @@ Need to audit all visualizers and ensure they use the shape system consistently.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Audit all visualizers (ReactFlow, Sketch, Mermaid) for shape handling
-- [ ] #2 Identify duplicate/contradictory shape logic
-- [ ] #3 Create unified approach for shape conversion
-- [ ] #4 Document the single correct way to handle shapes
-- [ ] #5 Fix inconsistencies to use one unified approach
+- [x] #1 Audit all visualizers (ReactFlow, Sketch, Mermaid) for shape handling
+- [x] #2 Identify duplicate/contradictory shape logic
+- [x] #3 Create unified approach for shape conversion
+- [x] #4 Document the single correct way to handle shapes
+- [x] #5 Fix inconsistencies to use one unified approach
 <!-- AC:END -->
 
 ## Implementation Notes
