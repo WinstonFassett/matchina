@@ -1,68 +1,66 @@
-import { defineStates } from "matchina";
-import { createFlatMachine } from "matchina/hsm";
-
-// Flat state keys with dot notation representing checkout with payment substates
-const states = defineStates({
-  Cart: undefined,
-  Shipping: undefined,
-  ShippingPaid: undefined,
-
-  // Flattened payment substates
-  "Payment.MethodEntry": undefined,
-  "Payment.Authorizing": undefined,
-  "Payment.AuthChallenge": undefined,
-  "Payment.AuthorizationError": undefined,
-  "Payment.Authorized": { final: true },
-
-  Review: undefined,
-  Confirmation: undefined,
-});
+import { describeHSM } from "matchina/hsm";
 
 export function createFlatCheckoutMachine() {
-  return createFlatMachine(
-    states,
-    {
-      Cart: { proceed: "Shipping" },
+  return describeHSM({
+    initial: "Cart",
+    states: {
+      Cart: {
+        on: { proceed: "Shipping" }
+      },
       Shipping: {
-        back: "Cart",
-        proceed: "Payment.MethodEntry",
+        on: {
+          back: "Cart",
+          proceed: "Payment"
+        }
       },
-      // Parent Payment state - synthetic parent for all Payment.* states
       Payment: {
-        back: "Shipping",
-        "child.exit": "Review",
-      },
-      "Payment.MethodEntry": {
-        authorize: "Payment.Authorizing",
-      },
-      "Payment.Authorizing": {
-        authRequired: "Payment.AuthChallenge",
-        authSucceeded: "Payment.Authorized",
-        authFailed: "Payment.AuthorizationError",
-      },
-      "Payment.AuthChallenge": {
-        authSucceeded: "Payment.Authorized",
-        authFailed: "Payment.AuthorizationError",
-      },
-      "Payment.AuthorizationError": {
-        retry: "Payment.MethodEntry",
-      },
-      "Payment.Authorized": {
-        // Final state - no transitions
-        // child.exit is automatically triggered by withFlattenedChildExit
+        initial: "MethodEntry",
+        states: {
+          MethodEntry: {
+            on: { authorize: "Authorizing" }
+          },
+          Authorizing: {
+            on: {
+              authRequired: "AuthChallenge",
+              authSucceeded: "Authorized",
+              authFailed: "AuthorizationError"
+            }
+          },
+          AuthChallenge: {
+            on: {
+              authSucceeded: "Authorized",
+              authFailed: "AuthorizationError"
+            }
+          },
+          AuthorizationError: {
+            on: { retry: "MethodEntry" }
+          },
+          Authorized: {
+            // Final payment state - child.exit automatically triggered
+          }
+        },
+        on: {
+          back: "Shipping",
+          "child.exit": "Review"
+        }
       },
       Review: {
-        back: "ShippingPaid",
-        changePayment: "Payment.MethodEntry",
-        submitOrder: "Confirmation",
+        on: {
+          back: "ShippingPaid",
+          changePayment: "Payment",
+          submitOrder: "Confirmation"
+        }
       },
       ShippingPaid: {
-        back: "Cart",
-        proceed: "Review",
-        changePayment: "Payment.MethodEntry",
+        on: {
+          back: "Cart",
+          proceed: "Review",
+          changePayment: "Payment"
+        }
       },
-      Confirmation: { restart: "Cart" },
-    },
-    "Cart"
-  );
+      Confirmation: {
+        on: { restart: "Cart" }
+      }
+    }
+  });
 }
