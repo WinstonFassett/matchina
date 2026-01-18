@@ -261,7 +261,7 @@ export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
   // Users requiring maximum type safety should use defineStates() directly with createMachine()
   // Note: internal createFlatMachine already applies parent transition fallback and child.exit handling
-  return createFlatMachine(states, flatTransitions as any, initialKey) as any;
+  return createFlatMachine(states, flatTransitions as any, initialKey);
 }
 
 /**

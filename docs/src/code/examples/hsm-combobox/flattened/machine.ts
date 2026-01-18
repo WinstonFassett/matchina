@@ -37,7 +37,7 @@ export function createFlatComboboxMachine() {
   });
 
   setup(machine)(
-    effect((ev: any) => {
+    effect((ev) => { // Note: ev now has proper typing instead of any
       ev.match({
         select: store.api.selectHighlighted,
         blur: store.api.clear,
