@@ -41,25 +41,8 @@ export * from "./is-machine";
 export * from "./transition-helper";
 export * from "./atom";
 
-// Interface exports
-export * from "./interfaces";
-
-// Shape analysis exports (explicit to avoid conflicts)
-export {
-  buildFlattenedShape,
-  buildMachineStructure,
-  getMachineHierarchy,
-  getParentStates,
-  isChildState,
-  getRootStates,
-  getChildStates
-} from "./shape";
-
-export type {
-  MachineShape as ShapeMachineShape,
-  StateNode as ShapeStateNode,
-  ShapeController
-} from "./shape";
+// Shape package exports (includes machine interfaces)
+export * from "./shape";
 
 // Runtime inspection exports  
 export * from "./inspect";

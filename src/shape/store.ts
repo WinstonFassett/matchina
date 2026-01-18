@@ -9,7 +9,7 @@
 import type { FactoryMachine } from "../factory-machine";
 import type { MachineShape, ShapeController } from "./definition";
 import { buildFlattenedShape, buildMachineStructure } from "./builders";
-import { createDescriptorFromMachine } from "../interfaces";
+import { createDescriptorFromMachine } from "./machine";
 
 /**
  * Create a static shape store for flattened machines

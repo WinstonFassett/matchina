@@ -2,6 +2,10 @@
  * Shape analysis module exports
  */
 
+// Machine interfaces
+export type { MachineDescriptor } from './machine';
+export { isMachineDescriptor, createDescriptorFromMachine } from './machine';
+
 // Shape builders
 export { buildFlattenedShape, buildMachineStructure } from './builders';
 
