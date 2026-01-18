@@ -53,9 +53,8 @@ function getChildFromParentState(state: any): DuckTypedMachine | undefined {
 /**
  * Wrap a machine with hierarchical propagation semantics and attach shape metadata.
  *
- * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`)
- * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
- * loose composition of independent machine instances.
+ * Escape hatch for scenarios requiring loose composition of independent machine instances.
+ * For most use cases, prefer createHSM() which uses flattening.
  *
  * Call this helper on a root machine to install propagation hooks, attach shape metadata
  * for visualization, and return a typed facade.
@@ -71,9 +70,8 @@ export function nestedHsmRoot<M extends FactoryMachine<any>>(machine: M) {
 /**
  * Attach hierarchical propagation to a root machine.
  *
- * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`)
- * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
- * loose composition of independent machine instances.
+ * Escape hatch for scenarios requiring loose composition of independent machine instances.
+ * For most use cases, prefer createHSM() which uses flattening.
  *
  * Returns a disposer that unhooks the root and any hooked descendants and
  * clears internal tracking structures.

@@ -1,4 +1,4 @@
-// Flattened machine creation (primary API for flat hierarchies)
+// Flattened hierarchy approach (primary API)
 export { createHSM as createHSM } from "./flattened/declarative-flat";
 export type {
   DeclarativeFlatMachineConfig,
@@ -7,7 +7,7 @@ export type {
 export { createFlatMachine } from "./flattened/declarative-flat";
 export { parseFlatStateKey } from "./flattened/flat-state-utils";
 
-// Hierarchical machine creation (primary API for nested machines)
+// Nested hierarchy approach (escape hatch)
 // Propagation and child-first routing
 export {
   withFlattenedChildExit,

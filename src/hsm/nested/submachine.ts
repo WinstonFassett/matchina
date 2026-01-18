@@ -1,5 +1,14 @@
-// Minimal helper to declare a nested child machine inside a state factory.
-// FactoryMachine-only. This is syntactic sugar for embedding `{ machine }` in state data.
+/**
+ * Wrap a machine factory for use as a child in a nested hierarchy.
+ * 
+ * Used with nestedHsmRoot() to create actual nested machine instances.
+ * Embeds the child machine in state.data.machine for event propagation.
+ * 
+ * @param createChild - Factory function that creates the child machine
+ * @param opts - Optional configuration
+ * @param opts.id - Optional identifier for the child machine
+ * @returns State factory that embeds the child machine
+ */
 export function submachine<F extends () => { definition: any }>(
   createChild: F
 ): () => { machine: ReturnType<F> };
@@ -31,6 +40,14 @@ export function submachine<F extends () => any>(
   return factory;
 }
 
+/**
+ * Alternative syntax for creating submachine with options object.
+ * 
+ * @param opts - Configuration object
+ * @param opts.create - Factory function that creates the child machine
+ * @param opts.id - Optional identifier for the child machine
+ * @returns State factory that embeds the child machine
+ */
 export function submachineOptions<F extends () => any>(opts: {
   create: F;
   id?: string;
