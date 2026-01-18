@@ -29,4 +29,5 @@ export {
 export { createStaticShapeStore, createLazyShapeStore } from './store';
 
 // Machine augmentation utilities
-export { FactoryMachineWithShape, hasShape, enhanceWithShape } from './augmented';
+export type { FactoryMachineWithShape } from './augmented';
+export { hasShape, enhanceWithShape } from './augmented';
