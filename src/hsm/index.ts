@@ -1,6 +1,6 @@
 // Flattened machine creation (primary API for flat hierarchies)
 export { createFlatMachine } from "./flat-machine";
-export { describeHSM } from "./declarative-flat";
+export { createHSM as createHSM } from "./declarative-flat";
 export type {
   DeclarativeFlatMachineConfig,
   DeclarativeStateConfig,

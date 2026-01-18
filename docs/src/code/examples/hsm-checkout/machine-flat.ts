@@ -1,7 +1,7 @@
-import { describeHSM } from "matchina/hsm";
+import { createHSM } from "matchina/hsm";
 
 export function createFlatCheckoutMachine() {
-  return describeHSM({
+  return createHSM({
     initial: "Cart",
     states: {
       Cart: {

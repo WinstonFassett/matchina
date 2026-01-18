@@ -1,7 +1,7 @@
-import { describeHSM } from "matchina/hsm";
+import { createHSM } from "matchina/hsm";
 
 export function createFlatTrafficLight() {
-  return describeHSM({
+  return createHSM({
     initial: "Working",
     states: {
       Broken: {

@@ -26,7 +26,7 @@
  *
  * **New API (declarative, DRY):**
  * ```typescript
- * describeHSM({
+ * createHSM({
  *   initial: 'Payment',
  *   states: {
  *     Payment: {
@@ -74,7 +74,7 @@
  * ## Example: Checkout Flow
  *
  * ```typescript
- * const machine = describeHSM({
+ * const machine = createHSM({
  *   initial: 'Cart',
  *   states: {
  *     Cart: {
@@ -350,7 +350,7 @@ function resolveInitialChild(
  * - Generates synthetic parent states automatically
  * - DRY and elegant
  */
-export function describeHSM(config: DeclarativeFlatMachineConfig) {
+export function createHSM(config: DeclarativeFlatMachineConfig) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 

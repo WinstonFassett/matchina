@@ -1,4 +1,4 @@
-import { describeHSM } from "matchina/hsm";
+import { createHSM } from "matchina/hsm";
 import { addEventApi, addStoreApi, setup, effect } from "matchina";
 import { createComboboxStore } from "./store";
 
@@ -6,7 +6,7 @@ export function createComboboxMachine() {
   const store = addStoreApi(createComboboxStore());
 
   // HSM: Inactive, Active.Empty, Active.Suggesting
-  const machine = describeHSM({
+  const machine = createHSM({
     initial: "Inactive",
     states: {
       Inactive: {

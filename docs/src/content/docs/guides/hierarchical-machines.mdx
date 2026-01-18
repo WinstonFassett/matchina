@@ -51,111 +51,78 @@ Use hierarchy only when a state temporarily delegates control and must return it
 
 ## Creating Hierarchical Machines
 
-### Option 1: Type-Safe Flat Machine (Recommended)
+### Option 1: Declarative Hierarchy (Recommended)
 
-Use `createFlatMachine` with `defineStates` for full type inference:
+Use `createHSM` for clean hierarchical definition. This approach defines the hierarchy once and auto-resolves relative transitions. See the [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) example for a complete working implementation.
 
 ```ts
-import { 
-  defineStates,
-  createFlatMachine 
-} from "matchina";
+const machine = createHSM({
+  initial: "Working",
+  states: {
+    Working: {
+      initial: "Red",
+      states: {
+        Red: { on: { tick: "Green" } },
+        Green: { on: { tick: "Yellow" } },
+        Yellow: { on: { tick: "Red" } },
+      },
+      on: { break: "Broken", maintenance: "Maintenance" }
+    },
+    Broken: { on: { repair: "Working" } },
+    Maintenance: { on: { complete: "Working" } }
+  }
+});
+```
 
-// Define states with dot-notation for hierarchy
-const states = defineStates({
+Key concepts:
+- Define hierarchy naturally: `Working` contains `Red`, `Green`, `Yellow`
+- Parent transitions apply to all child states
+- Child transitions are specific to that state
+- Library handles flattening automatically
+
+### Option 2: Runtime Propagation (Advanced)
+
+For cases where you need actual nested machine instances, use `submachine` and `makeHierarchical`. This approach creates separate machine instances that communicate via event propagation.
+
+```ts
+// Child machine factory
+const createLightCycle = () => matchina(
+  lightStates,
+  { Red: { tick: "Green" }, Green: { tick: "Yellow" }, Yellow: { tick: "Red" } },
+  "Red"
+);
+
+// Parent machine with embedded child
+const controllerStates = defineStates({
   Broken: undefined,
-  "Working.Red": undefined,
-  "Working.Green": undefined,
-  "Working.Yellow": undefined,
+  Working: submachine(createLightCycle),
   Maintenance: undefined,
 });
 
-// Define transitions (parent transitions apply to all children)
-const transitions = {
-  // Child transitions
-  "Working.Red": { tick: "Working.Green" },
-  "Working.Green": { tick: "Working.Yellow" },
-  "Working.Yellow": { tick: "Working.Red" },
-  
-  // Parent transitions (inherited by all children)
-  "Working": { break: "Broken", maintenance: "Maintenance" },
-  "Broken": { repair: "Working", maintenance: "Maintenance" },
-  "Maintenance": { complete: "Working" },
-};
+const createController = () => matchina(
+  controllerStates,
+  { Broken: { repair: "Working" }, Working: { break: "Broken" }, Maintenance: { complete: "Working" } },
+  "Working"
+);
 
-// Create machine with automatic enhancements
-const machine = createFlatMachine(states, transitions, "Working.Red");
-
-// Usage
-machine.getState().key; // "Working.Red" (initial)
-machine.send("tick");   // -> "Working.Green"
-machine.send("break");  // -> "Broken"
-machine.send("repair"); // -> "Working.Red"
+// Enable hierarchical propagation
+export function createPropagatingTrafficLight() {
+  const root = createController();
+  return makeHierarchical(root);
+}
 ```
 
-### Option 2: Declarative Hierarchy (Ergonomic, Dynamic)
+## How Hierarchy Works
 
-Use `createDeclarativeFlatMachine` for DRY hierarchical definition:
-
-```ts
-import { 
-  createDeclarativeFlatMachine 
-} from "matchina";
-
-const machine = createDeclarativeFlatMachine({
-  initial: "Working.Red",
-  states: {
-    Broken: {
-      data: () => ({}),
-      on: { repair: "Working", maintenance: "Maintenance" }
-    },
-    Working: {
-      initial: "Red", // Initial child state
-      states: {
-        Red: {
-          data: () => ({}),
-          on: { tick: "Green" } // Relative: resolves to Working.Green
-        },
-        Green: {
-          data: () => ({}),
-          on: { tick: "Yellow" }
-        },
-        Yellow: {
-          data: () => ({}),
-          on: { tick: "Red" }
-        }
-      },
-      on: { 
-        break: "Broken", 
-        maintenance: "Maintenance",
-        "child.exit": "Maintenance" // Auto-triggered when final child reached
-      }
-    },
-    Maintenance: {
-      data: () => ({}),
-      on: { complete: "Working" } // Auto-resolves to Working.Red
-    }
-  }
-});
-
-// Same usage, but hierarchy defined once
-machine.getState().key; // "Working.Red"
-machine.send("tick");   // -> "Working.Green"
-```
-
-**Trade-offs:**
-- **createFlatMachine**: Full type safety, verbose dot-notation
-- **createDeclarativeFlatMachine**: DRY hierarchy, runtime dynamic (less type safety)
-
-## How Flattening Works
-
-### State Keys
-Nested states become dot-notation keys:
+### Internal State Keys
+The library internally converts nested states to dot-notation keys:
 - `Working` with child `Red` → `"Working.Red"`
 - `Working` with child `Green` → `"Working.Green"`
 
-### Transitions
-- **Child transitions** are prefixed: `Red: { tick: "Green" }` → `"Working.Red": { tick: "Working.Green" }`
+**Important:** You define hierarchy naturally - the library handles the flattening internally. You never write `"Working.Red"` in your definitions.
+
+### Transition Resolution
+- **Child transitions** are automatically prefixed: `Red: { tick: "Green" }` → `"Working.Red": { tick: "Working.Green" }`
 - **Parent transitions** apply to all child leaves: `Working: { break: "Broken" }` → both `"Working.Red"` and `"Working.Green"` get `break: "Broken"`
 - **Initial states** cascade: transitioning to `"Working"` goes to `"Working.Red"` (the child's initial)
 
@@ -163,114 +130,30 @@ Nested states become dot-notation keys:
 When parent and child define the same event, **child wins** (first-seen policy):
 
 ```ts
-const states = defineStates({
-  "Parent.Child": undefined
-});
-
-const transitions = {
-  "Parent.Child": { event: "Parent.Child" }, // Child handles "event"
-  "Parent": { event: "Parent" } // Parent also defines "event"
-};
-
-const machine = createFlatMachine(states, transitions, "Parent.Child");
-// "Parent.Child" has { event: "Parent.Child" } - child transition wins
-```
-
-## API Reference
-
-### `createFlatMachine(states, transitions, initial)`
-Creates a flattened machine with automatic enhancements:
-- **Parent transition fallback** - Child states inherit parent transitions
-- **Child exit triggering** - Final child states automatically trigger `child.exit`
-- **Static shape metadata** - For visualization and introspection
-- **Full type inference** - When used with `defineStates()`
-
-### `createDeclarativeFlatMachine(config)`
-Creates a flattened machine from hierarchical configuration:
-- **DRY hierarchy definition** - Define structure once, no repetitive dot-notation
-- **Auto-resolution** - Relative transitions (`'Green'` → `'Working.Green'`)
-- **Parent escape** - `'^Parent'` syntax to go up one level
-- **Runtime dynamic** - Less type safety, more ergonomic
-
-### `defineStates(factory)`
-Creates typed state factories. Use with dot-notation for flattened hierarchies.
-
-### `createHierarchicalMachine(machine)`
-**Alternative approach** - Creates actual nested machine instances with child-first event routing. Use when you need dynamic/reusable child machines.
-
-## Alternative: Runtime Propagation
-
-:::caution[Experimental]
-Propagation is an escape hatch for scenarios requiring loose composition of independent machine instances. Prefer flattening for most use cases.
-:::
-
-For cases where you need actual nested machine instances (e.g., reusing existing machines, dynamic child creation), use `createHierarchicalMachine`:
-
-```ts
-import { 
-  matchina,
-  defineStates, 
-  submachine,
-  createHierarchicalMachine 
-} from "matchina";
-
-const lightStates = defineStates({ 
-  Red: undefined, 
-  Green: undefined, 
-  Yellow: undefined,
-});
-
-const states = defineStates({
-  Broken: undefined,
-  Working: submachine(() => 
-    matchina(
-      lightStates,
-      {
-        Red: { tick: "Green" },
-        Green: { tick: "Yellow" },
-        Yellow: { tick: "Red" },
+const machine = createHSM({
+  states: {
+    Working: {
+      states: {
+        Red: { on: { tick: "Green" } }, // Child handles "tick"
       },
-      "Red"
-    )
-  ),
-  Maintenance: undefined,
+      on: { tick: "Yellow" }            // Parent also defines "tick"
+    }
+  }
 });
-
-const ctrl = matchina(
-  states,
-  {
-    Broken: { repair: "Working", maintenance: "Maintenance" },
-    Working: { break: "Broken", maintenance: "Maintenance" },
-    Maintenance: { complete: "Working" },
-  },
-  "Working"
-);
-
-const machine = createHierarchicalMachine(ctrl);
-
-// Events route through hierarchy (child-first)
-machine.send("tick");  // Routes to child -> Green
-machine.send("break"); // Routes to parent -> Broken
+// Child wins - "Working.Red" uses its own transition
 ```
 
-### Key Differences from Flattening
+See the [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) example for concrete collision handling.
 
-| Aspect | Flattening | Propagation |
-|--------|-----------|-------------|
-| **Runtime** | Single flat machine | Nested machine instances |
-| **State keys** | `"Working.Red"` | `"Working"` (child accessed via `.data.machine`) |
-| **Event routing** | Direct | Child-first traversal |
-| **Memory** | Lower | Higher (multiple instances) |
-| **Use case** | Most HSMs | Dynamic/reusable children |
+## Related APIs
 
-### Propagation API
-
-- **`submachine(factory)`** - Wrap a machine factory for embedding in state data
-- **`createHierarchicalMachine(machine)`** - Enable child-first event routing
-- **`propagateSubmachines(machine)`** - Lower-level hook installation
+Key functions for hierarchical machines:
+- `createHSM()` - Clean hierarchical definition with automatic flattening
+- `submachine()` - Wrap machine factories for nested instances
+- `makeHierarchical()` - Enable event propagation between nested machines
 
 ## Related Examples
 
-- [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) - Flattened vs propagating comparison
+- [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) - Complete HSM implementation
 - [Hierarchical Checkout](/matchina/examples/hsm-checkout) - Complex nested payment flow
 - [Hierarchical Combobox](/matchina/examples/hsm-combobox) - UI component with nested states
