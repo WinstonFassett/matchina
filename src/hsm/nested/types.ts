@@ -6,9 +6,18 @@ import { AllEventsOf } from "../utility-types";
 
 export interface HierarchicalMachine<
   M extends FactoryMachine<any> = FactoryMachine<any>
-> extends FactoryMachine<any> {
+> extends Omit<FactoryMachine<any>, 'send'> {
   shape: ReturnType<typeof createLazyShapeStore>;
+  
+  /**
+   * Send an event to the hierarchical machine with support for child events
+   */
+  send<T extends HierarchicalEvents<M>>(
+    type: T,
+    ...params: any[]
+  ): void;
 }
+
 // Type representing all events in a hierarchical machine (including child.* events)
 
 export type HierarchicalEvents<M extends FactoryMachine<any>> = AllEventsOf<M> |

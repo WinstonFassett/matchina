@@ -63,7 +63,7 @@ export function nestedHsmRoot<M extends FactoryMachine<any>>(machine: M) {
 
   // Attach lazy shape store for visualization
   // Shape is computed on first access and cached
-  return enhanceWithShape(machine, createLazyShapeStore(machine)) as any as HierarchicalMachine<M>;
+  return enhanceWithShape(machine, createLazyShapeStore(machine)) as HierarchicalMachine<M>;
 }
 
 /**

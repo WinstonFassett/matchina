@@ -53,7 +53,7 @@ export function createComboboxMachine() {
         "child.change": ({ target }) => {
           target.getChange().match({
             select: store.api.selectHighlighted,
-            type: (input: any) => {
+            type: (input: string) => { // Now properly typed - target and input have types
               combobox.model.api.setInput(input);
             },            
           }, false)
