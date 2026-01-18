@@ -1,6 +1,6 @@
 import { defineStates, effect, eventApi, matchina, setup } from "matchina";
 import { nestedHsmRoot, submachine } from "matchina/hsm";
-import { createComboboxStore } from "./store";
+import { createComboboxStore } from "../store";
 
 
 export function createComboboxMachine() {
@@ -54,8 +54,9 @@ export function createComboboxMachine() {
         "child.change": ({ target }) => {
           target.getChange().match({
             select: store.api.selectHighlighted,
-            type: (ev: any) => {
-              console.log('typed', ev)
+            type: (input: any) => {
+              console.log('typed', input)
+              combobox.model.api.setInput(input);
             },            
           }, false)
         }
@@ -72,7 +73,6 @@ export function createComboboxMachine() {
     ...store.api,
     ...api,
     type: (input: string) => {
-      combobox.model.api.setInput(input);
       combobox.send("type", input);
     },    
   });

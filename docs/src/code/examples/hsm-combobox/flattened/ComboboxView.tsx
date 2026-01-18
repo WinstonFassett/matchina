@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { effect, setup } from "matchina";
 import { useMachine } from "matchina/react";
-import type { FlatComboboxMachine } from "./machine-flat";
+import type { FlatComboboxMachine } from "./machine";
 
 interface ComboboxViewFlatProps {
   machine: FlatComboboxMachine;

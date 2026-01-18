@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFlatComboboxMachine } from "./machine-flat";
-import { createComboboxMachine } from "./machine-nested";
-import { ComboboxViewNested } from "./ComboboxViewNested";
-import { ComboboxViewFlat } from "./ComboboxViewFlat";
+import { createFlatComboboxMachine } from "./flattened/machine";
+import { createComboboxMachine } from "./nested/machine";
+import { ComboboxViewNested } from "./nested/ComboboxView";
+import { ComboboxViewFlat } from "./flattened/ComboboxView";
 import { MachineVisualizer } from "@components/MachineVisualizer";
 
 type Mode = "flat" | "nested";

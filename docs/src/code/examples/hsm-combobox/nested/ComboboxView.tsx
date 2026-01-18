@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useMachine } from "matchina/react";
 import { setup, effect } from "matchina";
-import type { NestedComboboxMachine } from "./machine-nested";
+import type { NestedComboboxMachine } from "./machine";
 
 interface ComboboxViewProps {
   machine: NestedComboboxMachine;

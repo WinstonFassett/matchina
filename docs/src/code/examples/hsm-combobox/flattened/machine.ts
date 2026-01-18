@@ -1,6 +1,6 @@
+import { addStoreApi, effect, eventApi, setup } from "matchina";
 import { createHSM } from "matchina/hsm";
-import { setup, effect, addEventApi, addStoreApi, eventApi } from "matchina";
-import { createComboboxStore } from "./store";
+import { createComboboxStore } from "../store";
 
 export function createFlatComboboxMachine() {
   const store = addStoreApi(createComboboxStore());
@@ -48,24 +48,20 @@ export function createFlatComboboxMachine() {
   );
 
   const machineApi = eventApi(machine);
-  console.log({ machineApi })
+
   // Component-level API - all actions go through machine, effects coordinate
   const combobox = Object.assign(machine, {
     model: store,
     ...store.api,
     ...machineApi,    
     blur: () => {
-      console.log("blur");
       machine.send("blur");
     },
     type: (input: string) => {
-      console.log("type", input);
-      // machineApi.type(input);
       machine.model.api.setInput(input);
       machine.send("type", input);
     },
     select: (index: number) => {
-      console.log("select", index);
       machine.send("select", index);
     },
   });

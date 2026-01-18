@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createFlatComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/machine-flat";
-import { createComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/machine-nested";
+import { createFlatComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/flattened/machine";
+import { createComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/nested/machine";
 
 describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
   it("should create identical machine shapes", () => {

@@ -5,8 +5,8 @@ import {
 } from "../docs/src/code/examples/lib/matchina-machine-to-xstate-definition";
 import { createCheckoutMachine } from "../docs/src/code/examples/hsm-checkout/machine";
 import { createFlatCheckoutMachine } from "../docs/src/code/examples/hsm-checkout/machine-flat";
-import { createComboboxMachine } from "../docs/src/code/examples/hsm-combobox/machine";
-import { createFlatComboboxMachine } from "../docs/src/code/examples/hsm-combobox/machine-flat";
+import { createComboboxMachine } from "../docs/src/code/examples/hsm-combobox/nested/machine";
+import { createFlatComboboxMachine } from "../docs/src/code/examples/hsm-combobox/flattened/machine";
 
 describe("Unified HSM Visualization", () => {
   describe("getActiveStatePath", () => {

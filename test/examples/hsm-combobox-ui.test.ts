@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createFlatComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/machine-flat";
+import { createFlatComboboxMachine } from "../../docs/src/code/examples/hsm-combobox/flattened/machine";
 
 describe("Flat Combobox UI Integration", () => {
   it("should handle real-world usage patterns", () => {
