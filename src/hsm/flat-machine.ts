@@ -13,10 +13,10 @@ import type { FactoryMachineTransitions } from "../factory-machine-types";
 import type { KeysWithZeroRequiredArgs } from "../utility-types";
 import type { StateMatchboxFactory } from "../state-types";
 import { createMachine } from "../factory-machine";
-import type { ShapeController } from "./shape-types";
+import type { ShapeController } from "../shape";
 import { withParentTransitionFallback } from "./parent-transition-fallback";
 import { withFlattenedChildExit } from "./flattened-child-exit";
-import { createStaticShapeStore } from "./shape-store";
+import { createStaticShapeStore, enhanceWithShape } from "../shape";
 
 /**
  * Create a flat machine directly from states and transitions.
@@ -48,8 +48,5 @@ export function createFlatMachine<
 
   // Attach static shape store for visualization and introspection
   // Flattened machines have immutable structure (locked at creation)
-  const machineWithShape = machine as { shape?: ShapeController };
-  machineWithShape.shape = createStaticShapeStore(machine);
-
-  return machine;
+  return enhanceWithShape(machine, createStaticShapeStore(machine));
 }

@@ -4,7 +4,7 @@ import { createMachine } from "../src/factory-machine";
 import {
   createStaticShapeStore,
   createLazyShapeStore,
-} from "../src/hsm/shape-store";
+} from "../src/shape";
 import { createFlatMachine, makeHierarchical } from "../src/hsm";
 
 describe("shape-store coverage", () => {

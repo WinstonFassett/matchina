@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildForceGraphData } from "@matchina/viz-forcegraph/utils/shape-to-force-graph";
-import type { MachineShape } from "../src/hsm/shape-types";
+import type { MachineShape } from "../src/shape";
 
 // Helper to create a simple toggle machine shape
 function createToggleShape(): MachineShape {

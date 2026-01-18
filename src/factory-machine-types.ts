@@ -7,7 +7,6 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { StateMachine, TransitionEvent } from "./state-machine";
 import { ResolveEvent } from "./state-machine-types";
 import { FlatMemberUnion } from "./utility-types";
-import type { ShapeController } from "./hsm/shape-types";
 
 /**
  * Utility type to extract parameter types for a specific event type in a factory machine.
@@ -56,13 +55,6 @@ export interface FactoryMachine<
     type: T,
     ...params: ExtractEventParams<FC, T>
   ): void;
-
-  /**
-   * Optional shape controller for hierarchical machines.
-   * Present on flattened and nested machines.
-   * Absent on simple flat machines.
-   */
-  readonly shape?: ShapeController;
 }
 
 /**

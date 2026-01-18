@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   buildFlattenedShape,
-  buildHierarchicalShape,
-} from "../src/hsm/shape-builders";
+  buildMachineStructure,
+} from "../src/shape";
+import { createDescriptorFromMachine } from "../src/interfaces";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 
@@ -160,7 +161,7 @@ describe("shape-builders", () => {
     });
   });
 
-  describe("buildHierarchicalShape", () => {
+  describe("buildMachineStructure", () => {
     it("should build shape from hierarchical machine", () => {
       const childStates = defineStates({
         Child1: () => ({ key: "Child1", data: { value: "child1" } }),
@@ -186,7 +187,7 @@ describe("shape-builders", () => {
 
       const parentMachine = createMachine(parentStates, {}, "Parent");
 
-      const shape = buildHierarchicalShape(parentMachine);
+      const shape = buildMachineStructure(createDescriptorFromMachine(parentMachine));
 
       expect(shape.type).toBe("nested");
       expect(shape.states.size).toBe(1); // Only Parent (child machine not automatically discovered)
@@ -207,7 +208,7 @@ describe("shape-builders", () => {
         "State1"
       );
 
-      const shape = buildHierarchicalShape(machine);
+      const shape = buildMachineStructure(createDescriptorFromMachine(machine));
 
       expect(shape.type).toBe("nested");
       expect(shape.states.size).toBe(2);
@@ -226,7 +227,7 @@ describe("shape-builders", () => {
 
       const parentMachine = createMachine(parentStates, {}, "Parent");
 
-      const shape = buildHierarchicalShape(parentMachine);
+      const shape = buildMachineStructure(createDescriptorFromMachine(parentMachine));
 
       expect(shape.states.size).toBe(1); // Only parent
       expect(shape.states.get("Parent")?.isCompound).toBe(false); // Not marked as compound due to error
@@ -240,7 +241,7 @@ describe("shape-builders", () => {
 
       const machine = createMachine(states, {}, "State2");
 
-      const shape = buildHierarchicalShape(machine);
+      const shape = buildMachineStructure(createDescriptorFromMachine(machine));
 
       expect(shape.initialKey).toBe("State2");
     });
@@ -259,7 +260,7 @@ describe("shape-builders", () => {
         "State1"
       );
 
-      const shape = buildHierarchicalShape(machine);
+      const shape = buildMachineStructure(createDescriptorFromMachine(machine));
 
       expect(shape.transitions.get("State1")?.get("NEXT")).toBe("State2");
     });

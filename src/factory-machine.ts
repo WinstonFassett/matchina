@@ -11,7 +11,6 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 import { brandFactoryMachine } from "./machine-brand";
-import { createStaticShapeStore } from "./hsm/shape-store";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -116,20 +115,6 @@ export function createMachine<
   ) as FactoryMachine<FC>;
 
   brandFactoryMachine(machine);
-
-  // Attach shape for visualization (works for both flat and hierarchical machines)
-  // This enables visualization for all machines created with createMachine()
-  try {
-    const shapeStore = createStaticShapeStore(machine);
-    Object.defineProperty(machine, "shape", {
-      value: shapeStore,
-      enumerable: false,
-      configurable: true,
-      writable: true,
-    });
-  } catch (error) {
-    console.error("[createMachine] Failed to attach shape:", error);
-  }
 
   return machine;
 }

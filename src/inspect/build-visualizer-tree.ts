@@ -1,5 +1,6 @@
 import type { FactoryMachine } from "../factory-machine";
-import type { MachineShape } from "../hsm/shape-types";
+import type { MachineShape } from "../shape";
+import { hasShape } from "../shape";
 
 /**
  * Get the current active state path for both hierarchical and flattened machines.
@@ -46,7 +47,7 @@ export function buildShapeTree<F extends FactoryMachine<any>>(
   machine: F,
   parentKey?: string
 ): any {
-  const shape = machine.shape?.getState();
+  const shape = hasShape(machine) ? machine.shape.getState() : undefined;
   if (shape) {
     // Use shape when available (preferred path)
     return buildShapeTreeFromShape(shape);
@@ -110,7 +111,7 @@ function buildShapeTreeFromHierarchy(machine: any, parentKey?: string) {
       const childFullKey = parentKey ? `${parentKey}.${stateKey}` : stateKey;
 
       // Try to get shape first (preferred for flat machines)
-      const shape = (childMachine as any).shape?.getState();
+      const shape = hasShape(childMachine) ? childMachine.shape.getState() : undefined;
       const childDefinition = shape
         ? buildShapeTreeFromShape(shape)
         : buildShapeTreeFromHierarchy(childMachine, childFullKey);

@@ -2,7 +2,7 @@ import type { FactoryMachine } from "../factory-machine";
 import { FactoryMachineEventImpl } from "../factory-machine-event";
 import { isFactoryMachine } from "../machine-brand";
 import { send as sendHook } from "../state-machine-hooks";
-import { createLazyShapeStore } from "./shape-store";
+import { createLazyShapeStore, enhanceWithShape } from "../shape";
 import { AllEventsOf } from "./types";
 
 // Enhanced machine interfaces for better type safety
@@ -117,9 +117,7 @@ export function makeHierarchical<M extends FactoryMachine<any>>(machine: M) {
 
   // Attach lazy shape store for visualization
   // Shape is computed on first access and cached
-  (machine as any).shape = createLazyShapeStore(machine);
-
-  return machine as any as HierarchicalMachine<M>;
+  return enhanceWithShape(machine, createLazyShapeStore(machine)) as any as HierarchicalMachine<M>;
 }
 
 /**
@@ -139,9 +137,7 @@ export function propagateSubmachines<M extends FactoryMachine<any>>(
 
   // Attach lazy shape store for visualization
   // Shape is computed on first access and cached
-  (root as HierarchicalMachine<M>).shape = createLazyShapeStore(root);
-
-  const rootMachine = root as unknown as RootMachine;
+  const rootMachine = enhanceWithShape(root, createLazyShapeStore(root)) as unknown as RootMachine;
 
   // Flag to prevent recursion in handleReservedEvents
   let isHandlingReservedEvent = false;

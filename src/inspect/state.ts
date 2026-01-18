@@ -1,8 +1,5 @@
 /**
- * Inspection utilities for hierarchical machines
- *
- * These utilities walk the machine hierarchy on-demand to compute
- * inspection data (fullKey, depth, stack) without mutating states.
+ * State inspection utilities for hierarchical machines
  */
 
 type AnyMachine = { getState(): any };
@@ -13,7 +10,7 @@ type AnyMachine = { getState(): any };
  * @returns Dot-separated key path (e.g., "Parent.Child.GrandChild")
  */
 export function getFullKey(machine: AnyMachine): string {
-  const chain = getActiveChain(machine);
+  const chain = getActiveStatePath(machine);
   return chain.map((item) => item.state.key).join(".");
 }
 
@@ -24,27 +21,17 @@ export function getFullKey(machine: AnyMachine): string {
  * @returns Depth (0 for root, 1 for first child, etc.)
  */
 export function getDepth(machine: AnyMachine, state: any): number {
-  const chain = getActiveChain(machine);
+  const chain = getActiveStatePath(machine);
   const index = chain.findIndex((item) => item.state === state);
   return index >= 0 ? index : 0;
 }
 
 /**
- * Get the current active state stack
- * @param machine - Root or any machine in hierarchy
- * @returns Array of states from root to deepest active
- */
-export function getStack(machine: AnyMachine): any[] {
-  const chain = getActiveChain(machine);
-  return chain.map((item) => item.state);
-}
-
-/**
- * Get the full active chain with machine references
+ * Get the full active state path with machine references
  * @param machine - Root or any machine in hierarchy
  * @returns Array of {machine, state} objects
  */
-export function getActiveChain(
+export function getActiveStatePath(
   machine: AnyMachine
 ): Array<{ machine: AnyMachine; state: any }> {
   const chain: Array<{ machine: AnyMachine; state: any }> = [];
@@ -70,26 +57,4 @@ export function getActiveChain(
   }
 
   return chain;
-}
-
-/**
- * Create a snapshot of the current hierarchy state
- * @param machine - Root machine
- * @returns Snapshot with fullKey, depth, stack, state
- */
-export function inspect(machine: AnyMachine) {
-  const chain = getActiveChain(machine);
-  const fullKey = chain.map((item) => item.state.key).join(".");
-  const state = chain.at(-1)?.state;
-  const depth = chain.length - 1;
-  const stack = chain.map((item) => item.state);
-
-  return {
-    fullKey,
-    depth,
-    stack,
-    state,
-    machine,
-    chain,
-  };
 }

@@ -38,10 +38,9 @@ export {
   inspect,
   getFullKey,
   getDepth,
-  getStack,
-  getActiveChain,
+  getStateStack,
+  getActiveStatePath,
 } from "../inspect";
 
-// Shape types and utilities
-export type { MachineShape, StateNode, ShapeController } from "./shape-types";
-export { createStaticShapeStore, createLazyShapeStore } from "./shape-store";
+// Shape types and utilities - moved to shape package
+// NO LONGER EXPORTED FROM HSM - use shape package directly

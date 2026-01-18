@@ -7,8 +7,9 @@
  */
 
 import type { FactoryMachine } from "../factory-machine";
-import type { MachineShape, ShapeController } from "./shape-types";
-import { buildFlattenedShape, buildHierarchicalShape } from "./shape-builders";
+import type { MachineShape, ShapeController } from "./definition";
+import { buildFlattenedShape, buildMachineStructure } from "./builders";
+import { createDescriptorFromMachine } from "../interfaces";
 
 /**
  * Create a static shape store for flattened machines
@@ -47,7 +48,7 @@ export function createStaticShapeStore(
 /**
  * Create a lazy shape store for hierarchical machines
  *
- * Shape is computed on first access via buildHierarchicalShape.
+ * Shape is computed on first access via buildMachineStructure.
  * Hierarchical machines can have dynamic shapes if submachines change,
  * but for most cases the shape is stable and we compute it lazily.
  */
@@ -61,7 +62,7 @@ export function createLazyShapeStore(
     if (cachedShape) {
       return cachedShape;
     }
-    cachedShape = buildHierarchicalShape(machine);
+    cachedShape = buildMachineStructure(createDescriptorFromMachine(machine));
     return cachedShape;
   }
 
