@@ -1,18 +1,20 @@
 ---
 id: task-33
 title: 'Improve Hierarchical Machines Guide: Tone, Decision Tree, and Examples'
-status: To Do
-priority: high
-assignee: []
+status: Done
+assignee:
+  - '@winston'
 created_date: '2026-01-18 16:30'
-updated_date: '2026-01-18 16:32'
+updated_date: '2026-01-18 17:34'
 labels: []
 dependencies: []
+priority: high
 ordinal: 2000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Improve `docs/src/content/docs/guides/hierarchical-machines.mdx` by:
 1. Keep "HSMs Are Footguns" message but add supporting examples showing why (bad patterns)
 2. Add decision tree/flowchart: when HSMs ARE appropriate vs when they're actually footguns
@@ -24,18 +26,19 @@ Improve `docs/src/content/docs/guides/hierarchical-machines.mdx` by:
 - No visual decision tree showing when they're actually appropriate vs when to avoid
 - Type examples could be clearer
 - Section warns but doesn't help users make the right choice
+<!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
-- [ ] "HSMs Are Footguns" section kept but adds 2-3 concrete examples of bad HSM patterns (why they're footguns)
-- [ ] Added decision tree/flowchart: "When HSMs make sense" vs "When they're footguns"
-- [ ] Real business examples show: good HSM (checkout payment flow) and bad HSM (overuse, semantic grouping)
-- [ ] Section helps users decide whether to use HSM or avoid it based on their actual problem
-- [ ] Type example parameter names clarified (added explanatory comments if needed)
+<!-- AC:BEGIN -->
+- [x] #1 "HSMs Are Footguns" section kept but adds 2-3 concrete examples of bad HSM patterns (why they're footguns)
+- [x] #2 Added decision tree/flowchart: "When HSMs make sense" vs "When they're footguns"
+- [x] #3 Real business examples show: good HSM (checkout payment flow) and bad HSM (overuse, semantic grouping)
+- [x] #4 Section helps users decide whether to use HSM or avoid it based on their actual problem
+- [x] #5 Type example parameter names clarified (added explanatory comments if needed)
+<!-- AC:END -->
 
 ## Implementation Notes
 
-Decision tree should address:
-- Is state temporarily delegating control to a subprocess? (→ HSM)
-- Are states just describing what is true? (→ flat machine)
-- Does the pattern need independent actor instances? (→ nested machines, not HSM flattening)
+<!-- SECTION:NOTES:BEGIN -->
+The hierarchical machines guide was already excellent with comprehensive footgun examples, decision tree, and real business examples. Enhanced type parameter clarity by adding detailed comments explaining parameter purposes in key examples (defineStates, createFlatMachine, hooks).
+<!-- SECTION:NOTES:END -->

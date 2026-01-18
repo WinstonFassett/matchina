@@ -25,8 +25,7 @@ npx playwright test --headed
 node scripts/e2e-coverage-report.js
 ```
 
-**Current Coverage:** 7% (2/27 examples) - See [E2E Coverage Report](review/E2E_COVERAGE_REPORT.md)
-**Documentation:** [E2E Testing Guide](docs/E2E.md)
+**Current Coverage:** 7% (2/27 examples)
 
 ### 🧪 Unit Testing
 
