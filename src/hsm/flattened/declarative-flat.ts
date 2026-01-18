@@ -7,9 +7,9 @@
  * automatically flattened to dot-notation internally. This API solves the problem
  * of repetitive dot-notation state keys and manual synthetic parent state management.
  *
- * ## Comparison with createFlatMachine
+ * ## Implementation Note
  *
- * **Old API (verbose, repetitive):**
+ * **Internal API (verbose, repetitive):**
  * ```typescript
  * const states = defineStates({
  *   'Payment.MethodEntry': () => ({}),
@@ -24,7 +24,7 @@
  * createFlatMachine(states, transitions, 'Payment.MethodEntry');
  * ```
  *
- * **New API (declarative, DRY):**
+ * **Public API (declarative, DRY):**
  * ```typescript
  * createHSM({
  *   initial: 'Payment',
@@ -125,9 +125,9 @@
  * machine.getState().key;  // 'Payment.Authorizing'
  * ```
  *
- * ## Internal Flattening
+ * ## Internal Implementation
  *
- * The API converts the hierarchical config to the same internal format as `createFlatMachine`:
+ * The API converts the hierarchical config to the same internal format as the internal `createFlatMachine`:
  * - States: `{ 'Payment.MethodEntry': () => ({}), 'Payment.Authorizing': () => ({}) }`
  * - Transitions: `{ 'Payment.MethodEntry': { authorize: 'Payment.Authorizing' } }`
  * - Synthetic parents: `{ Payment: { back: 'Cart', 'child.exit': 'Review' } }`
@@ -190,17 +190,17 @@ function resolveInitialChild(
 /**
  * Create a flattened machine from declarative hierarchical config
  *
- * ⚠️ **TYPE SAFETY LIMITATION**: This API trades type inference for ergonomics.
+ * ⚠️ **TYPE SAFETY TRADEOFF**: This API trades type inference for ergonomics.
  * State keys and transitions are determined at runtime, so TypeScript cannot
  * provide exhaustive type checking or autocomplete for state/event names.
  *
- * **For type-safe code**, use `createFlatMachine()` with `defineStates()` instead:
+ * **For maximum type safety**, use `defineStates()` directly with `createMachine()`:
  * ```typescript
  * const states = defineStates({
  *   'Payment.MethodEntry': () => ({}),
  *   'Payment.Authorized': () => ({})
  * });
- * const machine = createFlatMachine(states, transitions, initial);
+ * const machine = createMachine(states, transitions, initial);
  * // ✅ Full type inference for states and events
  * ```
  *
@@ -261,13 +261,13 @@ export function createHSM(config: DeclarativeFlatMachineConfig) {
     }
   }
 
-  // Create flat machine using existing API
+  // Create flat machine using internal API
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
-  // Users requiring type safety should use createFlatMachine() with defineStates() directly
-  // Note: createFlatMachine already applies parent transition fallback and child.exit handling
+  // Users requiring maximum type safety should use defineStates() directly with createMachine()
+  // Note: internal createFlatMachine already applies parent transition fallback and child.exit handling
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
 }/**
- * Create a flat machine directly from states and transitions.
+ * Internal flat machine creation from states and transitions.
  *
  * Handles all internal complexity:
  * - Detects if flattening is needed (dot-notation states)
@@ -276,7 +276,7 @@ export function createHSM(config: DeclarativeFlatMachineConfig) {
  * - Applies enhancements (parent fallback, child exit)
  * - Attaches static shape for visualization
  *
- * This is the recommended API for flat machines.
+ * This is an internal implementation detail used by createHSM().
  */
 
 export function createFlatMachine<

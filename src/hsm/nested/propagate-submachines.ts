@@ -8,9 +8,8 @@ import { DuckTypedMachine, HierarchicalMachine, PropagatedMachine, RootMachine, 
 /**
  * Hierarchical propagation core
  *
- * @experimental This API is experimental. Prefer flattening (`flattenMachineDefinition`)
- * for most use cases. Propagation is provided as an escape hatch for scenarios requiring
- * loose composition of independent machine instances.
+ * Escape hatch for scenarios requiring loose composition of independent machine instances.
+ * For most use cases, prefer createHSM() which uses flattening.
  *
  * This file wires a root FactoryMachine so that events flow through a
  * child-first traversal, with explicit bubbling of child exits, and uniform
