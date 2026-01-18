@@ -2,12 +2,13 @@
 id: task-35
 title: Documentation Polish - Verification and Consistency
 status: To Do
+priority: medium
 assignee: []
 created_date: '2026-01-18 16:30'
 updated_date: '2026-01-18 16:32'
 labels: []
 dependencies: [task-31, task-32, task-33, task-34]
-ordinal: 4000
+ordinal: 5000
 ---
 
 ## Description

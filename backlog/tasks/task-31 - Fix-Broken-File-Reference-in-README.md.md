@@ -2,12 +2,13 @@
 id: task-31
 title: Fix Broken File Reference in README.md
 status: To Do
+priority: high
 assignee: []
 created_date: '2026-01-18 16:30'
 updated_date: '2026-01-18 16:32'
 labels: []
 dependencies: []
-ordinal: 5000
+ordinal: 1000
 ---
 
 ## Description

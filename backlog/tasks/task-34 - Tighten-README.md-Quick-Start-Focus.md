@@ -2,12 +2,13 @@
 id: task-34
 title: Tighten README.md Quick Start Focus
 status: To Do
+priority: high
 assignee: []
 created_date: '2026-01-18 16:30'
 updated_date: '2026-01-18 16:32'
 labels: []
 dependencies: [task-31]
-ordinal: 3000
+ordinal: 4000
 ---
 
 ## Description
