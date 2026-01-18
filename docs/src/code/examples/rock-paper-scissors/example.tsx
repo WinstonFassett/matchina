@@ -14,7 +14,7 @@ export default function RockPaperScissorsExample() {
     <div className="space-y-6">
       <MachineVisualizer
         machine={machine}
-        title="State Machine Visualizer"
+        title="Rock Paper Scissors"
         defaultViz="reactflow"
         interactive={true}
         layout="split"

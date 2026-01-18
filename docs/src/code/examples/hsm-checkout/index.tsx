@@ -52,7 +52,7 @@ export default function HSMCheckoutIndex() {
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
-        title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
+        title={`Hierarchical Traffic Light (${mode === "flat" ? "Flattened" : "Nested"})`}
         defaultViz="sketch"
         interactive={true}
         layout="stacked"

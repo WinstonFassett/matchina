@@ -46,7 +46,7 @@ export default function CheckoutExample() {
       <MachineVisualizer
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
-        title={`State Machine Visualizer (${mode === "flat" ? "Flattened" : "Nested"})`}
+        title={`HSM Checkout (${mode === "flat" ? "Flattened" : "Nested"})`}
         defaultViz="reactflow"
         interactive={true}
         layout="stacked"
