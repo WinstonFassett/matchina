@@ -10,7 +10,6 @@ export default function CheckoutExample() {
       machine={machine as any}
       AppView={CheckoutView}
       showRawState={true}
-      defaultViz="reactflow"
       interactive={false}
     />
   );

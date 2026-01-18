@@ -6,9 +6,9 @@
 export type VisualizerType =
   | "reactflow"
   | "sketch"
-  | "forcegraph"
-  | "mermaid-statechart"
-  | "mermaid-flowchart";
+  // | "forcegraph"
+  // | "mermaid-statechart"
+  // | "mermaid-flowchart";
 
 export interface VisualizerOption {
   value: VisualizerType;
@@ -17,10 +17,10 @@ export interface VisualizerOption {
 
 export const VISUALIZERS: readonly VisualizerOption[] = [
   { value: "reactflow", label: "ReactFlow" },
-  { value: "sketch", label: "Sketch" },
-  { value: "forcegraph", label: "ForceGraph (Deprecated)" },
-  { value: "mermaid-statechart", label: "Mermaid - Statechart" },
-  { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
+  { value: "sketch", label: "Blocks" },
+  // { value: "forcegraph", label: "ForceGraph (Deprecated)" },
+  // { value: "mermaid-statechart", label: "Mermaid - Statechart" },
+  // { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
 ] as const;
 
 export interface VizPickerProps {

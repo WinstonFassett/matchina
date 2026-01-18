@@ -11,7 +11,6 @@ export default function ExtendedTrafficLightExample() {
       machine={machine as any}
       AppView={ExtendedTrafficLightView}
       showRawState={true}
-      defaultViz="reactflow"
-    />
+          />
   );
 }

@@ -25,7 +25,6 @@ export default function FetcherExample() {
         machine={fetcher as any}
         AppView={FetcherAppView}
         showRawState={true}
-        defaultViz="reactflow"
         interactive={true}
         layout="split"
         exampleName="fetcher-advanced"

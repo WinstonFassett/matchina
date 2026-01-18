@@ -12,7 +12,6 @@ export function BalancedParenthesesDemo() {
       <MachineVisualizer
         machine={checker}
         showRawState={true}
-        defaultViz="reactflow"
         AppView={BalancedParentheses}
       />
     </div>

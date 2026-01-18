@@ -47,7 +47,6 @@ export default function CheckoutExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`HSM Checkout (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="reactflow"
         interactive={true}
         layout="stacked"
         exampleName="hsm-checkout"

@@ -8,8 +8,8 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { BlockInspector } from "@matchina/viz-react";
 import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
-import { MermaidInspector } from "@matchina/viz-mermaid";
-import { ForceGraphInspector } from "@matchina/viz-forcegraph";
+// import { MermaidInspector } from "@matchina/viz-mermaid";
+// import { ForceGraphInspector } from "@matchina/viz-forcegraph";
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -219,32 +219,32 @@ function renderVisualizer({
         </div>
       );
 
-    case "forcegraph":
-      // 🚡 DEPRECATED: ForceGraph Inspector is marked for retirement
-      // Consider using ReactFlow (default) or Mermaid visualizers instead
-      console.warn(
-        "ForceGraph Inspector is deprecated and will be removed in a future version. " +
-        "Consider using the ReactFlow visualizer (default) for better performance and features."
-      );
-      // ForceGraph needs explicit height constraint - it doesn't respect h-full well
-      return (
-        <div
-          className={commonClasses}
-          style={{ height: "100%", maxHeight: "400px" }}
-        >
-          <ForceGraphInspector
-            value={activeStatePath}
-            definition={machine as any}
-            dispatch={(event: any) => {
-              const eventName = typeof event === "string" ? event : event?.type;
-              if (eventName && actions[eventName]) {
-                machine.send(eventName);
-              }
-            }}
-            interactive={interactive}
-          />
-        </div>
-      );
+    // case "forcegraph":
+    //   // 🚡 DEPRECATED: ForceGraph Inspector is marked for retirement
+    //   // Consider using ReactFlow (default) or Mermaid visualizers instead
+    //   console.warn(
+    //     "ForceGraph Inspector is deprecated and will be removed in a future version. " +
+    //     "Consider using the ReactFlow visualizer (default) for better performance and features."
+    //   );
+    //   // ForceGraph needs explicit height constraint - it doesn't respect h-full well
+    //   return (
+    //     <div
+    //       className={commonClasses}
+    //       style={{ height: "100%", maxHeight: "400px" }}
+    //     >
+    //       <ForceGraphInspector
+    //         value={activeStatePath}
+    //         definition={machine as any}
+    //         dispatch={(event: any) => {
+    //           const eventName = typeof event === "string" ? event : event?.type;
+    //           if (eventName && actions[eventName]) {
+    //             machine.send(eventName);
+    //           }
+    //         }}
+    //         interactive={interactive}
+    //       />
+    //     </div>
+    //   );
 
     case "sketch":
       return (
@@ -253,34 +253,34 @@ function renderVisualizer({
         </div>
       );
 
-    case "mermaid-statechart":
-      return (
-        <div
-          className={commonClasses}
-          data-testid="mermaid-statechart-container"
-        >
-          <MermaidInspector
-            shape={shape}
-            currentStateKey={activeStatePath}
-            actions={actions}
-            interactive={interactive}
-            diagramType="statechart"
-          />
-        </div>
-      );
+    // case "mermaid-statechart":
+    //   return (
+    //     <div
+    //       className={commonClasses}
+    //       data-testid="mermaid-statechart-container"
+    //     >
+    //       <MermaidInspector
+    //         shape={shape}
+    //         currentStateKey={activeStatePath}
+    //         actions={actions}
+    //         interactive={interactive}
+    //         diagramType="statechart"
+    //       />
+    //     </div>
+    //   );
 
-    case "mermaid-flowchart":
-      return (
-        <div className={commonClasses}>
-          <MermaidInspector
-            shape={shape}
-            currentStateKey={activeStatePath}
-            actions={actions}
-            interactive={interactive}
-            diagramType="flowchart"
-          />
-        </div>
-      );
+    // case "mermaid-flowchart":
+    //   return (
+    //     <div className={commonClasses}>
+    //       <MermaidInspector
+    //         shape={shape}
+    //         currentStateKey={activeStatePath}
+    //         actions={actions}
+    //         interactive={interactive}
+    //         diagramType="flowchart"
+    //       />
+    //     </div>
+    //   );
 
     default:
       return (

@@ -52,7 +52,6 @@ export default function ComboboxExample() {
         key={mode} // Force re-mount of visualizer when mode changes
         machine={machine}
         title={`HSM Combobox (${mode === "flat" ? "Flattened" : "Nested"})`}
-        defaultViz="reactflow"
         interactive={true}
         layout="split"
         exampleName="hsm-combobox"

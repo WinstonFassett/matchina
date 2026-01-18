@@ -9,7 +9,6 @@ export default function StopwatchExample() {
       machine={stopwatch}
       AppView={StopwatchView}
       showRawState={true}
-      defaultViz="forcegraph"
     />
   );
 }

@@ -12,7 +12,6 @@ export default function PromiseFetcherExample() {
         <PromiseFetcherView {...props} onReset={reset} />
       )}
       showRawState={true}
-      defaultViz="reactflow"
       interactive={true}
       layout="split"
       exampleName="promise-machine-fetcher"

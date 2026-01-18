@@ -10,7 +10,6 @@ export default function AsyncCalculatorExample() {
       machine={calculator}
       AppView={AsyncCalculatorView}
       showRawState={true}
-      defaultViz="reactflow"
       interactive={true}
       layout="split"
       exampleName="async-calculator"
