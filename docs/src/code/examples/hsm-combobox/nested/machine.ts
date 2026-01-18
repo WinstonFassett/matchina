@@ -50,14 +50,8 @@ export function createComboboxMachine() {
       ev.match({
         focus: store.api.clear,
         blur: store.api.clear,
-        "child.change": ({ target }) => {
-          target.getChange().match({
-            select: store.api.selectHighlighted,
-            type: (input: string) => { // Now properly typed - target and input have types
-              combobox.model.api.setInput(input);
-            },            
-          }, false)
-        }
+        type: store.api.setInput,
+        select: store.api.selectHighlighted,
       }, false);
     })
   );
