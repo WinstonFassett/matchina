@@ -172,9 +172,9 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   interactive = true,
 }) => {
   // Layout state - use engine defaults
-  const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.HIERARCHICAL);
+  const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.FORCE_DIRECTED);
   const [layoutSettings, setLayoutSettings] = useState<AnyLayoutSettings>(() => {
-    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
+    const engine = layoutManager.getEngine(layoutType);
     return engine?.getDefaultSettings() ?? {
       nodeSpacing: 120,
       edgeSpacing: 20,

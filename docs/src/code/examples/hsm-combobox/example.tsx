@@ -8,7 +8,7 @@ import { MachineVisualizer } from "@components/MachineVisualizer";
 type Mode = "flat" | "nested";
 
 export default function ComboboxExample() {
-  const [mode, setMode] = useState<Mode>("nested");
+  const [mode, setMode] = useState<Mode>("flat");
 
   // Re-create machine when mode changes
   const { flatMachine, nestedMachine } = useMemo(() => {
@@ -55,7 +55,6 @@ export default function ComboboxExample() {
         defaultViz="reactflow"
         interactive={true}
         layout="split"
-        preset="hierarchical"
         exampleName="hsm-combobox"
         AppView={mode === "flat" ? ComboboxViewFlat : ComboboxViewNested}
       />
