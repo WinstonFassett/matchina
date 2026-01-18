@@ -1,4 +1,5 @@
-import { defineStates, createFlatMachine } from "matchina";
+import { defineStates } from "matchina";
+import { createFlatMachine } from "matchina/hsm";
 
 // Flat state keys with dot notation representing checkout with payment substates
 const states = defineStates({

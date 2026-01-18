@@ -1,4 +1,4 @@
-import { describeHSM } from "matchina";
+import { describeHSM } from "matchina/hsm";
 
 export function createFlatTrafficLight() {
   return describeHSM({
