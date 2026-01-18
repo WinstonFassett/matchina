@@ -241,7 +241,7 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
         }
       })
       .catch(error => {
-        console.error('Layout calculation failed:', error);
+        console.error('Error in shapeToReactFlow:', error);
         if (!cancelled && startTime === layoutRef.current.startTime) {
           setGraphData(null);
         }

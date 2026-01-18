@@ -11,6 +11,7 @@ import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
 import { brandFactoryMachine } from "./machine-brand";
+import { enhanceWithShape, createStaticShapeStore } from "./shape";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -116,7 +117,8 @@ export function createMachine<
 
   brandFactoryMachine(machine);
 
-  return machine;
+  // Add shape support to all machines
+  return enhanceWithShape(machine, createStaticShapeStore(machine));
 }
 
 /**
