@@ -8,11 +8,26 @@ import machineCode from "@code/examples/traffic-light/machine.ts?raw";
 import viewCode from "@code/examples/traffic-light/TrafficLightView.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
-A traffic light state machine that cycles through Red, Yellow, and Green states, demonstrating a state machine with multiple distinct states in a defined sequence.
+A traffic light state machine that cycles through Red, Yellow, and Green states in a defined sequence.
 
 <div className="not-content">
   <TrafficLightExample client:only="react" />
 </div>
+
+## When to Use This Pattern
+
+**Use simple state machines for:**
+- Systems with a fixed sequence of states
+- Processes that follow predictable patterns
+- UI components with distinct modes or phases
+- Any scenario where state transitions are deterministic and clear
+
+**Key benefits:**
+- Eliminates invalid states (can't have two lights at once)
+- Ensures proper sequence (can't skip from Red to Green)
+- Clear state-dependent behavior and styling
+- Easy to test and debug
+- Foundation for more complex state patterns
 
 ## Key Features
 

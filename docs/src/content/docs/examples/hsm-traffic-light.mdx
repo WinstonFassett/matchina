@@ -8,11 +8,25 @@ import flatMachineCode from "@code/examples/hsm-traffic-light/machine-flat.ts?ra
 import propMachineCode from "@code/examples/hsm-traffic-light/machine.ts?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
-Toggle below to compare flattened vs nested (propagating) HSM implementations.
+Comparison of flattened vs nested (propagating) hierarchical state machines.
 
 <div className="not-content">
   <Example client:only="react" />
 </div>
+
+## When to Use This Pattern
+
+**Use flattened HSMs for:**
+- Static hierarchies where the structure doesn't change at runtime
+- UI flows and wizards with predefined steps
+- Simple state serialization needs (string-based state keys)
+- Performance-critical scenarios with O(1) event handling
+
+**Use nested HSMs for:**
+- Dynamic composition where submachines can be added/removed
+- Independent actors that need to run in parallel
+- Complex state data that requires nested objects
+- Scenarios where event propagation is beneficial
 
 ## Comparison
 

@@ -40,40 +40,262 @@ Use hierarchy only when a state temporarily takes control and must return contro
 - Complex parameter threading reduces readability and reasoning
 - Example: `Empty: () => ({})` instead of `Empty: (selectedTags: string[]) => ({ selectedTags })`
 
+```typescript
+// GOOD: Simple state without parameters
+const states = defineStates({
+  Empty: () => ({}),                    // No data needed
+  Loading: () => ({ progress: 0 }),     // Minimal, clear data
+  Error: (message: string) => ({ message }), // Clear parameter purpose
+});
+
+// AVOID: Complex parameter threading
+const states = defineStates({
+  Empty: (selectedTags: string[], filterText: string, sortBy: SortOption) => ({
+    selectedTags,    // Why does Empty need tags?
+    filterText,      // Why does Empty need filter?
+    sortBy          // Complex state makes reasoning hard
+  }),
+});
+```
+
 **Present Tense Naming**
 - Use present tense or gerunds: `Ready`, `Waiting`, `Loading`, `Saving`, `Typing`
 - Avoid past tense states which can be ambiguous
 - States should describe what the thing **IS**, not what it **WAS**
+
+```typescript
+// GOOD: Present tense states describe current condition
+const states = defineStates({
+  Loading: () => ({}),           // Currently loading
+  Saving: () => ({}),           // Currently saving
+  Error: (message: string) => ({ message }), // Currently in error state
+  Ready: () => ({}),            // Currently ready for input
+});
+
+// AVOID: Past tense states are ambiguous
+const states = defineStates({
+  Loaded: () => ({}),           // Was loaded, but what's the current state?
+  Saved: () => ({}),            // Was saved, but now what?
+  Failed: () => ({}),           // Failed in the past, but what's happening now?
+});
+```
 
 **Mutual Exclusivity**
 - States must be mutually exclusive - no overlapping conditions
 - Avoid states like `Selecting` AND `Suggesting` that can be true simultaneously
 - Each state should represent a unique, non-overlapping condition
 
+```typescript
+// GOOD: Mutually exclusive states
+const states = defineStates({
+  Idle: () => ({}),              // Nothing happening
+  Selecting: (items: any[]) => ({ items }), // User is actively selecting
+  Suggesting: (suggestions: string[]) => ({ suggestions }), // Showing suggestions
+  Processing: () => ({}),        // System is processing
+});
+
+// AVOID: Overlapping state conditions
+const states = defineStates({
+  Selecting: () => ({}),         // User can select AND see suggestions simultaneously
+  Suggesting: () => ({}),        // These aren't mutually exclusive
+  // Better: combine into a single state or use separate machines
+});
+```
+
 ### Transition Design Principles
 
 **Single Exit States**
 - Prefer transitions that map to exactly one target state
 - Avoid functional transitions that return multiple possible states
-- Example: Instead of `typed: (value) => value ? "TextEntry" : "Empty"`, use:
+- Example: Instead of `typed: (inputText: string) => inputText ? "TextEntry" : "Empty"`, use:
   ```typescript
   Typing: {
-    toTextEntry: "TextEntry",
-    toEmpty: "Empty"
+    toTextEntry: "TextEntry",    // Clear transition purpose
+    toEmpty: "Empty"             // Clear transition purpose
   }
   ```
+
+```typescript
+// GOOD: Explicit transitions with clear intent
+const transitions = {
+  Typing: {
+    startTyping: "TextEntry",    // User begins typing
+    clearInput: "Empty",         // User clears input
+    submitText: "Submitting"     // User submits what they typed
+  }
+};
+
+// AVOID: Functional transitions with unclear logic
+const transitions = {
+  Typing: {
+    // What determines the target state? Hard to reason about
+    processInput: (inputText: string, isValid: boolean) => {
+      if (!inputText) return "Empty";
+      if (isValid) return "TextEntry";
+      return "Error";
+    }
+  }
+};
+```
 
 **Use Hooks for Conditional Logic**
 - Handle conditional logic in hooks rather than functional transitions
 - Use `resolveExit` hooks for fallback behavior
 - This keeps transitions inspectable and simplifies reasoning
 
+```typescript
+// GOOD: Use hooks for conditional logic
+const machine = createFlatMachine(states, transitions, "Empty", {
+  hooks: {
+    resolveExit: (fromState, toState, event) => {
+      // Handle conditional logic in a dedicated place
+      if (fromState.key === "Typing" && event.type === "submit") {
+        const text = event.payload.text;
+        if (!text.trim()) {
+          return "Empty"; // Fallback for empty input
+        }
+      }
+      return toState; // Default behavior
+    }
+  }
+});
+
+// AVOID: Complex functional transitions
+const transitions = {
+  Typing: {
+    submit: (text: string) => {
+      if (!text.trim()) return "Empty";      // Hidden logic
+      if (text.length > 100) return "Error"; // Hidden validation
+      return "Submitted";                     // Unclear conditions
+    }
+  }
+};
+```
+
 ### HSM Usage Patterns
 
 **HSMs Are Footguns**
-- Question whether HSMs help or hurt your specific use case
-- Most HSMs can be flattened into simple state machines
-- Prefer flattening when hierarchy isn't truly necessary
+
+Hierarchical state machines seem powerful but often create more problems than they solve. Before using HSMs, question whether they genuinely help your specific use case.
+
+**Concrete examples of HSM footguns:**
+
+**1. Semantic Grouping Anti-pattern**
+```typescript
+// BAD: Using HSM for categorization
+const states = defineStates({
+  "Viewing.Loading": undefined,    // Loading isn't a sub-state of Viewing
+  "Viewing.Error": undefined,      // Error can occur in any context
+  "Viewing.Success": undefined,    // Success is a result, not a state mode
+  "Editing.Loading": undefined,    // Duplicated Loading state
+  "Editing.Error": undefined,      // Duplicated Error state
+});
+
+// BETTER: Flat machine with clear states
+const states = defineStates({
+  Loading: undefined,
+  Viewing: undefined,
+  Editing: undefined,
+  Error: { message: string },
+  Success: { data: any },
+});
+```
+*Why this is a footgun:* Creates artificial hierarchy, duplicates states, and makes transitions ambiguous.
+
+**2. Over-nesting Anti-pattern**
+```typescript
+// BAD: Excessive nesting for simple UI
+const states = defineStates({
+  "Form.Active.Editing.Text": undefined,
+  "Form.Active.Editing.Dropdown": undefined,
+  "Form.Active.Validating.Text": undefined,
+  "Form.Active.Validating.Dropdown": undefined,
+  "Form.Inactive": undefined,
+});
+
+// BETTER: Flat machine with composable state
+const states = defineStates({
+  "EditingText": undefined,
+  "EditingDropdown": undefined,
+  "Validating": { field: "text" | "dropdown" },
+  "Inactive": undefined,
+});
+```
+*Why this is a footgun:* Complex state keys, difficult transitions, and unclear state relationships.
+
+**3. Control Flow Confusion Anti-pattern**
+```typescript
+// BAD: HSM for independent processes
+const states = defineStates({
+  "Payment.Processing": undefined,    // Payment doesn't control checkout
+  "Shipping.Calculating": undefined,  // Shipping is independent
+  "Checkout.Payment": undefined,      // Confusing: which payment state?
+  "Checkout.Shipping": undefined,     // Confusing: which shipping state?
+});
+
+// BETTER: Separate machines or flat orchestration
+const checkoutStates = defineStates({
+  GatheringInfo: undefined,
+  ProcessingPayment: undefined,
+  CalculatingShipping: undefined,
+  Completed: undefined,
+});
+```
+*Why this is a footgun:* Mixes independent processes, creates ambiguous control flow.
+
+**Decision Tree: When HSMs Make Sense vs When They're Footguns**
+
+```mermaid
+flowchart TD
+    A[Need to model state?] --> B{Is state temporarily<br/>delegating control?}
+    B -->|Yes| C{Does subprocess<br/>return control?}
+    B -->|No| D[Use flat machine]
+    C -->|Yes| E{Is hierarchy<br/>truly necessary?}
+    C -->|No| F[Use flat machine]
+    E -->|Yes| G[✅ HSMs make sense]
+    E -->|No| H[⚠️ Consider flat machine]
+    
+    D --> I[States describe<br/>what IS true]
+    F --> J[States are independent<br/>or parallel]
+    H --> K[Can be expressed<br/>without nesting]
+    
+    style G fill:#e8f5e8
+    style D fill:#ffe8e8
+    style F fill:#ffe8e8
+    style H fill:#fff3cd
+```
+
+**Real Business Examples:**
+
+**✅ Good HSM Design: Checkout Payment Flow**
+```typescript
+// GOOD: Payment temporarily takes control, then returns
+const states = defineStates({
+  "Checkout.GatheringInfo": undefined,
+  "Checkout.Payment.MethodEntry": undefined,    // Payment subprocess
+  "Checkout.Payment.Authorizing": undefined,    // Payment subprocess  
+  "Checkout.Payment.Authorized": undefined,      // Payment subprocess
+  "Checkout.Confirmation": undefined,           // Back to main flow
+});
+
+// Payment states are temporary delegation - they control the flow
+// and must return to Checkout when complete
+```
+
+**❌ Bad HSM Design: Overuse for UI Components**
+```typescript
+// BAD: Using HSM for simple UI categorization
+const states = defineStates({
+  "Header.LoggedIn": undefined,        // Login state isn't a sub-state of Header
+  "Header.LoggedOut": undefined,       // These are app-level states
+  "Sidebar.Collapsed": undefined,      // Independent UI concerns
+  "Sidebar.Expanded": undefined,      // Should not be nested
+  "Content.Loading": undefined,        // Content state is independent
+  "Content.Error": undefined,          // Error can occur anywhere
+});
+
+// These are independent concerns artificially nested
+```
 
 **True Substates Only**
 - Use HSMs for genuine delegation of control (processes/subprocesses)

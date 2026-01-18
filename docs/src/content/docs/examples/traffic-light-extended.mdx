@@ -12,11 +12,26 @@ import indexCode from "@code/examples/traffic-light-extended/index.tsx?raw";
 import CodeBlock from "@components/CodeBlock.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 
-An extended traffic light state machine that adds pedestrian crossing functionality, demonstrating how to model more complex systems with additional states and transitions.
+An extended traffic light system with pedestrian crossing functionality and exceptional conditions.
 
 <div className="not-content">
   <ExtendedTrafficLightExample client:only="react" />
 </div>
+
+## When to Use This Pattern
+
+**Use extended state machines for:**
+- Systems that need to handle both normal and exceptional conditions
+- Applications with external inputs that modify behavior based on current state
+- Complex UI components with multiple modes and special states
+- Systems that require different behavior in different contexts
+
+**Key benefits:**
+- Clean handling of exceptional conditions (emergency, malfunction modes)
+- State-dependent response to external inputs
+- Clear separation between normal and special operation modes
+- Easier to add new states and transitions as requirements evolve
+- Better modeling of real-world complexity
 
 ## Implementation Details
 
@@ -63,6 +78,5 @@ This pattern demonstrates how state machines can handle external inputs differen
 
 Now that you've seen a more complex state machine example, you might want to explore:
 
-- [Nested States](/matchina/guides/nested-states) - Create hierarchical state machines
+- [Hierarchical Machines](/matchina/guides/hierarchical-machines) - Create hierarchical state machines
 - [Effect Handlers](/matchina/guides/effects) - Add side effects to your transitions
-- [History States](/matchina/guides/history) - Remember previous states

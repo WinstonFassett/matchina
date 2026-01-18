@@ -8,11 +8,26 @@ import machineCode from "@code/examples/hsm-combobox/machine.ts?raw";
 import flatMachineCode from "@code/examples/hsm-combobox/machine-flat.ts?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
-Autocomplete tag editor with keyboard navigation. Toggle below to compare flattened vs nested HSM implementations.
+An autocomplete tag editor with complex keyboard navigation and nested state management.
 
 <div className="not-content">
   <Example client:only="react" />
 </div>
+
+## When to Use This Pattern
+
+**Use hierarchical combobox for:**
+- Complex form controls with multiple interaction modes
+- Autocomplete components with keyboard navigation
+- Tag editors that need to manage both selection and input states
+- UI components that have distinct operational modes with sub-behaviors
+
+**Key benefits:**
+- Clear separation between UI mode and interaction logic
+- Easier keyboard navigation implementation
+- Better accessibility support through structured state
+- Simplified testing of individual interaction modes
+- Reusable patterns for other complex form controls
 
 <CodeTabs
   files={[

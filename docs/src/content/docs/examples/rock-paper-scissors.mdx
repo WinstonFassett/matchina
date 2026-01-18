@@ -15,15 +15,27 @@ import CodeBlock from "@components/CodeBlock.astro";
 import CodeTabs from "@components/CodeTabs.astro";
 import { Mermaid } from "@matchina/viz-mermaid";
 
-## Interactive Rock-Paper-Scissors Game
+A game state machine that manages the complete game flow, from player selection through winner determination and score tracking.
 
 <div className="not-content">
   <RockPaperScissorsExample client:only="react" />
 </div>
 
-## Introduction
+## When to Use This Pattern
 
-This example demonstrates a Rock-Paper-Scissors game state machine that manages the game flow, tracks scores, and determines winners. It shows how state machines can handle complex conditional logic and state transitions in an interactive application.
+**Use game state machines for:**
+- Turn-based games with distinct phases and rules
+- Interactive applications that need to enforce business logic
+- Scenarios where actions are only valid in certain states
+- Complex conditional logic that depends on current game state
+- Multi-step processes that need to track progress and context
+
+**Key benefits:**
+- Enforces game rules through state transitions
+- Prevents invalid actions by restricting available events
+- Clear separation of game phases and their logic
+- Easier testing of individual game states
+- Simplified debugging of game flow issues
 
 ## Source Code
 
