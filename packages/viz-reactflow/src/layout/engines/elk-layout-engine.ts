@@ -98,20 +98,8 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
     const startTime = performance.now();
     const validatedSettings = this.validateSettings(settings);
     
-    console.log('🔍 DEBUG: ELKLayoutEngine.calculateLayout', { 
-      algorithm: validatedSettings.algorithm,
-      nodeCount: nodes.length,
-      edgeCount: edges.length 
-    });
-
     try {
       const elkGraph = this.toElkGraph(nodes, edges, validatedSettings);
-      
-      // DEBUG: Log V2 ELK options for comparison with V1
-      // eslint-disable-next-line unicorn/no-null
-      console.log('[V2 ELK] layoutOptions:', JSON.stringify(elkGraph.layoutOptions, null, 2));
-      console.log('[V2 ELK] node count:', elkGraph.children?.length);
-      console.log('[V2 ELK] first node dimensions:', elkGraph.children?.[0] ? { w: elkGraph.children[0].width, h: elkGraph.children[0].height } : 'none');
       
       // Run ELK layout
       const layoutedGraph = await this.elk.layout(elkGraph);
@@ -368,11 +356,6 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
             groupLayoutOptions['elk.layered.considerModelOrder.hierarchy'] = 'true';
             groupLayoutOptions['elk.hierarchyHandling'] = 'INCLUDE_CHILDREN';
           }
-          
-          // DEBUG: Log what direction we're applying
-          console.log(`[ALTERNATING] Level ${level} (${node.id}) using direction: ${childDirection} for algorithm ${algorithm}`);
-          // eslint-disable-next-line unicorn/no-null
-          console.log(`[ALTERNATING] Group layoutOptions:`, JSON.stringify(groupLayoutOptions, null, 2));
         }
         
         elkNode.layoutOptions = {

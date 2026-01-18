@@ -30,7 +30,6 @@ export function createFlatComboboxMachine() {
         },
         // Child machine transitions
         on: {
-          
           blur: "^Inactive",
         },
       },
@@ -47,25 +46,11 @@ export function createFlatComboboxMachine() {
     })
   );
 
-  const machineApi = eventApi(machine);
-
-  // Component-level API - all actions go through machine, effects coordinate
-  const combobox = Object.assign(machine, {
+  return Object.assign(machine, {
     model: store,
     ...store.api,
-    ...machineApi,    
-    blur: () => {
-      machine.send("blur");
-    },
-    type: (input: string) => {
-      machine.model.api.setInput(input);
-      machine.send("type", input);
-    },
-    select: (index: number) => {
-      machine.send("select", index);
-    },
-  });
-  return combobox;
+    ...eventApi(machine)
+  });  
 }
 
 export type FlatComboboxMachine = ReturnType<typeof createFlatComboboxMachine>;

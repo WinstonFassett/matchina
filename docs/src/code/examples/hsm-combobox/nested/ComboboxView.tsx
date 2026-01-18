@@ -94,7 +94,6 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
             type="text"
             value={input}
             onChange={(e) => {
-              machine.model.api.setInput(e.target.value);
               machine.type(e.target.value);
             }}
             onFocus={() => machine.send("focus")}

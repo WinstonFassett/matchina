@@ -2,7 +2,6 @@ import { defineStates, effect, eventApi, matchina, setup } from "matchina";
 import { nestedHsmRoot, submachine } from "matchina/hsm";
 import { createComboboxStore } from "../store";
 
-
 export function createComboboxMachine() {
   const store = createComboboxStore()
 
@@ -55,7 +54,6 @@ export function createComboboxMachine() {
           target.getChange().match({
             select: store.api.selectHighlighted,
             type: (input: any) => {
-              console.log('typed', input)
               combobox.model.api.setInput(input);
             },            
           }, false)
@@ -64,17 +62,10 @@ export function createComboboxMachine() {
     })
   );
 
-  // Add event API to nested machine
-  const api = eventApi(hsm);
-
-  // Clean API composition - Object.assign to preserve shape data
   const combobox = Object.assign(hsm, {
     model: store,
     ...store.api,
-    ...api,
-    type: (input: string) => {
-      combobox.send("type", input);
-    },    
+    ...eventApi(hsm),
   });
 
   return combobox;
