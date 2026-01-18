@@ -1,11 +1,10 @@
 import { createHSM } from "matchina/hsm";
-import { setup, effect, addEventApi, addStoreApi } from "matchina";
+import { setup, effect, addEventApi, addStoreApi, eventApi } from "matchina";
 import { createComboboxStore } from "./store";
 
 export function createFlatComboboxMachine() {
   const store = addStoreApi(createComboboxStore());
 
-  // HSM: Inactive, Active.Empty, Active.Suggesting
   const machine = createHSM({
     initial: "Inactive",
     states: {
@@ -14,6 +13,7 @@ export function createFlatComboboxMachine() {
           focus: "Active",
         },
       },
+      // Define the Child Machine
       Active: {
         initial: "Empty",
         states: {
@@ -24,6 +24,7 @@ export function createFlatComboboxMachine() {
             },
           },
         },
+        // Child machine transitions
         on: {
           type: "Suggesting",
           blur: "^Inactive",
@@ -40,42 +41,24 @@ export function createFlatComboboxMachine() {
     })
   );
 
-  // Add event API to machine
-  addEventApi(machine);
-
+  const machineApi = eventApi(machine);
   // Component-level API - all actions go through machine, effects coordinate
   const combobox = Object.assign(machine, {
     model: store,
-
-    // Machine state transitions (exposed directly)
-    focus: () => machine.send("focus"),
-    blur: () => machine.send("blur"),
-    select: () => machine.send("select"),
-
+    ...store.api,
+    ...machineApi,    
     // Store operations that update state and trigger machine events
-    setInput: (input: string) => {
-      store.api.setInput(input);
-      machine.send("type");
-    },
-
-    addTag: (tag: string) => {
-      store.api.addTag(tag);
-    },
-
-    // Pure store operations (no machine events)
-    removeTag: store.api.removeTag,
-    highlight: store.api.highlight,
-    setHighlighted: store.api.setHighlighted,
+    // setInput: (input: string) => {
+    //   store.api.setInput(input);
+    //   machine.send("type");
+    // },
 
     // Convenience methods that combine store + machine
-    selectSuggestion: () => {
-      store.api.selectHighlighted();
-      machine.send("select");
-    },
-
-    dismiss: () => {
-      machine.send("select");
-    },
+    // selectSuggestion: () => {
+    //   store.api.selectHighlighted();
+    //   machine.send("select");
+    // },
+    dismiss: machineApi.dismiss,
   });
 
   return combobox;
