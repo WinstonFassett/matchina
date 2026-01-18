@@ -68,9 +68,7 @@ export function createComboboxMachine() {
 
   // Clean API composition - Object.assign to preserve shape data
   const combobox = Object.assign(hsm, {
-    // Expose model
     model: store,
-    // Mix in entire store API
     ...store.api,
     ...api,
     type: (input: string) => {
