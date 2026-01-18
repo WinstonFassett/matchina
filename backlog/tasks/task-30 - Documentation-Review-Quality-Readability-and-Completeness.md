@@ -75,20 +75,18 @@ Comprehensive quality review of all new and impacted documentation changes on th
 
 ## Remediation Categories
 
-### Critical (Must Fix)
-- [ ] Fix broken file reference (E2E coverage report doesn't exist)
+These issues are captured in separate tickets (task-31 through task-35):
 
-### High (Impacts User Experience)
-- [ ] Add intro context to all example pages (explain what pattern and when to use)
-- [ ] Standardize example documentation structure
-- [ ] Add decision tree to HSM guide (when to use HSM vs flat)
-- [ ] Soften tone in HSM guide ("considerations" vs "footguns")
+**Critical:**
+- task-31: Fix broken file reference in README.md
 
-### Medium (Improves Clarity)
-- [ ] Add real business examples to HSM guide
-- [ ] Clarify/expand type examples in guides
-- [ ] Move or condense Philosophy section in README.md
-- [ ] Tighten README.md quick start focus
+**High-Impact:**
+- task-32: Add context to all example pages
+- task-33: Improve HSM guide (tone, decision tree, examples)
+- task-34: Tighten README.md quick start focus
+
+**Medium:**
+- task-35: Clarify examples and consistency pass
 
 ## Implementation Plan
 
