@@ -3,7 +3,7 @@ import {
   buildFlattenedShape,
   buildMachineStructure,
 } from "../src/shape";
-import { createDescriptorFromMachine } from "../src/interfaces";
+import { createDescriptorFromMachine } from "../src/shape";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
 
