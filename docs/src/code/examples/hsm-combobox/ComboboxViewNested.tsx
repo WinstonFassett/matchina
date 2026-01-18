@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { useMachine } from "matchina/react";
+import { setup, effect } from "matchina";
 import type { NestedComboboxMachine } from "./machine-nested";
 
 interface ComboboxViewProps {
@@ -16,14 +17,18 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
 
   const state = machine.getState();
   const isActive = state.key !== "Inactive";
-  const isSuggesting = state.is("Active.Suggesting");
+  
+  const isSuggesting = state.is("Active") && state.data.machine.getState().is("Suggesting");
 
-  // Focus input when entering Active state
-  useEffect(() => {
-    if (isActive) {
-      inputRef.current?.focus();
-    }
-  }, [isActive]);
+  useEffect(() =>
+    setup(machine)(
+      effect((ev: any) => {
+        if (ev.type === "focus") inputRef.current?.focus();
+        if (ev.type === "blur") inputRef.current?.blur();
+      })
+    ),
+    [machine]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -90,7 +95,7 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
             value={input}
             onChange={(e) => {
               machine.model.api.setInput(e.target.value);
-              machine.send("type");
+              machine.type(e.target.value);
             }}
             onFocus={() => machine.send("focus")}
             onBlur={() => machine.send("blur")}

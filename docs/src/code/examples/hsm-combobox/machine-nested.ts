@@ -1,9 +1,8 @@
-import { addEventApi, defineStates, effect, matchina, setup } from "matchina";
+import { defineStates, effect, eventApi, matchina, setup } from "matchina";
 import { nestedHsmRoot, submachine } from "matchina/hsm";
 import { createComboboxStore } from "./store";
 
 
-// 3. Create the Nested HSM Machine
 export function createComboboxMachine() {
   const store = createComboboxStore()
 
@@ -46,30 +45,26 @@ export function createComboboxMachine() {
 
   const hsm = nestedHsmRoot(rootMachine);
 
-  // Get input mode machine from state to wire up effects
-  const getInputMode = () => {
-    const state = hsm.getState();
-    return state.is("Active") ? state.data.machine : null;
-  };
-
   // Effects coordinate machine transitions with store updates
   setup(hsm)(
     effect((ev) => {
-      const inputMode = getInputMode();
-      
       ev.match({
         focus: store.api.clear,
         blur: store.api.clear,
-        select: store.api.selectHighlighted,
-        type: () => {
-          // TODO: Handle child machine transition without send()
-        },
-      });
+        "child.change": ({ target }) => {
+          target.getChange().match({
+            select: store.api.selectHighlighted,
+            type: (ev: any) => {
+              console.log('typed', ev)
+            },            
+          }, false)
+        }
+      }, false);
     })
   );
 
   // Add event API to nested machine
-  addEventApi(hsm);
+  const api = eventApi(hsm);
 
   // Clean API composition - Object.assign to preserve shape data
   const combobox = Object.assign(hsm, {
@@ -77,6 +72,11 @@ export function createComboboxMachine() {
     model: store,
     // Mix in entire store API
     ...store.api,
+    ...api,
+    type: (input: string) => {
+      combobox.model.api.setInput(input);
+      combobox.send("type", input);
+    },    
   });
 
   return combobox;

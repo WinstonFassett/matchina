@@ -8,7 +8,7 @@ import { MachineVisualizer } from "@components/MachineVisualizer";
 type Mode = "flat" | "nested";
 
 export default function ComboboxExample() {
-  const [mode, setMode] = useState<Mode>("flat");
+  const [mode, setMode] = useState<Mode>("nested");
 
   // Re-create machine when mode changes
   const { flatMachine, nestedMachine } = useMemo(() => {

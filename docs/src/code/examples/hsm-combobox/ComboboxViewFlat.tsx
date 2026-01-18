@@ -107,7 +107,6 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
                   key={suggestion}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    console.log('down', index);
                     machine.select(index);
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
