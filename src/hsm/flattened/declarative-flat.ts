@@ -189,33 +189,29 @@ function resolveInitialChild(
 
 /**
  * Create a flattened machine from declarative hierarchical config
+ * 
+ * This API provides ergonomic hierarchical definition with improved type inference.
+ * For maximum type safety, use `as const` with your config.
  *
- * ⚠️ **TYPE SAFETY TRADEOFF**: This API trades type inference for ergonomics.
- * State keys and transitions are determined at runtime, so TypeScript cannot
- * provide exhaustive type checking or autocomplete for state/event names.
- *
- * **For maximum type safety**, use `defineStates()` directly with `createMachine()`:
+ * @example
  * ```typescript
- * const states = defineStates({
- *   'Payment.MethodEntry': () => ({}),
- *   'Payment.Authorized': () => ({})
- * });
- * const machine = createMachine(states, transitions, initial);
- * // ✅ Full type inference for states and events
+ * const machine = createHSM({
+ *   initial: 'Payment',
+ *   states: {
+ *     Payment: {
+ *       initial: 'MethodEntry',
+ *       states: {
+ *         MethodEntry: {
+ *           data: (amount: number) => ({ amount }),
+ *           on: { authorize: 'Authorizing' }
+ *         }
+ *       }
+ *     }
+ *   }
+ * } as const);
  * ```
- *
- * **Use this API when**:
- * - Prototyping or less type-critical code
- * - DRY hierarchy definition is more important than type safety
- * - State structure is simple and unlikely to change
- *
- * Benefits:
- * - Define hierarchy ONCE (no repetitive dot-notation)
- * - Auto-flattens to dot-notation internally
- * - Generates synthetic parent states automatically
- * - DRY and elegant
  */
-export function createHSM(config: DeclarativeFlatMachineConfig) {
+export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 
@@ -266,7 +262,9 @@ export function createHSM(config: DeclarativeFlatMachineConfig) {
   // Users requiring maximum type safety should use defineStates() directly with createMachine()
   // Note: internal createFlatMachine already applies parent transition fallback and child.exit handling
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
-}/**
+}
+
+/**
  * Internal flat machine creation from states and transitions.
  *
  * Handles all internal complexity:
