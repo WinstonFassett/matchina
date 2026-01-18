@@ -36,12 +36,12 @@ export function createFlatComboboxMachine() {
     },
   });
 
-  // Effects coordinate machine transitions with store updates
   setup(machine)(
     effect((ev: any) => {
       ev.match({
-        select: () => store.api.selectHighlighted(),
-        blur: store.api.clear
+        select: store.api.selectHighlighted,
+        blur: store.api.clear,
+        type: store.api.setInput,
       }, false)
     })
   );

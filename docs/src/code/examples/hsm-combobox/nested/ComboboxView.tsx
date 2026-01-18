@@ -17,7 +17,6 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
 
   const state = machine.getState();
   const isActive = state.key !== "Inactive";
-  
   const isSuggesting = state.is("Active") && state.data.machine.getState().is("Suggesting");
 
   useEffect(() =>
