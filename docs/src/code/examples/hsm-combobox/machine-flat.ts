@@ -17,7 +17,11 @@ export function createFlatComboboxMachine() {
       Active: {
         initial: "Empty",
         states: {
-          Empty: {},
+          Empty: {
+            on: {
+              type: "Suggesting",
+            }
+          },
           Suggesting: {
             on: {
               select: "Empty",
@@ -26,7 +30,7 @@ export function createFlatComboboxMachine() {
         },
         // Child machine transitions
         on: {
-          type: "Suggesting",
+          
           blur: "^Inactive",
         },
       },
@@ -36,31 +40,35 @@ export function createFlatComboboxMachine() {
   // Effects coordinate machine transitions with store updates
   setup(machine)(
     effect((ev: any) => {
-      if (ev.type === "select") store.api.selectHighlighted();
-      if (ev.type === "blur") store.api.clear();
+      ev.match({
+        select: () => store.api.selectHighlighted(),
+        blur: store.api.clear
+      }, false)
     })
   );
 
   const machineApi = eventApi(machine);
+  console.log({ machineApi })
   // Component-level API - all actions go through machine, effects coordinate
   const combobox = Object.assign(machine, {
     model: store,
     ...store.api,
     ...machineApi,    
-    // Store operations that update state and trigger machine events
-    // setInput: (input: string) => {
-    //   store.api.setInput(input);
-    //   machine.send("type");
-    // },
-
-    // Convenience methods that combine store + machine
-    // selectSuggestion: () => {
-    //   store.api.selectHighlighted();
-    //   machine.send("select");
-    // },
-    dismiss: machineApi.dismiss,
+    blur: () => {
+      console.log("blur");
+      machine.send("blur");
+    },
+    type: (input: string) => {
+      console.log("type", input);
+      // machineApi.type(input);
+      machine.model.api.setInput(input);
+      machine.send("type", input);
+    },
+    select: (index: number) => {
+      console.log("select", index);
+      machine.send("select", index);
+    },
   });
-
   return combobox;
 }
 

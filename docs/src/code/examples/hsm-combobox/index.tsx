@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFlatComboboxMachine } from "./machine-flat";
-import { createComboboxMachine } from "./machine";
-import { ComboboxView } from "./ComboboxViewNested";
+import { createComboboxMachine } from "./machine-nested";
+import { ComboboxViewNested } from "./ComboboxViewNested";
 import { ComboboxViewFlat } from "./ComboboxViewFlat";
 import { MachineVisualizer } from "@components/MachineVisualizer";
 
@@ -51,7 +51,7 @@ export default function HSMComboboxIndex() {
       {mode === "flat" ? (
         <ComboboxViewFlat machine={flatMachine} />
       ) : (
-        <ComboboxView machine={hierarchicalMachine} />
+        <ComboboxViewNested machine={hierarchicalMachine} />
       )}
 
       <MachineVisualizer

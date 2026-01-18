@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { effect, setup } from "matchina";
 import { useMachine } from "matchina/react";
 import type { FlatComboboxMachine } from "./machine-flat";
 
@@ -17,13 +18,16 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
   const state = machine.getState();
   const isActive = state.key !== "Inactive";
   const isSuggesting = state.is("Active.Suggesting");
-
-  // Focus input when entering Active state
-  useEffect(() => {
-    if (isActive) {
-      inputRef.current?.focus();
-    }
-  }, [isActive]);
+  
+  useEffect(() =>
+    setup(machine)(
+      effect((ev: any) => {
+        if (ev.type === "focus") inputRef.current?.focus();
+        if (ev.type === "blur") inputRef.current?.blur();
+      })
+    ),
+    [machine]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -31,7 +35,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     switch (e.key) {
       case "Escape":
         e.preventDefault();
-        machine.send("blur");
+        machine.blur();
         break;
       case "Backspace":
         if (!input && selectedTags.length > 0) {
@@ -88,12 +92,9 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => {
-              machine.model.api.setInput(e.target.value);
-              machine.send("type");
-            }}
-            onFocus={() => machine.send("focus")}
-            onBlur={() => machine.send("blur")}
+            onChange={(e) => { machine.type(e.target.value) }}
+            onFocus={machine.focus}
+            onBlur={machine.blur}
             onKeyDown={handleKeyDown}
             placeholder="Type to add tags..."
             className="w-full px-1 py-1 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
@@ -106,8 +107,8 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
                   key={suggestion}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    machine.setHighlighted(index);
-                    machine.select();
+                    console.log('down', index);
+                    machine.select(index);
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
                     index === highlightedIndex
