@@ -95,5 +95,36 @@
     "name": "with-subscribe",
     "path": "src/extras/with-subscribe.ts",
     "import": "{ withSubscribe }"
+  },
+  {
+    "name": "hsm",
+    "path": "src/hsm/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "shape",
+    "path": "src/shape/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "inspect",
+    "path": "src/inspect/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "viz",
+    "path": "src/viz/index.ts",
+    "import": "*"
+  },
+  {
+    "name": "hsm-basic",
+    "path": "src/hsm/index.ts",
+    "import": "{ createFlatMachine, describeHSM }"
+  },
+  {
+    "name": "hsm-with-viz",
+    "path": "src/hsm/index.ts",
+    "import": "{ createFlatMachine, describeHSM }",
+    "ignore": ["react", "react-dom"]
   }
 ]
