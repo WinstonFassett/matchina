@@ -39,21 +39,3 @@ export function submachine<F extends () => any>(
 
   return factory;
 }
-
-/**
- * Alternative syntax for creating submachine with options object.
- * 
- * @param opts - Configuration object
- * @param opts.create - Factory function that creates the child machine
- * @param opts.id - Optional identifier for the child machine
- * @returns State factory that embeds the child machine
- */
-export function submachineOptions<F extends () => any>(opts: {
-  create: F;
-  id?: string;
-}) {
-  return () => ({
-    machine: opts.create() as ReturnType<F>,
-    ...(opts.id ? { id: opts.id } : {}),
-  });
-}

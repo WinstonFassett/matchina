@@ -1,13 +1,14 @@
 ---
 id: task-41
 title: HSM API Naming - Intuitive Developer-Friendly Names
-status: In Progress
+status: Done
 assignee:
   - '@cascade'
 created_date: '2026-01-18 18:07'
-updated_date: '2026-01-18 18:12'
+updated_date: '2026-01-18 18:44'
 labels: []
 dependencies: []
+ordinal: 13000
 ---
 
 ## Description

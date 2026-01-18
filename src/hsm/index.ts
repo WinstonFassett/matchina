@@ -23,7 +23,7 @@ export {
 export {
   type HierarchicalEvents, type HierarchicalMachine
 } from "./nested/types";
-export { submachine, submachineOptions } from "./nested/submachine";
+export { submachine } from "./nested/submachine";
 export { sendWhen } from "./utility-types";
 export type {
   ActiveEvents, AllEventsOf,
