@@ -2,6 +2,7 @@
 export { buildShapeTree } from "./build-visualizer-tree";
 
 // Runtime inspection utilities
-export { getFullKey, getDepth, getActiveStatePath } from './state';
+export { inspect } from './instance';
 export { getStateStack } from './stack';
-export { inspect, getMachineInstance } from './instance';
+export { getActiveStatePath, getDepth, getFullKey } from './state';
+

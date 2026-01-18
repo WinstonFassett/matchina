@@ -26,12 +26,3 @@ export function inspect(machine: AnyMachine) {
     chain,
   };
 }
-
-/**
- * Get machine instance from state (identity function for now)
- * @param machine - Machine instance
- * @returns Same machine instance
- */
-export function getMachineInstance(machine: AnyMachine): AnyMachine {
-  return machine;
-}

@@ -3,12 +3,10 @@
  */
 
 export type {
-  MachineDescriptor,
-  MachineInstance
+  MachineDescriptor
 } from './machine';
 
 export {
-  isMachineDescriptor,
-  isMachineInstance,
-  createDescriptorFromMachine
+  createDescriptorFromMachine, isMachineDescriptor
 } from './machine';
+

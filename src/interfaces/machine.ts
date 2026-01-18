@@ -6,7 +6,6 @@
  * to implement the same contracts.
  */
 
-import type { FactoryKeyedState } from '../state-keyed';
 import type { KeyedStateFactory } from '../state-keyed';
 
 /**
@@ -36,29 +35,6 @@ export interface MachineDescriptor {
 }
 
 /**
- * Interface for runtime machine inspection
- * 
- * Provides access to the runtime state and behavior of a machine instance.
- * Used by inspection utilities and visualizers for runtime monitoring.
- */
-export interface MachineInstance {
-  /** Get the current state of the machine */
-  getState(): FactoryKeyedState<any>;
-  
-  /** Send an event to the machine */
-  send(event: string): void;
-  
-  /** Subscribe to state changes */
-  subscribe(callback: (state: FactoryKeyedState<any>) => void): () => void;
-  
-  /** Get the current active state path hierarchy */
-  getActivePath(): string[];
-  
-  /** Get the stack of active states (for hierarchical machines) */
-  getStateStack(): FactoryKeyedState<any>[];
-}
-
-/**
  * Type guard to check if an object implements MachineDescriptor
  */
 export function isMachineDescriptor(obj: unknown): obj is MachineDescriptor {
@@ -73,26 +49,6 @@ export function isMachineDescriptor(obj: unknown): obj is MachineDescriptor {
     obj.transitions instanceof Map &&
     obj.hierarchy instanceof Map &&
     typeof obj.initial === 'string'
-  );
-}
-
-/**
- * Type guard to check if an object implements MachineInstance
- */
-export function isMachineInstance(obj: unknown): obj is MachineInstance {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'getState' in obj &&
-    'send' in obj &&
-    'subscribe' in obj &&
-    'getActivePath' in obj &&
-    'getStateStack' in obj &&
-    typeof obj.getState === 'function' &&
-    typeof obj.send === 'function' &&
-    typeof obj.subscribe === 'function' &&
-    typeof obj.getActivePath === 'function' &&
-    typeof obj.getStateStack === 'function'
   );
 }
 

@@ -5,9 +5,9 @@
  * buildMachineStructure: computes shape from hierarchical machine structure (lazy/runtime)
  */
 
+import type { MachineDescriptor } from "../interfaces";
 import { getTargets } from "../transition-helper";
 import type { MachineShape, StateNode } from "./definition";
-import type { MachineDescriptor } from "../interfaces";
 
 /**
  * Build shape from flattened machine
