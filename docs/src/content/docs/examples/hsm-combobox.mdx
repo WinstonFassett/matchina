@@ -4,7 +4,7 @@ description: An autocomplete tag editor demonstrating complex nested state manag
 ---
 
 import Example from "@code/examples/hsm-combobox/example";
-import machineCode from "@code/examples/hsm-combobox/machine.ts?raw";
+import machineCode from "@code/examples/hsm-combobox/machine-nested.ts?raw";
 import flatMachineCode from "@code/examples/hsm-combobox/machine-flat.ts?raw";
 import CodeTabs from "@components/CodeTabs.astro";
 
@@ -31,7 +31,7 @@ Autocomplete tag editor with complex keyboard navigation and nested state manage
 
 <CodeTabs
   files={[
-    { name: "machine.ts (Hierarchical)", code: machineCode },
+    { name: "machine.ts (Nested)", code: machineCode },
     { name: "machine-flat.ts (Flattened)", code: flatMachineCode },
   ]}
 />
