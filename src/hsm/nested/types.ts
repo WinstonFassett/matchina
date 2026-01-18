@@ -1,6 +1,6 @@
 import type { FactoryMachine } from "../../factory-machine-types";
 import { createLazyShapeStore } from "../../shape";
-import { AllEventsOf } from "../types";
+import { AllEventsOf } from "../utility-types";
 
 // Enhanced machine interfaces for better type safety
 
