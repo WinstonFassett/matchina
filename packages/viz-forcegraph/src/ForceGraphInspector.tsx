@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useEffect, useState } from "react";
 import { useMachine } from "matchina/react";
 import type { InspectorTheme } from "matchina/viz";
 import { defaultTheme } from "matchina/viz";
-import { buildShapeTree } from "matchina/inspect";
 import { buildForceGraphData } from "./utils/shape-to-force-graph";
 
 interface Diagram {
@@ -123,31 +122,29 @@ export default function ForceGraphInspector({
   console.log("ForceGraph: Has notify:", typeof definition.notify);
 
   const diagram: Diagram = useMemo(() => {
-    // Handle both HSM machines (with shape) and legacy factory machines
-    if (definition.shape?.getState) {
-      // HSM Machine - use the new converter
-      const shape = definition.shape.getState();
+    // All machines should have shapes now
+    const shape = definition.shape.getState();
 
-      if (!shape?.states) {
-        return { nodes: [], links: [] };
-      }
+    if (!shape?.states) {
+      return { nodes: [], links: [] };
+    }
 
-      // Use the new converter that properly handles string IDs and validation
-      const graphData = buildForceGraphData(shape, { showHierarchy: true });
+    // Use the new converter that properly handles string IDs and validation
+    const graphData = buildForceGraphData(shape, { showHierarchy: true });
 
-      // Convert to the old Diagram format for compatibility with existing rendering code
-      // But preserve new hierarchy information for enhanced rendering
-      return {
-        nodes: graphData.nodes.map((node) => ({
-          id: node.id,
-          name: node.name,
-          // Pass through hierarchy info for rendering
-          isGroup: node.isGroup,
-          level: node.level,
-          group: node.group,
-          val: node.val,
-          color: node.color,
-          fullKey: node.fullKey,
+    // Convert to the old Diagram format for compatibility with existing rendering code
+    // But preserve new hierarchy information for enhanced rendering
+    return {
+      nodes: graphData.nodes.map((node) => ({
+        id: node.id,
+        name: node.name,
+        // Pass through hierarchy info for rendering
+        isGroup: node.isGroup,
+        level: node.level,
+        group: node.group,
+        val: node.val,
+        color: node.color,
+        fullKey: node.fullKey,
         })),
         links: graphData.links.map((link) => ({
           name: link.event,
@@ -158,65 +155,6 @@ export default function ForceGraphInspector({
           value: link.value,
         })),
       };
-    } else {
-      // Legacy Factory Machine - convert to ForceGraph format
-      const currentState = definition.getState?.();
-      const transitions = definition.transitions || {};
-
-      if (!currentState) {
-        return { nodes: [], links: [] };
-      }
-
-      // Extract states from transitions
-      const stateNames = new Set<string>();
-      stateNames.add(currentState.key);
-
-      // Add all target states from transitions
-      Object.values(transitions).forEach((transitionMap: any) => {
-        if (typeof transitionMap === "object") {
-          Object.values(transitionMap).forEach((targetState: any) => {
-            if (typeof targetState === "string") {
-              stateNames.add(targetState);
-            }
-          });
-        }
-      });
-
-      // Create nodes
-      const nodes = Array.from(stateNames).map((stateName) => ({
-        id: stateName,
-        name: stateName,
-        isGroup: false,
-        level: 0,
-        val: stateName === currentState.key ? 15 : 10,
-        color: stateName === currentState.key ? "#60a5fa" : "#8b5cf6",
-        fullKey: stateName,
-      }));
-
-      // Create links
-      const links: any[] = [];
-      Object.entries(transitions).forEach(
-        ([sourceState, transitionMap]: [string, any]) => {
-          if (typeof transitionMap === "object") {
-            Object.entries(transitionMap).forEach(
-              ([eventName, targetState]: [string, any]) => {
-                if (typeof targetState === "string") {
-                  links.push({
-                    name: eventName,
-                    source: sourceState,
-                    target: targetState,
-                    type: "transition",
-                    value: 1,
-                  });
-                }
-              }
-            );
-          }
-        }
-      );
-
-      return { nodes, links };
-    }
   }, [definition]);
 
   // Handle value tracking using the working pattern from SketchInspector
@@ -227,18 +165,11 @@ export default function ForceGraphInspector({
       currentState?.fullKey
     );
 
-    if (definition.shape?.getState) {
-      // HSM Machine - use current state from machine
-      const result =
-        currentState?.key || currentState?.fullKey || valueFromProp;
-      console.log("ForceGraph: HSM result:", result);
-      return result;
-    } else {
-      // Legacy Factory Machine - get current state from machine
-      const result = currentState?.key || valueFromProp;
-      console.log("ForceGraph: Legacy result:", result);
-      return result;
-    }
+    // All machines should have shapes now
+    const result =
+      currentState?.key || currentState?.fullKey || valueFromProp;
+    console.log("ForceGraph: result:", result);
+    return result;
   }, [currentState, valueFromProp]);
 
   const valueRef = useRef(currentValue);

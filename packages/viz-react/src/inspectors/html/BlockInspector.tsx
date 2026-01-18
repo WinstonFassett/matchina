@@ -8,7 +8,6 @@ import { useMachine } from "matchina/react";
 import type { MachineShape, StateNode } from "matchina/hsm/shape-types";
 import type { InspectorTheme } from "matchina/viz";
 import { defaultTheme, generateCSSVariables } from "matchina/viz";
-import { buildShapeTree } from "matchina/inspect";
 import "./BlockInspector.css";
 
 interface BlockInspectorProps {
@@ -131,40 +130,9 @@ function BlockInspector({
       return existingShape;
     }
     
-    // Fallback: build shape tree from machine structure for non-HSM machines
-    try {
-      const tree = buildShapeTree(machine);
-      
-      // Convert tree back to a shape-like structure for compatibility
-      // Create a mock shape with the tree structure
-      const mockShape: MachineShape = {
-        initialKey: tree.initial,
-        states: new Map(),
-        transitions: new Map(),
-        hierarchy: new Map(),
-      };
-      
-      // Convert tree states to Map
-      Object.entries(tree.states || {}).forEach(([key, state]: [string, any]) => {
-        mockShape.states.set(key, {
-          key,
-          fullKey: state.fullKey || key,
-        });
-        
-        // Add transitions
-        if (state.on) {
-          mockShape.transitions.set(key, new Map(Object.entries(state.on)));
-        }
-        
-        // For non-HSM machines, all states are root states (no hierarchy)
-        mockShape.hierarchy.set(key, undefined);
-      });
-      
-      return mockShape;
-    } catch (error) {
-      console.error('Failed to build shape tree:', error);
-      return null;
-    }
+    // All machines should have shapes now - if we get here, something is wrong
+    console.error('Machine does not have shape support - this should not happen');
+    return null;
   }, [machine, currentState.key]);
 
   // Step 3: Prepare highlighting info - compute deepest active path
