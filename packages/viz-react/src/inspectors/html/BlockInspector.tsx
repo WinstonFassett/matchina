@@ -184,7 +184,7 @@ function BlockInspector({
 
     return (
       <div
-        ref={isActive ? activeStateRef : ref}
+        ref={isActive && !isBranchActive ? activeStateRef : ref}
         className={`state-item ${isActive ? "active" : isBranchActive ? "active-ancestor" : ""} depth-${depth}`}
         data-state-key={stateNode.key}
         style={{
@@ -277,19 +277,19 @@ function BlockInspector({
           >
             {children.map((childNode) => {
               const isMatch = childNode.fullKey === fullPath;
-              const childBranchActive =
+              const isBranchActive =
                 !!fullPath &&
-                (fullPath === childNode.fullKey ||
-                  fullPath.startsWith(childNode.fullKey + "."));
+                fullPath !== childNode.fullKey &&
+                fullPath.startsWith(childNode.fullKey + ".");
 
               return (
                 <StateItem
                   key={childNode.fullKey}
                   stateNode={childNode}
                   isActive={isMatch}
-                  isBranchActive={childBranchActive}
+                  isBranchActive={isBranchActive}
                   depth={depth + 1}
-                  ref={isMatch ? activeStateRef : undefined}
+                  ref={isMatch && !isBranchActive ? activeStateRef : undefined}
                 />
               );
             })}
@@ -315,8 +315,8 @@ function BlockInspector({
       const isActive = stateNode.fullKey === fullPath;
       const branchActive =
         !!fullPath &&
-        (fullPath === stateNode.fullKey ||
-          fullPath.startsWith(stateNode.fullKey + "."));
+        fullPath !== stateNode.fullKey &&
+        fullPath.startsWith(stateNode.fullKey + ".");
 
       return (
         <StateItem
@@ -325,7 +325,7 @@ function BlockInspector({
           isActive={isActive}
           isBranchActive={branchActive}
           depth={0}
-          ref={isActive ? activeStateRef : undefined}
+          ref={isActive && !branchActive ? activeStateRef : undefined}
         />
       );
     });
