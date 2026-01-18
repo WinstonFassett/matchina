@@ -1,24 +1,24 @@
 import { useMemo, useState } from "react";
 import { createFlatComboboxMachine } from "./machine-flat";
-import { createComboboxMachine } from "./machine";
-import { ComboboxView } from "./ComboboxView";
+import { createComboboxMachine } from "./machine-nested";
 import { ComboboxViewFlat } from "./ComboboxViewFlat";
+import { ComboboxViewNested } from "./ComboboxViewNested";
 import { MachineVisualizer } from "@components/MachineVisualizer";
 
 type Mode = "flat" | "nested";
 
 export default function ComboboxExample() {
-  const [mode, setMode] = useState<Mode>("flat");
+  const [mode, setMode] = useState<Mode>("nested");
 
   // Re-create machine when mode changes
-  const { flatMachine, hierarchicalMachine } = useMemo(() => {
+  const { flatMachine, nestedMachine } = useMemo(() => {
     return {
       flatMachine: createFlatComboboxMachine(),
-      hierarchicalMachine: createComboboxMachine(),
+      nestedMachine: createComboboxMachine(),
     };
   }, [mode]);
 
-  const machine = mode === "flat" ? flatMachine : hierarchicalMachine;
+  const machine = mode === "flat" ? flatMachine : nestedMachine;
 
   return (
     <div className="space-y-6">
@@ -43,7 +43,7 @@ export default function ComboboxExample() {
                 : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             }`}
           >
-            Nested (Hierarchical)
+            Nested
           </button>
         </div>
       </div>
@@ -57,7 +57,7 @@ export default function ComboboxExample() {
         layout="split"
         preset="hierarchical"
         exampleName="hsm-combobox"
-        AppView={mode === "flat" ? ComboboxViewFlat : ComboboxView}
+        AppView={mode === "flat" ? ComboboxViewFlat : ComboboxViewNested}
       />
     </div>
   );
