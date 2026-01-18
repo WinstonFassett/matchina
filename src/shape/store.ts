@@ -7,9 +7,8 @@
  */
 
 import type { FactoryMachine } from "../factory-machine";
+import { buildFlattenedShape, buildHierarchicalShape } from "./builders";
 import type { MachineShape, ShapeController } from "./definition";
-import { buildFlattenedShape, buildMachineStructure } from "./builders";
-import { createDescriptorFromMachine } from "./machine";
 
 /**
  * Create a static shape store for flattened machines
@@ -62,7 +61,7 @@ export function createLazyShapeStore(
     if (cachedShape) {
       return cachedShape;
     }
-    cachedShape = buildMachineStructure(createDescriptorFromMachine(machine));
+    cachedShape = buildHierarchicalShape(machine);
     return cachedShape;
   }
 

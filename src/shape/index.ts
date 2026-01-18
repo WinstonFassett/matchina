@@ -7,7 +7,11 @@ export type { MachineDescriptor } from './machine';
 export { isMachineDescriptor, createDescriptorFromMachine } from './machine';
 
 // Shape builders
-export { buildFlattenedShape, buildMachineStructure } from './builders';
+export {
+  buildFlattenedShape,
+  buildMachineStructure,
+  buildHierarchicalShape
+} from './builders';
 
 // Shape types and definitions
 export type { MachineShape, StateNode, ShapeController } from './definition';

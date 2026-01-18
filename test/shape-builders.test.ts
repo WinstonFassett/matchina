@@ -2,10 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   buildFlattenedShape,
   buildMachineStructure,
+  buildHierarchicalShape,
 } from "../src/shape";
 import { createDescriptorFromMachine } from "../src/shape";
 import { defineStates } from "../src/define-states";
 import { createMachine } from "../src/factory-machine";
+import { submachine } from "../src/hsm";
 
 describe("shape-builders", () => {
   describe("buildFlattenedShape", () => {
@@ -161,11 +163,11 @@ describe("shape-builders", () => {
     });
   });
 
-  describe("buildMachineStructure", () => {
-    it("should build shape from hierarchical machine", () => {
+  describe("buildHierarchicalShape", () => {
+    it("should build shape from hierarchical machine with submachines", () => {
       const childStates = defineStates({
-        Child1: () => ({ key: "Child1", data: { value: "child1" } }),
-        Child2: () => ({ key: "Child2", data: { value: "child2" } }),
+        Child1: () => ({ key: "Child1", data: { value: 1 } }),
+        Child2: () => ({ key: "Child2", data: { value: 2 } }),
       });
 
       const childMachine = createMachine(
@@ -178,20 +180,18 @@ describe("shape-builders", () => {
       );
 
       const parentStates = defineStates({
-        Parent: () => ({
-          key: "Parent",
-          data: { value: "parent" },
-          machine: childMachine,
-        }),
+        Parent: submachine(() => childMachine, { id: "parent" }),
       });
 
       const parentMachine = createMachine(parentStates, {}, "Parent");
 
-      const shape = buildMachineStructure(createDescriptorFromMachine(parentMachine));
+      const shape = buildHierarchicalShape(parentMachine);
 
       expect(shape.type).toBe("nested");
-      expect(shape.states.size).toBe(1); // Only Parent (child machine not automatically discovered)
-      expect(shape.states.get("Parent")?.isCompound).toBe(false); // Not auto-detected as compound
+      expect(shape.states.size).toBe(3); // Parent, Parent.Child1, Parent.Child2
+      expect(shape.states.get("Parent")?.isCompound).toBe(true);
+      expect(shape.states.get("Parent.Child1")?.key).toBe("Child1");
+      expect(shape.states.get("Parent.Child2")?.key).toBe("Child2");
     });
 
     it("should handle machines without submachines", () => {
@@ -208,7 +208,7 @@ describe("shape-builders", () => {
         "State1"
       );
 
-      const shape = buildMachineStructure(createDescriptorFromMachine(machine));
+      const shape = buildHierarchicalShape(machine);
 
       expect(shape.type).toBe("nested");
       expect(shape.states.size).toBe(2);
@@ -216,18 +216,33 @@ describe("shape-builders", () => {
       expect(shape.transitions.get("State1")?.get("NEXT")).toBe("State2");
     });
 
+    it("should handle function transitions in hierarchical machines", () => {
+      const states = defineStates({
+        State1: () => ({ key: "State1", data: { value: 1 } }),
+        State2: () => ({ key: "State2", data: { value: 2 } }),
+      });
+
+      const machine = createMachine(
+        states,
+        {
+          State1: { NEXT: () => states["State2"]() },
+        },
+        "State1"
+      );
+
+      const shape = buildHierarchicalShape(machine);
+
+      expect(shape.transitions.get("State1")?.get("NEXT")).toBe("State2");
+    });
+
     it("should handle nested machine instantiation errors gracefully", () => {
       const parentStates = defineStates({
-        Parent: () => ({
-          key: "Parent",
-          data: { value: "parent" },
-          machine: null, // Invalid machine
-        }),
+        Parent: submachine(() => null, { id: "parent" }), // Invalid machine
       });
 
       const parentMachine = createMachine(parentStates, {}, "Parent");
 
-      const shape = buildMachineStructure(createDescriptorFromMachine(parentMachine));
+      const shape = buildHierarchicalShape(parentMachine);
 
       expect(shape.states.size).toBe(1); // Only parent
       expect(shape.states.get("Parent")?.isCompound).toBe(false); // Not marked as compound due to error

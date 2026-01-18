@@ -44,7 +44,7 @@ export function buildVisualizerTree<F extends FactoryMachine<any>>(
   machine: F,
   parentKey?: string
 ): any {
-  const shape = machine.shape?.getState();
+  const shape = machine.shape?.getState() as ShapeMachineShape | undefined;
   if (shape) {
     // Use shape when available (preferred path)
     return buildVisualizerTreeFromShape(shape);

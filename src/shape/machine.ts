@@ -89,6 +89,5 @@ export function createDescriptorFromMachine(machine: any): MachineDescriptor {
     hierarchy,
     initial: initialKey || Object.keys(transitions)[0] || "",
     initialKey,
-    type: "flattened"
   };
 }
