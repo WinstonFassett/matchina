@@ -13,14 +13,12 @@ export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./event-lifecycle";
 export * from "./match-case";
-// export * from "./match-case-types";
+export * from "./match-case-types";
 // export * from "./factory-machine-event";
-// export * from "./factory-machine-types";
+export * from "./factory-machine-types";
 export * from "./state-keyed";
-// export * from "./utility-types";
+export * from "./utility-types";
 
-// HSM exports
-export * from "./hsm";
 export * from "./matchbox-factory";
 export * from "./matchina";
 export * from "./extras/emitter";
@@ -40,9 +38,3 @@ export * from "./match-filters";
 export * from "./is-machine";
 export * from "./transition-helper";
 export * from "./atom";
-
-// Shape package exports (includes machine interfaces)
-export * from "./shape";
-
-// Runtime inspection exports  
-export * from "./inspect";
