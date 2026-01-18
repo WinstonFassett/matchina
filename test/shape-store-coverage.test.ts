@@ -5,7 +5,7 @@ import {
   createStaticShapeStore,
   createLazyShapeStore,
 } from "../src/shape";
-import { createFlatMachine, makeHierarchical } from "../src/hsm";
+import { createFlatMachine, nestedHsmRoot } from "../src/hsm";
 
 describe("shape-store coverage", () => {
   describe("createStaticShapeStore", () => {

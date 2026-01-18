@@ -20,7 +20,7 @@ export {
 } from "./flattened-child-exit";
 export {
   propagateSubmachines,
-  makeHierarchical,
+  nestedHsmRoot,
   type HierarchicalMachine,
   type HierarchicalEvents,
 } from "./propagate-submachines";

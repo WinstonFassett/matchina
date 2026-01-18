@@ -82,7 +82,7 @@ Key concepts:
 
 ### Option 2: Runtime Propagation (Advanced)
 
-For cases where you need actual nested machine instances, use `submachine` and `makeHierarchical`. This approach creates separate machine instances that communicate via event propagation.
+For cases where you need actual nested machine instances, use `submachine` and `nestedHsmRoot`. This approach creates separate machine instances that communicate via event propagation.
 
 ```ts
 // Child machine factory
@@ -108,7 +108,7 @@ const createController = () => matchina(
 // Enable hierarchical propagation
 export function createPropagatingTrafficLight() {
   const root = createController();
-  return makeHierarchical(root);
+  return nestedHsmRoot(root);
 }
 ```
 
@@ -150,7 +150,7 @@ See the [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) examp
 Key functions for hierarchical machines:
 - `createHSM()` - Clean hierarchical definition with automatic flattening
 - `submachine()` - Wrap machine factories for nested instances
-- `makeHierarchical()` - Enable event propagation between nested machines
+- `nestedHsmRoot()` - Enable event propagation between nested machines
 
 ## Related Examples
 

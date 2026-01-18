@@ -119,12 +119,12 @@
   {
     "name": "hsm-basic",
     "path": "src/hsm/index.ts",
-    "import": "{ createFlatMachine, describeHSM }"
+    "import": "{ createFlatMachine, createHSM }"
   },
   {
     "name": "hsm-with-viz",
     "path": "src/hsm/index.ts",
-    "import": "{ createFlatMachine, describeHSM }",
+    "import": "{ createFlatMachine, createHSM }",
     "ignore": ["react", "react-dom"]
   }
 ]

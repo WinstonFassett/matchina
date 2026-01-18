@@ -1,5 +1,5 @@
 import { defineStates, matchina } from "matchina";
-import { submachine, makeHierarchical } from "matchina/hsm";
+import { submachine, nestedHsmRoot } from "matchina/hsm";
 
 // 1. Define the Child Machine (Light Cycle)
 // We need a factory for the child machine so it can be instantiated freshly
@@ -43,5 +43,5 @@ const createController = () =>
 // This wraps the controller with propagation logic
 export function createPropagatingTrafficLight() {
   const root = createController();
-  return makeHierarchical(root);
+  return nestedHsmRoot(root);
 }

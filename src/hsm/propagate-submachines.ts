@@ -112,7 +112,7 @@ function getChildFromParentState(state: any): DuckTypedMachine | undefined {
  * Call this helper on a root machine to install propagation hooks, attach shape metadata
  * for visualization, and return a typed facade.
  */
-export function makeHierarchical<M extends FactoryMachine<any>>(machine: M) {
+export function nestedHsmRoot<M extends FactoryMachine<any>>(machine: M) {
   propagateSubmachines(machine);
 
   // Attach lazy shape store for visualization

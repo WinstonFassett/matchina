@@ -624,7 +624,7 @@ For HSM and visualization features, import from the specialized packages:
 
 ```typescript
 // Hierarchical State Machines
-import { submachine, makeHierarchical } from 'matchina/hsm';
+import { submachine, nestedHsmRoot } from 'matchina/hsm';
 
 // Visualization Components  
 import { ReactFlowInspector, HSMMermaidInspector } from 'matchina/viz';
