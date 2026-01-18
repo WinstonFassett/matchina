@@ -1,7 +1,12 @@
 ---
 title: Hierarchical Machines
-description: Build complex nested state machines with flattening
+description: Build nested state machines with flattening
 ---
+
+import Example from "@code/examples/hsm-traffic-light/example";
+import flatMachineCode from "@code/examples/hsm-traffic-light/machine-flat.ts?raw";
+import propMachineCode from "@code/examples/hsm-traffic-light/machine.ts?raw";
+import CodeTabs from "@components/CodeTabs.astro";
 
 :::caution[Experimental Feature]
 Hierarchical state machines are experimental in Matchina. The APIs may change and complex nested types may require explicit annotations.
@@ -9,18 +14,16 @@ Hierarchical state machines are experimental in Matchina. The APIs may change an
 
 ## What are Hierarchical Machines?
 
-Hierarchical State Machines (HSMs) allow you to build complex state machines by nesting child machines within parent states. Matchina's approach **flattens** nested definitions into a single-level machine with dot-notation keys.
+Hierarchical State Machines (HSMs) allow you to build nested state machines by defining child states within parent states. Matchina flattens these definitions into a single-level machine with dot-notation state keys.
 
 **Key benefits:**
 - **Modular definition** - Define nested structure, run as flat machine
 - **Simple runtime** - No nested machine instances to manage
-- **Familiar events** - Same `send()` API, states like `"Working.Red"`
+- **Type-safe transitions** - Same `send()` API with compound states like `"Working.Red"`
 
 ## When to Use Hierarchy
 
-:::tip[Core Principle]
-Use hierarchy only when a state temporarily takes control and must return control when finished. If states merely describe *what is true*, hierarchy is the wrong tool.
-:::
+Use hierarchy only when a state temporarily delegates control and must return it when finished. If states merely describe *what is true*, use a flat machine.
 
 **Good examples (temporary delegation):**
 - **Traffic light** - `Working` contains `Red`/`Green`/`Yellow` cycle
@@ -31,213 +34,22 @@ Use hierarchy only when a state temporarily takes control and must return contro
 - **"Loading" nested under "Viewing"** when both can exist independently
 - Using hierarchy as namespacing for unrelated concerns
 
-## HSM Design Guidelines
+## Interactive Example
 
-### State Design Principles
+<div className="not-content">
+  <Example client:only="react" />
+</div>
 
-**Prefer Simple States**
-- Use simple states without parameters or typed payloads when possible
-- Complex parameter threading reduces readability and reasoning
-- Example: `Empty: () => ({})` instead of `Empty: (selectedTags: string[]) => ({ selectedTags })`
+## Source Code
 
-```typescript
-// GOOD: Simple state without parameters
-const states = defineStates({
-  Empty: undefined,                    // No data needed for empty state
-  Loading: () => ({ progress: 0 }),     // Progress tracks completion percentage (0-100)
-  Error: (message: string) => ({ message }), // Error message for user display
-});
+<CodeTabs
+  files={[
+    { name: "machine-flat.ts", code: flatMachineCode },
+    { name: "machine.ts", code: propMachineCode },
+  ]}
+/>
 
-// AVOID: Complex parameter threading
-const states = defineStates({
-  Empty: (selectedTags: string[], filterText: string, sortBy: SortOption) => ({
-    selectedTags,    // Why does Empty need tags? Empty means no tags selected
-    filterText,      // Why does Empty need filter? No text when empty
-    sortBy          // Complex state makes reasoning hard - move to global context
-  }),
-});
-```
-
-**Present Tense Naming**
-- Use present tense or gerunds: `Ready`, `Waiting`, `Loading`, `Saving`, `Typing`
-- Avoid past tense states which can be ambiguous
-- States should describe what the thing **IS**, not what it **WAS**
-
-```typescript
-// GOOD: Present tense states describe current condition
-const states = defineStates({
-  Loading: undefined,           // Currently loading
-  Saving: undefined,           // Currently saving
-  Error: (message: string) => ({ message }), // Currently in error state
-  Ready: undefined,            // Currently ready for input
-});
-
-// AVOID: Past tense states are ambiguous
-const states = defineStates({
-  Loaded: undefined,           // Was loaded, but what's the current state?
-  Saved: undefined,            // Was saved, but now what?
-  Failed: undefined,           // Failed in the past, but what's happening now?
-});
-```
-
-**Mutual Exclusivity**
-- States must be mutually exclusive - no overlapping conditions
-- Avoid states like `Selecting` AND `Suggesting` that can be true simultaneously
-- Each state should represent a unique, non-overlapping condition
-
-```typescript
-// GOOD: Mutually exclusive states
-const states = defineStates({
-  Idle: undefined,              // Nothing happening - user inactive
-  Selecting: (items: any[]) => ({ items }), // User actively selecting from options
-  Suggesting: (suggestions: string[]) => ({ suggestions }), // Showing AI/autocomplete suggestions
-  Processing: undefined,        // System processing user action
-});
-
-// AVOID: Overlapping state conditions
-const states = defineStates({
-  Selecting: undefined,         // User can select AND see suggestions simultaneously
-  Suggesting: undefined,        // These aren't mutually exclusive
-  // Better: combine into a single state or use separate machines
-});
-```
-
-### Transition Design Principles
-
-**Single Exit States**
-- Prefer transitions that map to exactly one target state
-- Avoid functional transitions that return multiple possible states
-- Example: Instead of `typed: (inputText: string) => inputText ? "TextEntry" : "Empty"`, use:
-  ```typescript
-  Typing: {
-    toTextEntry: "TextEntry",    // Clear transition purpose
-    toEmpty: "Empty"             // Clear transition purpose
-  }
-  ```
-
-```typescript
-// GOOD: Explicit transitions with clear intent
-const transitions = {
-  Typing: {
-    startTyping: "TextEntry",    // User begins typing
-    clearInput: "Empty",         // User clears input
-    submitText: "Submitting"     // User submits what they typed
-  }
-};
-
-// AVOID: Functional transitions with unclear logic
-const transitions = {
-  Typing: {
-    // What determines the target state? Hard to reason about
-    processInput: (inputText: string, isValid: boolean) => {
-      if (!inputText) return "Empty";
-      if (isValid) return "TextEntry";
-      return "Error";
-    }
-  }
-};
-```
-
-**Use Hooks for Conditional Logic**
-- Handle conditional logic in hooks rather than functional transitions
-- Use `resolveExit` hooks for fallback behavior
-- This keeps transitions inspectable and simplifies reasoning
-
-```typescript
-// GOOD: Use hooks for conditional logic
-const machine = createFlatMachine(
-  states, 
-  transitions, 
-  "Empty", // Initial state when machine starts
-  {
-    hooks: {
-      resolveExit: (fromState, toState, event) => {
-        // Handle conditional logic in a dedicated place
-        // fromState: current state before transition
-        // toState: target state after transition  
-        // event: the event that triggered this transition
-        if (fromState.key === "Typing" && event.type === "submit") {
-          const text = event.payload.text;
-          if (!text.trim()) {
-            return "Empty"; // Fallback for empty input validation
-          }
-        }
-        return toState; // Default behavior - proceed with planned transition
-      }
-    }
-  }
-);
-
-// AVOID: Complex functional transitions
-const transitions = {
-  Typing: {
-    submit: (text: string) => {
-      if (!text.trim()) return "Empty";      // Hidden logic
-      if (text.length > 100) return "Error"; // Hidden validation
-      return "Submitted";                     // Unclear conditions
-    }
-  }
-};
-```
-
-### HSM Usage Patterns
-
-**HSMs Are Footguns**
-
-Hierarchical state machines seem powerful but often create more problems than they solve. Before using HSMs, question whether they genuinely help your specific use case.
-
-**Concrete examples of HSM footguns:**
-
-**1. Semantic Grouping Anti-pattern**
-See the [Traffic Light](/matchina/examples/traffic-light) example for the correct approach - flat states that describe what IS true, not artificial categorization.
-
-**2. Over-nesting Anti-pattern**  
-Compare the [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) example - notice how flattening keeps the state keys simple and transitions clear.
-
-**3. Control Flow Confusion Anti-pattern**
-The [Hierarchical Checkout](/matchina/examples/hsm-checkout) example shows proper delegation - payment temporarily takes control and returns it, rather than mixing independent processes.
-
-**Decision Tree: When HSMs Make Sense vs When They're Footguns**
-
-```mermaid
-flowchart TD
-    A[Need to model state?] --> B{Is state temporarily<br/>delegating control?}
-    B -->|Yes| C{Does subprocess<br/>return control?}
-    B -->|No| D[Use flat machine]
-    C -->|Yes| E{Is hierarchy<br/>truly necessary?}
-    C -->|No| F[Use flat machine]
-    E -->|Yes| G[✅ HSMs make sense]
-    E -->|No| H[⚠️ Consider flat machine]
-    
-    D --> I[States describe<br/>what IS true]
-    F --> J[States are independent<br/>or parallel]
-    H --> K[Can be expressed<br/>without nesting]
-    
-    style G fill:#e8f5e8
-    style D fill:#ffe8e8
-    style F fill:#ffe8e8
-    style H fill:#fff3cd
-```
-
-**Real Business Examples:**
-
-**✅ Good HSM Design: Checkout Payment Flow**
-The [Hierarchical Checkout](/matchina/examples/hsm-checkout) example demonstrates proper delegation - the Payment subprocess temporarily takes control during authorization and returns it when complete.
-
-**❌ Bad HSM Design: Overuse for UI Components**  
-Compare with the [Traffic Light](/matchina/examples/traffic-light) example which correctly uses flat states instead of artificial nesting for simple UI categorization.
-
-**True Substates Only**
-- Use HSMs for genuine delegation of control (processes/subprocesses)
-- Avoid using HSMs for semantic groupings or labeling work types
-- Hierarchy should represent actual control flow, not categorization
-
-**Flatten When Possible**
-- Consider if your HSM can be represented as a flat machine
-- Flattened machines are easier to reason about and debug
-- Use `createFlatMachine()` for type-safe flattened representation
-
-## Flattening Approach
+## Creating Hierarchical Machines
 
 ### Option 1: Type-Safe Flat Machine (Recommended)
 
@@ -457,13 +269,8 @@ machine.send("break"); // Routes to parent -> Broken
 - **`createHierarchicalMachine(machine)`** - Enable child-first event routing
 - **`propagateSubmachines(machine)`** - Lower-level hook installation
 
-## Interactive Example
+## Related Examples
 
-See the [Flattened Traffic Light](/matchina/examples/hsm-traffic-light-flat) example for a working demo with visualizers.
-
-## Notes
-
-- Complex nested types may require explicit annotations
-- Flattening happens at definition time, not runtime
-- The flattened machine is a normal `FactoryMachine` with string keys
-- Propagation creates actual nested instances with child-first event routing
+- [Hierarchical Traffic Light](/matchina/examples/hsm-traffic-light) - Flattened vs propagating comparison
+- [Hierarchical Checkout](/matchina/examples/hsm-checkout) - Complex nested payment flow
+- [Hierarchical Combobox](/matchina/examples/hsm-combobox) - UI component with nested states
