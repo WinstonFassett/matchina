@@ -8,6 +8,7 @@ import { useMachine } from "matchina/react";
 import type { MachineShape, StateNode } from "matchina/hsm/shape-types";
 import type { InspectorTheme } from "matchina/viz";
 import { defaultTheme, generateCSSVariables } from "matchina/viz";
+import { buildShapeTree } from "matchina/inspect";
 import "./BlockInspector.css";
 
 interface BlockInspectorProps {
@@ -121,10 +122,49 @@ function BlockInspector({
     };
   }, [currentState.key]);
 
-  // Step 2: Get the shape directly from machine
+  // Step 2: Get the shape directly from machine or build it from machine structure
   const shape = useMemo(() => {
+    // First try to get shape from machine (HSM machines)
     const shapeController = machine.shape;
-    return shapeController?.getState();
+    const existingShape = shapeController?.getState();
+    if (existingShape) {
+      return existingShape;
+    }
+    
+    // Fallback: build shape tree from machine structure for non-HSM machines
+    try {
+      const tree = buildShapeTree(machine);
+      
+      // Convert tree back to a shape-like structure for compatibility
+      // Create a mock shape with the tree structure
+      const mockShape: MachineShape = {
+        initialKey: tree.initial,
+        states: new Map(),
+        transitions: new Map(),
+        hierarchy: new Map(),
+      };
+      
+      // Convert tree states to Map
+      Object.entries(tree.states || {}).forEach(([key, state]: [string, any]) => {
+        mockShape.states.set(key, {
+          key,
+          fullKey: state.fullKey || key,
+        });
+        
+        // Add transitions
+        if (state.on) {
+          mockShape.transitions.set(key, new Map(Object.entries(state.on)));
+        }
+        
+        // For non-HSM machines, all states are root states (no hierarchy)
+        mockShape.hierarchy.set(key, undefined);
+      });
+      
+      return mockShape;
+    } catch (error) {
+      console.error('Failed to build shape tree:', error);
+      return null;
+    }
   }, [machine, currentState.key]);
 
   // Step 3: Prepare highlighting info - compute deepest active path
