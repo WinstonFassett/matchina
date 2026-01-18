@@ -7,12 +7,12 @@ status: Done
 assignee:
   - '@agent'
 created_date: ''
-updated_date: '2026-01-18 16:44'
+updated_date: '2026-01-18 17:54'
 labels:
   - slop
 dependencies: []
 priority: high
-ordinal: 1000
+ordinal: 2000
 ---
 
 ## Description

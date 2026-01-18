@@ -4,8 +4,10 @@ title: 'Documentation Review - Quality, Readability, and Completeness'
 status: Done
 assignee: []
 created_date: '2026-01-18 16:25'
+updated_date: '2026-01-18 17:54'
 labels: []
 dependencies: []
+ordinal: 7000
 ---
 
 ## Overview
@@ -13,12 +15,12 @@ dependencies: []
 Comprehensive quality review of all new and impacted documentation changes on this branch. Focus on clarity, consistency, completeness, and identifying improvement opportunities to avoid "slop."
 
 ## Acceptance Criteria
-
-- [x] Review document created at backlog/docs/doc-1 with analysis of README.md and all MDX example/guide pages
-- [x] 1 critical issue identified and documented: broken file reference in README.md line 30
-- [x] 4 high-impact issues identified and documented: example context, structure, HSM tone, decision tree
-- [x] 5 medium issues identified and documented: clarity, examples, philosophy bloat
-- [x] 5 specific remediation tickets created (task-31 through task-35) and committed to backlog
+<!-- AC:BEGIN -->
+- [x] #1 Review document created at backlog/docs/doc-1 with analysis of README.md and all MDX example/guide pages
+- [x] #2 1 critical issue identified and documented: broken file reference in README.md line 30
+- [x] #3 4 high-impact issues identified and documented: example context, structure, HSM tone, decision tree
+- [x] #4 5 medium issues identified and documented: clarity, examples, philosophy bloat
+- [x] #5 5 specific remediation tickets created (task-31 through task-35) and committed to backlog
 
 ## Review Scope
 
@@ -87,9 +89,11 @@ These issues are captured in separate tickets (task-31 through task-35):
 
 **Medium:**
 - task-35: Clarify examples and consistency pass
+<!-- AC:END -->
 
 ## Implementation Plan
 
+<!-- SECTION:PLAN:BEGIN -->
 1. **Phase 1:** Critical fixes (1 ticket)
    - Fix broken file reference in README.md
 
@@ -120,3 +124,4 @@ All tickets committed to backlog and ready for work.
 **Result:** 1 critical + 4 high-impact + 1 polish remediation tickets created
 **Effort Estimate:** 6-10 hours total
 **Quality Impact:** High (improves user documentation)
+<!-- SECTION:PLAN:END -->

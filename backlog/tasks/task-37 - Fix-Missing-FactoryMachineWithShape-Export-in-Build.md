@@ -1,16 +1,17 @@
 ---
 id: task-37
 title: Fix Missing FactoryMachineWithShape Export in Build
-status: In Progress
+status: Done
 assignee:
   - '@cascade'
 created_date: '2026-01-18 17:34'
-updated_date: '2026-01-18 17:36'
+updated_date: '2026-01-18 17:54'
 labels:
   - bug
   - build
   - shape
 dependencies: []
+ordinal: 9000
 ---
 
 ## Description
