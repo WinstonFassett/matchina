@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFlatComboboxMachine } from "./machine-flat";
 import { createComboboxMachine } from "./machine";
-import { ComboboxView } from "./ComboboxView";
+import { ComboboxView } from "./ComboboxViewNested";
 import { ComboboxViewFlat } from "./ComboboxViewFlat";
 import { MachineVisualizer } from "@components/MachineVisualizer";
 
