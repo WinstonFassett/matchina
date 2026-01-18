@@ -138,150 +138,15 @@
  * - Static shape metadata for visualization
  */
 
-import { defineStates } from "../define-states";
-import { createFlatMachine } from "./flat-machine";
-
-/**
- * State configuration in declarative format
- */
-export interface DeclarativeStateConfig<
-  TData = any,
-  TParams extends any[] = any[],
-> {
-  /** State data constructor function - if omitted, state has empty data */
-  data?: (...params: TParams) => TData;
-
-  /** Initial child state (for parent states) */
-  initial?: string;
-
-  /** Child states (for hierarchical states) */
-  states?: Record<string, DeclarativeStateConfig>;
-
-  /** Transitions from this state */
-  on?: Record<string, string | ((...params: any[]) => any)>;
-
-  /** Mark as final state */
-  final?: boolean;
-}
-
-/**
- * Root machine configuration
- */
-export interface DeclarativeFlatMachineConfig {
-  /** Initial state key */
-  initial: string;
-
-  /** State definitions */
-  states: Record<string, DeclarativeStateConfig>;
-}
-
-/**
- * Flattens a hierarchical state config to dot-notation
- *
- * Example:
- * - Input: { Payment: { states: { MethodEntry: {...} } } }
- * - Output: { 'Payment.MethodEntry': {...} }
- */
-function flattenStates(
-  states: Record<string, DeclarativeStateConfig>,
-  prefix = ""
-): Record<string, { data: (...params: any[]) => any; final?: boolean }> {
-  const flattened: Record<
-    string,
-    { data: (...params: any[]) => any; final?: boolean }
-  > = {};
-
-  for (const [key, config] of Object.entries(states)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key;
-
-    // Add the state itself if it has data constructor or no child states
-    if (config.data || !config.states) {
-      flattened[fullKey] = {
-        data: config.data || (() => ({})),
-        final: config.final,
-      };
-    }
-
-    // Recursively flatten child states
-    if (config.states) {
-      Object.assign(flattened, flattenStates(config.states, fullKey));
-    }
-  }
-
-  return flattened;
-}
-
-/**
- * Flattens hierarchical transitions to dot-notation
- *
- * Example:
- * - Payment.MethodEntry: { authorize: 'Authorizing' } → Payment.MethodEntry: { authorize: 'Payment.Authorizing' }
- * - Payment: { back: '^Shipping' } → Payment: { back: 'Shipping' }
- * - Payment: { type: 'Suggesting' } → Payment: { type: 'Payment.Suggesting' } (targets child)
- */
-function flattenTransitions(
-  states: Record<string, DeclarativeStateConfig>,
-  prefix = "",
-  childKeys: Record<string, Set<string>> = {}
-): Record<string, Record<string, string | ((...params: any[]) => any)>> {
-  const flattened: Record<
-    string,
-    Record<string, string | ((...params: any[]) => any)>
-  > = {};
-
-  // First pass: collect all child keys for each parent
-  for (const [key, config] of Object.entries(states)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key;
-    if (config.states) {
-      childKeys[fullKey] = new Set(Object.keys(config.states));
-    }
-  }
-
-  for (const [key, config] of Object.entries(states)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key;
-    const parentKey = prefix || ""; // The parent state for resolving relative refs
-
-    // Add transitions for this state
-    if (config.on) {
-      flattened[fullKey] = {};
-
-      for (const [event, target] of Object.entries(config.on)) {
-        if (typeof target === "string") {
-          // Resolve relative state references
-          if (target.startsWith("^")) {
-            // ^ means go to parent level (strip prefix)
-            flattened[fullKey][event] = target.slice(1);
-          } else if (target.includes(".")) {
-            // Already fully qualified
-            flattened[fullKey][event] = target;
-          } else if (config.states && target in config.states) {
-            // Target is a direct child state
-            flattened[fullKey][event] = `${fullKey}.${target}`;
-          } else {
-            // Relative to parent - target is a sibling state
-            flattened[fullKey][event] = parentKey
-              ? `${parentKey}.${target}`
-              : target;
-          }
-        } else {
-          // Transition resolver function - pass through
-          flattened[fullKey][event] = target;
-        }
-      }
-    }
-
-    // Recursively flatten child transitions
-    // The new parent key is the full key of the current state
-    if (config.states) {
-      Object.assign(
-        flattened,
-        flattenTransitions(config.states, fullKey, childKeys)
-      );
-    }
-  }
-
-  return flattened;
-}
+import { defineStates, type StateMatchboxFactory } from "../../define-states";
+import { createMachine } from "../../factory-machine";
+import type { FactoryMachineTransitions } from "../../factory-machine-types";
+import { enhanceWithShape, createStaticShapeStore } from "../../shape";
+import type { KeysWithZeroRequiredArgs } from "../../utility-types";
+import { DeclarativeStateConfig, DeclarativeFlatMachineConfig } from "./types";
+import { withFlattenedChildExit } from "./flattened-child-exit";
+import { withParentTransitionFallback } from "./parent-transition-fallback";
+import { flattenStates, flattenTransitions } from "./flatten";
 
 /**
  * Resolves parent state keys to their initial child
@@ -401,4 +266,37 @@ export function createHSM(config: DeclarativeFlatMachineConfig) {
   // Users requiring type safety should use createFlatMachine() with defineStates() directly
   // Note: createFlatMachine already applies parent transition fallback and child.exit handling
   return createFlatMachine(states, flatTransitions as any, initialKey) as any;
+}/**
+ * Create a flat machine directly from states and transitions.
+ *
+ * Handles all internal complexity:
+ * - Detects if flattening is needed (dot-notation states)
+ * - Flattens hierarchical structures automatically
+ * - Creates the machine
+ * - Applies enhancements (parent fallback, child exit)
+ * - Attaches static shape for visualization
+ *
+ * This is the recommended API for flat machines.
+ */
+
+export function createFlatMachine<
+  SF extends StateMatchboxFactory<any>,
+  T extends FactoryMachineTransitions<SF>,
+  I extends KeysWithZeroRequiredArgs<SF> | ReturnType<SF[keyof SF]>
+>(states: SF, transitions: T, initial: I) {
+  // Create raw machine
+  const machine = createMachine(states, transitions, initial);
+
+  // Apply parent transition fallback for flattened machines
+  // This allows child states to inherit parent transitions
+  withParentTransitionFallback(machine);
+
+  // Apply automatic child.exit triggering for flattened machines
+  // When a final child state is reached, automatically send child.exit event
+  withFlattenedChildExit(machine);
+
+  // Attach static shape store for visualization and introspection
+  // Flattened machines have immutable structure (locked at creation)
+  return enhanceWithShape(machine, createStaticShapeStore(machine));
 }
+

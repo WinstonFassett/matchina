@@ -5,9 +5,9 @@
  * when a transition is not found in the current child state.
  */
 
-import { resolveExit } from "../state-machine-hooks";
-import { setup } from "../ext/setup";
-import { FactoryMachineEventImpl } from "../factory-machine-event";
+import { resolveExit } from "../../state-machine-hooks";
+import { setup } from "../../ext/setup";
+import { FactoryMachineEventImpl } from "../../factory-machine-event";
 
 export interface ParentTransitionFallbackOptions {
   delimiter?: string;

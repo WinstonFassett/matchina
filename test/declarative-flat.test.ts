@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createHSM } from "../src/hsm/declarative-flat";
+import { createHSM } from "../src/hsm/flattened/declarative-flat";
 
 describe("createHSM", () => {
   it("should create a simple flat machine from declarative config", () => {

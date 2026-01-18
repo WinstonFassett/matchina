@@ -1,46 +1,33 @@
 // Flattened machine creation (primary API for flat hierarchies)
-export { createFlatMachine } from "./flat-machine";
-export { createHSM as createHSM } from "./declarative-flat";
+export { createHSM as createHSM } from "./flattened/declarative-flat";
 export type {
   DeclarativeFlatMachineConfig,
-  DeclarativeStateConfig,
-} from "./declarative-flat";
-export { parseFlatStateKey } from "./flat-state-utils";
+  DeclarativeStateConfig
+} from "./flattened/types";
+export { createFlatMachine } from "./flattened/declarative-flat";
+export { parseFlatStateKey } from "./flattened/flat-state-utils";
 
 // Hierarchical machine creation (primary API for nested machines)
 // Propagation and child-first routing
-export { submachine, submachineOptions } from "./submachine";
-export {
-  withParentTransitionFallback,
-  type ParentTransitionFallbackOptions,
-} from "./parent-transition-fallback";
 export {
   withFlattenedChildExit,
-  type FlattenedChildExitOptions,
-} from "./flattened-child-exit";
+  type FlattenedChildExitOptions
+} from "./flattened/flattened-child-exit";
 export {
-  propagateSubmachines,
-  nestedHsmRoot,
-  type HierarchicalMachine,
-  type HierarchicalEvents,
-} from "./propagate-submachines";
-export type {
-  StatesOf,
-  EventsOf,
-  AllEventsOf,
-  ChildOf,
-  ActiveEvents,
-} from "./types";
+  withParentTransitionFallback,
+  type ParentTransitionFallbackOptions
+} from "./flattened/parent-transition-fallback";
+export {
+  nestedHsmRoot, propagateSubmachines
+} from "./nested/propagate-submachines";
+export {
+  type HierarchicalEvents, type HierarchicalMachine
+} from "./nested/types";
+export { submachine, submachineOptions } from "./nested/submachine";
 export { sendWhen } from "./types";
+export type {
+  ActiveEvents, AllEventsOf,
+  ChildOf, EventsOf, StatesOf
+} from "./types";
 
-// Inspection utilities - now imported from inspect package
-export {
-  inspect,
-  getFullKey,
-  getDepth,
-  getStateStack,
-  getActiveStatePath,
-} from "../inspect";
 
-// Shape types and utilities - moved to shape package
-// NO LONGER EXPORTED FROM HSM - use shape package directly
