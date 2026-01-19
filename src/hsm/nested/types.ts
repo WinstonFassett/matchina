@@ -1,4 +1,5 @@
 import type { FactoryMachine } from "../../factory-machine-types";
+import type { FactoryMachineApi } from "../../factory-machine-api-types";
 import { createLazyShapeStore } from "../../shape";
 import { AllEventsOf } from "../utility-types";
 
@@ -30,8 +31,8 @@ export interface HierarchicalMachine<
 
 export type HierarchicalEvents<M extends FactoryMachine<any>> = 
   | AllEventsOf<M>
-  | { type: "child.change"; params: [{ target: any; type: string; params: any[]; _internal?: boolean }] }
-  | { type: "child.exit"; params: [{ target: any; type: string; params: any[]; _internal?: boolean }] }
+  | { type: "child.change"; target: any; eventType: string; params: any[]; _internal?: boolean }
+  | { type: "child.exit"; target: any; eventType: string; params: any[]; _internal?: boolean }
   | { type: `child.${string}`; params: any[] };
 
 export interface DuckTypedMachine {
@@ -50,7 +51,7 @@ export interface PropagatedMachine extends DuckTypedMachine {
   transition?: (event: any) => void;
 }
 interface ChildChangePayload {
-  target?: any;
+  target?: FactoryMachine<any>;
   type: string;
   params?: any[];
   _internal?: boolean;
@@ -65,4 +66,36 @@ export interface RootMachine {
   notify?: (event: any) => void;
   resolveExit?: (event: any) => any;
   getState(): any;
+}
+
+/**
+ * Creates an HSM-aware event API that works with HierarchicalMachine
+ * Uses the original machine's transitions while respecting the hierarchical structure
+ */
+export function hsmEventApi<M extends FactoryMachine<any>>(
+  machine: M,
+  hsm: HierarchicalMachine<M>
+): FactoryMachineApi<M> {
+  const { states, transitions } = machine;
+  const createSender =
+    (eventKey: any) =>
+    (...params: any[]) => {
+      return hsm.send(eventKey, ...params);
+    };
+
+  const transitioners: any = {};
+  const events: any = {};
+  for (const stateKey in states) {
+    const transitionKey = stateKey as keyof typeof transitions;
+    const stateTransitions = transitions[transitionKey];
+    transitioners[transitionKey] = {};
+    if (stateTransitions) {
+      for (const eventKey in stateTransitions) {
+        const sender = createSender(eventKey);
+        transitioners[transitionKey][eventKey] = sender;
+        events[eventKey] ||= sender;
+      }
+    }
+  }
+  return events;
 }

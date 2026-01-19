@@ -21,7 +21,7 @@ export {
   nestedHsmRoot, propagateSubmachines
 } from "./nested/propagate-submachines";
 export {
-  type HierarchicalEvents, type HierarchicalMachine
+  type HierarchicalEvents, type HierarchicalMachine, hsmEventApi
 } from "./nested/types";
 export { submachine } from "./nested/submachine";
 export { sendWhen } from "./utility-types";
