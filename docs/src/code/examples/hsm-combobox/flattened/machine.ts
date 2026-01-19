@@ -46,7 +46,9 @@ export function createFlatComboboxMachine() {
         type: (it) => { // this MUST be inferred to be a FUCKING string! or
           // Debug: what does the event object contain?
           console.log('Event structure:', it);
-          store.api.setInput(it);
+          if (it !== undefined && it !== null) {
+            store.api.setInput(it);
+          }
         }
       }, false)
     })
@@ -56,10 +58,6 @@ export function createFlatComboboxMachine() {
     model: store,
     ...store.api,
     ...eventApi(machine),
-    // Override setInput to trigger type event for test compatibility
-    setInput: (text: string) => {
-      machine.send("type", text || "");
-    },
     // Add aliases for test compatibility
     blur: () => machine.send("blur"),
     selectSuggestion: () => machine.send("select"),

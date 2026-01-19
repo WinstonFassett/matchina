@@ -22,7 +22,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should stay at Empty when typing with no suggestions", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("zzz");
+    combobox.type("zzz");
 
     // No guard - still transitions to Suggesting, but UI hides empty dropdown
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
@@ -33,7 +33,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should transition to Suggesting when there are suggestions", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("typ");
+    combobox.type("typ");
 
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
     expect(combobox.model.getState().input).toBe("typ");
@@ -43,7 +43,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should select suggestion and return to Empty", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("typ");
+    combobox.type("typ");
     combobox.selectSuggestion();
 
     expect(combobox.getState().is("Active.Empty")).toBe(true);
@@ -54,7 +54,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should dismiss suggestions and return to Empty", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("typ");
+    combobox.type("typ");
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
 
     combobox.dismiss();
@@ -66,7 +66,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should blur and return to Inactive", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("typ");
+    combobox.type("typ");
     combobox.blur();
 
     expect(combobox.getState().is("Inactive")).toBe(true);
@@ -84,7 +84,7 @@ describe("HSM Combobox (Flat)", () => {
   it("should highlight next and prev", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
-    combobox.setInput("a"); // matches angular
+    combobox.type("a"); // matches angular
 
     expect(combobox.model.getState().highlightedIndex).toBe(0);
     combobox.highlight("next");

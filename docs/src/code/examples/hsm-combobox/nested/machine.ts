@@ -63,6 +63,52 @@ export function createComboboxMachine() {
     model: store,
     ...store.api,
     ...eventApi(hsm),
+    // Override setInput to trigger type event for test compatibility
+    setInput: (text: string) => {
+      // For nested machine, we need to trigger the child type event
+      // First update the store directly
+      store.api.setInput(text);
+      // Then try to trigger the child event if we're in Active state
+      if (hsm.getState().is("Active")) {
+        const childMachine = hsm.getState().data;
+        if (childMachine && typeof childMachine.send === 'function') {
+          childMachine.send("type", text);
+        }
+      }
+    },
+    // Add type method for compatibility
+    type: (text: string) => {
+      // For nested machine, we need to trigger the child type event
+      if (hsm.getState().is("Active")) {
+        const childMachine = hsm.getState().data;
+        if (childMachine && typeof childMachine.send === 'function') {
+          childMachine.send("type", text);
+        }
+      }
+    },
+    // Add aliases for test compatibility
+    blur: () => hsm.send("blur"),
+    selectSuggestion: () => {
+      // For nested machine, directly call the store method and trigger child event
+      store.api.selectHighlighted();
+      // Also trigger the child select event for state transition
+      if (hsm.getState().is("Active")) {
+        const childMachine = hsm.getState().data;
+        if (childMachine && typeof childMachine.send === 'function') {
+          childMachine.send("select");
+        }
+      }
+    },
+    dismiss: () => {
+      store.api.clear();
+      // If we're in Suggesting, transition back to Empty
+      if (hsm.getState().is("Active.Suggesting")) {
+        const childMachine = hsm.getState().data;
+        if (childMachine && typeof childMachine.send === 'function') {
+          childMachine.send("select");
+        }
+      }
+    }
   });
 
   return combobox;

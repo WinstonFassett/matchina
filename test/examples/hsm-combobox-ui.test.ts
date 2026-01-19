@@ -13,7 +13,7 @@ describe("Flat Combobox UI Integration", () => {
     expect(combobox.getState().is("Active.Empty")).toBe(true);
 
     // Type something that matches suggestions
-    combobox.setInput("typ");
+    combobox.type("typ");
 
     // Should have transitioned to Suggesting
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
@@ -36,7 +36,7 @@ describe("Flat Combobox UI Integration", () => {
     expect(combobox.getState().is("Active.Empty")).toBe(true);
 
     // Type something that won't match suggestions
-    combobox.setInput("zzz");
+    combobox.type("zzz");
 
     // No guard - transitions to Suggesting, UI hides empty dropdown
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
