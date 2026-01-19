@@ -211,7 +211,7 @@ function resolveInitialChild(
  * } as const);
  * ```
  */
-export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
+export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): ReturnType<typeof createFlatMachine<any, any, any>> {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 

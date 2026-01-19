@@ -23,7 +23,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Suggesting: {
-            data: (suggestions: string[]) => ({ suggestions }), // Typed state data
+            data: (text: string) => text, // Typed state data
             on: {
               select: "Empty",
             },
@@ -36,7 +36,7 @@ export function createFlatComboboxMachine() {
         },
       },
     },
-  });
+  } as const);
 
   setup(machine)(
     effect((ev) => { // Note: ev now has proper typing instead of any
