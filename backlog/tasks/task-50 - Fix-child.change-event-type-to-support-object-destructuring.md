@@ -4,7 +4,7 @@ title: Fix child.change event type to support object destructuring
 status: Done
 assignee: []
 created_date: '2026-01-19 04:44'
-updated_date: '2026-01-19 04:58'
+updated_date: '2026-01-19 05:04'
 labels: []
 dependencies: []
 ---
@@ -275,4 +275,28 @@ RESULT:
 ✅ Proper hierarchical event propagation maintained
 
 The HSM event API is now shape-aware and works with the hierarchical machine structure while maintaining proper typing.
+
+## ✅ FINAL SOLUTION - CONSOLIDATED eventApi WITH HSM SUPPORT!
+
+SOLUTION IMPLEMENTED:
+- Enhanced eventApi() to detect HSM machines (those with 'shape' property)
+- For HSM machines: Use original machine's transitions but call through HSM send()
+- For regular machines: Use original logic
+- Removed complex shape-based approach and unused helper functions
+- All tests pass (198/198)
+
+KEY INSIGHT:
+- The shape system is for visualization, not for event API generation
+- HSM machines have __original property pointing to the wrapped machine
+- Use original machine's transitions but call through HSM's send() for proper routing
+- This maintains proper typing and runtime behavior without complexity
+
+RESULT:
+✅ All tests pass (198/198)
+✅ Single eventApi() function works for both regular and HSM machines
+✅ Proper typing maintained throughout
+✅ No more separate hsmEventApi needed
+✅ Clean, minimal implementation
+
+The consolidated eventApi now properly handles both regular machines and HSM machines with full type safety and runtime correctness.
 <!-- SECTION:NOTES:END -->

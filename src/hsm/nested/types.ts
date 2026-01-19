@@ -70,32 +70,46 @@ export interface RootMachine {
 
 /**
  * Creates an HSM-aware event API that works with HierarchicalMachine
- * Uses the original machine's transitions while respecting the hierarchical structure
+ * Recursively gathers transitions from all nested machines in the hierarchy
  */
 export function hsmEventApi<M extends FactoryMachine<any>>(
   machine: M,
   hsm: HierarchicalMachine<M>
 ): FactoryMachineApi<M> {
-  const { states, transitions } = machine;
-  const createSender =
-    (eventKey: any) =>
-    (...params: any[]) => {
-      return hsm.send(eventKey, ...params);
-    };
-
-  const transitioners: any = {};
   const events: any = {};
-  for (const stateKey in states) {
-    const transitionKey = stateKey as keyof typeof transitions;
-    const stateTransitions = transitions[transitionKey];
-    transitioners[transitionKey] = {};
-    if (stateTransitions) {
-      for (const eventKey in stateTransitions) {
-        const sender = createSender(eventKey);
-        transitioners[transitionKey][eventKey] = sender;
-        events[eventKey] ||= sender;
+  
+  // Helper function to recursively collect transitions
+  function collectTransitions(currentMachine: any, visited = new Set()) {
+    if (visited.has(currentMachine)) return;
+    visited.add(currentMachine);
+    
+    const { states, transitions } = currentMachine;
+    if (!states || !transitions) return;
+    
+    for (const stateKey in states) {
+      const transitionKey = stateKey as keyof typeof transitions;
+      const stateTransitions = transitions[transitionKey];
+      if (stateTransitions) {
+        for (const eventKey in stateTransitions) {
+          if (!events[eventKey]) {
+            events[eventKey] = (...params: any[]) => {
+              return (hsm as any).send(eventKey, ...params);
+            };
+          }
+        }
+      }
+      
+      // Recursively collect from nested machines
+      const stateFactory = states[stateKey];
+      if (stateFactory && typeof stateFactory === 'function') {
+        const stateInstance = stateFactory();
+        if (stateInstance.machine) {
+          collectTransitions(stateInstance.machine, visited);
+        }
       }
     }
   }
+  
+  collectTransitions(machine);
   return events;
 }

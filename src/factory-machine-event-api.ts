@@ -13,11 +13,40 @@ import type {
  * @param {K} [filterStateKey] - Optional state key to filter transitions
  * @returns {FactoryMachineApi<M>} An object mapping event keys to sender functions
  */
-export function eventApi<
-  M extends FactoryMachine<any>,
-  K extends keyof M["transitions"] = keyof M["transitions"],
->(machine: M, filterStateKey?: K): FactoryMachineApi<M> {
-  const { states, transitions } = machine;
+export function eventApi<M extends any>(machine: M, filterStateKey?: any): any {
+  // Check if machine has shape and use original machine for HSM
+  if (machine && typeof machine === 'object' && 'shape' in machine) {
+    // For HSM machines, use the original machine's transitions but call through HSM
+    const originalMachine = (machine as any).__original || machine;
+    const { states, transitions } = originalMachine as any;
+    const createSender =
+      (eventKey: any) =>
+      (...params: any[]) => {
+        return (machine as any).send(eventKey, ...params);
+      };
+
+    const transitioners: any = {};
+    const events: any = {};
+    for (const stateKey in states) {
+      if (filterStateKey && stateKey !== filterStateKey) {
+        continue;
+      }
+      const transitionKey = stateKey as keyof typeof transitions;
+      const stateTransitions = transitions[transitionKey];
+      transitioners[transitionKey] = {};
+      if (stateTransitions) {
+        for (const eventKey in stateTransitions) {
+          const sender = createSender(eventKey);
+          transitioners[transitionKey][eventKey] = sender;
+          events[eventKey] ||= sender;
+        }
+      }
+    }
+    return events;
+  }
+  
+  // Regular machine logic
+  const { states, transitions } = machine as any;
   const createSender =
     (eventKey: any) =>
     (...params: any[]) => {

@@ -63,7 +63,7 @@ export function createComboboxMachine() {
   const combobox = Object.assign(hsm, {
     model: store,
     ...store.api,
-    ...hsmEventApi(rootMachine, hsm),
+    ...eventApi(hsm),
   });
 
   return combobox;
