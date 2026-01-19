@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(backlog task list:*)",
+      "Bash(backlog task:*)",
+      "Bash(backlog search:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:lib:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx vitest:*)"
+    ]
+  }
+}
