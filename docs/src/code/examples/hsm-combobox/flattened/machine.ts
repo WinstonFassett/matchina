@@ -23,6 +23,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Suggesting: {
+            data: (suggestions: string[]) => ({ suggestions }), // Typed state data
             on: {
               select: "Empty",
             },
