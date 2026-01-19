@@ -19,7 +19,7 @@ export function createFlatComboboxMachine() {
         states: {
           Empty: {
             on: {
-              // type: "Suggesting",
+              type: "Suggesting",
             }
           },
           Suggesting: {
@@ -32,7 +32,7 @@ export function createFlatComboboxMachine() {
         // Child machine transitions
         on: {
           blur: "^Inactive",
-          type: (input: string) => "Suggesting",
+          type: "Suggesting",
         },
       },
     },
@@ -43,7 +43,7 @@ export function createFlatComboboxMachine() {
       ev.match({
         select: store.api.selectHighlighted,
         blur: store.api.clear,
-        type: (it) => {
+        type: (it) => { // this MUST be inferred to be a FUCKING string! or
           // Debug: what does the event object contain?
           console.log('Event structure:', it);
           store.api.setInput(it);
