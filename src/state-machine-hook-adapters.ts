@@ -46,6 +46,10 @@ export const HookAdapters = {
   leave: tap,
   after: tap,
   enter: tap,
-  effect: tap,
+  effect: <E>(fn: EffectFunc<E>) => (inner: EffectFunc<E>) => (ev: E) => {
+    inner(ev);
+    fn(ev);
+    return undefined;
+  },
   notify: tap,
 } as Adapters;
