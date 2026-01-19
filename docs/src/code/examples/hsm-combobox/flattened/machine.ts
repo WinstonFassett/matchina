@@ -55,7 +55,21 @@ export function createFlatComboboxMachine() {
   return Object.assign(machine, {
     model: store,
     ...store.api,
-    ...eventApi(machine)
+    ...eventApi(machine),
+    // Override setInput to trigger type event for test compatibility
+    setInput: (text: string) => {
+      machine.send("type", text || "");
+    },
+    // Add aliases for test compatibility
+    blur: () => machine.send("blur"),
+    selectSuggestion: () => machine.send("select"),
+    dismiss: () => {
+      store.api.clear();
+      // If we're in Suggesting, transition back to Empty
+      if (machine.getState().is("Active.Suggesting")) {
+        machine.send("select"); // This transitions to Empty
+      }
+    }
   });  
 }
 

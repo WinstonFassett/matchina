@@ -38,3 +38,12 @@ export * from "./match-filters";
 export * from "./is-machine";
 export * from "./transition-helper";
 export * from "./atom";
+
+// HSM exports
+export * from "./hsm";
+
+// Shape package exports (includes machine interfaces)
+export * from "./shape";
+
+// Runtime inspection exports  
+export * from "./inspect";
