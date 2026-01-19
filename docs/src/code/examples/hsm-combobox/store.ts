@@ -95,8 +95,8 @@ export function createComboboxStore() {
   ));
 }
 
-function getSuggestions(input: string, selectedTags: string[]): string[] {
-  const trimmed = input.trim().toLowerCase();
+function getSuggestions(input: string | undefined, selectedTags: string[]): string[] {
+  const trimmed = input?.trim().toLowerCase();
   if (!trimmed) return [];
 
   return AVAILABLE_TAGS.filter(
