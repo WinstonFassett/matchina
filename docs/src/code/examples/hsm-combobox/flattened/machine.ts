@@ -1,9 +1,9 @@
-import { addStoreApi, effect, eventApi, setup } from "matchina";
+import { effect, eventApi, guard, setup } from "matchina";
 import { createHSM } from "matchina/hsm";
 import { createComboboxStore } from "../store";
 
 export function createFlatComboboxMachine() {
-  const store = addStoreApi(createComboboxStore());
+  const store = createComboboxStore();
 
   const machine = createHSM({
     initial: "Inactive",
@@ -39,19 +39,22 @@ export function createFlatComboboxMachine() {
   } as const);
 
   setup(machine)(
-    effect((ev) => { // Note: ev now has proper typing instead of any
+    guard((ev) =>
       ev.match({
-        select: store.api.selectHighlighted,
-        blur: store.api.clear,
-        type: (it) => { // this MUST be inferred to be a FUCKING string! or
-          // Debug: what does the event object contain?
-          console.log('Event structure:', it);
-          if (it !== undefined && it !== null) {
-            store.api.setInput(it);
-          }
-        }
-      }, false)
-    })
+        type: (it) => it !== undefined && it !== null,
+        _: () => true,
+      })
+    ),
+    effect((ev) =>
+      ev.match(
+        {
+          select: store.api.selectHighlighted,
+          blur: store.api.clear,
+          type: store.api.setInput,
+        },
+        false
+      )
+    )
   );
 
   return Object.assign(machine, {

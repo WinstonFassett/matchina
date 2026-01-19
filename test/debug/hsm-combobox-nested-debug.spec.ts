@@ -107,7 +107,7 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     nestedMachine.send("focus");
 
     flatMachine.model.api.setInput("typ");
-    flatMachine.send("type");
+    flatMachine.send("type", "typ");
 
     nestedMachine.setInput("typ");
 
