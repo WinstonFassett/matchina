@@ -116,7 +116,12 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     flatMachine.send("select");
 
     nestedMachine.model.api.setHighlighted(0);
-    nestedMachine.selectSuggestion();
+    // For nested machine, trigger child event and call store method directly
+    const childMachine = nestedMachine.getState().data;
+    if (childMachine && typeof childMachine.send === 'function') {
+      childMachine.send("select");
+    }
+    nestedMachine.model.api.selectHighlighted();
 
     console.log("\n=== AFTER SELECTION ===");
     console.log("Flat state:", flatMachine.getState().key);

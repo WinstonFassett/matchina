@@ -63,17 +63,6 @@ export function createComboboxMachine() {
     model: store,
     ...store.api,
     ...eventApi(hsm),
-    // Add methods that tests expect
-    blur: () => hsm.send("blur"),
-    selectSuggestion: () => {
-      // For nested machine, call store method and trigger child event
-      store.api.selectHighlighted();
-      const childMachine = hsm.getState().data;
-      if (childMachine && typeof childMachine.send === 'function') {
-        childMachine.send("select");
-      }
-    },
-    dismiss: () => store.api.clear()
   });
 
   return combobox;

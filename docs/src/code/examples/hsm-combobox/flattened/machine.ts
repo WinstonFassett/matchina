@@ -57,11 +57,7 @@ export function createFlatComboboxMachine() {
   return Object.assign(machine, {
     model: store,
     ...store.api,
-    ...eventApi(machine),
-    // Add methods that tests expect
-    blur: () => machine.send("blur"),
-    selectSuggestion: () => machine.send("select"),
-    dismiss: () => store.api.clear()
+    ...eventApi(machine)
   });  
 }
 

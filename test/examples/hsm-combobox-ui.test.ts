@@ -21,7 +21,7 @@ describe("Flat Combobox UI Integration", () => {
     expect(combobox.model.getState().suggestions).toContain("typescript");
 
     // Select the suggestion
-    combobox.selectSuggestion();
+    combobox.send("select");
 
     // Should be back to Empty with tag added
     expect(combobox.getState().is("Active.Empty")).toBe(true);

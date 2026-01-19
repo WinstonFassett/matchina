@@ -44,7 +44,7 @@ describe("HSM Combobox (Flat)", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
     combobox.type("typ");
-    combobox.selectSuggestion();
+    combobox.send("select");
 
     expect(combobox.getState().is("Active.Empty")).toBe(true);
     expect(combobox.model.getState().selectedTags).toContain("typescript");
@@ -57,7 +57,7 @@ describe("HSM Combobox (Flat)", () => {
     combobox.type("typ");
     expect(combobox.getState().is("Active.Suggesting")).toBe(true);
 
-    combobox.dismiss();
+    combobox.clear();
 
     expect(combobox.model.getState().input).toBe("");
     // Should still be in Suggesting since dismiss just clears input
@@ -67,7 +67,7 @@ describe("HSM Combobox (Flat)", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
     combobox.type("typ");
-    combobox.blur();
+    combobox.send("blur");
 
     expect(combobox.getState().is("Inactive")).toBe(true);
   });
