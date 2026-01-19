@@ -54,7 +54,7 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
       case "Enter":
         e.preventDefault();
         if (isSuggesting && suggestions.length > 0) {
-          machine.select();
+          machine.send("select");
         } else if (input.trim()) {
           machine.addTag(input.trim());
         }
@@ -93,7 +93,7 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
             type="text"
             value={input}
             onChange={(e) => {
-              machine.type(e.target.value);
+              machine.send("type", e.target.value);
             }}
             onFocus={() => machine.send("focus")}
             onBlur={() => machine.send("blur")}
@@ -110,7 +110,7 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
                   onMouseDown={(e) => {
                     e.preventDefault();
                     machine.setHighlighted(index);
-                    machine.select();
+                    machine.send("select");
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
                     index === highlightedIndex

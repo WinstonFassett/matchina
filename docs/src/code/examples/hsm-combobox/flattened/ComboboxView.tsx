@@ -92,7 +92,7 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => { machine.type(e.target.value) }}
+            onChange={(e) => { machine.send("type", e.target.value) }}
             onFocus={() => machine.send("focus")}
             onBlur={() => machine.send("blur")}
             onKeyDown={handleKeyDown}

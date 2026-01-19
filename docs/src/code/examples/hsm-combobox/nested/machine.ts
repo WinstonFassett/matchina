@@ -35,8 +35,6 @@ export function createComboboxMachine() {
       Inactive: { focus: "Active" },
       Active: { 
         blur: "Inactive",
-        type: "Active",
-        select: "Active",
       },
     },
     "Inactive"
@@ -49,9 +47,14 @@ export function createComboboxMachine() {
     effect((ev) => {
       ev.match({
         focus: store.api.clear,
-        blur: store.api.clear,
-        type: store.api.setInput,
-        select: store.api.selectHighlighted,
+        blur: store.api.clear,    
+        "child.change": ({ target, type, ...rest }) => {
+          const change = target.getChange();
+          change.match({
+            type: store.api.setInput,
+            select: store.api.selectHighlighted,
+          }, false);
+        },
       }, false);
     })
   );
