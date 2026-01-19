@@ -32,7 +32,7 @@ export function createFlatComboboxMachine() {
         // Child machine transitions
         on: {
           blur: "^Inactive",
-          type: "Suggesting",
+          type: (input: string) => "Suggesting",
         },
       },
     },
