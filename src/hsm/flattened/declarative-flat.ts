@@ -163,36 +163,63 @@ type TransitionFuncRecord<Config> = CollectTransitionFuncsAsRecord<Config> exten
 
 /**
  * Collects all transitions from a state's 'on' as function types.
+ * SiblingStates is the record of states at the same level (for resolving sibling transitions).
+ * ChildStates is the record of child states (for resolving child transitions).
  */
-type CollectStateEvents<StateConfig extends DeclarativeStateConfig> =
+type CollectStateEvents<
+  StateConfig extends DeclarativeStateConfig,
+  SiblingStates extends Record<string, DeclarativeStateConfig> = {},
+  ChildStates extends Record<string, DeclarativeStateConfig> = StateConfig["states"] extends Record<string, DeclarativeStateConfig> ? StateConfig["states"] : {}
+> =
   StateConfig["on"] extends Record<string, any>
     ? {
         [EventKey in keyof StateConfig["on"]]:
           StateConfig["on"][EventKey] extends (...args: any[]) => any
             ? StateConfig["on"][EventKey]  // Function transition: preserve type
-            : () => any                     // String transition: no parameters
+            : StateConfig["on"][EventKey] extends string
+              // First check child states
+              ? StateConfig["on"][EventKey] extends keyof ChildStates
+                ? ChildStates[StateConfig["on"][EventKey]] extends { data: (...args: infer P) => any }
+                  ? (...args: P) => any  // String transition to child state: infer from child state data
+                  : () => any
+                // Then check sibling states
+                : StateConfig["on"][EventKey] extends keyof SiblingStates
+                  ? SiblingStates[StateConfig["on"][EventKey]] extends { data: (...args: infer P) => any }
+                    ? (...args: P) => any  // String transition to sibling state: infer from sibling state data
+                    : () => any
+                  : () => any                     // String transition to other state: no parameters
+              : () => any                     // Not a string: no parameters
       }
-    : {};
+    : {}
 
 /**
  * Collects all transitions as a record of event names to function types.
  * Recursively processes nested states to collect ALL events from the hierarchy.
  * - Function transitions: preserves the function type (e.g., `(input: string) => any`)
- * - String transitions: uses `() => any` (no parameters)
+ * - String transitions: infers params from target state's data function
  */
 type CollectTransitionFuncsAsRecord<Config> = Config extends Record<string, DeclarativeStateConfig>
   ? UnionToIntersection<{
       [StateKey in keyof Config]:
-        // Collect events from this state's 'on' property
-        CollectStateEvents<Config[StateKey]> &
+        // Collect events from this state's 'on' property, passing sibling states for resolution
+        CollectStateEvents<Config[StateKey], Config> &
         // Recursively collect events from nested states
         (Config[StateKey]["states"] extends Record<string, DeclarativeStateConfig>
           ? CollectTransitionFuncsAsRecord<Config[StateKey]["states"]>
           : {})
     }[keyof Config]>
-  : {};
+  : {}
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+/**
+ * Helper to merge function types in intersections
+ */
+type MergeFunctions<T, U> = T extends (...args: infer A) => infer R
+  ? U extends (...args: any[]) => any
+    ? (...args: A) => R
+    : T
+  : U;
 
 /**
  * HSM Event type with properly typed match handler
