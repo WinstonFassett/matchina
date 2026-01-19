@@ -1,10 +1,11 @@
-import { defineStates, effect, matchina, setup } from "matchina";
+import { defineStates, effect, matchina, setup, addStoreApi } from "matchina";
 import { eventApi } from "matchina";
 import { nestedHsmRoot, submachine, hsmEventApi } from "matchina/hsm";
 import { createComboboxStore } from "../store";
 
 export function createComboboxMachine() {
-  const store = createComboboxStore()
+  const store = addStoreApi(createComboboxStore());
+  const storeApi = store.api; // Explicitly extract api for better typing
 
   const rootMachine = matchina(
     defineStates({
@@ -47,13 +48,13 @@ export function createComboboxMachine() {
   setup(hsm)(
     effect((ev) => {
       ev.match({
-        focus: store.api.clear,
-        blur: store.api.clear,    
+        focus: storeApi.clear,
+        blur: storeApi.clear,    
         "child.change": ({ target, eventType, ...rest }) => {
           const change = target.getChange();
           change.match({
-            type: store.api.setInput,
-            select: store.api.selectHighlighted,
+            type: storeApi.setInput,
+            select: storeApi.selectHighlighted,
           }, false);
         },
       }, false);
@@ -62,7 +63,7 @@ export function createComboboxMachine() {
 
   const combobox = Object.assign(hsm, {
     model: store,
-    ...store.api,
+    ...storeApi,
     ...eventApi(hsm),
   });
 
