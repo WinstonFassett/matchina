@@ -70,15 +70,15 @@ export function storeApi<
 export function addStoreApi<
   T,
   TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
->(machine: StoreMachine<T, TR>): addEventApi<StoreMachine<T, TR>> {
-  const enhanced = machine as addEventApi<StoreMachine<T, TR>>;
+>(machine: StoreMachine<T, TR>): StoreMachine<T, TR> & { api: StoreMachineApi<T, TR> } {
+  const enhanced = machine as StoreMachine<T, TR> & { api: StoreMachineApi<T, TR> };
   if (enhanced.api) {
     return enhanced;
   }
 
   return Object.assign(machine, {
     api: storeApi(machine),
-  }) as addEventApi<StoreMachine<T, TR>>;
+  }) as StoreMachine<T, TR> & { api: StoreMachineApi<T, TR> };
 }
 /**
  * Extract parameter types from a store transition handler
@@ -87,7 +87,9 @@ export function addStoreApi<
 export type ExtractStoreParams<
   TR extends Record<string, DirectTransition<any> | CurriedTransition<any>>,
   E extends keyof TR,
-> = Parameters<TR[E]>;
+> = TR[E] extends (...args: infer A) => (change: any) => any 
+  ? A 
+  : Parameters<TR[E]>;
 
 /**
  * StoreMachine is a minimal, event-driven state container for a single value.
