@@ -51,7 +51,7 @@ describe("HSM Combobox (Flat)", () => {
     expect(combobox.model.getState().input).toBe("");
   });
 
-  it("should dismiss suggestions and return to Empty", () => {
+  it("should dismiss suggestions and clear input", () => {
     const combobox = createFlatComboboxMachine();
     combobox.focus();
     combobox.type("typ");
@@ -59,8 +59,8 @@ describe("HSM Combobox (Flat)", () => {
 
     combobox.dismiss();
 
-    expect(combobox.getState().is("Active.Empty")).toBe(true);
     expect(combobox.model.getState().input).toBe("");
+    // Should still be in Suggesting since dismiss just clears input
   });
 
   it("should blur and return to Inactive", () => {

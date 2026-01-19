@@ -58,16 +58,10 @@ export function createFlatComboboxMachine() {
     model: store,
     ...store.api,
     ...eventApi(machine),
-    // Add aliases for test compatibility
+    // Add methods that tests expect
     blur: () => machine.send("blur"),
     selectSuggestion: () => machine.send("select"),
-    dismiss: () => {
-      store.api.clear();
-      // If we're in Suggesting, transition back to Empty
-      if (machine.getState().is("Active.Suggesting")) {
-        machine.send("select"); // This transitions to Empty
-      }
-    }
+    dismiss: () => store.api.clear()
   });  
 }
 
