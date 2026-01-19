@@ -1,4 +1,13 @@
-# Package Building Configuration for Matchina Docs
+# Live Dev Shims (Package Building for Docs Dev Server)
+
+## Why This Matters (DX Gold)
+
+The mkdist setup enables a **zero-friction dev loop**:
+- Save code → browser auto-refreshes
+- No manual builds, no typechecks, no restarts
+- Just have the dev server running and that's it
+
+This is a **huge differentiator** for AI-assisted development — agents don't need to run builds/typechecks themselves. Save file, see changes. Done.
 
 ## Problem
 When adding new packages to the Matchina monorepo, the docs dev server can't resolve them with "Cannot find module" errors.
