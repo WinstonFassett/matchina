@@ -44,6 +44,8 @@ export function createFlatComboboxMachine() {
         select: store.api.selectHighlighted,
         blur: store.api.clear,
         type: (it) => {
+          // This should fail if typing is working
+          const test: number = it;
           store.api.setInput(it);
         }
       }, false)

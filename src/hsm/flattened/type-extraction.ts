@@ -34,6 +34,35 @@ export type ExtractTransitionsFromConfig<T extends DeclarativeFlatMachineConfig>
 };
 
 /**
+ * Extract flattened transition types from hierarchical config
+ * This handles the dot-notation flattening while preserving parameter types
+ */
+export type ExtractFlattenedTransitionsFromConfig<T extends DeclarativeFlatMachineConfig> = {
+  // For each state in the config
+  [StateKey in keyof T["states"]]: {
+    // For each event in that state
+    [EventKey in keyof T["states"][StateKey]["on"]]: T["states"][StateKey]["on"][EventKey] extends (...params: infer P) => any
+      ? (...params: P) => any
+      : T["states"][StateKey]["on"][EventKey] extends string
+        ? () => any
+        : never;
+  } & {
+    // Also include child state events (flattened)
+    [ChildStateKey in T["states"][StateKey]["states"] extends Record<string, any> 
+      ? keyof T["states"][StateKey]["states"] 
+      : never]: {
+      [ChildEventKey in T["states"][StateKey]["states"] extends Record<string, any> 
+        ? keyof T["states"][StateKey]["states"][ChildStateKey]["on"] 
+        : never]: T["states"][StateKey]["states"][ChildStateKey]["on"][ChildEventKey] extends (...params: infer P) => any
+          ? (...params: P) => any
+          : T["states"][StateKey]["states"][ChildStateKey]["on"][ChildEventKey] extends string
+            ? () => any
+            : never;
+    };
+  };
+};
+
+/**
  * Create a proper StateMatchboxFactory type from the config
  */
 export type StateFactoryFromConfig<T extends DeclarativeFlatMachineConfig> = 
