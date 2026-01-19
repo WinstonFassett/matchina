@@ -67,45 +67,48 @@ export type ResolveTransitionTarget<
 
 /**
  * Type-level transition flattening with proper resolution
+ * Recursively processes nested states to include all transitions with dot-notation keys
  */
 export type FlattenTransitions<
   Config extends Record<string, DeclarativeStateConfig>,
-  Prefix extends string = "",
-  ParentKey extends string = ""
+  Prefix extends string = ""
+> = UnionToIntersection<FlattenTransitionsUnion<Config, Prefix>>;
+
+/**
+ * Helper that produces a union of transition objects for each state
+ */
+type FlattenTransitionsUnion<
+  Config extends Record<string, DeclarativeStateConfig>,
+  Prefix extends string = ""
 > = {
   [StateKey in keyof Config]: BuildPath<Prefix, StateKey & string> extends infer FullKey
     ? FullKey extends string
       ? Config[StateKey] extends DeclarativeStateConfig<any, any>
-        ? Config[StateKey]["on"] extends Record<string, string | ((...params: any[]) => any)>
-          ? {
-              [K in FullKey]: {
-                [EventKey in keyof Config[StateKey]["on"]]: Config[StateKey]["on"][EventKey] extends (...params: any[]) => any
-                  ? Config[StateKey]["on"][EventKey] // Function - pass through
-                  : Config[StateKey]["on"][EventKey] extends string
-                    ? ResolveTransitionTarget<Config[StateKey]["on"][EventKey], FullKey, Config>
+        ? // Current state's transitions
+          (Config[StateKey]["on"] extends Record<string, any>
+            ? {
+                [K in FullKey]: {
+                  [EventKey in keyof Config[StateKey]["on"]]: Config[StateKey]["on"][EventKey] extends (...params: infer P) => any
+                    ? (...params: P) => any // Preserve function with parameter types
                     : Config[StateKey]["on"][EventKey];
-              };
-            }
-          : {} // No transitions
-        : {}
-      : {}
-    : {}
-}[keyof Config] extends infer Mapped
-  ? Mapped extends Record<string, any>
-    ? MergeTransitionMaps<Mapped>
-    : {}
-  : {};
+                };
+              }
+            : { [K in FullKey]: {} }) |
+          // Recursively include child state transitions
+          (Config[StateKey]["states"] extends Record<string, DeclarativeStateConfig>
+            ? FlattenTransitionsUnion<Config[StateKey]["states"], FullKey>
+            : never)
+        : never
+      : never
+    : never;
+}[keyof Config];
 
 /**
- * Merges transition maps from recursive flattening
+ * Convert union to intersection for merging transition maps
  */
-type MergeTransitionMaps<T extends Record<string, any>> = {
-  [K in keyof T]: T[K] extends Record<string, any>
-    ? T[K]
-    : never;
-} & {
-  [K in keyof T as T[K] extends Record<string, any> ? never : K]: never;
-};
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never;
 
 /**
  * Extract state data types from flattened configuration
@@ -144,14 +147,4 @@ export type ExtractTransitionParams<
   };
 };
 
-/**
- * Complete flattened machine type computation
- */
-export type FlattenedMachineTypes<
-  Config extends Record<string, DeclarativeStateConfig>
-> = {
-  states: FlattenStates<Config>;
-  transitions: FlattenTransitions<Config>;
-  stateFactory: CreateStateFactory<FlattenStates<Config>>;
-  transitionParams: ExtractTransitionParams<FlattenTransitions<Config>>;
-};
+

@@ -36,7 +36,7 @@ export function createFlatComboboxMachine() {
         },
       },
     },
-  });
+  } as const);
 
   setup(machine)(
     effect((ev) => { // Note: ev now has proper typing instead of any
@@ -44,8 +44,8 @@ export function createFlatComboboxMachine() {
         select: store.api.selectHighlighted,
         blur: store.api.clear,
         type: (it) => {
-          // This should fail if typing is working
-          const test: number = it;
+          // Debug: what does the event object contain?
+          console.log('Event structure:', it);
           store.api.setInput(it);
         }
       }, false)

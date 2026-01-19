@@ -140,14 +140,84 @@
 
 import { defineStates, type StateMatchboxFactory } from "../../define-states";
 import { createMachine } from "../../factory-machine";
-import type { FactoryMachineTransitions } from "../../factory-machine-types";
+import type { FactoryMachine, FactoryMachineTransitions } from "../../factory-machine-types";
 import { enhanceWithShape, createStaticShapeStore } from "../../shape";
 import type { KeysWithZeroRequiredArgs } from "../../utility-types";
 import { DeclarativeStateConfig, DeclarativeFlatMachineConfig } from "./types";
 import { withFlattenedChildExit } from "./flattened-child-exit";
 import { withParentTransitionFallback } from "./parent-transition-fallback";
 import { flattenStates, flattenTransitions } from "./flatten";
-import { StateFactoryFromConfig, TransitionsFromConfig } from "./type-extraction";
+import type { MatchInvocation } from "../../match-case-types";
+import type { FactoryKeyedState } from "../../state-keyed";
+import type { StateMachine, TransitionEvent } from "../../state-machine";
+
+/**
+ * Creates a record of event names to their handler function types
+ * Ensures the result is always a valid FuncRecord for MatchInvocation
+ */
+type TransitionFuncRecord<Config> = CollectTransitionFuncsAsRecord<Config> extends infer R
+  ? R extends Record<string, (...args: any[]) => any>
+    ? R
+    : Record<string, (...args: any[]) => any>
+  : Record<string, (...args: any[]) => any>;
+
+/**
+ * Collects all transitions from a state's 'on' as function types.
+ */
+type CollectStateEvents<StateConfig extends DeclarativeStateConfig> =
+  StateConfig["on"] extends Record<string, any>
+    ? {
+        [EventKey in keyof StateConfig["on"]]:
+          StateConfig["on"][EventKey] extends (...args: any[]) => any
+            ? StateConfig["on"][EventKey]  // Function transition: preserve type
+            : () => any                     // String transition: no parameters
+      }
+    : {};
+
+/**
+ * Collects all transitions as a record of event names to function types.
+ * Recursively processes nested states to collect ALL events from the hierarchy.
+ * - Function transitions: preserves the function type (e.g., `(input: string) => any`)
+ * - String transitions: uses `() => any` (no parameters)
+ */
+type CollectTransitionFuncsAsRecord<Config> = Config extends Record<string, DeclarativeStateConfig>
+  ? UnionToIntersection<{
+      [StateKey in keyof Config]:
+        // Collect events from this state's 'on' property
+        CollectStateEvents<Config[StateKey]> &
+        // Recursively collect events from nested states
+        (Config[StateKey]["states"] extends Record<string, DeclarativeStateConfig>
+          ? CollectTransitionFuncsAsRecord<Config[StateKey]["states"]>
+          : {})
+    }[keyof Config]>
+  : {};
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+/**
+ * HSM Event type with properly typed match handler
+ * The match function uses TransitionFuncRecord to preserve parameter types from the config
+ */
+export type HSMEvent<T extends DeclarativeFlatMachineConfig> = TransitionEvent<
+  FactoryKeyedState<any>,
+  FactoryKeyedState<any>
+> & {
+  match: MatchInvocation<TransitionFuncRecord<T["states"]>>;
+  get machine(): HSMMachine<T>;
+};
+
+/**
+ * HSM Machine type that preserves transition parameter types for match handlers
+ * Extends FactoryMachine but overrides event-related methods to use HSMEvent<T>
+ */
+export type HSMMachine<T extends DeclarativeFlatMachineConfig> = Omit<
+  FactoryMachine<any>,
+  "getChange" | "effect"
+> &
+  StateMachine<HSMEvent<T>> & {
+    getChange(): HSMEvent<T>;
+    effect(ev: HSMEvent<T>): void;
+  };
 
 /**
  * Resolves parent state keys to their initial child
@@ -212,7 +282,7 @@ function resolveInitialChild(
  * } as const);
  * ```
  */
-export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
+export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): HSMMachine<T> {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 
@@ -258,17 +328,11 @@ export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
     }
   }
 
-  // Resolve the initial hierarchical key to the flattened key before accessing the state factory
-  const flattenedInitialKey = resolveInitialChild(initialKey, flatStates);
-
-  // Create the initial state object properly
-  const initialState = states[flattenedInitialKey]();  
-
   // Create flat machine using internal API
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
-  // Users requiring maximum type safety should use defineStates() directly with createMachine()
+  // The HSMMachine return type preserves transition parameter types for match handlers
   // Note: internal createFlatMachine already applies parent transition fallback and child.exit handling
-  return createFlatMachine(states, flatTransitions, initialState);
+  return createFlatMachine(states, flatTransitions, initialKey as any) as unknown as HSMMachine<T>;
 }
 
 /**
