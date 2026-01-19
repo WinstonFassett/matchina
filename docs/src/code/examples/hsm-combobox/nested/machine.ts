@@ -1,11 +1,10 @@
-import { defineStates, effect, matchina, setup, addStoreApi } from "matchina";
-import { eventApi } from "matchina";
-import { nestedHsmRoot, submachine, hsmEventApi } from "matchina/hsm";
+import { storeApi as createStoreApi, defineStates, effect, eventApi, matchina, setup } from "matchina";
+import { nestedHsmRoot, submachine } from "matchina/hsm";
 import { createComboboxStore } from "../store";
 
 export function createComboboxMachine() {
-  const store = addStoreApi(createComboboxStore());
-  const storeApi = store.api; // Explicitly extract api for better typing
+  const store = createComboboxStore();
+  const storeApi = createStoreApi(store);
 
   const rootMachine = matchina(
     defineStates({

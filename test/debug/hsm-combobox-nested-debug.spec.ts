@@ -76,7 +76,7 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     flatMachine.send("focus");
     nestedMachine.send("focus");
 
-    flatMachine.model.api.setInput("typ");
+    flatMachine.setInput("typ");
     flatMachine.send("type");
 
     nestedMachine.setInput("typ");
@@ -106,22 +106,22 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     flatMachine.send("focus");
     nestedMachine.send("focus");
 
-    flatMachine.model.api.setInput("typ");
+    flatMachine.setInput("typ");
     flatMachine.send("type", "typ");
 
     nestedMachine.setInput("typ");
 
     // Select first suggestion
-    flatMachine.model.api.setHighlighted(0);
+    flatMachine.setHighlighted(0);
     flatMachine.send("select");
 
-    nestedMachine.model.api.setHighlighted(0);
+    nestedMachine.setHighlighted(0);
     // For nested machine, trigger child event and call store method directly
     const childMachine = nestedMachine.getState().data;
     if (childMachine && typeof childMachine.send === 'function') {
       childMachine.send("select");
     }
-    nestedMachine.model.api.selectHighlighted();
+    nestedMachine.selectHighlighted();
 
     console.log("\n=== AFTER SELECTION ===");
     console.log("Flat state:", flatMachine.getState().key);

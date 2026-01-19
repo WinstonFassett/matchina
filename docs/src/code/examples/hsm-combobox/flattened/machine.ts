@@ -1,10 +1,10 @@
-import { effect, eventApi, guard, setup } from "matchina";
+import { effect, eventApi, guard, setup, storeApi as createStoreApi } from "matchina";
 import { createHSM } from "matchina/hsm";
 import { createComboboxStore } from "../store";
 
 export function createFlatComboboxMachine() {
   const store = createComboboxStore();
-
+  const storeApi = createStoreApi(store);
   const machine = createHSM({
     initial: "Inactive",
     states: {
@@ -23,7 +23,7 @@ export function createFlatComboboxMachine() {
             }
           },
           Suggesting: {
-            data: (text: string) => text, // Typed state data
+            data: (text: string) => text,
             on: {
               select: "Empty",
             },
@@ -36,7 +36,7 @@ export function createFlatComboboxMachine() {
         },
       },
     },
-  } as const);
+  });
 
   setup(machine)(
     guard((ev) =>
@@ -48,9 +48,9 @@ export function createFlatComboboxMachine() {
     effect((ev) =>
       ev.match(
         {
-          select: store.api.selectHighlighted,
-          blur: store.api.clear,
-          type: store.api.setInput,
+          select: storeApi.selectHighlighted,
+          blur: storeApi.clear,
+          type: storeApi.setInput,
         },
         false
       )
@@ -59,7 +59,7 @@ export function createFlatComboboxMachine() {
 
   return Object.assign(machine, {
     model: store,
-    ...store.api,
+    ...storeApi,
     ...eventApi(machine)
   });  
 }
