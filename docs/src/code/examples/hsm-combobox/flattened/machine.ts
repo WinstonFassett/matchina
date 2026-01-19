@@ -36,7 +36,7 @@ export function createFlatComboboxMachine() {
         },
       },
     },
-  } as const);
+  });
 
   setup(machine)(
     effect((ev) => { // Note: ev now has proper typing instead of any

@@ -147,6 +147,7 @@ import { DeclarativeStateConfig, DeclarativeFlatMachineConfig } from "./types";
 import { withFlattenedChildExit } from "./flattened-child-exit";
 import { withParentTransitionFallback } from "./parent-transition-fallback";
 import { flattenStates, flattenTransitions } from "./flatten";
+import { StateFactoryFromConfig, TransitionsFromConfig } from "./type-extraction";
 
 /**
  * Resolves parent state keys to their initial child
@@ -211,7 +212,7 @@ function resolveInitialChild(
  * } as const);
  * ```
  */
-export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): ReturnType<typeof createFlatMachine<any, any, any>> {
+export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T) {
   // Flatten states to dot-notation
   const flatStates = flattenStates(config.states);
 
@@ -235,7 +236,7 @@ export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): Re
     }
   }
 
-  // Create state factory using defineStates
+  // Create state factory using defineStates - preserve type information
   const stateFactories: Record<string, (...params: any[]) => any> = {};
   for (const [key, { data, final }] of Object.entries(flatStates)) {
     stateFactories[key] = (...params: any[]) => {
@@ -244,7 +245,7 @@ export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): Re
     };
   }
 
-  const states = defineStates(stateFactories as any);
+  const states = defineStates(stateFactories);
 
   // Resolve initial state - handle hierarchical initial (e.g., 'Payment.MethodEntry')
   const initialKey = resolveInitialChild(config.initial, config.states);
@@ -257,11 +258,17 @@ export function createHSM<T extends DeclarativeFlatMachineConfig>(config: T): Re
     }
   }
 
+  // Resolve the initial hierarchical key to the flattened key before accessing the state factory
+  const flattenedInitialKey = resolveInitialChild(initialKey, flatStates);
+
+  // Create the initial state object properly
+  const initialState = states[flattenedInitialKey]();  
+
   // Create flat machine using internal API
   // Type assertions required: declarative config is runtime-dynamic, preventing compile-time type inference
   // Users requiring maximum type safety should use defineStates() directly with createMachine()
   // Note: internal createFlatMachine already applies parent transition fallback and child.exit handling
-  return createFlatMachine(states, flatTransitions as any, initialKey);
+  return createFlatMachine(states, flatTransitions, initialState);
 }
 
 /**
