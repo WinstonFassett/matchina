@@ -33,16 +33,16 @@ export type MatchInvocationCases<
   ? (InvocationCases<R, A> & { _?: never }) | PartialInvocationCases<R, A>
   : AnyInvocationCases<R, A>;
 type InvocationCases<R extends FuncRecord, A> = {
-  [T in keyof R]: (...args: Parameters<R[T]>) => A;
+  [T in keyof R]: (...params: Parameters<R[T]>) => A;
 };
 type PartialInvocationCases<R extends FuncRecord, A> = Partial<
   InvocationCases<R, A>
 > & {
-  _: (...args: Parameters<R[keyof R]>) => A;
+  _: (...params: Parameters<R[keyof R]>) => A;
 };
 type AnyInvocationCases<R extends FuncRecord, A> = Partial<
   InvocationCases<R, A> & {
-    _: (...args: Parameters<R[keyof R]>) => A;
+    _: (...params: Parameters<R[keyof R]>) => A;
   }
 >;
 

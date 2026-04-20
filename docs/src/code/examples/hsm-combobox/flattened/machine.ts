@@ -41,7 +41,7 @@ export function createFlatComboboxMachine() {
   setup(machine)(
     guard((ev) =>
       ev.match({
-        type: (it) => it !== undefined && it !== null,
+        type: () => true,
         _: () => true,
       })
     ),
