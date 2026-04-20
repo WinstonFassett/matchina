@@ -67,6 +67,17 @@
       "require": "./dist/inspect/index.js",
       "default": "./dist/inspect/index.mjs"
     },
+    "./shape": {
+      "node": {
+        "types": "./src/shape/index.ts",
+        "import": "./src/shape/index.ts",
+        "require": "./src/shape/index.ts"
+      },
+      "types": "./dist/shape/index.d.ts",
+      "import": "./dist/shape/index.mjs",
+      "require": "./dist/shape/index.js",
+      "default": "./dist/shape/index.mjs"
+    },
     "./viz": {
       "node": {
         "types": "./src/viz/index.ts",

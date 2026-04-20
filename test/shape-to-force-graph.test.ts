@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildForceGraphData } from "@matchina/viz-forcegraph/utils/shape-to-force-graph";
+import { buildForceGraphData } from "../packages/viz-forcegraph/src/utils/shape-to-force-graph";
 import type { MachineShape } from "../src/shape";
 
 // Helper to create a simple toggle machine shape
@@ -140,8 +140,8 @@ describe("buildForceGraphData", () => {
     expect(result.nodeIds.size).toBe(2);
 
     // Check nodes
-    const onNode = result.nodes.find((n) => n.id === "On");
-    const offNode = result.nodes.find((n) => n.id === "Off");
+    const onNode = result.nodes.find((n: any) => n.id === "On");
+    const offNode = result.nodes.find((n: any) => n.id === "Off");
 
     expect(onNode).toBeDefined();
     expect(onNode?.name).toBe("On");
@@ -188,10 +188,10 @@ describe("buildForceGraphData", () => {
 
     // Check that hierarchical nodes exist
     const paymentPendingNode = result.nodes.find(
-      (n) => n.id === "Payment.Pending"
+      (n: any) => n.id === "Payment.Pending"
     );
     const paymentAuthorizedNode = result.nodes.find(
-      (n) => n.id === "Payment.Authorized"
+      (n: any) => n.id === "Payment.Authorized"
     );
 
     expect(paymentPendingNode).toBeDefined();
@@ -203,7 +203,7 @@ describe("buildForceGraphData", () => {
     expect(paymentAuthorizedNode?.name).toBe("Authorized");
 
     // Check initial state
-    const cartNode = result.nodes.find((n) => n.id === "Cart");
+    const cartNode = result.nodes.find((n: any) => n.id === "Cart");
     expect(cartNode?.isInitial).toBe(true);
   });
 
@@ -211,7 +211,7 @@ describe("buildForceGraphData", () => {
     const shape = createToggleShape();
     const result = buildForceGraphData(shape);
 
-    result.links.forEach((link) => {
+    result.links.forEach((link: any) => {
       expect(typeof link.source).toBe("string");
       expect(typeof link.target).toBe("string");
       expect(link.source).not.toBeInstanceOf(Object);
@@ -223,7 +223,7 @@ describe("buildForceGraphData", () => {
     const shape = createToggleShape();
     const result = buildForceGraphData(shape);
 
-    result.links.forEach((link) => {
+    result.links.forEach((link: any) => {
       expect(result.nodeIds.has(link.source)).toBe(true);
       expect(result.nodeIds.has(link.target)).toBe(true);
     });
@@ -234,11 +234,11 @@ describe("buildForceGraphData", () => {
     const result = buildForceGraphData(shape);
 
     // Should have nodes with dots in their IDs (hierarchical)
-    const hierarchicalNodes = result.nodes.filter((n) => n.id.includes("."));
+    const hierarchicalNodes = result.nodes.filter((n: any) => n.id.includes("."));
     expect(hierarchicalNodes.length).toBeGreaterThan(0);
 
     // All hierarchical nodes should have proper fullKey
-    hierarchicalNodes.forEach((node) => {
+    hierarchicalNodes.forEach((node: any) => {
       expect(node.fullKey).toBe(node.id);
       expect(node.name).not.toContain("."); // name should be just the leaf
     });
@@ -289,7 +289,7 @@ describe("buildForceGraphData", () => {
     expect(result.links).toHaveLength(2);
 
     // Flattened machines should have level 0 for all nodes
-    result.nodes.forEach((node) => {
+    result.nodes.forEach((node: any) => {
       expect(node.level).toBe(0);
       expect(node.group).toBeUndefined();
       expect(node.isGroup).toBe(false);
@@ -297,13 +297,13 @@ describe("buildForceGraphData", () => {
 
     // Should not have hierarchy links for flattened machines
     const hierarchyLinks = result.links.filter(
-      (link) => link.type === "hierarchy"
+      (link: any) => link.type === "hierarchy"
     );
     expect(hierarchyLinks).toHaveLength(0);
 
     // Should only have transition links
     const transitionLinks = result.links.filter(
-      (link) => link.type === "transition"
+      (link: any) => link.type === "transition"
     );
     expect(transitionLinks).toHaveLength(2);
   });

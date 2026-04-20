@@ -32,10 +32,8 @@ describe("HSM Typing Analysis", () => {
         }
       });
 
-      // @ts-expect-error - This should be typed but isn't
       machine.send("authorize", 100);
       
-      // @ts-expect-error - This should be typed but isn't  
       machine.send("success", 100, "approved");
 
       // The machine type is 'any' - this is the core problem
@@ -60,20 +58,20 @@ describe("HSM Typing Analysis", () => {
           },
           "Payment.Authorizing": {
             success: (amount: number, result: string) => states["Payment.Authorized"](amount, result),
-            error: () => states["Payment.MethodEntry"]()
+            error: (amount: number) => states["Payment.MethodEntry"](amount)
           }
         },
-        "Payment.MethodEntry"
+        states["Payment.MethodEntry"](0)
       );
 
       // This has PERFECT typing - autocomplete, parameter checking, etc.
       // machine.send("authorize", 100); // ✅ Works with proper typing
       // machine.send("success", 100, "approved"); // ✅ Works with proper typing
       
-      // @ts-expect-error - This would fail: missing parameter
+      // This would fail: missing parameter
       // machine.send("authorize"); 
       
-      // @ts-expect-error - This would fail: wrong parameter types  
+      // This would fail: wrong parameter types  
       // machine.send("success", "not a number", "approved");
 
       expect(machine.getState().key).toBe("Payment.MethodEntry");
@@ -94,7 +92,7 @@ describe("HSM Typing Analysis", () => {
           "Payment.MethodEntry": { authorize: "Payment.Authorizing" },
           "Payment.Authorizing": { cancel: "Payment.MethodEntry" }
         },
-        "Payment.MethodEntry"
+        directStates["Payment.MethodEntry"](0)
       );
 
       // Approach 2: createHSM - ERGONOMIC and should have good typing now

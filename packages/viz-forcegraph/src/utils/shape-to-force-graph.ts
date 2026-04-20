@@ -1,4 +1,4 @@
-import type { MachineShape, StateNode } from "../../../hsm/shape-types";
+import type { MachineShape, StateNode } from "../../../../src/shape";
 
 export interface ForceGraphNode {
   id: string;
