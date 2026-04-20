@@ -87,10 +87,12 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     console.log("Nested state:", nestedMachine.getState().key);
     console.log("Nested suggestions:", nestedMachine.model.getState().suggestions);
     
-    // Debug child state
+    // Debug child state - nested machine uses "Active" key, child state is in data.machine
     const nestedState = nestedMachine.getState();
-    if (nestedState.key === "Active.Empty" && nestedState.data?.machine) {
-      console.log("Child machine state:", nestedState.data.machine.getState().key);
+    if (nestedState.key === "Active" && nestedState.data?.machine) {
+      const childStateKey = nestedState.data.machine.getState().key;
+      console.log("Child machine state:", childStateKey);
+      console.log("Full hierarchical state should be:", `Active.${childStateKey}`);
     }
 
     // Both should have same suggestions
@@ -117,9 +119,9 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
 
     nestedMachine.setHighlighted(0);
     // For nested machine, trigger child event and call store method directly
-    const childMachine = nestedMachine.getState().data;
-    if (childMachine && typeof childMachine.send === 'function') {
-      childMachine.send("select");
+    const childData = nestedMachine.getState().data;
+    if (childData?.machine) {
+      childData.machine.send("select");
     }
     nestedMachine.selectHighlighted();
 

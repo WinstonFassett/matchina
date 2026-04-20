@@ -103,7 +103,9 @@ export function createCheckoutMachine() {
     effect((ev) => {
       if (ev.type === "restart") {
         const payment = getPayment();
-        payment?.reset();
+        if (payment) {
+          payment.reset!();
+        }
         return true;
       }
     })
@@ -111,3 +113,6 @@ export function createCheckoutMachine() {
 
   return hierarchical;
 }
+
+// Type export for payment machine (used by CheckoutViewNested context)
+export type PaymentMachine = ReturnType<typeof createPayment>;

@@ -36,7 +36,7 @@ export function createFlatComboboxMachine() {
         },
       },
     },
-  });
+  } as const);
 
   setup(machine)(
     guard((ev) =>

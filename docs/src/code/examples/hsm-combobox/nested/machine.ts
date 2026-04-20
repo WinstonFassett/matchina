@@ -46,14 +46,15 @@ export function createComboboxMachine() {
   // Effects coordinate machine transitions with store updates
   setup(hsm)(
     effect((ev) => {
-      ev.match({
+      // HSM emits 'child.change' pseudo-event for child state changes
+      // Use type assertion since it's a runtime HSM feature not in static types
+      (ev.match as any)({
         focus: storeApi.clear,
-        blur: storeApi.clear,    
-        "child.change": (...args) => {
-          const [data] = args;
+        blur: storeApi.clear,
+        "child.change": (data: [any, string]) => {
           if (data && data.length >= 2) {
             const target = data[0];
-            const eventType = data[1];
+            const _eventType = data[1];
             if (target && typeof target.getChange === 'function') {
               const change = target.getChange();
               change.match({
