@@ -1,4 +1,4 @@
-import { FactoryMachine } from "./factory-machine-types";
+import { FactoryMachine, FactoryMachineContext } from "./factory-machine-types";
 import type {
   FactoryMachineApi,
   addEventApi as AddEventApiType,
@@ -13,7 +13,27 @@ import type {
  * @param {K} [filterStateKey] - Optional state key to filter transitions
  * @returns {FactoryMachineApi<M>} An object mapping event keys to sender functions
  */
-export function eventApi<M extends any>(machine: M, filterStateKey?: any): any {
+// Duck-typed extraction of FactoryMachineContext from any machine-shaped value.
+// Accepts regular FactoryMachines and HSM wrappers alike.
+type FCOf<M> = M extends FactoryMachine<infer FC>
+  ? FC
+  : M extends { states: infer S; transitions: infer T }
+    ? S extends import("./state-keyed").KeyedStateFactory
+      ? { states: S; transitions: T } extends FactoryMachineContext<any>
+        ? { states: S; transitions: T }
+        : never
+      : never
+    : never;
+
+export function eventApi<M extends { states: any; transitions: any; send: any }>(
+  machine: M,
+  filterStateKey?: keyof M["transitions"]
+): [FCOf<M>] extends [never]
+  ? {}
+  : FCOf<M> extends FactoryMachineContext<any>
+    ? FactoryMachineApi<FCOf<M>>
+    : {};
+export function eventApi(machine: any, filterStateKey?: any): any {
   // Check if machine has shape and use original machine for HSM
   if (machine && typeof machine === 'object' && 'shape' in machine) {
     // For HSM machines, use the original machine's transitions but call through HSM

@@ -5,27 +5,17 @@ import { AllEventsOf } from "../utility-types";
 
 // Enhanced machine interfaces for better type safety
 
-export interface HierarchicalMachine<
+export type HierarchicalMachine<
   M extends FactoryMachine<any> = FactoryMachine<any>
-> extends Omit<FactoryMachine<any>, 'send'> {
+> = Omit<M, 'send'> & {
   shape: ReturnType<typeof createLazyShapeStore>;
-  
+
   /**
-   * Send an event to the hierarchical machine with support for child events
+   * Send an event to the hierarchical machine.
+   * Accepts parent/child machine event types plus `child.*` namespaced events.
    */
-  send<T extends HierarchicalEvents<M>>(
-    type: T extends { type: infer EventType; params: infer EventParams }
-      ? EventType
-      : T extends string
-        ? T
-        : never,
-    ...params: T extends { type: infer EventType; params: infer EventParams }
-      ? EventParams
-      : T extends string
-        ? []
-        : never
-  ): void;
-}
+  send(type: string, ...params: any[]): void;
+};
 
 // Type representing all events in a hierarchical machine (including child.* events)
 
