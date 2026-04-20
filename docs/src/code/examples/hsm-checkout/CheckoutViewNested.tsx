@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
 import type { FactoryMachine } from "matchina";
-import { createCheckoutMachine } from "./machine";
+import { createCheckoutMachine, type PaymentMachine } from "./machine";
 
 // Type the machine and its actions
 type CheckoutMachine = FactoryMachine<ReturnType<typeof createCheckoutMachine>>;
@@ -11,7 +11,7 @@ type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
 // Context to share the payment machine and event APIs
 const CheckoutContext = React.createContext<{
   machine: CheckoutMachine;
-  paymentMachine?: FactoryMachine<any>;
+  paymentMachine?: PaymentMachine;
   actions: CheckoutActions;
 } | null>(null);
 
@@ -220,7 +220,7 @@ function PaymentFlow() {
               </div>
             ),
           },
-          null
+          false
         )}
       </div>
 

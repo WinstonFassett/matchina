@@ -107,7 +107,8 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
                   key={suggestion}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    machine.select(index);
+                    machine.setHighlighted(index);
+                    machine.select();
                   }}
                   className={`w-full text-left px-3 py-2 transition-colors ${
                     index === highlightedIndex
