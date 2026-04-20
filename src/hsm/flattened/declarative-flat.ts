@@ -247,6 +247,20 @@ export type HSMMachine<T extends DeclarativeFlatMachineConfig> = Omit<
   };
 
 /**
+ * Typed event-sender API for an HSM machine. Each key is an event name
+ * collected from the declarative config (at any nesting depth), and each
+ * value is a sender function whose parameters match the event's declared
+ * handler signature.
+ */
+export type HSMEventApi<T extends DeclarativeFlatMachineConfig> = {
+  [K in keyof TransitionFuncRecord<T["states"]>]: TransitionFuncRecord<
+    T["states"]
+  >[K] extends (...args: infer A) => any
+    ? (...args: A) => void
+    : (...args: any[]) => void;
+};
+
+/**
  * Resolves parent state keys to their initial child
  * E.g., 'Payment' -> 'Payment.MethodEntry'
  * But 'Payment.Authorizing' stays as 'Payment.Authorizing' (explicit path)
