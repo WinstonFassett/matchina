@@ -49,12 +49,19 @@ export function createComboboxMachine() {
       ev.match({
         focus: storeApi.clear,
         blur: storeApi.clear,    
-        "child.change": ({ target, eventType, ...rest }) => {
-          const change = target.getChange();
-          change.match({
-            type: storeApi.setInput,
-            select: storeApi.selectHighlighted,
-          }, false);
+        "child.change": (...args) => {
+          const [data] = args;
+          if (data && data.length >= 2) {
+            const target = data[0];
+            const eventType = data[1];
+            if (target && typeof target.getChange === 'function') {
+              const change = target.getChange();
+              change.match({
+                type: storeApi.setInput,
+                select: storeApi.selectHighlighted,
+              }, false);
+            }
+          }
         },
       }, false);
     })

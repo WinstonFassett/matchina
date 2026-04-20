@@ -138,16 +138,9 @@ export type FactoryMachineTransitionEvent<
             to: R;
           }
         : never);
-// Helper type to convert tuple-parameter functions to single-parameter functions for FuncRecord compatibility
-type ToFuncRecord<T> = T extends Record<string, (...args: infer A) => infer R>
-  ? { [K in keyof T]: (arg: A) => R }
-  : T extends Record<string, (...args: infer A) => infer R>
-  ? { [K in keyof T]: (arg: A) => R }
-  : Record<string, (arg: any) => any>;
-
 type FactoryMachineEventApi<FC extends FactoryMachineContext<any>> = {
   get machine(): FactoryMachine<FC> & StateMachine<FactoryMachineEvent<FC>>;
-  match: MatchInvocation<ToFuncRecord<FlatMemberUnion<StateEventTransitionSenders<FC>>>>;
+  match: MatchInvocation<FlatMemberUnion<StateEventTransitionSenders<FC>>>;
 }; // Valid state keys and event types for a given context
 
 export type StateKey<FC extends FactoryMachineContext> = keyof FC["states"];

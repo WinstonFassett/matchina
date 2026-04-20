@@ -7,7 +7,7 @@ import type { HierarchicalMachine } from "matchina/hsm";
  * Get the current active state path for both hierarchical and flattened machines.
  * Returns dot-joined path (e.g., "Active.Empty" or "Payment.MethodEntry").
  */
-export function getActiveStatePath(machine: FactoryMachine<any> | HierarchicalMachine<any>): string {
+export function getActiveStatePath(machine: FactoryMachine<any> | any): string {
   try {
     const currentState = machine.getState();
     const stateKey = currentState?.key || "";
@@ -42,7 +42,7 @@ export function getActiveStatePath(machine: FactoryMachine<any> | HierarchicalMa
  * For best results, use createMachineFromFlat() to create flattened machines
  * which automatically get shape metadata attached.
  */
-export function buildVisualizerTree<F extends FactoryMachine<any> | HierarchicalMachine<any>>(
+export function buildVisualizerTree<F extends FactoryMachine<any> | any>(
   machine: F,
   parentKey?: string
 ): any {
