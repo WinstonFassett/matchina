@@ -1,4 +1,4 @@
-import { addStoreApi, createStoreMachine, storeApi } from "matchina";
+import { createStoreMachine } from "matchina";
 
 // Available options for autocomplete
 export const AVAILABLE_TAGS = [
@@ -22,13 +22,14 @@ export interface ComboboxState {
 }
 
 export function createComboboxStore() {
-  const baseStore = createStoreMachine<ComboboxState>(
-    {
-      input: "",
-      selectedTags: [],
-      suggestions: [],
-      highlightedIndex: 0,
-    },
+  const initialState: ComboboxState = {
+    input: "",
+    selectedTags: [],
+    suggestions: [],
+    highlightedIndex: 0,
+  };
+  const baseStore = createStoreMachine(
+    initialState,
     {
       setInput: (input: string) => (change) => {
         const suggestions = getSuggestions(input, change.from.selectedTags);

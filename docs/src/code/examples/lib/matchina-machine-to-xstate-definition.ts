@@ -1,7 +1,6 @@
 import type { FactoryMachine } from "matchina";
-import type { MachineShape, FactoryMachineWithShape } from "matchina/shape";
+import type { MachineShape } from "matchina/shape";
 import { hasShape } from "matchina/shape";
-import type { HierarchicalMachine } from "matchina/hsm";
 
 /**
  * Get the current active state path for both hierarchical and flattened machines.

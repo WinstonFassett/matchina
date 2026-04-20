@@ -191,9 +191,9 @@ export function MachineVisualizer({
 function renderVisualizer({
   type,
   machine,
-  activeStatePath,
-  shape,
-  actions,
+  activeStatePath: _activeStatePath,
+  shape: _shape,
+  actions: _actions,
   interactive,
 }: {
   type: VisualizerType;
