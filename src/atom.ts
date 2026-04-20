@@ -1,4 +1,4 @@
-import { createStoreMachine, StoreChange } from "./store-machine";
+import { createStoreMachine, StoreChange, storeApi } from "./store-machine";
 import { withSubscribe } from "./extras/with-subscribe";
 
 /**
@@ -34,8 +34,8 @@ export function atom<T>(initialValue: T): Atom<T> {
 
   return {
     get: () => store.getState(),
-    set: (value: T) => store.dispatch("set", value),
-    update: (fn: (current: T) => T) => store.dispatch("update", fn),
+    set: (value: T) => (store.dispatch as any)("set", value),
+    update: (fn: (current: T) => T) => (store.dispatch as any)("update", fn),
     subscribe: enhanced.subscribe,
     getState: () => store.getState(),
     getChange: () => store.getChange(),
