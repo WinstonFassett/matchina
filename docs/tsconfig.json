@@ -17,7 +17,8 @@
       "matchina/hsm": ["../src/hsm/index.ts"],
       "@matchina/viz-reactflow": ["../packages/viz-reactflow/src/index.ts"],
       "@matchina/viz-mermaid": ["../packages/viz-mermaid/src/index.ts"],
-      "@matchina/viz-forcegraph": ["../packages/viz-forcegraph/src/index.ts"]
+      "@matchina/viz-forcegraph": ["../packages/viz-forcegraph/src/index.ts"],
+      "@matchina/viz-react": ["../packages/viz-react/src/index.ts"]
     }
   }
 }
