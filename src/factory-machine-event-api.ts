@@ -3,6 +3,11 @@ import type {
   FactoryMachineApi,
   addEventApi as AddEventApiType,
 } from "./factory-machine-api-types";
+import type {
+  HSMMachine,
+  HSMEventApi,
+} from "./hsm/flattened/declarative-flat";
+import type { HierarchicalMachine } from "./hsm/nested/types";
 
 /**
  * Creates an API object for a FactoryMachine instance, providing event sender functions for each transition.
@@ -25,14 +30,33 @@ type FCOf<M> = M extends FactoryMachine<infer FC>
       : never
     : never;
 
+// Direct extraction of states/transitions from any machine-shaped value
+// This works for FactoryMachine, HierarchicalMachine, and wrapped machines (withReset, etc.)
+type ExtractContext<M> = M extends { states: infer S; transitions: infer T }
+  ? S extends import("./state-keyed").KeyedStateFactory
+    ? { states: S; transitions: T } extends FactoryMachineContext<any>
+      ? { states: S; transitions: T }
+      : never
+    : never
+  : never;
+
 export function eventApi<M extends { states: any; transitions: any; send: any }>(
   machine: M,
   filterStateKey?: keyof M["transitions"]
-): [FCOf<M>] extends [never]
-  ? {}
-  : FCOf<M> extends FactoryMachineContext<any>
-    ? FactoryMachineApi<FCOf<M>>
-    : {};
+): M extends { shape: any }
+  ? // HierarchicalMachine (has shape) - extract from states/transitions directly
+    [ExtractContext<M>] extends [never]
+    ? {}
+    : ExtractContext<M> extends FactoryMachineContext<any>
+      ? FactoryMachineApi<ExtractContext<M>>
+      : {}
+  : M extends HSMMachine<infer HC>
+    ? HSMEventApi<HC>
+    : [ExtractContext<M>] extends [never]
+      ? {}
+      : ExtractContext<M> extends FactoryMachineContext<any>
+        ? FactoryMachineApi<ExtractContext<M>>
+        : {};
 export function eventApi(machine: any, filterStateKey?: any): any {
   // Check if machine has shape and use original machine for HSM
   if (machine && typeof machine === 'object' && 'shape' in machine) {
