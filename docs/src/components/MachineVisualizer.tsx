@@ -8,6 +8,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { BlockInspector } from "@matchina/viz-react";
 import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
+import { SvgInspector, type ElkLayoutOptions } from "@matchina/viz-svg";
 // import { MermaidInspector } from "@matchina/viz-mermaid";
 // import { ForceGraphInspector } from "@matchina/viz-forcegraph";
 import { useMemo, useState, type ComponentType } from "react";
@@ -67,6 +68,15 @@ export function MachineVisualizer({
   className = "",
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
+
+  // SVG layout knobs
+  const [svgDirection, setSvgDirection] = useState<'RIGHT' | 'DOWN'>('RIGHT');
+  const [svgNodeSpacing, setSvgNodeSpacing] = useState(40);
+  const [svgLayerSpacing, setSvgLayerSpacing] = useState(60);
+  const svgLayoutOptions: ElkLayoutOptions = useMemo(
+    () => ({ direction: svgDirection, nodeSpacing: svgNodeSpacing, layerSpacing: svgLayerSpacing }),
+    [svgDirection, svgNodeSpacing, svgLayerSpacing]
+  );
 
   // Machine state and actions
   // CRITICAL: useMachine must be called in MachineVisualizer to subscribe to state changes
@@ -131,7 +141,7 @@ export function MachineVisualizer({
       {/* Controls header */}
       {effectiveShowPicker && (
         <div
-          className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+          className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
           data-testid="visualizer-controls"
         >
           <VizPicker
@@ -139,6 +149,42 @@ export function MachineVisualizer({
             onChange={setCurrentViz}
             availableViz={availableViz}
           />
+          {currentViz === "svg" && (
+            <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-600 pl-3" data-testid="svg-layout-controls">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Direction:</label>
+              <select
+                value={svgDirection}
+                onChange={(e) => setSvgDirection(e.target.value as 'RIGHT' | 'DOWN')}
+                className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                data-testid="svg-direction"
+              >
+                <option value="RIGHT">Right</option>
+                <option value="DOWN">Down</option>
+              </select>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Node gap:</label>
+              <input
+                type="number"
+                min={10}
+                max={200}
+                step={10}
+                value={svgNodeSpacing}
+                onChange={(e) => setSvgNodeSpacing(Number(e.target.value))}
+                className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                data-testid="svg-node-spacing"
+              />
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Layer gap:</label>
+              <input
+                type="number"
+                min={10}
+                max={300}
+                step={10}
+                value={svgLayerSpacing}
+                onChange={(e) => setSvgLayerSpacing(Number(e.target.value))}
+                className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                data-testid="svg-layer-spacing"
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -153,6 +199,7 @@ export function MachineVisualizer({
             shape,
             actions,
             interactive,
+            svgLayoutOptions,
           })}
         </div>
 
@@ -191,10 +238,11 @@ export function MachineVisualizer({
 function renderVisualizer({
   type,
   machine,
-  activeStatePath: _activeStatePath,
-  shape: _shape,
+  activeStatePath,
+  shape,
   actions: _actions,
   interactive,
+  svgLayoutOptions,
 }: {
   type: VisualizerType;
   machine: FactoryMachine<any>;
@@ -202,6 +250,7 @@ function renderVisualizer({
   shape: any;
   actions: Record<string, any>;
   interactive: boolean;
+  svgLayoutOptions: ElkLayoutOptions;
 }) {
   const commonClasses =
     "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
@@ -250,6 +299,19 @@ function renderVisualizer({
       return (
         <div className={commonClasses}>
           <BlockInspector machine={machine} interactive={interactive} />
+        </div>
+      );
+
+    case "svg":
+      return (
+        <div className={commonClasses} style={{ overflow: "hidden" }}>
+          <SvgInspector
+            shape={shape}
+            value={activeStatePath}
+            onFire={(event) => machine.send(event)}
+            options={svgLayoutOptions}
+            interactive={interactive}
+          />
         </div>
       );
 

@@ -125,7 +125,7 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
       {label && (
         <g
           transform={`translate(${label.x}, ${label.y})`}
-          style={{ opacity, transition: 'opacity 220ms ease' }}
+          style={{ opacity, transition: 'opacity 220ms ease', pointerEvents: 'none' }}
         >
           <rect
             x={-6} y={-2}

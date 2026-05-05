@@ -46,6 +46,10 @@ export interface ElkLayoutOptions {
   layerSpacing?: number;
 }
 
+// ELK parses dots in node IDs as "nodeId.portId", so sanitize them.
+function toElkId(fullKey: string): string { return fullKey.replace(/\./g, '|'); }
+function fromElkId(id: string): string { return id.replace(/\|/g, '.'); }
+
 function textWidth(text: string, charW = 7.2, pad = 24): number {
   return Math.max(60, Math.ceil(text.length * charW) + pad);
 }
@@ -92,7 +96,7 @@ function buildElkNode(
   const path = fullKey.split('.');
 
   const node: ElkNodeDraft = {
-    id: fullKey,
+    id: toElkId(fullKey),
     labels: [{ text: label, width: textWidth(label, 7.5, 16), height: 18 }],
     layoutOptions: {
       'elk.algorithm': 'layered',
@@ -160,20 +164,21 @@ export async function runElkLayout(
   for (const [sourceFullKey, eventMap] of shape.transitions) {
     for (const [event, targetFullKey] of eventMap) {
       if (!shape.states.has(targetFullKey)) continue;
+      if (!byId.has(toElkId(sourceFullKey)) || !byId.has(toElkId(targetFullKey))) continue;
 
       const sourcePath = sourceFullKey.split('.');
       const targetPath = targetFullKey.split('.');
       const edge: ElkEdgeDraft = {
-        id: `e:${sourceFullKey}->${targetFullKey}:${event}`,
-        sources: [sourceFullKey],
-        targets: [targetFullKey],
+        id: `e:${toElkId(sourceFullKey)}->${toElkId(targetFullKey)}:${event}`,
+        sources: [toElkId(sourceFullKey)],
+        targets: [toElkId(targetFullKey)],
         labels: [{ text: event, width: textWidth(event, 6.6, 14), height: 16 }],
         _meta: { event, sourcePath, targetPath },
       };
 
       const lca = lcaPath(sourcePath, targetPath);
       const lcaKey = lca.join('.');
-      const owner = lcaKey ? byId.get(lcaKey) : null;
+      const owner = lcaKey ? byId.get(toElkId(lcaKey)) : null;
       if (owner?.children) {
         owner.edges = owner.edges ?? [];
         owner.edges.push(edge);
@@ -217,7 +222,7 @@ export async function runElkLayout(
 
     if (node.id !== 'root' && node._meta) {
       nodes.push({
-        id: node.id,
+        id: fromElkId(node.id),
         x: ax,
         y: ay,
         width: node.width ?? 92,

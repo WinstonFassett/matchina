@@ -23,6 +23,7 @@ https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
   --card: var(--sl-color-bg);
   --font-sans: var(--sl-font-system, "Atkinson Hyperlegible", sans-serif);
   --forcegraph-edge-bg: #eee;
+  --matchina-viz-accent: var(--sl-color-accent);
 }
 
 html[data-theme="dark"] {
@@ -32,4 +33,5 @@ html[data-theme="dark"] {
   --card: var(--sl-color-bg);
   --forcegraph-edge-bg: #000;
   --forcegraph-edge-label: #ddd;
+  --matchina-viz-accent: var(--sl-color-accent-high);
 }

@@ -6,6 +6,7 @@
 export type VisualizerType =
   | "reactflow"
   | "sketch"
+  | "svg"
   // | "forcegraph"
   // | "mermaid-statechart"
   // | "mermaid-flowchart";
@@ -18,6 +19,7 @@ export interface VisualizerOption {
 export const VISUALIZERS: readonly VisualizerOption[] = [
   { value: "reactflow", label: "ReactFlow" },
   { value: "sketch", label: "Blocks" },
+  { value: "svg", label: "SVG" },
   // { value: "forcegraph", label: "ForceGraph (Deprecated)" },
   // { value: "mermaid-statechart", label: "Mermaid - Statechart" },
   // { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
