@@ -74,7 +74,7 @@ const ELKLayoutSettings = z.object({
   nodePlacementStrategy: z.enum(['SIMPLE', 'NETWORK_SIMPLEX', 'BRANDES_KOEPF']).default('NETWORK_SIMPLEX'),
   edgeRoutingStrategy: z.enum(['ORTHOGONAL', 'POLYLINE', 'SPLINES', 'STRAIGHT']).default('ORTHOGONAL'),
   compactionStrategy: z.enum(['NONE', 'EDGE_LENGTH', 'NODE_DIMENSIONS']).default('NONE'),
-  cycleBreakingStrategy: z.enum(['GREEDY', 'DEPTH_FIRST', 'INTERACTIVE']).default('DEPTH_FIRST'),
+  cycleBreakingStrategy: z.enum(['GREEDY', 'DEPTH_FIRST', 'MODEL_ORDER', 'INTERACTIVE']).default('MODEL_ORDER'),
 });
 
 type ELKLayoutSettings = z.infer<typeof ELKLayoutSettings>;
@@ -175,8 +175,8 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
             ? "SIMPLE"
             : "NETWORK_SIMPLEX",
 
-          // Cycle breaking
-          "elk.layered.cycleBreaking.strategy": "DEPTH_FIRST",
+          // Cycle breaking — MODEL_ORDER respects source order, better for state machines
+          "elk.layered.cycleBreaking.strategy": "MODEL_ORDER",
 
           // Edge routing - Basic orthogonal routing
           "elk.layered.edgeRouting.selfLoopDistribution": "EQUALLY",
@@ -679,7 +679,7 @@ export class ELKLayoutEngine implements LayoutEngine<ELKLayoutSettings> {
       nodePlacementStrategy: 'NETWORK_SIMPLEX',
       edgeRoutingStrategy: 'ORTHOGONAL',
       compactionStrategy: 'NONE',
-      cycleBreakingStrategy: 'DEPTH_FIRST',
+      cycleBreakingStrategy: 'MODEL_ORDER',
     };
   }
 

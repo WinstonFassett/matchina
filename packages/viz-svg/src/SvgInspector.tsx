@@ -1,0 +1,343 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { MachineShape } from 'matchina';
+import { runElkLayout } from './elk-layout.js';
+import type { ElkLayoutOptions, SvgEdge, SvgLayout, SvgNode } from './elk-layout.js';
+import { buildCurvedPath } from './svg-path.js';
+
+// CSS variable names with their default values (dark teal theme).
+// Consumers can override any of these on a parent element.
+//
+//   --matchina-viz-accent          active highlight color
+//   --matchina-viz-bg              canvas background
+//   --matchina-viz-node            leaf node fill
+//   --matchina-viz-node-active     active leaf fill
+//   --matchina-viz-node-compound   compound node fill
+//   --matchina-viz-border          inactive node border
+//   --matchina-viz-text            label text
+//   --matchina-viz-text-active     active label text
+//   --matchina-viz-edge            inactive edge stroke
+//   --matchina-viz-dot             background dot color
+
+const V = {
+  accent: 'var(--matchina-viz-accent, #2dd4bf)',
+  bg: 'var(--matchina-viz-bg, #0a0f17)',
+  node: 'var(--matchina-viz-node, rgba(28,38,54,0.95))',
+  nodeActive: 'var(--matchina-viz-node-active, rgba(20,90,82,0.85))',
+  nodeCompound: 'var(--matchina-viz-node-compound, rgba(20,28,40,0.7))',
+  border: 'var(--matchina-viz-border, rgba(148,163,184,0.25))',
+  text: 'var(--matchina-viz-text, rgba(226,232,240,0.92))',
+  textActive: 'var(--matchina-viz-text-active, #e6fffb)',
+  edge: 'var(--matchina-viz-edge, rgba(100,116,139,0.55))',
+  dot: 'var(--matchina-viz-dot, rgba(148,163,184,0.08))',
+} as const;
+
+function NodeShape({ node, isActive, isAncestor }: {
+  node: SvgNode;
+  isActive: boolean;
+  isAncestor: boolean;
+}) {
+  const stroke = isActive || isAncestor ? V.accent : V.border;
+  const strokeWidth = isActive ? 2 : isAncestor ? 1.5 : 1;
+  const fill = node.isCompound
+    ? V.nodeCompound
+    : isActive
+    ? V.nodeActive
+    : V.node;
+  const textFill = isActive ? V.textActive : isActive || isAncestor ? V.accent : V.text;
+
+  return (
+    <g>
+      <rect
+        x={node.x} y={node.y}
+        width={node.width} height={node.height}
+        rx={10} ry={10}
+        style={{ fill, stroke, strokeWidth, transition: 'stroke 280ms ease, fill 280ms ease' }}
+      />
+      {node.isCompound ? (
+        <text
+          x={node.x + 14} y={node.y + 22}
+          style={{
+            fill: isActive || isAncestor ? V.accent : 'rgba(226,232,240,0.85)',
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            transition: 'fill 280ms ease',
+          }}
+        >
+          {node.label}
+        </text>
+      ) : (
+        <text
+          x={node.x + node.width / 2} y={node.y + node.height / 2 + 5}
+          textAnchor="middle"
+          style={{
+            fill: textFill,
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontSize: 14,
+            fontWeight: isActive ? 600 : 500,
+            transition: 'fill 280ms ease',
+          }}
+        >
+          {node.label}
+        </text>
+      )}
+      {isActive && !node.isCompound && (
+        <circle cx={node.x + node.width - 10} cy={node.y + 10} r={4} style={{ fill: V.accent }}>
+          <animate attributeName="opacity" values="1;0.35;1" dur="1.6s" repeatCount="indefinite" />
+        </circle>
+      )}
+    </g>
+  );
+}
+
+function EdgeShape({ edge, isOutgoing, onFire }: {
+  edge: SvgEdge;
+  isOutgoing: boolean;
+  onFire: (event: string) => void;
+}) {
+  const section = edge.sections?.[0];
+  if (!section?.startPoint || !section?.endPoint) return null;
+
+  const d = buildCurvedPath(section);
+  const stroke = isOutgoing ? V.accent : V.edge;
+  const strokeWidth = isOutgoing ? 2 : 1.25;
+  const opacity = isOutgoing ? 1 : 0.65;
+  const { label } = edge;
+  const markerId = isOutgoing ? 'matchina-svg-arrow-active' : 'matchina-svg-arrow';
+
+  return (
+    <g
+      style={{ cursor: isOutgoing ? 'pointer' : 'default' }}
+      onClick={isOutgoing ? () => onFire(edge.event) : undefined}
+    >
+      {isOutgoing && (
+        <path d={d} fill="none" stroke="transparent" strokeWidth={18} />
+      )}
+      <path
+        d={d} fill="none"
+        style={{
+          stroke, strokeWidth, opacity,
+          transition: 'stroke 220ms ease, opacity 220ms ease',
+        }}
+        markerEnd={`url(#${markerId})`}
+      />
+      {label && (
+        <g
+          transform={`translate(${label.x}, ${label.y})`}
+          style={{ opacity, transition: 'opacity 220ms ease' }}
+        >
+          <rect
+            x={-6} y={-2}
+            width={label.width + 12} height={label.height + 4}
+            rx={6} ry={6}
+            style={{
+              fill: isOutgoing ? 'rgba(8,47,51,0.95)' : 'rgba(15,23,33,0.95)',
+              stroke: isOutgoing ? V.accent : 'rgba(100,116,139,0.45)',
+              strokeWidth: isOutgoing ? 1 : 0.75,
+            }}
+          />
+          <text
+            x={label.width / 2} y={label.height - 2}
+            textAnchor="middle"
+            style={{
+              fill: isOutgoing ? V.accent : 'rgba(203,213,225,0.82)',
+              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontSize: 11,
+              fontWeight: isOutgoing ? 600 : 500,
+              letterSpacing: '0.04em',
+            }}
+          >
+            {label.text}
+          </text>
+        </g>
+      )}
+    </g>
+  );
+}
+
+const ctrlBtn: React.CSSProperties = {
+  background: 'rgba(20,28,40,0.85)',
+  border: '1px solid rgba(148,163,184,0.24)',
+  color: 'rgba(226,232,240,0.65)',
+  padding: '5px 11px',
+  borderRadius: 6,
+  fontFamily: 'monospace',
+  fontSize: 11,
+  cursor: 'pointer',
+};
+
+export interface SvgInspectorProps {
+  shape: MachineShape;
+  value: string;
+  onFire?: (event: string) => void;
+  options?: ElkLayoutOptions;
+  interactive?: boolean;
+}
+
+export const SvgInspector = React.memo(function SvgInspector({
+  shape,
+  value,
+  onFire,
+  options,
+  interactive = true,
+}: SvgInspectorProps) {
+  const [layout, setLayout] = useState<SvgLayout | null>(null);
+  const [pan, setPan] = useState({ x: 20, y: 20 });
+  const [zoom, setZoom] = useState(1);
+  const dragRef = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0 });
+
+  // Stable options key — re-layout only when options actually change
+  const optionsKey = JSON.stringify(options ?? {});
+
+  useEffect(() => {
+    runElkLayout(shape, options ?? {}).then(setLayout).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shape, optionsKey]);
+
+  // Derive active paths from the current state value (dot-separated fullKey)
+  const activePath = useMemo(() => (value ? value.split('.') : []), [value]);
+
+  const activeLeafId = value;
+  const activeAncestorIds = useMemo(() => {
+    const set = new Set<string>();
+    for (let i = 0; i < activePath.length - 1; i++) {
+      set.add(activePath.slice(0, i + 1).join('.'));
+    }
+    return set;
+  }, [activePath]);
+
+  // Outgoing edges: source is on the active path (leaf or any ancestor)
+  const activeSourceIds = useMemo(() => {
+    const set = new Set<string>();
+    for (let i = 1; i <= activePath.length; i++) {
+      set.add(activePath.slice(0, i).join('.'));
+    }
+    return set;
+  }, [activePath]);
+
+  function handleFire(event: string) {
+    if (interactive) onFire?.(event);
+  }
+
+  function onWheel(e: React.WheelEvent) {
+    e.preventDefault();
+    setZoom(z => Math.min(2.5, Math.max(0.3, z * (e.deltaY > 0 ? 0.92 : 1.08))));
+  }
+
+  function onMouseDown(e: React.MouseEvent) {
+    if (e.button !== 0) return;
+    dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
+  }
+  function onMouseMove(e: React.MouseEvent) {
+    if (!dragRef.current.active) return;
+    setPan({
+      x: dragRef.current.px + e.clientX - dragRef.current.sx,
+      y: dragRef.current.py + e.clientY - dragRef.current.sy,
+    });
+  }
+  function onMouseUp() { dragRef.current.active = false; }
+
+  if (!layout) {
+    return (
+      <div style={{ width: '100%', height: '100%', background: V.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: V.edge, fontFamily: 'monospace', fontSize: 12 }}>computing layout…</span>
+      </div>
+    );
+  }
+
+  const { nodes, edges, width, height } = layout;
+  const compounds = nodes.filter(n => n.isCompound);
+  const leaves = nodes.filter(n => !n.isCompound);
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        cursor: 'grab',
+        background: V.bg,
+        backgroundImage: `radial-gradient(ellipse 80% 60% at 70% 0%, color-mix(in srgb, ${V.accent} 5%, transparent), transparent 60%)`,
+      }}
+      onWheel={onWheel}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+    >
+      <svg
+        width="100%" height="100%"
+        viewBox={`0 0 ${Math.max(width, 800)} ${Math.max(height, 600)}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ display: 'block' }}
+      >
+        <defs>
+          <pattern id="matchina-svg-dots" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" style={{ fill: V.dot }} />
+          </pattern>
+          <marker id="matchina-svg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: 'rgba(100,116,139,0.7)' }} />
+          </marker>
+          <marker id="matchina-svg-arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: V.accent }} />
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#matchina-svg-dots)" />
+
+        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+          {/* Compound containers rendered first (lowest z) */}
+          {compounds.map(node => (
+            <NodeShape
+              key={node.id}
+              node={node}
+              isActive={node.id === activeLeafId}
+              isAncestor={activeAncestorIds.has(node.id)}
+            />
+          ))}
+          {/* Edges */}
+          {edges.map(edge => (
+            <EdgeShape
+              key={edge.id}
+              edge={edge}
+              isOutgoing={activeSourceIds.has(edge.sourcePath.join('.'))}
+              onFire={handleFire}
+            />
+          ))}
+          {/* Leaves on top */}
+          {leaves.map(node => (
+            <NodeShape
+              key={node.id}
+              node={node}
+              isActive={node.id === activeLeafId}
+              isAncestor={activeAncestorIds.has(node.id)}
+            />
+          ))}
+        </g>
+      </svg>
+
+      <div style={{
+        position: 'absolute', bottom: 14, right: 14,
+        display: 'flex', gap: 4,
+        background: 'rgba(15,22,33,0.85)',
+        border: '1px solid rgba(148,163,184,0.12)',
+        padding: 4, borderRadius: 8,
+      }}>
+        <button onClick={() => { setZoom(1); setPan({ x: 20, y: 20 }); }} style={ctrlBtn}>Reset</button>
+        <button onClick={() => setZoom(z => Math.min(2.5, z * 1.15))} style={ctrlBtn}>+</button>
+        <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
+        <span style={{
+          fontFamily: 'monospace',
+          color: 'rgba(148,163,184,0.55)',
+          padding: '0 6px', fontSize: 11, lineHeight: '28px',
+        }}>
+          {Math.round(zoom * 100)}%
+        </span>
+      </div>
+    </div>
+  );
+});
+
+export default SvgInspector;

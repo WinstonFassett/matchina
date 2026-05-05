@@ -113,7 +113,8 @@
     "packages/viz-reactflow",
     "packages/viz-react",
     "packages/viz-mermaid",
-    "packages/viz-forcegraph"
+    "packages/viz-forcegraph",
+    "packages/viz-svg"
   ],
   "scripts": {
     "build": "npm run build:lib",
