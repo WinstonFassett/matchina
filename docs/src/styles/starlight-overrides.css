@@ -62,6 +62,8 @@ header.header .social-links a:hover,
 header.header a[href*="github"]:hover {
   color: var(--sl-color-text-accent);
 }
+
+/* Keep distinctive site title styling */
 header.header .site-title {
   font-family: var(--font-serif);
   font-size: 22px;
@@ -75,7 +77,7 @@ header.header .site-title {
 header.header .site-title img,
 header.header .site-title svg { width: 20px; height: 20px; }
 
-/* Search pill */
+/* Fix search styling - keep monospace but match header border and height */
 site-search button[data-open-modal] {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -84,8 +86,21 @@ site-search button[data-open-modal] {
   padding: 4px 10px;
   color: var(--sl-color-gray-2);
   min-width: 360px;
-  min-height: 0;
-  height: auto;
+  height: 24px;
+  border-radius: 0;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out;
+}
+site-search button[data-open-modal]:hover {
+  border-color: var(--sl-color-text);
+  color: var(--sl-color-text);
+}
+site-search button[data-open-modal] kbd {
+  border-radius: 0;
+}
+
+/* Fix theme selector height for text display */
+select[aria-label="Select theme"] {
+  height: 32px;
 }
 
 /* Version pill (wrap a <span class="version-pill"> next to site title) */
@@ -131,7 +146,6 @@ site-search button[data-open-modal] {
   color: var(--sl-color-gray-2);
   padding: 3px 16px !important;
   border-left: 2px solid transparent;
-  border-radius: 0;
   margin-left: -1px;
   letter-spacing: -0.005em;
   text-decoration: none;
@@ -145,6 +159,7 @@ site-search button[data-open-modal] {
   background: var(--sl-color-bg-inline-code);
   border-left-color: var(--accent);
   font-weight: 500;
+  border-radius: 0;
 }
 
 /* ---------- Main content ---------- */
@@ -175,12 +190,6 @@ site-search button[data-open-modal] {
   margin: 28px 0 0 0;
   padding-top: 20px;
 }
-.main-frame h1 em,
-.sl-markdown-content h1 em,
-.hero h1 em { font-weight: 400; font-style: italic; }
-.main-frame h1 em.dim,
-.sl-markdown-content h1 em.dim,
-.hero h1 em.dim { color: var(--sl-color-gray-2); }
 /* When mobile TOC is fixed above content, give h1 enough clearance */
 @media (max-width: 72rem) {
   .main-frame h1,
@@ -189,6 +198,13 @@ site-search button[data-open-modal] {
     padding-top: calc(var(--sl-mobile-toc-height, 48px) + 20px);
   }
 }
+
+.main-frame h1 em,
+.sl-markdown-content h1 em,
+.hero h1 em { font-weight: 400; font-style: italic; }
+.main-frame h1 em.dim,
+.sl-markdown-content h1 em.dim,
+.hero h1 em.dim { color: var(--sl-color-gray-2); }
 
 /* H2 / H3 — Geist */
 .sl-markdown-content h2 {
@@ -261,13 +277,13 @@ a.action.secondary {
   padding: 4px 0;
   color: var(--sl-color-gray-2);
   border-left: 0;
-  border-radius: 0;
 }
 .right-sidebar-panel a[aria-current="true"] {
   color: var(--sl-color-text);
   border-left: 1.5px solid var(--accent);
   padding-left: 8px;
   margin-left: -10px;
+  border-radius: 0;
 }
 
 /* ---------- Code blocks ---------- */
@@ -413,4 +429,9 @@ a.action.secondary {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sl-color-gray-3);
+}
+
+
+.pagination-links a .link-title {  
+  font-size: var(--sl-text-xl);
 }

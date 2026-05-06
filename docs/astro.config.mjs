@@ -113,8 +113,8 @@ export default defineConfig({
               --sl-color-bg-sidebar:#f6f5f1;
               --sl-color-text:#15130f;
               --sl-color-hairline:#e3e0d8;
-              --sl-color-accent:#e6d089;
-              --sl-color-text-accent:#e6d089;
+              --sl-color-accent:var(--accent);
+              --sl-color-text-accent:var(--accent);
             }
             html[data-theme="dark"]{
               --sl-color-bg:#0e0e0f;
@@ -122,8 +122,8 @@ export default defineConfig({
               --sl-color-bg-sidebar:#0e0e0f;
               --sl-color-text:#ececec;
               --sl-color-hairline:#262628;
-              --sl-color-accent:#e6d089;
-              --sl-color-text-accent:#e6d089;
+              --sl-color-accent:var(--accent);
+              --sl-color-text-accent:var(--accent);
             }
           `,
         },
