@@ -29,6 +29,12 @@ const V = {
   textActive: 'var(--matchina-viz-text-active, #e6fffb)',
   edge: 'var(--matchina-viz-edge, rgba(100,116,139,0.55))',
   dot: 'var(--matchina-viz-dot, rgba(148,163,184,0.08))',
+  labelBg: 'var(--matchina-viz-label-bg, rgba(15,23,33,0.95))',
+  labelBgActive: 'var(--matchina-viz-label-bg-active, rgba(8,47,51,0.95))',
+  labelText: 'var(--matchina-viz-label-text, rgba(203,213,225,0.82))',
+  ctrlBg: 'var(--matchina-viz-ctrl-bg, rgba(20,28,40,0.85))',
+  ctrlBorder: 'var(--matchina-viz-ctrl-border, rgba(148,163,184,0.24))',
+  ctrlText: 'var(--matchina-viz-ctrl-text, rgba(226,232,240,0.65))',
 } as const;
 
 function NodeShape({ node, isActive, isAncestor }: {
@@ -57,7 +63,7 @@ function NodeShape({ node, isActive, isAncestor }: {
         <text
           x={node.x + 14} y={node.y + 22}
           style={{
-            fill: isActive || isAncestor ? V.accent : 'rgba(226,232,240,0.85)',
+            fill: isActive || isAncestor ? V.accent : V.text,
             fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: 12,
             fontWeight: 600,
@@ -132,7 +138,7 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
             width={label.width + 12} height={label.height + 4}
             rx={6} ry={6}
             style={{
-              fill: isOutgoing ? 'rgba(8,47,51,0.95)' : 'rgba(15,23,33,0.95)',
+              fill: isOutgoing ? V.labelBgActive : V.labelBg,
               stroke: isOutgoing ? V.accent : 'rgba(100,116,139,0.45)',
               strokeWidth: isOutgoing ? 1 : 0.75,
             }}
@@ -141,7 +147,7 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
             x={label.width / 2} y={label.height - 2}
             textAnchor="middle"
             style={{
-              fill: isOutgoing ? V.accent : 'rgba(203,213,225,0.82)',
+              fill: isOutgoing ? V.accent : V.labelText,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               fontSize: 11,
               fontWeight: isOutgoing ? 600 : 500,
@@ -157,9 +163,9 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
 }
 
 const ctrlBtn: React.CSSProperties = {
-  background: 'rgba(20,28,40,0.85)',
-  border: '1px solid rgba(148,163,184,0.24)',
-  color: 'rgba(226,232,240,0.65)',
+  background: V.ctrlBg,
+  border: `1px solid ${V.ctrlBorder}`,
+  color: V.ctrlText,
   padding: '5px 11px',
   borderRadius: 6,
   fontFamily: 'monospace',
@@ -321,8 +327,8 @@ export const SvgInspector = React.memo(function SvgInspector({
       <div style={{
         position: 'absolute', bottom: 14, right: 14,
         display: 'flex', gap: 4,
-        background: 'rgba(15,22,33,0.85)',
-        border: '1px solid rgba(148,163,184,0.12)',
+        background: V.ctrlBg,
+        border: `1px solid ${V.ctrlBorder}`,
         padding: 4, borderRadius: 8,
       }}>
         <button onClick={() => { setZoom(1); setPan({ x: 20, y: 20 }); }} style={ctrlBtn}>Reset</button>
@@ -330,7 +336,7 @@ export const SvgInspector = React.memo(function SvgInspector({
         <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
         <span style={{
           fontFamily: 'monospace',
-          color: 'rgba(148,163,184,0.55)',
+          color: V.ctrlText,
           padding: '0 6px', fontSize: 11, lineHeight: '28px',
         }}>
           {Math.round(zoom * 100)}%
