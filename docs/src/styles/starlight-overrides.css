@@ -181,6 +181,14 @@ site-search button[data-open-modal] {
 .main-frame h1 em.dim,
 .sl-markdown-content h1 em.dim,
 .hero h1 em.dim { color: var(--sl-color-gray-2); }
+/* When mobile TOC is fixed above content, give h1 enough clearance */
+@media (max-width: 72rem) {
+  .main-frame h1,
+  .sl-markdown-content h1:first-of-type,
+  .hero h1 {
+    padding-top: calc(var(--sl-mobile-toc-height, 48px) + 20px);
+  }
+}
 
 /* H2 / H3 — Geist */
 .sl-markdown-content h2 {
