@@ -100,6 +100,43 @@ export default defineConfig({
       expressiveCode: {
         themes: ["material-theme-ocean"],
       },
+      head: [
+        // Inline critical --sl-* vars so Starlight's chrome doesn't paint cold
+        // defaults before external CSS loads. Editorial light is the default;
+        // html[data-theme="dark"] switches to dark chrome.
+        {
+          tag: "style",
+          content: `
+            :root{
+              --sl-color-bg:#f6f5f1;
+              --sl-color-bg-nav:#f6f5f1;
+              --sl-color-bg-sidebar:#f6f5f1;
+              --sl-color-text:#15130f;
+              --sl-color-hairline:#e3e0d8;
+              --sl-color-accent:#e6d089;
+              --sl-color-text-accent:#e6d089;
+            }
+            html[data-theme="dark"]{
+              --sl-color-bg:#0e0e0f;
+              --sl-color-bg-nav:#0e0e0f;
+              --sl-color-bg-sidebar:#0e0e0f;
+              --sl-color-text:#ececec;
+              --sl-color-hairline:#262628;
+              --sl-color-accent:#e6d089;
+              --sl-color-text-accent:#e6d089;
+            }
+          `,
+        },
+        { tag: "link", attrs: { rel: "preconnect", href: "https://fonts.googleapis.com" } },
+        { tag: "link", attrs: { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: true } },
+        {
+          tag: "link",
+          attrs: {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap",
+          },
+        },
+      ],
       title: "Matchina",
       editLink: {
         baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
@@ -238,6 +275,10 @@ export default defineConfig({
             {
               label: "React",
               link: "/guides/react",
+            },
+            {
+              label: "ui26 Components",
+              link: "/guides/ui26",
             },
           ],
         },

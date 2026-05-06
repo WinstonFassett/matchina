@@ -1,71 +1,88 @@
+/* Matchina docs — themed with ui26 (editorial).
+ * Theme tokens: ./themes/editorial.css
+ * Starlight chrome bridge + restyle: ./starlight-overrides.css
+ */
+
 @layer base, starlight, theme, components, utilities;
 
 @import "@astrojs/starlight-tailwind";
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-@theme {
-  /*
-	Configure your Tailwind theme that will be used by Starlight.
-	https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind
-	*/
+/* ui26 theme tokens — defines --background/--foreground/--primary/etc.
+ * `:root` block = editorial light (default); html[data-theme="dark"] = editorial dark. */
+@import "./themes/editorial.css";
+
+/* Maps Starlight's --sl-* palette onto our tokens, then patches DOM chrome
+ * (header, sidebar, content, code, TOC, CTAs). Must come AFTER the theme. */
+@import "./starlight-overrides.css";
+
+/* Tailwind dark: variant matches Starlight's stock toggle. */
+@custom-variant dark (html[data-theme="dark"] &);
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+  --color-purple: var(--purple);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-text-mute: var(--text-mute);
+  --color-code: var(--code);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
 }
 
-/*
-Add additional Tailwind styles to this file:
-https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
-*/
-
+/* Matchina-specific viz vars (force-graph, SvgInspector). Theme-agnostic. */
 :root {
-  --primary: var(--sl-color-accent);
-  --secondary: var(--sl-color-gray-4);
-  --accent: var(--sl-color-accent-high);
-  --card: var(--sl-color-bg);
-  --font-sans: var(--sl-font-system, "Atkinson Hyperlegible", sans-serif);
   --forcegraph-edge-bg: #eee;
-
-  /* SvgInspector — light mode */
-  --matchina-viz-accent: var(--sl-color-accent);
-  --matchina-viz-bg: var(--sl-color-bg, #f8fafc);
-  --matchina-viz-node: #ffffff;
-  --matchina-viz-node-active: color-mix(in srgb, var(--sl-color-accent) 14%, #ffffff);
-  --matchina-viz-node-compound: var(--sl-color-gray-6, #f1f5f9);
-  --matchina-viz-border: rgba(148, 163, 184, 0.45);
-  --matchina-viz-text: var(--sl-color-gray-2, #1e293b);
-  --matchina-viz-text-active: var(--sl-color-accent);
-  --matchina-viz-edge: rgba(100, 116, 139, 0.55);
-  --matchina-viz-dot: rgba(148, 163, 184, 0.18);
-  --matchina-viz-label-bg: rgba(241, 245, 249, 0.97);
-  --matchina-viz-label-bg-active: color-mix(in srgb, var(--sl-color-accent) 10%, #ffffff);
-  --matchina-viz-label-text: rgba(71, 85, 105, 0.9);
-  --matchina-viz-ctrl-bg: rgba(248, 250, 252, 0.92);
-  --matchina-viz-ctrl-border: rgba(148, 163, 184, 0.35);
-  --matchina-viz-ctrl-text: rgba(71, 85, 105, 0.8);
+  --matchina-viz-accent: var(--accent);
+  --matchina-viz-bg: var(--background);
+  --matchina-viz-node: var(--card);
+  --matchina-viz-node-active: color-mix(in srgb, var(--accent) 14%, var(--card));
+  --matchina-viz-node-compound: var(--muted);
+  --matchina-viz-border: var(--border);
+  --matchina-viz-text: var(--foreground);
+  --matchina-viz-text-active: var(--accent);
+  --matchina-viz-edge: var(--muted-foreground);
+  --matchina-viz-dot: color-mix(in srgb, var(--border) 60%, transparent);
+  --matchina-viz-label-bg: var(--card);
+  --matchina-viz-label-bg-active: color-mix(in srgb, var(--accent) 10%, var(--card));
+  --matchina-viz-label-text: var(--muted-foreground);
+  --matchina-viz-ctrl-bg: var(--card);
+  --matchina-viz-ctrl-border: var(--border);
+  --matchina-viz-ctrl-text: var(--muted-foreground);
 }
 
 html[data-theme="dark"] {
-  --primary: var(--sl-color-accent-high);
-  --secondary: var(--sl-color-gray-2);
-  --accent: var(--sl-color-accent);
-  --card: var(--sl-color-bg);
   --forcegraph-edge-bg: #000;
   --forcegraph-edge-label: #ddd;
-
-  /* SvgInspector — dark mode (keep original dark teal palette) */
-  --matchina-viz-accent: var(--sl-color-accent-high);
-  --matchina-viz-bg: #0a0f17;
-  --matchina-viz-node: rgba(28, 38, 54, 0.95);
-  --matchina-viz-node-active: rgba(20, 90, 82, 0.85);
-  --matchina-viz-node-compound: rgba(20, 28, 40, 0.7);
-  --matchina-viz-border: rgba(148, 163, 184, 0.25);
-  --matchina-viz-text: rgba(226, 232, 240, 0.92);
-  --matchina-viz-text-active: #e6fffb;
-  --matchina-viz-edge: rgba(100, 116, 139, 0.55);
-  --matchina-viz-dot: rgba(148, 163, 184, 0.08);
-  --matchina-viz-label-bg: rgba(15, 23, 33, 0.95);
-  --matchina-viz-label-bg-active: rgba(8, 47, 51, 0.95);
-  --matchina-viz-label-text: rgba(203, 213, 225, 0.82);
-  --matchina-viz-ctrl-bg: rgba(20, 28, 40, 0.85);
-  --matchina-viz-ctrl-border: rgba(148, 163, 184, 0.24);
-  --matchina-viz-ctrl-text: rgba(226, 232, 240, 0.65);
 }

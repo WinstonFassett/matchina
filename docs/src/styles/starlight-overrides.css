@@ -1,0 +1,408 @@
+/* Starlight bridge + overrides.
+ * Import AFTER registry/tokens.css. Maps Starlight's `--sl-*` namespace onto
+ * our semantic tokens so it follows the active theme, then patches the DOM.
+ */
+
+/* ---------- Starlight bridge (theme-agnostic) ---------- */
+
+:where(:root) {
+  --sl-color-bg: var(--background);
+  --sl-color-bg-sidebar: var(--background);
+  --sl-color-bg-nav: var(--background);
+  --sl-color-bg-inline-code: var(--card);
+  --sl-color-bg-hover: var(--muted);
+  --sl-color-hairline: var(--border);
+  --sl-color-hairline-light: var(--border);
+  --sl-color-hairline-shade: var(--border);
+
+  --sl-color-text: var(--foreground);
+  --sl-color-text-accent: var(--accent);
+  --sl-color-text-invert: var(--primary-foreground);
+  --sl-color-gray-1: var(--foreground);
+  --sl-color-gray-2: var(--muted-foreground);
+  --sl-color-gray-3: var(--text-mute);
+  --sl-color-gray-4: var(--border);
+  --sl-color-gray-5: var(--muted);
+  --sl-color-gray-6: var(--card);
+
+  --sl-font: var(--font-sans);
+  --sl-font-system: var(--font-sans);
+  --sl-font-system-mono: var(--font-mono);
+
+  --sl-content-width: 56rem;
+  --sl-nav-height: 44px;
+  --sl-sidebar-width: 240px;
+}
+
+/* ---------- Global ---------- */
+
+html, body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+/* ---------- Top nav ---------- */
+
+header.header {
+  height: var(--sl-nav-height);
+  background: var(--sl-color-bg-nav);
+  border-bottom: 1px solid var(--sl-color-hairline);
+  padding: 0 16px;
+}
+
+/* Social icons (GitHub) should use text color, not accent */
+header.header .social-links a,
+header.header a[href*="github"] {
+  color: var(--sl-color-text);
+}
+header.header .social-links a:hover,
+header.header a[href*="github"]:hover {
+  color: var(--sl-color-text-accent);
+}
+header.header .site-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  gap: 10px;
+  color: var(--sl-color-text);
+}
+header.header .site-title img,
+header.header .site-title svg { width: 20px; height: 20px; }
+
+/* Search pill */
+site-search button[data-open-modal] {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--sl-color-hairline);
+  background: transparent;
+  padding: 4px 10px;
+  color: var(--sl-color-gray-2);
+  min-width: 360px;
+  min-height: 0;
+  height: auto;
+}
+
+/* Version pill (wrap a <span class="version-pill"> next to site title) */
+.version-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--sl-color-gray-3);
+  border: 1px solid var(--sl-color-hairline);
+  padding: 1px 6px;
+  margin-left: 4px;
+}
+
+/* ---------- Sidebar ---------- */
+
+.sidebar-pane {
+  border-right: 1px solid var(--sl-color-hairline);
+  background: var(--sl-color-bg-sidebar);
+}
+.sidebar-content { padding: 14px 0; }
+
+/* Section / group titles: mono uppercase micro-label */
+.sidebar-content .group > summary,
+.sidebar-content .large {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  padding: 16px 16px 6px;
+  font-weight: 400;
+}
+.sidebar-content .group:first-child > summary,
+.sidebar-content > ul > li:first-child .large {
+  padding-top: 2px;
+}
+
+/* Leaf items: tight 3px vertical, Geist 12px */
+.sidebar-content a {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sl-color-gray-2);
+  padding: 3px 16px !important;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  margin-left: -1px;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+}
+.sidebar-content a:hover {
+  color: var(--sl-color-text);
+  background: var(--sl-color-bg-hover);
+}
+.sidebar-content a[aria-current="page"] {
+  color: var(--sl-color-text);
+  background: var(--sl-color-bg-inline-code);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+
+/* ---------- Main content ---------- */
+
+.main-frame { padding-top: 0; }
+.content-panel { padding: 48px 56px; border: 0; }
+.content-panel + .content-panel { border-top: 1px solid var(--sl-color-hairline); }
+
+/* Breadcrumbs / rail labels — reusable .eyebrow utility */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+/* H1 — Newsreader display */
+.main-frame h1,
+.sl-markdown-content h1:first-of-type,
+.hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(40px, 6vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
+  color: var(--sl-color-text);
+  margin: 28px 0 0 0;
+  padding-top: 20px;
+}
+.main-frame h1 em,
+.sl-markdown-content h1 em,
+.hero h1 em { font-weight: 400; font-style: italic; }
+.main-frame h1 em.dim,
+.sl-markdown-content h1 em.dim,
+.hero h1 em.dim { color: var(--sl-color-gray-2); }
+
+/* H2 / H3 — Geist */
+.sl-markdown-content h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.015em;
+  margin-top: 2.5rem;
+}
+.sl-markdown-content h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Body */
+.sl-markdown-content p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.hero .tagline,
+.sl-markdown-content > p:first-of-type {
+  color: var(--sl-color-gray-2);
+  max-width: 520px;
+}
+
+/* ---------- CTAs ---------- */
+
+.sl-link-button.primary,
+a.action.primary {
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
+  border: 0 !important;
+  padding: 10px 16px !important;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  gap: 10px;
+}
+.sl-link-button.secondary,
+a.action.secondary {
+  background: transparent !important;
+  color: var(--sl-color-text) !important;
+  border: 1px solid var(--sl-color-hairline) !important;
+  padding: 10px 16px !important;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  gap: 10px;
+}
+
+/* ---------- TOC (right rail) ---------- */
+
+.right-sidebar-panel { padding: 48px 24px; }
+.right-sidebar-panel h2 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  margin-bottom: 12px;
+  font-weight: 400;
+}
+.right-sidebar-panel a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 0;
+  color: var(--sl-color-gray-2);
+  border-left: 0;
+  border-radius: 0;
+}
+.right-sidebar-panel a[aria-current="true"] {
+  color: var(--sl-color-text);
+  border-left: 1.5px solid var(--accent);
+  padding-left: 8px;
+  margin-left: -10px;
+}
+
+/* ---------- Code blocks ---------- */
+
+.expressive-code {
+  border: 1px solid var(--sl-color-hairline);
+  background: var(--sl-color-bg-inline-code);
+}
+.expressive-code pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 14px 20px !important;
+}
+.expressive-code .frame .title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+:not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--sl-color-bg-inline-code);
+  border: 1px solid var(--sl-color-hairline);
+  padding: 0.5px 5px;
+}
+
+/* ---------- .not-content = scoped Tailwind preflight for embeds ----------
+ * apps/docs skips global Tailwind preflight (see global.css) because it
+ * fights Starlight's prose typography. External components (Kibo, AIE,
+ * shadcn) are authored against preflight and break without it — UA button
+ * padding leaks, lists get bullets, SVGs inline-align weirdly, etc.
+ *
+ * Fix: scope a preflight-equivalent reset to .not-content descendants via
+ * native CSS @scope. Every demo embed goes inside <div class="not-content">
+ * and gets a clean preflight slate; the rest of the site keeps Starlight
+ * typography untouched. Ported from Tailwind v4 preflight.css — omits
+ * rules that target `html`/`:host` or only make sense at document root.
+ */
+@layer base {
+@scope (.not-content) {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+
+  :scope { -webkit-tap-highlight-color: transparent; }
+
+  hr { height: 0; color: inherit; border-top-width: 1px; }
+
+  h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+
+  a { color: inherit; -webkit-text-decoration: inherit; text-decoration: inherit; }
+
+  b, strong { font-weight: bolder; }
+
+  small { font-size: 80%; }
+
+  sub, sup {
+    font-size: 75%; line-height: 0;
+    position: relative; vertical-align: baseline;
+  }
+  sub { bottom: -0.25em; }
+  sup { top: -0.5em; }
+
+  table { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+
+  :-moz-focusring { outline: auto; }
+  progress { vertical-align: baseline; }
+  summary { display: list-item; }
+
+  ol, ul, menu { list-style: none; }
+
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block; vertical-align: middle;
+  }
+  img, video { max-width: 100%; height: auto; }
+
+  button, input, select, optgroup, textarea, ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+  button, [role="button"] { cursor: pointer; }
+
+  :where(select:is([multiple], [size])) optgroup { font-weight: bolder; }
+  :where(select:is([multiple], [size])) optgroup option { padding-inline-start: 20px; }
+
+  ::file-selector-button { margin-inline-end: 4px; }
+
+  ::placeholder { opacity: 1; }
+  @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+    ::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent); }
+  }
+
+  textarea { resize: vertical; }
+
+  button, input:where([type='button'], [type='reset'], [type='submit']),
+  ::file-selector-button { appearance: button; }
+
+  [hidden]:where(:not([hidden='until-found'])) { display: none !important; }
+}
+}
+
+/* ---------- Focused utilities (optional) ---------- */
+
+.stat-row {
+  display: flex; gap: 48px; margin-top: 28px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--sl-color-gray-2);
+}
+.stat-row .n {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--sl-color-text);
+  margin-right: 8px;
+}
+
+.hero-card {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--sl-color-hairline);
+  background: var(--sl-color-bg-inline-code);
+}
+.hero-card > :first-child { border-right: 1px solid var(--sl-color-hairline); }
+.hero-card .pane-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid var(--sl-color-hairline-light);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}

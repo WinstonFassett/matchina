@@ -1,0 +1,100 @@
+/* Editorial theme — adapted from ui26 (apps/docs/registry/themes/editorial.css).
+ * Bound to Starlight's stock `html[data-theme="dark"]` for the dark variant
+ * so Starlight's built-in theme toggle works without a custom ThemeProvider.
+ */
+
+:root,
+[data-theme="editorial"] {
+  /* Fonts — Editorial (serif display + Geist sans/mono) */
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Surfaces */
+  --background: #f6f5f1;
+  --foreground: #15130f;
+  --card: #ffffff;
+  --card-foreground: #15130f;
+  --popover: #ffffff;
+  --popover-foreground: #15130f;
+
+  /* Anchors — near-black primary with gold inversion */
+  --primary: #15130f;
+  --primary-foreground: #e6d089;
+  --secondary: #ecebe4;
+  --secondary-foreground: #15130f;
+  --muted: #ecebe4;
+  --muted-foreground: #6a665d;
+  --accent: #e6d089;
+  --accent-foreground: #15130f;
+
+  --destructive: #9f4a4a;
+  --destructive-foreground: #f6f5f1;
+
+  --border: #e3e0d8;
+  --border-soft: #ecebe4;
+  --input: #e3e0d8;
+  --ring: #15130f;
+
+  --radius: 0.25rem;
+
+  /* Status layer */
+  --success: #2f7a3a;
+  --warn: #a35a00;
+  --info: #1f5ab8;
+  --purple: #6a3fb5;
+
+  /* Accent companions */
+  --accent-ink: #15130f;
+  --accent-soft: rgba(230, 208, 137, 0.35);
+
+  --text-mute: #a09b91;
+  --code: #faf9f6;
+
+  /* Editorial carries no shadows — hierarchy is 1px rules + background tiers. */
+  --shadow-color: 0 0 0;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --highlight-inset: none;
+}
+
+html[data-theme="dark"],
+[data-theme="editorial-dark"] {
+  --background: #0e0e0f;
+  --foreground: #ececec;
+  --card: #141416;
+  --card-foreground: #ececec;
+  --popover: #141416;
+  --popover-foreground: #ececec;
+
+  --primary: #e6d089;
+  --primary-foreground: #15130f;
+  --secondary: #262628;
+  --secondary-foreground: #ececec;
+  --muted: #1a1a1c;
+  --muted-foreground: #8a8a90;
+  --accent: #e6d089;
+  --accent-foreground: #15130f;
+
+  --destructive: #b54a4a;
+  --destructive-foreground: #0e0e0f;
+
+  --border: #262628;
+  --border-soft: #1e1e20;
+  --input: #262628;
+  --ring: #e6d089;
+
+  /* Status layer (dark tones) */
+  --success: #8fd1a3;
+  --warn: #e6b86a;
+  --info: #8fb9d6;
+  --purple: #b89dd8;
+
+  --accent-ink: #15130f;
+  --accent-soft: rgba(230, 208, 137, 0.14);
+
+  --text-mute: #56565c;
+  --code: #1a1a1c;
+}
