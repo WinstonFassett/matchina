@@ -138,6 +138,11 @@ export default defineConfig({
         },
       ],
       title: "Matchina",
+      logo: {
+        light: "./src/assets/logo-light.svg",
+        dark: "./src/assets/logo-dark.svg",
+        alt: "Matchina",
+      },
       editLink: {
         baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
       },
