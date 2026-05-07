@@ -66,6 +66,7 @@ function ReactFlowInspectorInner({
 }: ReactFlowInspectorProps) {
   const { fitView } = useReactFlow();
   const isFirstRender = useRef(true);
+  const [visible, setVisible] = useState(false);
 
   // Separate layout nodes (stable) from highlighting (dynamic)
   const layoutNodes = useMemo(() => {
@@ -213,14 +214,14 @@ function ReactFlowInspectorInner({
       .join('|');
   }, [layoutNodes]);
 
-  // Fit view on first render and when layout changes (not when highlighting changes)
   useEffect(() => {
     if (layoutNodes.length > 0) {
-      // Small delay to allow layout to settle
-      const duration = isFirstRender.current ? 300 : 200;
+      const first = isFirstRender.current;
+      const duration = first ? 0 : 200;
       isFirstRender.current = false;
       setTimeout(() => {
         fitView({ padding: 0.1, duration });
+        if (first) setVisible(true);
       }, 50);
     }
   }, [layoutKey, layoutNodes.length, fitView]);
@@ -251,11 +252,11 @@ function ReactFlowInspectorInner({
         type: 'floating',
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
       }}
-      // Limit zoom to 100% (1.0) for better appearance and usability
       minZoom={0.1}
       maxZoom={1.0}
       defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       proOptions={{ hideAttribution: true }}
+      style={{ opacity: visible ? 1 : 0, transition: 'opacity 150ms ease' }}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
       <Controls showInteractive={false} />

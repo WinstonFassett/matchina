@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MachineShape } from 'matchina';
 import { runElkLayout } from './elk-layout.js';
 import type { ElkLayoutOptions, SvgEdge, SvgLayout, SvgNode } from './elk-layout.js';
-import { buildCurvedPath } from './svg-path.js';
+import { buildCurvedPath, pathMidpoint } from './svg-path.js';
 
 // CSS variable names with their default values (dark teal theme).
 // Consumers can override any of these on a parent element.
@@ -102,20 +102,27 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
   isOutgoing: boolean;
   onFire: (event: string) => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   const section = edge.sections?.[0];
   if (!section?.startPoint || !section?.endPoint) return null;
 
   const d = buildCurvedPath(section);
   const stroke = isOutgoing ? V.accent : V.edge;
-  const strokeWidth = isOutgoing ? 2 : 1.25;
+  const strokeWidth = isOutgoing ? (hovered ? 2.5 : 2) : 1.25;
   const opacity = isOutgoing ? 1 : 0.65;
   const { label } = edge;
   const markerId = isOutgoing ? 'matchina-svg-arrow-active' : 'matchina-svg-arrow';
+
+  // Compute path midpoint for label centering — ELK's label placement can drift
+  // off the visual center of routed edges, so we override with the actual midpoint.
+  const mid = label ? pathMidpoint(section) : null;
 
   return (
     <g
       style={{ cursor: isOutgoing ? 'pointer' : 'default' }}
       onClick={isOutgoing ? () => onFire(edge.event) : undefined}
+      onMouseEnter={isOutgoing ? () => setHovered(true) : undefined}
+      onMouseLeave={isOutgoing ? () => setHovered(false) : undefined}
     >
       {isOutgoing && (
         <path d={d} fill="none" stroke="transparent" strokeWidth={18} />
@@ -128,30 +135,38 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
         }}
         markerEnd={`url(#${markerId})`}
       />
-      {label && (
+      {label && mid && (
         <g
-          transform={`translate(${label.x}, ${label.y})`}
-          style={{ opacity, transition: 'opacity 220ms ease', pointerEvents: 'none' }}
+          transform={`translate(${mid.x - label.width / 2}, ${mid.y - label.height / 2})`}
+          style={{ opacity, transition: 'opacity 220ms ease', cursor: isOutgoing ? 'pointer' : 'default' }}
+          onClick={isOutgoing ? () => onFire(edge.event) : undefined}
         >
           <rect
             x={-6} y={-2}
             width={label.width + 12} height={label.height + 4}
             rx={6} ry={6}
             style={{
-              fill: isOutgoing ? V.labelBgActive : V.labelBg,
+              fill: isOutgoing
+                ? hovered ? V.accent : V.labelBgActive
+                : V.labelBg,
               stroke: isOutgoing ? V.accent : 'rgba(100,116,139,0.45)',
               strokeWidth: isOutgoing ? 1 : 0.75,
+              transition: 'fill 150ms ease, stroke 150ms ease',
             }}
           />
           <text
             x={label.width / 2} y={label.height - 2}
             textAnchor="middle"
             style={{
-              fill: isOutgoing ? V.accent : V.labelText,
+              fill: isOutgoing
+                ? hovered ? V.labelBg : V.accent
+                : V.labelText,
               fontFamily: "'JetBrains Mono', ui-monospace, monospace",
               fontSize: 11,
               fontWeight: isOutgoing ? 600 : 500,
               letterSpacing: '0.04em',
+              userSelect: 'none',
+              transition: 'fill 150ms ease',
             }}
           >
             {label.text}

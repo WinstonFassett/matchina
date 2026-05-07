@@ -14,3 +14,37 @@
   padding: 0;
   margin: 0;
 }
+
+/* Controls — scale down and theme to match editorial vars */
+.react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--matchina-viz-ctrl-border, rgba(148, 163, 184, 0.24));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: var(--matchina-viz-ctrl-bg, rgba(20, 28, 40, 0.85));
+  border-bottom: 1px solid var(--matchina-viz-ctrl-border, rgba(148, 163, 184, 0.24));
+  color: var(--matchina-viz-ctrl-text, rgba(226, 232, 240, 0.65));
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--matchina-viz-node, rgba(28, 38, 54, 0.95));
+  color: var(--matchina-viz-accent, #2dd4bf);
+}
+
+.react-flow__controls-button svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  max-width: unset;
+  max-height: unset;
+}
