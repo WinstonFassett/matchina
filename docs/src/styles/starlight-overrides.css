@@ -15,6 +15,11 @@
   --sl-color-hairline-light: var(--border);
   --sl-color-hairline-shade: var(--border);
 
+  /* Starlight only flips --sl-color-white/black via [data-theme='light'], which
+   * our compound data-theme values never match — map them to semantic tokens. */
+  --sl-color-white: var(--foreground);
+  --sl-color-black: var(--background);
+
   --sl-color-text: var(--foreground);
   --sl-color-text-accent: var(--accent);
   --sl-color-text-invert: var(--primary-foreground);
