@@ -6,5 +6,5 @@ export default {
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.type === 'dark' ? '[data-theme$="dark"]' : ':root',
-  plugins: [pluginTwoslash()],
+  plugins: [pluginTwoslash({ includeJsDoc: false })],
 };
