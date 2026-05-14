@@ -58,6 +58,12 @@ header.header {
   padding: 0 16px;
 }
 
+/* Mobile: hide theme picker from header — it appears in the sidebar popup footer */
+@media (max-width: 50rem) {
+  header.header { padding-inline-start: 8px; }
+  header.header [data-ui26-theme-slot] { display: none; }
+}
+
 /* Social icons (GitHub) should use text color, not accent */
 header.header .social-links a,
 header.header a[href*="github"] {
@@ -82,7 +88,13 @@ header.header .site-title {
 header.header .site-title img,
 header.header .site-title svg { width: 20px; height: 20px; }
 
-/* Fix search styling - keep monospace but match header border and height */
+/* Starlight's dark:sl-hidden / light:sl-hidden use [data-theme='dark'] which
+ * doesn't match our compound data-theme (e.g. 'editorial-dark'). Override so
+ * only the correct logo is visible for our theme system. */
+:root:not([data-theme$="-dark"]) .site-title .dark\:sl-hidden { display: none !important; }
+:root[data-theme$="-dark"] .site-title .light\:sl-hidden { display: none !important; }
+
+/* Search — compact icon+kbd pill matching ref site */
 site-search button[data-open-modal] {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -90,7 +102,8 @@ site-search button[data-open-modal] {
   background: transparent;
   padding: 4px 10px;
   color: var(--sl-color-gray-2);
-  min-width: 360px;
+  min-width: 0;
+  width: auto;
   height: 24px;
   border-radius: 0;
   transition: border-color 0.15s ease-out, color 0.15s ease-out;
@@ -101,6 +114,10 @@ site-search button[data-open-modal]:hover {
 }
 site-search button[data-open-modal] kbd {
   border-radius: 0;
+}
+/* Hide the text label — keep icon + kbd shortcut only */
+site-search button[data-open-modal] > span {
+  display: none !important;
 }
 
 /* Fix theme selector height for text display */
@@ -282,6 +299,8 @@ a.action.secondary {
   padding: 4px 0;
   color: var(--sl-color-gray-2);
   border-left: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .right-sidebar-panel a[aria-current="true"] {
   color: var(--sl-color-text);
