@@ -5,7 +5,7 @@ description: "A powerful typed factory for creating tagged unions"
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import CodeBlock from "@components/CodeBlock.astro";
+import { Code } from "@astrojs/starlight/components";
 
 import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
 import lightPatternMatchingRaw from "../../../code/examples/matchbox-usage/light-pattern-matching.ts?raw";
@@ -35,13 +35,13 @@ Its main features include:
 
 You can create a factory using the `matchboxFactory` function. This factory then provides functions to create individual tagged union instances:
 
-<CodeBlock code={lightBasicRaw} lang="ts" twoslash={true} />
+<Code code={lightBasicRaw} lang="ts" />
 
 ## Custom Tag Property
 
 By default, the tag property is named `tag`, but you can customize it:
 
-<CodeBlock code={matchboxTagsRaw} lang="ts" twoslash={true} />
+<Code code={matchboxTagsRaw} lang="ts" />
 
 ## Conclusion
 

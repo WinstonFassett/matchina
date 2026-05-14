@@ -9,7 +9,7 @@
   --sl-color-bg: var(--background);
   --sl-color-bg-sidebar: var(--background);
   --sl-color-bg-nav: var(--background);
-  --sl-color-bg-inline-code: var(--card);
+  --sl-color-bg-inline-code: var(--code, var(--card));
   --sl-color-bg-hover: var(--muted);
   --sl-color-hairline: var(--border);
   --sl-color-hairline-light: var(--border);
@@ -303,6 +303,7 @@ a.action.secondary {
   font-size: 12px;
   line-height: 1.6;
   padding: 14px 20px !important;
+  background: transparent !important;
 }
 .expressive-code .frame .title {
   font-family: var(--font-mono);

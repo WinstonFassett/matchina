@@ -3,7 +3,7 @@ title: Tagged Unions
 description: "Type-Safe Tagged Unions"
 ---
 import { Tabs, TabItem } from "@astrojs/starlight/components";
-import CodeBlock from "@components/CodeBlock.astro";
+import { Code } from "@astrojs/starlight/components";
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
 
 import lightBasicRaw from "../../../code/examples/matchbox-usage/light-basic.ts?raw";
@@ -22,7 +22,7 @@ import typeGuardsRaw from "../../../code/examples/matchbox-usage/type-guards.ts?
 
 Tagged unions (also known as discriminated unions or sum types) are a powerful way to represent data that can be one of several distinct types, each with its own structure:
 
-<CodeBlock code={tsNativeUnionRaw} lang="ts" twoslash={true} />
+<Code code={tsNativeUnionRaw} lang="ts" />
 
 
 This makes complex state modeling and data handling more robust and maintainable, with TypeScript helping to catch errors at compile time rather than runtime.

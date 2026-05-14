@@ -3,7 +3,7 @@ title: Matchbox Usage
 description: Learn how to use Matchbox factories for type-safe operations and pattern matching
 ---
 
-import CodeBlock from "@components/CodeBlock.astro";
+import { Code } from "@astrojs/starlight/components";
 import code from "@code/examples/usage-typeguards.ts?raw";
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
@@ -30,26 +30,26 @@ One of the most powerful features of Matchbox is exhaustive pattern matching wit
 
 Given the following matchbox factory:
 
-<CodeBlock code={matchSetupRaw} lang="ts" twoslash={false} />
+<Code code={matchSetupRaw} lang="ts" />
 
 ### Pattern Matching with Exhaustive Checking
 
 
 The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
 
-<CodeBlock code={matchRaw} lang="ts" twoslash={true} />
+<Code code={matchRaw} lang="ts" />
 
 ### Using Default Cases
 
 Sometimes you want to handle multiple states with a single case, or provide a fallback:
 
-<CodeBlock code={matchWithDefaultRaw} lang="ts" twoslash={true} />
+<Code code={matchWithDefaultRaw} lang="ts" />
 
 ### Non-Exhaustive Matching
 
 You can opt-out of exhaustiveness checking by passing `false` as the second argument:
 
-<CodeBlock code={matchNonExhaustiveRaw} lang="ts" twoslash={true} />
+<Code code={matchNonExhaustiveRaw} lang="ts" />
 
 
 ## Type Guards
@@ -66,13 +66,13 @@ Using type guards in Matchbox provides several benefits:
 
 Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
 
-<CodeBlock code={lightTypeGuardsRaw} lang="ts" twoslash={true} />
+<Code code={lightTypeGuardsRaw} lang="ts" />
 
 ### Cast using `as()`
 
 Use the `as` method for type-safe casting with runtime validation:
 
-<CodeBlock code={lightCastingRaw} lang="ts" twoslash={true} />
+<Code code={lightCastingRaw} lang="ts" />
 
 ### Filter using with Type Predicates
 

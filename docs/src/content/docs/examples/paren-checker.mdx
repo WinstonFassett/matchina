@@ -1,10 +1,11 @@
+import { Code } from "@astrojs/starlight/components";
 ---
 title: Parentheses Checker
 ---
 
 import { BalancedParenthesesDemo } from "@code/examples/balanced-paren-checker";
 import code from "@code/examples/balanced-paren-checker/index.tsx?raw";
-import CodeBlock from "@components/CodeBlock.astro";
+
 
 <div className="text-4xl text-red-500 text-green-500 text-yellow-500 container w-full flex items-center gap-2 rounded"></div>
 
@@ -14,4 +15,4 @@ import CodeBlock from "@components/CodeBlock.astro";
 
 ## Full Code
 
-<CodeBlock lang="jsx" code={code} />
+<Code lang="jsx" code={code} />

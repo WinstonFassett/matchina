@@ -1,9 +1,9 @@
+import { Code } from "@astrojs/starlight/components";
 ---
 title: Machine Interfaces
 description: Core interface definitions for Matchina state machines
 ---
 
-import CodeBlock from "@components/CodeBlock.astro";
 import stateMachineCode from "@lib/src/state-machine.ts?raw";
 
 ## What is a state machine?
@@ -22,7 +22,7 @@ In addition to `getState` and `send`, machines internally include several lifecy
 
 Here are the core interfaces that define a Matchina state machine:
 
-<CodeBlock code={stateMachineCode} lang="ts" />
+<Code code={stateMachineCode} lang="ts" />
 
 If you prefer to only expose a minimal interface to consumers, you can use the `pure` API wrapper:
 
