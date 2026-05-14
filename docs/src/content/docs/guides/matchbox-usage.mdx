@@ -37,19 +37,19 @@ Given the following matchbox factory:
 
 The most powerful feature of tagged unions created with `matchboxFactory` is exhaustive pattern matching with the `match` method:
 
-<Code code={matchRaw} lang="ts" />
+<Code code={matchRaw} lang="ts" meta="twoslash" />
 
 ### Using Default Cases
 
 Sometimes you want to handle multiple states with a single case, or provide a fallback:
 
-<Code code={matchWithDefaultRaw} lang="ts" />
+<Code code={matchWithDefaultRaw} lang="ts" meta="twoslash" />
 
 ### Non-Exhaustive Matching
 
 You can opt-out of exhaustiveness checking by passing `false` as the second argument:
 
-<Code code={matchNonExhaustiveRaw} lang="ts" />
+<Code code={matchNonExhaustiveRaw} lang="ts" meta="twoslash" />
 
 
 ## Type Guards
@@ -66,13 +66,13 @@ Using type guards in Matchbox provides several benefits:
 
 Tagged union instances created with `matchboxFactory` provide automatic type narrowing with the `is` method:
 
-<Code code={lightTypeGuardsRaw} lang="ts" />
+<Code code={lightTypeGuardsRaw} lang="ts" meta="twoslash" />
 
 ### Cast using `as()`
 
 Use the `as` method for type-safe casting with runtime validation:
 
-<Code code={lightCastingRaw} lang="ts" />
+<Code code={lightCastingRaw} lang="ts" meta="twoslash" />
 
 ### Filter using with Type Predicates
 
