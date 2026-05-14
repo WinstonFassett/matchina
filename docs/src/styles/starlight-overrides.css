@@ -74,25 +74,7 @@ header.header a[href*="github"]:hover {
   color: var(--sl-color-text-accent);
 }
 
-/* Keep distinctive site title styling */
-header.header .site-title {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-  gap: 10px;
-  color: var(--sl-color-text);
-}
-header.header .site-title img,
-header.header .site-title svg { width: 20px; height: 20px; }
-
-/* Starlight's dark:sl-hidden / light:sl-hidden use [data-theme='dark'] which
- * doesn't match our compound data-theme (e.g. 'editorial-dark'). Override so
- * only the correct logo is visible for our theme system. */
-:root:not([data-theme$="-dark"]) .site-title .dark\:sl-hidden { display: none !important; }
-:root[data-theme$="-dark"] .site-title .light\:sl-hidden { display: none !important; }
+/* Site title styling lives in SiteTitle.astro */
 
 /* Search — compact icon+kbd pill matching ref site */
 site-search button[data-open-modal] {

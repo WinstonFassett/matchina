@@ -102,6 +102,7 @@ export default defineConfig({
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         Header: './src/components/starlight/Header.astro',
         PageFrame: './src/components/starlight/PageFrame.astro',
+        SiteTitle: './src/components/starlight/SiteTitle.astro',
       },
       head: [
         // Inline critical --sl-* vars so Starlight's chrome doesn't paint cold
@@ -141,11 +142,6 @@ export default defineConfig({
         },
       ],
       title: "Matchina",
-      logo: {
-        light: "./src/assets/logo-light.svg",
-        dark: "./src/assets/logo-dark.svg",
-        alt: "Matchina",
-      },
       editLink: {
         baseUrl: "https://github.com/winstonfassett/matchina/edit/main/docs/",
       },
