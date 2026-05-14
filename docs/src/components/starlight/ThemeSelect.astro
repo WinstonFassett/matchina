@@ -1,0 +1,12 @@
+---
+/*
+ * Replaces Starlight's default ThemeSelect. Mounts the ui26 ThemePicker
+ * (theme identity dropdown + light/dark/auto toggle) as a React island.
+ * The underlying state is owned by window.Ui26Theme from ThemeProvider.astro.
+ */
+import { ThemePicker } from './theme-picker';
+---
+
+<div data-ui26-theme-slot class="not-content">
+  <ThemePicker client:only="react" />
+</div>

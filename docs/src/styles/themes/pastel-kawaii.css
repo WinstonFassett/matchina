@@ -1,0 +1,117 @@
+[data-theme="pastel-kawaii"] {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Code", monospace;
+
+  --background: hsl(60 30% 97%);
+  --foreground: hsl(60 30% 10%);
+  --card: hsl(60 30% 98%);
+  --card-foreground: hsl(60 30% 10%);
+  --popover: hsl(60 30% 98%);
+  --popover-foreground: hsl(60 30% 10%);
+
+  --primary: hsl(350 80% 80%);
+  --primary-foreground: hsl(350 80% 10%);
+  --secondary: hsl(180 60% 80%);
+  --secondary-foreground: hsl(180 60% 10%);
+  --muted: hsl(60 20% 90%);
+  --muted-foreground: hsl(60 20% 40%);
+  --accent: hsl(270 70% 80%);
+  --accent-foreground: hsl(270 70% 10%);
+
+  --destructive: hsl(0 80% 80%);
+  --destructive-foreground: hsl(0 80% 10%);
+
+  --border: hsl(60 30% 85%);
+  --border-soft: hsl(60 30% 92%);
+  --input: hsl(60 30% 85%);
+  --ring: hsl(350 80% 80%);
+
+  --radius: 1rem;
+
+  --success: oklch(0.6 0.15 145);
+  --warn: oklch(0.65 0.15 70);
+  --info: oklch(0.55 0.17 240);
+  --purple: oklch(0.55 0.2 300);
+
+  --accent-ink: hsl(60 30% 10%);
+  --accent-soft: hsl(270 70% 80% / 0.3);
+
+  --text-mute: hsl(60 20% 55%);
+  --code: hsl(60 20% 92%);
+
+  --sidebar: hsl(60 30% 95%);
+  --sidebar-foreground: hsl(60 30% 10%);
+  --sidebar-primary: hsl(350 80% 80%);
+  --sidebar-primary-foreground: hsl(350 80% 10%);
+  --sidebar-accent: hsl(180 60% 80%);
+  --sidebar-accent-foreground: hsl(180 60% 10%);
+  --sidebar-border: hsl(60 30% 90%);
+  --sidebar-ring: hsl(350 80% 80%);
+
+  --shadow-color: 350 40 100;
+  --shadow-xs: 0 1px 2px 0 rgb(var(--shadow-color) / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(var(--shadow-color) / 0.1), 0 1px 2px -1px rgb(var(--shadow-color) / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(var(--shadow-color) / 0.1), 0 2px 4px -2px rgb(var(--shadow-color) / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(var(--shadow-color) / 0.1), 0 4px 6px -4px rgb(var(--shadow-color) / 0.1);
+  --highlight-inset: inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+[data-theme="pastel-kawaii-dark"] {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Code", monospace;
+
+  --background: hsl(270 30% 10%);
+  --foreground: hsl(60 30% 97%);
+  --card: hsl(270 30% 12%);
+  --card-foreground: hsl(60 30% 97%);
+  --popover: hsl(270 30% 12%);
+  --popover-foreground: hsl(60 30% 97%);
+
+  --primary: hsl(350 80% 70%);
+  --primary-foreground: hsl(350 80% 10%);
+  --secondary: hsl(180 60% 70%);
+  --secondary-foreground: hsl(180 60% 10%);
+  --muted: hsl(270 20% 25%);
+  --muted-foreground: hsl(60 20% 70%);
+  --accent: hsl(270 70% 70%);
+  --accent-foreground: hsl(270 70% 10%);
+
+  --destructive: hsl(0 80% 70%);
+  --destructive-foreground: hsl(0 80% 10%);
+
+  --border: hsl(270 30% 30%);
+  --border-soft: hsl(270 30% 22%);
+  --input: hsl(270 30% 30%);
+  --ring: hsl(350 80% 70%);
+
+  --radius: 1rem;
+
+  --success: oklch(0.75 0.13 150);
+  --warn: oklch(0.78 0.14 80);
+  --info: oklch(0.7 0.14 240);
+  --purple: oklch(0.68 0.17 300);
+
+  --accent-ink: hsl(60 30% 97%);
+  --accent-soft: hsl(270 70% 70% / 0.3);
+
+  --text-mute: hsl(60 20% 55%);
+  --code: hsl(270 25% 16%);
+
+  --sidebar: hsl(270 30% 15%);
+  --sidebar-foreground: hsl(60 30% 97%);
+  --sidebar-primary: hsl(350 80% 70%);
+  --sidebar-primary-foreground: hsl(350 80% 10%);
+  --sidebar-accent: hsl(180 60% 70%);
+  --sidebar-accent-foreground: hsl(180 60% 10%);
+  --sidebar-border: hsl(270 30% 35%);
+  --sidebar-ring: hsl(350 80% 70%);
+
+  --shadow-color: 270 40 80;
+  --shadow-xs: 0 1px 2px 0 rgb(var(--shadow-color) / 0.4);
+  --shadow-sm: 0 1px 3px 0 rgb(var(--shadow-color) / 0.5), 0 1px 2px -1px rgb(var(--shadow-color) / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(var(--shadow-color) / 0.5), 0 2px 4px -2px rgb(var(--shadow-color) / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(var(--shadow-color) / 0.55), 0 4px 6px -4px rgb(var(--shadow-color) / 0.45);
+  --highlight-inset: inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
