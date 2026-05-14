@@ -1,5 +1,5 @@
-/* Matchina docs — themed with ui26 (editorial).
- * Theme tokens: ./themes/editorial.css
+/* Matchina docs — themed with ui26 multi-theme system.
+ * All theme tokens: ./all-themes.css (14 themes, [data-theme="<name>"] selectors)
  * Starlight chrome bridge + restyle: ./starlight-overrides.css
  */
 
@@ -9,16 +9,17 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* ui26 theme tokens — defines --background/--foreground/--primary/etc.
- * `:root` block = editorial light (default); html[data-theme="dark"] = editorial dark. */
-@import "./themes/editorial.css";
+/* All ui26 themes — defines --background/--foreground/--primary/etc. per data-theme.
+ * ThemeProvider.astro sets data-theme on <html> before first paint. */
+@import "./all-themes.css";
 
 /* Maps Starlight's --sl-* palette onto our tokens, then patches DOM chrome
  * (header, sidebar, content, code, TOC, CTAs). Must come AFTER the theme. */
 @import "./starlight-overrides.css";
 
-/* Tailwind dark: variant matches Starlight's stock toggle. */
-@custom-variant dark (html[data-theme="dark"] &);
+/* Tailwind dark: variant fires for any theme ending in "dark"
+ * (e.g. "editorial-dark", "tix-dark"). Matches ui26's compound data-theme format. */
+@custom-variant dark (&:is([data-theme$="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -82,7 +83,7 @@
   --matchina-viz-ctrl-text: var(--muted-foreground);
 }
 
-html[data-theme="dark"] {
+[data-theme$="dark"] {
   --forcegraph-edge-bg: #000;
   --forcegraph-edge-label: #ddd;
 }

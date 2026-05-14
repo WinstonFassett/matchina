@@ -97,13 +97,16 @@ export default defineConfig({
           },
         }),
       ],
-      expressiveCode: {
-        themes: ["material-theme-ocean"],
+      components: {
+        ThemeProvider: './src/components/starlight/ThemeProvider.astro',
+        ThemeSelect: './src/components/starlight/ThemeSelect.astro',
+        Header: './src/components/starlight/Header.astro',
+        PageFrame: './src/components/starlight/PageFrame.astro',
       },
       head: [
         // Inline critical --sl-* vars so Starlight's chrome doesn't paint cold
         // defaults before external CSS loads. Editorial light is the default;
-        // html[data-theme="dark"] switches to dark chrome.
+        // any *-dark suffix switches to dark chrome. Full palette loads with all-themes.css.
         {
           tag: "style",
           content: `
@@ -116,7 +119,7 @@ export default defineConfig({
               --sl-color-accent:var(--accent);
               --sl-color-text-accent:var(--accent);
             }
-            html[data-theme="dark"]{
+            [data-theme$="dark"]{
               --sl-color-bg:#0e0e0f;
               --sl-color-bg-nav:#0e0e0f;
               --sl-color-bg-sidebar:#0e0e0f;
@@ -468,6 +471,10 @@ export default defineConfig({
       // Always use 'node' condition to resolve to source .ts files via path mappings
       // This works for both dev and production since we don't pre-build packages
       conditions: ["node"],
+      // Deduplicate React to prevent dual-instance errors. The workspace root has
+      // React 18; docs has React 19. Vite deduplication forces all imports to
+      // resolve to the same copy, preventing useContext/useState from failing.
+      dedupe: ["react", "react-dom"],
     },
   },
 });
