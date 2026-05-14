@@ -237,30 +237,33 @@ select[aria-label="Select theme"] {
 
 /* ---------- CTAs ---------- */
 
+.sl-link-button,
+a.action {
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  height: 36px !important;
+  padding: 0 16px !important;
+  line-height: 1 !important;
+  gap: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
 .sl-link-button.primary,
 a.action.primary {
   background: var(--accent) !important;
   color: var(--accent-ink) !important;
   border: 0 !important;
-  padding: 10px 16px !important;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  gap: 10px;
+  font-weight: 600 !important;
 }
 .sl-link-button.secondary,
 a.action.secondary {
   background: transparent !important;
   color: var(--sl-color-text) !important;
   border: 1px solid var(--sl-color-hairline) !important;
-  padding: 10px 16px !important;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  gap: 10px;
 }
 
 /* ---------- TOC (right rail) ---------- */
@@ -408,6 +411,7 @@ a.action.secondary {
 
 .stat-row {
   display: flex; gap: 48px; margin-top: 28px;
+  align-items: baseline;
   font-family: var(--font-mono); font-size: 11px;
   color: var(--sl-color-gray-2);
 }
