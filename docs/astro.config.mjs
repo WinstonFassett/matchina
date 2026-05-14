@@ -280,10 +280,6 @@ export default defineConfig({
               label: "React",
               link: "/guides/react",
             },
-            {
-              label: "ui26 Components",
-              link: "/guides/ui26",
-            },
           ],
         },
         // {
