@@ -1,133 +1,77 @@
 ---
-title: Welcome to Matchina
-description: A TypeScript-first, lightweight toolkit for building type-safe state machines with powerful pattern matching and async handling.
+title: Matchina
+description: A tiny, strongly-typed state machine runtime with first-class pattern matching. Compose hierarchies, fetchers and side-effects — without giving up inference.
 hero:
   title: |
-    Type-Safe State
-    <span
-      class="font-black text-accent-700 dark:text-accent-200"
-    >
-      Matchina
-    </span>
-  tagline: Build strongly-typed state machines with powerful pattern matching
+    State machines,
+    <em>without the ceremony</em>.
+  tagline: Matchina is a tiny, strongly-typed state machine runtime with first-class pattern matching. Compose hierarchies, fetchers and side-effects — without giving up inference.
   actions:
-    - text: Quick Start
+    - text: Get started →
       link: ./guides/quickstart/
-      icon: right-arrow
       variant: primary
-    - text: GitHub
+    - text: npm i matchina
       link: https://github.com/winstonfassett/matchina
       icon: external
 ---
 
-import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
-import CodeTabs from "@components/CodeTabs.astro";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import setupCode from "@code/examples/teaser/setup.ts?raw";
-import machineCode from "@code/examples/teaser/state-machines.ts?raw";
-import patternMatchingCode from "@code/examples/teaser/pattern-matching.ts?raw";
-import typeGuardsCode from "@code/examples/teaser/typeguards.ts?raw";
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+import HeroCard from "@components/HeroCard.astro";
 
-import { Code } from "@astrojs/starlight/components";
+<HeroCard />
 
-{/* ## Key Features */}
-{/* 
-<CodeTabs
-  files={[
-    {
-      name: "TypeScript-First",
-      code: setupCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "State Machines",
-      code: machineCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "Pattern Matching",
-      code: patternMatchingCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "Type Guards",
-      code: typeGuardsCode,
-      language: "ts",
-      twoslash: true,
-    },
-  ]}
-></CodeTabs> 
-*/}
+<div class="stat-row">
+  <div><span class="n">2kb</span> gzipped</div>
+  <div><span class="n">0</span> dependencies</div>
+  <div><span class="n">100%</span> type-inferred</div>
+</div>
 
-
-## Get Started
+## Get started
 
 <CardGrid>
   <LinkCard
-    title="📚 Quick Start"
+    title="Quick start"
     href="/matchina/guides/quickstart/"
-    description="Get up and running with Matchina in minutes"
+    description="Get up and running in minutes"
   />
   <LinkCard
-    title="⚙️ State Machines"
+    title="State machines"
     href="/matchina/guides/machines/"
-    description="Learn how to build complex state machines with type safety"
+    description="Build complex machines with full type safety"
   />
-  <LinkCard    
-    title="🧩 Matchbox Factories"
-    href="/matchina/guides/matchbox-factories/"
-    description="Create type-safe tagged union factories with pattern matching"
-  />  
-  {/* <LinkCard
-    title="⏳ Promise Machines"
-    href="/matchina/guides/promises/"
-    description="Manage async operations with type-safe promise machines"
-  /> */}
-  {/* <LinkCard
-    title="🛡️ Type Guards"
-    href="/matchina/guides/matchbox-typescript-inference/"
-    description="Understand type-safe state handling with Matchina"
-  /> */}
   <LinkCard
-    title="⚛️ React Integration"
-    href="/matchina/guides/react/"
-    description="Integrate state machines with React components"
+    title="Matchbox factories"
+    href="/matchina/guides/matchbox-factories/"
+    description="Type-safe tagged union factories with pattern matching"
   />
-
-
+  <LinkCard
+    title="React integration"
+    href="/matchina/guides/react/"
+    description="Use state machines in React components"
+  />
 </CardGrid>
 
-## Explore Examples
+## Examples
 
 <CardGrid>
   <LinkCard
-    title="🔄 Toggle"
+    title="Toggle"
     href="/matchina/examples/toggle/"
-    description="Simple on/off toggle state machine"
+    description="Simple on/off state machine"
   />
-
-  {/* <LinkCard
-    title="🚦 Traffic Light"
-    href="/matchina/examples/traffic-light/"
-    description="State machine with automatic transitions"
-  /> */}
-
   <LinkCard
-    title="⏱️ Stopwatches"
+    title="Stopwatches"
     href="/matchina/examples/stopwatch-overview/"
-    description="Different approaches to implementing a stopwatch using Matchina state machines"
+    description="Multiple approaches to a stopwatch with Matchina"
   />
   <LinkCard
-    title="📡 Data Fetching"
+    title="Data fetching"
     href="/matchina/examples/fetcher-advanced/"
     description="Type-safe async data fetching"
   />
   <LinkCard
-    title="🚦 Traffic Light Simulator"
+    title="Traffic light simulator"
     href="/matchina/examples/traffic-light-extended/"
     description="State machine with automatic transitions"
-  />  
+  />
 </CardGrid>

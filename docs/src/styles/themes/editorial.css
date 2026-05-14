@@ -1,7 +1,7 @@
 [data-theme="editorial"] {
   /* Fonts — Editorial (serif display + Geist sans/mono) */
   --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Surfaces */
@@ -59,7 +59,7 @@
 
 [data-theme="editorial-dark"] {
   --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
   --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --background: #0e0e0f;

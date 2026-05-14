@@ -1,0 +1,160 @@
+---
+---
+
+<div class="hero-card not-content">
+  <div class="pane-left">
+    <div class="pane-head">
+      <span>fig.01 — fetcher machine</span>
+      <span class="live-dot">● live</span>
+    </div>
+    <svg viewBox="0 0 460 200" width="100%" height="200" style="overflow:visible">
+      <!-- grid dots -->
+      <circle cx="20" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="80" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="140" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="200" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="260" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="320" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="380" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="440" cy="20" r="0.7" fill="var(--border)" />
+      <circle cx="20" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="80" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="140" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="200" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="260" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="320" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="380" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="440" cy="70" r="0.7" fill="var(--border)" />
+      <circle cx="20" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="80" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="140" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="200" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="260" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="320" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="380" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="440" cy="120" r="0.7" fill="var(--border)" />
+      <circle cx="20" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="80" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="140" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="200" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="260" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="320" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="380" cy="170" r="0.7" fill="var(--border)" />
+      <circle cx="440" cy="170" r="0.7" fill="var(--border)" />
+      <!-- edges -->
+      <line x1="118" y1="58" x2="165" y2="58" stroke="var(--accent)" stroke-width="1.5" />
+      <polygon points="165,58 159,55 159,61" fill="var(--accent)" />
+      <line x1="266" y1="50" x2="316" y2="34" stroke="var(--accent)" stroke-width="1.5" />
+      <polygon points="316,34 310,33 312,39" fill="var(--accent)" />
+      <line x1="266" y1="66" x2="316" y2="126" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="3 3" />
+      <polygon points="316,126 310,122 309,128" fill="var(--border)" />
+      <path d="M 316 140 Q 220 170 180 86" stroke="var(--border)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" />
+      <polygon points="180,86 182,92 186,88" fill="var(--border)" />
+      <!-- edge labels -->
+      <text x="128" y="50" font-size="9" font-family="var(--font-mono)" fill="var(--muted-foreground)">fetch()</text>
+      <text x="270" y="38" font-size="9" font-family="var(--font-mono)" fill="var(--muted-foreground)">resolve</text>
+      <text x="270" y="98" font-size="9" font-family="var(--font-mono)" fill="var(--text-mute)">reject</text>
+      <text x="210" y="162" font-size="9" font-family="var(--font-mono)" fill="var(--text-mute)">retry</text>
+      <!-- nodes -->
+      <rect x="36" y="42" width="82" height="32" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
+      <text x="77" y="62" text-anchor="middle" font-size="12" font-family="var(--font-mono)" fill="var(--foreground)">idle</text>
+      <rect x="168" y="42" width="98" height="32" fill="var(--accent)" stroke="var(--accent)" stroke-width="1" />
+      <text x="217" y="62" text-anchor="middle" font-size="12" font-family="var(--font-mono)" fill="var(--accent-ink)">loading</text>
+      <rect x="316" y="18" width="90" height="32" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
+      <text x="361" y="38" text-anchor="middle" font-size="12" font-family="var(--font-mono)" fill="var(--foreground)">success</text>
+      <rect x="316" y="110" width="90" height="32" fill="var(--card)" stroke="var(--border)" stroke-width="1" />
+      <text x="361" y="130" text-anchor="middle" font-size="12" font-family="var(--font-mono)" fill="var(--foreground)">error</text>
+    </svg>
+    <div class="diagram-footer">
+      <span>4 states</span>
+      <span>6 transitions</span>
+      <span>0.2kb gzipped</span>
+    </div>
+  </div>
+  <div class="pane-right">
+    <div class="pane-head">
+      <span>fetcher.ts</span>
+      <span>typescript</span>
+    </div>
+    <pre class="hero-code"><code
+><span class="ln">01</span>  <span class="kw">const</span> fetcher <span class="op">=</span> <span class="fn">createMachine</span>(&#123;
+<span class="ln">02</span>    idle:    &#123; fetch:   <span class="s">'loading'</span> &#125;,
+<span class="ln">03</span>    loading: <span class="fn">effect</span>(fetchUser, &#123;
+<span class="ln">04</span>      resolve: <span class="s">'success'</span>,
+<span class="ln">05</span>      reject:  <span class="s">'error'</span>,
+<span class="ln">06</span>    &#125;),
+<span class="ln">07</span>    success: &#123; reset: <span class="s">'idle'</span>    &#125;,
+<span class="ln">08</span>    error:   &#123; retry: <span class="s">'loading'</span> &#125;,
+<span class="ln">09</span>  &#125;);
+<span class="ln">10</span>
+<span class="ln">11</span>  fetcher.<span class="fn">send</span>(<span class="s">'fetch'</span>);</code></pre>
+  </div>
+</div>
+
+<style>
+  .hero-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    background: var(--card);
+    margin-top: 44px;
+  }
+  .pane-left {
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+  }
+  .pane-right {
+    display: flex;
+    flex-direction: column;
+  }
+  .pane-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 14px;
+  }
+  .pane-right .pane-head {
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 0;
+  }
+  .live-dot {
+    color: var(--accent);
+  }
+  .diagram-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-mute);
+  }
+  .hero-code {
+    margin: 0 !important;
+    padding: 14px 20px !important;
+    font-family: var(--font-mono) !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    color: var(--muted-foreground) !important;
+    background: transparent !important;
+    border: 0 !important;
+    flex: 1;
+    overflow: hidden;
+  }
+  .hero-code .ln { color: var(--text-mute); }
+  .hero-code .kw { color: var(--purple); }
+  .hero-code .fn { color: var(--info); }
+  .hero-code .s  { color: var(--warn); }
+  .hero-code .op { color: var(--text-mute); }
+
+  @media (max-width: 60rem) {
+    .hero-card { grid-template-columns: 1fr; }
+    .pane-left { border-right: 0; border-bottom: 1px solid var(--border); }
+  }
+</style>
