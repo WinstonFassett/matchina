@@ -1,5 +1,6 @@
 ---
 import config from 'virtual:starlight/user-config';
+import type { StarlightSidebarTopicsRouteData } from '../../../node_modules/starlight-sidebar-topics/data';
 
 import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
 import Search from 'virtual:starlight/components/Search';
@@ -7,14 +8,44 @@ import SiteTitle from 'virtual:starlight/components/SiteTitle';
 import SocialIcons from 'virtual:starlight/components/SocialIcons';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
 
+type Topic = StarlightSidebarTopicsRouteData['topics'][number];
+
 const shouldRenderSearch =
     config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
+
+const rawTopics: Topic[] = Astro.locals.starlightSidebarTopics?.topics ?? [];
+
+const fallback = rawTopics.length > 0 && !rawTopics.some((t) => t.isCurrent);
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+const customTopicPrefixes: Record<string, RegExp> = {
+    Examples: /^\/matchina\/examples(\/|$)/,
+    Docs: /^\/matchina\/(guides|reference|api)(\/|$)/,
+};
+const topics = rawTopics.map((t) => {
+    if (t.isCurrent || !fallback) return t;
+    const re = customTopicPrefixes[t.label as string];
+    return re && re.test(pathname) ? { ...t, isCurrent: true } : t;
+});
 ---
 
 <div class="header">
     <div class="title-wrapper sl-flex">
         <SiteTitle />
     </div>
+
+    {topics.length > 0 && (
+        <nav class="topic-tabs sl-hidden md:sl-flex" aria-label="Sections">
+            {topics.map((t) => (
+                <a
+                    href={t.link}
+                    class:list={['topic-tab', { 'topic-tab-current': t.isCurrent }]}
+                    data-active={t.isCurrent ? 'true' : 'false'}
+                >
+                    {t.label}
+                </a>
+            ))}
+        </nav>
+    )}
 
     <div class="sl-flex right-group print:hidden">
         {shouldRenderSearch && (
@@ -47,6 +78,35 @@ const shouldRenderSearch =
             margin: -0.25rem;
             min-width: 0;
             flex-shrink: 0;
+        }
+
+        .topic-tabs {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .topic-tab {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0 0.875rem;
+            color: var(--sl-color-gray-2);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            border-bottom: 1.5px solid transparent;
+        }
+
+        .topic-tab:hover {
+            color: var(--sl-color-text);
+            background: var(--sl-color-bg-hover);
+        }
+
+        .topic-tab[data-active='true'] {
+            color: var(--sl-color-text);
+            border-bottom-color: var(--accent);
         }
 
         .right-group {

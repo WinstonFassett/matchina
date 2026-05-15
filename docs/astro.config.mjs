@@ -1,6 +1,7 @@
 import react from "@astrojs/react";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 import starlight from "@astrojs/starlight";
+import starlightSidebarTopics from "starlight-sidebar-topics";
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import webdev from "@winstonfassett/webdev-astro";
@@ -28,6 +29,136 @@ export default defineConfig({
   integrations: [
     starlight({
       plugins: [
+        starlightSidebarTopics(
+          [
+            {
+              id: "docs",
+              label: "Docs",
+              link: "/guides/quickstart",
+              items: [
+                {
+                  label: "Introduction",
+                  items: [
+                    { label: "Quickstart", link: "/guides/quickstart" },
+                    { label: "Installation", link: "/guides/installation" },
+                    { label: "About Matchina", link: "/guides/about" },
+                  ],
+                },
+                {
+                  label: "Core Concepts",
+                  items: [
+                    { label: "Tagged Unions", link: "/guides/tagged-unions" },
+                    { label: "State Machines", link: "/guides/state-machine-interface" },
+                  ],
+                },
+                {
+                  label: "Tagged Union Matchboxes",
+                  items: [
+                    { label: "Matchbox Factories", link: "/guides/matchbox-factories" },
+                    { label: "Matchbox Usage", link: "/guides/matchbox-usage" },
+                  ],
+                },
+                {
+                  label: "Machines",
+                  items: [
+                    { label: "Overview", link: "/guides/state-machines" },
+                    { label: "States", link: "/guides/states" },
+                    { label: "Factory Machines", link: "/guides/machines" },
+                    { label: "Store Machines", link: "/guides/store-machine" },
+                    { label: "Type Inference", link: "/guides/machine-inference" },
+                    { label: "Promise Machines", link: "/guides/promises" },
+                    { label: "Machine Enhancers", link: "/guides/machine-enhancers" },
+                    { label: "Hierarchical Machines", link: "/guides/hierarchical-machines" },
+                  ],
+                },
+                {
+                  label: "Machine Setup",
+                  items: [
+                    { label: "Lifecycle", link: "/guides/lifecycle" },
+                    { label: "Lifecycle Hooks", link: "/guides/lifecycle-hooks" },
+                    { label: "transitionHooks()", link: "/guides/transition-hooks" },
+                    { label: "onLifecycle()", link: "/guides/on-lifecycle" },
+                    { label: "Subscriptions", link: "/guides/subscriptions" },
+                    { label: "Declarative Effects", link: "/guides/effects" },
+                  ],
+                },
+                {
+                  label: "Frontend Integration",
+                  items: [
+                    { label: "React", link: "/guides/react" },
+                  ],
+                },
+                typeDocSidebarGroup,
+              ],
+            },
+            {
+              id: "examples",
+              label: "Examples",
+              link: "/examples",
+              items: [
+                { label: "Gallery", link: "/examples" },
+                {
+                  label: "Basic",
+                  items: [
+                    { label: "Toggle", link: "/examples/toggle" },
+                    { label: "Counter", link: "/examples/counter" },
+                    { label: "Traffic Light", link: "/examples/traffic-light" },
+                    { label: "Rock-Paper-Scissors", link: "/examples/rock-paper-scissors" },
+                  ],
+                },
+                {
+                  label: "Stopwatches",
+                  items: [
+                    { label: "Overview", link: "/examples/stopwatch-overview" },
+                    { label: "Basic Stopwatch", link: "/examples/stopwatch" },
+                    { label: "With Hooks", link: "/examples/stopwatch-using-data-and-hooks" },
+                    { label: "With Transition Functions", link: "/examples/stopwatch-using-data-and-transition-functions" },
+                    { label: "With React State and State Effects", link: "/examples/stopwatch-using-react-state-and-state-effects" },
+                    { label: "With React State and Effects", link: "/examples/stopwatch-using-react-state-and-effects" },
+                    { label: "With External React State", link: "/examples/stopwatch-using-external-react-state-and-state-effects" },
+                    { label: "With Lifecycle", link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect" },
+                    { label: "With Transition Hooks", link: "/examples/stopwatch-using-transition-hooks-instead-of-useeffect/" },
+                  ],
+                },
+                {
+                  label: "Async",
+                  items: [
+                    { label: "Async Calculator", link: "/examples/async-calculator" },
+                  ],
+                },
+                {
+                  label: "Fetchers",
+                  items: [
+                    { label: "Promise Machine Fetcher", link: "/examples/promise-machine-fetcher" },
+                    { label: "Advanced Fetcher", link: "/examples/fetcher-advanced" },
+                  ],
+                },
+                {
+                  label: "Hierarchical",
+                  items: [
+                    { label: "Hierarchical Traffic Light", link: "/examples/hsm-traffic-light" },
+                    { label: "Hierarchical Combobox", link: "/examples/hsm-combobox" },
+                    { label: "Hierarchical Checkout", link: "/examples/hsm-checkout" },
+                  ],
+                },
+                {
+                  label: "Advanced",
+                  items: [
+                    { label: "Traffic Light Simulator", link: "/examples/traffic-light-extended" },
+                    { label: "Authentication Flow", link: "/examples/auth-flow" },
+                    { label: "Checkout Flow", link: "/examples/checkout" },
+                  ],
+                },
+              ],
+            },
+          ],
+          {
+            topics: {
+              docs: ["/", "/guides/**", "/reference/**", "/api/**"],
+              examples: ["/examples", "/examples/**"],
+            },
+          },
+        ),
         starlightTypeDoc({
           watch: true,
           sidebar: {
@@ -103,6 +234,7 @@ export default defineConfig({
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         Header: './src/components/starlight/Header.astro',
         PageFrame: './src/components/starlight/PageFrame.astro',
+        Sidebar: './src/components/starlight/Sidebar.astro',
         SiteTitle: './src/components/starlight/SiteTitle.astro',
         Hero: './src/components/starlight/Hero.astro',
         PageTitle: './src/components/starlight/PageTitle.astro',
@@ -154,307 +286,6 @@ export default defineConfig({
           label: "GitHub",
           href: "https://github.com/WinstonFassett/matchina",
         },
-      ],
-      sidebar: [
-        {
-          label: "Introduction",
-          items: [
-            {
-              label: "Quickstart",
-              link: "/guides/quickstart",
-            },
-            {
-              label: "Installation",
-              link: "/guides/installation",
-            },
-            {
-              label: "About Matchina",
-              link: "/guides/about",
-            },
-          ],
-        },
-        {
-          label: "Core Concepts",
-          items: [
-            {
-              label: "Tagged Unions",
-              link: "/guides/tagged-unions",
-            },
-            {
-              label: "State Machines",
-              link: "/guides/state-machine-interface",
-            },
-          ],
-        },
-        {
-          label: "Tagged Union Matchboxes",
-          items: [
-            {
-              label: "Matchbox Factories",
-              link: "/guides/matchbox-factories",
-            },
-            {
-              label: "Matchbox Usage",
-              link: "/guides/matchbox-usage",
-            },
-          ],
-        },
-        {
-          label: "Machines",
-          items: [
-            {
-              label: "Overview",
-              link: "/guides/state-machines",
-            },
-            {
-              label: "States",
-              link: "/guides/states",
-            },
-            // {
-            //   label: "Transition Machines",
-            //   link: "/guides/transition-machines",
-            // },
-            {
-              label: "Factory Machines",
-              link: "/guides/machines",
-            },
-            {
-              label: "Store Machines",
-              link: "/guides/store-machine",
-            },
-            {
-              label: "Type Inference",
-              link: "/guides/machine-inference",
-            },
-            {
-              label: "Promise Machines",
-              link: "/guides/promises",
-            },
-            {
-              label: "Machine Enhancers",
-              link: "/guides/machine-enhancers",
-            },
-            {
-              label: "Hierarchical Machines",
-              link: "/guides/hierarchical-machines",
-            },
-          ],
-        },
-        {
-          label: "Machine Setup",
-          items: [
-            {
-              label: "Lifecycle",
-              link: "/guides/lifecycle",
-            },
-            {
-              label: "Lifecycle Hooks",
-              link: "/guides/lifecycle-hooks",
-            },
-            {
-              label: "transitionHooks()",
-              link: "/guides/transition-hooks",
-            },
-            {
-              label: "onLifecycle()",
-              link: "/guides/on-lifecycle",
-            },
-            { label: "Subscriptions", link: "/guides/subscriptions" },
-            { label: "Declarative Effects", link: "/guides/effects" },
-          ],
-        },
-        // {
-        //   label: "Schema Validation",
-        //   items: [
-        //     {
-        //       label: "Zod",
-        //       link: "/guides/zod",
-        //     },
-        //     {
-        //       label: "Valibot",
-        //       link: "/guides/valibot",
-        //     },
-        //   ],
-        // },
-        {
-          label: "Frontend Integration",
-          items: [
-            {
-              label: "React",
-              link: "/guides/react",
-            },
-          ],
-        },
-        // {
-        //   label: "How To",
-        //   collapsed: true,
-        //   items: [
-        //     {
-        //       label: "Context",
-        //       link: "/guides/context",
-        //     },
-        //   ],
-        // },
-        {
-          label: "Examples",
-          // collapsed: true,
-          items: [
-            {
-              label: "Basic",
-              items: [
-                {
-                  label: "Toggle",
-                  link: "/examples/toggle",
-                },
-                {
-                  label: "Counter",
-                  link: "/examples/counter",
-                },
-                {
-                  label: "Traffic Light",
-                  link: "/examples/traffic-light",
-                },
-                {
-                  label: "Rock-Paper-Scissors",
-                  link: "/examples/rock-paper-scissors",
-                },
-              ],
-            },
-            {
-              label: "Stopwatches",
-              items: [
-                {
-                  label: "Overview",
-                  link: "/learn/examples/stopwatch-overview",
-                },
-                {
-                  label: "Basic Stopwatch",
-                  link: "/examples/stopwatch",
-                },
-                {
-                  label: "With Hooks",
-                  link: "/examples/stopwatch-using-data-and-hooks",
-                },
-                {
-                  label: "With Transition Functions",
-                  link: "/examples/stopwatch-using-data-and-transition-functions",
-                },
-                {
-                  label: "With React State and State Effects",
-                  link: "/examples/stopwatch-using-react-state-and-state-effects",
-                },
-                {
-                  label: "With React State and Effects",
-                  link: "/examples/stopwatch-using-react-state-and-effects",
-                },
-                {
-                  label: "With External React State",
-                  link: "/examples/stopwatch-using-external-react-state-and-state-effects",
-                },
-                {
-                  label: "With Lifecycle",
-                  link: "/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useeffect",
-                },
-                {
-                  label: "With Transition Hooks",
-                  link: "/examples/stopwatch-using-transition-hooks-instead-of-useeffect/",
-                },
-              ],
-            },
-            {
-              label: "Async",
-              items: [
-                {
-                  label: "Async Calculator",
-                  link: "/examples/async-calculator",
-                },
-              ],
-            },
-            {
-              label: "Fetchers",
-              items: [
-                {
-                  label: "Promise Machine Fetcher",
-                  link: "/examples/promise-machine-fetcher",
-                },
-                {
-                  label: "Advanced Fetcher",
-                  link: "/examples/fetcher-advanced",
-                },
-              ],
-            },
-            {
-              label: "Hierarchical",
-              items: [
-                {
-                  label: "Hierarchical Traffic Light",
-                  link: "/examples/hsm-traffic-light",
-                },
-                {
-                  label: "Hierarchical Combobox",
-                  link: "/examples/hsm-combobox",
-                },
-                {
-                  label: "Hierarchical Checkout",
-                  link: "/examples/hsm-checkout",
-                },
-              ],
-            },
-            {
-              label: "Advanced",
-              items: [
-                {
-                  label: "Traffic Light Simulator",
-                  link: "/examples/traffic-light-extended",
-                },
-                {
-                  label: "Authentication Flow",
-                  link: "/examples/auth-flow",
-                },
-                {
-                  label: "Checkout Flow",
-                  link: "/examples/checkout",
-                },
-                // Currently buggy. State lags input
-                // {
-                //   label: "Paren Checker",
-                //   link: "/examples/paren-checker",
-                // },
-              ],
-            },
-          ],
-        },
-        // {
-        //   label: "Extras",
-        //   items: [
-        //   ],
-        // },
-        // {
-        //   label: "Appendix",
-        //   collapsed: true,
-        //   items: [
-        //     {
-        //       label: "Timsy Inspiration",
-        //       link: "/guides/timsy",
-        //     },
-        //     {
-        //       label: "Unions as Machines",
-        //       link: "/guides/unions-as-machine",
-        //     },
-        //   ],
-        // },
-        // {
-        //   label: "Guides",
-        //   items: [
-        //     // Each item here is one entry in the navigation menu.
-        //     { label: "Example Guide", slug: "guides/example" },
-        //   ],
-        // },
-        // {
-        //   label: "Reference",
-        //   autogenerate: { directory: "reference" },
-        // },
-        typeDocSidebarGroup,
       ],
       customCss: ["./src/styles/global.css"],
     }),

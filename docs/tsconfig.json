@@ -1,6 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "src/**/*", "scripts/**/*"],
+  "include": [".astro/types.d.ts", "src/**/*", "scripts/**/*", "node_modules/@astrojs/starlight/locals.d.ts", "node_modules/@astrojs/starlight/virtual.d.ts", "node_modules/@astrojs/starlight/virtual-internal.d.ts", "node_modules/starlight-sidebar-topics/locals.d.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "jsx": "react-jsx",
