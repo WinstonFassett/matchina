@@ -104,6 +104,7 @@ export default defineConfig({
         PageFrame: './src/components/starlight/PageFrame.astro',
         SiteTitle: './src/components/starlight/SiteTitle.astro',
         Hero: './src/components/starlight/Hero.astro',
+        PageTitle: './src/components/starlight/PageTitle.astro',
       },
       head: [
         // Inline critical --sl-* vars so Starlight's chrome doesn't paint cold

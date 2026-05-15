@@ -1,0 +1,43 @@
+---
+const { entry } = Astro.locals.starlightRoute;
+const isRoot = entry.id === 'index.mdx' || entry.id === 'index.md' || entry.id === 'index';
+
+// Build breadcrumb from the file path segments, excluding 'index' and the filename itself
+const segments = entry.id
+  .replace(/\.(mdx?|astro)$/, '')
+  .split('/')
+  .filter((s: string) => s !== 'index' && s !== '');
+
+// Format: "guides / quickstart"  — drop the last segment (it's the page title)
+const crumbs = segments.slice(0, -1);
+---
+
+{!isRoot && crumbs.length > 0 ? (
+  <div class="page-title-block">
+    <div class="breadcrumb eyebrow">{crumbs.join(' / ')}</div>
+    <h1 id="_top">{entry.data.title}</h1>
+  </div>
+) : (
+  <h1 id="_top">{entry.data.title}</h1>
+)}
+
+<style>
+  @layer starlight.core {
+    .page-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    h1 {
+      margin-top: 1rem;
+      font-size: var(--sl-text-h1);
+      line-height: var(--sl-line-height-headings);
+      font-weight: 600;
+      color: var(--sl-color-white);
+    }
+    .page-title-block h1 {
+      margin-top: 0;
+    }
+  }
+</style>

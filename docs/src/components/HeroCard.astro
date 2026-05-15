@@ -6,6 +6,7 @@ import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
   <div class="pane-left">
     <div class="pane-head">
       <span>fig.01 — fetcher machine</span>
+      <span class="live-badge">● live</span>
     </div>
     <HeroCardViz client:only="react" />
   </div>
@@ -88,6 +89,7 @@ import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
   .hero-code .fn { color: var(--info); }
   .hero-code .s  { color: var(--warn); }
   .hero-code .op { color: var(--text-mute); }
+  .live-badge { color: var(--accent); }
 
   @media (max-width: 60rem) {
     .hero-card { grid-template-columns: 1fr; }
