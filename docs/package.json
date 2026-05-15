@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "@shikijs/twoslash": "^3.20.0",
+    "@winstonfassett/webdev-astro": "file:../../webdev-ai/packages/adapter-astro",
     "webcola": "^3.4.0"
   }
 }

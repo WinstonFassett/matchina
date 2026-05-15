@@ -1,6 +1,7 @@
 ignore/
 
 .playwright-mcp/
+.web-dev-mcp/
 
 node_modules
 coverage
