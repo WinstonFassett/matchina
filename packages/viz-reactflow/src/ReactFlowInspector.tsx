@@ -115,7 +115,7 @@ function ReactFlowInspectorInner({
         strokeDasharray = '5,5';
         opacity = 1;
       } else if (isPossibleExit) {
-        strokeColor = 'var(--matchina-viz-node-active, #8fb9d6)';
+        strokeColor = 'var(--matchina-viz-accent, #8fb9d6)';
         strokeWidth = 2;
         opacity = 1;
       }
