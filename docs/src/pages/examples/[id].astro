@@ -15,6 +15,15 @@ if (!example) return Astro.redirect("/examples");
 
 const sourceFiles = await example.getSourceFiles();
 
+const CATEGORY_ORDER = ["Basic", "Stopwatch", "Async", "Fetcher", "Hierarchical", "Advanced"];
+const all = getExamples({ indexable: true });
+const grouped = CATEGORY_ORDER
+  .map((cat) => ({
+    category: cat,
+    items: all.filter((e) => e.category === cat).sort((a, b) => (a.order ?? 999) - (b.order ?? 999)),
+  }))
+  .filter((g) => g.items.length > 0);
+
 function getLang(filename: string): string {
   const ext = filename.split(".").pop();
   switch (ext) {
@@ -34,27 +43,199 @@ function getLang(filename: string): string {
     template: "splash",
   }}
 >
-  <div class="example-page not-content">
-    <div class="mb-2 flex items-center gap-2">
-      <a href="/examples" class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
-        ← Examples
-      </a>
-      <span class="text-muted-foreground text-xs">/</span>
-      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{example.category}</span>
-    </div>
+  <div class="ex-shell not-content">
 
-    <div class="mb-6">
-      <ExamplePageViewer exampleId={id} client:only="react" />
-    </div>
-
-    <div class="source-tabs">
-      <Tabs>
-        {sourceFiles.map((file) => (
-          <TabItem label={file.name}>
-            <Code code={file.code} lang={getLang(file.name)} />
-          </TabItem>
+    <aside class="ex-sidebar" id="ex-sidebar">
+      <div class="ex-sidebar-header">
+        <a href="/matchina/examples/" class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+          ← Examples
+        </a>
+        <button class="ex-sidebar-close" aria-label="Close navigation" aria-controls="ex-sidebar">✕</button>
+      </div>
+      <nav class="ex-sidebar-nav">
+        {grouped.map((group) => (
+          <div class="mb-5">
+            <div class="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground mb-1.5 px-2">
+              {group.category}
+            </div>
+            <ul>
+              {group.items.map((ex) => (
+                <li>
+                  <a
+                    href={`/matchina/examples/${ex.id}`}
+                    class:list={[
+                      "block px-2 py-1 text-[12.5px] leading-snug rounded-sm transition-colors",
+                      ex.id === id
+                        ? "text-foreground bg-muted/60 font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+                    ]}
+                  >
+                    {ex.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
-      </Tabs>
+      </nav>
+    </aside>
+
+    <div class="ex-main">
+      <div class="ex-tabs-bar" role="tablist">
+        <button class="ex-tab is-active" role="tab" aria-selected="true" data-tab="preview">Preview</button>
+        <button class="ex-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
+      </div>
+
+      <div class="ex-panel" id="ex-panel-preview">
+        <ExamplePageViewer exampleId={id} client:only="react" />
+      </div>
+
+      <div class="ex-panel is-hidden" id="ex-panel-code">
+        <Tabs>
+          {sourceFiles.map((file) => (
+            <TabItem label={file.name}>
+              <Code code={file.code} lang={getLang(file.name)} />
+            </TabItem>
+          ))}
+        </Tabs>
+      </div>
     </div>
+
   </div>
 </StarlightPage>
+
+<style is:global>
+  body:has(.ex-shell) [data-page-title],
+  body:has(.ex-shell) h1#_top { display: none !important; }
+
+  body:has(.ex-shell) .sl-container { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+  body:has(.ex-shell) .content-panel { padding: 0 !important; border: 0 !important; }
+
+  .ex-shell {
+    display: flex;
+    gap: 0;
+    min-height: 80vh;
+  }
+
+  /* ── sidebar ── */
+  .ex-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid hsl(var(--border));
+    position: sticky;
+    top: var(--sl-nav-height);
+    max-height: calc(100vh - var(--sl-nav-height));
+    overflow: hidden;
+  }
+  .ex-sidebar-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid hsl(var(--border));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ex-sidebar-close {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 13px;
+    line-height: 1;
+    padding: 2px 4px;
+  }
+  .ex-sidebar-close:hover { color: hsl(var(--foreground)); }
+  .ex-sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 10px 24px;
+  }
+
+  /* ── main ── */
+  .ex-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* ── preview/code tab bar ── */
+  .ex-tabs-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0 1.5rem;
+    flex-shrink: 0;
+  }
+  .ex-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    padding: 10px 16px 8px;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .ex-tab:hover { color: hsl(var(--foreground)); }
+  .ex-tab.is-active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+  }
+
+  /* ── panels ── */
+  .ex-panel {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 1.5rem;
+  }
+  .ex-panel.is-hidden { display: none; }
+
+  /* ── narrow: slide-in sidebar ── */
+  @media (max-width: 1023px) {
+    .ex-sidebar {
+      position: fixed;
+      top: var(--sl-nav-height);
+      left: 0;
+      bottom: 0;
+      z-index: 10;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease-out;
+      background: hsl(var(--background));
+    }
+    .ex-sidebar.is-open {
+      transform: translateX(0);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    }
+    .ex-sidebar-close { display: block; }
+  }
+</style>
+
+<script>
+  // sidebar close
+  const close = document.querySelector('.ex-sidebar-close');
+  const sidebar = document.getElementById('ex-sidebar');
+  function shut() { sidebar?.classList.remove('is-open'); }
+  close?.addEventListener('click', shut);
+
+  // preview/code tabs
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.ex-tab');
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.ex-panel').forEach((panel) => {
+        panel.classList.toggle('is-hidden', panel.id !== `ex-panel-${target}`);
+      });
+    });
+  });
+</script>
