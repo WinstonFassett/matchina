@@ -1,0 +1,60 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
+import { ExamplePageViewer } from "../../components/ExamplePageViewer";
+import { getExamples, getExample } from "../../examples";
+
+export async function getStaticPaths() {
+  const all = getExamples();
+  return all.map((ex) => ({ params: { id: ex.id } }));
+}
+
+const { id } = Astro.params;
+const example = getExample(id);
+if (!example) return Astro.redirect("/examples");
+
+const sourceFiles = await example.getSourceFiles();
+
+function getLang(filename: string): string {
+  const ext = filename.split(".").pop();
+  switch (ext) {
+    case "ts": return "ts";
+    case "tsx": return "tsx";
+    case "js": return "javascript";
+    case "jsx": return "jsx";
+    default: return "plaintext";
+  }
+}
+---
+
+<StarlightPage
+  frontmatter={{
+    title: example.title,
+    description: example.description,
+    template: "splash",
+  }}
+>
+  <div class="example-page not-content">
+    <div class="mb-2 flex items-center gap-2">
+      <a href="/examples" class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+        ← Examples
+      </a>
+      <span class="text-muted-foreground text-xs">/</span>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{example.category}</span>
+    </div>
+
+    <div class="mb-6">
+      <ExamplePageViewer exampleId={id} client:only="react" />
+    </div>
+
+    <div class="source-tabs">
+      <Tabs>
+        {sourceFiles.map((file) => (
+          <TabItem label={file.name}>
+            <Code code={file.code} lang={getLang(file.name)} />
+          </TabItem>
+        ))}
+      </Tabs>
+    </div>
+  </div>
+</StarlightPage>

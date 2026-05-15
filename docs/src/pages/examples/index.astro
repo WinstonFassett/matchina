@@ -1,0 +1,66 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { getExamples } from "../../examples";
+import type { ExampleCategory } from "../../examples/types";
+
+const CATEGORY_ORDER: ExampleCategory[] = ["Basic", "Stopwatch", "Async", "Fetcher", "Hierarchical", "Advanced"];
+
+const all = getExamples({ indexable: true });
+
+const categories = CATEGORY_ORDER.map((cat) => ({
+  category: cat,
+  examples: all.filter((e) => e.category === cat),
+})).filter((g) => g.examples.length > 0);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Examples",
+    description: "Interactive state machine examples built with Matchina.",
+    template: "splash",
+    hero: {},
+  }}
+>
+  <div class="examples-index not-content">
+    <section class="mb-10">
+      <p class="text-base text-muted-foreground max-w-2xl">
+        Browse interactive examples demonstrating Matchina patterns — from simple toggles to complex hierarchical machines.
+      </p>
+    </section>
+
+    {categories.map(({ category, examples }) => (
+      <section class="mb-10">
+        <header class="mb-4 flex items-baseline gap-4 border-b border-border pb-2">
+          <h2 class="font-serif text-xl font-medium tracking-tight">{category}</h2>
+          <span class="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {examples.length} example{examples.length === 1 ? "" : "s"}
+          </span>
+        </header>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {examples.map((ex) => (
+            <a
+              href={`examples/${ex.id}`}
+              class="ex-card group block border border-border bg-card hover:border-accent transition-colors p-5 rounded-lg"
+            >
+              <div class="font-medium text-foreground group-hover:text-accent transition-colors mb-1">
+                {ex.title}
+              </div>
+              <div class="text-sm text-muted-foreground leading-relaxed mb-3">
+                {ex.description}
+              </div>
+              {ex.tags && ex.tags.length > 0 && (
+                <div class="flex flex-wrap gap-1">
+                  {ex.tags.map((tag) => (
+                    <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</StarlightPage>
