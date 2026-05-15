@@ -64,7 +64,7 @@ function NodeShape({ node, isActive, isAncestor }: {
           x={node.x + 14} y={node.y + 22}
           style={{
             fill: isActive || isAncestor ? V.accent : V.text,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
             fontSize: 12,
             fontWeight: 600,
             letterSpacing: '0.06em',
@@ -79,7 +79,7 @@ function NodeShape({ node, isActive, isAncestor }: {
           textAnchor="middle"
           style={{
             fill: textFill,
-            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+            fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
             fontSize: 14,
             fontWeight: isActive ? 600 : 500,
             transition: 'fill 280ms ease',
@@ -161,7 +161,7 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
               fill: isOutgoing
                 ? hovered ? V.labelBg : V.accent
                 : V.labelText,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+              fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
               fontSize: 11,
               fontWeight: isOutgoing ? 600 : 500,
               letterSpacing: '0.04em',
@@ -183,7 +183,7 @@ const ctrlBtn: React.CSSProperties = {
   color: V.ctrlText,
   padding: '5px 11px',
   borderRadius: 6,
-  fontFamily: 'monospace',
+  fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
   fontSize: 11,
   cursor: 'pointer',
 };
@@ -262,7 +262,7 @@ export const SvgInspector = React.memo(function SvgInspector({
   if (!layout) {
     return (
       <div style={{ width: '100%', height: '100%', background: V.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: V.edge, fontFamily: 'monospace', fontSize: 12 }}>computing layout…</span>
+        <span style={{ color: V.edge, fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)", fontSize: 12 }}>computing layout…</span>
       </div>
     );
   }
@@ -350,7 +350,7 @@ export const SvgInspector = React.memo(function SvgInspector({
         <button onClick={() => setZoom(z => Math.min(2.5, z * 1.15))} style={ctrlBtn}>+</button>
         <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
         <span style={{
-          fontFamily: 'monospace',
+          fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
           color: V.ctrlText,
           padding: '0 6px', fontSize: 11, lineHeight: '28px',
         }}>

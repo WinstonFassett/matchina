@@ -31,7 +31,11 @@ interface EdgeData extends Record<string, unknown> {
   event?: string;
   isClickable?: boolean;
   isActive?: boolean;
+  isDashed?: boolean;
 }
+
+// Events that represent reverse/error/cancel paths — rendered as dashed edges
+const DASHED_EVENT_PATTERN = /^(error|reject|cancel|back|retry|fail|reset|abort|undo|timeout)/i;
 
 export interface ReactFlowInspectorProps {
   value: string; // Current active state
@@ -94,35 +98,35 @@ function ReactFlowInspectorInner({
         (edge.target === value || value.startsWith(edge.target + '_')) && 
         (edge.data?.event === currentTransition || edge.label === currentTransition);
       
-      const isPossibleExit = edge.source === value; // Current state to any target
-      const isClickable = interactive; // ALL edges are clickable for convenience
+      const isPossibleExit = edge.source === value;
+      const isClickable = interactive;
+      const eventName = (edge.data?.event || edge.label) as string | undefined;
+      const isDashed = !!(eventName && DASHED_EVENT_PATTERN.test(eventName));
 
-      // Determine edge style based on exact transition priority system
-      let strokeColor = '#94a3b8'; // Default inactive (gray)
-      let strokeWidth = 2;
-      let strokeDasharray = undefined;
-      let opacity = 0.8;
-      
+      // Edge stroke colors — use CSS vars where possible
+      let strokeColor = 'var(--matchina-viz-edge, rgba(100,116,139,0.5))';
+      let strokeWidth = 1.5;
+      let strokeDasharray: string | undefined = isDashed ? '6,4' : undefined;
+      let opacity = 0.85;
+
       if (isExactTransition) {
-        // EXACT transition taken: animated dashed blue (highest priority)
-        strokeColor = '#60a5fa';
-        strokeWidth = 3;
+        strokeColor = 'var(--matchina-viz-accent, #8fb9d6)';
+        strokeWidth = 2.5;
         strokeDasharray = '5,5';
         opacity = 1;
       } else if (isPossibleExit) {
-        // Current → Any: solid blue (medium priority)
-        strokeColor = '#2563eb';
-        strokeWidth = 2.5;
-        opacity = 0.9;
+        strokeColor = 'var(--matchina-viz-node-active, #8fb9d6)';
+        strokeWidth = 2;
+        opacity = 1;
       }
 
       return {
         ...edge,
-        type: 'floating', // Use our floating edge for all edges
+        type: 'floating',
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 16,
-          height: 16,
+          width: 14,
+          height: 14,
           color: strokeColor,
         },
         style: {
@@ -132,20 +136,13 @@ function ReactFlowInspectorInner({
           opacity,
           cursor: isClickable ? 'pointer' : 'default',
         },
-        labelStyle: {
-          fontSize: '10px',
-          fill: strokeColor,
-          fontWeight: 500,
-        },
         data: {
           ...edge.data,
-          isActive: isPossibleExit, // For compatibility with existing logic
+          isActive: isPossibleExit,
           isClickable,
-          isExactTransition, // New: exact transition highlighting
+          isExactTransition,
+          isDashed,
         },
-        // Add data attributes for CSS targeting
-        'data-is-clickable': isClickable ? 'true' : 'false',
-        'data-is-exact-transition': isExactTransition ? 'true' : 'false',
       };
     });
   }, [initialEdges, value, previousState, currentTransition, interactive]);
