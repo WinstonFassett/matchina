@@ -181,11 +181,11 @@ select[aria-label="Select theme"] {
   color: var(--sl-color-gray-3);
 }
 
-/* H1 — Newsreader display */
+/* H1 — Source Serif 4 display */
 .main-frame h1,
 .sl-markdown-content h1:first-of-type,
 .hero h1 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-weight: 500;
   font-size: clamp(40px, 6vw, 60px);
   line-height: 1.02;
@@ -416,7 +416,7 @@ a.action.secondary {
   color: var(--sl-color-gray-2);
 }
 .stat-row .n {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-style: italic;
   font-size: 18px;
   color: var(--sl-color-text);

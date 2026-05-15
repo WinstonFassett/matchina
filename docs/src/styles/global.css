@@ -59,6 +59,7 @@
 
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --font-display: var(--font-display, var(--font-sans));
   --font-mono: var(--font-mono);
 }
 

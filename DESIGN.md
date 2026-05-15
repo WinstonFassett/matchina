@@ -49,9 +49,8 @@ Source of truth for visual values: [`/Users/winston/Downloads/matchina-starlight
 | `--color-text` | `#ececec` | Body text |
 | `--color-text-dim` | `#8a8a90` | Dimmed text |
 | `--color-text-mute` | `#56565c` | Muted meta |
-| `--accent` | `#d4ff4f` | Electric lime — CTA, active state |
+| `--accent` | `#8ab4d8` | Fog blue — CTA, active state (same as light) |
 | `--accent-ink` | `#0e0e0f` | Text on accent |
-| `--color-accent-fog` | `#8ab4d8` | Fog blue — links, info |
 | `--color-accent-soft` | `rgba(138,180,216,0.14)` | Fog blue tint backgrounds |
 
 **Semantic** (light / dark):
@@ -64,15 +63,16 @@ Source of truth for visual values: [`/Users/winston/Downloads/matchina-starlight
 | Info | `#1f5ab8` | `#8fb9d6` |
 | Purple | `#6a3fb5` | `#b89dd8` |
 
-### Alternate accents (available, not default)
+### Alternate accents (documented, not currently active)
 
-Swap into `--accent` when exploring palette variants. These are documented in `colors_and_type.css` as commented-out properties.
+Previously trialed accents. Soft gold was used for a period before settling on fog blue. Electric lime (`#d4ff4f`) was in the handoff as a dark-mode accent but was not adopted.
 
 | Name | Value | Character |
 |---|---|---|
-| Soft gold | `#e6d089` | Warm, refined |
+| Soft gold | `#e6d089` | Warm, refined — previously used |
 | Lavender | `#b89dd8` | Dusty, unexpected |
 | Apricot | `#e0a876` | Warm, friendly |
+| Electric lime | `#d4ff4f` | High contrast on dark — considered, not adopted |
 
 ### Syntax highlighting
 
@@ -90,13 +90,14 @@ Swap into `--accent` when exploring palette variants. These are documented in `c
 
 ## Typography
 
-Three families. Never more.
+Three font roles. `--font-display` is the editorial display face; `--font-serif` is a system serif fallback for other themes.
 
-| Family | Variable | Use |
+| Variable | Stack | Use |
 |---|---|---|
-| Newsreader | `--font-serif` | Display headlines, stat numerals |
-| Geist | `--font-sans` | All UI text, body, headings H1–H3, buttons, sidebar |
-| Geist Mono | `--font-mono` | Code, eyebrows, breadcrumbs, badges, meta, shortcuts |
+| `--font-display` | `"Source Serif 4", "Iowan Old Style", Georgia, serif` | H1 headlines, stat numerals |
+| `--font-sans` | `"Geist", "Inter", system-ui, sans-serif` | All UI text, body, headings H2–H3, buttons, sidebar |
+| `--font-mono` | `"Geist Mono", "JetBrains Mono", ui-monospace, monospace` | Code, eyebrows, breadcrumbs, badges, meta, shortcuts |
+| `--font-serif` | `ui-serif, Georgia, Cambria, serif` | System serif fallback; not used directly in Editorial |
 
 ### Type scale
 
@@ -117,9 +118,9 @@ Three families. Never more.
 
 ### Rules
 
-- Hero headline (Newsreader 500, 60px): mix italic 400 secondary phrase within the same `<h1>` using `<em class="dim">` for the soft phrase and `<em>` for the keyword.
+- Hero headline (Source Serif 4 500, 60px): mix italic 400 secondary phrase within the same `<h1>` using `<em class="dim">` for the soft phrase and `<em>` for the keyword.
 - Eyebrows: ALL-CAPS mono, `letter-spacing: 0.12em`, `color: --color-text-mute`. Used for section labels (`DOCS / CORE`), figure labels (`fig.01 — fetcher machine`), badge labels (`ACTIVE`).
-- Stat numerals: Newsreader italic, 18px, paired with mono 11px labels.
+- Stat numerals: Source Serif 4 italic, 18px, paired with mono 11px labels.
 - Body copy in docs: max-width 65–75ch; lead paragraphs use `--color-text-dim`.
 - No gradient text, ever. No `background-clip: text`.
 
@@ -177,7 +178,7 @@ Stat row: flex `gap: 48px`, aligned baseline.
 
 ### Top bar
 
-- Logo SVG (20×20, `currentColor`) + wordmark "Matchina" in Newsreader italic 22px + version pill (mono 10px, muted, 1px border).
+- Logo SVG (20×20, `currentColor`) + wordmark "Matchina" in Source Serif 4 italic 22px + version pill (mono 10px, muted, 1px border).
 - Center: search pill. 1px border, padding `4px 10px`, mono 11px placeholder, `⌘K` shortcut on right. Min-width 360px.
 - Right: nav links `docs / examples / github ↗`, theme toggle `[● dark|○ light]`. All mono 11px.
 
@@ -255,7 +256,7 @@ Overrides are applied via:
 Starlight's own `--sl-*` variables are remapped to the Editorial tokens. Key remaps:
 - `--sl-font` → `var(--font-sans)`
 - `--sl-color-bg` → `#f6f5f1` / `#0e0e0f`
-- `--sl-color-text-accent` → `#15130f` / `#d4ff4f`
+- `--sl-color-text-accent` → `#15130f` / `#8ab4d8`
 - `--sl-nav-height` → `44px`
 - `--sl-sidebar-width` → `240px`
 - `--sl-content-width` → `56rem`
