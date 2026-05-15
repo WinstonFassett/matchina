@@ -78,6 +78,7 @@
   --matchina-viz-dot: color-mix(in srgb, var(--border) 60%, transparent);
   --matchina-viz-label-bg: var(--card);
   --matchina-viz-label-bg-active: color-mix(in srgb, var(--accent) 10%, var(--card));
+  --matchina-viz-label-bg-pill: color-mix(in srgb, var(--card) 90%, transparent);
   --matchina-viz-label-text: var(--muted-foreground);
   --matchina-viz-ctrl-bg: var(--card);
   --matchina-viz-ctrl-border: var(--border);

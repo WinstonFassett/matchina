@@ -1,52 +1,56 @@
 /* ReactFlow V2 styling — UI26 editorial theme
    CSS vars mirror viz-svg's --matchina-viz-* canonical set.
-   Dark mode defaults; light mode overrides in [data-theme="light"] block below. */
+   Token defaults live in @layer base so any page-level :root definition wins. */
 
-/* ── Token defaults (dark/editorial) ─────────────────────────────────────── */
-/* Viz tokens inherit from the page theme wherever possible.
-   --accent / --accent-soft / --accent-ink are the theme's action color.
-   Hardcoded fallbacks are for contexts where the page theme isn't loaded. */
-:root {
-  --matchina-viz-accent:          var(--accent, #8fb9d6);
-  --matchina-viz-accent-soft:     var(--accent-soft, rgba(143, 185, 214, 0.35));
-  --matchina-viz-accent-ink:      var(--accent-ink, #15130f);
-  --matchina-viz-bg:              #0a0f17;
-  --matchina-viz-node:            #0d1117;
-  --matchina-viz-node-active:     var(--accent, #8fb9d6);
-  --matchina-viz-node-compound:   rgba(20, 28, 40, 0.7);
-  --matchina-viz-border:          rgba(148, 163, 184, 0.2);
-  --matchina-viz-active-border:   var(--accent, #8fb9d6);
-  --matchina-viz-text:            #ffffff;
-  --matchina-viz-text-active:     var(--accent-ink, #15130f);
-  --matchina-viz-edge:            rgba(100, 116, 139, 0.5);
-  --matchina-viz-dot:             rgba(148, 163, 184, 0.08);
-  --matchina-viz-label-bg:        transparent;
-  --matchina-viz-label-text:      rgba(203, 213, 225, 0.85);
-  --matchina-viz-radius:          var(--radius, 0.125rem);
-  --matchina-viz-font:            'JetBrains Mono', 'Fira Mono', monospace;
-  --matchina-viz-ctrl-bg:         rgba(20, 28, 40, 0.85);
-  --matchina-viz-ctrl-border:     rgba(148, 163, 184, 0.24);
-  --matchina-viz-ctrl-text:       rgba(226, 232, 240, 0.65);
-}
+/* ── Token defaults (dark/editorial) — lowest priority via @layer ─────────── */
+/* These are standalone fallbacks only. In docs context, global.css owns the tokens
+   via :root { --matchina-viz-*: var(--card) } etc. and wins over this @layer. */
+@layer matchina-viz-defaults {
+  :root {
+    --matchina-viz-accent:          var(--accent, #8fb9d6);
+    --matchina-viz-accent-soft:     var(--accent-soft, rgba(143, 185, 214, 0.35));
+    --matchina-viz-accent-ink:      var(--accent-ink, #15130f);
+    --matchina-viz-bg:              #0a0f17;
+    --matchina-viz-node:            #0d1117;
+    --matchina-viz-node-active:     var(--accent, #8fb9d6);
+    --matchina-viz-node-compound:   rgba(20, 28, 40, 0.7);
+    --matchina-viz-border:          rgba(148, 163, 184, 0.2);
+    --matchina-viz-active-border:   var(--accent, #8fb9d6);
+    --matchina-viz-text:            #ffffff;
+    --matchina-viz-text-active:     var(--accent-ink, #15130f);
+    --matchina-viz-edge:            rgba(100, 116, 139, 0.5);
+    --matchina-viz-dot:             rgba(148, 163, 184, 0.08);
+    --matchina-viz-label-bg:        rgba(15, 23, 33, 0.92);
+    --matchina-viz-label-bg-active: rgba(8, 47, 51, 0.92);
+    --matchina-viz-label-bg-pill:   rgba(15, 23, 33, 0.82);
+    --matchina-viz-label-text:      rgba(203, 213, 225, 0.85);
+    --matchina-viz-radius:          var(--radius, 0.125rem);
+    --matchina-viz-font:            'JetBrains Mono', 'Fira Mono', monospace;
+    --matchina-viz-ctrl-bg:         rgba(20, 28, 40, 0.85);
+    --matchina-viz-ctrl-border:     rgba(148, 163, 184, 0.24);
+    --matchina-viz-ctrl-text:       rgba(226, 232, 240, 0.65);
+  }
 
-/* Light mode — bg flips, label text darkens; accent still comes from --accent */
-[data-theme="light"] {
-  --matchina-viz-bg:              #f8fafc;
-  --matchina-viz-node:            #1e293b;
-  --matchina-viz-node-active:     var(--accent, #8fb9d6);
-  --matchina-viz-node-compound:   rgba(226, 232, 240, 0.7);
-  --matchina-viz-border:          rgba(100, 116, 139, 0.3);
-  --matchina-viz-active-border:   var(--accent, #8fb9d6);
-  --matchina-viz-text:            #f8fafc;
-  --matchina-viz-text-active:     var(--accent-ink, #15130f);
-  --matchina-viz-edge:            rgba(55, 65, 81, 0.55);
-  --matchina-viz-dot:             rgba(148, 163, 184, 0.22);
-  --matchina-viz-label-bg:        rgba(241, 245, 249, 0.92);
-  --matchina-viz-label-bg-active: rgba(219, 234, 254, 0.95);
-  --matchina-viz-label-text:      #374151;
-  --matchina-viz-ctrl-bg:         rgba(255, 255, 255, 0.92);
-  --matchina-viz-ctrl-border:     rgba(100, 116, 139, 0.25);
-  --matchina-viz-ctrl-text:       rgba(55, 65, 81, 0.85);
+  /* Standalone light mode — only applies when page has no theme system */
+  :root[data-theme="light"],
+  [data-theme="light"] :root {
+    --matchina-viz-bg:              #f8fafc;
+    --matchina-viz-node:            #1e293b;
+    --matchina-viz-node-active:     var(--accent, #8fb9d6);
+    --matchina-viz-node-compound:   rgba(226, 232, 240, 0.7);
+    --matchina-viz-border:          rgba(100, 116, 139, 0.3);
+    --matchina-viz-text:            #f8fafc;
+    --matchina-viz-text-active:     var(--accent-ink, #15130f);
+    --matchina-viz-edge:            rgba(55, 65, 81, 0.55);
+    --matchina-viz-dot:             rgba(148, 163, 184, 0.22);
+    --matchina-viz-label-bg:        rgba(241, 245, 249, 0.92);
+    --matchina-viz-label-bg-active: rgba(219, 234, 254, 0.95);
+    --matchina-viz-label-bg-pill:   rgba(241, 245, 249, 0.9);
+    --matchina-viz-label-text:      #374151;
+    --matchina-viz-ctrl-bg:         rgba(255, 255, 255, 0.92);
+    --matchina-viz-ctrl-border:     rgba(100, 116, 139, 0.25);
+    --matchina-viz-ctrl-text:       rgba(55, 65, 81, 0.85);
+  }
 }
 
 /* ── Remove ReactFlow default node chrome ─────────────────────────────────── */
