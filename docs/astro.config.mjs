@@ -154,7 +154,7 @@ export default defineConfig({
           ],
           {
             topics: {
-              docs: ["/guides/**", "/reference/**"],
+              docs: ["/", "/guides/**", "/reference/**", "/api/**"],
               examples: ["/examples", "/examples/**"],
             },
           },

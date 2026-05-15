@@ -70,10 +70,10 @@ try {
 
 // Define transition schemas for validation
 const transitions = {
-  start: z.function().args(z.number()),
-  success: z.function().args(),
-  error: z.function().args(z.string()),
-  retry: z.function().args(),
+  start: z.function({ input: z.tuple([z.number()]) }),
+  success: z.function({ input: z.tuple([]) }),
+  error: z.function({ input: z.tuple([z.string()]) }),
+  retry: z.function({ input: z.tuple([]) }),
 };
 
 // Create machine with validated transitions
@@ -81,13 +81,13 @@ const validatedMachine = matchina(
   zodStates,
   {
     Idle: {
-      start: transitions.start.implement((progress) =>
+      start: transitions.start.implement((progress: number) =>
         zodStates.Loading(progress)
       ),
     },
     Loading: {
       success: transitions.success.implement(() => zodStates.Idle()),
-      error: transitions.error.implement((message) => zodStates.Error(message)),
+      error: transitions.error.implement((message: string) => zodStates.Error(message)),
     },
     Error: {
       retry: transitions.retry.implement(() => zodStates.Idle()),
