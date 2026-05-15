@@ -191,15 +191,14 @@ select[aria-label="Select theme"] {
   line-height: 1.02;
   letter-spacing: -0.022em;
   color: var(--sl-color-text);
-  margin: 28px 0 0 0;
-  padding-top: 20px;
+  margin: 0;
+  padding-top: 0;
 }
-/* When mobile TOC is fixed above content, give h1 enough clearance */
+/* When mobile TOC is fixed above content, give h1 clearance (non-hero only) */
 @media (max-width: 72rem) {
-  .main-frame h1,
-  .sl-markdown-content h1:first-of-type,
-  .hero h1 {
-    padding-top: calc(var(--sl-mobile-toc-height, 48px) + 20px);
+  .main-frame h1:not(.hero h1),
+  .sl-markdown-content h1:first-of-type {
+    padding-top: calc(var(--sl-mobile-toc-height, 48px) + 8px);
   }
 }
 
@@ -409,6 +408,15 @@ a.action.secondary {
 
 /* ---------- Focused utilities (optional) ---------- */
 
+.landing-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-body .stat-row {
+  margin-top: 28px;
+}
+
 .stat-row {
   display: flex; gap: 48px; margin-top: 28px;
   align-items: baseline;
@@ -424,7 +432,7 @@ a.action.secondary {
 }
 
 .hero-card {
-  margin-top: 44px;
+  margin-top: 28px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   border: 1px solid var(--sl-color-hairline);

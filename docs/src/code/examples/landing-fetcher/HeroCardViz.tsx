@@ -14,7 +14,7 @@ export function HeroCardViz() {
       showPicker={true}
       interactive={false}
       layout="stacked"
-      minVizHeight={220}
+      minVizHeight={270}
     />
   );
 }

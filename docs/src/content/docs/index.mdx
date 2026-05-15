@@ -14,63 +14,13 @@ hero:
       variant: primary
 ---
 
-import { CardGrid, LinkCard } from "@astrojs/starlight/components";
 import HeroCard from "@components/HeroCard.astro";
 
-<HeroCard />
-
-<div class="stat-row">
-  <div><span class="n">2kb</span> gzipped</div>
-  <div><span class="n">0</span> dependencies</div>
-  <div><span class="n">100%</span> type-inferred</div>
+<div class="landing-body">
+  <HeroCard />
+  <div class="stat-row">
+    <div><span class="n">2kb</span> gzipped</div>
+    <div><span class="n">0</span> dependencies</div>
+    <div><span class="n">100%</span> type-inferred</div>
+  </div>
 </div>
-
-## Get started
-
-<CardGrid>
-  <LinkCard
-    title="Quick start"
-    href="/matchina/guides/quickstart/"
-    description="Get up and running in minutes"
-  />
-  <LinkCard
-    title="State machines"
-    href="/matchina/guides/machines/"
-    description="Build complex machines with full type safety"
-  />
-  <LinkCard
-    title="Matchbox factories"
-    href="/matchina/guides/matchbox-factories/"
-    description="Type-safe tagged union factories with pattern matching"
-  />
-  <LinkCard
-    title="React integration"
-    href="/matchina/guides/react/"
-    description="Use state machines in React components"
-  />
-</CardGrid>
-
-## Examples
-
-<CardGrid>
-  <LinkCard
-    title="Toggle"
-    href="/matchina/examples/toggle/"
-    description="Simple on/off state machine"
-  />
-  <LinkCard
-    title="Stopwatches"
-    href="/matchina/examples/stopwatch-overview/"
-    description="Multiple approaches to a stopwatch with Matchina"
-  />
-  <LinkCard
-    title="Data fetching"
-    href="/matchina/examples/fetcher-advanced/"
-    description="Type-safe async data fetching"
-  />
-  <LinkCard
-    title="Traffic light simulator"
-    href="/matchina/examples/traffic-light-extended/"
-    description="State machine with automatic transitions"
-  />
-</CardGrid>

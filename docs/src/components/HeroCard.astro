@@ -44,12 +44,15 @@ import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
     grid-template-columns: 1fr 1fr;
     border: 1px solid var(--border);
     background: var(--card);
-    margin-top: 44px;
+    margin-top: 28px;
+    height: 360px;
+    overflow: hidden;
   }
   .pane-left {
     border-right: 1px solid var(--border);
     padding: 20px;
-    min-height: 260px;
+    display: flex;
+    flex-direction: column;
   }
   .pane-right {
     display: flex;
@@ -82,7 +85,7 @@ import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
     border: 0 !important;
     flex: 1;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
   }
   .hero-code .ln { color: var(--text-mute); }
   .hero-code .kw { color: var(--purple); }
