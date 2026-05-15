@@ -38,18 +38,11 @@ const categories = CATEGORY_ORDER.map((cat) => ({
         </header>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {examples.map((ex) => (
-            <a
-              href={`/matchina/examples/${ex.id}`}
-              class="ex-card group block border border-border bg-card hover:border-accent transition-colors p-5 rounded-lg"
-            >
-              <div class="font-medium text-foreground group-hover:text-accent transition-colors mb-1">
-                {ex.title}
-              </div>
-              <div class="text-sm text-muted-foreground leading-relaxed mb-3">
-                {ex.description}
-              </div>
+            <div class="ex-card border border-border bg-card p-5 rounded-lg flex flex-col">
+              <div class="font-medium text-foreground mb-1">{ex.title}</div>
+              <div class="text-sm text-muted-foreground leading-relaxed mb-3">{ex.description}</div>
               {ex.tags && ex.tags.length > 0 && (
-                <div class="flex flex-wrap gap-1">
+                <div class="flex flex-wrap gap-1 mb-4">
                   {ex.tags.map((tag) => (
                     <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                       {tag}
@@ -57,10 +50,54 @@ const categories = CATEGORY_ORDER.map((cat) => ({
                   ))}
                 </div>
               )}
-            </a>
+              <div class="mt-auto flex items-center gap-3">
+                {ex.docSlug ? (
+                  <>
+                    <a
+                      href={`/matchina/${ex.docSlug}`}
+                      class="ex-cta-primary"
+                    >
+                      Read article →
+                    </a>
+                    <a
+                      href={`/matchina/examples/${ex.id}`}
+                      class="ex-cta-secondary"
+                    >
+                      Playground
+                    </a>
+                  </>
+                ) : (
+                  <a
+                    href={`/matchina/examples/${ex.id}`}
+                    class="ex-cta-primary"
+                  >
+                    Open playground →
+                  </a>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       </section>
     ))}
   </div>
 </StarlightPage>
+
+<style>
+  .ex-cta-primary {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .ex-cta-primary:hover { color: hsl(var(--accent)); }
+
+  .ex-cta-secondary {
+    font-size: 11.5px;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .ex-cta-secondary:hover { color: hsl(var(--foreground)); }
+</style>
