@@ -12,6 +12,7 @@ const meta: ExampleMeta = {
   category: "Hierarchical",
   tags: ["hsm", "hierarchical", "nested-states"],
   order: 1,
+  docSlug: "learn/examples/hsm-traffic-light",
   getMachine: () => import("../code/examples/hsm-traffic-light/machine").then((m) => ({ default: m.createPropagatingTrafficLight })),
   getAppView: () => import("../code/examples/hsm-traffic-light/TrafficLightViewNested").then((m) => ({ default: m.TrafficLightViewNested })),
   getSourceFiles: async () => [

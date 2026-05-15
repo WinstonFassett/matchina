@@ -12,6 +12,7 @@ const meta: ExampleMeta = {
   category: "Hierarchical",
   tags: ["hsm", "hierarchical", "multi-step", "submachine"],
   order: 3,
+  docSlug: "learn/examples/hsm-checkout",
   getMachine: () => import("../code/examples/hsm-checkout/machine").then((m) => ({ default: m.createCheckoutMachine })),
   getAppView: () => import("../code/examples/hsm-checkout/CheckoutViewNested").then((m) => ({ default: m.CheckoutViewNested })),
   getSourceFiles: async () => [

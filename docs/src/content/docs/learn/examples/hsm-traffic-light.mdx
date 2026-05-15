@@ -1,0 +1,79 @@
+---
+title: Hierarchical Traffic Light
+description: Compare flattened vs nested hierarchical state machines with the same traffic light behavior
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+
+A traffic light that demonstrates the core tradeoff in hierarchical state machines: you can model the same behavior with a **flattened** machine (all states at the top level, explicit transitions everywhere) or a **nested** machine (child states inherit transitions from parents via propagation).
+
+<div class="hsm-variant-bar not-content" role="tablist">
+  <button class="hsm-vtab is-active" data-variant="nested">Nested (propagating)</button>
+  <button class="hsm-vtab" data-variant="flat">Flattened</button>
+</div>
+
+<div data-hsm-panel="nested">
+  <ExampleEmbed id="hsm-traffic-light" viewerLink={true} />
+</div>
+<div data-hsm-panel="flat" style="display:none">
+  <ExampleEmbed id="hsm-traffic-light-flat" viewerLink={true} />
+</div>
+
+## Nested vs flattened
+
+In the **nested** variant, child states like `Pedestrian.Walk` and `Pedestrian.Flashing` automatically inherit the `reset` transition defined on their parent. You define shared behavior once on the parent, and it propagates down.
+
+In the **flattened** variant, every state is a peer at the top level. Each state that needs to respond to `reset` must declare that transition explicitly. The machine is more verbose but immediately readable — no implicit inheritance to reason about.
+
+Neither is universally better. Use nesting when you have genuine shared transitions across several child states. Use flat machines when clarity and explicitness matter more than concision.
+
+## Next steps
+
+- [Hierarchical Combobox](/matchina/learn/examples/hsm-combobox) — nested states applied to a keyboard-navigable UI widget
+- [Hierarchical Checkout](/matchina/learn/examples/hsm-checkout) — a submachine nested inside a larger flow
+- [Hierarchical Machines guide](/matchina/guides/hierarchical-machines) — full reference
+
+<style>{`
+  .hsm-variant-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    margin-bottom: 0;
+  }
+  .hsm-vtab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 8px 14px 6px;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hsm-vtab:hover { color: hsl(var(--foreground)); }
+  .hsm-vtab.is-active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+  }
+`}</style>
+
+<script>{`
+  document.querySelectorAll('.hsm-variant-bar').forEach((bar) => {
+    const tabs = bar.querySelectorAll('.hsm-vtab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        const variant = tab.dataset.variant;
+        document.querySelectorAll('[data-hsm-panel]').forEach((panel) => {
+          panel.style.display = panel.dataset.hsmPanel === variant ? '' : 'none';
+        });
+      });
+    });
+  });
+`}</script>

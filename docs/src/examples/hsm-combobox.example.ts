@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   tags: ["hsm", "hierarchical", "keyboard", "forms"],
   order: 2,
   span: "full",
+  docSlug: "learn/examples/hsm-combobox",
   getMachine: () => import("../code/examples/hsm-combobox/nested/machine").then((m) => ({ default: m.createComboboxMachine })),
   getAppView: () => import("../code/examples/hsm-combobox/nested/ComboboxView").then((m) => ({ default: m.ComboboxViewNested })),
   getSourceFiles: async () => [

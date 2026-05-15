@@ -1,0 +1,77 @@
+---
+title: Hierarchical Combobox
+description: Compare flattened vs nested approaches in a keyboard-navigable autocomplete tag editor
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+
+An autocomplete tag editor demonstrating hierarchical state management for complex UI interactions. The combobox tracks whether it's open or closed, what's highlighted, and what's selected — and shows how nesting simplifies the handling of shared keyboard events across sub-states.
+
+<div class="hsm-variant-bar not-content" role="tablist">
+  <button class="hsm-vtab is-active" data-variant="nested">Nested (propagating)</button>
+  <button class="hsm-vtab" data-variant="flat">Flattened</button>
+</div>
+
+<div data-hsm-panel="nested">
+  <ExampleEmbed id="hsm-combobox" viewerLink={true} />
+</div>
+<div data-hsm-panel="flat" style="display:none">
+  <ExampleEmbed id="hsm-combobox-flat" viewerLink={true} />
+</div>
+
+## Nested vs flattened
+
+The combobox has an `Open` state with child states for different interaction modes (typing, navigating with arrow keys, etc.). In the **nested** variant, keyboard events like `Escape` and `Enter` are defined once on the `Open` parent and propagate to all children automatically.
+
+In the **flattened** variant, every sub-state of `Open` must explicitly handle those shared events. The machine is longer but every transition is visible at a glance without tracing through a parent hierarchy.
+
+## Next steps
+
+- [Hierarchical Traffic Light](/matchina/learn/examples/hsm-traffic-light) — a simpler introduction to nesting vs flattening
+- [Hierarchical Checkout](/matchina/learn/examples/hsm-checkout) — nested submachine inside a larger checkout flow
+- [Hierarchical Machines guide](/matchina/guides/hierarchical-machines) — full reference
+
+<style>{`
+  .hsm-variant-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    margin-bottom: 0;
+  }
+  .hsm-vtab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 8px 14px 6px;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hsm-vtab:hover { color: hsl(var(--foreground)); }
+  .hsm-vtab.is-active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+  }
+`}</style>
+
+<script>{`
+  document.querySelectorAll('.hsm-variant-bar').forEach((bar) => {
+    const tabs = bar.querySelectorAll('.hsm-vtab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        const variant = tab.dataset.variant;
+        document.querySelectorAll('[data-hsm-panel]').forEach((panel) => {
+          panel.style.display = panel.dataset.hsmPanel === variant ? '' : 'none';
+        });
+      });
+    });
+  });
+`}</script>

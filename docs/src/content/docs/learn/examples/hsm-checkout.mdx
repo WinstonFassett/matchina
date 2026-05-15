@@ -1,0 +1,79 @@
+---
+title: Hierarchical Checkout
+description: Compare flattened vs nested checkout flow with a payment submachine
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+
+A multi-step checkout flow covering cart, shipping, and payment. The payment step is complex enough to warrant its own sub-states — making this a natural fit for a nested submachine. The flattened variant shows what the same flow looks like when every state is promoted to the top level.
+
+<div class="hsm-variant-bar not-content" role="tablist">
+  <button class="hsm-vtab is-active" data-variant="nested">Nested (submachine)</button>
+  <button class="hsm-vtab" data-variant="flat">Flattened</button>
+</div>
+
+<div data-hsm-panel="nested">
+  <ExampleEmbed id="hsm-checkout" viewerLink={true} />
+</div>
+<div data-hsm-panel="flat" style="display:none">
+  <ExampleEmbed id="hsm-checkout-flat" viewerLink={true} />
+</div>
+
+## Nested vs flattened
+
+In the **nested** variant, the `Payment` state contains a submachine (`CardEntry → Processing → Confirmed / Failed`). The outer machine delegates control to the submachine while payment is in progress and resumes once it reaches a terminal state. This keeps the top-level machine focused on the checkout stages and isolates payment complexity.
+
+In the **flattened** variant, all payment sub-states are peers at the top level alongside `Cart`, `Shipping`, and `OrderComplete`. Every state is explicit and directly traversable, at the cost of a larger flat list of states and repeated transitions.
+
+Submachines shine when a phase of your flow is complex enough to warrant local state management — and when you want to reuse or test that phase in isolation.
+
+## Next steps
+
+- [Hierarchical Traffic Light](/matchina/learn/examples/hsm-traffic-light) — simplest introduction to nesting
+- [Hierarchical Combobox](/matchina/learn/examples/hsm-combobox) — nesting for UI keyboard interactions
+- [Hierarchical Machines guide](/matchina/guides/hierarchical-machines) — full reference
+
+<style>{`
+  .hsm-variant-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    margin-bottom: 0;
+  }
+  .hsm-vtab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 8px 14px 6px;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hsm-vtab:hover { color: hsl(var(--foreground)); }
+  .hsm-vtab.is-active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+  }
+`}</style>
+
+<script>{`
+  document.querySelectorAll('.hsm-variant-bar').forEach((bar) => {
+    const tabs = bar.querySelectorAll('.hsm-vtab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        const variant = tab.dataset.variant;
+        document.querySelectorAll('[data-hsm-panel]').forEach((panel) => {
+          panel.style.display = panel.dataset.hsmPanel === variant ? '' : 'none';
+        });
+      });
+    });
+  });
+`}</script>
