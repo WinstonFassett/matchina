@@ -1,5 +1,5 @@
 ---
-import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
+import { ExamplePreview } from "./ExamplePreview";
 ---
 
 <div class="hero-card not-content">
@@ -8,7 +8,7 @@ import { HeroCardViz } from "@code/examples/landing-fetcher/HeroCardViz";
       <span>fig.01 — fetcher machine</span>
       <span class="live-badge">● live</span>
     </div>
-    <HeroCardViz client:only="react" />
+    <ExamplePreview id="landing-fetcher" defaultViz="svg" showPicker={false} hideAppPane={true} client:only="react" />
   </div>
   <div class="pane-right">
     <div class="pane-head">

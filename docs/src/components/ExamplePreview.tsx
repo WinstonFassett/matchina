@@ -2,14 +2,18 @@ import { getExample } from "../examples";
 import { useEffect, useState, type ComponentType } from "react";
 import type { FactoryMachine } from "matchina";
 import { MachineVisualizer } from "./MachineVisualizer";
+import type { VisualizerType } from "./VizPicker";
 
 interface Props {
   id: string;
   /** Show only the app view, no diagram */
   appOnly?: boolean;
+  defaultViz?: VisualizerType;
+  showPicker?: boolean;
+  hideAppPane?: boolean;
 }
 
-export function ExamplePreview({ id, appOnly = false }: Props) {
+export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hideAppPane = false }: Props) {
   const meta = getExample(id);
   const [machine, setMachine] = useState<FactoryMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
@@ -43,10 +47,12 @@ export function ExamplePreview({ id, appOnly = false }: Props) {
   return (
     <MachineVisualizer
       machine={machine}
-      AppView={AppView ?? undefined}
+      AppView={hideAppPane ? () => null : (AppView ?? undefined)}
       showRawState={false}
-      layout="split"
+      layout={hideAppPane ? "stacked" : "split"}
       interactive={true}
+      {...(defaultViz !== undefined && { defaultViz })}
+      {...(showPicker !== undefined && { showPicker })}
     />
   );
 }
