@@ -155,7 +155,7 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
             }}
           />
           <text
-            x={label.width / 2} y={label.height - 2}
+            x={label.width / 2} y={(label.height + 4) / 2 + 4}
             textAnchor="middle"
             style={{
               fill: isOutgoing

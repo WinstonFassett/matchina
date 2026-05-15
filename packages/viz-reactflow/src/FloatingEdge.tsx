@@ -183,18 +183,32 @@ export default function FloatingEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               fontSize: '11px',
               fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)',
-              fontWeight: isActive ? 600 : 400,
-              color: labelColor,
+              fontWeight: isActive ? 600 : 500,
+              color: isActive
+                ? 'var(--matchina-viz-bg, #0a0f17)'
+                : isExactTransition
+                ? 'var(--matchina-viz-accent, #8fb9d6)'
+                : 'var(--matchina-viz-label-text, rgba(203,213,225,0.85))',
+              background: isActive
+                ? 'var(--matchina-viz-accent, #8fb9d6)'
+                : isExactTransition
+                ? 'transparent'
+                : 'var(--matchina-viz-label-bg-pill, rgba(15,23,33,0.82))',
+              border: isActive
+                ? '1px solid var(--matchina-viz-accent, #8fb9d6)'
+                : isExactTransition
+                ? '1px solid var(--matchina-viz-accent, #8fb9d6)'
+                : '1px solid rgba(100,116,139,0.45)',
+              borderRadius: '6px',
+              padding: '2px 7px',
               pointerEvents: isClickable ? 'all' : 'none',
               cursor: isClickable ? 'pointer' : 'default',
-              background: 'none',
-              border: 'none',
-              padding: 0,
               userSelect: 'none',
               whiteSpace: 'nowrap',
               zIndex: isActive ? 1000 : 100,
+              letterSpacing: '0.04em',
+              lineHeight: 1.4,
             }}
-            onClick={isClickable ? undefined : undefined}
             className="nodrag nopan"
           >
             {label}

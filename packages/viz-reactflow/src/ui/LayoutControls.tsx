@@ -1,8 +1,3 @@
-/**
- * Layout controls component
- * Modern UI for configuring layout options
- */
-
 import React, { useRef, useState } from 'react';
 import type { ILayoutManager as LayoutManager, AnyLayoutSettings } from '../layout/types';
 import { LayoutType } from '../layout/types';
@@ -15,6 +10,50 @@ interface LayoutControlsProps {
   currentSettings: AnyLayoutSettings;
 }
 
+type LayoutPreset = {
+  id: string;
+  label: string;
+  description: string;
+  settings: AnyLayoutSettings;
+};
+
+const PRESETS: LayoutPreset[] = [
+  {
+    id: 'tb',
+    label: 'Top → Bottom',
+    description: 'Layered, top-down flow',
+    settings: { algorithm: 'layered', direction: 'DOWN' },
+  },
+  {
+    id: 'lr',
+    label: 'Left → Right',
+    description: 'Layered, left-to-right flow',
+    settings: { algorithm: 'layered', direction: 'RIGHT' },
+  },
+  {
+    id: 'force',
+    label: 'Force',
+    description: 'Physics-based clustering',
+    settings: { algorithm: 'force', direction: 'DOWN' },
+  },
+  {
+    id: 'organic',
+    label: 'Organic',
+    description: 'Stress-minimized natural layout',
+    settings: { algorithm: 'stress', direction: 'DOWN' },
+  },
+];
+
+function getPresetId(settings: AnyLayoutSettings): string {
+  const algo = settings.algorithm as string | undefined;
+  const dir = settings.direction as string | undefined;
+  if (algo === 'layered' && dir === 'DOWN') return 'tb';
+  if (algo === 'layered' && dir === 'RIGHT') return 'lr';
+  if (algo === 'force') return 'force';
+  if (algo === 'stress') return 'organic';
+  return 'tb';
+}
+
 export function LayoutControls({
   layoutManager,
   onLayoutChange,
@@ -24,183 +63,171 @@ export function LayoutControls({
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const availableEngines = layoutManager.getAvailableEngines();
-  const currentEngine = layoutManager.getEngine(currentLayoutType);
+  const activePresetId = getPresetId(currentSettings);
 
-  const handleLayoutTypeChange = (type: LayoutType) => {
-    // ELK engine handles all layout types - always use it for defaults
+  const handlePreset = (preset: LayoutPreset) => {
     const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
-    if (engine) {
-      onLayoutChange(type, engine.getDefaultSettings());
-    }
+    if (!engine) return;
+    const merged = { ...engine.getDefaultSettings(), ...preset.settings };
+    onLayoutChange(LayoutType.HIERARCHICAL, merged);
+  };
+
+  const getNumeric = (key: string, fallback: number): number => {
+    const v = currentSettings[key];
+    return typeof v === 'number' ? v : fallback;
   };
 
   const handleSettingChange = (key: string, value: unknown) => {
-    const updatedSettings = { ...currentSettings, [key]: value };
-    onLayoutChange(currentLayoutType, updatedSettings);
-  };
-
-  // Helper to safely get numeric settings
-  const getNumeric = (key: string, defaultValue: number): number => {
-    const value = currentSettings[key];
-    return typeof value === 'number' ? value : defaultValue;
-  };
-
-  // Helper to safely get string settings
-  const getString = (key: string, defaultValue: string): string => {
-    const value = currentSettings[key];
-    return typeof value === 'string' ? value : defaultValue;
+    onLayoutChange(currentLayoutType, { ...currentSettings, [key]: value });
   };
 
   const handleReset = () => {
-    if (currentEngine) {
-      const defaultSettings = currentEngine.getDefaultSettings();
-      onLayoutChange(currentLayoutType, defaultSettings);
-    }
+    const engine = layoutManager.getEngine(LayoutType.HIERARCHICAL);
+    if (engine) onLayoutChange(currentLayoutType, engine.getDefaultSettings());
   };
 
   return (
     <>
-      {/* Trigger Button */}
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsPanelOpen(true)}
-        className="flex items-center gap-1 px-2 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        title="Open layout controls"
+        onClick={() => setIsPanelOpen(o => !o)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '4px 10px',
+          fontSize: 11,
+          fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)',
+          background: isPanelOpen
+            ? 'var(--matchina-viz-accent, #8fb9d6)'
+            : 'var(--matchina-viz-ctrl-bg, rgba(20,28,40,0.85))',
+          color: isPanelOpen
+            ? 'var(--matchina-viz-bg, #0a0f17)'
+            : 'var(--matchina-viz-ctrl-text, rgba(226,232,240,0.65))',
+          border: '1px solid var(--matchina-viz-ctrl-border, rgba(148,163,184,0.24))',
+          borderRadius: 6,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          letterSpacing: '0.04em',
+        }}
+        title="Layout options"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
         </svg>
-        <span>Layout</span>
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        Layout
       </button>
 
-      {/* Floating Panel */}
       <FloatingPanel
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
         anchorRef={buttonRef}
-        title="Layout Controls"
-        width={360}
-        height={480}
+        title="Layout"
+        width={280}
+        height={380}
       >
-        <div className="space-y-6">
-          {/* Layout Type Selection */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Preset buttons */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Layout Type
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {availableEngines.map((engine) => (
-                <button
-                  key={engine.type}
-                  type="button"
-                  onClick={() => handleLayoutTypeChange(engine.type)}
-                  className={`p-2 text-xs rounded border transition-colors ${
-                    currentLayoutType === engine.type
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <div className="font-medium">{engine.name}</div>
-                  <div className="text-xs opacity-75 mt-1">{engine.description}</div>
-                </button>
-              ))}
+            <div style={labelStyle}>Direction / Algorithm</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 6 }}>
+              {PRESETS.map(preset => {
+                const active = activePresetId === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handlePreset(preset)}
+                    style={{
+                      padding: '7px 10px',
+                      fontSize: 11,
+                      fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)',
+                      textAlign: 'left',
+                      borderRadius: 6,
+                      border: active
+                        ? '1px solid var(--matchina-viz-accent, #8fb9d6)'
+                        : '1px solid var(--matchina-viz-ctrl-border, rgba(148,163,184,0.24))',
+                      background: active
+                        ? 'var(--matchina-viz-accent-soft, rgba(143,185,214,0.15))'
+                        : 'var(--matchina-viz-ctrl-bg, rgba(20,28,40,0.85))',
+                      color: active
+                        ? 'var(--matchina-viz-accent, #8fb9d6)'
+                        : 'var(--matchina-viz-ctrl-text, rgba(226,232,240,0.65))',
+                      cursor: 'pointer',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    <div style={{ fontWeight: active ? 600 : 500 }}>{preset.label}</div>
+                    <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>{preset.description}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Settings */}
+          {/* Spacing sliders */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Settings
-              </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={labelStyle}>Spacing</div>
               <button
                 type="button"
                 onClick={handleReset}
-                className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                style={{ fontSize: 10, color: 'var(--matchina-viz-accent, #8fb9d6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
               >
-                Reset to Default
+                Reset
               </button>
             </div>
-            
-            <div className="space-y-4">
-              {/* Universal Settings */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Node Spacing: {getNumeric('nodeSpacing', 120)}px
-                </label>
-                <input
-                  type="range"
-                  min="20"
-                  max="500"
-                  value={getNumeric('nodeSpacing', 120)}
-                  onChange={(e) => handleSettingChange('nodeSpacing', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Edge Spacing: {getNumeric('edgeSpacing', 20)}px
-                </label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value={getNumeric('edgeSpacing', 20)}
-                  onChange={(e) => handleSettingChange('edgeSpacing', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Compactness: {Math.round(getNumeric('compactness', 0.7) * 100)}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={getNumeric('compactness', 0.7)}
-                  onChange={(e) => handleSettingChange('compactness', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  View Padding: {getNumeric('fitPadding', 20)}px
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={getNumeric('fitPadding', 20)}
-                  onChange={(e) => handleSettingChange('fitPadding', Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <SliderRow
+                label="Node spacing"
+                value={getNumeric('nodeSpacing', 120)}
+                min={40} max={300}
+                onChange={v => handleSettingChange('nodeSpacing', v)}
+              />
+              <SliderRow
+                label="Layer spacing"
+                value={getNumeric('layerSpacing', 180)}
+                min={60} max={400}
+                onChange={v => handleSettingChange('layerSpacing', v)}
+              />
             </div>
-          </div>
-
-          {/* Apply Button */}
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => setIsPanelOpen(false)}
-              className="w-full px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Apply Layout
-            </button>
           </div>
         </div>
       </FloatingPanel>
     </>
+  );
+}
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 11,
+  fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)',
+  color: 'var(--matchina-viz-ctrl-text, rgba(226,232,240,0.65))',
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+};
+
+function SliderRow({ label, value, min, max, onChange }: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span style={{ fontSize: 11, fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)', color: 'var(--matchina-viz-ctrl-text, rgba(226,232,240,0.65))' }}>{label}</span>
+        <span style={{ fontSize: 11, fontFamily: 'var(--matchina-viz-font, "JetBrains Mono", monospace)', color: 'var(--matchina-viz-accent, #8fb9d6)' }}>{value}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        style={{ width: '100%', accentColor: 'var(--matchina-viz-accent, #8fb9d6)' }}
+      />
+    </div>
   );
 }

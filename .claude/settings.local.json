@@ -7,7 +7,14 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:lib:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_select_option",
+      "Bash(ls ~/Downloads/matchina-starlight-redesign-ui26/)"
     ]
   }
 }

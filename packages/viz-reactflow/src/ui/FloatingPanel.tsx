@@ -12,7 +12,6 @@ import {
   offset,
   arrow,
   FloatingPortal,
-  FloatingOverlay,
 } from '@floating-ui/react';
 
 interface FloatingPanelProps {
@@ -94,18 +93,18 @@ export function FloatingPanel({
 
   return (
     <FloatingPortal>
-      <FloatingOverlay lockScroll className="z-50">
-        <div
-          ref={refs.setFloating}
-          style={{
-            ...floatingStyles,
-            width,
-            height,
-            maxHeight: 'calc(100vh - 20px)',
-            maxWidth: 'calc(100vw - 20px)',
-          }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
-        >
+      <div
+        ref={refs.setFloating}
+        style={{
+          ...floatingStyles,
+          width,
+          height,
+          maxHeight: 'calc(100vh - 20px)',
+          maxWidth: 'calc(100vw - 20px)',
+          zIndex: 50,
+        }}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+      >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -139,7 +138,6 @@ export function FloatingPanel({
             }}
           />
         </div>
-      </FloatingOverlay>
     </FloatingPortal>
   );
 }
