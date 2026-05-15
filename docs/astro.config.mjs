@@ -325,7 +325,7 @@ export default defineConfig({
               items: [
                 {
                   label: "Overview",
-                  link: "/examples/stopwatch-overview",
+                  link: "/learn/examples/stopwatch-overview",
                 },
                 {
                   label: "Basic Stopwatch",

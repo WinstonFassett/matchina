@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   category: "Fetcher",
   tags: ["promise-machine", "async", "fetcher"],
   order: 2,
+  docSlug: "learn/examples/fetcher-advanced",
   getMachine: () => import("../code/examples/fetcher-advanced/machine").then((m) => ({ default: () => m.createFetcher("https://jsonplaceholder.typicode.com/todos/1") })),
   getAppView: () => import("../code/examples/fetcher-advanced/FetcherAppView").then((m) => ({ default: m.FetcherAppView })),
   getSourceFiles: async () => [

@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   category: "Fetcher",
   tags: ["promise-machine", "async", "fetcher"],
   order: 1,
+  docSlug: "learn/examples/promise-machine-fetcher",
   getMachine: () => import("../code/examples/promise-machine-fetcher/machine").then((m) => ({ default: m.createPromiseFetcherMachine })),
   getAppView: () => import("../code/examples/promise-machine-fetcher/FetcherAppView").then((m) => ({ default: m.FetcherAppView })),
   getSourceFiles: async () => [

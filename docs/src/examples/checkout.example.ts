@@ -13,6 +13,7 @@ const meta: ExampleMeta = {
   category: "Advanced",
   tags: ["createMachine", "multi-step", "forms"],
   order: 2,
+  docSlug: "learn/examples/checkout",
   getMachine: () => import("../code/examples/checkout/machine").then((m) => ({ default: m.createCheckoutMachine })),
   getAppView: () => import("../code/examples/checkout/CheckoutView").then((m) => ({ default: m.CheckoutView })),
   getSourceFiles: async () => [

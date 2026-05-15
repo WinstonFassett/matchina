@@ -1,0 +1,30 @@
+---
+title: Promise Fetcher
+description: A basic HTTP fetcher using promise machines
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
+
+A simple HTTP fetcher built with promise machines, demonstrating how to handle asynchronous operations with automatic state management for loading, success, and error states.
+
+<ExampleEmbed id="promise-machine-fetcher" />
+
+## How it works
+
+Promise machines automatically transition between states based on the fetch lifecycle:
+
+1. **Idle** — ready to make a request
+2. **Pending** — request in flight, shows loading state
+3. **Resolved** — request succeeded, displays response data
+4. **Rejected** — request failed, shows error message
+
+The reset functionality recreates the machine instance by incrementing a `machineId`, forcing React to mount a fresh machine in the Idle state.
+
+<ExampleCode id="promise-machine-fetcher" file="machine.ts" />
+
+## Next steps
+
+- [Advanced Fetcher](/matchina/examples/fetcher-advanced) — retry logic, timeouts, abort
+- [Async Calculator](/matchina/examples/async-calculator) — promise machines for computations
+- [Promise Machine Guide](/matchina/guides/promises) — complete documentation

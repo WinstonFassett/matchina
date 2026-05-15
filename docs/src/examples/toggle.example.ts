@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "addEventApi", "two-states"],
   order: 1,
   featured: true,
+  docSlug: "learn/examples/toggle",
   getMachine: () => import("../code/examples/toggle/machine").then((m) => ({ default: m.createToggleMachine })),
   getAppView: () => import("../code/examples/toggle/ToggleView").then((m) => ({ default: m.ToggleView })),
   getSourceFiles: async () => [

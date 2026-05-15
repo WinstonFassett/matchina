@@ -12,6 +12,7 @@ const meta: ExampleMeta = {
   category: "Basic",
   tags: ["createMachine", "game", "store"],
   order: 4,
+  docSlug: "learn/examples/rock-paper-scissors",
   getMachine: () => import("../code/examples/rock-paper-scissors/machine").then((m) => ({ default: m.createRPSMachine })),
   getAppView: () => import("../code/examples/rock-paper-scissors/RPSAppView").then((m) => ({ default: m.RPSAppView })),
   getSourceFiles: async () => [

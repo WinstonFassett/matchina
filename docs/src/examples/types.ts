@@ -13,6 +13,8 @@ export interface ExampleMeta {
   featured?: boolean;
   indexable?: boolean;
   span?: "full" | "auto";
+  /** Slug of the MDX article for this example, e.g. "examples/toggle". When set, viewer links back to the article. */
+  docSlug?: string;
   getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> }>;
   getAppView?: () => Promise<{ default: ComponentType<{ machine: FactoryMachine<any> & any }> }>;
   getSourceFiles: () => Promise<{ name: string; code: string }[]>;

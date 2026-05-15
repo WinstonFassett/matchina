@@ -1,0 +1,19 @@
+---
+title: Rock-Paper-Scissors
+description: A game state machine demonstrating state transitions with conditional logic
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
+
+Game state machine managing complete game flow from player selection through winner determination.
+
+<ExampleEmbed id="rock-paper-scissors" />
+
+## When to use this pattern
+
+Turn-based games with distinct phases and rules. Interactive applications that need to enforce business logic. Scenarios where actions are only valid in certain states, or where complex conditional logic depends on current state.
+
+State machines enforce game rules through transitions — preventing invalid actions by restricting available events per state. Each phase is explicit and independently testable.
+
+<ExampleCode id="rock-paper-scissors" file="machine.ts" />

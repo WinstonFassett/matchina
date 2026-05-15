@@ -84,6 +84,15 @@ function getLang(filename: string): string {
       <div class="ex-tabs-bar" role="tablist">
         <button class="ex-tab is-active" role="tab" aria-selected="true" data-tab="preview">Preview</button>
         <button class="ex-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
+        {example.docSlug && (
+          <a
+            href={`/matchina/${example.docSlug}`}
+            class="ex-doc-link"
+            title="Read the article"
+          >
+            read the article →
+          </a>
+        )}
       </div>
 
       <div class="ex-panel" id="ex-panel-preview">
@@ -188,6 +197,17 @@ function getLang(filename: string): string {
     color: hsl(var(--foreground));
     border-bottom-color: hsl(var(--foreground));
   }
+
+  .ex-doc-link {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    padding: 10px 4px 8px;
+    transition: color 0.15s;
+  }
+  .ex-doc-link:hover { color: hsl(var(--foreground)); }
 
   /* ── panels ── */
   .ex-panel {

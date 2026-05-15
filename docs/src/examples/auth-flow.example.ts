@@ -10,6 +10,7 @@ const meta: ExampleMeta = {
   category: "Advanced",
   tags: ["createMachine", "multi-state", "forms"],
   order: 1,
+  docSlug: "learn/examples/auth-flow",
   getMachine: () => import("../code/examples/auth-flow/machine").then((m) => ({ default: m.createAuthMachine })),
   getAppView: () => import("../code/examples/auth-flow/AuthFlowView").then((m) => ({ default: m.AuthFlowView })),
   getSourceFiles: async () => [

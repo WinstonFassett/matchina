@@ -1,0 +1,141 @@
+---
+import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
+import { ExamplePreview } from "./ExamplePreview";
+import { getExample } from "../examples";
+
+interface Props {
+  id: string;
+  /** Link to the full standalone viewer */
+  viewerLink?: boolean;
+}
+
+const { id, viewerLink = true } = Astro.props;
+
+const meta = getExample(id);
+const sourceFiles = meta ? await meta.getSourceFiles() : [];
+
+function getLang(filename: string): string {
+  const ext = filename.split(".").pop();
+  switch (ext) {
+    case "ts": return "ts";
+    case "tsx": return "tsx";
+    case "js": return "javascript";
+    case "jsx": return "jsx";
+    default: return "plaintext";
+  }
+}
+---
+
+{!meta && (
+  <p class="font-mono text-sm text-red-500">Example "{id}" not found</p>
+)}
+
+{meta && (
+  <div class="example-embed not-content">
+    <div class="example-embed-tabs-bar" role="tablist">
+      <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview">Preview</button>
+      <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
+      {viewerLink && (
+        <a
+          href={`/matchina/examples/${id}`}
+          class="example-embed-viewer-link"
+          title="Open in standalone viewer"
+        >
+          open in viewer →
+        </a>
+      )}
+    </div>
+
+    <div class="example-embed-panel" id={`embed-preview-${id}`}>
+      <ExamplePreview id={id} client:only="react" />
+    </div>
+
+    <div class="example-embed-panel is-hidden" id={`embed-code-${id}`}>
+      {sourceFiles.length === 1 && (
+        <Code code={sourceFiles[0].code} lang={getLang(sourceFiles[0].name)} />
+      )}
+      {sourceFiles.length > 1 && (
+        <Tabs>
+          {sourceFiles.map((f) => (
+            <TabItem label={f.name}>
+              <Code code={f.code} lang={getLang(f.name)} />
+            </TabItem>
+          ))}
+        </Tabs>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .example-embed {
+    border: 1px solid hsl(var(--border));
+    margin: 1.5rem 0;
+  }
+
+  .example-embed-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0 1rem;
+  }
+
+  .example-embed-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground));
+    padding: 8px 12px 6px;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+    text-transform: uppercase;
+  }
+  .example-embed-tab:hover { color: hsl(var(--foreground)); }
+  .example-embed-tab.is-active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+  }
+
+  .example-embed-viewer-link {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    padding: 8px 4px;
+    transition: color 0.15s;
+  }
+  .example-embed-viewer-link:hover { color: hsl(var(--foreground)); }
+
+  .example-embed-panel {
+    padding: 1.25rem;
+  }
+  .example-embed-panel.is-hidden { display: none; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.example-embed').forEach((embed) => {
+    const tabs = embed.querySelectorAll<HTMLButtonElement>('.example-embed-tab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected', 'true');
+        const target = tab.dataset.tab;
+        embed.querySelectorAll<HTMLElement>('.example-embed-panel').forEach((panel) => {
+          const isPreview = panel.id.startsWith('embed-preview-');
+          const isCode = panel.id.startsWith('embed-code-');
+          panel.classList.toggle('is-hidden',
+            (target === 'preview' && isCode) || (target === 'code' && isPreview)
+          );
+        });
+      });
+    });
+  });
+</script>

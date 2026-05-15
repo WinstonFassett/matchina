@@ -1,0 +1,26 @@
+---
+title: Advanced Fetcher
+description: A robust HTTP fetcher with retry logic, timeouts, and abort functionality
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
+
+A production-ready HTTP fetcher with advanced error handling, automatic retries, configurable timeouts, and abort functionality.
+
+<ExampleEmbed id="fetcher-advanced" />
+
+## Implementation details
+
+- **Configurable retry logic** — automatic retries with exponential backoff for network errors, timeouts, and failures
+- **Request timeout management** — configurable timeout with automatic cleanup
+- **Abort capability** — cancel in-flight requests with proper cleanup
+- **Network error detection** — distinguishes between network errors, timeouts, and other failures
+- **Live configuration** — change settings and see the machine recreate with new options
+
+<ExampleCode id="fetcher-advanced" file="machine.ts" />
+
+## Related
+
+- [Promise Fetcher](/matchina/examples/promise-machine-fetcher) — the simpler baseline
+- [Promise Machine Guide](/matchina/guides/promises) — complete promise machine documentation
