@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
-  Background,
-  BackgroundVariant,
   Controls,
   MarkerType,
   useNodesState,
@@ -255,7 +253,6 @@ function ReactFlowInspectorInner({
       proOptions={{ hideAttribution: true }}
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 150ms ease' }}
     >
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
       <Controls showInteractive={false} />
     </ReactFlow>
   );
