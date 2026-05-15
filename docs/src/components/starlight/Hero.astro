@@ -40,7 +40,7 @@ if (image) {
           {icon?.html && <Fragment set:html={icon.html} />}
         </a>
       ))}
-      <InstallStrip />
+      {actions.length > 0 && <InstallStrip />}
     </div>
   </div>
 </div>
