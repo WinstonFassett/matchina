@@ -27,8 +27,14 @@ export function ExamplePreview({ id, appOnly = false }: Props) {
     }
   }, [id, meta]);
 
+  // Hide skeleton once machine is committed to DOM
+  useEffect(() => {
+    if (!machine) return;
+    document.getElementById(`embed-preview-${id}`)?.setAttribute('data-loaded', '');
+  }, [machine, id]);
+
   if (error) return <div className="p-4 text-red-500 font-mono text-sm">{error}</div>;
-  if (!machine) return <div className="p-4 text-muted-foreground font-mono text-sm">Loading…</div>;
+  if (!machine) return null;
 
   if (appOnly && AppView) {
     return <AppView machine={machine} />;
