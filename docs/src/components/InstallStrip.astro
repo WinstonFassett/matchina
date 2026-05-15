@@ -80,38 +80,46 @@
   .copy-btn.copied { color: var(--info); }
 </style>
 
-<script>
-  const COMMANDS: Record<string, string> = {
-    npm:  "npm install matchina",
-    pnpm: "pnpm add matchina",
-    yarn: "yarn add matchina",
-    bun:  "bun add matchina",
-  };
-  // Same key format as Starlight's syncKey tabs: starlight-synced-tabs__<syncKey>
+<script is:inline>
+(function () {
+  const COMMANDS = { npm: "npm install matchina", pnpm: "pnpm add matchina", yarn: "yarn add matchina", bun: "bun add matchina" };
   const KEY = "starlight-synced-tabs__pkg";
 
-  document.querySelectorAll<HTMLElement>(".install-strip").forEach((strip) => {
-    const sel  = strip.querySelector<HTMLSelectElement>(".pkgmgr-select")!;
-    const cmd  = strip.querySelector<HTMLElement>(".install-cmd")!;
-    const btn  = strip.querySelector<HTMLButtonElement>(".copy-btn")!;
-
-    function setMgr(mgr: string) {
-      sel.value = mgr;
-      cmd.textContent = COMMANDS[mgr] ?? COMMANDS.npm;
-    }
-
+  function restore() {
     const saved = localStorage.getItem(KEY) ?? "npm";
-    setMgr(saved in COMMANDS ? saved : "npm");
-
-    sel.addEventListener("change", () => {
-      localStorage.setItem(KEY, sel.value);
-      setMgr(sel.value);
+    const mgr = (saved in COMMANDS) ? saved : "npm";
+    document.querySelectorAll(".install-strip").forEach(function (strip) {
+      const sel = strip.querySelector(".pkgmgr-select");
+      const cmd = strip.querySelector(".install-cmd");
+      if (sel) sel.value = mgr;
+      if (cmd) cmd.textContent = COMMANDS[mgr];
     });
+  }
 
-    btn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(cmd.textContent ?? "");
-      btn.classList.add("copied");
-      setTimeout(() => btn.classList.remove("copied"), 1400);
+  function init() {
+    document.querySelectorAll(".install-strip").forEach(function (strip) {
+      const sel = strip.querySelector(".pkgmgr-select");
+      const cmd = strip.querySelector(".install-cmd");
+      const btn = strip.querySelector(".copy-btn");
+      if (!sel) return;
+      sel.addEventListener("change", function () {
+        localStorage.setItem(KEY, sel.value);
+        if (cmd) cmd.textContent = COMMANDS[sel.value] || COMMANDS.npm;
+      });
+      if (btn) btn.addEventListener("click", async function () {
+        await navigator.clipboard.writeText(cmd ? cmd.textContent : "");
+        btn.classList.add("copied");
+        setTimeout(function () { btn.classList.remove("copied"); }, 1400);
+      });
     });
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  window.addEventListener("pageshow", function () { restore(); });
+})();
 </script>
