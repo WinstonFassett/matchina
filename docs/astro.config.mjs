@@ -234,6 +234,7 @@ export default defineConfig({
         ThemeSelect: './src/components/starlight/ThemeSelect.astro',
         Header: './src/components/starlight/Header.astro',
         PageFrame: './src/components/starlight/PageFrame.astro',
+        Sidebar: './src/components/starlight/Sidebar.astro',
         SiteTitle: './src/components/starlight/SiteTitle.astro',
         Hero: './src/components/starlight/Hero.astro',
         PageTitle: './src/components/starlight/PageTitle.astro',
