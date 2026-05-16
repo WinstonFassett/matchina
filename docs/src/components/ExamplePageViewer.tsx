@@ -29,8 +29,13 @@ export function ExamplePageViewer({ exampleId }: Props) {
     }
   }, [exampleId, meta]);
 
+  useEffect(() => {
+    if (!machine) return;
+    document.getElementById('ex-panel-preview')?.setAttribute('data-loaded', '');
+  }, [machine]);
+
   if (error) return <div className="p-4 text-red-500">{error}</div>;
-  if (!machine) return <div className="p-4 text-muted-foreground">Loading…</div>;
+  if (!machine) return null;
 
   return (
     <MachineVisualizer
@@ -39,7 +44,7 @@ export function ExamplePageViewer({ exampleId }: Props) {
       showRawState={false}
       layout="split"
       interactive={true}
-      showPicker={!meta?.hideVizPicker}
+      showPicker={import.meta.env.DEV && !meta?.hideVizPicker}
       {...(meta?.defaultViz !== undefined && { defaultViz: meta.defaultViz })}
     />
   );

@@ -96,6 +96,13 @@ function getLang(filename: string): string {
       </div>
 
       <div class="ex-panel ex-panel--preview" id="ex-panel-preview">
+        <div class="ex-skeleton" aria-hidden="true">
+          <div class="ex-skeleton-picker"></div>
+          <div class="ex-skeleton-body">
+            <div class="ex-skeleton-pane"></div>
+            {example.getAppView && <div class="ex-skeleton-pane"></div>}
+          </div>
+        </div>
         <ExamplePageViewer exampleId={id} client:only="react" />
       </div>
 
@@ -227,6 +234,40 @@ function getLang(filename: string): string {
     padding: 1.5rem;
   }
   .ex-panel.is-hidden { display: none; }
+
+  /* ── skeleton ── */
+  .ex-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    min-height: 0;
+  }
+  #ex-panel-preview[data-loaded] .ex-skeleton { display: none; }
+
+  .ex-skeleton-picker {
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: var(--muted);
+    animation: sk-pulse 1.6s ease-in-out infinite;
+  }
+  .ex-skeleton-body {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+  }
+  .ex-skeleton-pane {
+    flex: 1;
+    border-radius: 6px;
+    background: var(--muted);
+    animation: sk-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes sk-pulse {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 0.9; }
+  }
 
   /* ── narrow: slide-in sidebar ── */
   @media (max-width: 1023px) {
