@@ -6,11 +6,10 @@ interface Point {
   y: number;
 }
 
-export function pathMidpoint(section: {
-  startPoint: Point;
-  endPoint: Point;
-  bendPoints?: Point[];
-}): Point {
+export function pathAtT(
+  section: { startPoint: Point; endPoint: Point; bendPoints?: Point[] },
+  t: number,
+): Point {
   const pts = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint];
   const lengths: number[] = [];
   let total = 0;
@@ -19,18 +18,26 @@ export function pathMidpoint(section: {
     lengths.push(l);
     total += l;
   }
-  let remaining = total / 2;
+  let remaining = total * Math.max(0, Math.min(1, t));
   for (let i = 0; i < lengths.length; i++) {
     if (remaining <= lengths[i]) {
-      const t = remaining / lengths[i];
+      const s = remaining / lengths[i];
       return {
-        x: pts[i].x + t * (pts[i + 1].x - pts[i].x),
-        y: pts[i].y + t * (pts[i + 1].y - pts[i].y),
+        x: pts[i].x + s * (pts[i + 1].x - pts[i].x),
+        y: pts[i].y + s * (pts[i + 1].y - pts[i].y),
       };
     }
     remaining -= lengths[i];
   }
   return pts[pts.length - 1];
+}
+
+export function pathMidpoint(section: {
+  startPoint: Point;
+  endPoint: Point;
+  bendPoints?: Point[];
+}): Point {
+  return pathAtT(section, 0.5);
 }
 
 export function buildCurvedPath(

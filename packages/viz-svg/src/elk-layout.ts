@@ -197,6 +197,9 @@ export async function runElkLayout(
       'elk.edgeRouting': edgeRouting,
       'elk.layered.spacing.nodeNodeBetweenLayers': String(layerSpacing),
       'elk.spacing.nodeNode': String(nodeSpacing),
+      // Keep parallel edges visually separate — don't merge or collapse them.
+      'elk.layered.mergeEdges': 'false',
+      'elk.layered.mergeHierarchyEdges': 'false',
       'elk.layered.cycleBreaking.strategy': 'MODEL_ORDER',
       'elk.layered.considerModelOrder': 'NODES_AND_EDGES',
       'elk.padding': `[top=${nodeSpacing * 0.6},left=${nodeSpacing * 0.6},bottom=${nodeSpacing * 0.6},right=${nodeSpacing * 0.6}]`,

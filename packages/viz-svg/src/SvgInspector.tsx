@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MachineShape } from 'matchina';
 import { runElkLayout } from './elk-layout.js';
 import type { ElkLayoutOptions, SvgEdge, SvgLayout, SvgNode } from './elk-layout.js';
-import { buildCurvedPath, pathMidpoint } from './svg-path.js';
+import { buildCurvedPath, pathAtT } from './svg-path.js';
 
 // CSS variable names with their default values (dark teal theme).
 // Consumers can override any of these on a parent element.
@@ -95,10 +95,93 @@ function NodeShape({ node, isActive, isAncestor }: {
   );
 }
 
-function EdgeShape({ edge, isOutgoing, onFire }: {
+// Self-loop: cubic bezier looping out from the top-right corner of the node.
+// Ported from FloatingEdge.tsx in viz-reactflow — stacks multiple loops by index.
+function SelfLoopShape({ edge, node, isOutgoing, onFire, loopIndex }: {
+  edge: SvgEdge;
+  node: SvgNode;
+  isOutgoing: boolean;
+  onFire: (event: string) => void;
+  loopIndex: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const stroke = isOutgoing ? V.accent : V.edge;
+  const strokeWidth = isOutgoing ? (hovered ? 2.5 : 2) : 1.25;
+  const opacity = isOutgoing ? 1 : 0.65;
+  const markerId = isOutgoing ? 'matchina-svg-arrow-active' : 'matchina-svg-arrow';
+  const { label } = edge;
+
+  const hw = node.width / 2;
+  const hh = node.height / 2;
+  const sx = node.x + hw; // node center x
+  const sy = node.y + hh; // node center y
+  const loopRadius = 28 + loopIndex * 16;
+
+  const startX = sx + hw - 8 - loopIndex * 2;
+  const startY = sy - hh;
+  const endX = sx + hw;
+  const endY = sy - hh + 8 + loopIndex * 2;
+
+  const d = `M ${startX} ${startY} C ${startX} ${startY - loopRadius}, ${endX + loopRadius} ${endY}, ${endX} ${endY}`;
+  const labelX = sx + hw + loopRadius + 4;
+  const labelY = sy - hh - 10 + loopIndex * (label ? label.height + 8 : 24);
+
+  return (
+    <g
+      style={{ cursor: isOutgoing ? 'pointer' : 'default' }}
+      onClick={isOutgoing ? () => onFire(edge.event) : undefined}
+      onMouseEnter={isOutgoing ? () => setHovered(true) : undefined}
+      onMouseLeave={isOutgoing ? () => setHovered(false) : undefined}
+    >
+      {isOutgoing && <path d={d} fill="none" stroke="transparent" strokeWidth={14} />}
+      <path
+        d={d} fill="none"
+        style={{ stroke, strokeWidth, opacity, transition: 'stroke 220ms ease, opacity 220ms ease' }}
+        markerEnd={`url(#${markerId})`}
+      />
+      {label && (
+        <g
+          transform={`translate(${labelX}, ${labelY - label.height / 2})`}
+          style={{ opacity, transition: 'opacity 220ms ease', cursor: isOutgoing ? 'pointer' : 'default' }}
+          onClick={isOutgoing ? () => onFire(edge.event) : undefined}
+        >
+          <rect
+            x={-6} y={-2}
+            width={label.width + 12} height={label.height + 4}
+            rx={6} ry={6}
+            style={{
+              fill: isOutgoing ? (hovered ? V.accent : V.labelBgActive) : V.labelBg,
+              stroke: isOutgoing ? V.accent : 'rgba(100,116,139,0.45)',
+              strokeWidth: isOutgoing ? 1 : 0.75,
+              transition: 'fill 150ms ease, stroke 150ms ease',
+            }}
+          />
+          <text
+            x={label.width / 2} y={(label.height + 4) / 2 + 4}
+            textAnchor="middle"
+            style={{
+              fill: isOutgoing ? (hovered ? V.labelBg : V.accent) : V.labelText,
+              fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
+              fontSize: 11,
+              fontWeight: isOutgoing ? 600 : 500,
+              letterSpacing: '0.04em',
+              userSelect: 'none',
+              transition: 'fill 150ms ease',
+            }}
+          >
+            {label.text}
+          </text>
+        </g>
+      )}
+    </g>
+  );
+}
+
+function EdgeShape({ edge, isOutgoing, onFire, labelT = 0.5 }: {
   edge: SvgEdge;
   isOutgoing: boolean;
   onFire: (event: string) => void;
+  labelT?: number;
 }) {
   const [hovered, setHovered] = useState(false);
   const section = edge.sections?.[0];
@@ -111,9 +194,8 @@ function EdgeShape({ edge, isOutgoing, onFire }: {
   const { label } = edge;
   const markerId = isOutgoing ? 'matchina-svg-arrow-active' : 'matchina-svg-arrow';
 
-  // Compute path midpoint for label centering — ELK's label placement can drift
-  // off the visual center of routed edges, so we override with the actual midpoint.
-  const mid = label ? pathMidpoint(section) : null;
+  // Use labelT to spread parallel edge labels along the path instead of all at midpoint.
+  const mid = label ? pathAtT(section, labelT) : null;
 
   return (
     <g
@@ -291,6 +373,30 @@ export const SvgInspector = React.memo(function SvgInspector({
   }
   function onMouseUp() { dragRef.current.active = false; }
 
+  // Spread label positions for parallel edges (same source→target pair).
+  // Uses evenly spaced t values across [0.3..0.7] so labels don't stack.
+  // Must be before the early return to satisfy Rules of Hooks.
+  const edgeLabelT = useMemo(() => {
+    const allEdges = layout?.edges ?? [];
+    const pairNextIdx = new Map<string, number>();
+    const pairTotal = new Map<string, number>();
+    for (const edge of allEdges) {
+      const key = `${edge.sourcePath.join('.')}→${edge.targetPath.join('.')}`;
+      pairTotal.set(key, (pairTotal.get(key) ?? 0) + 1);
+    }
+    const result = new Map<string, number>();
+    for (const edge of allEdges) {
+      const key = `${edge.sourcePath.join('.')}→${edge.targetPath.join('.')}`;
+      const count = pairTotal.get(key) ?? 1;
+      const idx = pairNextIdx.get(key) ?? 0;
+      pairNextIdx.set(key, idx + 1);
+      // Spread evenly: 1 edge → 0.5, 2 → [0.35, 0.65], 3 → [0.3, 0.5, 0.7], etc.
+      const t = count === 1 ? 0.5 : 0.3 + (idx / (count - 1)) * 0.4;
+      result.set(edge.id, t);
+    }
+    return result;
+  }, [layout]);
+
   if (!layout) {
     return (
       <div style={{ width: '100%', height: '100%', background: V.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -344,15 +450,41 @@ export const SvgInspector = React.memo(function SvgInspector({
               isAncestor={activeAncestorIds.has(node.id)}
             />
           ))}
-          {/* Edges */}
-          {edges.map(edge => (
-            <EdgeShape
-              key={edge.id}
-              edge={edge}
-              isOutgoing={activeSourceIds.has(edge.sourcePath.join('.'))}
-              onFire={handleFire}
-            />
-          ))}
+          {/* Edges — self-loops rendered separately with custom arc geometry */}
+          {(() => {
+            const nodeById = new Map(nodes.map(n => [n.id, n]));
+            const selfLoopIndexByNode = new Map<string, number>();
+            return edges.map(edge => {
+              const isSelf = edge.sourcePath.join('.') === edge.targetPath.join('.');
+              const isOutgoing = activeSourceIds.has(edge.sourcePath.join('.'));
+              if (isSelf) {
+                const nodeId = edge.sourcePath.join('.');
+                const node = nodeById.get(nodeId);
+                if (!node) return null;
+                const loopIndex = selfLoopIndexByNode.get(nodeId) ?? 0;
+                selfLoopIndexByNode.set(nodeId, loopIndex + 1);
+                return (
+                  <SelfLoopShape
+                    key={edge.id}
+                    edge={edge}
+                    node={node}
+                    isOutgoing={isOutgoing}
+                    onFire={handleFire}
+                    loopIndex={loopIndex}
+                  />
+                );
+              }
+              return (
+                <EdgeShape
+                  key={edge.id}
+                  edge={edge}
+                  isOutgoing={isOutgoing}
+                  onFire={handleFire}
+                  labelT={edgeLabelT.get(edge.id) ?? 0.5}
+                />
+              );
+            });
+          })()}
           {/* Leaves on top */}
           {leaves.map(node => (
             <NodeShape
