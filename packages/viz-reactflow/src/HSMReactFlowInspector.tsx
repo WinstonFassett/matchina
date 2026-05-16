@@ -215,8 +215,10 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
 
   // Step 2: Convert to ReactFlow format with layout (async)
   const [graphData, setGraphData] = useState<{ nodes: Node<NodeData>[]; edges: Edge<EdgeData>[] } | null>(null);
+  // Track the layoutKey that graphData was last computed for, so we know when it's stale
+  const [graphDataKey, setGraphDataKey] = useState<string>('');
   const layoutRef = useRef<{ startTime: number }>({ startTime: 0 });
-  
+
   // Create a layout key that changes when layout parameters change
   const layoutKey = useMemo(() => {
     const shape = machine.shape?.getState();
@@ -225,34 +227,40 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
     const settingsStr = JSON.stringify(layoutSettings);
     return `${stateIds}-${layoutType}-${settingsStr}`;
   }, [machine.shape, layoutType, layoutSettings]);
-  
+
   useEffect(() => {
     if (!machineShape) {
       setGraphData(null);
+      setGraphDataKey('');
       return;
     }
-    
+
     let cancelled = false;
     const startTime = Date.now();
     layoutRef.current.startTime = startTime;
-    
+
     shapeToReactFlow(machineShape, layoutType, layoutSettings)
       .then(result => {
         if (!cancelled && startTime === layoutRef.current.startTime) {
           setGraphData(result);
+          setGraphDataKey(layoutKey);
         }
       })
       .catch(error => {
         console.error('Error in shapeToReactFlow:', error);
         if (!cancelled && startTime === layoutRef.current.startTime) {
           setGraphData(null);
+          setGraphDataKey(layoutKey);
         }
       });
-      
+
     return () => {
       cancelled = true;
     };
   }, [layoutKey, machineShape, layoutType, layoutSettings]);
+
+  // Loading: shape exists but graph hasn't been computed for current key yet
+  const graphLoading = !!machine.shape?.getState() && graphDataKey !== layoutKey;
 
   // Step 3: Subscribe to state changes for highlighting
   const deepestMachine = (() => {
@@ -315,6 +323,10 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
     setLayoutType(type);
     setLayoutSettings(settings);
   }, []);
+
+  if (graphLoading) {
+    return null;
+  }
 
   if (!graphData) {
     return <div>No shape data available</div>;
