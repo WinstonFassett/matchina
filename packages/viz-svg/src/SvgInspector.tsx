@@ -194,6 +194,25 @@ export interface SvgInspectorProps {
   interactive?: boolean;
 }
 
+const FIT_PADDING = 32;
+const MAX_FIT_ZOOM = 1.0;
+
+function computeFit(
+  contentW: number,
+  contentH: number,
+  containerW: number,
+  containerH: number,
+): { zoom: number; pan: { x: number; y: number } } {
+  const scaleX = (containerW - FIT_PADDING * 2) / contentW;
+  const scaleY = (containerH - FIT_PADDING * 2) / contentH;
+  const zoom = Math.min(scaleX, scaleY, MAX_FIT_ZOOM);
+  const pan = {
+    x: (containerW - contentW * zoom) / 2,
+    y: (containerH - contentH * zoom) / 2,
+  };
+  return { zoom, pan };
+}
+
 export const SvgInspector = React.memo(function SvgInspector({
   shape,
   value,
@@ -205,6 +224,7 @@ export const SvgInspector = React.memo(function SvgInspector({
   const [pan, setPan] = useState({ x: 20, y: 20 });
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Stable options key — re-layout only when options actually change
   const optionsKey = JSON.stringify(options ?? {});
@@ -213,6 +233,20 @@ export const SvgInspector = React.memo(function SvgInspector({
     runElkLayout(shape, options ?? {}).then(setLayout).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shape, optionsKey]);
+
+  function fitToContainer(l: SvgLayout) {
+    const el = containerRef.current;
+    if (!el) return;
+    const { zoom: z, pan: p } = computeFit(l.width, l.height, el.clientWidth, el.clientHeight);
+    setZoom(z);
+    setPan(p);
+  }
+
+  // Auto-fit whenever a new layout arrives
+  useEffect(() => {
+    if (layout) fitToContainer(layout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layout]);
 
   // Derive active paths from the current state value (dot-separated fullKey)
   const activePath = useMemo(() => (value ? value.split('.') : []), [value]);
@@ -271,6 +305,7 @@ export const SvgInspector = React.memo(function SvgInspector({
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: 'relative',
         width: '100%',
@@ -288,8 +323,6 @@ export const SvgInspector = React.memo(function SvgInspector({
     >
       <svg
         width="100%" height="100%"
-        viewBox={`0 0 ${Math.max(width, 800)} ${Math.max(height, 600)}`}
-        preserveAspectRatio="xMidYMid meet"
         style={{ display: 'block' }}
       >
         <defs>
@@ -339,7 +372,7 @@ export const SvgInspector = React.memo(function SvgInspector({
         border: `1px solid ${V.ctrlBorder}`,
         padding: 4, borderRadius: 8,
       }}>
-        <button onClick={() => { setZoom(1); setPan({ x: 20, y: 20 }); }} style={ctrlBtn}>Reset</button>
+        <button onClick={() => layout && fitToContainer(layout)} style={ctrlBtn}>Fit</button>
         <button onClick={() => setZoom(z => Math.min(2.5, z * 1.15))} style={ctrlBtn}>+</button>
         <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
         <span style={{
