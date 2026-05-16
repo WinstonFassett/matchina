@@ -17,6 +17,19 @@
  * (header, sidebar, content, code, TOC, CTAs). Must come AFTER the theme. */
 @import "./starlight-overrides.css";
 
+/* ui26 component layer — generated from docs/scripts/generate-components.ts */
+@import "../components/ui/button/btn.css";
+@import "../components/ui/badge/badge.css";
+@import "../components/ui/card/card.css";
+@import "../components/ui/card/card-header.css";
+@import "../components/ui/card/card-title.css";
+@import "../components/ui/card/card-description.css";
+@import "../components/ui/card/card-content.css";
+@import "../components/ui/card/card-footer.css";
+@import "../components/ui/toggle/toggle-track.css";
+@import "../components/ui/toggle/toggle-thumb.css";
+
+
 /* Tailwind dark: variant fires for any theme ending in "dark"
  * (e.g. "editorial-dark", "tix-dark"). Matches ui26's compound data-theme format. */
 @custom-variant dark (&:is([data-theme$="dark"] *));

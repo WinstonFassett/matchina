@@ -1,8 +1,5 @@
 import { useMachine } from "matchina/react";
-import { exBtn, exStateDisplay } from "@/lib/example-ui";
 import { type CounterMachine } from "./machine";
-
-const { root, label, value } = exStateDisplay({ size: "lg" });
 
 export const CounterView = ({ machine }: { machine: CounterMachine }) => {
   useMachine(machine);
@@ -13,38 +10,20 @@ export const CounterView = ({ machine }: { machine: CounterMachine }) => {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className={root()}>
-        <span className={label()}>count</span>
-        <span className={value()}>{count}</span>
+      <div className="flex flex-col items-center gap-1">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">count</span>
+        <span className="text-6xl font-semibold text-foreground tabular-nums">{count}</span>
       </div>
 
       <div className="flex gap-2">
-        <button
-          className={exBtn({ variant: "outline", size: "md" })}
-          onClick={() => machine.decrement()}
-          disabled={!isActive}
-        >
-          −
-        </button>
-        <button
-          className={exBtn({ variant: "default", size: "md" })}
-          onClick={() => machine.increment()}
-          disabled={!isActive}
-        >
-          +
-        </button>
+        <button className="btn btn-outline" onClick={() => machine.decrement()} disabled={!isActive}>−</button>
+        <button className="btn btn-primary" onClick={() => machine.increment()} disabled={!isActive}>+</button>
       </div>
 
       <div className="flex gap-2">
+        <button className="btn btn-ghost btn-sm" onClick={() => machine.reset()} disabled={!isActive}>Reset</button>
         <button
-          className={exBtn({ variant: "ghost", size: "sm" })}
-          onClick={() => machine.reset()}
-          disabled={!isActive}
-        >
-          Reset
-        </button>
-        <button
-          className={exBtn({ variant: isActive ? "outline" : "default", size: "sm" })}
+          className={`btn btn-sm ${isActive ? "btn-outline" : "btn-primary"}`}
           onClick={() => isActive ? machine.send("deactivate") : machine.send("activate")}
         >
           {isActive ? "Deactivate" : "Activate"}
