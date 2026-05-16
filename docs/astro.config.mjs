@@ -94,15 +94,15 @@ export default defineConfig({
             {
               id: "examples",
               label: "Examples",
-              link: "/examples/toggle",
+              link: "/learn/examples/toggle",
               items: [
                 {
                   label: "Basic",
                   items: [
-                    { label: "Toggle", link: "/examples/toggle" },
-                    { label: "Counter", link: "/examples/counter" },
+                    { label: "Toggle", link: "/learn/examples/toggle" },
+                    { label: "Counter", link: "/learn/examples/counter" },
                     { label: "Traffic Light", link: "/examples/traffic-light" },
-                    { label: "Rock-Paper-Scissors", link: "/examples/rock-paper-scissors" },
+                    { label: "Rock-Paper-Scissors", link: "/learn/examples/rock-paper-scissors" },
                   ],
                 },
                 {
@@ -128,24 +128,24 @@ export default defineConfig({
                 {
                   label: "Fetchers",
                   items: [
-                    { label: "Promise Machine Fetcher", link: "/examples/promise-machine-fetcher" },
-                    { label: "Advanced Fetcher", link: "/examples/fetcher-advanced" },
+                    { label: "Promise Machine Fetcher", link: "/learn/examples/promise-machine-fetcher" },
+                    { label: "Advanced Fetcher", link: "/learn/examples/fetcher-advanced" },
                   ],
                 },
                 {
                   label: "Hierarchical",
                   items: [
-                    { label: "Hierarchical Traffic Light", link: "/examples/hsm-traffic-light" },
-                    { label: "Hierarchical Combobox", link: "/examples/hsm-combobox" },
-                    { label: "Hierarchical Checkout", link: "/examples/hsm-checkout" },
+                    { label: "Hierarchical Traffic Light", link: "/learn/examples/hsm-traffic-light" },
+                    { label: "Hierarchical Combobox", link: "/learn/examples/hsm-combobox" },
+                    { label: "Hierarchical Checkout", link: "/learn/examples/hsm-checkout" },
                   ],
                 },
                 {
                   label: "Advanced",
                   items: [
                     { label: "Traffic Light Simulator", link: "/examples/traffic-light-extended" },
-                    { label: "Authentication Flow", link: "/examples/auth-flow" },
-                    { label: "Checkout Flow", link: "/examples/checkout" },
+                    { label: "Authentication Flow", link: "/learn/examples/auth-flow" },
+                    { label: "Checkout Flow", link: "/learn/examples/checkout" },
                   ],
                 },
               ],
