@@ -96,7 +96,7 @@ export default defineConfig({
               label: "Examples",
               link: "/examples",
               items: [
-                { label: "Gallery", link: "/examples" },
+                { label: "Examples", link: "/examples" },
                 {
                   label: "Basic",
                   items: [

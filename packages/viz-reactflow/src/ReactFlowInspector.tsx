@@ -214,10 +214,11 @@ function ReactFlowInspectorInner({
       const first = isFirstRender.current;
       const duration = first ? 0 : 200;
       isFirstRender.current = false;
+      const delay = first ? 200 : 50;
       setTimeout(() => {
-        fitView({ padding: 0.1, duration });
+        fitView({ padding: 0.2, duration, maxZoom: 1.0 });
         if (first) setVisible(true);
-      }, 50);
+      }, delay);
     }
   }, [layoutKey, layoutNodes.length, fitView]);
 
@@ -248,7 +249,7 @@ function ReactFlowInspectorInner({
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
       }}
       minZoom={0.1}
-      maxZoom={1.0}
+      maxZoom={2.0}
       defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       proOptions={{ hideAttribution: true }}
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 150ms ease' }}

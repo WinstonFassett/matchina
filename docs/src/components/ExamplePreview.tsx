@@ -11,9 +11,10 @@ interface Props {
   defaultViz?: VisualizerType;
   showPicker?: boolean;
   hideAppPane?: boolean;
+  defaultSvgDirection?: 'RIGHT' | 'DOWN';
 }
 
-export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hideAppPane = false }: Props) {
+export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hideAppPane = false, defaultSvgDirection }: Props) {
   const meta = getExample(id);
   const [machine, setMachine] = useState<FactoryMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
@@ -53,6 +54,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
       interactive={true}
       {...(defaultViz !== undefined && { defaultViz })}
       {...(showPicker !== undefined && { showPicker })}
+      {...(defaultSvgDirection !== undefined && { defaultSvgDirection })}
     />
   );
 }

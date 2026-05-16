@@ -90,16 +90,16 @@ function getLang(filename: string): string {
             class="ex-doc-link"
             title="Read the article"
           >
-            read the article →
+            Article →
           </a>
         )}
       </div>
 
-      <div class="ex-panel" id="ex-panel-preview">
+      <div class="ex-panel ex-panel--preview" id="ex-panel-preview">
         <ExamplePageViewer exampleId={id} client:only="react" />
       </div>
 
-      <div class="ex-panel is-hidden" id="ex-panel-code">
+      <div class="ex-panel ex-panel--code is-hidden" id="ex-panel-code">
         <Tabs>
           {sourceFiles.map((file) => (
             <TabItem label={file.name}>
@@ -123,7 +123,8 @@ function getLang(filename: string): string {
   .ex-shell {
     display: flex;
     gap: 0;
-    min-height: 80vh;
+    height: calc(100vh - var(--sl-nav-height));
+    max-height: calc(100vh - var(--sl-nav-height));
   }
 
   /* ── sidebar ── */
@@ -178,6 +179,7 @@ function getLang(filename: string): string {
     gap: 0;
     border-bottom: 1px solid hsl(var(--border));
     padding: 0 1.5rem;
+    margin-top: 1rem;
     flex-shrink: 0;
   }
   .ex-tab {
@@ -213,6 +215,14 @@ function getLang(filename: string): string {
   .ex-panel {
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ex-panel--preview {
+    overflow: hidden;
+    padding: 1.5rem;
+  }
+  .ex-panel--code {
     overflow: auto;
     padding: 1.5rem;
   }

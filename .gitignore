@@ -43,3 +43,8 @@ test/**/*.jpeg
 test/**/*.gif
 test/**/*.webp
 test/**/*.svg
+
+dogfood-screenshots/
+*.png
+*.jpg
+*.jpeg

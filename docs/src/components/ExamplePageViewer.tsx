@@ -39,6 +39,7 @@ export function ExamplePageViewer({ exampleId }: Props) {
       showRawState={false}
       layout="split"
       interactive={true}
+      showPicker={!meta?.hideVizPicker}
     />
   );
 }

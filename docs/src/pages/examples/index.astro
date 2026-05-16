@@ -38,44 +38,31 @@ const categories = CATEGORY_ORDER.map((cat) => ({
         </header>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {examples.map((ex) => (
-            <div class="ex-card border border-border bg-card p-5 rounded-lg flex flex-col">
+            <a href={`/matchina/examples/${ex.id}`} class="ex-card border border-border bg-card p-5 flex flex-col">
               <div class="font-medium text-foreground mb-1">{ex.title}</div>
               <div class="text-sm text-muted-foreground leading-relaxed mb-3">{ex.description}</div>
               {ex.tags && ex.tags.length > 0 && (
                 <div class="flex flex-wrap gap-1 mb-4">
                   {ex.tags.map((tag) => (
-                    <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                    <span class="font-mono text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground">
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
               <div class="mt-auto flex items-center gap-3">
-                {ex.docSlug ? (
-                  <>
-                    <a
-                      href={`/matchina/${ex.docSlug}`}
-                      class="ex-cta-primary"
-                    >
-                      Read article →
-                    </a>
-                    <a
-                      href={`/matchina/examples/${ex.id}`}
-                      class="ex-cta-secondary"
-                    >
-                      Playground
-                    </a>
-                  </>
-                ) : (
+                {ex.docSlug && (
                   <a
-                    href={`/matchina/examples/${ex.id}`}
-                    class="ex-cta-primary"
+                    href={`/matchina/${ex.docSlug}`}
+                    class="ex-cta-secondary"
+                    onclick="event.stopPropagation()"
                   >
-                    Open playground →
+                    Article →
                   </a>
                 )}
+                <span class="ex-cta-primary">Playground →</span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -84,14 +71,18 @@ const categories = CATEGORY_ORDER.map((cat) => ({
 </StarlightPage>
 
 <style>
+  .ex-card {
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .ex-card:hover { border-color: hsl(var(--foreground) / 0.4); }
+
   .ex-cta-primary {
     font-size: 12.5px;
     font-weight: 500;
     color: hsl(var(--foreground));
-    text-decoration: none;
-    transition: color 0.15s;
+    margin-left: auto;
   }
-  .ex-cta-primary:hover { color: hsl(var(--accent)); }
 
   .ex-cta-secondary {
     font-size: 11.5px;

@@ -20,6 +20,7 @@ interface HSMReactFlowInspectorProps {
     getChange: () => TransitionEvent;
   };
   interactive?: boolean;
+  showLayoutControls?: boolean;
 }
 
 interface NodeData extends Record<string, unknown> {
@@ -170,6 +171,7 @@ async function shapeToReactFlow(shape: MachineShape, layoutType: LayoutType, set
 export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   machine,
   interactive = true,
+  showLayoutControls = true,
 }) => {
   // Layout state - use engine defaults
   const [layoutType, setLayoutType] = useState<LayoutType>(LayoutType.FORCE_DIRECTED);
@@ -321,14 +323,16 @@ export const HSMReactFlowInspector: React.FC<HSMReactFlowInspectorProps> = ({
   return (
     <div className="relative w-full h-full">
       {/* Layout Controls - positioned consistently */}
-      <div className="absolute top-0 right-0 z-10" data-testid="layout-controls-wrapper" style={{ top: '0px', right: '0px' }}>
-        <HSMLayoutControls
-          layoutManager={layoutManager}
-          onLayoutChange={handleLayoutChange}
-          currentLayoutType={layoutType}
-          currentSettings={layoutSettings}
-        />
-      </div>
+      {showLayoutControls && (
+        <div className="absolute top-0 right-0 z-10" data-testid="layout-controls-wrapper" style={{ top: '0px', right: '0px' }}>
+          <HSMLayoutControls
+            layoutManager={layoutManager}
+            onLayoutChange={handleLayoutChange}
+            currentLayoutType={layoutType}
+            currentSettings={layoutSettings}
+          />
+        </div>
+      )}
 
       {/* ReactFlow Component */}
       <ReactFlowInspector

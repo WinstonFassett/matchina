@@ -15,6 +15,8 @@ export interface ExampleMeta {
   span?: "full" | "auto";
   /** Slug of the MDX article for this example, e.g. "examples/toggle". When set, viewer links back to the article. */
   docSlug?: string;
+  /** Hide the visualizer picker (for simple machines where the diagram is noise, not signal). */
+  hideVizPicker?: boolean;
   getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> }>;
   getAppView?: () => Promise<{ default: ComponentType<{ machine: FactoryMachine<any> & any }> }>;
   getSourceFiles: () => Promise<{ name: string; code: string }[]>;

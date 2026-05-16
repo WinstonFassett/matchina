@@ -29,6 +29,7 @@ export interface MachineVisualizerProps {
   defaultViz?: VisualizerType;
   availableViz?: VisualizerType[];
   showPicker?: boolean;
+  defaultSvgDirection?: 'RIGHT' | 'DOWN';
 
   // Layout configuration
   layout?: "split" | "stacked";
@@ -66,11 +67,12 @@ export function MachineVisualizer({
   showRawState = false,
   title,
   className = "",
+  defaultSvgDirection = 'RIGHT',
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 
   // SVG layout knobs
-  const [svgDirection, setSvgDirection] = useState<'RIGHT' | 'DOWN'>('RIGHT');
+  const [svgDirection, setSvgDirection] = useState<'RIGHT' | 'DOWN'>(defaultSvgDirection);
   const [svgNodeSpacing, setSvgNodeSpacing] = useState(40);
   const [svgLayerSpacing, setSvgLayerSpacing] = useState(60);
   const svgLayoutOptions: ElkLayoutOptions = useMemo(
@@ -105,9 +107,7 @@ export function MachineVisualizer({
   const isVizLeft = vizPosition === "left";
 
   const containerClasses = [
-    "machine-visualizer",
-    className,
-    isSplit ? "flex flex-row gap-4 items-center" : "flex flex-col gap-4",
+    isSplit ? "flex flex-row gap-4 flex-1 min-h-0" : "flex flex-col gap-4",
     isSplit && !isVizLeft ? "flex-row-reverse" : "",
   ]
     .filter(Boolean)
@@ -115,33 +115,26 @@ export function MachineVisualizer({
 
   const vizContainerClasses = [
     "visualizer-container",
-    isSplit ? "flex-1" : `w-full`,
+    isSplit ? "flex-1 min-h-0 h-full" : `w-full`,
   ]
     .filter(Boolean)
     .join(" ");
 
-  // ReactFlow needs explicit height on the viz container
-  const vizContainerStyle = { height: `${minVizHeight}px` };
-
-  const appContainerClasses = ["app-container", isSplit ? "flex-1" : "w-full"]
+  const appContainerClasses = ["app-container", isSplit ? "flex-1 min-h-0 h-full" : "w-full"]
     .filter(Boolean)
     .join(" ");
 
-  // Height styling
-  const heightStyle =
-    layout === "split"
-      ? { height: `${Math.max(minVizHeight, 500)}px` }
-      : { minHeight: `${minVizHeight}px` };
+  const stackedHeightStyle = isSplit ? undefined : { minHeight: `${minVizHeight}px` };
 
   return (
-    <div data-testid="machine-visualizer" className={`space-y-4 ${className}`}>
+    <div data-testid="machine-visualizer" className={`flex flex-col ${isSplit ? "h-full" : ""} ${className}`}>
       {/* Title */}
-      {title && <h3 className="text-lg font-medium">{title}</h3>}
+      {title && <h3 className="text-lg font-medium shrink-0">{title}</h3>}
 
       {/* Controls header */}
       {effectiveShowPicker && (
         <div
-          className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+          className="flex flex-wrap items-center gap-3 p-3 bg-muted/40 border border-border shrink-0"
           data-testid="visualizer-controls"
         >
           <VizPicker
@@ -150,18 +143,18 @@ export function MachineVisualizer({
             availableViz={availableViz}
           />
           {currentViz === "svg" && (
-            <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-600 pl-3" data-testid="svg-layout-controls">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Direction:</label>
+            <div className="flex items-center gap-3 border-l border-border pl-3" data-testid="svg-layout-controls">
+              <label className="text-sm font-medium text-foreground">Direction:</label>
               <select
                 value={svgDirection}
                 onChange={(e) => setSvgDirection(e.target.value as 'RIGHT' | 'DOWN')}
-                className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-2 py-1 text-sm border border-border bg-background text-foreground"
                 data-testid="svg-direction"
               >
                 <option value="RIGHT">Right</option>
                 <option value="DOWN">Down</option>
               </select>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Node gap:</label>
+              <label className="text-sm font-medium text-foreground">Node gap:</label>
               <input
                 type="number"
                 min={10}
@@ -169,10 +162,10 @@ export function MachineVisualizer({
                 step={10}
                 value={svgNodeSpacing}
                 onChange={(e) => setSvgNodeSpacing(Number(e.target.value))}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground"
                 data-testid="svg-node-spacing"
               />
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Layer gap:</label>
+              <label className="text-sm font-medium text-foreground">Layer gap:</label>
               <input
                 type="number"
                 min={10}
@@ -180,7 +173,7 @@ export function MachineVisualizer({
                 step={10}
                 value={svgLayerSpacing}
                 onChange={(e) => setSvgLayerSpacing(Number(e.target.value))}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground"
                 data-testid="svg-layer-spacing"
               />
             </div>
@@ -189,9 +182,9 @@ export function MachineVisualizer({
       )}
 
       {/* Main content area */}
-      <div className={containerClasses} style={heightStyle}>
+      <div className={containerClasses} style={stackedHeightStyle}>
         {/* Visualizer */}
-        <div data-testid="visualizer-container" className={vizContainerClasses} style={vizContainerStyle}>
+        <div data-testid="visualizer-container" className={vizContainerClasses}>
           {renderVisualizer({
             type: currentViz,
             machine,
@@ -200,6 +193,7 @@ export function MachineVisualizer({
             actions,
             interactive,
             svgLayoutOptions,
+            showPicker: effectiveShowPicker,
           })}
         </div>
 
@@ -220,10 +214,10 @@ export function MachineVisualizer({
       {/* Raw state debug panel */}
       {showRawState && (
         <details>
-          <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400">
+          <summary className="cursor-pointer text-sm text-muted-foreground">
             Show State Data
           </summary>
-          <pre className="text-xs mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded overflow-auto">
+          <pre className="text-xs mt-2 p-2 bg-muted overflow-auto">
             {JSON.stringify(currentState.data, null, 2)}
           </pre>
         </details>
@@ -243,6 +237,7 @@ function renderVisualizer({
   actions: _actions,
   interactive,
   svgLayoutOptions,
+  showPicker,
 }: {
   type: VisualizerType;
   machine: FactoryMachine<any>;
@@ -251,9 +246,10 @@ function renderVisualizer({
   actions: Record<string, any>;
   interactive: boolean;
   svgLayoutOptions: ElkLayoutOptions;
+  showPicker: boolean;
 }) {
   const commonClasses =
-    "w-full h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto";
+    "w-full h-full border border-border overflow-auto";
 
   switch (type) {
     case "reactflow":
@@ -263,6 +259,7 @@ function renderVisualizer({
             <HSMReactFlowInspector
               machine={machine as any}
               interactive={interactive}
+              showLayoutControls={showPicker}
             />
           </ReactFlowProvider>
         </div>
@@ -346,8 +343,8 @@ function renderVisualizer({
 
     default:
       return (
-        <div className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="p-4 border border-border">
+          <p className="text-sm text-foreground">
             Visualizer type "{type}" not available
           </p>
         </div>
@@ -368,12 +365,12 @@ function DefaultAppView({
   machine: FactoryMachine<any>;
 }) {
   return (
-    <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg h-full flex flex-col">
+    <div className="p-4 border border-border h-full flex flex-col">
       <div className="mb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Current State
         </p>
-        <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+        <div className="text-lg font-bold text-foreground">
           {activeStatePath}
         </div>
       </div>
@@ -385,7 +382,7 @@ function DefaultAppView({
               <button
                 type="button"
                 key={action}
-                className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
+                className="px-3 py-1 border border-border bg-muted hover:bg-muted/70 text-foreground text-sm transition-colors"
                 onClick={() => machine.send(action)}
               >
                 {action}

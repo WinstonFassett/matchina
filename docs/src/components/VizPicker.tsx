@@ -54,13 +54,13 @@ export function VizPicker({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label className="text-sm font-medium text-foreground">
         Visualizer:
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as VisualizerType)}
-        className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="px-3 py-1 text-sm border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-border"
         data-testid="visualizer-picker"
       >
         {options.map(({ value, label }) => (

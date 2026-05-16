@@ -79,12 +79,12 @@ export function HSMLayoutControls({
         type="button"
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+        className="flex items-center gap-1 px-2 py-1 text-xs border border-border bg-background text-foreground hover:bg-muted/50 transition-colors"
         data-testid="hsm-layout-trigger"
       >
         <span>{LAYOUT_INFO[currentLayoutType]?.icon}</span>
         <span>{LAYOUT_INFO[currentLayoutType]?.name}</span>
-        <span className="text-gray-400 dark:text-gray-500">▼</span>
+        <span className="text-muted-foreground">▼</span>
       </button>
 
       {isOpen && (
