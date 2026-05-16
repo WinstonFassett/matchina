@@ -94,9 +94,8 @@ export default defineConfig({
             {
               id: "examples",
               label: "Examples",
-              link: "/examples",
+              link: "/examples/toggle",
               items: [
-                { label: "Examples", link: "/examples" },
                 {
                   label: "Basic",
                   items: [
