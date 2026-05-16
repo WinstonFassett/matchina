@@ -97,7 +97,7 @@ function getLang(filename: string): string {
 
       <div class="ex-panel ex-panel--preview" id="ex-panel-preview">
         <div class="ex-skeleton" aria-hidden="true">
-          <div class="ex-skeleton-picker"></div>
+          {import.meta.env.DEV && !example.hideVizPicker && <div class="ex-skeleton-picker"></div>}
           <div class="ex-skeleton-body">
             <div class="ex-skeleton-pane"></div>
             {example.getAppView && <div class="ex-skeleton-pane"></div>}
