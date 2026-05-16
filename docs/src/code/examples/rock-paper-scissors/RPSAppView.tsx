@@ -3,10 +3,6 @@ import type { Move } from "./store";
 
 // Style lookups
 const styles = {
-  button: "px-4 py-2 text-white rounded hover:opacity-90 transition-opacity",
-  primary: "bg-blue-500 hover:bg-blue-600",
-  success: "bg-green-500 hover:bg-green-600",
-  danger: "bg-red-500 hover:bg-red-600",
   moveButton:
     "p-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-4xl transition-colors",
   score: "flex justify-around text-sm",
@@ -110,7 +106,7 @@ export function RPSAppView({ machine }: { machine: RPSMachine }) {
             <button
               type="button"
               onClick={() => machine.computerSelectMove()}
-              className={`${styles.button} ${styles.primary}`}
+              className="btn btn-primary"
             >
               Computer Move
             </button>
@@ -125,7 +121,7 @@ export function RPSAppView({ machine }: { machine: RPSMachine }) {
             <button
               type="button"
               onClick={() => machine.judge()}
-              className={`${styles.button} ${styles.success}`}
+              className="btn btn-secondary"
             >
               Judge Round
             </button>
@@ -148,7 +144,7 @@ export function RPSAppView({ machine }: { machine: RPSMachine }) {
               <button
                 type="button"
                 onClick={() => machine.nextRound()}
-                className={`${styles.button} ${styles.primary}`}
+                className="btn btn-primary"
               >
                 Next Round
               </button>
@@ -174,7 +170,7 @@ export function RPSAppView({ machine }: { machine: RPSMachine }) {
             <button
               type="button"
               onClick={() => machine.newGame()}
-              className={`${styles.button} ${styles.danger}`}
+              className="btn btn-destructive"
             >
               New Game
             </button>

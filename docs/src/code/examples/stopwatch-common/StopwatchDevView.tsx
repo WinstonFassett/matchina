@@ -18,7 +18,7 @@ export function StopwatchDevView({ stopwatch }: { stopwatch: Stopwatch }) {
   return (
     <div style={{ width: "100%", display: "flex", gap: "1em" }}>
       <div style={{ flex: 2 }}>
-        <StopwatchView stopwatch={stopwatch} />
+        <StopwatchView machine={stopwatch} />
         <MermaidInspectorWithSettings
           config={config}
           stateKey={stopwatch.getState().key}

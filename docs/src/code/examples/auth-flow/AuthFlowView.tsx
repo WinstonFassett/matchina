@@ -42,7 +42,7 @@ function LoginFormView({ machine, handleAutoSuccess }: any) {
           onClick={() =>
             handleAutoSuccess(() => machine.login({ email, password }))
           }
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="btn btn-primary w-full"
         >
           Log In
         </button>
@@ -114,7 +114,7 @@ function RegisterFormView({ machine, handleAutoSuccess }: any) {
           onClick={() =>
             handleAutoSuccess(() => machine.register({ name, email }))
           }
-          className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="btn btn-secondary w-full"
         >
           Register
         </button>
@@ -171,7 +171,7 @@ function PasswordResetFormView({ machine, handleAutoSuccess }: any) {
           onClick={() =>
             handleAutoSuccess(() => machine.requestReset({ email }))
           }
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="btn btn-primary w-full"
         >
           Send Reset Link
         </button>
@@ -241,13 +241,13 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
             <div className="space-y-3">
               <button
                 onClick={() => machine.showLogin()}
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="btn btn-primary w-full"
               >
                 Log In
               </button>
               <button
                 onClick={() => machine.showRegister()}
-                className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                className="btn btn-secondary w-full"
               >
                 Register
               </button>
@@ -302,13 +302,13 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                       },
                     })
                   }
-                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                  className="btn btn-secondary flex-1"
                 >
                   Login Success
                 </button>
                 <button
                   onClick={() => machine.failure("Invalid credentials")}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                  className="btn btn-destructive flex-1"
                 >
                   Login Failed
                 </button>
@@ -342,13 +342,13 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                       },
                     })
                   }
-                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                  className="btn btn-secondary flex-1"
                 >
                   Register Success
                 </button>
                 <button
                   onClick={() => machine.failure("Email already taken")}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                  className="btn btn-destructive flex-1"
                 >
                   Register Failed
                 </button>
@@ -373,13 +373,13 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
                   onClick={() =>
                     machine.success({ email: machine.store.getState().email })
                   }
-                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                  className="btn btn-secondary flex-1"
                 >
                   Reset Success
                 </button>
                 <button
                   onClick={() => machine.failure("Email not found")}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                  className="btn btn-destructive flex-1"
                 >
                   Reset Failed
                 </button>
@@ -400,7 +400,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
               </p>
               <button
                 onClick={() => machine.goToLogin()}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="btn btn-primary"
               >
                 Back to Log In
               </button>
@@ -432,7 +432,7 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
               </div>
               <button
                 onClick={() => machine.logout()}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="btn btn-destructive"
               >
                 Log Out
               </button>

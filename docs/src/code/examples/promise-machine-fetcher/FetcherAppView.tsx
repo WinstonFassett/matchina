@@ -33,14 +33,14 @@ export function FetcherAppView({ machine, onReset }: FetcherAppViewProps) {
           <button
             onClick={handleFetch}
             disabled={!isIdle}
-            className="px-4 py-1 bg-blue-500 text-white rounded disabled:opacity-50 whitespace-nowrap"
+            className="btn btn-primary btn-sm"
           >
             Fetch
           </button>
           {!isIdle && (
             <button
               onClick={handleReset}
-              className="px-4 py-1 bg-gray-500 text-white rounded whitespace-nowrap"
+              className="btn btn-ghost btn-sm"
             >
               Reset
             </button>

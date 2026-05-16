@@ -13,7 +13,7 @@ const meta: ExampleMeta = {
   order: 6,
   defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/machine").then((m) => ({ default: () => m.createStopwatchMachine(0, () => {}) })),
-  getAppView: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/StopwatchView").then((m) => ({ default: m.StopwatchView })),
+  getAppView: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/index").then((m) => ({ default: m.Stopwatch })),
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "useStopwatch.ts", code: useStopwatchRaw },

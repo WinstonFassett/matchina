@@ -22,7 +22,7 @@ export function MachineActions<T extends { [key: string]: any }>({
             onClick={() => {
               send(event);
             }}
-            className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             {event}
           </button>

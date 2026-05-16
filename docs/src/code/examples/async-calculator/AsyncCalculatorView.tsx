@@ -36,14 +36,14 @@ export function AsyncCalculatorView({ machine }: AsyncCalculatorViewProps) {
           <button
             onClick={handleCalculate}
             disabled={state.is("Pending")}
-            className="px-4 py-1 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             Calculate
           </button>
           {!state.is("Idle") && (
             <button
               onClick={machine.reset}
-              className="px-4 py-1 bg-gray-500 text-white rounded"
+              className="btn btn-ghost btn-sm"
             >
               Reset
             </button>
