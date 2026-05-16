@@ -1,5 +1,8 @@
 import { useMachine } from "matchina/react";
+import { exBtn, exStateDisplay } from "@/lib/example-ui";
 import { type CounterMachine } from "./machine";
+
+const { root, label, value } = exStateDisplay({ size: "lg" });
 
 export const CounterView = ({ machine }: { machine: CounterMachine }) => {
   useMachine(machine);
@@ -9,38 +12,40 @@ export const CounterView = ({ machine }: { machine: CounterMachine }) => {
   const isActive = machine.getState().is("Active");
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="text-6xl font-bold mb-4">{count}</div>
-      <div className="text-sm mb-2 text-gray-500">
-        {isActive ? "Active" : "Inactive"}
+    <div className="flex flex-col items-center gap-6">
+      <div className={root()}>
+        <span className={label()}>count</span>
+        <span className={value()}>{count}</span>
       </div>
-      <div className="flex space-x-2">
+
+      <div className="flex gap-2">
         <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+          className={exBtn({ variant: "outline", size: "md" })}
+          onClick={() => machine.decrement()}
+          disabled={!isActive}
+        >
+          −
+        </button>
+        <button
+          className={exBtn({ variant: "default", size: "md" })}
           onClick={() => machine.increment()}
           disabled={!isActive}
         >
           +
         </button>
+      </div>
+
+      <div className="flex gap-2">
         <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-          onClick={() => machine.decrement()}
-          disabled={!isActive}
-        >
-          -
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+          className={exBtn({ variant: "ghost", size: "sm" })}
           onClick={() => machine.reset()}
           disabled={!isActive}
         >
           Reset
         </button>
         <button
-          className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600"
-          onClick={() =>
-            isActive ? machine.send("deactivate") : machine.send("activate")
-          }
+          className={exBtn({ variant: isActive ? "outline" : "default", size: "sm" })}
+          onClick={() => isActive ? machine.send("deactivate") : machine.send("activate")}
         >
           {isActive ? "Deactivate" : "Activate"}
         </button>
