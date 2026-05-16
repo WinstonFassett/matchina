@@ -11,7 +11,6 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "addEventApi", "two-states"],
   order: 1,
   featured: true,
-  hideVizPicker: true,
   docSlug: "learn/examples/toggle",
   defaultViz: "reactflow",
   getMachine: () => import("../code/examples/toggle/machine").then((m) => ({ default: m.createToggleMachine })),

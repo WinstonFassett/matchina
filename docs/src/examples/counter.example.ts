@@ -10,7 +10,6 @@ const meta: ExampleMeta = {
   category: "Basic",
   tags: ["createMachine", "state-data"],
   order: 2,
-  hideVizPicker: true,
   docSlug: "learn/examples/counter",
   defaultViz: "reactflow",
   getMachine: () => import("../code/examples/counter/machine").then((m) => ({ default: m.createCounterMachine })),
