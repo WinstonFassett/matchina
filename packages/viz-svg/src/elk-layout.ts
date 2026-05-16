@@ -142,7 +142,7 @@ export async function runElkLayout(
 ): Promise<SvgLayout> {
   const nodeSpacing = opts.nodeSpacing ?? 40;
   const layerSpacing = opts.layerSpacing ?? nodeSpacing + 20;
-  const direction = opts.direction ?? 'RIGHT';
+  const direction = opts.direction ?? 'DOWN';
   const edgeRouting = opts.edgeRouting ?? 'ORTHOGONAL';
 
   // Root states: those without a parent

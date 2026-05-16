@@ -12,6 +12,7 @@ const meta: ExampleMeta = {
   order: 2,
   hideVizPicker: true,
   docSlug: "learn/examples/counter",
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/counter/machine").then((m) => ({ default: m.createCounterMachine })),
   getAppView: () => import("../code/examples/counter/CounterView").then((m) => ({ default: m.CounterView })),
   getSourceFiles: async () => [

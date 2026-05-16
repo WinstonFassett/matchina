@@ -40,6 +40,7 @@ export function ExamplePageViewer({ exampleId }: Props) {
       layout="split"
       interactive={true}
       showPicker={!meta?.hideVizPicker}
+      {...(meta?.defaultViz !== undefined && { defaultViz: meta.defaultViz })}
     />
   );
 }

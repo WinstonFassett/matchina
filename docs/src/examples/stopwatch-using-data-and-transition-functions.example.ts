@@ -10,6 +10,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["state-data", "transition-functions"],
   order: 3,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-data-and-transition-functions/machine").then((m) => ({ default: m.createStopwatchMachine })),
   getAppView: () => import("../code/examples/stopwatch-using-data-and-transition-functions/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [

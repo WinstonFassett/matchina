@@ -10,6 +10,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["createMachine", "timers"],
   order: 1,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch/machine").then((m) => ({ default: m.createStopwatchMachine })),
   getAppView: () => import("../code/examples/stopwatch/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [

@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["lifecycle", "react-state"],
   order: 7,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine").then((m) => ({ default: m.createStopwatch })),
   getAppView: () => import("../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [

@@ -13,6 +13,7 @@ const meta: ExampleMeta = {
   featured: true,
   hideVizPicker: true,
   docSlug: "learn/examples/toggle",
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/toggle/machine").then((m) => ({ default: m.createToggleMachine })),
   getAppView: () => import("../code/examples/toggle/ToggleView").then((m) => ({ default: m.ToggleView })),
   getSourceFiles: async () => [

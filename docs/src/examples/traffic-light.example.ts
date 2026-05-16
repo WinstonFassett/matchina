@@ -10,6 +10,7 @@ const meta: ExampleMeta = {
   category: "Basic",
   tags: ["createMachine", "multi-state"],
   order: 3,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/traffic-light/machine").then((m) => ({ default: m.createTrafficLightMachine })),
   getAppView: () => import("../code/examples/traffic-light/TrafficLightView").then((m) => ({ default: m.TrafficLightView })),
   getSourceFiles: async () => [

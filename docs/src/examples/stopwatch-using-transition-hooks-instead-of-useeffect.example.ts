@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["transition-hooks", "react-state"],
   order: 8,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-react-state-using-transitionhooks/machine").then((m) => ({ default: m.createStopwatch })),
   getAppView: () => import("../code/examples/stopwatch-using-react-state-using-transitionhooks/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [

@@ -11,6 +11,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["state-effects", "react-state"],
   order: 6,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/machine").then((m) => ({ default: () => m.createStopwatchMachine(0, () => {}) })),
   getAppView: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [

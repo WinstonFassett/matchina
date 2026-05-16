@@ -17,6 +17,8 @@ export interface ExampleMeta {
   docSlug?: string;
   /** Hide the visualizer picker (for simple machines where the diagram is noise, not signal). */
   hideVizPicker?: boolean;
+  /** Override the default visualizer type for this example. */
+  defaultViz?: "svg" | "reactflow" | "block";
   getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> }>;
   getAppView?: () => Promise<{ default: ComponentType<{ machine: FactoryMachine<any> & any }> }>;
   getSourceFiles: () => Promise<{ name: string; code: string }[]>;

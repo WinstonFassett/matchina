@@ -57,7 +57,7 @@ export interface MachineVisualizerProps {
 export function MachineVisualizer({
   machine,
   AppView,
-  defaultViz = "reactflow",
+  defaultViz = "svg",
   availableViz,
   showPicker = true,
   layout = "split",
@@ -67,7 +67,7 @@ export function MachineVisualizer({
   showRawState = false,
   title,
   className = "",
-  defaultSvgDirection = 'RIGHT',
+  defaultSvgDirection = 'DOWN',
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 

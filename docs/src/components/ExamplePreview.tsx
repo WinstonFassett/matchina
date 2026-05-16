@@ -45,6 +45,8 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
     return <AppView machine={machine} />;
   }
 
+  const resolvedViz = defaultViz ?? meta?.defaultViz;
+
   return (
     <MachineVisualizer
       machine={machine}
@@ -52,7 +54,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
       showRawState={false}
       layout={hideAppPane ? "stacked" : "split"}
       interactive={true}
-      {...(defaultViz !== undefined && { defaultViz })}
+      {...(resolvedViz !== undefined && { defaultViz: resolvedViz })}
       {...(showPicker !== undefined && { showPicker })}
       {...(defaultSvgDirection !== undefined && { defaultSvgDirection })}
     />

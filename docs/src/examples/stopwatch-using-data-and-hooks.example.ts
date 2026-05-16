@@ -10,6 +10,7 @@ const meta: ExampleMeta = {
   category: "Stopwatch",
   tags: ["state-data", "hooks"],
   order: 2,
+  defaultViz: "reactflow",
   getMachine: () => import("../code/examples/stopwatch-using-data-and-hooks/machine").then((m) => ({ default: m.createStopwatchMachine })),
   getAppView: () => import("../code/examples/stopwatch-using-data-and-hooks/StopwatchView").then((m) => ({ default: m.StopwatchView })),
   getSourceFiles: async () => [
