@@ -16,7 +16,6 @@ import { buildCurvedPath, pathMidpoint } from './svg-path.js';
 //   --matchina-viz-text            label text
 //   --matchina-viz-text-active     active label text
 //   --matchina-viz-edge            inactive edge stroke
-//   --matchina-viz-dot             background dot color
 
 const V = {
   accent: 'var(--matchina-viz-accent, #2dd4bf)',
@@ -28,7 +27,6 @@ const V = {
   text: 'var(--matchina-viz-text, rgba(226,232,240,0.92))',
   textActive: 'var(--matchina-viz-text-active, #e6fffb)',
   edge: 'var(--matchina-viz-edge, rgba(100,116,139,0.55))',
-  dot: 'var(--matchina-viz-dot, rgba(148,163,184,0.08))',
   labelBg: 'var(--matchina-viz-label-bg, rgba(15,23,33,0.95))',
   labelBgActive: 'var(--matchina-viz-label-bg-active, rgba(8,47,51,0.95))',
   labelText: 'var(--matchina-viz-label-text, rgba(203,213,225,0.82))',
@@ -295,9 +293,6 @@ export const SvgInspector = React.memo(function SvgInspector({
         style={{ display: 'block' }}
       >
         <defs>
-          <pattern id="matchina-svg-dots" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" style={{ fill: V.dot }} />
-          </pattern>
           <marker id="matchina-svg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: 'rgba(100,116,139,0.7)' }} />
           </marker>
@@ -305,8 +300,6 @@ export const SvgInspector = React.memo(function SvgInspector({
             <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: V.accent }} />
           </marker>
         </defs>
-
-        <rect width="100%" height="100%" fill="url(#matchina-svg-dots)" />
 
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {/* Compound containers rendered first (lowest z) */}
