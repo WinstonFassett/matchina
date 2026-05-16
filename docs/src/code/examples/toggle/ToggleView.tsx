@@ -1,36 +1,33 @@
+import { exBtn, exStateDisplay, exToggleTrack, exToggleThumb } from "@/lib/example-ui";
 import { type ToggleMachine } from "./machine";
 
-// A toggle view component that uses the enhanced ToggleMachine
+const { root, label, value } = exStateDisplay();
+
 export const ToggleView = ({ machine }: { machine: ToggleMachine }) => {
-  // Get current state
-  const currentState = machine.getState();
-  const isOn = currentState.key === "On";
+  const isOn = machine.getState().key === "On";
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="text-6xl font-bold mb-4">{isOn ? "ON" : "OFF"}</div>
-      <div
-        className={`w-16 h-8 rounded-full p-1 flex ${
-          isOn ? "bg-blue-500 justify-end" : "bg-gray-300 justify-start"
-        } transition-colors duration-200 cursor-pointer mb-4`}
-        onClick={() => machine.api.toggle()}
-      >
-        <div className="bg-white rounded-full w-6 h-6 shadow-md"></div>
+    <div className="flex flex-col items-center gap-6">
+      <div className={root()}>
+        <span className={label()}>state</span>
+        <span className={value()}>{isOn ? "On" : "Off"}</span>
       </div>
-      <div className="flex space-x-2">
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-          onClick={() => machine.api.turnOn()}
-          disabled={isOn}
-        >
-          Turn On
+
+      <button
+        className={exToggleTrack({ checked: isOn })}
+        onClick={() => machine.api.toggle()}
+        aria-label="Toggle"
+        aria-pressed={isOn}
+      >
+        <span className={exToggleThumb({ checked: isOn })} />
+      </button>
+
+      <div className="flex gap-2">
+        <button className={exBtn({ variant: isOn ? "outline" : "default", size: "sm" })} onClick={() => machine.api.turnOn()} disabled={isOn}>
+          Turn on
         </button>
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-          onClick={() => machine.api.turnOff()}
-          disabled={!isOn}
-        >
-          Turn Off
+        <button className={exBtn({ variant: isOn ? "default" : "outline", size: "sm" })} onClick={() => machine.api.turnOff()} disabled={!isOn}>
+          Turn off
         </button>
       </div>
     </div>
