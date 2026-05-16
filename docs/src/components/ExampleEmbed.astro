@@ -33,8 +33,6 @@ function getLang(filename: string): string {
 {meta && (
   <div class="example-embed not-content">
     <div class="example-embed-tabs-bar" role="tablist">
-      <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview">Preview</button>
-      <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
       {viewerLink && (
         <a
           href={`/matchina/examples/${id}`}
@@ -44,6 +42,8 @@ function getLang(filename: string): string {
           open in viewer →
         </a>
       )}
+      <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview" style="margin-left: auto">Preview</button>
+      <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
     </div>
 
     <div class="example-embed-panel" id={`embed-preview-${id}`}>
@@ -110,7 +110,7 @@ function getLang(filename: string): string {
   }
 
   .example-embed-viewer-link {
-    margin-left: auto;
+    margin-left: 0;
     font-family: var(--font-mono);
     font-size: 10px;
     color: hsl(var(--muted-foreground));
