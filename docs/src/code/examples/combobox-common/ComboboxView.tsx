@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect } from "react";
+import { useLayoutEffect } from "react";
 import { XIcon, SearchIcon, CheckIcon } from "lucide-react";
 
 export interface ComboboxMachineApi {
@@ -23,7 +23,6 @@ export interface ComboboxMachineApi {
 interface ComboboxViewProps {
   stateKey: string;
   isActive: boolean;
-  isSuggesting: boolean;
   input: string;
   selectedTags: string[];
   suggestions: string[];
@@ -41,7 +40,6 @@ interface ComboboxViewProps {
 export function ComboboxView({
   stateKey,
   isActive,
-  isSuggesting,
   input,
   selectedTags,
   suggestions,

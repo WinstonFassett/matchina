@@ -65,9 +65,11 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
     machine.placeOrder();
     await new Promise((r) => setTimeout(r, 800));
     if (Math.random() > 0.3) {
-      machine.success("ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase());
+      machine.store.api.setOrderId("ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase());
+      machine.success();
     } else {
-      machine.failure("Payment declined. Please try a different card.");
+      machine.store.api.setError("Payment declined. Please try a different card.");
+      machine.failure();
     }
   };
 

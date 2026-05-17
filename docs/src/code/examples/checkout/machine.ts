@@ -89,12 +89,6 @@ export const createCheckoutMachine = () => {
 
   setup(machine)(
     effect((ev) => {
-      if (ev.type === "success" && ev.params[0]) {
-        store.api.setOrderId(ev.params[0] as string);
-      }
-      if (ev.type === "failure" && ev.params[0]) {
-        store.api.setError(ev.params[0] as string);
-      }
       if (ev.type === "newOrder") {
         store.api.reset();
       }

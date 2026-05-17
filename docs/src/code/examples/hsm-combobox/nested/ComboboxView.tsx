@@ -16,8 +16,6 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
 
   const state = machine.getState();
   const isActive = state.key !== "Inactive";
-  const isSuggesting = state.is("Active") && state.data.machine.getState().is("Suggesting");
-
   useEffect(() =>
     setup(machine)(
       effect((ev: any) => {
@@ -32,7 +30,6 @@ export function ComboboxViewNested({ machine }: ComboboxViewProps) {
     <ComboboxView
       stateKey={state.key}
       isActive={isActive}
-      isSuggesting={isSuggesting}
       input={input}
       selectedTags={selectedTags}
       suggestions={suggestions}

@@ -55,7 +55,6 @@ export function createComboboxMachine() {
         "child.change": (data: [any, string]) => {
           if (data && data.length >= 2) {
             const target = data[0];
-            const _eventType = data[1];
             if (target && typeof target.getChange === 'function') {
               const change = target.getChange();
               change.match({

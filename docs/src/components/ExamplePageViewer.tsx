@@ -1,6 +1,6 @@
 import { MachineVisualizer } from "./MachineVisualizer";
 import { getExample } from "../examples";
-import { useMemo, useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import type { FactoryMachine } from "matchina";
 
 interface Props {

@@ -16,8 +16,6 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
 
   const state = machine.getState();
   const isActive = state.key !== "Inactive";
-  const isSuggesting = state.is("Active.Suggesting");
-
   useEffect(() =>
     setup(machine)(
       effect((ev: any) => {
@@ -32,7 +30,6 @@ export function ComboboxViewFlat({ machine }: ComboboxViewFlatProps) {
     <ComboboxView
       stateKey={state.key}
       isActive={isActive}
-      isSuggesting={isSuggesting}
       input={input}
       selectedTags={selectedTags}
       suggestions={suggestions}
