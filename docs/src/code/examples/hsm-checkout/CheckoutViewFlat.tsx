@@ -3,25 +3,20 @@ import { useMachine } from "matchina/react";
 import { eventApi } from "matchina";
 import { parseFlatStateKey } from "matchina/hsm";
 import { createFlatCheckoutMachine } from "./machine-flat";
+import { CartItems, ShippingForm, CardForm, StepIndicator, Confirmation, STATE_TO_STEP } from "./ui";
 
-// Type the machine and its actions
 type CheckoutMachine = ReturnType<typeof createFlatCheckoutMachine>;
 type CheckoutActions = ReturnType<typeof eventApi<CheckoutMachine>>;
 
-// Context to share the payment machine and event APIs
 const CheckoutContext = React.createContext<{
   machine: CheckoutMachine;
   actions: CheckoutActions;
 } | null>(null);
 
 function useCheckoutContext() {
-  const context = useContext(CheckoutContext);
-  if (!context) {
-    throw new Error(
-      "useCheckoutContext must be used within CheckoutContext.Provider"
-    );
-  }
-  return context;
+  const ctx = useContext(CheckoutContext);
+  if (!ctx) throw new Error("useCheckoutContext must be used within CheckoutContext.Provider");
+  return ctx;
 }
 
 interface CheckoutViewFlatProps {
@@ -29,387 +24,154 @@ interface CheckoutViewFlatProps {
 }
 
 export function CheckoutViewFlat({ machine }: CheckoutViewFlatProps) {
-  const change = useMachine(machine) as { to: { key: string; data?: any } };
-  const state = change.to;
-
-  // Parse flattened state
+  useMachine(machine);
+  const state = machine.getState() as { key: string; data?: any };
   const parsed = parseFlatStateKey(state.key);
   const parent = parsed.parent;
   const child = parsed.child;
-
-  // Create event APIs
   const actions = eventApi(machine);
-
-  const contextValue = { machine, actions };
+  const currentStep = STATE_TO_STEP[parent] ?? "Cart";
 
   return (
-    <CheckoutContext.Provider value={contextValue}>
+    <CheckoutContext.Provider value={{ machine, actions }}>
       <div className="max-w-xs mx-auto bg-card rounded-2xl border border-border p-5">
-        <h3 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
-          Checkout · Flattened
-        </h3>
-
-        <div className="space-y-6">
-          <CheckoutSteps currentStep={parent} />
-          <PaymentSection parsed={parsed} />
-          <CheckoutControls />
-
-          <div className="text-center">
-            <span className="badge badge-outline text-[10px] font-mono">
-              {child ? `${parent}.${child}` : parent}
-            </span>
-          </div>
+        <StepIndicator currentStep={currentStep} />
+        <div className="space-y-5">
+          <MainContent parent={parent} child={child} />
+          <CheckoutControls parent={parent} />
         </div>
       </div>
     </CheckoutContext.Provider>
   );
 }
 
-function CheckoutSteps({ currentStep }: { currentStep: string }) {
-  const steps = [
-    { key: "Cart", label: "Cart" },
-    { key: "Shipping", label: "Shipping" },
-    { key: "Payment", label: "Payment" },
-    { key: "Review", label: "Review" },
-    { key: "Confirmation", label: "Confirmation" },
-  ];
-
-  const currentIndex = steps.findIndex((step) => step.key === currentStep);
-
-  return (
-    <div className="flex items-center justify-between gap-1">
-      {steps.map((step, index) => (
-        <React.Fragment key={step.key}>
-          <div className="flex flex-col items-center gap-1">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                index <= currentIndex
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span className={`text-[9px] whitespace-nowrap font-medium ${index <= currentIndex ? "text-foreground" : "text-muted-foreground"}`}>
-              {step.label}
-            </span>
-          </div>
-          {index < steps.length - 1 && (
-            <div className={`flex-1 h-px mb-4 ${index < currentIndex ? "bg-primary" : "bg-border"}`} />
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-}
-
-function PaymentSection({
-  parsed,
-}: {
-  parsed: { parent: string; child: string | null };
-}) {
-  const { machine } = useCheckoutContext();
-  const state = machine.getState();
-
-  // Handle flattened payment states
-  const stateKey = state.key;
-  if (stateKey.startsWith("Payment.")) {
-    return <PaymentFlow parsed={parsed} />;
+function MainContent({ parent, child }: { parent: string; child: string | null }) {
+  if (parent === "Cart") return <CartItems />;
+  if (parent === "Shipping") return <ShippingForm />;
+  if (parent === "Payment" && child) return <PaymentContent child={child} />;
+  if (parent === "Review" || parent === "ShippingPaid") {
+    return (
+      <div>
+        <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-2">Order Summary</p>
+        <CartItems readOnly />
+      </div>
+    );
   }
-
+  if (parent === "Confirmation") return <Confirmation />;
   return null;
 }
 
-function PaymentFlow({
-  parsed,
-}: {
-  parsed: { parent: string; child: string | null };
-}) {
-  const { machine } = useCheckoutContext();
-
-  // In flattened mode, the payment state is embedded in the main state's data
-  const mainState = machine.getState();
-  let paymentState;
-
-  if (
-    mainState.data &&
-    typeof mainState.data === "object" &&
-    "getTag" in mainState.data
-  ) {
-    // Extract the actual payment state from the MatchboxImpl
-    paymentState = mainState.data;
-  } else {
-    // Fallback: use the main state directly
-    paymentState = mainState;
-  }
-
-  if (!paymentState) return null;
-
-  // Use the main machine's actions for flattened mode
-  const paymentActions = eventApi(machine) as CheckoutActions;
-
-  return (
-    <div className="rounded-xl border border-border bg-muted p-4">
-      <h4 className="text-sm font-medium mb-3">Payment Method</h4>
-
-      <div className="space-y-3">
-        {paymentState.match(
-          {
-            "Payment.MethodEntry": () => (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Select payment method</p>
-                <button
-                  onClick={() => paymentActions.authorize?.()}
-                  className="btn btn-primary"
-                >
-                  Authorize Payment
-                </button>
-              </div>
-            ),
-            "Payment.Authorizing": () => (
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin w-4 h-4 border-2 border-border border-t-primary rounded-full" />
-                <span className="text-sm text-muted-foreground">Authorizing…</span>
-              </div>
-            ),
-            "Payment.AuthChallenge": () => (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Additional authentication required</p>
-                <div className="space-x-2">
-                  <button
-                    onClick={() => paymentActions.authSucceeded?.()}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => paymentActions.authFailed?.()}
-                    className="btn btn-destructive btn-sm"
-                  >
-                    Deny
-                  </button>
-                </div>
-              </div>
-            ),
-            "Payment.AuthorizationError": () => (
-              <div>
-                <p className="text-xs text-destructive mb-2">Authorization failed</p>
-                <button
-                  onClick={() => paymentActions.retry?.()}
-                  className="btn btn-outline btn-sm"
-                >
-                  Retry
-                </button>
-              </div>
-            ),
-            "Payment.Authorized": () => (
-              <div className="flex items-center space-x-2 text-[oklch(0.55_0.16_142)]">
-                <svg className="w-5 h-5 fill-currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm font-medium">Payment Authorized</span>
-              </div>
-            ),
-          },
-          null
-        )}
-      </div>
-
-      {/* Payment Simulation Controls - only show when authorizing */}
-      {parsed.child === "Authorizing" && (
-        <PaymentSimulationControls paymentActions={paymentActions} />
-      )}
-    </div>
-  );
-}
-
-function PaymentSimulationControls({
-  paymentActions,
-}: {
-  paymentActions: CheckoutActions;
-}) {
-  return (
-    <div className="mt-4 pt-4 border-t border-border">
-      <h5 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Simulation</h5>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          onClick={() => paymentActions.authSucceeded?.()}
-          className="btn btn-secondary btn-sm"
-        >
-          Approve (Success)
-        </button>
-        <button
-          onClick={() => paymentActions.authFailed?.()}
-          className="btn btn-destructive btn-sm"
-        >
-          Deny (Challenge)
-        </button>
-        <button
-          onClick={() => paymentActions.retry?.()}
-          className="btn btn-outline btn-sm"
-        >
-          Retry Failed
-        </button>
-        <button
-          onClick={() => {
-            // Simulate a network error by setting an invalid state
-            console.log("Simulating payment network error...");
-            // This would typically trigger an AuthorizationError state in a real implementation
-            paymentActions.retry?.();
-          }}
-          className="btn btn-outline btn-sm"
-        >
-          Network Error
-        </button>
-      </div>
-      <p className="text-[10px] text-muted-foreground mt-2">Simulate approve, deny, retry, or network error</p>
-    </div>
-  );
-}
-
-function CheckoutControls() {
+function PaymentContent({ child }: { child: string }) {
   const { actions } = useCheckoutContext();
-  const { machine } = useCheckoutContext();
-  const state = machine.getState();
 
-  return (
-    <div className="flex flex-wrap gap-2 justify-center">
-      {state.match(
-        {
-          Cart: () => (
-            <button
-              onClick={() => actions.proceed?.()}
-              className="btn btn-primary"
-            >
-              Proceed to Shipping
-            </button>
-          ),
-          Shipping: () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Cart
-              </button>
-              <button
-                onClick={() => actions.proceed?.()}
-                className="btn btn-primary"
-              >
-                Proceed to Payment
-              </button>
-            </>
-          ),
-          // Handle flattened payment states
-          "Payment.MethodEntry": () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-            </>
-          ),
-          "Payment.Authorizing": () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-            </>
-          ),
-          "Payment.AuthChallenge": () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-            </>
-          ),
-          "Payment.AuthorizationError": () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-            </>
-          ),
-          "Payment.Authorized": () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-            </>
-          ),
-          Review: () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Shipping
-              </button>
-              <button
-                onClick={() => actions.changePayment?.()}
-                className="btn btn-outline"
-              >
-                Change Payment
-              </button>
-              <button
-                onClick={() => actions.submitOrder?.()}
-                className="btn btn-secondary"
-              >
-                Submit Order
-              </button>
-            </>
-          ),
-          ShippingPaid: () => (
-            <>
-              <button
-                onClick={() => actions.back?.()}
-                className="btn btn-ghost"
-              >
-                Back to Cart
-              </button>
-              <button
-                onClick={() => actions.proceed?.()}
-                className="btn btn-primary"
-              >
-                Proceed to Review
-              </button>
-              <button
-                onClick={() => actions.changePayment?.()}
-                className="btn btn-outline"
-              >
-                Change Payment
-              </button>
-            </>
-          ),
-          Confirmation: () => (
-            <button
-              onClick={() => actions.restart?.()}
-              className="btn btn-primary"
-            >
-              Start New Order
-            </button>
-          ),
-        },
-        null
-      )}
-    </div>
-  );
+  switch (child) {
+    case "MethodEntry":
+      return (
+        <div className="space-y-3">
+          <CardForm />
+          <button onClick={() => actions.authorize?.()} className="btn btn-primary w-full">
+            Authorize Payment
+          </button>
+        </div>
+      );
+    case "Authorizing":
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-3.5 h-3.5 border-2 border-border border-t-primary rounded-full animate-spin" />
+            Authorizing payment
+          </div>
+          <div className="border border-border rounded-xl p-3 space-y-2">
+            <p className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground">Simulate outcome</p>
+            <div className="flex gap-2">
+              <button onClick={() => actions.authSucceeded?.()} className="btn btn-outline btn-sm flex-1">Approve</button>
+              <button onClick={() => actions.authRequired?.()} className="btn btn-outline btn-sm flex-1">Challenge</button>
+              <button onClick={() => actions.authFailed?.()} className="btn btn-destructive btn-sm flex-1">Fail</button>
+            </div>
+          </div>
+        </div>
+      );
+    case "AuthChallenge":
+      return (
+        <div className="space-y-3">
+          <div className="bg-muted rounded-xl p-3">
+            <p className="text-sm font-medium mb-0.5">Authentication required</p>
+            <p className="text-xs text-muted-foreground">Your bank is requesting additional verification.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => actions.authSucceeded?.()} className="btn btn-primary btn-sm flex-1">Approve</button>
+            <button onClick={() => actions.authFailed?.()} className="btn btn-destructive btn-sm flex-1">Deny</button>
+          </div>
+        </div>
+      );
+    case "AuthorizationError":
+      return (
+        <div className="space-y-3">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
+            <p className="text-sm text-destructive font-medium">Authorization failed</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your payment could not be authorized.</p>
+          </div>
+          <button onClick={() => actions.retry?.()} className="btn btn-outline btn-sm">Try Again</button>
+        </div>
+      );
+    case "Authorized":
+      return (
+        <div className="flex items-center gap-2 text-[oklch(0.55_0.16_142)] text-sm font-medium bg-[oklch(0.55_0.16_142)]/10 rounded-xl px-3 py-2.5">
+          <span>✓</span>
+          <span>Payment authorized</span>
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
+function CheckoutControls({ parent }: { parent: string }) {
+  const { actions } = useCheckoutContext();
+
+  switch (parent) {
+    case "Cart":
+      return (
+        <button onClick={() => actions.proceed?.()} className="btn btn-primary w-full">
+          Continue to Shipping
+        </button>
+      );
+    case "Shipping":
+      return (
+        <div className="flex gap-2">
+          <button onClick={() => actions.back?.()} className="btn btn-outline flex-1">Back</button>
+          <button onClick={() => actions.proceed?.()} className="btn btn-primary flex-1">Continue to Payment</button>
+        </div>
+      );
+    case "Payment":
+      return (
+        <button onClick={() => actions.back?.()} className="btn btn-outline w-full">Back to Shipping</button>
+      );
+    case "ShippingPaid":
+      return (
+        <div className="space-y-2">
+          <button onClick={() => actions.proceed?.()} className="btn btn-primary w-full">Continue to Review</button>
+          <div className="flex gap-2">
+            <button onClick={() => actions.back?.()} className="btn btn-outline btn-sm flex-1">Back to Cart</button>
+            <button onClick={() => actions.changePayment?.()} className="btn btn-outline btn-sm flex-1">Change Payment</button>
+          </div>
+        </div>
+      );
+    case "Review":
+      return (
+        <div className="space-y-2">
+          <button onClick={() => actions.submitOrder?.()} className="btn btn-primary w-full">Place Order</button>
+          <div className="flex gap-2">
+            <button onClick={() => actions.back?.()} className="btn btn-outline btn-sm flex-1">Back</button>
+            <button onClick={() => actions.changePayment?.()} className="btn btn-outline btn-sm flex-1">Change Payment</button>
+          </div>
+        </div>
+      );
+    case "Confirmation":
+      return (
+        <button onClick={() => actions.restart?.()} className="btn btn-outline w-full">Start New Order</button>
+      );
+    default:
+      return null;
+  }
 }

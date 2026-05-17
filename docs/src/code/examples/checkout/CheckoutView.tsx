@@ -1,3 +1,4 @@
+import { useMachine } from "matchina/react";
 import { CartForm, PaymentForm, ShippingForm } from "./forms";
 import type { CheckoutMachine } from "./machine";
 
@@ -55,14 +56,18 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
 }
 
 export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
+  useMachine(machine);
+  useMachine(machine.store);
   const currentState = machine.getState();
   const currentStep = stateToStep[currentState.key] ?? "Cart";
 
   const handlePlaceOrder = async () => {
+    machine.placeOrder();
+    await new Promise((r) => setTimeout(r, 800));
     if (Math.random() > 0.3) {
-      machine.success();
+      machine.success("ORD-" + Math.random().toString(36).substring(2, 9).toUpperCase());
     } else {
-      machine.failure();
+      machine.failure("Payment declined. Please try a different card.");
     }
   };
 
@@ -133,9 +138,6 @@ export function CheckoutView({ machine }: { machine: CheckoutMachine }) {
         },
       })}
 
-      <div className="mt-5 text-center">
-        <span className="badge badge-outline text-[10px]">{currentState.key}</span>
-      </div>
     </div>
   );
 }
