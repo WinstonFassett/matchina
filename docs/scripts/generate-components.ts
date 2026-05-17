@@ -11,6 +11,7 @@ import { join } from "path";
 
 import { button } from "../src/components/ui/button/button.tv";
 import { badge } from "../src/components/ui/badge/badge.tv";
+import { chip } from "../src/components/ui/chip/chip.tv";
 import { card, cardHeader, cardTitle, cardDescription, cardContent, cardFooter } from "../src/components/ui/card/card.tv";
 import { toggleTrack, toggleThumb } from "../src/components/ui/toggle/toggle.tv";
 
@@ -87,6 +88,7 @@ const uiDir = join(import.meta.dirname, "../src/components/ui");
 const entries: Array<{ folder: string; name: string; tv: TvInstance }> = [
   { folder: "button", name: "btn", tv: button as any },
   { folder: "badge",  name: "badge",  tv: badge as any },
+  { folder: "chip",   name: "chip",   tv: chip as any },
   { folder: "card",   name: "card",         tv: card as any },
   { folder: "card",   name: "card-header",  tv: cardHeader as any },
   { folder: "card",   name: "card-title",   tv: cardTitle as any },

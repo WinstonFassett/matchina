@@ -21,6 +21,7 @@ export function createComboboxMachine() {
             {
               Empty: {
                 type: "Suggesting",
+                select: "Empty",
               },
               Suggesting: {
                 select: "Empty",
@@ -72,6 +73,10 @@ export function createComboboxMachine() {
     model: store,
     ...storeApi,
     ...eventApi(hsm),
+    select: () => {
+      storeApi.selectHighlighted();
+      hsm.send("select");
+    },
   });
 
   return combobox;

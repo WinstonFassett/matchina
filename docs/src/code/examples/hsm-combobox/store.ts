@@ -49,15 +49,19 @@ export function createComboboxStore() {
         highlightedIndex: 0,
       }),
 
-      removeTag: (tag: string) => (change) => ({
-        ...change.from,
-        selectedTags: change.from.selectedTags.filter((t: string) => t !== tag),
-      }),
+      removeTag: (tag: string) => (change) => {
+        const selectedTags = change.from.selectedTags.filter((t: string) => t !== tag);
+        return {
+          ...change.from,
+          selectedTags,
+          suggestions: getSuggestions(change.from.input, selectedTags),
+        };
+      },
 
       clear: () => (change) => ({
         ...change.from,
         input: "",
-        suggestions: [],
+        suggestions: getSuggestions("", change.from.selectedTags),
         highlightedIndex: 0,
       }),
 
@@ -100,9 +104,10 @@ export function createComboboxStore() {
 
 function getSuggestions(input: string | undefined, selectedTags: string[]): string[] {
   const trimmed = input?.trim().toLowerCase();
-  if (!trimmed) return [];
-
+  if (!trimmed) {
+    return AVAILABLE_TAGS.filter((tag) => !selectedTags.includes(tag));
+  }
   return AVAILABLE_TAGS.filter(
     (tag) => tag.toLowerCase().includes(trimmed) && !selectedTags.includes(tag)
-  ).slice(0, 5);
+  );
 }

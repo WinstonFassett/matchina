@@ -1,67 +1,45 @@
 import type { RPSMachine } from "./machine";
 import type { Move } from "./store";
 
-// Style lookups
-const styles = {
-  moveButton:
-    "p-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-4xl transition-colors",
-  score: "flex justify-around text-sm",
-  versus: "flex justify-around items-center mb-4",
-  playerCard: "text-center",
-  icon: "text-4xl mb-2",
-} as const;
-
 const moveIcons: Record<Move, string> = {
   rock: "✊",
-  paper: "✋",
+  paper: "🖐️",
   scissors: "✌️",
 };
 
-// Convenience components
+const moveAccent: Record<Move, string> = {
+  rock: "hover:bg-[oklch(0.70_0.14_38)] hover:border-[oklch(0.60_0.16_38)] hover:text-white",
+  paper: "hover:bg-[oklch(0.70_0.12_240)] hover:border-[oklch(0.60_0.14_240)] hover:text-white",
+  scissors: "hover:bg-[oklch(0.68_0.15_12)] hover:border-[oklch(0.58_0.17_12)] hover:text-white",
+};
+
 function MoveButton({ move, onClick }: { move: Move; onClick: () => void }) {
   return (
-    <button type="button" className={styles.moveButton} onClick={onClick}>
-      {moveIcons[move]}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-2xl border border-border bg-card transition-all duration-150 cursor-pointer select-none active:scale-95 ${moveAccent[move]}`}
+    >
+      <span className="text-5xl leading-none">{moveIcons[move]}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-widest opacity-50 capitalize">{move}</span>
     </button>
   );
 }
 
 function PlayerCard({ move, label }: { move: Move | null; label: string }) {
   return (
-    <div className={styles.playerCard}>
-      <div className={styles.icon}>{move ? moveIcons[move] : "❓"}</div>
-      <div>{label}</div>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-5xl leading-none">{move ? moveIcons[move] : "❓"}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
 }
 
-function ScoreDisplay({
-  playerScore,
-  computerScore,
-}: {
-  playerScore: number;
-  computerScore: number;
-}) {
+function ScorePip({ label, score }: { label: string; score: number }) {
   return (
-    <div className={styles.score}>
-      <div>Player: {playerScore}</div>
-      <div>Computer: {computerScore}</div>
-    </div>
-  );
-}
-
-function VersusDisplay({
-  playerMove,
-  computerMove,
-}: {
-  playerMove: Move | null;
-  computerMove: Move | null;
-}) {
-  return (
-    <div className={styles.versus}>
-      <PlayerCard move={playerMove} label="You" />
-      <div className="text-2xl">VS</div>
-      <PlayerCard move={computerMove} label="Computer" />
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="text-2xl font-bold tabular-nums">{score}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -71,112 +49,103 @@ export function RPSAppView({ machine }: { machine: RPSMachine }) {
   const storeData = machine.store.getState();
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-transparent rounded-lg border border-current/20">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold mb-2">Rock Paper Scissors</h1>
-        <ScoreDisplay
-          playerScore={storeData.playerScore}
-          computerScore={storeData.computerScore}
-        />
+    <div className="p-5 flex flex-col gap-5">
+      <div className="flex items-center justify-between">
+        <h1 className="text-base font-semibold tracking-tight">Rock · Paper · Scissors</h1>
+        <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-muted">
+          <ScorePip label="You" score={storeData.playerScore} />
+          <span className="text-muted-foreground text-xs">vs</span>
+          <ScorePip label="CPU" score={storeData.computerScore} />
+        </div>
       </div>
 
-      {/* Game content based on state */}
       {currentState.match({
         WaitingForPlayer: () => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">Choose your move:</h3>
-            <div className="flex justify-center gap-4">
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm text-muted-foreground">Choose your move</p>
+            <div className="flex justify-center gap-3">
               {(["rock", "paper", "scissors"] as Move[]).map((move) => (
-                <MoveButton
-                  key={move}
-                  move={move}
-                  onClick={() => machine.selectMove(move)}
-                />
+                <MoveButton key={move} move={move} onClick={() => machine.selectMove(move)} />
               ))}
             </div>
           </div>
         ),
+
         PlayerChose: () => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">
-              You chose: {moveIcons[storeData.playerMove!]}
-            </h3>
-            <div className="mb-4 text-2xl">VS</div>
-            <div className="text-2xl mb-4">🤖</div>
-            <button
-              type="button"
-              onClick={() => machine.computerSelectMove()}
-              className="btn btn-primary"
-            >
-              Computer Move
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-around w-full px-4">
+              <PlayerCard move={storeData.playerMove} label="You" />
+              <span className="text-muted-foreground text-sm font-medium">vs</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-5xl leading-none">🤖</span>
+                <span className="text-xs text-muted-foreground">CPU</span>
+              </div>
+            </div>
+            <button type="button" onClick={() => machine.computerSelectMove()} className="btn btn-primary btn-sm">
+              CPU picks...
             </button>
           </div>
         ),
+
         Judging: () => (
-          <div className="text-center">
-            <VersusDisplay
-              playerMove={storeData.playerMove}
-              computerMove={storeData.computerMove}
-            />
-            <button
-              type="button"
-              onClick={() => machine.judge()}
-              className="btn btn-secondary"
-            >
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-around w-full px-4">
+              <PlayerCard move={storeData.playerMove} label="You" />
+              <span className="text-muted-foreground text-sm font-medium">vs</span>
+              <PlayerCard move={storeData.computerMove} label="CPU" />
+            </div>
+            <button type="button" onClick={() => machine.judge()} className="btn btn-secondary btn-sm">
               Judge Round
             </button>
           </div>
         ),
-        RoundComplete: () => (
-          <div className="text-center">
-            <h3 className="text-lg mb-3">Round Result:</h3>
-            <div className={styles.versus}>
-              <PlayerCard move={storeData.playerMove} label="You" />
-              <div className="text-center">
-                <div className={styles.icon}>vs</div>
-                <div className="text-lg mb-2">
-                  {storeData.roundWinner || "Tie"}
+
+        RoundComplete: () => {
+          const winner = storeData.roundWinner;
+          const resultLabel = !winner ? "Tie!" : winner === "player" ? "You win!" : "CPU wins!";
+          const resultColor = !winner
+            ? "text-muted-foreground"
+            : winner === "player"
+            ? "text-[oklch(0.55_0.16_142)]"
+            : "text-destructive";
+          return (
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center justify-around w-full px-4">
+                <PlayerCard move={storeData.playerMove} label="You" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className={`text-lg font-bold ${resultColor}`}>{resultLabel}</span>
                 </div>
+                <PlayerCard move={storeData.computerMove} label="CPU" />
               </div>
-              <PlayerCard move={storeData.computerMove} label="Computer" />
-            </div>
-            <div className="flex justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => machine.nextRound()}
-                className="btn btn-primary"
-              >
+              <button type="button" onClick={() => machine.nextRound()} className="btn btn-primary btn-sm">
                 Next Round
               </button>
             </div>
-          </div>
-        ),
-        GameOver: () => (
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-3">Game Over!</h3>
-            <div className="mb-4">
-              <div className="text-lg mb-2">Final Score:</div>
-              <div className={styles.versus}>
-                <div className={styles.playerCard}>
-                  <div className={styles.icon}>{storeData.playerScore}</div>
-                  <div>You</div>
-                </div>
-                <div className={styles.playerCard}>
-                  <div className={styles.icon}>{storeData.computerScore}</div>
-                  <div>Computer</div>
-                </div>
+          );
+        },
+
+        GameOver: () => {
+          const playerWon = storeData.playerScore > storeData.computerScore;
+          return (
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-center">
+                <p className="text-2xl mb-1">{playerWon ? "🏆" : "💀"}</p>
+                <h3 className="text-base font-semibold">{playerWon ? "You win!" : "CPU wins!"}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Final: {storeData.playerScore} – {storeData.computerScore}
+                </p>
               </div>
+              <button type="button" onClick={() => machine.newGame()} className="btn btn-outline btn-sm">
+                Play Again
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => machine.newGame()}
-              className="btn btn-destructive"
-            >
-              New Game
-            </button>
-          </div>
-        ),
+          );
+        },
       })}
+
+      <div className="text-center">
+        <span className="badge badge-outline text-[10px]">{currentState.key}</span>
+      </div>
     </div>
   );
 }

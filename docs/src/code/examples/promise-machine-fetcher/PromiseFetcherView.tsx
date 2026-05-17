@@ -5,63 +5,55 @@ interface PromiseFetcherViewProps {
   onReset?: () => void;
 }
 
-export function PromiseFetcherView({
-  machine,
-  onReset,
-}: PromiseFetcherViewProps) {
+export function PromiseFetcherView({ machine, onReset }: PromiseFetcherViewProps) {
   const [url, setUrl] = useState("https://httpbin.org/delay/1");
   const state = machine.getState();
   const isIdle = state.is("Idle");
 
-  const handleFetch = () => {
-    machine.execute(url);
-  };
-
-  const handleReset = () => {
-    onReset?.();
-  };
-
   return (
-    <div className="space-y-4 p-4 border rounded-lg max-w-full">
-      <div className="space-y-2">
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 px-2 py-1 border rounded min-w-0"
-            placeholder="Enter URL to fetch"
-            disabled={!isIdle}
-          />
-          <button
-            onClick={handleFetch}
-            disabled={!isIdle}
-            className="btn btn-primary btn-sm"
-          >
-            Fetch
+    <div className="p-5 flex flex-col gap-4">
+      <div className="flex gap-2 items-center">
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-muted text-sm min-w-0 focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="Enter URL to fetch"
+          disabled={!isIdle}
+        />
+        <button
+          onClick={() => machine.execute(url)}
+          disabled={!isIdle}
+          className="btn btn-primary btn-sm shrink-0"
+        >
+          Fetch
+        </button>
+        {!isIdle && (
+          <button onClick={() => onReset?.()} className="btn btn-ghost btn-sm shrink-0">
+            Reset
           </button>
-          {!isIdle && (
-            <button
-              onClick={handleReset}
-              className="btn btn-ghost btn-sm"
-            >
-              Reset
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
-      <div className="p-3 rounded bg-gray-100 dark:bg-gray-800 max-w-full overflow-hidden">
+      <div className="rounded-xl border border-border bg-muted px-4 py-3 min-h-12 flex items-center">
         {state.match({
-          Idle: () => <span>Ready to fetch data</span>,
+          Idle: () => <span className="text-sm text-muted-foreground">Ready to fetch</span>,
           Pending: ({ params }: any) => (
-            <span>Fetching from {params[0]}...</span>
+            <span className="text-sm text-muted-foreground animate-pulse">
+              Fetching {params[0]}…
+            </span>
           ),
-          Resolved: () => <div className="text-green-600">Success!</div>,
+          Resolved: () => (
+            <span className="text-sm font-medium text-[oklch(0.55_0.16_142)]">Success!</span>
+          ),
           Rejected: (error: any) => (
-            <span className="text-red-600">Error: {error.message}</span>
+            <span className="text-sm font-medium text-destructive">Error: {error.message}</span>
           ),
         })}
+      </div>
+
+      <div className="text-center">
+        <span className="badge badge-outline text-[10px]">{state.key}</span>
       </div>
     </div>
   );

@@ -54,9 +54,9 @@ export function CheckoutViewNested({ machine }: CheckoutViewNestedProps) {
 
   return (
     <CheckoutContext.Provider value={contextValue}>
-      <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Checkout Flow (Nested)
+      <div className="max-w-xs mx-auto bg-card rounded-2xl border border-border p-5">
+        <h3 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
+          Checkout · Nested
         </h3>
 
         <div className="space-y-6">
@@ -64,9 +64,8 @@ export function CheckoutViewNested({ machine }: CheckoutViewNestedProps) {
           <PaymentSection />
           <CheckoutControls />
 
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            State:{" "}
-            <span className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">
+          <div className="text-center">
+            <span className="badge badge-outline text-[10px] font-mono">
               {child ? `${parent}.${child}` : parent}
             </span>
           </div>
@@ -88,34 +87,28 @@ function CheckoutSteps({ currentStep }: { currentStep: string }) {
   const currentIndex = steps.findIndex((step) => step.key === currentStep);
 
   return (
-    <div className="flex items-center justify-between overflow-x-auto pb-2">
-      <div className="flex items-center min-w-max">
-        {steps.map((step, index) => (
-          <div key={step.key} className="flex items-center shrink-0">
+    <div className="flex items-center justify-between gap-1">
+      {steps.map((step, index) => (
+        <React.Fragment key={step.key}>
+          <div className="flex flex-col items-center gap-1">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                 index <= currentIndex
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               {index + 1}
             </div>
-            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+            <span className={`text-[9px] whitespace-nowrap font-medium ${index <= currentIndex ? "text-foreground" : "text-muted-foreground"}`}>
               {step.label}
             </span>
-            {index < steps.length - 1 && (
-              <div
-                className={`w-12 h-0.5 mx-2 shrink-0 ${
-                  index < currentIndex
-                    ? "bg-blue-500"
-                    : "bg-gray-200 dark:bg-gray-700"
-                }`}
-              />
-            )}
           </div>
-        ))}
-      </div>
+          {index < steps.length - 1 && (
+            <div className={`flex-1 h-px mb-4 ${index < currentIndex ? "bg-primary" : "bg-border"}`} />
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
@@ -144,19 +137,15 @@ function PaymentFlow() {
   const paymentActions = paymentMachine ? eventApi(paymentMachine) : null;
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-      <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-        Payment Method
-      </h4>
+    <div className="rounded-xl border border-border bg-muted p-4">
+      <h4 className="text-sm font-medium mb-3">Payment Method</h4>
 
       <div className="space-y-3">
         {state.match(
           {
             MethodEntry: () => (
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Select payment method
-                </p>
+                <p className="text-xs text-muted-foreground mb-2">Select payment method</p>
                 <button
                   onClick={() => paymentActions?.authorize?.()}
                   className="btn btn-primary"
@@ -167,17 +156,13 @@ function PaymentFlow() {
             ),
             Authorizing: () => (
               <div className="flex items-center space-x-2">
-                <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Authorizing...
-                </span>
+                <div className="animate-spin w-4 h-4 border-2 border-border border-t-primary rounded-full" />
+                <span className="text-sm text-muted-foreground">Authorizing…</span>
               </div>
             ),
             AuthChallenge: () => (
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Additional authentication required
-                </p>
+                <p className="text-xs text-muted-foreground mb-2">Additional authentication required</p>
                 <div className="space-x-2">
                   <button
                     onClick={() => paymentActions?.authSucceeded?.()}
@@ -196,9 +181,7 @@ function PaymentFlow() {
             ),
             AuthorizationError: () => (
               <div>
-                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
-                  Authorization failed
-                </p>
+                <p className="text-xs text-destructive mb-2">Authorization failed</p>
                 <button
                   onClick={() => paymentActions?.retry?.()}
                   className="btn btn-outline btn-sm"
@@ -208,7 +191,7 @@ function PaymentFlow() {
               </div>
             ),
             Authorized: () => (
-              <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
+              <div className="flex items-center space-x-2 text-[oklch(0.55_0.16_142)]">
                 <svg className="w-5 h-5 fill-currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
@@ -238,10 +221,8 @@ function PaymentSimulationControls({
   paymentActions: any;
 }) {
   return (
-    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-      <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Payment Simulation
-      </h5>
+    <div className="mt-4 pt-4 border-t border-border">
+      <h5 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Simulation</h5>
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => paymentActions.authSucceeded?.()}
@@ -273,10 +254,7 @@ function PaymentSimulationControls({
           Network Error
         </button>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-        Simulate payment outcomes: approve, deny, retry failed attempts, or
-        network errors
-      </p>
+      <p className="text-[10px] text-muted-foreground mt-2">Simulate approve, deny, retry, or network error</p>
     </div>
   );
 }

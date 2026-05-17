@@ -20,6 +20,7 @@
 /* ui26 component layer — generated from docs/scripts/generate-components.ts */
 @import "../components/ui/button/btn.css";
 @import "../components/ui/badge/badge.css";
+@import "../components/ui/chip/chip.css";
 @import "../components/ui/card/card.css";
 @import "../components/ui/card/card-header.css";
 @import "../components/ui/card/card-title.css";

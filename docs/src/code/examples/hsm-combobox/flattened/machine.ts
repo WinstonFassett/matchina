@@ -20,6 +20,7 @@ export function createFlatComboboxMachine() {
           Empty: {
             on: {
               type: "Suggesting",
+              select: "Empty",
             }
           },
           Suggesting: {
@@ -48,6 +49,7 @@ export function createFlatComboboxMachine() {
     effect((ev) =>
       ev.match(
         {
+          focus: storeApi.clear,
           select: storeApi.selectHighlighted,
           blur: storeApi.clear,
           type: storeApi.setInput,
@@ -60,8 +62,12 @@ export function createFlatComboboxMachine() {
   return Object.assign(machine, {
     model: store,
     ...storeApi,
-    ...eventApi(machine)
-  });  
+    ...eventApi(machine),
+    select: () => {
+      storeApi.selectHighlighted();
+      machine.send("select");
+    },
+  });
 }
 
 export type FlatComboboxMachine = ReturnType<typeof createFlatComboboxMachine>;

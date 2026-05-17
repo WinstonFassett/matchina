@@ -2,6 +2,9 @@ import { useMachine } from "matchina/react";
 import { type AuthMachine } from "./machine";
 import React, { useState } from "react";
 
+const inputClass =
+  "w-full px-3 py-2 rounded-xl border border-border bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background";
+
 function LoginFormView({ machine, handleAutoSuccess }: any) {
   const storeData = machine.store.getState();
   const [email, setEmail] = useState(storeData.email || "");
@@ -12,60 +15,36 @@ function LoginFormView({ machine, handleAutoSuccess }: any) {
   }, [storeData.email, storeData.password]);
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Log In</h2>
-      <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-5">Log In</h2>
+      <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Password</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
         </div>
-        {/* Show error if exists */}
         {storeData.error && (
-          <div className="text-red-500 mb-4">
-            <p className="text-sm">{storeData.error}</p>
-          </div>
+          <p className="text-xs text-destructive">{storeData.error}</p>
         )}
         <button
-          onClick={() =>
-            handleAutoSuccess(() => machine.login({ email, password }))
-          }
+          onClick={() => handleAutoSuccess(() => machine.login({ email, password }))}
           className="btn btn-primary w-full"
         >
           Log In
         </button>
-        <div className="text-center space-y-2">
-          <button
-            onClick={() => machine.goToPasswordReset()}
-            className="text-blue-500 hover:underline text-sm"
-          >
+        <div className="flex flex-col items-center gap-1.5 pt-1">
+          <button onClick={() => machine.goToPasswordReset()} className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
             Forgot Password?
           </button>
-          <div>
-            <span className="text-sm opacity-70">Don't have an account? </span>
-            <button
-              onClick={() => machine.goToRegister()}
-              className="text-blue-500 hover:underline text-sm"
-            >
+          <p className="text-xs text-muted-foreground">
+            No account?{" "}
+            <button onClick={() => machine.goToRegister()} className="underline underline-offset-2 hover:text-foreground transition-colors">
               Register
             </button>
-          </div>
-          <button
-            onClick={() => machine.cancel()}
-            className="text-current/50 hover:underline text-sm"
-          >
+          </p>
+          <button onClick={() => machine.cancel()} className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
             Cancel
           </button>
         </div>
@@ -84,56 +63,33 @@ function RegisterFormView({ machine, handleAutoSuccess }: any) {
   }, [storeData.name, storeData.email]);
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Register</h2>
-      <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-5">Register</h2>
+      <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Name</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
         </div>
-        {/* Show error if exists */}
         {storeData.error && (
-          <div className="text-red-500 mb-4">
-            <p className="text-sm">{storeData.error}</p>
-          </div>
+          <p className="text-xs text-destructive">{storeData.error}</p>
         )}
         <button
-          onClick={() =>
-            handleAutoSuccess(() => machine.register({ name, email }))
-          }
-          className="btn btn-secondary w-full"
+          onClick={() => handleAutoSuccess(() => machine.register({ name, email }))}
+          className="btn btn-primary w-full"
         >
-          Register
+          Create Account
         </button>
-        <div className="text-center space-y-2">
-          <div>
-            <span className="text-sm opacity-70">
-              Already have an account?{" "}
-            </span>
-            <button
-              onClick={() => machine.goToLogin()}
-              className="text-blue-500 hover:underline text-sm"
-            >
-              Log In
-            </button>
-          </div>
-          <button
-            onClick={() => machine.cancel()}
-            className="text-current/50 hover:underline text-sm"
-          >
+        <p className="text-xs text-center text-muted-foreground">
+          Already have an account?{" "}
+          <button onClick={() => machine.goToLogin()} className="underline underline-offset-2 hover:text-foreground transition-colors">
+            Log In
+          </button>
+        </p>
+        <div className="text-center">
+          <button onClick={() => machine.cancel()} className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
             Cancel
           </button>
         </div>
@@ -150,47 +106,49 @@ function PasswordResetFormView({ machine, handleAutoSuccess }: any) {
   }, [storeData.email]);
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Reset Password</h2>
-      <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-5">Reset Password</h2>
+      <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-current/20 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
         </div>
-        {/* Show error if exists */}
         {storeData.error && (
-          <div className="text-red-500 mb-4">
-            <p className="text-sm">{storeData.error}</p>
-          </div>
+          <p className="text-xs text-destructive">{storeData.error}</p>
         )}
         <button
-          onClick={() =>
-            handleAutoSuccess(() => machine.requestReset({ email }))
-          }
+          onClick={() => handleAutoSuccess(() => machine.requestReset({ email }))}
           className="btn btn-primary w-full"
         >
           Send Reset Link
         </button>
-        <div className="text-center space-y-2">
-          <button
-            onClick={() => machine.goToLogin()}
-            className="text-blue-500 hover:underline text-sm"
-          >
-            Back to Log In
-          </button>
-          <br />
-          <button
-            onClick={() => machine.cancel()}
-            className="text-current/50 hover:underline text-sm"
-          >
-            Cancel
-          </button>
+        <div className="text-center space-y-1.5">
+          <div>
+            <button onClick={() => machine.goToLogin()} className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
+              Back to Log In
+            </button>
+          </div>
+          <div>
+            <button onClick={() => machine.cancel()} className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div className="animate-spin rounded-full h-7 w-7 border-2 border-border border-t-primary mx-auto mb-4" />
+  );
+}
+
+function ManualControls({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-5 pt-4 border-t border-border">
+      <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mb-3 text-center">Manual Controls</p>
+      <div className="flex gap-2">{children}</div>
     </div>
   );
 }
@@ -201,30 +159,14 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
 
   const handleAutoSuccess = async (action: () => void) => {
     action();
-
-    // Auto-success after short delay
     setTimeout(() => {
       const state = machine.getState();
       if (state.is("LoggingIn")) {
         const storeData = machine.store.getState();
-        machine.success({
-          user: {
-            id: "user-123",
-            name: "Demo User",
-            email: storeData.email,
-            avatar: "https://i.pravatar.cc/150?u=demo",
-          },
-        });
+        machine.success({ user: { id: "user-123", name: "Demo User", email: storeData.email, avatar: "https://i.pravatar.cc/150?u=demo" } });
       } else if (state.is("Registering")) {
         const storeData = machine.store.getState();
-        machine.success({
-          user: {
-            id: "user-123",
-            name: storeData.name,
-            email: storeData.email,
-            avatar: "https://i.pravatar.cc/150?u=" + storeData.email,
-          },
-        });
+        machine.success({ user: { id: "user-123", name: storeData.name, email: storeData.email, avatar: "https://i.pravatar.cc/150?u=" + storeData.email } });
       } else if (state.is("RequestingPasswordReset")) {
         const storeData = machine.store.getState();
         machine.success({ email: storeData.email });
@@ -233,158 +175,82 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-transparent rounded-lg border border-current/20 p-6">
+    <div className="max-w-sm mx-auto rounded-2xl border border-border bg-card p-6">
       {currentState.match({
         LoggedOut: () => (
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-6">Welcome</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => machine.showLogin()}
-                className="btn btn-primary w-full"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => machine.showRegister()}
-                className="btn btn-secondary w-full"
-              >
-                Register
-              </button>
+            <p className="text-2xl mb-1">👋</p>
+            <h2 className="text-xl font-semibold mb-6">Welcome</h2>
+            <div className="space-y-2">
+              <button onClick={() => machine.showLogin()} className="btn btn-primary w-full">Log In</button>
+              <button onClick={() => machine.showRegister()} className="btn btn-outline w-full">Register</button>
             </div>
           </div>
         ),
 
         LoginForm: (data) => (
-          <LoginFormView
-            data={data}
-            machine={machine}
-            handleAutoSuccess={handleAutoSuccess}
-          />
+          <LoginFormView data={data} machine={machine} handleAutoSuccess={handleAutoSuccess} />
         ),
 
         RegisterForm: (data) => (
-          <RegisterFormView
-            data={data}
-            machine={machine}
-            handleAutoSuccess={handleAutoSuccess}
-          />
+          <RegisterFormView data={data} machine={machine} handleAutoSuccess={handleAutoSuccess} />
         ),
 
         PasswordResetForm: (data) => (
-          <PasswordResetFormView
-            data={data}
-            machine={machine}
-            handleAutoSuccess={handleAutoSuccess}
-          />
+          <PasswordResetFormView data={data} machine={machine} handleAutoSuccess={handleAutoSuccess} />
         ),
 
         LoggingIn: () => (
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Logging In...</h2>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">
-              Authenticating {machine.store.getState().email}
-            </p>
-
-            {/* Manual Controls */}
-            <div className="space-y-2">
-              <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    machine.success({
-                      user: {
-                        id: "user-123",
-                        name: machine.store.getState().name,
-                        email: machine.store.getState().email,
-                        avatar: "https://i.pravatar.cc/150?u=demo",
-                      },
-                    })
-                  }
-                  className="btn btn-secondary flex-1"
-                >
-                  Login Success
-                </button>
-                <button
-                  onClick={() => machine.failure("Invalid credentials")}
-                  className="btn btn-destructive flex-1"
-                >
-                  Login Failed
-                </button>
-              </div>
-            </div>
+            <Spinner />
+            <h2 className="text-base font-semibold mb-1">Logging in…</h2>
+            <p className="text-xs text-muted-foreground mb-1">{machine.store.getState().email}</p>
+            <ManualControls>
+              <button
+                onClick={() => machine.success({ user: { id: "user-123", name: machine.store.getState().name, email: machine.store.getState().email, avatar: "https://i.pravatar.cc/150?u=demo" } })}
+                className="btn btn-secondary btn-sm flex-1"
+              >
+                Success
+              </button>
+              <button onClick={() => machine.failure("Invalid credentials")} className="btn btn-destructive btn-sm flex-1">
+                Fail
+              </button>
+            </ManualControls>
           </div>
         ),
 
         Registering: () => (
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Creating Account...</h2>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">
-              Registering {machine.store.getState().email}
-            </p>
-
-            {/* Manual Controls */}
-            <div className="space-y-2">
-              <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    machine.success({
-                      user: {
-                        id: "user-123",
-                        name: machine.store.getState().name,
-                        email: machine.store.getState().email,
-                        avatar:
-                          "https://i.pravatar.cc/150?u=" +
-                          machine.store.getState().email,
-                      },
-                    })
-                  }
-                  className="btn btn-secondary flex-1"
-                >
-                  Register Success
-                </button>
-                <button
-                  onClick={() => machine.failure("Email already taken")}
-                  className="btn btn-destructive flex-1"
-                >
-                  Register Failed
-                </button>
-              </div>
-            </div>
+            <Spinner />
+            <h2 className="text-base font-semibold mb-1">Creating account…</h2>
+            <p className="text-xs text-muted-foreground mb-1">{machine.store.getState().email}</p>
+            <ManualControls>
+              <button
+                onClick={() => machine.success({ user: { id: "user-123", name: machine.store.getState().name, email: machine.store.getState().email, avatar: "https://i.pravatar.cc/150?u=" + machine.store.getState().email } })}
+                className="btn btn-secondary btn-sm flex-1"
+              >
+                Success
+              </button>
+              <button onClick={() => machine.failure("Email already taken")} className="btn btn-destructive btn-sm flex-1">
+                Fail
+              </button>
+            </ManualControls>
           </div>
         ),
 
         RequestingPasswordReset: () => (
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Sending Reset Link...</h2>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="mb-6 opacity-70">
-              Sending to {machine.store.getState().email}
-            </p>
-
-            {/* Manual Controls */}
-            <div className="space-y-2">
-              <p className="text-sm opacity-50 mb-3">Manual Controls:</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    machine.success({ email: machine.store.getState().email })
-                  }
-                  className="btn btn-secondary flex-1"
-                >
-                  Reset Success
-                </button>
-                <button
-                  onClick={() => machine.failure("Email not found")}
-                  className="btn btn-destructive flex-1"
-                >
-                  Reset Failed
-                </button>
-              </div>
-            </div>
+            <Spinner />
+            <h2 className="text-base font-semibold mb-1">Sending reset link…</h2>
+            <p className="text-xs text-muted-foreground mb-1">{machine.store.getState().email}</p>
+            <ManualControls>
+              <button onClick={() => machine.success({ email: machine.store.getState().email })} className="btn btn-secondary btn-sm flex-1">
+                Success
+              </button>
+              <button onClick={() => machine.failure("Email not found")} className="btn btn-destructive btn-sm flex-1">
+                Fail
+              </button>
+            </ManualControls>
           </div>
         ),
 
@@ -392,18 +258,10 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           const storeData = machine.store.getState();
           return (
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4 text-blue-600">
-                Reset Link Sent!
-              </h2>
-              <p className="mb-6 opacity-70">
-                We've sent a password reset link to {storeData.email}.
-              </p>
-              <button
-                onClick={() => machine.goToLogin()}
-                className="btn btn-primary"
-              >
-                Back to Log In
-              </button>
+              <p className="text-2xl mb-2">📬</p>
+              <h2 className="text-base font-semibold mb-1">Link sent!</h2>
+              <p className="text-xs text-muted-foreground mb-5">Reset link sent to {storeData.email}.</p>
+              <button onClick={() => machine.goToLogin()} className="btn btn-primary btn-sm">Back to Log In</button>
             </div>
           );
         },
@@ -412,30 +270,17 @@ export const AuthFlowView = ({ machine }: { machine: AuthMachine }) => {
           const storeData = machine.store.getState();
           return (
             <div className="text-center">
-              <div className="mb-4">
-                {storeData.user?.avatar && (
-                  <img
-                    src={storeData.user.avatar}
-                    alt={storeData.user.name || "User"}
-                    className="w-16 h-16 rounded-full mx-auto mb-4"
-                  />
-                )}
-                <h2 className="text-2xl font-bold text-green-600">
-                  Welcome, {storeData.user?.name || "User"}!
-                </h2>
-                <p className="opacity-70">{storeData.user?.email}</p>
-              </div>
-              <div className="bg-green-500/10 border border-green-500/20 rounded p-4 mb-4">
-                <p className="text-green-600">
-                  You are successfully logged in!
-                </p>
-              </div>
-              <button
-                onClick={() => machine.logout()}
-                className="btn btn-destructive"
-              >
-                Log Out
-              </button>
+              {storeData.user?.avatar && (
+                <img
+                  src={storeData.user.avatar}
+                  alt={storeData.user.name || "User"}
+                  className="w-14 h-14 rounded-full mx-auto mb-3 ring-2 ring-border"
+                />
+              )}
+              <h2 className="text-base font-semibold">Welcome, {storeData.user?.name || "User"}!</h2>
+              <p className="text-xs text-muted-foreground mb-1">{storeData.user?.email}</p>
+              <p className="text-xs text-[oklch(0.55_0.16_142)] mb-5">Logged in successfully</p>
+              <button onClick={() => machine.logout()} className="btn btn-destructive btn-sm">Log Out</button>
             </div>
           );
         },
