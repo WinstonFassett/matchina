@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useMachine } from "matchina/react";
 import type { RPSMachine } from "./machine";
 import type { Move } from "./store";
 
@@ -7,142 +9,186 @@ const moveIcons: Record<Move, string> = {
   scissors: "✌️",
 };
 
-const moveAccent: Record<Move, string> = {
-  rock: "hover:bg-[oklch(0.70_0.14_38)] hover:border-[oklch(0.60_0.16_38)] hover:text-white",
-  paper: "hover:bg-[oklch(0.70_0.12_240)] hover:border-[oklch(0.60_0.14_240)] hover:text-white",
-  scissors: "hover:bg-[oklch(0.68_0.15_12)] hover:border-[oklch(0.58_0.17_12)] hover:text-white",
+const moveLabel: Record<Move, string> = {
+  rock: "Rock",
+  paper: "Paper",
+  scissors: "Scissors",
 };
+
+const moveAccentBg: Record<Move, string> = {
+  rock: "hover:bg-[oklch(0.24_0.08_38)] hover:border-[oklch(0.40_0.12_38)]",
+  paper: "hover:bg-[oklch(0.22_0.06_240)] hover:border-[oklch(0.38_0.10_240)]",
+  scissors: "hover:bg-[oklch(0.24_0.08_12)] hover:border-[oklch(0.40_0.12_12)]",
+};
+
+function ThinkingDots() {
+  return (
+    <span className="inline-flex items-center gap-1">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-1 h-1 rounded-full bg-current opacity-50 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s`, animationDuration: "0.9s" }}
+        />
+      ))}
+    </span>
+  );
+}
 
 function MoveButton({ move, onClick }: { move: Move; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-2xl border border-border bg-card transition-all duration-150 cursor-pointer select-none active:scale-95 ${moveAccent[move]}`}
+      className={`flex flex-col items-center gap-1.5 flex-1 py-4 rounded-xl border border-[oklch(0.28_0.02_240)] bg-[oklch(0.16_0.01_240)] transition-all duration-150 cursor-pointer select-none active:scale-95 group ${moveAccentBg[move]}`}
     >
       <span className="text-5xl leading-none">{moveIcons[move]}</span>
-      <span className="text-[10px] font-semibold uppercase tracking-widest opacity-50 capitalize">{move}</span>
+      <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.50_0.02_240)] group-hover:text-[oklch(0.72_0.02_240)] transition-colors">
+        {moveLabel[move]}
+      </span>
     </button>
   );
 }
 
-function PlayerCard({ move, label }: { move: Move | null; label: string }) {
+function MoveDisplay({ move, label, dim }: { move: Move | null; label: string; dim?: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-5xl leading-none">{move ? moveIcons[move] : "❓"}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function ScorePip({ label, score }: { label: string; score: number }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className="text-2xl font-bold tabular-nums">{score}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="flex flex-col items-center gap-1.5 w-20">
+      <span className={`text-5xl leading-none transition-all duration-300 ${dim ? "opacity-25 scale-90" : ""}`}>
+        {move ? moveIcons[move] : "❓"}
+      </span>
+      <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)]">{label}</span>
     </div>
   );
 }
 
 export function RPSAppView({ machine }: { machine: RPSMachine }) {
+  useMachine(machine);
+  useMachine(machine.store);
   const currentState = machine.getState();
   const storeData = machine.store.getState();
 
+  useEffect(() => {
+    if (!currentState.is("PlayerChose")) return;
+    const t = setTimeout(() => machine.computerSelectMove(), 600);
+    return () => clearTimeout(t);
+  }, [currentState.key]);
+
+  useEffect(() => {
+    if (!currentState.is("Judging")) return;
+    const t = setTimeout(() => machine.judge(), 500);
+    return () => clearTimeout(t);
+  }, [currentState.key]);
+
   return (
-    <div className="p-5 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-base font-semibold tracking-tight">Rock · Paper · Scissors</h1>
-        <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-muted">
-          <ScorePip label="You" score={storeData.playerScore} />
-          <span className="text-muted-foreground text-xs">vs</span>
-          <ScorePip label="CPU" score={storeData.computerScore} />
+    <div className="max-w-xs mx-auto flex flex-col gap-3 py-3">
+      {/* Unified game card */}
+      <div className="bg-[oklch(0.13_0.01_240)] rounded-2xl border border-[oklch(0.22_0.01_240)] overflow-hidden">
+
+        {/* Scoreboard — inset header */}
+        <div className="flex items-center border-b border-[oklch(0.20_0.01_240)]">
+          <div className="flex flex-col items-center gap-0.5 flex-1 py-4">
+            <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)]">You</span>
+            <span className="text-3xl font-black tabular-nums text-[oklch(0.88_0.01_240)]">{storeData.playerScore}</span>
+          </div>
+          <div className="w-px h-10 bg-[oklch(0.24_0.01_240)]" />
+          <div className="flex flex-col items-center gap-0.5 flex-1 py-4">
+            <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)]">CPU</span>
+            <span className="text-3xl font-black tabular-nums text-[oklch(0.88_0.01_240)]">{storeData.computerScore}</span>
+          </div>
+        </div>
+
+        {/* Arena — fixed height so card doesn't jump */}
+        <div className="flex flex-col items-center justify-center min-h-[220px] px-4 py-5">
+          {currentState.match({
+            WaitingForPlayer: () => (
+              <div className="flex flex-col items-center gap-4 w-full">
+                <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)]">
+                  Choose your move
+                </span>
+                <div className="flex gap-2 w-full">
+                  {(["rock", "paper", "scissors"] as Move[]).map((move) => (
+                    <MoveButton key={move} move={move} onClick={() => machine.selectMove(move)} />
+                  ))}
+                </div>
+              </div>
+            ),
+
+            PlayerChose: () => (
+              <div className="flex flex-col items-center gap-4 w-full">
+                <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)] flex items-center gap-1.5">
+                  CPU thinking <ThinkingDots />
+                </span>
+                <div className="flex items-center justify-around w-full px-4">
+                  <MoveDisplay move={storeData.playerMove} label="You" />
+                  <span className="text-xs font-mono text-[oklch(0.30_0.01_240)]">vs</span>
+                  <div className="flex flex-col items-center gap-1.5 w-20">
+                    <span className="text-5xl leading-none animate-pulse">🤔</span>
+                    <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)]">CPU</span>
+                  </div>
+                </div>
+              </div>
+            ),
+
+            Judging: () => (
+              <div className="flex flex-col items-center gap-4 w-full">
+                <span className="text-[8px] font-mono uppercase tracking-widest text-[oklch(0.42_0.02_240)] flex items-center gap-1.5">
+                  Judging <ThinkingDots />
+                </span>
+                <div className="flex items-center justify-around w-full px-4">
+                  <MoveDisplay move={storeData.playerMove} label="You" />
+                  <span className="text-sm font-black text-[oklch(0.30_0.01_240)]">VS</span>
+                  <MoveDisplay move={storeData.computerMove} label="CPU" />
+                </div>
+              </div>
+            ),
+
+            RoundComplete: () => {
+              const winner = storeData.roundWinner;
+              const resultLabel = !winner ? "Tie" : winner === "player" ? "You win" : "CPU wins";
+              const resultColor = !winner
+                ? "text-[oklch(0.52_0.02_240)]"
+                : winner === "player"
+                  ? "text-[oklch(0.72_0.18_142)]"
+                  : "text-[oklch(0.65_0.18_15)]";
+              return (
+                <div className="flex flex-col items-center gap-4 w-full">
+                  <span className={`text-2xl font-black tracking-tight ${resultColor}`}>{resultLabel}</span>
+                  <div className="flex items-center justify-around w-full px-4">
+                    <MoveDisplay move={storeData.playerMove} label="You" dim={!!(winner && winner !== "player")} />
+                    <span className="text-sm font-black text-[oklch(0.26_0.01_240)]">VS</span>
+                    <MoveDisplay move={storeData.computerMove} label="CPU" dim={!!(winner && winner !== "computer")} />
+                  </div>
+                  <button type="button" onClick={() => machine.nextRound()} className="btn btn-primary btn-sm">
+                    Next Round
+                  </button>
+                </div>
+              );
+            },
+
+            GameOver: () => {
+              const playerWon = storeData.playerScore > storeData.computerScore;
+              return (
+                <div className="flex flex-col items-center gap-4">
+                  <span className="text-5xl leading-none">{playerWon ? "🏆" : "💀"}</span>
+                  <div className="text-center">
+                    <p className="text-lg font-black text-[oklch(0.88_0.01_240)]">
+                      {playerWon ? "You win" : "CPU wins"}
+                    </p>
+                    <p className="text-xs text-[oklch(0.42_0.02_240)] mt-0.5 font-mono tabular-nums">
+                      {storeData.playerScore} — {storeData.computerScore}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => machine.newGame()} className="btn btn-outline btn-sm">
+                    Play Again
+                  </button>
+                </div>
+              );
+            },
+          })}
         </div>
       </div>
 
-      {currentState.match({
-        WaitingForPlayer: () => (
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-sm text-muted-foreground">Choose your move</p>
-            <div className="flex justify-center gap-3">
-              {(["rock", "paper", "scissors"] as Move[]).map((move) => (
-                <MoveButton key={move} move={move} onClick={() => machine.selectMove(move)} />
-              ))}
-            </div>
-          </div>
-        ),
-
-        PlayerChose: () => (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center justify-around w-full px-4">
-              <PlayerCard move={storeData.playerMove} label="You" />
-              <span className="text-muted-foreground text-sm font-medium">vs</span>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-5xl leading-none">🤖</span>
-                <span className="text-xs text-muted-foreground">CPU</span>
-              </div>
-            </div>
-            <button type="button" onClick={() => machine.computerSelectMove()} className="btn btn-primary btn-sm">
-              CPU picks...
-            </button>
-          </div>
-        ),
-
-        Judging: () => (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center justify-around w-full px-4">
-              <PlayerCard move={storeData.playerMove} label="You" />
-              <span className="text-muted-foreground text-sm font-medium">vs</span>
-              <PlayerCard move={storeData.computerMove} label="CPU" />
-            </div>
-            <button type="button" onClick={() => machine.judge()} className="btn btn-secondary btn-sm">
-              Judge Round
-            </button>
-          </div>
-        ),
-
-        RoundComplete: () => {
-          const winner = storeData.roundWinner;
-          const resultLabel = !winner ? "Tie!" : winner === "player" ? "You win!" : "CPU wins!";
-          const resultColor = !winner
-            ? "text-muted-foreground"
-            : winner === "player"
-            ? "text-[oklch(0.55_0.16_142)]"
-            : "text-destructive";
-          return (
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center justify-around w-full px-4">
-                <PlayerCard move={storeData.playerMove} label="You" />
-                <div className="flex flex-col items-center gap-1">
-                  <span className={`text-lg font-bold ${resultColor}`}>{resultLabel}</span>
-                </div>
-                <PlayerCard move={storeData.computerMove} label="CPU" />
-              </div>
-              <button type="button" onClick={() => machine.nextRound()} className="btn btn-primary btn-sm">
-                Next Round
-              </button>
-            </div>
-          );
-        },
-
-        GameOver: () => {
-          const playerWon = storeData.playerScore > storeData.computerScore;
-          return (
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-center">
-                <p className="text-2xl mb-1">{playerWon ? "🏆" : "💀"}</p>
-                <h3 className="text-base font-semibold">{playerWon ? "You win!" : "CPU wins!"}</h3>
-                <p className="text-sm text-muted-foreground">
-                  Final: {storeData.playerScore} – {storeData.computerScore}
-                </p>
-              </div>
-              <button type="button" onClick={() => machine.newGame()} className="btn btn-outline btn-sm">
-                Play Again
-              </button>
-            </div>
-          );
-        },
-      })}
-
+      {/* State badge */}
       <div className="text-center">
         <span className="badge badge-outline text-[10px]">{currentState.key}</span>
       </div>
