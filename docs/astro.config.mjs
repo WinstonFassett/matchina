@@ -4,7 +4,14 @@ import starlight from "@astrojs/starlight";
 import starlightSidebarTopics from "starlight-sidebar-topics";
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
-import webdev from "@winstonfassett/webdev-astro";
+
+// Optional dev-only integration — not published, not available in CI/prod builds.
+let webdev;
+try {
+  webdev = (await import("@winstonfassett/webdev-astro")).default;
+} catch {
+  webdev = () => ({ name: "@winstonfassett/webdev-astro", hooks: {} });
+}
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // const twoslashConfigPath = path.resolve(__dirname, "twoslash.config.js");
