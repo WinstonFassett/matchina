@@ -10,6 +10,8 @@ import { withLifecycle } from "./event-lifecycle";
 import { FactoryKeyedState, KeyedStateFactory } from "./state-keyed";
 import { ResolveEvent } from "./state-machine-types";
 import { KeysWithZeroRequiredArgs } from "./utility-types";
+import { brandFactoryMachine } from "./machine-brand";
+import { enhanceWithShape, createStaticShapeStore } from "./shape";
 
 /**
  * Creates a type-safe state machine from a state factory and transitions.
@@ -66,7 +68,7 @@ export function createMachine<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ): FactoryMachine<FC> {
-  const initialState = typeof init === "string" ? states[init]({}) : init;
+  const initialState = typeof init === "string" ? states[init]() : init;
 
   let lastChange: E = new FactoryMachineEventImpl<E>(
     "__initialize" as E["type"],
@@ -75,13 +77,17 @@ export function createMachine<
     []
   ) as E;
 
+  // Determine the initial key - either from the init parameter or from the initial state
+  const initialKey = typeof init === "string" ? init : init.key;
+
   const machine = withLifecycle(
     {
       states,
       transitions,
+      initialKey, // Store for shape building and introspection
       getChange: () => lastChange,
       getState: () => lastChange.to,
-      send(type, ...params) {
+      send(type: E["type"], ...params: any[]) {
         const resolved = machine.resolveExit({
           type,
           params,
@@ -91,19 +97,28 @@ export function createMachine<
           machine.transition(resolved);
         }
       },
-      resolveExit: (ev) => {
+      resolveExit: (ev: ResolveEvent<E>) => {
         const to = resolveNextState<FC>(transitions, states, ev);
         return to
-          ? new FactoryMachineEventImpl(ev.type, ev.from, to, ev.params)
+          ? (new FactoryMachineEventImpl(
+              ev.type,
+              ev.from,
+              to,
+              ev.params,
+              machine as E["machine"]
+            ) as E)
           : undefined;
       },
-    } as Partial<FactoryMachine<FC>>,
+    } as unknown as Partial<FactoryMachine<FC>>,
     (ev: E) => {
       lastChange = ev;
     }
   ) as FactoryMachine<FC>;
 
-  return machine;
+  brandFactoryMachine(machine);
+
+  // Add shape support to all machines
+  return enhanceWithShape(machine, createStaticShapeStore(machine));
 }
 
 /**
@@ -149,7 +164,12 @@ export function resolveExitState<FC extends FactoryMachineContext<any>>(
     return typeof stateOrFn === "function" ? (stateOrFn as any)(ev) : stateOrFn;
   }
 
-  return states[transition as keyof typeof states](...ev.params) as any;
+  // Check if transition is a string key to prevent recursion
+  if (typeof transition === "string") {
+    return states[transition](...ev.params) as any;
+  }
+
+  return undefined;
 }
 
 export {

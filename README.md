@@ -10,46 +10,38 @@ Matchina is a TypeScript-first, lightweight toolkit for building type-safe state
 - **Promise integration** for handling async operations safely
 - **Optional integrations** with libraries like Immer, Valibot, Zod, and React
 
-## Philosophy & Inspiration
+## Testing
 
-- **TypeScript-first design** with powerful type inference
-- **Nano-sized, opt-in primitives** for state machines and async logic
-- **Composable APIs** that work together or standalone
-- Inspired by [suchipi/safety-match](https://github.com/suchipi/safety-match), [christianalfoni/timsy](https://github.com/christianalfoni/timsy), [pelotom/unionize](https://github.com/pelotom/unionize), and [XState](https://xstate.js.org/)
+### 🧪 E2E Testing
 
-## Philosophy & Inspiration
+```bash
+# Run all E2E tests
+npm run test:e2e
 
-- **Nano-sized, opt-in primitives** for state machines and async logic.
-- Inspired by [Timsy](https://github.com/streamich/timsy), [XState](https://xstate.js.org/), and Andre Sitnik’s nano library style.
-- Each primitive is useful standalone or composable.
+# Debug with browser console
+npx playwright test --headed
 
-## What is Matchina?
+# Generate coverage report
+node scripts/e2e-coverage-report.js
+```
 
-A super lightweight, strongly-typed toolkit for building and extending state machines, factories, and async flows in TypeScript. Use only what you need.
+**Current Coverage:** 7% (2/27 examples)
 
-## Features
+### 🧪 Unit Testing
 
-- **Type-Safe State Factories**:
+```bash
+# Run all tests with coverage
+npm test
 
-  - Create discriminated union types with `matchboxFactory()` for powerful pattern matching
-  - Build factory machines with complete type inference for states and transitions
-  - Enjoy automatic type narrowing with `.is()` and `.as()` type guards
+# Run specific test
+npx vitest run test/file.test.ts
+```
 
-- **Smart Transitions**:
+**Coverage:** Core library ~92% (excellent), visualization 0% (E2E only)
 
-  - Define transitions with TypeScript inferring parameter types from destination states
-  - Trigger transitions with fully typed parameters based on target state requirements
-  - Handle complex transition logic with guards and side effects
+## Philosophy
 
-- **Async Handling**:
-
-  - `createPromiseMachine` for type-safe async state management
-  - Lifecycle hooks for promises with appropriate typing
-  - Safe error handling for rejected promises
-
-- **React Integration**:
-  - React hooks for consuming state machines
-  - Type-safe component rendering based on state
+Matchina focuses on type-safe state management with powerful pattern matching. [Read more about our philosophy](docs/PHILOSOPHY.md).
 
 ## Installation
 
@@ -541,12 +533,6 @@ The React integration provides:
 - **Pattern matching for rendering** based on machine state
 - **Lifecycle hooks** for reacting to state changes
 
-## Installation
-
-```sh
-npm install matchina
-```
-
 ## Documentation
 
 For detailed documentation, examples, and API reference, visit:
@@ -554,9 +540,11 @@ For detailed documentation, examples, and API reference, visit:
 - [Getting Started](https://winstonfassett.github.io/matchina/guides/quickstart)
 - [Matchbox Factories](https://winstonfassett.github.io/matchina/guides/matchbox-factories)
 - [State Machines](https://winstonfassett.github.io/matchina/guides/machines)
+- [Hierarchical Machines](https://winstonfassett.github.io/matchina/guides/hierarchical-machines)
 - [Promise Handling](https://winstonfassett.github.io/matchina/guides/promises)
 - [Lifecycle Hooks](https://winstonfassett.github.io/matchina/guides/lifecycle)
 - [React Integration](https://winstonfassett.github.io/matchina/guides/react)
+- [Visualization Tools](https://winstonfassett.github.io/matchina/guides/visualization)
 - [Full Examples](https://winstonfassett.github.io/matchina/examples)
 
 ## Integrations
@@ -629,6 +617,22 @@ const store2 = createStoreMachine(
 ### Valibot/Zod Integration
 
 You can integrate validation libraries like Valibot or Zod with matchina:
+
+### Hierarchical State Machines & Visualization
+
+For HSM and visualization features, import from the specialized packages:
+
+```typescript
+// Hierarchical State Machines
+import { submachine, nestedHsmRoot } from 'matchina/hsm';
+
+// Visualization Components  
+import { ReactFlowInspector, HSMMermaidInspector } from 'matchina/viz';
+import { defaultTheme, applyTheme } from 'matchina/viz';
+
+// React integration for visualization
+import { MachineVisualizer } from 'matchina/react';
+```
 
 ## Transition Hooks
 
@@ -730,13 +734,18 @@ Matchina is very lightweight:
 | valibot integration  | 680 B         |
 | full library         | 3.42 kB       |
 
+## Development
+
+```bash
+npm run dev:docs  # Start live development with automatic updates
+npm run build:lib  # Build .mjs/.js files for npm publishing
+```
+
+**Project Structure:** `src/` (TypeScript source), `docs/` (Astro docs), `dist/` (built files)
+
 ## Contributing
 
-Contributions are welcome! Feel free to:
-
-- Report issues and bugs
-- Suggest new features or improvements
-- Submit pull requests
+Contributions welcome! Report issues, suggest features, or submit pull requests.
 
 ## License
 

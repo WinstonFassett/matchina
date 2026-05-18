@@ -1,0 +1,53 @@
+/**
+ * Annotates a parameterized transition handler with possible target states for visualization.
+ *
+ * @example
+ * ```ts
+ * const typed = defineTransition(
+ *   (value: string) => (ev) => {
+ *     return value ? activeStates.Suggesting(...) : activeStates.Empty(...);
+ *   },
+ *   (f) => [f(""), f("search term")]
+ * );
+ * ```
+ */
+export function defineTransition<S extends { key: string }>(
+  handler: (...args: any[]) => (ev: any) => S,
+  discover?:
+    | ((f: typeof handler) => S[]) // Receives handler, calls it with samples
+    | (() => S[]) // Just returns possible states
+) {
+  if (discover) {
+    // Detect which form of discover we have
+    const results =
+      discover.length === 1
+        ? (discover as (f: typeof handler) => S[])(handler)
+        : (discover as () => S[])();
+
+    // Extract state keys for visualization
+    const targets = results.map((r) => r.key);
+    (handler as any)._targets = targets;
+  }
+
+  return handler;
+}
+
+/**
+ * Check if a transition has inspection metadata
+ */
+export function hasTargets(
+  transition: any
+): transition is { _targets: string[] } {
+  return (
+    transition &&
+    typeof transition === "function" &&
+    Array.isArray(transition._targets)
+  );
+}
+
+/**
+ * Get possible target states from a transition
+ */
+export function getTargets(transition: any): string[] | undefined {
+  return hasTargets(transition) ? transition._targets : undefined;
+}

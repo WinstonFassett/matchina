@@ -16,238 +16,175 @@ export const ExtendedTrafficLightView = ({
   const data = machine.data.getState();
   const walkWarningDuration = data.data.walkWarningDuration;
 
-  const [timeRemaining, setTimeRemaining] = useState(
-    currentState.data.duration
-  );
+  const [timeRemaining, setTimeRemaining] = useState(currentState.data.duration);
   const [walkTimeRemaining, setWalkTimeRemaining] = useState(0);
   const [isBlinking, setIsBlinking] = useState(false);
   const [walkBlinking, setWalkBlinking] = useState(false);
 
-  const progressPercent = Math.max(
-    0,
-    Math.min(100, (timeRemaining / currentState.data.duration) * 100)
-  );
-  // Set initial walk warning duration
+  const progressPercent = Math.max(0, Math.min(100, (timeRemaining / currentState.data.duration) * 100));
+
   useEffect(() => {
-    if (walkWarningDuration) {
-      setWalkTimeRemaining(walkWarningDuration);
-    } else {
-      setWalkTimeRemaining(0);
-    }
+    if (walkWarningDuration) setWalkTimeRemaining(walkWarningDuration);
+    else setWalkTimeRemaining(0);
   }, [walkWarningDuration]);
 
-  // Set initial time remaining when state changes
   useEffect(() => {
     setTimeRemaining(currentState.data.duration);
   }, [currentState]);
 
-  // Handle light countdown
-  useIntervalEffect(
-    () => setTimeRemaining((prev) => Math.max(0, prev - 100)),
-    currentState.data.duration > 0 ? 100 : null
-  );
+  useIntervalEffect(() => setTimeRemaining((prev) => Math.max(0, prev - 100)), currentState.data.duration > 0 ? 100 : null);
+  useIntervalEffect(() => setWalkTimeRemaining((prev) => Math.max(0, prev - 100)), walkTimeRemaining > 0 ? 100 : null);
+  useIntervalEffect(() => setIsBlinking((prev) => !prev), currentState.is("FlashingYellow") || currentState.is("FlashingRed") ? 500 : null);
+  useIntervalEffect(() => setWalkBlinking((prev) => !prev), walkTimeRemaining > 0 ? 500 : null);
 
-  // Handle walk countdown
-  useIntervalEffect(
-    () => setWalkTimeRemaining((prev) => Math.max(0, prev - 100)),
-    walkTimeRemaining > 0 ? 100 : null
-  );
+  const notFlashing = !currentState.is("FlashingYellow") && !currentState.is("FlashingRed");
 
-  // Handle traffic light blinking
-  useIntervalEffect(
-    () => setIsBlinking((prev) => !prev),
-    currentState.is("FlashingYellow") || currentState.is("FlashingRed")
-      ? 500
-      : null
-  );
-  useIntervalEffect(
-    () => {
-      setWalkBlinking((prev) => !prev);
+  const bulbRed = currentState.match(
+    {
+      Red: () => "bg-red-500 shadow-lg shadow-red-500/50",
+      RedWithPedestrianRequest: () => "bg-red-500 shadow-lg shadow-red-500/50",
+      FlashingRed: () => (isBlinking ? "bg-red-500 shadow-lg shadow-red-500/50" : "bg-[oklch(0.22_0.04_15)]"),
+      _: () => "bg-[oklch(0.22_0.04_15)]",
     },
-    walkTimeRemaining > 0 ? 500 : null
+    false,
+  );
+
+  const bulbYellow = currentState.match(
+    {
+      Yellow: () => "bg-yellow-400 shadow-lg shadow-yellow-400/50",
+      FlashingYellow: () => (isBlinking ? "bg-yellow-400 shadow-lg shadow-yellow-400/50" : "bg-[oklch(0.22_0.04_85)]"),
+      _: () => "bg-[oklch(0.22_0.04_85)]",
+    },
+    false,
+  );
+
+  const bulbGreen = currentState.match(
+    {
+      Green: () => "bg-green-500 shadow-lg shadow-green-500/50",
+      _: () => "bg-[oklch(0.22_0.04_142)]",
+    },
+    false,
   );
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="flex space-x-8 mb-4 items-end">
-        {/* Traffic light */}
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <div className="flex flex-col space-y-4 items-center">
-            {/* Red light */}
+    <div className="flex flex-col items-center gap-5">
+      {/* Housings row */}
+      <div className="flex flex-row items-end gap-6">
+        {/* Traffic light housing */}
+        <div className="flex flex-col items-center gap-3 bg-[oklch(0.18_0.01_240)] rounded-2xl px-5 py-6 border border-[oklch(0.25_0.01_240)]">
+          <div className={`w-14 h-14 rounded-full transition-all duration-200 ${bulbRed}`} />
+          <div className={`w-14 h-14 rounded-full transition-all duration-200 ${bulbYellow}`} />
+          <div className={`w-14 h-14 rounded-full transition-all duration-200 ${bulbGreen}`} />
+        </div>
+
+        {/* Pedestrian signal housing */}
+        <div className="flex flex-col items-center gap-2 bg-[oklch(0.18_0.01_240)] rounded-2xl px-4 py-5 border border-[oklch(0.25_0.01_240)]">
+          <div className="h-10 flex items-center justify-center">
+            {pedestrianSignal.match({
+              Walk: () => (
+                <span
+                  className="text-green-400 text-3xl"
+                  style={walkTimeRemaining > 0 ? { opacity: walkBlinking ? 1 : 0.25 } : undefined}
+                >
+                  🚶
+                </span>
+              ),
+              DontWalk: () => <span className="text-red-400 text-3xl">✋</span>,
+              Error: () => <span className="text-yellow-400 text-3xl">⚠️</span>,
+            })}
+          </div>
+          <div className="text-[9px] font-mono uppercase tracking-widest text-center text-[oklch(0.55_0.02_240)] w-16">
+            {pedestrianSignal.match({
+              Walk: () => "Walk",
+              DontWalk: () => "Don't Walk",
+              Error: () => "Error",
+            })}
+          </div>
+          <div className="h-5 flex items-center justify-center">
+            {walkTimeRemaining > 0 ? (
+              <span className="text-yellow-400 font-mono text-xs tabular-nums">
+                {(walkTimeRemaining / 1000).toFixed(1)}s
+              </span>
+            ) : (
+              <span className="invisible text-xs">0.0s</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress bars */}
+      {notFlashing && (
+        <div className="flex flex-col items-center gap-1 w-64">
+          <div className="w-full h-1.5 bg-[oklch(0.20_0.01_240)] rounded-full">
             <div
-              className={`w-16 h-16 rounded-full ${currentState.match(
-                {
-                  Red: () => "bg-red-600",
-                  RedWithPedestrianRequest: () => "bg-red-600",
-                  FlashingRed: () => (isBlinking ? "bg-red-600" : "bg-red-900"),
-                  _: () => "bg-red-900",
-                },
-                false
-              )}`}
-            />
-            {/* Yellow light */}
-            <div
-              className={`w-16 h-16 rounded-full ${currentState.match(
-                {
-                  Yellow: () => "bg-yellow-400",
-                  FlashingYellow: () =>
-                    isBlinking ? "bg-yellow-400" : "bg-yellow-900",
-                  _: () => "bg-yellow-900",
-                },
-                false
-              )}`}
-            />
-            {/* Green light */}
-            <div
-              className={`w-16 h-16 rounded-full ${currentState.match(
+              className={`h-full rounded-full transition-all ${currentState.match(
                 {
                   Green: () => "bg-green-500",
-                  _: () => "bg-green-900",
+                  Yellow: () => "bg-yellow-400",
+                  Red: () => "bg-red-500",
+                  RedWithPedestrianRequest: () => "bg-red-500",
                 },
-                false
+                false,
               )}`}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
+          <span className="text-[9px] font-mono uppercase tracking-widest text-[oklch(0.40_0.01_240)]">
+            Light countdown
+          </span>
         </div>
-
-        {/* Pedestrian signal */}
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <div className="flex flex-col items-center">
-            <div className="h-8 flex items-center justify-center">
-              {pedestrianSignal.match({
-                Walk: () => (
-                  <span
-                    className="text-green-500 text-2xl"
-                    style={
-                      walkTimeRemaining > 0
-                        ? { opacity: walkBlinking ? 1 : 0.3 }
-                        : undefined
-                    }
-                  >
-                    🚶
-                  </span>
-                ),
-                DontWalk: () => (
-                  <span className="text-red-500 text-2xl">✋</span>
-                ),
-                Error: () => (
-                  <span className="text-yellow-500 text-2xl">⚠️</span>
-                ),
-              })}
-            </div>
-            <div className="text-sm text-center w-16 h-8 flex items-center justify-center">
-              {pedestrianSignal.match({
-                Walk: () => "WALK",
-                DontWalk: () => "DON'T WALK",
-                Error: () => "ERROR",
-              })}
-            </div>
-            <div className="h-4 flex items-center justify-center">
-              {walkTimeRemaining > 0 ? (
-                <div className="text-yellow-600 font-mono text-center">
-                  {`${(walkTimeRemaining / 1000).toFixed(1)}s`}
-                </div>
-              ) : (
-                <div className="invisible">0.0s</div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Light Countdown - only show for non-flashing states */}
-      {!currentState.is("FlashingYellow") &&
-        !currentState.is("FlashingRed") && (
-          <>
-            <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
-              <div
-                className={`h-full rounded-full ${currentState.match(
-                  {
-                    Green: () => "bg-green-500",
-                    Yellow: () => "bg-yellow-400",
-                    Red: () => "bg-red-600",
-                    RedWithPedestrianRequest: () => "bg-red-600",
-                  },
-                  false
-                )}`}
-                style={{ width: `${progressPercent}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-gray-600 mb-2">Light Countdown</div>
-          </>
-        )}
-
-      {/* Walk Countdown */}
-      {walkWarningDuration && walkTimeRemaining > 0 && (
-        <>
-          <div className="w-64 h-2 bg-gray-200 rounded-full mb-2">
-            <div
-              className={`h-full rounded-full bg-yellow-500`}
-              style={{ width: `${(walkTimeRemaining / walkDuration) * 100}%` }}
-            ></div>
-          </div>
-          <div className="text-xs text-gray-600 mb-2">Walk Countdown</div>
-        </>
       )}
 
-      <div className="text-xl font-bold mb-2">{currentState.data.message}</div>
+      {walkWarningDuration && walkTimeRemaining > 0 && (
+        <div className="flex flex-col items-center gap-1 w-64">
+          <div className="w-full h-1.5 bg-[oklch(0.20_0.01_240)] rounded-full">
+            <div
+              className="h-full rounded-full bg-yellow-400"
+              style={{ width: `${(walkTimeRemaining / walkDuration) * 100}%` }}
+            />
+          </div>
+          <span className="text-[9px] font-mono uppercase tracking-widest text-[oklch(0.40_0.01_240)]">
+            Walk countdown
+          </span>
+        </div>
+      )}
 
-      <div className="text-sm mb-4">
-        Current state: <span className="font-mono">{currentState.key}</span>
-      </div>
+      {/* State message */}
+      <div className="text-sm font-medium text-foreground">{currentState.data.message}</div>
 
-      <div className="flex space-x-4 mb-4">
-        {!currentState.is("FlashingYellow") &&
-          !currentState.is("FlashingRed") && (
-            <>
-              <button
-                className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-                onClick={() => machine.api.next()}
-              >
-                Next Signal
-              </button>
-              {!data.data.crossingRequested ? (
-                <button
-                  className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
-                  onClick={() => machine.requestCrossing()}
-                >
-                  Request Crossing
-                </button>
-              ) : (
-                <button
-                  className="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-                  disabled
-                >
-                  Crossing Requested
-                </button>
-              )}
-            </>
-          )}
-      </div>
+      {/* State badge */}
+      <span className="badge badge-outline text-[10px]">{currentState.key}</span>
 
-      {/* Special mode controls */}
-      <div className="flex space-x-4">
-        {!currentState.is("FlashingYellow") &&
-        !currentState.is("FlashingRed") ? (
-          <>
-            <button
-              className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600"
-              onClick={() => machine.api.emergency()}
-            >
-              Emergency Mode
+      {/* Controls */}
+      {notFlashing && (
+        <div className="flex gap-3">
+          <button className="btn btn-primary btn-sm" onClick={() => machine.api.next()}>
+            Next Signal
+          </button>
+          {!data.data.crossingRequested ? (
+            <button className="btn btn-outline btn-sm" onClick={() => machine.requestCrossing()}>
+              Request Crossing
             </button>
-            <button
-              className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-              onClick={() => machine.api.malfunction()}
-            >
+          ) : (
+            <button className="btn btn-outline btn-sm" disabled>
+              Crossing Requested
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {notFlashing ? (
+          <>
+            <button className="btn btn-outline btn-sm" onClick={() => machine.api.emergency()}>
+              Emergency
+            </button>
+            <button className="btn btn-destructive btn-sm" onClick={() => machine.api.malfunction()}>
               Malfunction
             </button>
           </>
         ) : (
-          <button
-            className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-            onClick={() => machine.api.reset()}
-          >
+          <button className="btn btn-primary btn-sm" onClick={() => machine.api.reset()}>
             Reset to Normal
           </button>
         )}

@@ -1,0 +1,34 @@
+---
+title: Authentication Flow
+description: Complete authentication flow with login, registration, and password reset
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
+
+A robust authentication flow using a state machine to coordinate login, registration, and password reset. Demonstrates how to separate UI form state from business logic, and how to handle async effects and error propagation in a predictable way.
+
+<ExampleEmbed id="auth-flow" />
+
+## Key patterns
+
+**State machine for flow, not form state** — the machine tracks which step the user is in (login, register, reset, etc.), but the view manages the actual form fields. This keeps the machine focused on transitions and error handling.
+
+**Async effects in dedicated states** — async logic (API calls) is triggered by entering states like `LoggingIn`, `Registering`, or `RequestingPasswordReset`. The machine handles success/failure and transitions accordingly.
+
+**Error propagation** — errors from async operations are passed back to the relevant form state as state data, so the view can display them without any extra wiring.
+
+<ExampleCode id="auth-flow" file="machine.ts" />
+
+## How to use this pattern
+
+- Put UI state in the view: use React state for form fields. Only call the machine when the user submits or triggers navigation.
+- Let the machine handle flow and validation: the machine decides what state comes next and how to handle errors.
+- Trigger side effects on state entry, not in response to UI events.
+- Pass error messages through state data so the view can render them.
+
+## When to use this pattern
+
+Multi-step forms where the flow depends on user actions or async results. Flows with error handling, retries, or conditional navigation. Anywhere you want UI logic and business logic clearly separated.
+
+For more on effect management, see the [State Effects Guide](/matchina/guides/effects).

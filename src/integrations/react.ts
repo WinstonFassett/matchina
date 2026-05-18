@@ -1,7 +1,10 @@
 import React, { useCallback } from "react";
 import { EffectFunc } from "../function-types";
+import { withSubscribe } from "../extras/with-subscribe";
+
 // Global no-op subscribe used when a machine is absent.
 // Signature matches useSyncExternalStore's expected subscribe shape.
+// eslint-disable-next-line unicorn/consistent-function-scoping
 const noopSubscribe: (onStoreChange: () => void) => () => void = () => () => {};
 
 /**
@@ -27,16 +30,15 @@ export function useMachineMaybe<Change>(
 ): Change | undefined {
   const onSubscribe = useCallback(
     (listener: EffectFunc<Change>) => {
-      if (!machine) return () => {};
-      const orig = machine.notify;
-      const bound = orig.bind(machine);
-      machine.notify = (ev) => {
-        bound(ev);
-        listener(ev);
-      };
-      return () => {
-        machine.notify = orig;
-      };
+      if (!machine) {
+        return () => {};
+      }
+
+      // Use withSubscribe to ensure notify is wrapped only once, even with multiple subscribers.
+      // withSubscribe is idempotent - calling it multiple times is safe.
+      // It checks if machine.subscribe already exists before wrapping.
+      const machineWithSub = withSubscribe(machine);
+      return machineWithSub.subscribe(listener);
     },
     [machine]
   );
@@ -54,12 +56,12 @@ export function useMachineMaybe<Change>(
 }
 
 /** Strict variant that requires a machine and never returns undefined. */
-export function useMachine<Change>(
-  machine: { notify: (ev: Change) => void; getChange: () => Change }
-): Change {
+export function useMachine<Change>(machine: {
+  notify: (ev: Change) => void;
+  getChange: () => Change;
+}): Change {
   if (!machine || !machine.getChange) {
     throw new Error("useMachine requires a machine instance");
   }
   return useMachineMaybe(machine) as Change;
 }
-

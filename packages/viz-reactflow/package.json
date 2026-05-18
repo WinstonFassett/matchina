@@ -1,0 +1,38 @@
+{
+  "name": "@matchina/viz-reactflow",
+  "version": "0.1.0",
+  "description": "ReactFlow-based state machine visualizer for Matchina",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "node": {
+        "types": "./src/index.ts",
+        "import": "./src/index.ts"
+      },
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --watch"
+  },
+  "dependencies": {
+    "@floating-ui/react": "^0.27.16",
+    "@xyflow/react": "^12.7.0",
+    "elkjs": "^0.9.3",
+    "matchina": "file:../.."
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "unbuild": "^3.6.1"
+  }
+}

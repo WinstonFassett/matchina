@@ -1,0 +1,16 @@
+---
+import { cn } from "@/lib/utils";
+import { button, type ButtonVariants } from "./button.tv";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = Omit<HTMLAttributes<"button">, "size" | "class"> &
+  ButtonVariants & {
+    class?: string;
+  };
+
+const { variant, size, class: className, ...rest } = Astro.props;
+---
+
+<button class={cn(button({ variant, size }), className)} {...rest}>
+  <slot />
+</button>

@@ -8,42 +8,17 @@ export const TrafficLightView = ({
 }) => {
   useMachine(machine);
   const currentState = machine.getState();
-  const stateMessage = currentState.data.message;
   return (
-    <div className="flex flex-col items-center">
-      <div className="bg-gray-800 p-4 rounded-lg mb-4">
-        <div className="flex flex-row space-x-4 items-center">
-          {/* Red light */}
-          <div
-            className={`w-16 h-16 rounded-full ${
-              currentState.is("Red") ? "bg-red-600" : "bg-red-900"
-            }`}
-          />
-          {/* Yellow light */}
-          <div
-            className={`w-16 h-16 rounded-full ${
-              currentState.is("Yellow") ? "bg-yellow-400" : "bg-yellow-900"
-            }`}
-          />
-          {/* Green light */}
-          <div
-            className={`w-16 h-16 rounded-full ${
-              currentState.is("Green") ? "bg-green-500" : "bg-green-900"
-            }`}
-          />
-        </div>
+    <div className="flex flex-col items-center gap-5">
+      <div className="flex flex-col items-center gap-3 bg-[oklch(0.18_0.01_240)] rounded-2xl px-5 py-6 border border-[oklch(0.25_0.01_240)]">
+        <div className={`w-14 h-14 rounded-full transition-all duration-200 shadow-lg ${currentState.is("Red") ? "bg-red-500 shadow-red-500/50" : "bg-[oklch(0.22_0.04_15)]"}`} />
+        <div className={`w-14 h-14 rounded-full transition-all duration-200 shadow-lg ${currentState.is("Yellow") ? "bg-yellow-400 shadow-yellow-400/50" : "bg-[oklch(0.22_0.04_85)]"}`} />
+        <div className={`w-14 h-14 rounded-full transition-all duration-200 shadow-lg ${currentState.is("Green") ? "bg-green-500 shadow-green-500/50" : "bg-[oklch(0.22_0.04_142)]"}`} />
       </div>
 
-      <div className="text-xl font-bold mb-4">{stateMessage}</div>
+      <span className="badge badge-outline">{currentState.key}</span>
 
-      <div className="text-sm mb-4">
-        Current state: <span className="font-mono">{currentState.key}</span>
-      </div>
-
-      <button
-        className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-        onClick={() => machine.next()}
-      >
+      <button className="btn btn-primary btn-sm" onClick={() => machine.next()}>
         Next Signal
       </button>
     </div>

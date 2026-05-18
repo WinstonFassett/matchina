@@ -1,35 +1,105 @@
+/* Matchina docs — themed with ui26 multi-theme system.
+ * All theme tokens: ./all-themes.css (14 themes, [data-theme="<name>"] selectors)
+ * Starlight chrome bridge + restyle: ./starlight-overrides.css
+ */
+
 @layer base, starlight, theme, components, utilities;
 
 @import "@astrojs/starlight-tailwind";
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-@theme {
-  /*
-	Configure your Tailwind theme that will be used by Starlight.
-	https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind
-	*/
+/* All ui26 themes — defines --background/--foreground/--primary/etc. per data-theme.
+ * ThemeProvider.astro sets data-theme on <html> before first paint. */
+@import "./all-themes.css";
+
+/* Maps Starlight's --sl-* palette onto our tokens, then patches DOM chrome
+ * (header, sidebar, content, code, TOC, CTAs). Must come AFTER the theme. */
+@import "./starlight-overrides.css";
+
+/* ui26 component layer — generated from docs/scripts/generate-components.ts */
+@import "../components/ui/button/btn.css";
+@import "../components/ui/badge/badge.css";
+@import "../components/ui/chip/chip.css";
+@import "../components/ui/card/card.css";
+@import "../components/ui/card/card-header.css";
+@import "../components/ui/card/card-title.css";
+@import "../components/ui/card/card-description.css";
+@import "../components/ui/card/card-content.css";
+@import "../components/ui/card/card-footer.css";
+@import "../components/ui/toggle/toggle-track.css";
+@import "../components/ui/toggle/toggle-thumb.css";
+
+
+/* Tailwind dark: variant fires for any theme ending in "dark"
+ * (e.g. "editorial-dark", "tix-dark"). Matches ui26's compound data-theme format. */
+@custom-variant dark (&:is([data-theme$="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+  --color-purple: var(--purple);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-text-mute: var(--text-mute);
+  --color-code: var(--code);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-display: var(--font-display, var(--font-sans));
+  --font-mono: var(--font-mono);
 }
 
-/*
-Add additional Tailwind styles to this file:
-https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
-*/
-
+/* Matchina-specific viz vars (force-graph, SvgInspector). Theme-agnostic. */
 :root {
-  --primary: var(--sl-color-accent);
-  --secondary: var(--sl-color-gray-4);
-  --accent: var(--sl-color-accent-high);
-  --card: var(--sl-color-bg);
-  --font-sans: var(--sl-font-system, "Atkinson Hyperlegible", sans-serif);
   --forcegraph-edge-bg: #eee;
+  --matchina-viz-accent: var(--accent);
+  --matchina-viz-bg: var(--background);
+  --matchina-viz-node: var(--card);
+  --matchina-viz-node-active: color-mix(in srgb, var(--accent) 14%, var(--card));
+  --matchina-viz-node-compound: var(--muted);
+  --matchina-viz-border: var(--border);
+  --matchina-viz-text: var(--foreground);
+  --matchina-viz-text-active: var(--accent);
+  --matchina-viz-edge: var(--muted-foreground);
+  --matchina-viz-dot: color-mix(in srgb, var(--border) 60%, transparent);
+  --matchina-viz-label-bg: var(--card);
+  --matchina-viz-label-bg-active: color-mix(in srgb, var(--accent) 10%, var(--card));
+  --matchina-viz-label-bg-pill: color-mix(in srgb, var(--card) 90%, transparent);
+  --matchina-viz-label-text: var(--muted-foreground);
+  --matchina-viz-ctrl-bg: var(--card);
+  --matchina-viz-ctrl-border: var(--border);
+  --matchina-viz-ctrl-text: var(--muted-foreground);
 }
 
-html[data-theme="dark"] {
-  --primary: var(--sl-color-accent-high);
-  --secondary: var(--sl-color-gray-2);
-  --accent: var(--sl-color-accent);
-  --card: var(--sl-color-bg);
+[data-theme$="dark"] {
   --forcegraph-edge-bg: #000;
   --forcegraph-edge-label: #ddd;
 }

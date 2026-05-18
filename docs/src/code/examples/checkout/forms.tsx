@@ -1,101 +1,137 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { CheckoutMachine } from "./machine";
-import type { CartData, PaymentData, ShippingData } from "./types";
+import type { PaymentData } from "./types";
 
-function getMissing(fields: Record<string, string>) {
-  return Object.entries(fields)
-    .filter(([_, v]) => !v.trim())
-    .map(([k]) => k);
+const inputCls = "w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground";
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1.5">
+      {children}
+    </label>
+  );
 }
 
-export function ShippingForm({
-  data,
-  machine,
-}: {
-  data: ShippingData;
-  machine: CheckoutMachine;
-}) {
-  const {
-    cart,
-    shipping = { address: "", city: "", zipCode: "", error: null },
-  } = data;
-  const [address, setAddress] = useState(shipping.address || "");
-  const [city, setCity] = useState(shipping.city || "");
-  const [zipCode, setZipCode] = useState(shipping.zipCode || "");
-  React.useEffect(() => {
-    setAddress(shipping.address || "");
-    setCity(shipping.city || "");
-    setZipCode(shipping.zipCode || "");
-  }, [shipping.address, shipping.city, shipping.zipCode]);
+function ErrorBanner({ error }: { error: string | null }) {
+  if (!error) return null;
+  return (
+    <div className="mb-4 px-3 py-2.5 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive">
+      {error}
+    </div>
+  );
+}
 
-  const missingFields = getMissing({ address, city, zipCode });
+export function CartForm({ machine }: { machine: CheckoutMachine }) {
+  const [items, setItems] = useState(machine.store.getState().cart.items);
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item)),
+    );
+  };
+
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
-      {shipping.error && (
-        <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {shipping.error}
-        </div>
-      )}
-      {missingFields.length > 0 && (
-        <div className="mb-4 p-3 border border-yellow-400 text-yellow-900 rounded bg-yellow-50">
-          <span className="font-semibold">Missing:</span>{" "}
-          {missingFields.join(", ")}
-        </div>
-      )}
+      <h2 className="text-base font-semibold mb-4">Shopping Cart</h2>
+      <div className="space-y-2 mb-5">
+        {items.map((item) => (
+          <div key={item.id} className="flex justify-between items-center bg-muted rounded-xl px-4 py-3">
+            <div>
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <label htmlFor={item.id} className="text-xs text-muted-foreground">
+                Qty
+              </label>
+              <input
+                id={item.id}
+                type="number"
+                min={0}
+                value={item.quantity}
+                onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
+                className="w-14 bg-background border border-border rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <span className="text-sm font-semibold tabular-nums w-14 text-right">
+                ${(item.price * item.quantity).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-muted rounded-xl p-4 mb-5 flex justify-between items-center">
+        <span className="text-sm text-muted-foreground font-mono uppercase tracking-widest text-[10px]">
+          Total
+        </span>
+        <span className="text-xl font-bold tabular-nums">${total.toFixed(2)}</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => machine.proceedToShipping()}
+        className="btn btn-primary w-full"
+      >
+        Continue to Shipping
+      </button>
+    </div>
+  );
+}
+
+export function ShippingForm({ machine }: { machine: CheckoutMachine }) {
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
+
+  const error = machine.store.getState().error;
+
+  return (
+    <div>
+      <h2 className="text-base font-semibold mb-4">Shipping Information</h2>
+      <ErrorBanner error={error} />
+
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium mb-1">Address</label>
+          <FieldLabel>Address</FieldLabel>
           <input
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("address") ? "border-yellow-400" : ""}`}
+            className={inputCls}
             placeholder="123 Main Street"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">City</label>
+            <FieldLabel>City</FieldLabel>
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("city") ? "border-yellow-400" : ""}`}
+              className={inputCls}
               placeholder="New York"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">ZIP Code</label>
+            <FieldLabel>ZIP Code</FieldLabel>
             <input
               type="text"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value)}
-              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("zipCode") ? "border-yellow-400" : ""}`}
+              className={inputCls}
               placeholder="10001"
             />
           </div>
         </div>
       </div>
-      <div className="flex space-x-4">
-        <button
-          onClick={() => machine.backToCart(cart)}
-          className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-        >
-          Back to Cart
+
+      <div className="flex gap-3">
+        <button type="button" onClick={() => machine.backToCart()} className="btn btn-outline flex-1">
+          Back
         </button>
-        <button
-          onClick={() => {
-            if (missingFields.length > 0) return;
-            machine.proceedToPayment({
-              cart,
-              shipping: { address, city, zipCode },
-            });
-          }}
-          className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-          disabled={missingFields.length > 0}
-        >
+        <button type="button" onClick={() => machine.proceedToPayment()} className="btn btn-primary flex-1">
           Continue to Payment
         </button>
       </div>
@@ -104,190 +140,87 @@ export function ShippingForm({
 }
 
 export function PaymentForm({
-  data,
   machine,
   handleAsyncProcessing,
 }: {
-  data: PaymentData;
   machine: CheckoutMachine;
   handleAsyncProcessing: (data: PaymentData) => void;
 }) {
-  const { cart, shipping, payment } = data;
-  const [cardNumber, setCardNumber] = useState(payment.cardNumber || "");
-  const [expiryDate, setExpiryDate] = useState(payment.expiryDate || "");
-  const [cvv, setCvv] = useState(payment.cvv || "");
-  React.useEffect(() => {
-    setCardNumber(payment.cardNumber || "");
-    setExpiryDate(payment.expiryDate || "");
-    setCvv(payment.cvv || "");
-  }, [payment.cardNumber, payment.expiryDate, payment.cvv]);
+  const cart = machine.store.getState().cart;
+  const shipping = machine.store.getState().shipping;
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
 
-  const missingFields = getMissing({ cardNumber, expiryDate, cvv });
+  const error = machine.store.getState().error;
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Payment Information</h2>
-      {payment.error && (
-        <div className="mb-4 p-3 border border-red-400 text-red-700 rounded">
-          {payment.error}
-        </div>
-      )}
-      {missingFields.length > 0 && (
-        <div className="mb-4 p-3 border border-yellow-400 text-yellow-900 rounded bg-yellow-50">
-          <span className="font-semibold">Missing:</span>{" "}
-          {missingFields.join(", ")}
-        </div>
-      )}
-      <div className="mb-6 p-4 rounded border border-current/10">
-        <h3 className="font-semibold mb-2">Shipping Address</h3>
-        <p>{shipping.address}</p>
-        <p>
+      <h2 className="text-base font-semibold mb-4">Payment</h2>
+      <ErrorBanner error={error} />
+
+      <div className="bg-muted rounded-xl px-4 py-3 mb-5">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+          Shipping to
+        </p>
+        <p className="text-sm">{shipping.address}</p>
+        <p className="text-sm text-muted-foreground">
           {shipping.city}, {shipping.zipCode}
         </p>
       </div>
-      <div className="space-y-4 mb-6">
+
+      <div className="space-y-4 mb-5">
         <div>
-          <label className="block text-sm font-medium mb-1">Card Number</label>
+          <FieldLabel>Card Number</FieldLabel>
           <input
             type="text"
             value={cardNumber}
             onChange={(e) => setCardNumber(e.target.value)}
-            className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("cardNumber") ? "border-yellow-400" : ""}`}
+            className={inputCls}
             placeholder="1234 5678 9012 3456"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Expiry Date
-            </label>
+            <FieldLabel>Expiry</FieldLabel>
             <input
               type="text"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("expiryDate") ? "border-yellow-400" : ""}`}
+              className={inputCls}
               placeholder="MM/YY"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">CVV</label>
+            <FieldLabel>CVV</FieldLabel>
             <input
               type="text"
               value={cvv}
               onChange={(e) => setCvv(e.target.value)}
-              className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 border-current/20 ${missingFields.includes("cvv") ? "border-yellow-400" : ""}`}
+              className={inputCls}
               placeholder="123"
             />
           </div>
         </div>
       </div>
-      <div className="border-t pt-4 mb-6 border-current/10">
-        <div className="flex justify-between text-xl font-bold">
-          <span>Total: ${cart.total?.toFixed(2) ?? "0.00"}</span>
-        </div>
+
+      <div className="bg-muted rounded-xl p-4 mb-5 flex justify-between items-center">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total</span>
+        <span className="text-xl font-bold tabular-nums">${cart.total?.toFixed(2) ?? "0.00"}</span>
       </div>
-      <div className="flex space-x-4">
-        <button
-          onClick={() =>
-            machine.backToShipping({
-              cart,
-              shipping,
-            })
-          }
-          className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-        >
-          Back to Shipping
+
+      <div className="flex gap-3">
+        <button type="button" onClick={() => machine.backToShipping()} className="btn btn-outline flex-1">
+          Back
         </button>
         <button
-          onClick={() => {
-            if (missingFields.length > 0) return;
-            handleAsyncProcessing({
-              cart,
-              shipping,
-              payment: { cardNumber, expiryDate, cvv },
-            });
-          }}
-          className="flex-1 px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-          disabled={missingFields.length > 0}
+          type="button"
+          onClick={() => handleAsyncProcessing({ cart, shipping, payment: { cardNumber, expiryDate, cvv } })}
+          className="btn btn-primary flex-1"
         >
           Place Order
         </button>
       </div>
-    </div>
-  );
-}
-
-export function CartForm({
-  data,
-  machine,
-}: {
-  data: CartData;
-  machine: CheckoutMachine;
-}) {
-  const [items, setItems] = useState(data.items);
-
-  const handleQuantityChange = (id: string, quantity: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
-      )
-    );
-  };
-
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
-      <div className="space-y-4 mb-6">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between items-center p-4 border rounded border-current/10"
-          >
-            <div>
-              <h3 className="font-semibold">{item.name}</h3>
-              <p className="opacity-70">${item.price.toFixed(2)} each</p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="mr-2">Qty:</label>
-              <input
-                type="number"
-                min={0}
-                value={item.quantity}
-                onChange={(e) =>
-                  handleQuantityChange(item.id, Number(e.target.value))
-                }
-                className="w-16 px-2 py-1 border border-current/20 rounded text-center"
-              />
-              <span className="font-semibold">
-                ${(item.price * item.quantity).toFixed(2)}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="border-t pt-4 mb-6 border-current/10">
-        <div className="flex justify-between text-xl font-bold">
-          <span>Total: ${total.toFixed(2)}</span>
-        </div>
-      </div>
-      {total <= 0 ? (
-        <div className="text-center text-yellow-700 mb-4">
-          Your cart is empty. Add items to proceed.
-        </div>
-      ) : (
-        <button
-          onClick={() => machine.proceedToShipping({ cart: { items, total } })}
-          className="w-full px-4 py-2 rounded border border-current/20 text-current hover:bg-current/10"
-          disabled={total <= 0}
-        >
-          Proceed to Shipping
-        </button>
-      )}
     </div>
   );
 }

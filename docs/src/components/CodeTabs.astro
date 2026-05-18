@@ -1,7 +1,5 @@
 ---
-import { TabItem, Tabs } from "@astrojs/starlight/components";
-// import { Code } from "@astrojs/starlight/components";
-import CodeBlock from "./CodeBlock.astro";
+import { TabItem, Tabs, Code } from "@astrojs/starlight/components";
 
 interface Props {
   files: {
@@ -37,10 +35,10 @@ function getLangFromExtension(filename: string): string {
   {
     files.map((file) => (
       <TabItem label={file.name}>
-        <CodeBlock
+        <Code
           code={file.code}
           lang={file.language ?? getLangFromExtension(file.name)}
-          twoslash={file.twoslash || false}
+          meta={file.twoslash ? 'twoslash' : undefined}
         />
       </TabItem>
     ))

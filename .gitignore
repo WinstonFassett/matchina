@@ -1,14 +1,50 @@
 ignore/
-dev/
+
+.playwright-mcp/
+.webdev/
 
 node_modules
 coverage
+coverage-*.txt
+coverage-*.json
 dist
-types
+
 .vscode
 .DS_Store
 .eslintcache
 *.log*
 *.conf
 *.env*
+*-output.txt
+test-output-*.txt
 bun.lockb
+# Local notes/working docs (not tracked)
+local/
+test-results/
+.astro/
+playwright-report/
+
+# Obsidian
+.obsidian/
+
+# VitePress cache and build
+.vitepress/cache/
+.vitepress/dist/
+
+
+# Test scripts in docs
+docs/test-*.mjs
+
+# E2E test snapshots and screenshots
+test/**/*-snapshots/
+test/**/*.png
+test/**/*.jpg
+test/**/*.jpeg
+test/**/*.gif
+test/**/*.webp
+test/**/*.svg
+
+dogfood-screenshots/
+*.png
+*.jpg
+*.jpeg

@@ -1,7 +1,6 @@
 import { createMachine, defineStates, assignEventApi } from "matchina";
 import { useMachine } from "matchina/react";
-import { useMemo, useState } from "react";
-import { useEventTypeEffect, useStateEffects } from "../lib/matchina-hooks";
+import { useEffect, useMemo, useState } from "react";
 import { tickEffect } from "../lib/tick-effect";
 
 export function useStopwatch() {
@@ -22,45 +21,31 @@ export function useStopwatch() {
     []
   );
 
-  // Define the state machine
   const stopwatch = useMemo(() => {
-    // Define states using defineStates
     const states = defineStates({
       Stopped: { effects: [effects.clear] },
       Ticking: { effects: [effects.run] },
       Suspended: {},
     });
 
-    // Create the base machine with states, transitions, and initial state
-    const baseMachine = createMachine(
+    return Object.assign(assignEventApi(createMachine(
       states,
       {
-        Stopped: {
-          start: "Ticking",
-        },
-        Ticking: {
-          stop: "Stopped",
-          suspend: "Suspended",
-          clear: "Ticking",
-        },
-        Suspended: {
-          stop: "Stopped",
-          resume: "Ticking",
-          clear: "Suspended",
-        },
+        Stopped: { start: "Ticking" },
+        Ticking: { stop: "Stopped", suspend: "Suspended", clear: "Ticking" },
+        Suspended: { stop: "Stopped", resume: "Ticking", clear: "Suspended" },
       },
       "Stopped"
-    );
-
-    //Use assignEventApi to enhance the machine with utility methods
-    return Object.assign(assignEventApi(baseMachine), {
-      elapsed,
-    });
+    )), { elapsed });
   }, []);
 
   useMachine(stopwatch);
-  useStateEffects(stopwatch.getState());
-  useEventTypeEffect(stopwatch.getChange(), effects);
+  const state = stopwatch.getState();
+  useEffect(() => {
+    const fns: (() => (() => void) | void)[] = (state.data as any)?.effects ?? [];
+    const cleanups = fns.map((fn) => fn()).filter(Boolean) as (() => void)[];
+    return () => cleanups.forEach((fn) => fn());
+  }, [state]);
   stopwatch.elapsed = elapsed;
   return stopwatch;
 }

@@ -128,23 +128,6 @@ describe("createMachine", () => {
   describe("events", () => {
     it("invoke send", () => {});
   });
-  // it("events can match", () => {
-  //   const machine = makeMachine();
-  //   machine.api.done(true);
-  //   const mustBeOk = machine.getChange().match({
-  //     done: (ok) => {
-  //       console.log("ok?", ok);
-  //       return "ok" as const;
-  //     },
-  //   });
-  //   console.log({ mustBeOk });
-  //   const mustBeThing = machine.getChange().match({
-  //     _: () => {
-  //       return "thing" as const;
-  //     },
-  //   });
-  //   console.log({ mustBeThing });
-  // });
 });
 
 describe("pure", () => {

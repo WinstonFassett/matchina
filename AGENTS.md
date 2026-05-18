@@ -1,393 +1,559 @@
-# Agent Instructions for Matchina
+# Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. For development patterns, see `docs/DEVELOPMENT.md`.
+## Quick Start
+For complete agent documentation, see the **`for-agents/`** directory:
+- **`for-agents/README.md`** - Main agent guidance
+- **`for-agents/commands.md`** - Command reference
 
-## Agent Documentation Map
+## Agent-Specific Files
+- **`CLAUDE.md`** - Claude Code specific guidance
+- **`.github/copilot-instructions.md`** - GitHub Copilot specific guidance
 
-**All agent guidance documents:**
+## Shared Documentation
+- **`for-devs/README.md`** - Project overview, architecture, development patterns
+- **`for-devs/feature-checklist.md`** - Feature workflow
+- **`README.md`** - E2E testing guide
 
-- **`AGENTS.md`** (this file) - Session workflow, beads usage, testing, dev servers
-- **`CLAUDE.md`** - Project overview, architecture, build system
-- **`docs/DEVELOPMENT.md`** - Development patterns, example structure, path aliases
-- **`docs/FEATURE-CHECKLIST.md`** - Feature development reference
-- **`docs/AGENTS.md`** - Docs-specific patterns (Astro, MDX)
+## Foundation First
+All agents should start with **`for-devs/README.md`** to understand the project context, then use **`for-agents/`** for agent-specific rules.
 
-## ⚠️ CRITICAL: Type Inference Principles
+## Universal Standard
+This AGENTS.md follows the universal standard recognized by:
+- Claude Code
+- Windsurf (Cascade)
+- OpenCode
+- GitHub Copilot
+- Other AI coding agents
 
-**Matchina's entire purpose is type-safe state machines with full type inference. NEVER break this with casts or workarounds.**
+<!-- BACKLOG.MD GUIDELINES START -->
+# Instructions for the usage of Backlog.md CLI Tool
 
-### Cardinal Rules
+## Backlog.md: Comprehensive Project Management Tool via CLI
 
-1. **NEVER declare transitions as a variable** - Always pass transitions inline as a direct argument to `createMachine`/`createFlatMachine`
+### Assistant Objective
 
-   ```typescript
-   // ❌ WRONG - Breaks type inference
-   const transitions = { ... };
-   const machine = createMachine(states, transitions, "Initial");
+Efficiently manage all project tasks, status, and documentation using the Backlog.md CLI, ensuring all project metadata
+remains fully synchronized and up-to-date.
 
-   // ✅ CORRECT - Preserves type inference
-   const machine = createMachine(states, {
-     Initial: { event: "Next" },
-     Next: { ...}
-   }, "Initial");
-   ```
+### Core Capabilities
 
-2. **NEVER use `as any` or `@ts-ignore` in machine creation** - This destroys the type safety that is the library's core value
+- ✅ **Task Management**: Create, edit, assign, prioritize, and track tasks with full metadata
+- ✅ **Search**: Fuzzy search across tasks, documents, and decisions with `backlog search`
+- ✅ **Acceptance Criteria**: Granular control with add/remove/check/uncheck by index
+- ✅ **Board Visualization**: Terminal-based Kanban board (`backlog board`) and web UI (`backlog browser`)
+- ✅ **Git Integration**: Automatic tracking of task states across branches
+- ✅ **Dependencies**: Task relationships and subtask hierarchies
+- ✅ **Documentation & Decisions**: Structured docs and architectural decision records
+- ✅ **Export & Reporting**: Generate markdown reports and board snapshots
+- ✅ **AI-Optimized**: `--plain` flag provides clean text output for AI processing
 
-3. **NEVER work around type errors with casts** - Fix the root cause in the type signatures instead
+### Why This Matters to You (AI Agent)
 
-4. **States should also be inline or const-declared** - For best type inference, pass states directly or declare with `const states = defineStates({...})`
+1. **Comprehensive system** - Full project management capabilities through CLI
+2. **The CLI is the interface** - All operations go through `backlog` commands
+3. **Unified interaction model** - You can use CLI for both reading (`backlog task 1 --plain`) and writing (
+   `backlog task edit 1`)
+4. **Metadata stays synchronized** - The CLI handles all the complex relationships
 
-If you encounter type errors, the solution is to fix the type definitions, NOT to cast them away.
+### Key Understanding
 
-## Backward Compatibility
+- **Tasks** live in `backlog/tasks/` as `task-<id> - <title>.md` files
+- **You interact via CLI only**: `backlog task create`, `backlog task edit`, etc.
+- **Use `--plain` flag** for AI-friendly output when viewing/listing
+- **Never bypass the CLI** - It handles Git, metadata, file naming, and relationships
 
-**DO NOT worry about backward compatibility unless explicitly instructed.**
+---
 
-This is a major version development - no need to maintain legacy APIs or deprecated functions.
+# ⚠️ CRITICAL: NEVER EDIT TASK FILES DIRECTLY. Edit Only via CLI
 
-- Remove deprecated code instead of keeping it for compatibility
-- Use new API names without aliasing old ones
-- Do not add "legacy" or "deprecated" comments unless specifically required
-- Focus on clean, current API design
+**ALL task operations MUST use the Backlog.md CLI commands**
 
-## Quick Reference
+- ✅ **DO**: Use `backlog task edit` and other CLI commands
+- ✅ **DO**: Use `backlog task create` to create new tasks
+- ✅ **DO**: Use `backlog task edit <id> --check-ac <index>` to mark acceptance criteria
+- ❌ **DON'T**: Edit markdown files directly
+- ❌ **DON'T**: Manually change checkboxes in files
+- ❌ **DON'T**: Add or modify text in task files without using CLI
 
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync --flush-only  # Export to JSONL
+**Why?** Direct file editing breaks metadata synchronization, Git tracking, and task relationships.
+
+---
+
+## 1. Source of Truth & File Structure
+
+### 📖 **UNDERSTANDING** (What you'll see when reading)
+
+- Markdown task files live under **`backlog/tasks/`** (drafts under **`backlog/drafts/`**)
+- Files are named: `task-<id> - <title>.md` (e.g., `task-42 - Add GraphQL resolver.md`)
+- Project documentation is in **`backlog/docs/`**
+- Project decisions are in **`backlog/decisions/`**
+
+### 🔧 **ACTING** (How to change things)
+
+- **All task operations MUST use the Backlog.md CLI tool**
+- This ensures metadata is correctly updated and the project stays in sync
+- **Always use `--plain` flag** when listing or viewing tasks for AI-friendly text output
+
+---
+
+## 2. Common Mistakes to Avoid
+
+### ❌ **WRONG: Direct File Editing**
+
+```markdown
+# DON'T DO THIS:
+
+1. Open backlog/tasks/task-7 - Feature.md in editor
+2. Change "- [ ]" to "- [x]" manually
+3. Add notes directly to the file
+4. Save the file
 ```
 
-### Finding Work
-**CRITICAL: ALWAYS CHECK GIT STATUS BEFORE/AFTER WORK**
+### ✅ **CORRECT: Using CLI Commands**
 
 ```bash
-git status           # MUST check before starting work
-git status           # MUST check after completing work
-git add .            # Stage changes
-git commit -m "..."  # Commit work before moving to next ticket
+# DO THIS INSTEAD:
+backlog task edit 7 --check-ac 1  # Mark AC #1 as complete
+backlog task edit 7 --notes "Implementation complete"  # Add notes
+backlog task edit 7 -s "In Progress" -a @agent-k  # Multiple commands: change status and assign the task when you start working on the task
 ```
 
-### Finding Work (Task-Oriented)
+---
 
-**CRITICAL: WORK IN DEPENDENCY AND PRIORITY ORDER**
+## 3. Understanding Task Format (Read-Only Reference)
 
-- **NEVER ask user for priority decisions**
-- Work tickets in dependency order first, then by priority
-- Use `bd ready` output order - it's already sorted correctly
-- If multiple items are ready, start with the first one listed
-- Dependencies should be set up in beads, not guessed
-- **If dependency order is unclear, create a ticket to determine order** or find existing context/plan epic to organize
+⚠️ **FORMAT REFERENCE ONLY** - The following sections show what you'll SEE in task files.
+**Never edit these directly! Use CLI commands to make changes.**
 
-## 🚨 CRITICAL: TICKETS FIRST, THEN WORK - WITH EVIDENCE
+### Task Structure You'll See
 
-**ALWAYS CREATE TICKETS BEFORE STARTING WORK**
+```markdown
+---
+id: task-42
+title: Add GraphQL resolver
+status: To Do
+assignee: [@sara]
+labels: [backend, api]
+---
 
-1. **ASSESS** - Identify what needs to be done
-2. **CREATE TICKETS** - Create beads tickets for each piece of work
-3. **ORGANIZE** - Set up dependencies and priorities
-4. **THEN WORK** - Only after tickets exist and are organized
-5. **UPDATE WITH FINDINGS** - As you investigate, update tickets with analysis/plan BEFORE coding
-6. **GATHER EVIDENCE** - UI tickets must include evidence of the fix (screenshots, test results)
+## Description
 
-### Why This Matters:
+Brief explanation of the task purpose.
 
-- Prevents "I forgot to create a ticket for that"
-- Ensures work is tracked and visible
-- Allows proper dependency management
-- Provides clear work history
-- Prevents scope creep and forgotten tasks
-- Documents analysis and decisions for future reference
+## Acceptance Criteria
 
-### Ticket Creation Pattern:
+<!-- AC:BEGIN -->
 
-```bash
-# Before starting any work:
-bd create "Fix ReactFlow edges missing" type=bug priority=P2
-bd create "Add hierarchical support to ForceGraph" type=feature priority=P2
-bd create "Investigate rock paper scissors viz picker" type=task priority=P3
+- [ ] #1 First criterion
+- [x] #2 Second criterion (completed)
+- [ ] #3 Third criterion
 
-# Then organize dependencies:
-bd update <ticket-id> --depends=<other-ticket-id>
+<!-- AC:END -->
 
-# Then mark as in progress and analyze:
-bd update <first-ticket-id> --status=in_progress
+## Implementation Plan
 
-# IMPORTANT: Update ticket with findings BEFORE coding
-bd update <first-ticket-id> --description "Investigation results: [root cause, plan, evidence]"
+1. Research approach
+2. Implement solution
+
+## Implementation Notes
+
+Summary of what was done.
 ```
 
-### Ticket Field Structure:
+### How to Modify Each Section
 
-Beads tickets have dedicated fields for proper organization:
+| What You Want to Change | CLI Command to Use                                       |
+|-------------------------|----------------------------------------------------------|
+| Title                   | `backlog task edit 42 -t "New Title"`                    |
+| Status                  | `backlog task edit 42 -s "In Progress"`                  |
+| Assignee                | `backlog task edit 42 -a @sara`                          |
+| Labels                  | `backlog task edit 42 -l backend,api`                    |
+| Description             | `backlog task edit 42 -d "New description"`              |
+| Add AC                  | `backlog task edit 42 --ac "New criterion"`              |
+| Check AC #1             | `backlog task edit 42 --check-ac 1`                      |
+| Uncheck AC #2           | `backlog task edit 42 --uncheck-ac 2`                    |
+| Remove AC #3            | `backlog task edit 42 --remove-ac 3`                     |
+| Add Plan                | `backlog task edit 42 --plan "1. Step one\n2. Step two"` |
+| Add Notes (replace)     | `backlog task edit 42 --notes "What I did"`              |
+| Append Notes            | `backlog task edit 42 --append-notes "Another note"` |
 
-- **`--description`**: Concise problem statement and current state
-- **`--acceptance`**: Clear, actionable checklist of completion criteria
-- **`--design`**: Implementation plan and technical approach
-- **`--notes`**: Additional context, current state details, success metrics
+---
 
-**Example structured update:**
+## 4. Defining Tasks
+
+### Creating New Tasks
+
+**Always use CLI to create tasks:**
 
 ```bash
-bd update <id> \
-  --description "### Problem: X is broken because Y" \
-  --acceptance "- [ ] X works correctly\n- [ ] No regressions in Z" \
-  --design "### Plan: 1. Fix Y 2. Test X 3. Verify Z" \
-  --notes "### Current state: A, B, C examples affected"
+# Example
+backlog task create "Task title" -d "Description" --ac "First criterion" --ac "Second criterion"
 ```
 
-### Evidence Requirements for UI Tickets:
+### Title (one liner)
 
-- **NEVER close UI tickets without evidence** that the user will accept
-- Evidence types: browser screenshots, test results, working examples
-- Document the before/after state
-- Include reproduction steps if applicable
-- For bugs: prove the issue is fixed in the actual UI
-- For features: demonstrate the functionality works as intended
+Use a clear brief title that summarizes the task.
+
+### Description (The "why")
+
+Provide a concise summary of the task purpose and its goal. Explains the context without implementation details.
+
+### Acceptance Criteria (The "what")
+
+**Understanding the Format:**
+
+- Acceptance criteria appear as numbered checkboxes in the markdown files
+- Format: `- [ ] #1 Criterion text` (unchecked) or `- [x] #1 Criterion text` (checked)
+
+**Managing Acceptance Criteria via CLI:**
+
+⚠️ **IMPORTANT: How AC Commands Work**
+
+- **Adding criteria (`--ac`)** accepts multiple flags: `--ac "First" --ac "Second"` ✅
+- **Checking/unchecking/removing** accept multiple flags too: `--check-ac 1 --check-ac 2` ✅
+- **Mixed operations** work in a single command: `--check-ac 1 --uncheck-ac 2 --remove-ac 3` ✅
 
 ```bash
-# See what's ready to work on (with JSON for parsing)
-bd ready --json | jq '.[0]'
+# Examples
 
-# Get issue details (with JSON for parsing)
-bd show <issue-id> --json
+# Add new criteria (MULTIPLE values allowed)
+backlog task edit 42 --ac "User can login" --ac "Session persists"
 
-# List all open issues
-bd list --status=open
+# Check specific criteria by index (MULTIPLE values supported)
+backlog task edit 42 --check-ac 1 --check-ac 2 --check-ac 3  # Check multiple ACs
+# Or check them individually if you prefer:
+backlog task edit 42 --check-ac 1    # Mark #1 as complete
+backlog task edit 42 --check-ac 2    # Mark #2 as complete
+
+# Mixed operations in single command
+backlog task edit 42 --check-ac 1 --uncheck-ac 2 --remove-ac 3
+
+# ❌ STILL WRONG - These formats don't work:
+# backlog task edit 42 --check-ac 1,2,3  # No comma-separated values
+# backlog task edit 42 --check-ac 1-3    # No ranges
+# backlog task edit 42 --check 1         # Wrong flag name
+
+# Multiple operations of same type
+backlog task edit 42 --uncheck-ac 1 --uncheck-ac 2  # Uncheck multiple ACs
+backlog task edit 42 --remove-ac 2 --remove-ac 4    # Remove multiple ACs (processed high-to-low)
 ```
 
-## Beads Ticket Organization
+**Key Principles for Good ACs:**
 
-### Methodology
+- **Outcome-Oriented:** Focus on the result, not the method.
+- **Testable/Verifiable:** Each criterion should be objectively testable
+- **Clear and Concise:** Unambiguous language
+- **Complete:** Collectively cover the task scope
+- **User-Focused:** Frame from end-user or system behavior perspective
 
-This project uses a **two-tier ticket structure** for managing complex, multi-branch work:
+Good Examples:
 
-**Long-running ancestor tickets** - Persist across branches for continuity:
+- "User can successfully log in with valid credentials"
+- "System processes 1000 requests per second without errors"
+- "CLI preserves literal newlines in description/plan/notes; `\\n` sequences are not auto‑converted"
 
-- **Context/Plan tickets** (label: `plan`, type: `epic`) - Branch organization, work stream mapping
-- **Review tickets** (label: `review`, type: `task`) - Detailed findings, cross-cutting concerns
-- **Documentation tickets** (label: `doc`) - Persistent reference material
+Bad Example (Implementation Step):
 
-**Shorter-lived work tickets** - Scoped to specific implementations:
+- "Add a new function handleLogin() in auth.ts"
+- "Define expected behavior and document supported input patterns"
 
-- **Epics** (type: `epic`, optional label: `v2` for breaking changes) - Major feature areas
-- **Features/Tasks/Bugs** (type: `feature|task|bug`) - Concrete work items
+### Task Breakdown Strategy
 
-### Branch Planning Reference
+1. Identify foundational components first
+2. Create tasks in dependency order (foundations before features)
+3. Ensure each task delivers value independently
+4. Avoid creating tasks that block each other
 
-**System of record**: [matchina-19: Branch Plan Epic](http://localhost:3000/#/board?issue=matchina-19)
+### Task Requirements
 
-- Catchall for branch organization context
-- Contains work stream dependency graph
-- Living document updated as branches are created/merged
-- **Use `bd show matchina-19` for current branch planning context**
+- Tasks must be **atomic** and **testable** or **verifiable**
+- Each task should represent a single unit of work for one PR
+- **Never** reference future tasks (only tasks with id < current task id)
+- Ensure tasks are **independent** and don't depend on future work
 
-**Filesystem artifact**: `review/BRANCH_PLAN.md`
+---
 
-- Historical artifact, may not exist
-- Used as draft area before syncing to bd
-- Beads ticket is source of truth, not this file
+## 5. Implementing Tasks
 
-### Labeling Strategy
+### 5.1. First step when implementing a task
 
-- `v2` - Breaking release work (HSM is primary driver)
-- `plan` - Branch/work stream planning
-- `review` - Cross-cutting review findings
-- `doc` - Reference documentation
+The very first things you must do when you take over a task are:
 
-### Dependency Pattern
-
-**Work items usually link to organizing areas** (epics, plans) but this is NOT a blocker:
-
-- Can create work tickets independently and groom dependencies iteratively
-- Long-running tickets (plan/review) typically depend on work epics
-- Work tickets depend on each other based on implementation order
-- Don't block on perfect organization—refine as you go
-
-## Development Servers
-
-**CRITICAL: Do NOT run dev servers from agents.**
-
-- **ASSUME dev server is already running** - Developer pilots both agent and dev server
-- Don't check if running, don't try to start
-- If puppeteer/browser tests fail due to server not running:
-  - Inform user that dev server needs to be running
-  - Do NOT attempt to start it yourself
-
-**User runs:**
+* set the task in progress
+* assign it to yourself
 
 ```bash
-npm run dev              # Vitest watch (core library)
-npm --workspace docs run dev  # Astro dev server (docs at localhost:4321)
+# Example
+backlog task edit 42 -s "In Progress" -a @{myself}
 ```
 
-## Testing Requirements
+### 5.2. Create an Implementation Plan (The "how")
 
-**All bugs and features REQUIRE testing for completion:**
-
-1. **Unit tests (preferred)** - `/test` with Vitest
-   - If comprehensive unit tests exist, manual testing may not be required
-   - Test both type inference and runtime behavior
-
-2. **Interactive UX (requires manual or automated browser testing)**
-   - User must test manually in browser, OR
-   - Use puppeteer for automated screenshot/interaction review
-
-3. **Puppeteer setup (review/e2e, not test/e2e)**
-   - Available for screenshot-based review
-   - Started with specific examples, can be expanded
-   - Located in `review/` for visual review, not formal e2e tests
-
-4. **React Testing Library (future)**
-   - Preferred for React component testing
-   - Not set up yet - track as potential improvement
-
-**Bottom line:** Work is not complete without tests AND clean git status. Prefer unit tests. For UI, assume user tests manually or you use puppeteer.
-
-## Development Resources
-
-- `docs/DEVELOPMENT.md` - Example patterns, path aliases, testing
-- `docs/FEATURE-CHECKLIST.md` - Feature addition reference
-- `docs/AGENTS.md` - Docs-specific patterns (Astro, MDX)
-- `review/` - Living review and planning workspace
-
-**Focus:** Make things work. Tests and UI matter more than builds or typechecking unless explicitly asked.
-**Focus:** Make things work. Tests pass, UI works (manually tested or puppeteer), AND git status is clean.
-
-## Commands
-
-**Agents can run:**
+Previously created tasks contain the why and the what. Once you are familiar with that part you should think about a
+plan on **HOW** to tackle the task and all its acceptance criteria. This is your **Implementation Plan**.
+First do a quick check to see if all the tools that you are planning to use are available in the environment you are
+working in.   
+When you are ready, write it down in the task so that you can refer to it later.
 
 ```bash
-npm run dev              # Vitest watch mode (for testing)
-npm test                 # Run all tests with coverage (if everything passes)
-npm run build            # Build core library only (fast, preferred)
+# Example
+backlog task edit 42 --plan "1. Research codebase for references\n2Research on internet for similar cases\n3. Implement\n4. Test"
 ```
 
-**User runs (agents assume running):**
+## 5.3. Implementation
+
+Once you have a plan, you can start implementing the task. This is where you write code, run tests, and make sure
+everything works as expected. Follow the acceptance criteria one by one and MARK THEM AS COMPLETE as soon as you
+finish them.
+
+### 5.4 Implementation Notes (PR description)
+
+When you are done implementing a tasks you need to prepare a PR description for it.
+Because you cannot create PRs directly, write the PR as a clean description in the task notes.
+Append notes progressively during implementation using `--append-notes`:
+
+```
+backlog task edit 42 --append-notes "Implemented X" --append-notes "Added tests"
+```
 
 ```bash
-npm --workspace docs run dev    # Astro dev server at localhost:4321
-npm run build:docs              # Build docs (SLOW, VERBOSE - user runs when needed)
-npm run build:all              # Build core library + docs (when full build needed)
-npm run dev:all                # Run both core dev server and docs dev server
-npm run release                # Release process (user only)
-npm run publish                # Publish to npm (user only)
-npm run dry-run                # Dry run release (user only)
+# Example
+backlog task edit 42 --notes "Implemented using pattern X because Reason Y, modified files Z and W"
+```
+
+**IMPORTANT**: Do NOT include an Implementation Plan when creating a task. The plan is added only after you start the
+implementation.
+
+- Creation phase: provide Title, Description, Acceptance Criteria, and optionally labels/priority/assignee.
+- When you begin work, switch to edit, set the task in progress and assign to yourself
+  `backlog task edit <id> -s "In Progress" -a "..."`.
+- Think about how you would solve the task and add the plan: `backlog task edit <id> --plan "..."`.
+- After updating the plan, share it with the user and ask for confirmation. Do not begin coding until the user approves the plan or explicitly tells you to skip the review.
+- Add Implementation Notes only after completing the work: `backlog task edit <id> --notes "..."` (replace) or append progressively using `--append-notes`.
+
+## Phase discipline: What goes where
+
+- Creation: Title, Description, Acceptance Criteria, labels/priority/assignee.
+- Implementation: Implementation Plan (after moving to In Progress and assigning to yourself).
+- Wrap-up: Implementation Notes (Like a PR description), AC and Definition of Done checks.
+
+**IMPORTANT**: Only implement what's in the Acceptance Criteria. If you need to do more, either:
+
+1. Update the AC first: `backlog task edit 42 --ac "New requirement"`
+2. Or create a new follow up task: `backlog task create "Additional feature"`
+
+---
+
+## 6. Typical Workflow
+
+```bash
+# 1. Identify work
+backlog task list -s "To Do" --plain
+
+# 2. Read task details
+backlog task 42 --plain
+
+# 3. Start work: assign yourself & change status
+backlog task edit 42 -s "In Progress" -a @myself
+
+# 4. Add implementation plan
+backlog task edit 42 --plan "1. Analyze\n2. Refactor\n3. Test"
+
+# 5. Share the plan with the user and wait for approval (do not write code yet)
+
+# 6. Work on the task (write code, test, etc.)
+
+# 7. Mark acceptance criteria as complete (supports multiple in one command)
+backlog task edit 42 --check-ac 1 --check-ac 2 --check-ac 3  # Check all at once
+# Or check them individually if preferred:
+# backlog task edit 42 --check-ac 1
+# backlog task edit 42 --check-ac 2
+# backlog task edit 42 --check-ac 3
+
+# 8. Add implementation notes (PR Description)
+backlog task edit 42 --notes "Refactored using strategy pattern, updated tests"
+
+# 9. Mark task as done
+backlog task edit 42 -s Done
+```
+
+---
+
+## 7. Definition of Done (DoD)
+
+A task is **Done** only when **ALL** of the following are complete:
+
+### ✅ Via CLI Commands:
+
+1. **All acceptance criteria checked**: Use `backlog task edit <id> --check-ac <index>` for each
+2. **Implementation notes added**: Use `backlog task edit <id> --notes "..."`
+3. **Status set to Done**: Use `backlog task edit <id> -s Done`
+
+### ✅ Via Code/Testing:
+
+4. **Tests pass**: Run test suite and linting
+5. **Documentation updated**: Update relevant docs if needed
+6. **Code reviewed**: Self-review your changes
+7. **No regressions**: Performance, security checks pass
+
+⚠️ **NEVER mark a task as Done without completing ALL items above**
+
+---
+
+## 8. Finding Tasks and Content with Search
+
+When users ask you to find tasks related to a topic, use the `backlog search` command with `--plain` flag:
+
+```bash
+# Search for tasks about authentication
+backlog search "auth" --plain
+
+# Search only in tasks (not docs/decisions)
+backlog search "login" --type task --plain
+
+# Search with filters
+backlog search "api" --status "In Progress" --plain
+backlog search "bug" --priority high --plain
 ```
 
 **Key points:**
+- Uses fuzzy matching - finds "authentication" when searching "auth"
+- Searches task titles, descriptions, and content
+- Also searches documents and decisions unless filtered with `--type task`
+- Always use `--plain` flag for AI-readable output
 
-- Agents do NOT run dev servers - assume they're running
-- **NEVER run `npm run build:docs` as agent** - extremely slow and verbose
-- **NEVER run `npm run dev:all` as agent** - agents don't run dev servers
-- **NEVER run `npm run release`, `npm run publish`, or `npm run dry-run` as agent** - user only
-- **Prefer `npm run build` (core only) over `npm run build:all`** - much faster
-- **`npm run build` now only builds the core library** - docs build moved to `build:all`
-- **Docs workspace has its own scripts** - use `npm --workspace docs run <script>` for docs-specific commands
-- **When running builds**: Limit output ingestion (see Quality Gates section)
+---
 
-## Session Completion
+## 9. Quick Reference: DO vs DON'T
 
-When finishing work on an issue:
+### Viewing and Finding Tasks
 
-```bash
-# Update beads state
-bd close <id1> <id2> ...    # Close completed issues
-bd sync --flush-only         # Export to JSONL
-```
+| Task         | ✅ DO                        | ❌ DON'T                         |
+|--------------|-----------------------------|---------------------------------|
+| View task    | `backlog task 42 --plain`   | Open and read .md file directly |
+| List tasks   | `backlog task list --plain` | Browse backlog/tasks folder     |
+| Check status | `backlog task 42 --plain`   | Look at file content            |
+| Find by topic| `backlog search "auth" --plain` | Manually grep through files |
 
-**Note:** User manages git, staging, commits, and branches. Focus on making things work.
+### Modifying Tasks
 
-## Troubleshooting Philosophy
+| Task          | ✅ DO                                 | ❌ DON'T                           |
+|---------------|--------------------------------------|-----------------------------------|
+| Check AC      | `backlog task edit 42 --check-ac 1`  | Change `- [ ]` to `- [x]` in file |
+| Add notes     | `backlog task edit 42 --notes "..."` | Type notes into .md file          |
+| Change status | `backlog task edit 42 -s Done`       | Edit status in frontmatter        |
+| Add AC        | `backlog task edit 42 --ac "New"`    | Add `- [ ] New` to file           |
 
-**When bugs appear in examples:**
+---
 
-1. Check if problem reproduces in core library
-2. If yes → pivot to `/test`, write failing test, fix in `/src`
-3. If no → fix in example code
+## 10. Complete CLI Command Reference
 
-Evidence > assumptions. Let tests guide the fix.
+### Task Creation
 
-## Quality Gates
+| Action           | Command                                                                             |
+|------------------|-------------------------------------------------------------------------------------|
+| Create task      | `backlog task create "Title"`                                                       |
+| With description | `backlog task create "Title" -d "Description"`                                      |
+| With AC          | `backlog task create "Title" --ac "Criterion 1" --ac "Criterion 2"`                 |
+| With all options | `backlog task create "Title" -d "Desc" -a @sara -s "To Do" -l auth --priority high` |
+| Create draft     | `backlog task create "Title" --draft`                                               |
+| Create subtask   | `backlog task create "Title" -p 42`                                                 |
 
-Do prefer to run tests when working in the core
-Rely on developer (preferred) or browser integration (when running unattended) for manually testing examples in the docs
-Beware verbose quality gates. Do not naively pipe all output to yourself. 
-Docs are notoriously verbose to run dev, build and check. 
-Best to pipe such things into files/buffers and then once done, read them in reverse, ie last 10-20 lines to start
-Developer usually does not want you to run quality gates EXCEPT right before shipping. Even committing skip linting.
-Never destroy work. We have git. But do NOT do hard resets. 
-**When to run:**
+### Task Modification
 
-- Tests: Always when working in core (`npm run dev` for watch mode)
-- Manual browser testing: For interactive UX (or use puppeteer via dev server)
-- build: When needed to verify library builds correctly
-- build:docs: Rarely - user runs when needed (prefer live dev server testing)
-- build:all: Rarely - only when full build of library + docs is required
-- test-build: When type checking both core and docs (verbose, use sparingly)
-- Linting: Only right before shipping (skip during development)
+| Action           | Command                                     |
+|------------------|---------------------------------------------|
+| Edit title       | `backlog task edit 42 -t "New Title"`       |
+| Edit description | `backlog task edit 42 -d "New description"` |
+| Change status    | `backlog task edit 42 -s "In Progress"`     |
+| Assign           | `backlog task edit 42 -a @sara`             |
+| Add labels       | `backlog task edit 42 -l backend,api`       |
+| Set priority     | `backlog task edit 42 --priority high`      |
 
-**Verbose output handling (CRITICAL):**
+### Acceptance Criteria Management
 
-**DO NOT naively ingest full output from builds, dev servers, tests, or other verbose processes.**
+| Action              | Command                                                                     |
+|---------------------|-----------------------------------------------------------------------------|
+| Add AC              | `backlog task edit 42 --ac "New criterion" --ac "Another"`                  |
+| Remove AC #2        | `backlog task edit 42 --remove-ac 2`                                        |
+| Remove multiple ACs | `backlog task edit 42 --remove-ac 2 --remove-ac 4`                          |
+| Check AC #1         | `backlog task edit 42 --check-ac 1`                                         |
+| Check multiple ACs  | `backlog task edit 42 --check-ac 1 --check-ac 3`                            |
+| Uncheck AC #3       | `backlog task edit 42 --uncheck-ac 3`                                       |
+| Mixed operations    | `backlog task edit 42 --check-ac 1 --uncheck-ac 2 --remove-ac 3 --ac "New"` |
 
-**General rule: When output expected to be >2 pages, ALWAYS limit what you see.**
+### Task Content
 
-- **Tests**: Can be verbose with logging
-  - Run specific tests when possible: `npx vitest run test/file.test.ts -t "pattern"`
-  - For full test runs, consider piping and reading selectively
-  - Watch mode usually manageable, but full runs with coverage can be verbose
+| Action           | Command                                                  |
+|------------------|----------------------------------------------------------|
+| Add plan         | `backlog task edit 42 --plan "1. Step one\n2. Step two"` |
+| Add notes        | `backlog task edit 42 --notes "Implementation details"`  |
+| Add dependencies | `backlog task edit 42 --dep task-1 --dep task-2`         |
 
-- **Builds/dev servers/checks**: Notoriously verbose (often >2 pages)
-  - Pipe to files/buffers first
-  - Read in reverse: last 10-20 lines first
-  - Only read more if needed for debugging
+### Multi‑line Input (Description/Plan/Notes)
 
-**Strategy: Pipe to file, read last 10-20 lines for success/failure, investigate more only if needed.**
+The CLI preserves input literally. Shells do not convert `\n` inside normal quotes. Use one of the following to insert real newlines:
 
-**Examples:**
+- Bash/Zsh (ANSI‑C quoting):
+  - Description: `backlog task edit 42 --desc $'Line1\nLine2\n\nFinal'`
+  - Plan: `backlog task edit 42 --plan $'1. A\n2. B'`
+  - Notes: `backlog task edit 42 --notes $'Done A\nDoing B'`
+  - Append notes: `backlog task edit 42 --append-notes $'Progress update line 1\nLine 2'`
+- POSIX portable (printf):
+  - `backlog task edit 42 --notes "$(printf 'Line1\nLine2')"`
+- PowerShell (backtick n):
+  - `backlog task edit 42 --notes "Line1`nLine2"`
 
-```bash
-# ✅ Good - run specific test
-npx vitest run test/matchbox.test.ts -t "should create"
+Do not expect `"...\n..."` to become a newline. That passes the literal backslash + n to the CLI by design.
 
-# ✅ Good - limit output
-npm run build:lib 2>&1 | tail -20
-npm test 2>&1 | tail -30  # Tests may need more lines
+Descriptions support literal newlines; shell examples may show escaped `\\n`, but enter a single `\n` to create a newline.
 
-# ✅ Good - file then selective read
-npm run build:docs > /tmp/build.log 2>&1
-npm test > /tmp/test.log 2>&1
-# Then read last 20-30 lines of logs
+### Implementation Notes Formatting
 
-# ❌ Bad - don't do this
-npm run build:docs  # Floods context with verbose output
-npm test            # Can flood context if tests have logging
-```
+- Keep implementation notes human-friendly and PR-ready: use short paragraphs or
+  bullet lists instead of a single long line.
+- Lead with the outcome, then add supporting details (e.g., testing, follow-up
+  actions) on separate lines or bullets.
+- Prefer Markdown bullets (`-` for unordered, `1.` for ordered) so Maintainers
+  can paste notes straight into GitHub without additional formatting.
+- When using CLI flags like `--append-notes`, remember to include explicit
+  newlines. Example:
 
-**Safety:**
+  ```bash
+  backlog task edit 42 --append-notes $'- Added new API endpoint\n- Updated tests\n- TODO: monitor staging deploy'
+  ```
 
-- Never destroy work (we have git)
-- Do NOT do hard resets
+### Task Operations
 
-## Landing the Plane (Session Completion)
+| Action             | Command                                      |
+|--------------------|----------------------------------------------|
+| View task          | `backlog task 42 --plain`                    |
+| List tasks         | `backlog task list --plain`                  |
+| Search tasks       | `backlog search "topic" --plain`              |
+| Search with filter | `backlog search "api" --status "To Do" --plain` |
+| Filter by status   | `backlog task list -s "In Progress" --plain` |
+| Filter by assignee | `backlog task list -a @sara --plain`         |
+| Archive task       | `backlog task archive 42`                    |
+| Demote to draft    | `backlog task demote 42`                     |
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until committed.
+---
 
-**MANDATORY WORKFLOW:**
+## Common Issues
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **COMMIT** - Use conventional commits and do NOT mention AI or tooling used
-5. **Clean up** - Remove any working docs, debug logging in code
-6. **Verify** - All changes committed
-7. **Hand off** - Provide context for next session
+| Problem              | Solution                                                           |
+|----------------------|--------------------------------------------------------------------|
+| Task not found       | Check task ID with `backlog task list --plain`                     |
+| AC won't check       | Use correct index: `backlog task 42 --plain` to see AC numbers     |
+| Changes not saving   | Ensure you're using CLI, not editing files                         |
+| Metadata out of sync | Re-edit via CLI to fix: `backlog task edit 42 -s <current-status>` |
 
-**CRITICAL RULES:**
+---
 
-- Work is NOT complete until tested and committed
+## Remember: The Golden Rule
+
+**🎯 If you want to change ANYTHING in a task, use the `backlog task edit` command.**
+**📖 Use CLI to read tasks, exceptionally READ task files directly, never WRITE to them.**
+
+Full help available: `backlog --help`
+
+<!-- BACKLOG.MD GUIDELINES END -->

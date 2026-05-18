@@ -1,69 +1,60 @@
-import { createMachine, assignEventApi } from "matchina";
-import { states, type Move } from "./states";
-import { randomMove, determineWinner } from "./game-utils";
+import { createMachine, effect, eventApi, setup } from "matchina";
+import { randomMove } from "./game-utils";
+import { states } from "./states";
+import { createStore } from "./store";
 
 export function createRPSMachine() {
-  const machine = createMachine(
+  const store = createStore();
+
+  const baseMachine = createMachine(
     states,
     {
       WaitingForPlayer: {
-        selectMove:
-          (move: Move) =>
-          ({ from }) => {
-            const { playerScore, computerScore } = from.data;
-            return states.PlayerChose(move, playerScore, computerScore);
-          },
+        selectMove: "PlayerChose",
       },
       PlayerChose: {
-        computerSelectMove:
-          () =>
-          ({ from }) => {
-            const { playerMove, playerScore, computerScore } = from.data;
-            return states.Judging(
-              playerMove,
-              randomMove(),
-              playerScore,
-              computerScore
-            );
-          },
+        computerSelectMove: "Judging",
       },
       Judging: {
-        judge:
-          () =>
-          ({ from }) => {
-            const { playerMove, computerMove, playerScore, computerScore } =
-              from.data;
-            const winner = determineWinner(playerMove, computerMove);
-            return states.RoundComplete(
-              playerMove,
-              computerMove,
-              winner,
-              playerScore + (winner === "player" ? 1 : 0),
-              computerScore + (winner === "computer" ? 1 : 0)
-            );
-          },
+        judge: "RoundComplete",
       },
       RoundComplete: {
-        nextRound:
-          () =>
-          ({ from }) => {
-            const { playerScore, computerScore } = from.data;
-            // Check if game over condition is met (e.g., score >= 5)
-            if (playerScore >= 5 || computerScore >= 5) {
-              const winner = playerScore >= 5 ? "player" : "computer";
-              return states.GameOver(winner, playerScore, computerScore);
-            }
-            return states.WaitingForPlayer(playerScore, computerScore);
-          },
+        nextRound: "WaitingForPlayer",
         gameOver: "GameOver",
       },
       GameOver: {
         newGame: "WaitingForPlayer",
       },
     },
-    states.WaitingForPlayer(0, 0)
+    "WaitingForPlayer"
   );
-  return Object.assign(assignEventApi(machine), {
-    randomMove,
-  });
+
+  const machine = Object.assign(baseMachine, { store }, eventApi(baseMachine));
+
+  // bind machine to store
+  setup(machine)(
+    effect((ev) => {
+      ev.match(
+        {
+          selectMove: store.setPlayerMove,
+          computerSelectMove: () => {
+            store.setComputerMove(randomMove());
+          },
+          judge: () => {
+            store.judgeRound();
+            store.checkGameOver();
+            if (store.getState().gameWinner) {
+              machine.gameOver();
+            }
+          },
+          nextRound: store.clearRound,
+          newGame: store.reset,
+        },
+        false
+      );
+    })
+  );
+  return machine;
 }
+
+export type RPSMachine = ReturnType<typeof createRPSMachine>;

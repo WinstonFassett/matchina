@@ -1,25 +1,53 @@
 import {
   defineStates,
   createMachine,
+  createStoreMachine,
+  addStoreApi,
+  withSubscribe,
   setup,
   enter,
   when,
   effect,
-  assignEventApi,
-  before,
 } from "matchina";
 import { tickEffect } from "../lib/tick-effect";
 
+interface StopwatchState {
+  elapsed: number;
+  at: number;
+}
+
+const createStopwatchStore = () => {
+  const store = createStoreMachine<StopwatchState>(
+    { elapsed: 0, at: 0 },
+    {
+      tick: () => (change) => ({
+        elapsed: change.from.elapsed + (Date.now() - change.from.at),
+        at: Date.now(),
+      }),
+      start: () => (change) => ({
+        elapsed: change.from.elapsed,
+        at: Date.now(),
+      }),
+      resume: () => (change) => ({
+        elapsed: change.from.elapsed,
+        at: Date.now(),
+      }),
+      clear: () => () => ({ elapsed: 0, at: Date.now() }),
+    }
+  );
+  return addStoreApi(withSubscribe(store));
+};
+
 export const createStopwatchMachine = () => {
-  // Define states using defineStates
   const states = defineStates({
-    Stopped: (elapsed = 0) => ({ elapsed }),
-    Ticking: (elapsed = 0) => ({ elapsed, at: Date.now() }),
-    Suspended: (elapsed = 0) => ({ elapsed }),
+    Stopped: undefined,
+    Ticking: undefined,
+    Suspended: undefined,
   });
 
-  // Create the base machine with states, transitions, and initial state
-  const baseMachine = createMachine(
+  const store = createStopwatchStore();
+
+  const machine = createMachine(
     states,
     {
       Stopped: { start: "Ticking" },
@@ -35,39 +63,23 @@ export const createStopwatchMachine = () => {
         clear: "Suspended",
       },
     },
-    states.Stopped()
+    "Stopped"
   );
 
-  //Use assignEventApi to enhance the machine with utility methods
-  const machine = Object.assign(assignEventApi(baseMachine), {
-    elapsed: 0,
-  });
-
-  // Setup hooks directly on the machine (no need for .machine with assignEventApi)
   setup(machine)(
-    // Before transition handler
-    before((ev) => {
-      if (ev.type === "_tick" && ev.from.is("Ticking")) {
-        ev.to.data.elapsed =
-          ev.from.data.elapsed + (Date.now() - ev.from.data.at);
-      }
-      if (ev.type === "clear") {
-        ev.to.data.elapsed = 0;
-      }
-      return () => {};
+    effect((ev) => {
+      if (ev.type === "_tick") store.api.tick();
+      if (ev.type === "start") store.api.start();
+      if (ev.type === "resume") store.api.resume();
+      if (ev.type === "clear") store.api.clear();
     }),
-    // Effect when entering Ticking state
     enter(
       when(
         (ev) => ev.to.is("Ticking"),
-        () => tickEffect(machine._tick)
+        () => tickEffect(() => machine.send("_tick"))
       )
-    ),
-    // Effect for all transitions - update elapsed field
-    effect((ev) => {
-      machine.elapsed = ev?.to.data.elapsed ?? 0;
-    })
+    )
   );
 
-  return machine;
+  return Object.assign(machine, { store });
 };

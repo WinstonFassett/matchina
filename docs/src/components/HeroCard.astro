@@ -1,0 +1,99 @@
+---
+import { ExamplePreview } from "./ExamplePreview";
+---
+
+<div class="hero-card not-content">
+  <div class="pane-left">
+    <div class="pane-head">
+      <span>fig.01 — fetcher machine</span>
+      <span class="live-badge">● live</span>
+    </div>
+    <ExamplePreview id="landing-fetcher" defaultViz="svg" showPicker={false} hideAppPane={true} defaultSvgDirection="DOWN" client:only="react" />
+  </div>
+  <div class="pane-right">
+    <div class="pane-head">
+      <span>fetcher.ts</span>
+      <span>typescript</span>
+    </div>
+    <pre class="hero-code"><code
+><span class="ln">01</span>  <span class="kw">const</span> states <span class="op">=</span> <span class="fn">defineStates</span>(&#123;
+<span class="ln">02</span>    Idle:    undefined,
+<span class="ln">03</span>    Loading: undefined,
+<span class="ln">04</span>    Success: (data: unknown) <span class="op">=&gt;</span> data,
+<span class="ln">05</span>    Error:   (err: Error)    <span class="op">=&gt;</span> err,
+<span class="ln">06</span>  &#125;);
+<span class="ln">07</span>
+<span class="ln">08</span>  <span class="kw">const</span> &#123; getState, send &#125; <span class="op">=</span> <span class="fn">createMachine</span>(
+<span class="ln">09</span>    states,
+<span class="ln">10</span>    &#123;
+<span class="ln">11</span>      Idle:    &#123; fetch:   <span class="s">'Loading'</span> &#125;,
+<span class="ln">12</span>      Loading: &#123; resolve: <span class="s">'Success'</span>, reject: <span class="s">'Error'</span> &#125;,
+<span class="ln">13</span>      Success: &#123; reset:   <span class="s">'Idle'</span>    &#125;,
+<span class="ln">14</span>      Error:   &#123; retry:   <span class="s">'Loading'</span> &#125;,
+<span class="ln">15</span>    &#125;,
+<span class="ln">16</span>    <span class="s">'Idle'</span>
+<span class="ln">17</span>  );
+<span class="ln">18</span>
+<span class="ln">19</span>  send(<span class="s">'fetch'</span>);</code></pre>
+  </div>
+</div>
+
+<style>
+  .hero-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    background: var(--card);
+    margin-top: 20px;
+  }
+  .pane-left {
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .pane-right {
+    display: flex;
+    flex-direction: column;
+  }
+  .pane-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 14px;
+  }
+  .pane-right .pane-head {
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 0;
+  }
+  .hero-code {
+    margin: 0 !important;
+    padding: 14px 20px !important;
+    font-family: var(--font-mono) !important;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    color: var(--muted-foreground) !important;
+    background: transparent !important;
+    border: 0 !important;
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+  .hero-code .ln { color: var(--text-mute); }
+  .hero-code .kw { color: var(--purple); }
+  .hero-code .fn { color: var(--info); }
+  .hero-code .s  { color: var(--warn); }
+  .hero-code .op { color: var(--text-mute); }
+  .live-badge { color: var(--accent); }
+
+  @media (max-width: 60rem) {
+    .hero-card { grid-template-columns: 1fr; }
+    .pane-left { border-right: 0; border-bottom: 1px solid var(--border); }
+  }
+</style>

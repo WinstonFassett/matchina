@@ -1,0 +1,393 @@
+/**
+ * Shape builders for different machine types
+ *
+ * buildFlattenedShape: computes static shape from flattened transitions (eager)
+ * buildMachineStructure: computes shape from hierarchical machine structure (lazy/runtime)
+ */
+
+import { getTargets } from "../transition-helper";
+import type { MachineShape, StateNode } from "./definition";
+import type { MachineDescriptor } from "./machine";
+
+/**
+ * Build shape from flattened machine
+ *
+ * Flattened shapes are completely static - computed once from
+ * the flattened state structure.
+ */
+export function buildFlattenedShape(
+  transitions: Record<string, Record<string, any>>,
+  initialKey: string
+): MachineShape {
+  const states = new Map<string, StateNode>();
+  const transitionMap = new Map<string, Map<string, string>>();
+  const hierarchy = new Map<string, string | undefined>();
+  const parentStates = new Set<string>(); // Track which parent states we've created
+
+  // Get all state keys from transitions
+  for (const [stateKey, stateTransitions] of Object.entries(transitions)) {
+    const stateStr = String(stateKey);
+    const isFinal = Object.keys(stateTransitions).length === 0;
+    const parts = stateStr.split(".");
+    const parentKey =
+      parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+
+    states.set(stateStr, {
+      key: parts.at(-1) || stateStr,
+      fullKey: stateStr,
+      isFinal,
+      isCompound: parentKey !== undefined, // leaf states in hierarchy are compound if they have a parent
+    });
+
+    hierarchy.set(stateStr, parentKey);
+
+    // Convert transitions to Map
+    const trans = new Map<string, string>();
+    for (const [eventKey, target] of Object.entries(stateTransitions)) {
+      let finalTarget = target;
+      if (typeof target === "string") {
+        // For flattened machines:
+        // - Root-level states: convert child targets to parent states
+        // - Child states: preserve full paths for child-to-child transitions
+        if (target.includes(".")) {
+          if (parentKey) {
+            // Child-to-child transition - preserve full path
+            finalTarget = target;
+          } else {
+            // Root-level state transitioning to child state - use parent
+            const targetParent = target.split(".").slice(0, -1).join(".");
+            finalTarget = targetParent || target;
+          }
+        } else {
+          // Root-to-root transition, keep as is
+          finalTarget = target;
+        }
+        trans.set(String(eventKey), finalTarget);
+      } else if (typeof target === "function") {
+        // Check for defineTransition() helper metadata first
+        const targets = getTargets(target);
+        if (targets && targets.length > 0) {
+          // Has metadata from defineTransition() helper - use all discovered targets
+          for (const t of targets) {
+            let finalTarget = t;
+            if (t.includes(".")) {
+              finalTarget = t.split(".").pop() || t;
+            }
+            trans.set(String(eventKey), finalTarget);
+          }
+        } else {
+          // Try automatic discovery for simple transitions
+          try {
+            // Call with dummy params
+            const dummyParams = Array.from({ length: target.length }).fill(
+              undefined
+            );
+            const result = target(...dummyParams);
+
+            // Check if result is a state (simple form) or event handler (curried form)
+            if (result && typeof result === "object" && "key" in result) {
+              // Simple form: (params) => state
+              let finalTarget = result.key;
+              if (finalTarget.includes(".")) {
+                finalTarget = finalTarget.split(".").pop() || finalTarget;
+              }
+              trans.set(String(eventKey), finalTarget);
+            } else if (typeof result === "function") {
+              // Curried form: (params) => (ev) => state
+              const dummyEvent = { from: { data: {} }, to: { data: {} } };
+              const state = result(dummyEvent);
+              if (state && typeof state === "object" && "key" in state) {
+                let finalTarget = state.key;
+                if (finalTarget.includes(".")) {
+                  finalTarget = finalTarget.split(".").pop() || finalTarget;
+                }
+                trans.set(String(eventKey), finalTarget);
+              }
+            }
+          } catch {
+            // Can't auto-discover - transition won't show in visualization
+            // Use defineTransition() helper for complex branching logic
+          }
+        }
+      }
+    }
+    transitionMap.set(stateStr, trans);
+
+    // Track all parent states we need to create
+    if (parentKey) {
+      parentStates.add(parentKey);
+    }
+  }
+
+  // Create hierarchy entries for parent states AND create parent state nodes
+  // This allows the visualization to show the complete hierarchy structure
+  for (const parentKey of parentStates) {
+    if (!hierarchy.has(parentKey)) {
+      const parts = parentKey.split(".");
+      const grandParentKey =
+        parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+      hierarchy.set(parentKey, grandParentKey);
+    }
+
+    // Create parent state node if it doesn't exist
+    if (!states.has(parentKey)) {
+      const parts = parentKey.split(".");
+      const grandParentKey =
+        parts.length > 1 ? parts.slice(0, -1).join(".") : undefined;
+      states.set(parentKey, {
+        key: parts.at(-1) || parentKey,
+        fullKey: parentKey,
+        isFinal: false, // Parent states are never final (they have children)
+        isCompound: true, // Parent states are compound because they have children
+      });
+    }
+  }
+
+  return {
+    states,
+    transitions: transitionMap,
+    hierarchy,
+    initialKey,
+    type: "flattened",
+  };
+}
+
+/**
+ * Build shape from machine descriptor
+ *
+ * Used for both flattened and nested machines using the MachineDescriptor interface.
+ * Walks the hierarchy by inspecting the descriptor structure.
+ */
+export function buildMachineStructure(
+  descriptor: MachineDescriptor
+): MachineShape {
+  const states = new Map<string, StateNode>();
+  const transitionMap = new Map<string, Map<string, string>>();
+  const hierarchy = new Map<string, string | undefined>();
+
+  const initialKey = descriptor.initialKey ?? descriptor.initial ?? "Unknown";
+
+  // Process all states from descriptor
+  for (const [stateKey, stateFactory] of descriptor.states.entries()) {
+    // Add state to shape
+    const stateTransitions = descriptor.transitions.get(stateKey) || {};
+    const isFinal = Object.keys(stateTransitions).length === 0;
+
+    states.set(stateKey, {
+      key: stateKey.split('.').pop() || stateKey,
+      fullKey: stateKey,
+      isFinal,
+      isCompound: false, // Will be updated if has children
+    });
+    
+    // Use hierarchy from descriptor
+    const parentKey = descriptor.hierarchy.get(stateKey);
+    hierarchy.set(stateKey, parentKey);
+
+    // Collect transitions
+    const trans = new Map<string, string>();
+    for (const [event, target] of Object.entries(stateTransitions)) {
+      if (typeof target === "string") {
+        trans.set(event, target);
+      } else if (typeof target === "function") {
+        // Check for defineTransition() helper metadata first
+        const targets = getTargets(target);
+        if (targets && targets.length > 0) {
+          // Has metadata from defineTransition() helper - use all discovered targets
+          for (const t of targets) {
+            trans.set(event, t);
+          }
+        } else {
+          // Try automatic discovery for simple transitions
+          try {
+            // Call with dummy params
+            const dummyParams = Array.from({ length: target.length }).fill(
+              undefined
+            );
+            const result = target(...dummyParams);
+
+            // Check if result is a state (simple form) or event handler (curried form)
+            if (result && typeof result === "object" && "key" in result) {
+              // Simple form: (params) => state
+              trans.set(event, result.key);
+            } else if (typeof result === "function") {
+              // Curried form: (params) => (ev) => state
+              const dummyEvent = { from: { data: {} }, to: { data: {} } };
+              const state = result(dummyEvent);
+              if (state && typeof state === "object" && "key" in state) {
+                trans.set(event, state.key);
+              }
+            }
+          } catch {
+            // Can't auto-discover - transition won't show in visualization
+            // Use defineTransition() helper for complex branching logic
+          }
+        }
+      }
+    }
+    transitionMap.set(stateKey, trans);
+  }
+
+  // Mark compound states based on hierarchy
+  for (const [stateKey, parentKey] of descriptor.hierarchy.entries()) {
+    const hasChildren = Array.from(descriptor.hierarchy.values())
+      .some(childParent => childParent === stateKey);
+    
+    if (hasChildren) {
+      const stateNode = states.get(stateKey);
+      if (stateNode) {
+        const updatedNode = { ...stateNode, isCompound: true };
+        states.set(stateKey, updatedNode);
+      }
+    }
+  }
+
+  return {
+    states,
+    transitions: transitionMap,
+    hierarchy,
+    initialKey,
+    type: descriptor.type || "nested",
+  };
+}
+
+/**
+ * Build hierarchical shape from machine (original implementation)
+ */
+export function buildHierarchicalShape(
+  machine: any
+): MachineShape {
+  const states = new Map<string, StateNode>();
+  const transitionMap = new Map<string, Map<string, string>>();
+  const hierarchy = new Map<string, string | undefined>();
+  const visited = new Set<string>();
+
+  const initialState = machine.getState();
+  const machineWithInitial = machine as { initialKey?: string };
+  const initialKey =
+    machineWithInitial.initialKey ?? initialState?.key ?? "Unknown";
+
+  // Recursively walk all states in machine hierarchy
+  function walkMachine(
+    m: {
+      states?: Record<string, any>;
+      transitions?: Record<string, Record<string, any>>;
+    },
+    parentFullKey?: string
+  ): void {
+    // Iterate over ALL states in the machine, not just the current one
+    const machineStates = m.states || {};
+    const machineTransitions = m.transitions || {};
+
+    for (const [stateKey, stateFactory] of Object.entries(machineStates)) {
+      const fullKey = parentFullKey ? `${parentFullKey}.${stateKey}` : stateKey;
+
+      // Prevent infinite loops
+      if (visited.has(fullKey)) {
+        continue;
+      }
+      visited.add(fullKey);
+
+      // Add state to shape
+      const stateTransitions = machineTransitions[stateKey] || {};
+      const isFinal = Object.keys(stateTransitions).length === 0;
+
+      states.set(fullKey, {
+        key: stateKey,
+        fullKey,
+        isFinal,
+        isCompound: false, // Will be updated if has children
+      });
+      hierarchy.set(fullKey, parentFullKey);
+
+      // Collect transitions
+      const trans = new Map<string, string>();
+      for (const [event, target] of Object.entries(stateTransitions)) {
+        if (typeof target === "string") {
+          // Simple string transition
+          trans.set(event, target);
+        } else if (typeof target === "function") {
+          // Check for defineTransition() helper metadata first
+          const targets = getTargets(target);
+          if (targets && targets.length > 0) {
+            // Has metadata from defineTransition() helper - use all discovered targets
+            for (const t of targets) {
+              trans.set(event, t);
+            }
+          } else {
+            // Try automatic discovery for simple transitions
+            try {
+              // Call with dummy params
+              const dummyParams = Array.from({ length: target.length }).fill(
+                undefined
+              );
+              const result = target(...dummyParams);
+
+              // Check if result is a state (simple form) or event handler (curried form)
+              if (result && typeof result === "object" && "key" in result) {
+                // Simple form: (params) => state
+                trans.set(event, result.key);
+              } else if (typeof result === "function") {
+                // Curried form: (params) => (ev) => state
+                const dummyEvent = { from: { data: {} }, to: { data: {} } };
+                const state = result(dummyEvent);
+                if (state && typeof state === "object" && "key" in state) {
+                  trans.set(event, state.key);
+                }
+              }
+            } catch {
+              // Can't auto-discover - transition won't show in visualization
+              // Use defineTransition() helper for complex branching logic
+            }
+          }
+        }
+      }
+      transitionMap.set(fullKey, trans);
+
+      // Check if state has a submachine
+      const stateFactoryWithMachine = stateFactory as {
+        machineFactory?: () => { machine?: any };
+      };
+      const machineFactory = stateFactoryWithMachine?.machineFactory;
+      if (machineFactory) {
+        try {
+          // Create instance to inspect
+          const result = machineFactory();
+          const childMachine = result.machine || result;
+
+          // Get child machine's initial state
+          const childInitialState = childMachine.getState();
+          const childInitialKey = childInitialState?.key || "Unknown";
+
+          // Mark current state as compound with initial child
+          const stateNode = states.get(fullKey);
+          if (stateNode) {
+            const updatedNode = {
+              ...stateNode,
+              isCompound: true,
+              initial: childInitialKey,
+            };
+            states.set(fullKey, updatedNode);
+          }
+
+          // Recursively walk child machine with parent context
+          // This ensures child states are properly nested under the parent
+          walkMachine(childMachine, fullKey);
+        } catch {
+          // Skip if child machine fails to instantiate
+        }
+      }
+    }
+  }
+
+  // Start walking from root
+  walkMachine(machine);
+
+  return {
+    states,
+    transitions: transitionMap,
+    hierarchy,
+    initialKey,
+    type: "nested",
+  };
+}

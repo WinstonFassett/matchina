@@ -1,0 +1,25 @@
+/* ui26 themes barrel — all themes for the multi-theme switcher.
+ *
+ * Each theme owns both its light block (`[data-theme="<name>"]`) and dark block
+ * (`[data-theme="<name>-dark"]`). The editorial theme is the default.
+ *
+ * Tailwind's `dark:` variant matches any selector ending in `dark`
+ * (see global.css @custom-variant dark).
+ */
+
+@import './themes/shad.css';
+@import './themes/editorial.css';
+@import './themes/tix.css';
+
+@import './themes/neon-synthwave.css';
+@import './themes/cyberpunk-neon.css';
+@import './themes/pastel-kawaii.css';
+@import './themes/zen-garden.css';
+@import './themes/bubblegum-pop.css';
+@import './themes/retro-arcade.css';
+@import './themes/tropical-paradise.css';
+@import './themes/steampunk-cogs.css';
+@import './themes/space-odyssey.css';
+@import './themes/vintage-vinyl.css';
+@import './themes/misty-harbor.css';
+

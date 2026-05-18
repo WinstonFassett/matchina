@@ -1,9 +1,9 @@
 import { defineStates, matchina } from "matchina";
 
 const states = defineStates({
-  Red: () => ({ message: "Stop" }),
-  Yellow: () => ({ message: "Prepare to stop" }),
-  Green: () => ({ message: "Go" }),
+  Red: undefined,
+  Yellow: undefined,
+  Green: undefined,
 });
 
 export const createTrafficLightMachine = () => {
@@ -11,8 +11,8 @@ export const createTrafficLightMachine = () => {
     states,
     {
       Red: { next: "Green" },
-      Yellow: { next: "Red" },
       Green: { next: "Yellow" },
+      Yellow: { next: "Red" },
     },
     "Red"
   );

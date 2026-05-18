@@ -13,11 +13,12 @@ export * from "./factory-machine-hooks";
 export * from "./factory-machine-lifecycle";
 export * from "./event-lifecycle";
 export * from "./match-case";
-// export * from "./match-case-types";
+export * from "./match-case-types";
 // export * from "./factory-machine-event";
-// export * from "./factory-machine-types";
+export * from "./factory-machine-types";
 export * from "./state-keyed";
-// export * from "./utility-types";
+export * from "./utility-types";
+
 export * from "./matchbox-factory";
 export * from "./matchina";
 export * from "./extras/emitter";
@@ -34,5 +35,23 @@ export * from "./function-types";
 export * from "./match-change";
 export * from "./match-filters";
 
-export * from "./definitions";
-export * from "./definition-types";
+export * from "./is-machine";
+export * from "./transition-helper";
+export * from "./atom";
+
+// HSM exports (primary declarative API only; internals available via matchina/hsm)
+export { createHSM } from "./hsm";
+export type {
+  DeclarativeFlatMachineConfig,
+  DeclarativeStateConfig,
+} from "./hsm/flattened/types";
+export type {
+  HSMEvent,
+  HSMMachine,
+  HSMEventApi,
+} from "./hsm/flattened/declarative-flat";
+export { sendWhen } from "./hsm/utility-types";
+export type {
+  ActiveEvents, AllEventsOf,
+  ChildOf, EventsOf, StatesOf
+} from "./hsm/utility-types";

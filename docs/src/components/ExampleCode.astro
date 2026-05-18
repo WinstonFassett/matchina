@@ -1,0 +1,50 @@
+---
+import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
+import { getExample } from "../examples";
+
+interface Props {
+  id: string;
+  /** Show a single named file. Omit to show all files as tabs. */
+  file?: string;
+}
+
+const { id, file } = Astro.props;
+
+const meta = getExample(id);
+const sourceFiles = meta ? await meta.getSourceFiles() : [];
+
+function getLang(filename: string): string {
+  const ext = filename.split(".").pop();
+  switch (ext) {
+    case "ts": return "ts";
+    case "tsx": return "tsx";
+    case "js": return "javascript";
+    case "jsx": return "jsx";
+    default: return "plaintext";
+  }
+}
+
+const files = file
+  ? sourceFiles.filter((f) => f.name === file)
+  : sourceFiles;
+---
+
+{files.length === 0 && (
+  <p class="font-mono text-sm text-red-500">
+    {meta ? `File "${file}" not found in example "${id}"` : `Example "${id}" not found`}
+  </p>
+)}
+
+{files.length === 1 && (
+  <Code code={files[0].code} lang={getLang(files[0].name)} />
+)}
+
+{files.length > 1 && (
+  <Tabs>
+    {files.map((f) => (
+      <TabItem label={f.name}>
+        <Code code={f.code} lang={getLang(f.name)} />
+      </TabItem>
+    ))}
+  </Tabs>
+)}

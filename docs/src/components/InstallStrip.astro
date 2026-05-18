@@ -1,0 +1,125 @@
+---
+// Inline install strip: pkg manager dropdown + code + copy button.
+// Persists selected package manager in localStorage under "matchina-pkgmgr".
+---
+
+<div class="install-strip not-content">
+  <select class="pkgmgr-select" aria-label="Package manager">
+    <option value="npm">npm</option>
+    <option value="pnpm">pnpm</option>
+    <option value="yarn">yarn</option>
+    <option value="bun">bun</option>
+  </select>
+  <code class="install-cmd"></code>
+  <button class="copy-btn" aria-label="Copy install command">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .install-strip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    background: var(--card);
+    height: 36px;
+    gap: 0;
+    max-width: 100%;
+  }
+
+  .pkgmgr-select {
+    height: 100%;
+    border: 0;
+    border-right: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mute);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 0 10px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+
+  .install-cmd {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--foreground);
+    padding: 0 16px;
+    white-space: nowrap;
+    background: transparent;
+    border: 0;
+    user-select: all;
+  }
+
+  .copy-btn {
+    height: 100%;
+    width: 36px;
+    border: 0;
+    border-left: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-mute);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { color: var(--foreground); }
+  .copy-btn.copied { color: var(--info); }
+</style>
+
+<script is:inline>
+(function () {
+  const COMMANDS = { npm: "npm install matchina", pnpm: "pnpm add matchina", yarn: "yarn add matchina", bun: "bun add matchina" };
+  const KEY = "starlight-synced-tabs__pkg";
+
+  function restore() {
+    const saved = localStorage.getItem(KEY) ?? "npm";
+    const mgr = (saved in COMMANDS) ? saved : "npm";
+    document.querySelectorAll(".install-strip").forEach(function (strip) {
+      const sel = strip.querySelector(".pkgmgr-select");
+      const cmd = strip.querySelector(".install-cmd");
+      if (sel) sel.value = mgr;
+      if (cmd) cmd.textContent = COMMANDS[mgr];
+    });
+  }
+
+  function init() {
+    document.querySelectorAll(".install-strip").forEach(function (strip) {
+      const sel = strip.querySelector(".pkgmgr-select");
+      const cmd = strip.querySelector(".install-cmd");
+      const btn = strip.querySelector(".copy-btn");
+      if (!sel) return;
+      sel.addEventListener("change", function () {
+        localStorage.setItem(KEY, sel.value);
+        if (cmd) cmd.textContent = COMMANDS[sel.value] || COMMANDS.npm;
+      });
+      if (btn) btn.addEventListener("click", async function () {
+        await navigator.clipboard.writeText(cmd ? cmd.textContent : "");
+        btn.classList.add("copied");
+        setTimeout(function () { btn.classList.remove("copied"); }, 1400);
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  window.addEventListener("pageshow", function () { restore(); });
+})();
+</script>

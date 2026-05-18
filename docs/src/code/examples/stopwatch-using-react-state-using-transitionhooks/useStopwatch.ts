@@ -18,35 +18,46 @@ export function useStopwatch() {
             return tickEffect(() => {
               setElapsed(Date.now() - (machine.startTime ?? 0));
             });
-          })
+          }),
         },
         {
           type: "start",
-          effect: () => { setStartTime(Date.now()); },
+          effect: () => {
+            setStartTime(Date.now());
+          },
         },
         {
           type: "clear",
-          effect: () => { setElapsed(0); },
+          effect: () => {
+            setElapsed(0);
+          },
         },
         {
           type: "stop",
-          effect: () => { setElapsed(0); },
+          effect: () => {
+            setElapsed(0);
+          },
         },
         {
           type: "resume",
-          effect: () => { setStartTime(Date.now() - (machine.elapsed ?? 0)); },
+          effect: () => {
+            setStartTime(Date.now() - (machine.elapsed ?? 0));
+          },
         },
         {
           from: "Ticking",
           type: "clear",
-          effect: () => { setStartTime(Date.now()); },
+          effect: () => {
+            setStartTime(Date.now());
+          },
         },
         {
           from: "Suspended",
           type: "clear",
-          effect: () => { setStartTime(undefined); },
-        },
-        
+          effect: () => {
+            setStartTime(undefined);
+          },
+        }
       )
     );
     return machine;

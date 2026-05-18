@@ -2,10 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { FactoryMachineEventImpl } from "../src/factory-machine-event";
 import { StateMachine } from "../src/state-machine";
 
-// Define a minimal state type for testing
 type TestState = { key: string; data: any };
 
-// Define a minimal event type that matches TransitionEvent requirements
 interface TestEvent {
   type: string;
   from: TestState;
@@ -14,7 +12,6 @@ interface TestEvent {
   machine: StateMachine<any>;
 }
 
-// Create a minimal implementation of StateMachine with required methods
 const createMockMachine = (): StateMachine<any> => {
   return {
     getState: vi.fn(),
@@ -31,11 +28,9 @@ const createMockMachine = (): StateMachine<any> => {
     enter: vi.fn(),
     notify: vi.fn(),
     after: vi.fn(),
-    // Add any additional required methods here
   } as unknown as StateMachine<any>; // Cast to avoid implementing all methods
 };
 
-// Helper function to create a test event with proper typing
 const createTestEvent = (
   type: string,
   params: any[] = []

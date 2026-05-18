@@ -3,40 +3,28 @@ title: About Matchina
 ---
 import { Aside } from '@astrojs/starlight/components';
 
-## What is Matchina?
-
-Matchina is a lightweight toolkit for building type-safe state machinery. 
-
 <Aside>
-  Matchina is an exploratory library. 
-
-  It has tests and demos but is not yet stable or production-tested.
+  Matchina is an exploratory library. It has tests and demos but is not yet stable or production-tested.
 </Aside>
 
-{/* It provides:
+## What is Matchina?
 
-- **Strongly-typed store and state machines** with full type inference
-- **Tagged unions** via the `matchbox` pattern for discriminated types
-- **Type-safe transitions** with smart parameter inference
-- **Promise integration** for handling async operations safely
-- **Nano-sized, opt-in primitives** for state machines and async logic
-- **Composable APIs** that work together or standalone */}
+A small state machine runtime built on matchbox factories. You define states as discriminated unions. You define transitions. The rest — event types, payload types, method signatures — falls out of the definition.
 
 ## Why Matchina?
 
-{/* - **Lightweight**: Each feature is just a few hundred bytes */}
-- **Composable**: Use only what you need
-- **TypeScript-First**: Full type inference and safety
-- **Extensible**: composable setup, enhancers, lifecycle hooks
-- **No Dependencies**: Zero runtime dependencies
-- **Framework Agnostic**: Works with any UI library
-{/* - **Matching**: switch and filter matching, union factories */}
-{/* - **React Integration**: First-class support for React */}
-
+- **Types from definitions, not annotations.** Define your machine shape. Get typed events, typed payloads, and typed method APIs without writing generics by hand. The types are already there if the library earns them.
+- **Call `machine.start()` not `machine.send("start")`.** Derive a fully typed method API from your machine. Full autocomplete, full type safety, no string dispatch.
+- **Open mutation pipeline.** Every state transition runs through a hookable pipeline: guard, handle, before, update, enter/leave, effect, notify, after. Hook in at any phase, on any transition.
+- **Composable primitives.** The same matchbox factories and lifecycle utilities the machines are built from are exported for standalone use. Take what you need.
+- **Not config-driven.** Matchina is primitives that compose, not a declarative config format. If you want JSON-powered state machines, consider XState.
+- **Zero dependencies. 2kb.**
 
 ## What's inside
 
-- **State Machines**: state machine, promise machine
-- **Matchbox Union Factories**: matchbox, matchbox-factory
-- **Integrations**: React, Zod, Valibot
-- **Extras**: when, delay, effects, subscribe, reset
+- **Matchbox factories** — discriminated union primitives, used standalone or as state definitions
+- **Factory machines** — state machines with full type inference from matchbox shape
+- **Promise machines** — async state with typed loading/success/error
+- **Lifecycle hooks** — hook into any transition phase
+- **Event API** — derive typed method APIs from your machine
+- **Integrations** — React, Zod, Valibot

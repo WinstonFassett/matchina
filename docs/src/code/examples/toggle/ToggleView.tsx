@@ -1,36 +1,30 @@
 import { type ToggleMachine } from "./machine";
 
-// A toggle view component that uses the enhanced ToggleMachine
 export const ToggleView = ({ machine }: { machine: ToggleMachine }) => {
-  // Get current state
-  const currentState = machine.getState();
-  const isOn = currentState.key === "On";
+  const isOn = machine.getState().key === "On";
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="text-6xl font-bold mb-4">{isOn ? "ON" : "OFF"}</div>
-      <div
-        className={`w-16 h-8 rounded-full p-1 flex ${
-          isOn ? "bg-blue-500 justify-end" : "bg-gray-300 justify-start"
-        } transition-colors duration-200 cursor-pointer mb-4`}
-        onClick={() => machine.api.toggle()}
-      >
-        <div className="bg-white rounded-full w-6 h-6 shadow-md"></div>
+    <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-1">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">state</span>
+        <span className="text-4xl font-semibold text-foreground tabular-nums">{isOn ? "On" : "Off"}</span>
       </div>
-      <div className="flex space-x-2">
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-          onClick={() => machine.api.turnOn()}
-          disabled={isOn}
-        >
-          Turn On
+
+      <button
+        className={`toggle-track ${isOn ? "toggle-track-on" : "toggle-track-off"}`}
+        onClick={() => machine.api.toggle()}
+        aria-label="Toggle"
+        aria-pressed={isOn}
+      >
+        <span className={`toggle-thumb ${isOn ? "toggle-thumb-on" : "toggle-thumb-off"}`} />
+      </button>
+
+      <div className="flex gap-2">
+        <button className={`btn btn-sm ${isOn ? "btn-outline" : "btn-primary"}`} onClick={() => machine.api.turnOn()} disabled={isOn}>
+          Turn on
         </button>
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-          onClick={() => machine.api.turnOff()}
-          disabled={!isOn}
-        >
-          Turn Off
+        <button className={`btn btn-sm ${isOn ? "btn-primary" : "btn-outline"}`} onClick={() => machine.api.turnOff()} disabled={!isOn}>
+          Turn off
         </button>
       </div>
     </div>

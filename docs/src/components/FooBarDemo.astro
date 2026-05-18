@@ -1,6 +1,6 @@
 ---
-import StateMachineMermaidDiagram from "@components/inspectors/MermaidInspector";
-import { getXStateDefinition } from "@code/examples/lib/matchina-machine-to-xstate-definition";
+import { MermaidInspector } from "@matchina/viz-mermaid";
+import { buildVisualizerTree } from "@code/examples/lib/matchina-machine-to-xstate-definition";
 import { createMachine, defineStates, type FactoryMachine } from "matchina";
 
 const states = defineStates( {
@@ -26,8 +26,8 @@ const machine = createMachine(
   }, 
   'Idle'
 )
-const config = getXStateDefinition(machine as FactoryMachine<any>)
+const config = buildVisualizerTree(machine as FactoryMachine<any>)
 
 ---
 
-<StateMachineMermaidDiagram config={config} stateKey="Idle" client:only="react"  />
+<MermaidInspector shape={config} currentStateKey="Idle" actions={{}} interactive={false} diagramType="statechart" client:only="react"  />

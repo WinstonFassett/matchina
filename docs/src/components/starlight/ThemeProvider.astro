@@ -1,0 +1,83 @@
+---
+/*
+ * Replaces Starlight's default ThemeProvider. Resolves theme identity +
+ * light/dark mode from localStorage (or system preference) and writes the
+ * compound `data-theme` value on <html> before first paint.
+ *
+ * Storage keys:
+ *   ui26-theme-name  → "editorial" | "tix" | "shad" | "neon-synthwave" | ...
+ *   ui26-theme-mode  → "light" | "dark" | "auto"
+ *
+ * Default: editorial + auto. Auto follows `prefers-color-scheme`.
+ *
+ * Theme CSS: all 14 themes in dev, editorial only in prod.
+ */
+---
+
+<script is:inline>
+  window.Ui26Theme = (() => {
+    const THEMES = [
+      'editorial', 'tix', 'shad',
+      'neon-synthwave', 'cyberpunk-neon', 'pastel-kawaii', 'zen-garden',
+      'bubblegum-pop', 'retro-arcade', 'tropical-paradise', 'steampunk-cogs',
+      'space-odyssey', 'vintage-vinyl', 'misty-harbor',
+    ];
+    const MODES = ['light', 'dark', 'auto'];
+    const nameKey = 'ui26-theme-name';
+    const modeKey = 'ui26-theme-mode';
+
+    const hasLS = typeof localStorage !== 'undefined';
+    const readName = () => {
+      const v = hasLS && localStorage.getItem(nameKey);
+      return THEMES.includes(v) ? v : 'editorial';
+    };
+    const readMode = () => {
+      const v = hasLS && localStorage.getItem(modeKey);
+      return MODES.includes(v) ? v : 'auto';
+    };
+    const prefersDark = () =>
+      typeof matchMedia === 'function' &&
+      matchMedia('(prefers-color-scheme: dark)').matches;
+    const resolveSuffix = (mode) =>
+      mode === 'dark' ? '-dark' : mode === 'light' ? '' : prefersDark() ? '-dark' : '';
+    const apply = (name, mode) => {
+      document.documentElement.dataset.theme = name + resolveSuffix(mode);
+    };
+
+    const name = readName();
+    const mode = readMode();
+    apply(name, mode);
+
+    if (typeof matchMedia === 'function') {
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (readMode() === 'auto') apply(readName(), 'auto');
+      });
+    }
+
+    const listeners = new Set();
+    const notify = () => listeners.forEach((fn) => fn(readName(), readMode()));
+
+    return {
+      THEMES,
+      MODES,
+      getName: readName,
+      getMode: readMode,
+      setName(name) {
+        if (!THEMES.includes(name)) return;
+        if (hasLS) localStorage.setItem(nameKey, name);
+        apply(name, readMode());
+        notify();
+      },
+      setMode(mode) {
+        if (!MODES.includes(mode)) return;
+        if (hasLS) localStorage.setItem(modeKey, mode);
+        apply(readName(), mode);
+        notify();
+      },
+      subscribe(fn) {
+        listeners.add(fn);
+        return () => listeners.delete(fn);
+      },
+    };
+  })();
+</script>

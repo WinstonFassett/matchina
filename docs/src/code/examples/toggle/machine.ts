@@ -2,8 +2,8 @@ import { createMachine, defineStates, addEventApi } from "matchina";
 
 export const createToggleMachine = () => {
   const states = defineStates({
-    On: () => ({}),
-    Off: () => ({}),
+    On: undefined,
+    Off: undefined,
   });
 
   // Create a machine with proper transitions
@@ -20,7 +20,7 @@ export const createToggleMachine = () => {
           turnOn: "On",
         },
       },
-      states.Off() // Start in the Off state
+      "Off" // Start in the Off state
     )
   );
 

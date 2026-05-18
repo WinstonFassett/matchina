@@ -1,0 +1,15 @@
+---
+import { cn } from "@/lib/utils";
+import { card } from "./card.tv";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = Omit<HTMLAttributes<"div">, "class"> & {
+  class?: string;
+};
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={cn(card(), className)} {...rest}>
+  <slot />
+</div>

@@ -194,3 +194,15 @@ export const after = hookSetup("after");
  * ```
  */
 export const notify = hookSetup("notify");
+
+/**
+ * @function send
+ * Enhances the `send` method of a {@link StateMachine}.
+ * Returns a disposer to undo the enhancement.
+ *
+ * Usage:
+ * ```ts
+ * setup(machine)(send(funcware))
+ * ```
+ */
+export const send = hookSetup("send");

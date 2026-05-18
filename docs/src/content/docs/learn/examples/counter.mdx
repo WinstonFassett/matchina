@@ -1,0 +1,21 @@
+---
+title: Counter State Machine
+description: A counter example with state data
+---
+
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
+
+A counter state machine that maintains a numeric value that can be incremented, decremented, and reset, demonstrating how to store and update data within a state.
+
+<ExampleEmbed id="counter" />
+
+## Implementation details
+
+Unlike the toggle example which uses two distinct states, counter uses a single state (`Active`) with different data values. Self-transitions preserve the state key but return a new state object with updated data.
+
+<ExampleCode id="counter" file="machine.ts" />
+
+- Storing data within state using the `data` property
+- Self-transitions that preserve the state key but change the data
+- `addEventApi` for a clean event-dispatch API

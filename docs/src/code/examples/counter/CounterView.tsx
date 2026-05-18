@@ -1,30 +1,32 @@
+import { useMachine } from "matchina/react";
 import { type CounterMachine } from "./machine";
 
-// A counter view component that uses the enhanced CounterMachine
 export const CounterView = ({ machine }: { machine: CounterMachine }) => {
-  // Get current state
-  const currentState = machine.getState();
+  useMachine(machine);
+  useMachine(machine.store);
+
+  const count = machine.getCount();
+  const isActive = machine.getState().is("Active");
+
   return (
-    <div className="flex flex-col items-center">
-      <div className="text-6xl font-bold mb-4">{currentState.data.count}</div>
-      <div className="flex space-x-2">
+    <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-1">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">count</span>
+        <span className="text-6xl font-semibold text-foreground tabular-nums">{count}</span>
+      </div>
+
+      <div className="flex gap-2">
+        <button className="btn btn-outline" onClick={() => machine.decrement()} disabled={!isActive}>−</button>
+        <button className="btn btn-primary" onClick={() => machine.increment()} disabled={!isActive}>+</button>
+      </div>
+
+      <div className="flex gap-2">
+        <button className="btn btn-ghost btn-sm" onClick={() => machine.reset()} disabled={!isActive}>Reset</button>
         <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-          onClick={() => machine.api.increment()}
+          className={`btn btn-sm ${isActive ? "btn-outline" : "btn-primary"}`}
+          onClick={() => isActive ? machine.send("deactivate") : machine.send("activate")}
         >
-          +
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-          onClick={() => machine.api.decrement()}
-        >
-          -
-        </button>
-        <button
-          className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-          onClick={() => machine.api.reset()}
-        >
-          Reset
+          {isActive ? "Deactivate" : "Activate"}
         </button>
       </div>
     </div>

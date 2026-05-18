@@ -37,6 +37,8 @@ export const PROMISE_TRANSITIONS = {
     resolve: "Resolved",
     reject: "Rejected",
   },
+  Resolved: {},
+  Rejected: {},
 } as const;
 
 /**

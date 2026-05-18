@@ -1,137 +1,24 @@
 ---
-title: Welcome to Matchina
-description: A TypeScript-first, lightweight toolkit for building type-safe state machines with powerful pattern matching and async handling.
+title: Matchina
+description: Extensible state and state machine primitives with excellent type inference and autocomplete.
+template: splash
+tableOfContents: false
 hero:
-  title: |
-    Type-Safe State
-    <span
-      class="font-black text-transparent
-        bg-clip-text bg-gradient-to-b
-        from-accent-700 to-accent-400
-        dark:from-accent-500 dark:to-accent-200"
-    >
-      Matchina
-    </span>
-  tagline: Build strongly-typed state machines with powerful pattern matching
+  title: "<em>TypeScript-first</em><br/>state machinery."
+  tagline: Extensible state and state machine primitives with excellent type inference and autocomplete.
   actions:
-    - text: Quick Start
+    - text: Get started →
       link: ./guides/quickstart/
-      icon: right-arrow
       variant: primary
-    - text: GitHub
-      link: https://github.com/winstonfassett/matchina
-      icon: external
 ---
 
-import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
-import CodeBlock from "@components/CodeBlock.astro";
-import CodeTabs from "@components/CodeTabs.astro";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import setupCode from "@code/examples/teaser/setup.ts?raw";
-import machineCode from "@code/examples/teaser/state-machines.ts?raw";
-import patternMatchingCode from "@code/examples/teaser/pattern-matching.ts?raw";
-import typeGuardsCode from "@code/examples/teaser/typeguards.ts?raw";
+import HeroCard from "@components/HeroCard.astro";
 
-import { Code } from "@astrojs/starlight/components";
-
-{/* ## Key Features */}
-{/* 
-<CodeTabs
-  files={[
-    {
-      name: "TypeScript-First",
-      code: setupCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "State Machines",
-      code: machineCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "Pattern Matching",
-      code: patternMatchingCode,
-      language: "ts",
-      twoslash: true,
-    },
-    {
-      name: "Type Guards",
-      code: typeGuardsCode,
-      language: "ts",
-      twoslash: true,
-    },
-  ]}
-></CodeTabs> 
-*/}
-
-
-## Get Started
-
-<CardGrid>
-  <LinkCard
-    title="📚 Quick Start"
-    href="/matchina/guides/quickstart/"
-    description="Get up and running with Matchina in minutes"
-  />
-  <LinkCard
-    title="⚙️ State Machines"
-    href="/matchina/guides/machines/"
-    description="Learn how to build complex state machines with type safety"
-  />
-  <LinkCard    
-    title="🧩 Matchbox Factories"
-    href="/matchina/guides/matchbox-factories/"
-    description="Create type-safe tagged union factories with pattern matching"
-  />  
-  {/* <LinkCard
-    title="⏳ Promise Machines"
-    href="/matchina/guides/promises/"
-    description="Manage async operations with type-safe promise machines"
-  /> */}
-  {/* <LinkCard
-    title="🛡️ Type Guards"
-    href="/matchina/guides/matchbox-typescript-inference/"
-    description="Understand type-safe state handling with Matchina"
-  /> */}
-  <LinkCard
-    title="⚛️ React Integration"
-    href="/matchina/guides/react/"
-    description="Integrate state machines with React components"
-  />
-
-
-</CardGrid>
-
-## Explore Examples
-
-<CardGrid>
-  <LinkCard
-    title="🔄 Toggle"
-    href="/matchina/examples/toggle/"
-    description="Simple on/off toggle state machine"
-  />
-
-  {/* <LinkCard
-    title="🚦 Traffic Light"
-    href="/matchina/examples/traffic-light/"
-    description="State machine with automatic transitions"
-  /> */}
-
-  <LinkCard
-    title="⏱️ Stopwatches"
-    href="/matchina/examples/stopwatch-overview/"
-    description="Different approaches to implementing a stopwatch using Matchina state machines"
-  />
-  <LinkCard
-    title="📡 Data Fetching"
-    href="/matchina/examples/fetcher-advanced/"
-    description="Type-safe async data fetching"
-  />
-  <LinkCard
-    title="🚦 Traffic Light Simulator"
-    href="/matchina/examples/traffic-light-extended/"
-    description="State machine with automatic transitions"
-  />  
-</CardGrid>
+<div class="landing-body">
+  <HeroCard />
+  <div class="stat-row">
+    <div><span class="n">2kb</span> gzipped</div>
+    <div><span class="n">0</span> dependencies</div>
+    <div><span class="n">100%</span> type-inferred</div>
+  </div>
+</div>

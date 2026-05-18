@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - name: Install root dependencies (workspaces)
         run: npm ci
@@ -33,8 +33,8 @@ jobs:
         uses: withastro/action@v3
         with:
           path: docs # The root location of your Astro project inside the repository.
-        # env:
-          # PUBLIC_POKEAPI: 'https://pokeapi.co/api/v2' # Use single quotation marks for the variable value. (optional)
+        env:
+          SKIP_TYPEDOC: "1"
 
   deploy:
     needs: build

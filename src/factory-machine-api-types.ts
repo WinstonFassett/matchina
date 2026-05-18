@@ -6,16 +6,16 @@ export type ExtractParamTypes<
   FC extends FactoryMachineContext,
   StateKey extends keyof FC["transitions"],
   EventKey extends keyof FC["transitions"][StateKey],
-> = FC["transitions"][StateKey][EventKey] extends keyof FC["states"]
-  ? Parameters<FC["states"][FC["transitions"][StateKey][EventKey]]>
-  : FC["transitions"][StateKey][EventKey] extends (
-        ...args: infer A
-      ) => (...innerArgs: any[]) => infer _R
+> = FC["transitions"][StateKey][EventKey] extends (
+    ...args: infer A
+  ) => infer _R
     ? A
     : FC["transitions"][StateKey][EventKey] extends (
-          ...args: infer A
-        ) => infer _R
-      ? A
+        ...args: infer A
+      ) => (...innerArgs: any[]) => infer _R2
+    ? A
+    : FC["transitions"][StateKey][EventKey] extends keyof FC["states"]
+      ? Parameters<FC["states"][FC["transitions"][StateKey][EventKey]]>
       : any[];
 
 // Utility type to map event types to their parameter types

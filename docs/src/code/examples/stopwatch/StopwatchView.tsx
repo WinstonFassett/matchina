@@ -1,43 +1,50 @@
-// Basic StopwatchView component for the example
-import { getAvailableActions as getStateEvents } from "matchina";
+import { getAvailableActions } from "matchina";
 import { useMachine } from "matchina/react";
+import type { createStopwatchMachine } from "./machine";
 
-/**
- * A simple Stopwatch UI component that displays the current state, elapsed time,
- * and available actions based on the current state.
- */
-export function StopwatchView({ machine }: { machine: any }) {
+type StopwatchMachine = ReturnType<typeof createStopwatchMachine>;
+
+export function StopwatchView({ machine }: { machine: StopwatchMachine }) {
   useMachine(machine);
+  useMachine(machine.store);
+
   const state = machine.getState();
-  console.log("Current state:", state.key, machine.elapsed, machine);
-  // Generate color class based on state
-  const stateColorClass = state.match({
-    Stopped: () => "text-red-500",
-    Ticking: () => "text-green-500",
-    Suspended: () => "text-yellow-500",
-  });
+  const elapsed = machine.store.getState().elapsed;
+  const isTicking = state.is("Ticking");
+  const isStopped = state.is("Stopped");
+
+  const dot = isTicking ? "bg-green-600 dark:bg-green-400"
+            : isStopped ? "bg-destructive"
+            :              "bg-amber-500 dark:bg-amber-400";
+
+  const btnVariant = (event: string) =>
+    event === "start" || event === "resume" ? "btn-primary" :
+    event === "suspend"                     ? "btn-outline" :
+    /* stop, clear */                         "btn-ghost";
 
   return (
-    <div className="p-4 rounded border">
-      {/* State display */}
-      <div className={`inline ${stateColorClass}`}>{state.key}</div>
+    <div className="flex flex-col items-center gap-6 py-2">
+      <span className="badge badge-outline gap-1.5">
+        <span className={`size-1.5 rounded-full ${dot} ${isTicking ? "animate-pulse" : ""}`} />
+        {state.key}
+      </span>
 
-      {/* Elapsed time */}
-      <div className="text-4xl font-bold my-4">
-        {(machine.elapsed / 1000).toFixed(1)}s
+      <div className="flex flex-col items-center gap-1">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">elapsed</span>
+        <span className="text-6xl font-semibold tabular-nums text-foreground">
+          {(elapsed / 1000).toFixed(1)}
+          <span className="text-2xl font-normal text-muted-foreground ml-0.5">s</span>
+        </span>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex flex-wrap items-center gap-2">
-        {getStateEvents(machine.transitions, state.key)
-          .filter((event) => !event.startsWith("_"))
-          .map((event) => (
+      <div className="flex flex-wrap justify-center gap-2">
+        {getAvailableActions(machine.transitions, state.key)
+          .filter(e => !e.startsWith("_"))
+          .map(event => (
             <button
-              className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
               key={event}
-              onClick={() => {
-                (machine as any)[event]();
-              }}
+              className={`btn ${btnVariant(event)} ${event === "clear" ? "btn-sm" : ""}`}
+              onClick={() => machine.send(event as any)}
             >
               {event}
             </button>

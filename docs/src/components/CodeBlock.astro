@@ -12,6 +12,7 @@ import "./style-rich.css";
 export const theme = "material-theme-ocean";
 
 export let html = ``;
+const CodeBlock = Astro.self;
 const {
   lang,
   code: rawCode,
@@ -27,7 +28,7 @@ if (twoslash && ["ts", "tsx"].includes(lang)) {
   html = await codeToHtml(rawCode, {
     lang,
     theme,
-    transformers: [transformerTwoslash()],
+    transformers: [transformerTwoslash() as any],
   });
 }
 //  else if (lang !== "md") {
