@@ -1,6 +1,6 @@
 {
   "name": "matchina",
-  "version": "0.2.0",
+  "version": "0.2.1-alpha.0",
   "author": "Winston Fassett",
   "repository": "WinstonFassett/matchina",
   "homepage": "https://github.com/WinstonFassett/matchina#readme",
@@ -178,8 +178,8 @@
   "peerDependencies": {
     "force-graph": "^1.51.0",
     "immer": "^10.1.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^18.3.1 || ^19.0.0",
+    "react-dom": "^18.3.1 || ^19.0.0",
     "valibot": "^1.0.0",
     "zod": "^3.0.0"
   },
