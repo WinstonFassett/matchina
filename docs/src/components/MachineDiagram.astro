@@ -1,0 +1,58 @@
+---
+/**
+ * Server-rendered machine diagram. Computes ELK layout at build time and
+ * inlines the resulting SVG into the HTML. No client JS required for the
+ * diagram itself; instant first paint.
+ *
+ * Usage:
+ *   <MachineDiagram machine={createFoo} options={{ direction: "DOWN" }}>
+ *     <Fragment slot="header">fig.01 — fetcher machine</Fragment>
+ *     <Fragment slot="footer"><LiveBadge /></Fragment>
+ *   </MachineDiagram>
+ *
+ * The default slot wraps the SVG; named slots layer above/below for chrome.
+ */
+import { runElkLayout, layoutToSvg, type ElkLayoutOptions } from "@matchina/viz-svg";
+
+interface Props {
+  /** Factory function that returns a matchina machine instance. */
+  machine: () => any;
+  /** ELK layout options. */
+  options?: ElkLayoutOptions;
+  /** Initial active state (dot-separated full key). Defaults to the machine's starting state. */
+  value?: string;
+  /** Extra class for the outer wrapper. */
+  class?: string;
+}
+
+const { machine: createMachine, options, value, class: className = "" } = Astro.props;
+
+// Build time: instantiate, get shape, run ELK, render SVG to string.
+const m = createMachine();
+const shape = (m as any).shape?.getState();
+const layout = await runElkLayout(shape, options ?? {});
+
+// Derive initial active state if caller didn't provide.
+let activeValue = value;
+if (!activeValue) {
+  const state = m.getState ? m.getState() : null;
+  const key = state?.key ?? state?.type;
+  if (key) activeValue = String(key);
+}
+
+const svg = layoutToSvg(layout, { value: activeValue });
+---
+
+<div class={`machine-diagram relative h-full w-full ${className}`}>
+  <slot name="header" />
+  <div class="machine-diagram-svg absolute inset-0" set:html={svg} />
+  <slot name="footer" />
+  <slot />
+</div>
+
+<style>
+  .machine-diagram-svg :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,6 +1,8 @@
 ---
 import CodeBlock from "./CodeBlock.astro";
+import MachineDiagram from "./MachineDiagram.astro";
 import { HeroFetcherDiagram } from "./HeroFetcherDiagram";
+import { createLandingFetcherMachine } from "@code/examples/landing-fetcher/machine";
 import { getExample } from "../examples";
 
 const id = "landing-fetcher";
@@ -9,14 +11,17 @@ const sourceFiles = meta ? await meta.getSourceFiles() : [];
 const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? "";
 ---
 
-<div class="not-content mt-5 grid grid-cols-1 border border-border bg-card lg:grid-cols-2">
+<div id="hero-card" class="not-content mt-5 grid grid-cols-1 border border-border bg-card lg:grid-cols-2">
   <div class="flex flex-col border-b border-border p-5 lg:border-b-0 lg:border-r">
     <div class="mb-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.1em] text-text-mute">
       <span>fig.01 — fetcher machine</span>
-      <span class="text-accent">● live</span>
+      <span class="opacity-0 transition-opacity text-accent [#hero-card[data-live]_&]:opacity-100">● live</span>
     </div>
     <div class="relative min-h-[320px] flex-1 sm:min-h-[360px] [&>astro-island]:absolute [&>astro-island]:inset-0 [&>astro-island]:block">
-      <HeroFetcherDiagram client:only="react" />
+      <div class="hero-ssr-svg absolute inset-0">
+        <MachineDiagram machine={createLandingFetcherMachine} options={{ direction: "DOWN" }} />
+      </div>
+      <HeroFetcherDiagram client:load />
     </div>
   </div>
 
@@ -32,6 +37,9 @@ const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? 
 </div>
 
 <style is:global>
+  /* Hide the build-time SSR diagram once the live React island has hydrated. */
+  #hero-card[data-live] .hero-ssr-svg { display: none; }
+
   /* Make Starlight's <Code> blend into the hero card frame. */
   .hero-code .expressive-code,
   .hero-code .expressive-code .frame,

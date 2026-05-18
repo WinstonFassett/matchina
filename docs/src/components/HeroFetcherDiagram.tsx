@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useMachine } from "matchina/react";
 import { SvgInspector } from "@matchina/viz-svg";
 import { createLandingFetcherMachine } from "@code/examples/landing-fetcher/machine";
@@ -7,6 +7,9 @@ import { getActiveStatePath } from "@code/examples/lib/matchina-machine-to-xstat
 export function HeroFetcherDiagram() {
   const machine = useMemo(createLandingFetcherMachine, []);
   useMachine(machine);
+  useEffect(() => {
+    document.getElementById("hero-card")?.setAttribute("data-live", "");
+  }, []);
   const shape = (machine as any).shape?.getState();
   const value = getActiveStatePath(machine);
   return (
