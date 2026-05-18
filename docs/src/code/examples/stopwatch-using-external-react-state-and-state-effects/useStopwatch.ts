@@ -1,6 +1,5 @@
 import { useMachine } from "matchina/react";
 import { useEffect, useState } from "react";
-import { useEventTypeEffect, useStateEffects } from "../lib/matchina-hooks";
 import { createStopwatchMachine } from "./machine";
 
 export const useStopwatch = () => {
@@ -9,14 +8,13 @@ export const useStopwatch = () => {
     createStopwatchMachine(elapsed, setElapsed)
   );
 
-  useEffect(() => {
-    stopwatch.elapsed = elapsed;
-  }, [elapsed]);
-
   useMachine(stopwatch);
   const state = stopwatch.getState();
-  const lastChange = stopwatch.getChange();
-  useStateEffects(state);
-  useEventTypeEffect(lastChange, stopwatch.effects);
+  useEffect(() => {
+    const fns: (() => (() => void) | void)[] = (state.data as any)?.effects ?? [];
+    const cleanups = fns.map((fn) => fn()).filter(Boolean) as (() => void)[];
+    return () => cleanups.forEach((fn) => fn());
+  }, [state]);
+  stopwatch.elapsed = elapsed;
   return stopwatch;
 };
