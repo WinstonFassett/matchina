@@ -39,11 +39,17 @@ export * from "./is-machine";
 export * from "./transition-helper";
 export * from "./atom";
 
-// HSM exports
-export * from "./hsm";
-
-// Shape package exports (includes machine interfaces)
-export * from "./shape";
-
-// Runtime inspection exports  
-export * from "./inspect";
+// HSM exports (primary declarative API only; internals available via matchina/hsm)
+export { createHSM } from "./hsm";
+export type {
+  DeclarativeFlatMachineConfig,
+  DeclarativeStateConfig,
+  HSMEvent,
+  HSMMachine,
+  HSMEventApi,
+} from "./hsm/flattened/declarative-flat";
+export { sendWhen } from "./hsm/utility-types";
+export type {
+  ActiveEvents, AllEventsOf,
+  ChildOf, EventsOf, StatesOf
+} from "./hsm/utility-types";

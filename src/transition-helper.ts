@@ -1,19 +1,17 @@
 /**
- * Transition helper for making parameterized transitions inspectable.
+ * Annotates a parameterized transition handler with possible target states for visualization.
  *
  * @example
  * ```ts
- * const typed = t(
+ * const typed = defineTransition(
  *   (value: string) => (ev) => {
- *     // Complex logic here
  *     return value ? activeStates.Suggesting(...) : activeStates.Empty(...);
  *   },
- *   // Discovery: call handler with sample inputs
  *   (f) => [f(""), f("search term")]
  * );
  * ```
  */
-export function t<S extends { key: string }>(
+export function defineTransition<S extends { key: string }>(
   handler: (...args: any[]) => (ev: any) => S,
   discover?:
     | ((f: typeof handler) => S[]) // Receives handler, calls it with samples

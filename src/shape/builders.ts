@@ -64,10 +64,10 @@ export function buildFlattenedShape(
         }
         trans.set(String(eventKey), finalTarget);
       } else if (typeof target === "function") {
-        // Check for t() helper metadata first
+        // Check for defineTransition() helper metadata first
         const targets = getTargets(target);
         if (targets && targets.length > 0) {
-          // Has metadata from t() helper - use all discovered targets
+          // Has metadata from defineTransition() helper - use all discovered targets
           for (const t of targets) {
             let finalTarget = t;
             if (t.includes(".")) {
@@ -106,7 +106,7 @@ export function buildFlattenedShape(
             }
           } catch {
             // Can't auto-discover - transition won't show in visualization
-            // Use t() helper for complex branching logic
+            // Use defineTransition() helper for complex branching logic
           }
         }
       }
@@ -190,10 +190,10 @@ export function buildMachineStructure(
       if (typeof target === "string") {
         trans.set(event, target);
       } else if (typeof target === "function") {
-        // Check for t() helper metadata first
+        // Check for defineTransition() helper metadata first
         const targets = getTargets(target);
         if (targets && targets.length > 0) {
-          // Has metadata from t() helper - use all discovered targets
+          // Has metadata from defineTransition() helper - use all discovered targets
           for (const t of targets) {
             trans.set(event, t);
           }
@@ -220,7 +220,7 @@ export function buildMachineStructure(
             }
           } catch {
             // Can't auto-discover - transition won't show in visualization
-            // Use t() helper for complex branching logic
+            // Use defineTransition() helper for complex branching logic
           }
         }
       }
@@ -307,10 +307,10 @@ export function buildHierarchicalShape(
           // Simple string transition
           trans.set(event, target);
         } else if (typeof target === "function") {
-          // Check for t() helper metadata first
+          // Check for defineTransition() helper metadata first
           const targets = getTargets(target);
           if (targets && targets.length > 0) {
-            // Has metadata from t() helper - use all discovered targets
+            // Has metadata from defineTransition() helper - use all discovered targets
             for (const t of targets) {
               trans.set(event, t);
             }
@@ -337,7 +337,7 @@ export function buildHierarchicalShape(
               }
             } catch {
               // Can't auto-discover - transition won't show in visualization
-              // Use t() helper for complex branching logic
+              // Use defineTransition() helper for complex branching logic
             }
           }
         }
