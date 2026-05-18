@@ -165,7 +165,7 @@ export default defineConfig({
             },
           },
         ),
-        starlightTypeDoc({
+        ...(process.env.SKIP_TYPEDOC ? [] : [starlightTypeDoc({
           watch: true,
           sidebar: {
             label: "Reference",
@@ -233,7 +233,7 @@ export default defineConfig({
             theme: "starlight-typedoc-custom",
             // "excludeNotDocumented": true
           },
-        }),
+        })]),
       ],
       components: {
         ThemeProvider: './src/components/starlight/ThemeProvider.astro',
