@@ -10,8 +10,8 @@
     "check": "astro check",
     "build:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs",
     "watch:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs --watch",
-    "prebuild": "npm run build:typedoc-plugin",
-    "build": "rm -rf dist && npm run build:typedoc-plugin && astro check && astro build",
+    "prebuild": "[ \"$SKIP_TYPEDOC\" = \"1\" ] || npm run build:typedoc-plugin",
+    "build": "rm -rf dist && ([ \"$SKIP_TYPEDOC\" = \"1\" ] || npm run build:typedoc-plugin) && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
