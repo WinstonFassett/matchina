@@ -76,10 +76,9 @@ describe("DEBUG: HSM Combobox Nested vs Flat Shape Comparison", () => {
     flatMachine.send("focus");
     nestedMachine.send("focus");
 
-    flatMachine.setInput("typ");
-    flatMachine.send("type");
+    flatMachine.send("type", "typ");
 
-    nestedMachine.setInput("typ");
+    nestedMachine.send("type", "typ");
 
     console.log("\n=== AFTER TYPING 'typ' ===");
     console.log("Flat state:", flatMachine.getState().key);

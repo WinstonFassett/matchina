@@ -27,7 +27,7 @@ export function StopwatchView({ machine }: { machine: Stopwatch }) {
       <div className="flex flex-col items-center gap-1">
         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">elapsed</span>
         <span className="text-6xl font-semibold tabular-nums text-foreground">
-          {(machine.elapsed / 1000).toFixed(1)}
+          {((machine.elapsed ?? 0) / 1000).toFixed(1)}
           <span className="text-2xl font-normal text-muted-foreground ml-0.5">s</span>
         </span>
       </div>

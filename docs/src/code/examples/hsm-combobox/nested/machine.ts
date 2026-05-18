@@ -52,16 +52,14 @@ export function createComboboxMachine() {
       (ev.match as any)({
         focus: storeApi.clear,
         blur: storeApi.clear,
-        "child.change": (data: [any, string]) => {
-          if (data && data.length >= 2) {
-            const target = data[0];
-            if (target && typeof target.getChange === 'function') {
-              const change = target.getChange();
-              change.match({
-                type: storeApi.setInput,
-                select: storeApi.selectHighlighted,
-              }, false);
-            }
+        "child.change": (data: { target: any; type: string; params: any[] }) => {
+          const target = data?.target;
+          if (target && typeof target.getChange === 'function') {
+            const change = target.getChange();
+            change.match({
+              type: storeApi.setInput,
+              select: storeApi.selectHighlighted,
+            }, false);
           }
         },
       }, false);
