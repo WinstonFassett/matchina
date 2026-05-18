@@ -44,6 +44,8 @@ export { createHSM } from "./hsm";
 export type {
   DeclarativeFlatMachineConfig,
   DeclarativeStateConfig,
+} from "./hsm/flattened/types";
+export type {
   HSMEvent,
   HSMMachine,
   HSMEventApi,
