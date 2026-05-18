@@ -13,88 +13,48 @@
   "type": "module",
   "exports": {
     ".": {
-      "node": {
-        "types": "./src/index.ts",
-        "import": "./src/index.ts",
-        "require": "./src/index.ts"
-      },
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
     },
     "./react": {
-      "node": {
-        "types": "./src/integrations/react.ts",
-        "import": "./src/integrations/react.ts",
-        "require": "./src/integrations/react.ts"
-      },
       "types": "./dist/integrations/react.d.ts",
       "import": "./dist/integrations/react.mjs",
       "require": "./dist/integrations/react.js",
       "default": "./dist/integrations/react.mjs"
     },
     "./zod": {
-      "node": {
-        "types": "./src/integrations/zod.ts",
-        "import": "./src/integrations/zod.ts",
-        "require": "./src/integrations/zod.ts"
-      },
       "types": "./dist/integrations/zod.d.ts",
       "import": "./dist/integrations/zod.mjs",
       "require": "./dist/integrations/zod.js",
       "default": "./dist/integrations/zod.mjs"
     },
     "./valibot": {
-      "node": {
-        "types": "./src/integrations/valibot.ts",
-        "import": "./src/integrations/valibot.ts",
-        "require": "./src/integrations/valibot.ts"
-      },
       "types": "./dist/integrations/valibot.d.ts",
       "import": "./dist/integrations/valibot.mjs",
       "require": "./dist/integrations/valibot.js",
       "default": "./dist/integrations/valibot.mjs"
     },
     "./inspect": {
-      "node": {
-        "types": "./src/inspect/index.ts",
-        "import": "./src/inspect/index.ts",
-        "require": "./src/inspect/index.ts"
-      },
       "types": "./dist/inspect/index.d.ts",
       "import": "./dist/inspect/index.mjs",
       "require": "./dist/inspect/index.js",
       "default": "./dist/inspect/index.mjs"
     },
     "./shape": {
-      "node": {
-        "types": "./src/shape/index.ts",
-        "import": "./src/shape/index.ts",
-        "require": "./src/shape/index.ts"
-      },
       "types": "./dist/shape/index.d.ts",
       "import": "./dist/shape/index.mjs",
       "require": "./dist/shape/index.js",
       "default": "./dist/shape/index.mjs"
     },
     "./viz": {
-      "node": {
-        "types": "./src/viz/index.ts",
-        "import": "./src/viz/index.ts",
-        "require": "./src/viz/index.ts"
-      },
       "types": "./dist/viz/index.d.ts",
       "import": "./dist/viz/index.mjs",
       "require": "./dist/viz/index.js",
       "default": "./dist/viz/index.mjs"
     },
     "./hsm": {
-      "node": {
-        "types": "./src/hsm/index.ts",
-        "import": "./src/hsm/index.ts",
-        "require": "./src/hsm/index.ts"
-      },
       "types": "./dist/hsm/index.d.ts",
       "import": "./dist/hsm/index.mjs",
       "require": "./dist/hsm/index.js",
