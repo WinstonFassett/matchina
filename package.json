@@ -166,15 +166,7 @@
     "vitest": "^4.0.16",
     "zod": "^3.22.4"
   },
-  "dependencies": {
-    "@astrojs/ts-plugin": "^1.10.4",
-    "@floating-ui/react": "^0.27.16",
-    "@intevel/vitepress-plugin-mermaid": "^2.0.15",
-    "expressive-code-twoslash": "^0.6.1",
-    "marked": "^17.0.1",
-    "marked-gfm-heading-id": "^4.1.3",
-    "vitepress-sidebar": "^1.33.1"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "force-graph": "^1.51.0",
     "immer": "^10.1.1",

@@ -23,6 +23,7 @@
     "dev": "unbuild --watch"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.16",
     "@xyflow/react": "^12.7.0",
     "elkjs": "^0.9.3",
     "matchina": "file:../.."
