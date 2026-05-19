@@ -1,99 +1,64 @@
 ---
-import { ExamplePreview } from "./ExamplePreview";
+import CodeBlock from "./CodeBlock.astro";
+import MachineDiagram from "./MachineDiagram.astro";
+import { HeroFetcherDiagram } from "./HeroFetcherDiagram";
+import { createLandingFetcherMachine } from "@code/examples/landing-fetcher/machine";
+import { getExample } from "../examples";
+
+const id = "landing-fetcher";
+const meta = getExample(id);
+const sourceFiles = meta ? await meta.getSourceFiles() : [];
+const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? "";
 ---
 
-<div class="hero-card not-content">
-  <div class="pane-left">
-    <div class="pane-head">
+<div id="hero-card" class="not-content mt-5 grid grid-cols-1 border border-border bg-card lg:grid-cols-2">
+  <div class="flex flex-col border-b border-border p-5 lg:border-b-0 lg:border-r">
+    <div class="mb-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.1em] text-text-mute">
       <span>fig.01 — fetcher machine</span>
-      <span class="live-badge">● live</span>
+      <span class="opacity-0 transition-opacity text-accent [#hero-card[data-live]_&]:opacity-100">● live</span>
     </div>
-    <ExamplePreview id="landing-fetcher" defaultViz="svg" showPicker={false} hideAppPane={true} defaultSvgDirection="DOWN" client:only="react" />
+    <div class="relative min-h-[320px] flex-1 sm:min-h-[360px] [&>astro-island]:absolute [&>astro-island]:inset-0 [&>astro-island]:block">
+      <div class="hero-ssr-svg absolute inset-0">
+        <MachineDiagram machine={createLandingFetcherMachine} options={{ direction: "DOWN" }} />
+      </div>
+      <HeroFetcherDiagram client:load />
+    </div>
   </div>
-  <div class="pane-right">
-    <div class="pane-head">
+
+  <div class="flex min-w-0 flex-col">
+    <div class="flex items-center justify-between border-b border-border-soft px-5 pb-2.5 pt-4 font-mono text-[10px] uppercase tracking-[0.1em] text-text-mute">
       <span>fetcher.ts</span>
       <span>typescript</span>
     </div>
-    <pre class="hero-code"><code
-><span class="ln">01</span>  <span class="kw">const</span> states <span class="op">=</span> <span class="fn">defineStates</span>(&#123;
-<span class="ln">02</span>    Idle:    undefined,
-<span class="ln">03</span>    Loading: undefined,
-<span class="ln">04</span>    Success: (data: unknown) <span class="op">=&gt;</span> data,
-<span class="ln">05</span>    Error:   (err: Error)    <span class="op">=&gt;</span> err,
-<span class="ln">06</span>  &#125;);
-<span class="ln">07</span>
-<span class="ln">08</span>  <span class="kw">const</span> &#123; getState, send &#125; <span class="op">=</span> <span class="fn">createMachine</span>(
-<span class="ln">09</span>    states,
-<span class="ln">10</span>    &#123;
-<span class="ln">11</span>      Idle:    &#123; fetch:   <span class="s">'Loading'</span> &#125;,
-<span class="ln">12</span>      Loading: &#123; resolve: <span class="s">'Success'</span>, reject: <span class="s">'Error'</span> &#125;,
-<span class="ln">13</span>      Success: &#123; reset:   <span class="s">'Idle'</span>    &#125;,
-<span class="ln">14</span>      Error:   &#123; retry:   <span class="s">'Loading'</span> &#125;,
-<span class="ln">15</span>    &#125;,
-<span class="ln">16</span>    <span class="s">'Idle'</span>
-<span class="ln">17</span>  );
-<span class="ln">18</span>
-<span class="ln">19</span>  send(<span class="s">'fetch'</span>);</code></pre>
+    <div class="hero-code min-w-0 flex-1 overflow-auto">
+      <CodeBlock code={machineSource} lang="ts" />
+    </div>
   </div>
 </div>
 
-<style>
-  .hero-card {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border: 1px solid var(--border);
-    background: var(--card);
-    margin-top: 20px;
-  }
-  .pane-left {
-    border-right: 1px solid var(--border);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  .pane-right {
-    display: flex;
-    flex-direction: column;
-  }
-  .pane-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-mute);
-    margin-bottom: 14px;
-  }
-  .pane-right .pane-head {
-    padding: 16px 20px 10px;
-    border-bottom: 1px solid var(--border-soft);
-    margin-bottom: 0;
-  }
-  .hero-code {
-    margin: 0 !important;
-    padding: 14px 20px !important;
-    font-family: var(--font-mono) !important;
-    font-size: 12px !important;
-    line-height: 1.6 !important;
-    color: var(--muted-foreground) !important;
-    background: transparent !important;
-    border: 0 !important;
-    flex: 1;
-    overflow-x: auto;
-    overflow-y: auto;
-  }
-  .hero-code .ln { color: var(--text-mute); }
-  .hero-code .kw { color: var(--purple); }
-  .hero-code .fn { color: var(--info); }
-  .hero-code .s  { color: var(--warn); }
-  .hero-code .op { color: var(--text-mute); }
-  .live-badge { color: var(--accent); }
+<style is:global>
+  /* Hide the build-time SSR diagram once the live React island has hydrated. */
+  #hero-card[data-live] .hero-ssr-svg { display: none; }
 
-  @media (max-width: 60rem) {
-    .hero-card { grid-template-columns: 1fr; }
-    .pane-left { border-right: 0; border-bottom: 1px solid var(--border); }
+  /* Make Starlight's <Code> blend into the hero card frame. */
+  .hero-code .expressive-code,
+  .hero-code .expressive-code .frame,
+  .hero-code .expressive-code pre {
+    margin: 0;
+    border-radius: 0;
+    border: 0;
+    background: transparent;
+  }
+  .hero-code .expressive-code .frame {
+    box-shadow: none;
+  }
+  .hero-code .expressive-code .frame.has-title .header,
+  .hero-code .expressive-code .copy {
+    display: none;
+  }
+  .hero-code .expressive-code pre {
+    padding: 14px 20px;
+    font-size: 12px;
+    line-height: 1.6;
   }
 </style>
