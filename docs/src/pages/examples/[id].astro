@@ -234,6 +234,12 @@ function getLang(filename: string): string {
     padding: 1.5rem;
   }
   .ex-panel.is-hidden { display: none; }
+  @media (max-width: 639px) {
+    .ex-panel--preview,
+    .ex-panel--code {
+      padding: 0.75rem;
+    }
+  }
 
   /* ── skeleton ── */
   .ex-skeleton {

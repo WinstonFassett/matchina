@@ -107,7 +107,7 @@ export function MachineVisualizer({
   const isVizLeft = vizPosition === "left";
 
   const containerClasses = [
-    isSplit ? "flex flex-row gap-4 flex-1 min-h-0" : "flex flex-col gap-4",
+    isSplit ? "flex flex-col sm:flex-row gap-4 flex-1 min-h-0" : "flex flex-col gap-4",
     isSplit && !isVizLeft ? "flex-row-reverse" : "",
   ]
     .filter(Boolean)
@@ -254,7 +254,7 @@ function renderVisualizer({
   switch (type) {
     case "reactflow":
       return (
-        <div className={commonClasses}>
+        <div className="w-full h-full border border-border overflow-hidden">
           <ReactFlowProvider>
             <HSMReactFlowInspector
               machine={machine as any}
