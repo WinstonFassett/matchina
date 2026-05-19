@@ -169,8 +169,6 @@ select[aria-label="Select theme"] {
 /* ---------- Main content ---------- */
 
 .main-frame { padding-top: 0; }
-.main-pane { min-height: calc(100dvh - var(--sl-nav-height)); display: flex; flex-direction: column; }
-.main-pane > .content-panel:first-child { flex: 1; }
 .content-panel { padding: 48px 56px; border: 0; }
 .content-panel + .content-panel { border-top: 1px solid var(--sl-color-hairline); }
 
@@ -329,6 +327,11 @@ a.action.secondary {
   border: 1px solid var(--sl-color-hairline);
   padding: 0.5px 5px;
 }
+
+/* TwoSlash hover popups: EC renders all popups in static HTML; JS hides them.
+ * Without JS (or pre-hydration) they all render at once and overlap the code. */
+.twoslash-popup-container { display: none; }
+.twoslash:hover .twoslash-popup-container { display: block; }
 
 /* ---------- .not-content = scoped Tailwind preflight for embeds ----------
  * apps/docs skips global Tailwind preflight (see global.css) because it
