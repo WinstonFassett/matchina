@@ -115,7 +115,7 @@ export default defineConfig({
                 {
                   label: "Stopwatches",
                   items: [
-                    { label: "Overview", link: "/examples/stopwatch-overview" },
+                    { label: "Overview", link: "/learn/examples/stopwatch-overview" },
                     { label: "Basic Stopwatch", link: "/examples/stopwatch" },
                     { label: "With Hooks", link: "/examples/stopwatch-using-data-and-hooks" },
                     { label: "With Transition Functions", link: "/examples/stopwatch-using-data-and-transition-functions" },

@@ -169,8 +169,16 @@ select[aria-label="Select theme"] {
 /* ---------- Main content ---------- */
 
 .main-frame { padding-top: 0; }
+.main-pane { min-height: calc(100dvh - var(--sl-nav-height)); display: flex; flex-direction: column; }
+.main-pane > .content-panel:first-child { flex: 1; }
 .content-panel { padding: 48px 56px; border: 0; }
 .content-panel + .content-panel { border-top: 1px solid var(--sl-color-hairline); }
+
+@media (max-width: 50rem) {
+  .content-panel { padding: 24px 12px; }
+  .pagination-links a { padding: 10px 12px; }
+  .pagination-links a .link-title { font-size: var(--sl-text-base); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+}
 
 /* Breadcrumbs / rail labels — reusable .eyebrow utility */
 .eyebrow {
