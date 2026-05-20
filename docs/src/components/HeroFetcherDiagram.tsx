@@ -8,7 +8,11 @@ export function HeroFetcherDiagram() {
   const machine = useMemo(createLandingFetcherMachine, []);
   useMachine(machine);
   useEffect(() => {
-    document.getElementById("hero-card")?.setAttribute("data-live", "");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById("hero-card")?.setAttribute("data-live", "");
+      });
+    });
   }, []);
   const shape = (machine as any).shape?.getState();
   const value = getActiveStatePath(machine);

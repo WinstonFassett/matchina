@@ -37,8 +37,9 @@ const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? 
 </div>
 
 <style is:global>
-  /* Hide the build-time SSR diagram once the live React island has hydrated. */
-  #hero-card[data-live] .hero-ssr-svg { display: none; }
+  /* SSR diagram fades out once React island has painted its first frame. */
+  .hero-ssr-svg { transition: opacity 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
+  #hero-card[data-live] .hero-ssr-svg { opacity: 0; pointer-events: none; }
 
   /* Make Starlight's <Code> blend into the hero card frame. */
   .hero-code .expressive-code,

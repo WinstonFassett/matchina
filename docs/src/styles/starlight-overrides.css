@@ -58,10 +58,20 @@ header.header {
   padding: 0 16px;
 }
 
-/* Mobile: hide theme picker from header — it appears in the sidebar popup footer */
+/* Mobile: hide theme picker and search from header — they appear in the sidebar popup footer */
 @media (max-width: 50rem) {
   header.header { padding-inline-start: 8px; }
   header.header [data-ui26-theme-slot] { display: none; }
+  header.header .search-wrapper { display: none; }
+}
+
+/* Mobile menu toggle — remove circular pill; flat icon only */
+button[aria-label="Menu"] {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  color: var(--sl-color-text) !important;
 }
 
 /* Social icons (GitHub) should use text color, not accent */
@@ -168,7 +178,11 @@ select[aria-label="Select theme"] {
 
 /* ---------- Main content ---------- */
 
-.main-frame { padding-top: 0; }
+/* Restore nav clearance; zero it only on desktop splash (no sidebar, no mobile TOC). */
+.main-frame { padding-top: var(--sl-nav-height); }
+@media (min-width: 50rem) {
+  .has-splash-nav .main-frame { padding-top: 0; }
+}
 .content-panel { padding: 48px 56px; border: 0; }
 .content-panel + .content-panel { border-top: 1px solid var(--sl-color-hairline); }
 
