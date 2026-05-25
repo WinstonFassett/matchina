@@ -25,7 +25,7 @@ interface Props {
   class?: string;
 }
 
-const { machine: createMachine, options, value, class: className = "" } = Astro.props;
+const { machine: createMachine, options, value, class: className = "" } = Astro.props as Props;
 
 // Build time: instantiate, get shape, run ELK, render SVG to string.
 const m = createMachine();
