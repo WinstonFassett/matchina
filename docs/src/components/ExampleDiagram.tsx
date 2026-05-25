@@ -18,7 +18,7 @@ export function ExampleDiagram({ id, viz = "reactflow", interactive = false }: P
   useEffect(() => {
     if (!meta) { setError(`Example "${id}" not found`); return; }
     meta.getMachine()
-      .then((mod) => setMachine(mod.default()))
+      .then((mod) => setMachine(mod.default() as FactoryMachine<any>))
       .catch((e) => setError(String(e)));
   }, [id, meta]);
 

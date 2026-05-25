@@ -1,7 +1,8 @@
 import { MachineVisualizer } from "./MachineVisualizer";
+import { StoreVisualizer } from "./StoreVisualizer";
 import { getExample } from "../examples";
 import { useEffect, useState, type ComponentType } from "react";
-import type { FactoryMachine } from "matchina";
+import type { FactoryMachine, StoreMachine } from "matchina";
 
 interface Props {
   exampleId: string;
@@ -9,7 +10,7 @@ interface Props {
 
 export function ExamplePageViewer({ exampleId }: Props) {
   const meta = getExample(exampleId);
-  const [machine, setMachine] = useState<FactoryMachine<any> | null>(null);
+  const [machine, setMachine] = useState<FactoryMachine<any> | StoreMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,9 +38,19 @@ export function ExamplePageViewer({ exampleId }: Props) {
   if (error) return <div className="p-4 text-red-500">{error}</div>;
   if (!machine) return null;
 
+  if (meta?.kind === "store") {
+    return (
+      <StoreVisualizer
+        store={machine as StoreMachine<any>}
+        AppView={AppView ?? undefined}
+        layout="split"
+      />
+    );
+  }
+
   return (
     <MachineVisualizer
-      machine={machine}
+      machine={machine as FactoryMachine<any>}
       AppView={AppView ?? undefined}
       showRawState={false}
       layout="split"

@@ -3,11 +3,8 @@ title: Store Machine
 description: Event-driven state management for single values with type-safe actions
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import CodeTabs from "@components/CodeTabs.astro";
-import storeCode from "@code/examples/store-counter/store.ts?raw";
-import viewCode from "@code/examples/store-counter/StoreCounterView.tsx?raw";
-import Example from "@code/examples/store-counter/example";
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
 
 ## What is a Store Machine?
 
@@ -83,16 +80,9 @@ const change = counter.getChange();   // Last change event
 
 ## Interactive Example
 
-<div className="not-content">
-  <Example client:only="react" />
-</div>
+<ExampleEmbed id="store-counter" />
 
-<CodeTabs
-  files={[
-    { name: "store.ts", code: storeCode },
-    { name: "StoreCounterView.tsx", code: viewCode },
-  ]}
-/>
+<ExampleCode id="store-counter" />
 
 ## Using with Immer
 

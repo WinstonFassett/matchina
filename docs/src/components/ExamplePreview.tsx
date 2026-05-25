@@ -1,7 +1,8 @@
 import { getExample } from "../examples";
 import { useEffect, useState, type ComponentType } from "react";
-import type { FactoryMachine } from "matchina";
+import type { FactoryMachine, StoreMachine } from "matchina";
 import { MachineVisualizer } from "./MachineVisualizer";
+import { StoreVisualizer } from "./StoreVisualizer";
 import type { VisualizerType } from "./VizPicker";
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 
 export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hideAppPane = false, defaultSvgDirection }: Props) {
   const meta = getExample(id);
-  const [machine, setMachine] = useState<FactoryMachine<any> | null>(null);
+  const [machine, setMachine] = useState<FactoryMachine<any> | StoreMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,14 +43,25 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
   if (!machine) return null;
 
   if (appOnly && AppView) {
-    return <AppView machine={machine} />;
+    const propName = meta?.kind === "store" ? "store" : "machine";
+    return <AppView {...{ [propName]: machine }} />;
+  }
+
+  if (meta?.kind === "store") {
+    return (
+      <StoreVisualizer
+        store={machine as StoreMachine<any>}
+        AppView={hideAppPane ? () => null : (AppView ?? undefined)}
+        layout={hideAppPane ? "stacked" : "split"}
+      />
+    );
   }
 
   const resolvedViz = defaultViz ?? meta?.defaultViz;
 
   return (
     <MachineVisualizer
-      machine={machine}
+      machine={machine as FactoryMachine<any>}
       AppView={hideAppPane ? () => null : (AppView ?? undefined)}
       showRawState={false}
       layout={hideAppPane ? "stacked" : "split"}

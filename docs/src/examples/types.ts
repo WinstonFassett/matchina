@@ -1,7 +1,13 @@
 import type { ComponentType } from "react";
-import type { FactoryMachine } from "matchina";
+import type { FactoryMachine, StoreMachine } from "matchina";
 
 export type ExampleCategory = "Basic" | "Stopwatch" | "Async" | "Fetcher" | "Hierarchical" | "Advanced";
+
+/**
+ * "factory" — discrete state machines (createMachine). Rendered with MachineVisualizer (graph + app view).
+ * "store"   — single-value stores (createStoreMachine). Rendered with StoreVisualizer (value + change log).
+ */
+export type ExampleKind = "factory" | "store";
 
 export interface ExampleMeta {
   id: string;
@@ -19,8 +25,10 @@ export interface ExampleMeta {
   hideVizPicker?: boolean;
   /** Override the default visualizer type for this example. */
   defaultViz?: "svg" | "reactflow";
-  getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> }>;
-  getAppView?: () => Promise<{ default: ComponentType<{ machine: FactoryMachine<any> & any }> }>;
+  /** Discriminator: factory machines get the graph viz, stores get a value/change-log viz. Defaults to "factory". */
+  kind?: ExampleKind;
+  getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> | StoreMachine<any> }>;
+  getAppView?: () => Promise<{ default: ComponentType<any> }>;
   getSourceFiles: () => Promise<{ name: string; code: string }[]>;
 }
 
