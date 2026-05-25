@@ -41,7 +41,9 @@ A typed surface over the machine, so your call sites read like `api.checkout(ite
 
 ### 1. `send`
 
-This is where the event enters the machine. `machine.send(type, ...params)` resolves the change event, then kicks off the transition pipeline.
+`send` is the idiomatic way to mutate a matchina machine. A "pure" machine ([see the `pure` enhancer](/matchina/guides/machine-enhancers#pure)) exposes exactly `{ getState(), send(type, ...params) }`. Everything else is layered on top: typed `api` wrappers, hooks, subscriptions. They all flow through this one call.
+
+`send` itself sits outside the lifecycle. It resolves the change event, then hands off to the transition pipeline below.
 
 ```ts
 send(type, ...params) {
