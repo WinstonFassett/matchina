@@ -14,11 +14,11 @@ All machine types implement the same generic [EventLifecycle](/matchina/referenc
   <tbody>
     <tr><td data-depth="0"><a href="#0-api-type-params-optional"><code>{'api[type](...params)'}</code></a><span class="row-tag">optional</span></td><td>Model may call <code>machine.send(type, ...params)</code>.</td><td><code>void</code></td></tr>
     <tr><td data-depth="0"><a href="#1-send"><code>{'send(type, ...params)'}</code></a></td><td>Where does the event enter the machine?</td><td><code>void</code></td></tr>
-    <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit(ev)</code></a></td><td>Which state should we move to?</td><td><code>{'E | undefined'}</code><span class="halt-cond">no match — exit</span></td></tr>
+    <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit(ev)</code></a></td><td>Resolve the change event with its <code>to</code> state.<span class="halt-cond">return <code>undefined</code> to exit</span></td><td><code>{'E | undefined'}</code></td></tr>
     <tr><td data-depth="1"><a href="#3-transition"><code>transition(ev)</code></a></td><td>Run the transition lifecycle pipeline.</td><td><code>{'E | undefined'}</code></td></tr>
-    <tr><td data-depth="2"><a href="#4-guard"><code>guard(ev)</code></a></td><td>Is the change allowed?</td><td><code>boolean</code><span class="halt-cond">return <code>false</code> to halt</span></td></tr>
-    <tr><td data-depth="2"><a href="#5-handle"><code>handle(ev)</code></a></td><td>Map trigger event to change event.</td><td><code>{'E | undefined'}</code><span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
-    <tr><td data-depth="2"><a href="#6-before"><code>before(ev)</code></a></td><td>Last chance to abort or rewrite.</td><td><code>{'E | undefined'}</code><span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#4-guard"><code>guard(ev)</code></a></td><td>Is the change allowed?<span class="halt-cond">return <code>false</code> to halt</span></td><td><code>boolean</code></td></tr>
+    <tr><td data-depth="2"><a href="#5-handle"><code>handle(ev)</code></a></td><td>Map trigger event to change event.<span class="halt-cond">return <code>undefined</code> to halt</span></td><td><code>{'E | undefined'}</code></td></tr>
+    <tr><td data-depth="2"><a href="#6-before"><code>before(ev)</code></a></td><td>Last chance to abort or rewrite.<span class="halt-cond">return <code>undefined</code> to halt</span></td><td><code>{'E | undefined'}</code></td></tr>
     <tr><td data-depth="2"><a href="#7-update"><code>update(ev)</code></a></td><td>Apply the new state.</td><td><code>void</code></td></tr>
     <tr><td data-depth="2"><a href="#8-effect"><code>effect(ev)</code></a></td><td>Run side effects.</td><td><code>void</code></td></tr>
     <tr><td data-depth="3"><a href="#9-leave"><code>leave(ev)</code></a></td><td>What happens as we exit the old state?</td><td><code>void</code></td></tr>
@@ -50,9 +50,9 @@ If a generated API method is present (e.g. `api.doSomething(a, b)`), it is the f
 
 ### 2. `resolveExit`
 
-Looks up the transition handler for the current state and event type and returns the change event (or `undefined`).
+Resolves the `to` state for the event `{ type, from, to? }` — looks up the transition handler for the current state and event type and returns the resolved `to` state.
 
-- If `undefined`, `send` exits before the lifecycle pipeline runs.
+- Return `null` or `undefined` to exit before the lifecycle pipeline runs.
 
 ### 3. `transition`
 
