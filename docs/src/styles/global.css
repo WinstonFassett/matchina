@@ -97,6 +97,7 @@
   --matchina-viz-ctrl-bg: var(--card);
   --matchina-viz-ctrl-border: var(--border);
   --matchina-viz-ctrl-text: var(--muted-foreground);
+  --matchina-viz-radius: var(--radius);
 }
 
 [data-theme$="dark"] {

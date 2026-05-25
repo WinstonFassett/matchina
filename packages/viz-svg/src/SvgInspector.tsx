@@ -555,7 +555,7 @@ export const SvgInspector = React.memo(function SvgInspector({
         display: 'flex', flexDirection: 'column',
         background: V.ctrlBg,
         border: `1px solid ${V.ctrlBorder}`,
-        borderRadius: 'var(--radius, 6px)',
+        borderRadius: 'var(--matchina-viz-radius, 2px)',
         overflow: 'hidden',
       }}>
         <button

@@ -67,7 +67,7 @@
 .react-flow__controls {
   box-shadow: none;
   border: 1px solid var(--matchina-viz-ctrl-border);
-  border-radius: 8px;
+  border-radius: var(--matchina-viz-radius);
   overflow: hidden;
 }
 
