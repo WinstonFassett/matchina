@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createTrafficLight } from "../code/examples/traffic-light-delayed/machine";
+import { TrafficLight } from "../code/examples/traffic-light-delayed/index";
 import machineRaw from "../code/examples/traffic-light-delayed/machine.ts?raw";
 import indexRaw from "../code/examples/traffic-light-delayed/index.tsx?raw";
 
@@ -10,14 +12,8 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "delays", "effects"],
   order: 6,
   defaultViz: "reactflow",
-  getMachine: () =>
-    import("../code/examples/traffic-light-delayed/machine").then((m) => ({
-      default: m.createTrafficLight,
-    })),
-  getAppView: () =>
-    import("../code/examples/traffic-light-delayed/index").then((m) => ({
-      default: m.TrafficLight,
-    })),
+  machineFactory: createTrafficLight,
+  AppView: TrafficLight,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "index.tsx", code: indexRaw },

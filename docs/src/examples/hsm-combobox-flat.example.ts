@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createFlatComboboxMachine } from "../code/examples/hsm-combobox/flattened/machine";
+import { ComboboxViewFlat } from "../code/examples/hsm-combobox/flattened/ComboboxView";
 import flatMachineRaw from "../code/examples/hsm-combobox/flattened/machine.ts?raw";
 import flatViewRaw from "../code/examples/hsm-combobox/flattened/ComboboxView.tsx?raw";
 import indexRaw from "../code/examples/hsm-combobox/index.tsx?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   order: 2,
   indexable: false,
   span: "full",
-  getMachine: () => import("../code/examples/hsm-combobox/flattened/machine").then((m) => ({ default: m.createFlatComboboxMachine })),
-  getAppView: () => import("../code/examples/hsm-combobox/flattened/ComboboxView").then((m) => ({ default: m.ComboboxViewFlat })),
+  machineFactory: createFlatComboboxMachine,
+  AppView: ComboboxViewFlat,
   getSourceFiles: async () => [
     { name: "machine.ts", code: flatMachineRaw },
     { name: "ComboboxView.tsx", code: flatViewRaw },

@@ -3,6 +3,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
 import { ExamplePageViewer } from "../../components/ExamplePageViewer";
 import { getExamples, getExample } from "../../examples";
+import { runElkLayout, type SvgLayout } from "@matchina/viz-svg";
 
 export async function getStaticPaths() {
   const all = getExamples();
@@ -14,6 +15,24 @@ const example = getExample(id);
 if (!example) return Astro.redirect("/examples");
 
 const sourceFiles = await example.getSourceFiles();
+
+// Precompute ELK layout at build time so the diagram SSRs (no skeleton flash).
+let precomputedLayout: SvgLayout | undefined;
+if (example.kind !== "store") {
+  try {
+    const m = example.machineFactory();
+    const shape = (m as any).shape?.getState?.();
+    if (shape) {
+      precomputedLayout = await runElkLayout(shape, {
+        direction: "DOWN",
+        nodeSpacing: 40,
+        layerSpacing: 60,
+      });
+    }
+  } catch (err) {
+    console.warn(`[examples/[id]] precompute layout failed for "${id}":`, err);
+  }
+}
 
 const CATEGORY_ORDER = ["Basic", "Stopwatch", "Async", "Fetcher", "Hierarchical", "Advanced"];
 const all = getExamples({ indexable: true });
@@ -81,6 +100,10 @@ function getLang(filename: string): string {
     </aside>
 
     <div class="ex-main">
+      {/* No-JS progressive tabs: radios drive panel visibility via :has(input:checked) */}
+      <input type="radio" name="ex-tabs" id="ex-tab-preview" class="ex-radio" checked />
+      <input type="radio" name="ex-tabs" id="ex-tab-code" class="ex-radio" />
+
       <div class="ex-tabs-bar" role="tablist">
         {example.docSlug && (
           <a
@@ -91,22 +114,15 @@ function getLang(filename: string): string {
             Article →
           </a>
         )}
-        <button class="ex-tab is-active" role="tab" aria-selected="true" data-tab="preview" style="margin-left: auto">Preview</button>
-        <button class="ex-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
+        <label for="ex-tab-preview" class="ex-tab" data-tab="preview" role="tab" style="margin-left: auto">Preview</label>
+        <label for="ex-tab-code" class="ex-tab" data-tab="code" role="tab">Code</label>
       </div>
 
-      <div class="ex-panel ex-panel--preview" id="ex-panel-preview">
-        <div class="ex-skeleton" aria-hidden="true">
-          {import.meta.env.DEV && !example.hideVizPicker && <div class="ex-skeleton-picker"></div>}
-          <div class="ex-skeleton-body">
-            <div class="ex-skeleton-pane"></div>
-            {example.getAppView && <div class="ex-skeleton-pane"></div>}
-          </div>
-        </div>
-        <ExamplePageViewer exampleId={id} client:only="react" />
+      <div class="ex-panel ex-panel--preview" data-panel="preview">
+        <ExamplePageViewer exampleId={id} precomputedLayout={precomputedLayout} client:only="react" />
       </div>
 
-      <div class="ex-panel ex-panel--code is-hidden" id="ex-panel-code">
+      <div class="ex-panel ex-panel--code" data-panel="code">
         <Tabs>
           {sourceFiles.map((file) => (
             <TabItem label={file.name}>
@@ -180,6 +196,15 @@ function getLang(filename: string): string {
     min-height: 0;
   }
 
+  /* Hidden radio inputs that drive tab visibility */
+  .ex-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* ── preview/code tab bar ── */
   .ex-tabs-bar {
     display: flex;
@@ -200,11 +225,22 @@ function getLang(filename: string): string {
     padding: 10px 16px 8px;
     margin-bottom: -1px;
     transition: color 0.15s, border-color 0.15s;
+    user-select: none;
   }
   .ex-tab:hover { color: hsl(var(--foreground)); }
-  .ex-tab.is-active {
+
+  /* Active tab styling via :has() */
+  .ex-main:has(#ex-tab-preview:checked) [data-tab="preview"],
+  .ex-main:has(#ex-tab-code:checked) [data-tab="code"] {
     color: hsl(var(--foreground));
     border-bottom-color: hsl(var(--foreground));
+  }
+
+  /* Focus ring for keyboard nav */
+  .ex-main:has(#ex-tab-preview:focus-visible) [data-tab="preview"],
+  .ex-main:has(#ex-tab-code:focus-visible) [data-tab="code"] {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   .ex-doc-link {
@@ -222,7 +258,7 @@ function getLang(filename: string): string {
   .ex-panel {
     flex: 1;
     min-height: 0;
-    display: flex;
+    display: none;
     flex-direction: column;
   }
   .ex-panel--preview {
@@ -233,46 +269,16 @@ function getLang(filename: string): string {
     overflow: auto;
     padding: 1.5rem;
   }
-  .ex-panel.is-hidden { display: none; }
+  /* Show the panel whose radio is checked */
+  .ex-main:has(#ex-tab-preview:checked) [data-panel="preview"],
+  .ex-main:has(#ex-tab-code:checked) [data-panel="code"] {
+    display: flex;
+  }
   @media (max-width: 639px) {
     .ex-panel--preview,
     .ex-panel--code {
       padding: 0.75rem;
     }
-  }
-
-  /* ── skeleton ── */
-  .ex-skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    flex: 1;
-    min-height: 0;
-  }
-  #ex-panel-preview[data-loaded] .ex-skeleton { display: none; }
-
-  .ex-skeleton-picker {
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 6px;
-    background: var(--muted);
-    animation: sk-pulse 1.6s ease-in-out infinite;
-  }
-  .ex-skeleton-body {
-    display: flex;
-    gap: 1rem;
-    flex: 1;
-    min-height: 0;
-  }
-  .ex-skeleton-pane {
-    flex: 1;
-    border-radius: 6px;
-    background: var(--muted);
-    animation: sk-pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes sk-pulse {
-    0%, 100% { opacity: 0.45; }
-    50% { opacity: 0.9; }
   }
 
   /* ── narrow: slide-in sidebar ── */
@@ -296,23 +302,8 @@ function getLang(filename: string): string {
 </style>
 
 <script>
-  // sidebar close
+  // sidebar close (only DOM logic that remains; tabs are CSS-only)
   const close = document.querySelector('.ex-sidebar-close');
   const sidebar = document.getElementById('ex-sidebar');
-  function shut() { sidebar?.classList.remove('is-open'); }
-  close?.addEventListener('click', shut);
-
-  // preview/code tabs
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.ex-tab');
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      tabs.forEach((t) => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
-      tab.classList.add('is-active');
-      tab.setAttribute('aria-selected', 'true');
-      const target = tab.dataset.tab;
-      document.querySelectorAll('.ex-panel').forEach((panel) => {
-        panel.classList.toggle('is-hidden', panel.id !== `ex-panel-${target}`);
-      });
-    });
-  });
+  close?.addEventListener('click', () => sidebar?.classList.remove('is-open'));
 </script>

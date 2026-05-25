@@ -274,6 +274,12 @@ export interface SvgInspectorProps {
   onFire?: (event: string) => void;
   options?: ElkLayoutOptions;
   interactive?: boolean;
+  /**
+   * Pre-computed layout (e.g. from runElkLayout in an Astro frontmatter, serialized to JSON).
+   * When supplied, the inspector renders synchronously from this layout — no "computing layout…"
+   * placeholder on first paint. ELK still re-runs in the background when `options` changes after mount.
+   */
+  precomputedLayout?: SvgLayout;
 }
 
 const FIT_PADDING = 32;
@@ -301,8 +307,9 @@ export const SvgInspector = React.memo(function SvgInspector({
   onFire,
   options,
   interactive = true,
+  precomputedLayout,
 }: SvgInspectorProps) {
-  const [layout, setLayout] = useState<SvgLayout | null>(null);
+  const [layout, setLayout] = useState<SvgLayout | null>(precomputedLayout ?? null);
   const [pan, setPan] = useState({ x: 20, y: 20 });
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0 });
@@ -310,8 +317,18 @@ export const SvgInspector = React.memo(function SvgInspector({
 
   // Stable options key — re-layout only when options actually change
   const optionsKey = JSON.stringify(options ?? {});
+  const initialOptionsKey = useRef(optionsKey);
+  const initialShapeRef = useRef(shape);
 
   useEffect(() => {
+    // Skip the initial ELK run when we already have a precomputed layout for the same inputs.
+    if (
+      precomputedLayout &&
+      shape === initialShapeRef.current &&
+      optionsKey === initialOptionsKey.current
+    ) {
+      return;
+    }
     runElkLayout(shape, options ?? {}).then(setLayout).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shape, optionsKey]);

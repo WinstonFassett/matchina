@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createFetcher } from "../code/examples/fetcher-advanced/machine";
+import { FetcherAppView } from "../code/examples/fetcher-advanced/FetcherAppView";
 import machineRaw from "../code/examples/fetcher-advanced/machine.ts?raw";
 import hooksRaw from "../code/examples/fetcher-advanced/hooks.ts?raw";
 import viewRaw from "../code/examples/fetcher-advanced/FetcherAppView.tsx?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   tags: ["promise-machine", "async", "fetcher"],
   order: 2,
   docSlug: "learn/examples/fetcher-advanced",
-  getMachine: () => import("../code/examples/fetcher-advanced/machine").then((m) => ({ default: () => m.createFetcher("https://jsonplaceholder.typicode.com/todos/1") })),
-  getAppView: () => import("../code/examples/fetcher-advanced/FetcherAppView").then((m) => ({ default: m.FetcherAppView })),
+  machineFactory: () => createFetcher("https://jsonplaceholder.typicode.com/todos/1"),
+  AppView: FetcherAppView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "hooks.ts", code: hooksRaw },

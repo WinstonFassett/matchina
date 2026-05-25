@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createCounterStore } from "../code/examples/store-counter/store";
+import { StoreCounterView } from "../code/examples/store-counter/StoreCounterView";
 import storeRaw from "../code/examples/store-counter/store.ts?raw";
 import viewRaw from "../code/examples/store-counter/StoreCounterView.tsx?raw";
 
@@ -11,14 +13,8 @@ const meta: ExampleMeta = {
   order: 3,
   kind: "store",
   docSlug: "guides/store-machine",
-  getMachine: () =>
-    import("../code/examples/store-counter/store").then((m) => ({
-      default: m.createCounterStore,
-    })),
-  getAppView: () =>
-    import("../code/examples/store-counter/StoreCounterView").then((m) => ({
-      default: m.StoreCounterView,
-    })),
+  machineFactory: createCounterStore,
+  AppView: StoreCounterView,
   getSourceFiles: async () => [
     { name: "store.ts", code: storeRaw },
     { name: "StoreCounterView.tsx", code: viewRaw },

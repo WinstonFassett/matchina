@@ -27,8 +27,10 @@ export interface ExampleMeta {
   defaultViz?: "svg" | "reactflow";
   /** Discriminator: factory machines get the graph viz, stores get a value/change-log viz. Defaults to "factory". */
   kind?: ExampleKind;
-  getMachine: () => Promise<{ default: (...args: any[]) => FactoryMachine<any> | StoreMachine<any> }>;
-  getAppView?: () => Promise<{ default: ComponentType<any> }>;
+  /** Synchronous factory — enables SSR. Examples should statically import their machine module. */
+  machineFactory: (...args: any[]) => FactoryMachine<any> | StoreMachine<any>;
+  /** Synchronous AppView component — enables SSR. Examples should statically import their view module. */
+  AppView?: ComponentType<any>;
   getSourceFiles: () => Promise<{ name: string; code: string }[]>;
 }
 

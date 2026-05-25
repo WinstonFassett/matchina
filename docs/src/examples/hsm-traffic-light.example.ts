@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createPropagatingTrafficLight } from "../code/examples/hsm-traffic-light/machine";
+import { TrafficLightViewNested } from "../code/examples/hsm-traffic-light/TrafficLightViewNested";
 import flatMachineRaw from "../code/examples/hsm-traffic-light/machine-flat.ts?raw";
 import propMachineRaw from "../code/examples/hsm-traffic-light/machine.ts?raw";
 import flatViewRaw from "../code/examples/hsm-traffic-light/TrafficLightViewFlat.tsx?raw";
@@ -13,8 +15,8 @@ const meta: ExampleMeta = {
   tags: ["hsm", "hierarchical", "nested-states"],
   order: 1,
   docSlug: "learn/examples/hsm-traffic-light",
-  getMachine: () => import("../code/examples/hsm-traffic-light/machine").then((m) => ({ default: m.createPropagatingTrafficLight })),
-  getAppView: () => import("../code/examples/hsm-traffic-light/TrafficLightViewNested").then((m) => ({ default: m.TrafficLightViewNested })),
+  machineFactory: createPropagatingTrafficLight,
+  AppView: TrafficLightViewNested,
   getSourceFiles: async () => [
     { name: "machine.ts (propagating)", code: propMachineRaw },
     { name: "machine-flat.ts", code: flatMachineRaw },

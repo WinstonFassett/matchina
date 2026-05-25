@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createStopwatch } from "../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine";
+import { Stopwatch } from "../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/index";
 import machineRaw from "../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine.ts?raw";
 import viewRaw from "../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/StopwatchView.tsx?raw";
 import useStopwatchRaw from "../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/useStopwatch.ts?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   tags: ["lifecycle", "react-state"],
   order: 7,
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/machine").then((m) => ({ default: m.createStopwatch })),
-  getAppView: () => import("../code/examples/stopwatch-using-react-state-using-lifecycle-instead-of-useEffect/index").then((m) => ({ default: m.Stopwatch })),
+  machineFactory: createStopwatch,
+  AppView: Stopwatch,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "useStopwatch.ts", code: useStopwatchRaw },

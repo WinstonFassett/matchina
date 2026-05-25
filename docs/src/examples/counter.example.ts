@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createCounterMachine } from "../code/examples/counter/machine";
+import { CounterView } from "../code/examples/counter/CounterView";
 import machineRaw from "../code/examples/counter/machine.ts?raw";
 import viewRaw from "../code/examples/counter/CounterView.tsx?raw";
 import indexRaw from "../code/examples/counter/index.tsx?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   order: 2,
   docSlug: "learn/examples/counter",
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/counter/machine").then((m) => ({ default: m.createCounterMachine })),
-  getAppView: () => import("../code/examples/counter/CounterView").then((m) => ({ default: m.CounterView })),
+  machineFactory: createCounterMachine,
+  AppView: CounterView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "CounterView.tsx", code: viewRaw },

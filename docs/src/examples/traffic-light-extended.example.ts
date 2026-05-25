@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createExtendedTrafficLightMachine } from "../code/examples/traffic-light-extended/machine";
+import { ExtendedTrafficLightView } from "../code/examples/traffic-light-extended/TrafficLightView";
 import machineRaw from "../code/examples/traffic-light-extended/machine.ts?raw";
 import statesRaw from "../code/examples/traffic-light-extended/states.ts?raw";
 import hooksRaw from "../code/examples/traffic-light-extended/hooks.ts?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   category: "Advanced",
   tags: ["createMachine", "timers", "extended-state"],
   order: 3,
-  getMachine: () => import("../code/examples/traffic-light-extended/machine").then((m) => ({ default: m.createExtendedTrafficLightMachine })),
-  getAppView: () => import("../code/examples/traffic-light-extended/TrafficLightView").then((m) => ({ default: m.ExtendedTrafficLightView })),
+  machineFactory: createExtendedTrafficLightMachine,
+  AppView: ExtendedTrafficLightView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "states.ts", code: statesRaw },

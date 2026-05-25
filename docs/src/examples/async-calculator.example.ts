@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createAsyncCalculatorMachine } from "../code/examples/async-calculator/machine";
+import { AsyncCalculatorView } from "../code/examples/async-calculator/AsyncCalculatorView";
 import machineRaw from "../code/examples/async-calculator/machine.ts?raw";
 import hooksRaw from "../code/examples/async-calculator/hooks.ts?raw";
 import viewRaw from "../code/examples/async-calculator/AsyncCalculatorView.tsx?raw";
@@ -11,8 +13,8 @@ const meta: ExampleMeta = {
   category: "Async",
   tags: ["promise-machine", "async"],
   order: 1,
-  getMachine: () => import("../code/examples/async-calculator/machine").then((m) => ({ default: m.createAsyncCalculatorMachine })),
-  getAppView: () => import("../code/examples/async-calculator/AsyncCalculatorView").then((m) => ({ default: m.AsyncCalculatorView })),
+  machineFactory: createAsyncCalculatorMachine,
+  AppView: AsyncCalculatorView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "hooks.ts", code: hooksRaw },

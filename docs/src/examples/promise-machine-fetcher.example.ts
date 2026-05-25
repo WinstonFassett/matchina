@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createPromiseFetcherMachine } from "../code/examples/promise-machine-fetcher/machine";
+import { FetcherAppView } from "../code/examples/promise-machine-fetcher/FetcherAppView";
 import machineRaw from "../code/examples/promise-machine-fetcher/machine.ts?raw";
 import hooksRaw from "../code/examples/promise-machine-fetcher/hooks.ts?raw";
 import viewRaw from "../code/examples/promise-machine-fetcher/FetcherAppView.tsx?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   tags: ["promise-machine", "async", "fetcher"],
   order: 1,
   docSlug: "learn/examples/promise-machine-fetcher",
-  getMachine: () => import("../code/examples/promise-machine-fetcher/machine").then((m) => ({ default: m.createPromiseFetcherMachine })),
-  getAppView: () => import("../code/examples/promise-machine-fetcher/FetcherAppView").then((m) => ({ default: m.FetcherAppView })),
+  machineFactory: createPromiseFetcherMachine,
+  AppView: FetcherAppView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "hooks.ts", code: hooksRaw },
