@@ -3,71 +3,99 @@ title: Lifecycle
 description: Machine transition lifecycle
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-
 # Transition Flow: Lifecycle Hooks
 
-All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods for consistency. This allows you to use the same patterns across different machine types, whether you're using a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/).
+All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods. The same patterns work across a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/). The tree below traces a single call to `machine.send(type, ...params)`. Hooks marked with `*` can halt propagation.
 
-When you call `machine.send(type, ...params)`, the following flow occurs:
+<table class="lifetree not-content">
+  <thead>
+    <tr><th>Hook</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td data-depth="0"><a href="#1-send"><code>send</code></a></td><td>Where does the event enter?</td></tr>
+    <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit</code></a><span class="halt-mark">{'*'}</span></td><td>Which state should we move to? <span class="halt-cond">no match — exit</span></td></tr>
+    <tr><td data-depth="1"><a href="#3-transition"><code>transition</code></a></td><td>Run the lifecycle pipeline.</td></tr>
+    <tr><td data-depth="2"><a href="#4-guard"><code>guard</code></a><span class="halt-mark">{'*'}</span></td><td>Is the transition allowed? <span class="halt-cond">return <code>false</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#5-handle"><code>handle</code></a><span class="halt-mark">{'*'}</span></td><td>How should the event be processed? <span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#6-before"><code>before</code></a><span class="halt-mark">{'*'}</span></td><td>Last chance to abort or rewrite. <span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#7-update"><code>update</code></a></td><td>Apply the new state.</td></tr>
+    <tr><td data-depth="2"><a href="#8-effect"><code>effect</code></a></td><td>Run side effects.</td></tr>
+    <tr><td data-depth="3"><a href="#9-leave"><code>leave</code></a></td><td>What runs as we exit the old state?</td></tr>
+    <tr><td data-depth="3"><a href="#10-enter"><code>enter</code></a></td><td>What runs as we land in the new state?</td></tr>
+    <tr><td data-depth="2"><a href="#11-notify"><code>notify</code></a></td><td>Tell subscribers the change happened.</td></tr>
+    <tr><td data-depth="2"><a href="#12-after"><code>after</code></a></td><td>Final hook — transition is done.</td></tr>
+  </tbody>
+</table>
 
-<div className="flex flex-col sm:flex-row gap-8 items-start">
- <div className="flex-1 min-w-[260px] p-4">
-    {/*
-      Markdown content starts here
-    */}
-    ## Step-by-step
+<p class="lifecycle-legend"><span class="halt-mark">{'*'}</span> can halt propagation — remaining steps are skipped.</p>
 
-    ### 1. **`send`**
+## Step-by-step
 
-    Called with an event type and parameters.
+### 1. `send`
 
-    ### 2. **`resolveExit`**
+Where the event enters the machine. `machine.send(type, ...params)` resolves the change event and starts the transition pipeline.
 
-    Determines the target state for the event.
+```ts
+send(type, ...params) {
+  const resolved = machine.resolveExit({ type, params, from: lastChange.to });
+  if (resolved) machine.transition(resolved);
+}
+```
 
-    ### 3. **`guard`**
+If a generated API method is present (e.g. `api.doSomething(a, b)`), it is the first frame and delegates to `send`.
 
-    Checks if the transition is allowed.
+### 2. `resolveExit`
 
-       - If `false`, exit early.
-    ### 4. **`handle`**
+Looks up the transition handler for the current state and event type and returns the change event (or `undefined`).
 
-    First opportunity to process the event.
+- If `undefined`, `send` exits before the lifecycle pipeline runs.
 
-       - If returns `undefined`, exit early.
-    ### 5. **`before`**
+### 3. `transition`
 
-    Called before the state change.
+The lifecycle pipeline. Each step below runs in order against the resolved event; `guard`, `handle`, and `before` can each halt propagation.
 
-       - If returns `undefined`, exit early.
-    ### 6. **`update`**
+### 4. `guard`
 
-    Updates the internal state.
+Is the transition allowed?
 
-    ### 7. **`effect`**
+- If `false`, the pipeline exits.
 
-    Runs side effects.
+### 5. `handle`
 
-    ### 8. **`leave`**
+First opportunity to process or rewrite the event.
 
-    Called when leaving the previous state.
+- If returns `undefined`, the pipeline exits.
 
-    ### 9. **`enter`**
+### 6. `before`
 
-    Called when entering the new state.
+Final hook before the state change is applied. Can still rewrite the event.
 
-    ### 10. **`notify`**
+- If returns `undefined`, the pipeline exits.
 
-    Notifies subscribers.
+### 7. `update`
 
-    ### 11. **`after`**
+Applies the new state.
 
-    Final hook after transition completes.
+### 8. `effect`
 
-    ## Early exits
+Runs side effects. By default, this calls `leave` then `enter`.
 
-    - If `guard` returns `false`, or `handle`/`before` return `undefined`, the transition stops and no further steps run.
+### 9. `leave`
 
-  </div>
-</div>
+Called as the previous state is exited.
+
+### 10. `enter`
+
+Called as the new state is entered.
+
+### 11. `notify`
+
+Notifies subscribers of the change.
+
+### 12. `after`
+
+Final hook after the transition completes.
+
+## Early exits
+
+`resolveExit` returning no match, `guard` returning `false`, or `handle`/`before` returning `undefined` will stop the flow. No further steps run.
