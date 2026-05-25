@@ -115,12 +115,12 @@ export function MachineVisualizer({
 
   const vizContainerClasses = [
     "visualizer-container",
-    isSplit ? "flex-1 min-h-0 h-full" : `w-full`,
+    isSplit ? "flex-1 min-h-0" : `w-full`,
   ]
     .filter(Boolean)
     .join(" ");
 
-  const appContainerClasses = ["app-container", isSplit ? "flex-1 min-h-0 h-full flex items-center justify-center" : "w-full"]
+  const appContainerClasses = ["app-container", isSplit ? "flex-1 min-h-0 flex items-center justify-center" : "w-full"]
     .filter(Boolean)
     .join(" ");
 
