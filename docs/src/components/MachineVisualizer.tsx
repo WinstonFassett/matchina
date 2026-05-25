@@ -212,7 +212,7 @@ export function MachineVisualizer({
       </div>
 
       {/* Raw state debug panel */}
-      {showRawState && (
+      {showRawState && currentState.data !== undefined && (
         <details>
           <summary className="cursor-pointer text-sm text-muted-foreground">
             Show State Data
