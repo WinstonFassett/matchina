@@ -16,7 +16,7 @@ The table below walks a single call through `machine.send(type, ...params)` from
     <tr><th>Hook</th><th>Description</th><th>Returns</th></tr>
   </thead>
   <tbody>
-    <tr><td data-depth="0"><a href="#0-api-type-params-optional"><code>{'api[type](...params)'}</code></a><span class="row-tag">optional</span></td><td>Model may call <code>machine.send(type, ...params)</code>.</td><td><code>void</code></td></tr>
+    <tr><td data-depth="0"><a href="#0-apitypeparams-optional"><code>{'api[type](...params)'}</code></a><span class="row-tag">optional</span></td><td>Model may call <code>machine.send(type, ...params)</code>.</td><td><code>void</code></td></tr>
     <tr><td data-depth="0"><a href="#1-send"><code>{'send(type, ...params)'}</code></a></td><td>Resolve the event and transition</td><td><code>void</code></td></tr>
     <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit(ev)</code></a></td><td>Resolve the change event with its <code>to</code> state.<span class="halt-cond">return <code>undefined</code> to exit</span></td><td><code>{'E | undefined'}</code></td></tr>
     <tr><td data-depth="1"><a href="#3-transition"><code>transition(ev)</code></a></td><td>Run the transition lifecycle pipeline.</td><td><code>{'E | undefined'}</code></td></tr>

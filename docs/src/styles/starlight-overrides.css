@@ -545,6 +545,20 @@ a.action.secondary {
 
   /* Row tag (OPTIONAL pill) sits inline next to hook signature */
   .lifetree .row-tag { vertical-align: 1px; }
+
+  /* Full-row clickable on mobile cards: stretch the hook anchor over the row */
+  .lifetree tbody td:first-child a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .lifetree tbody td:first-child a { position: static; }
+  /* Keep nested links (none today, but future-proof) clickable above the overlay */
+  .lifetree tbody td:not(:first-child) a {
+    position: relative;
+    z-index: 2;
+  }
 }
 
 .lifecycle-legend {
