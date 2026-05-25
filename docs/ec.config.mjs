@@ -1,4 +1,5 @@
 import pluginTwoslash from 'expressive-code-twoslash';
+import { pluginCodeCut } from './src/lib/code-cut.mjs';
 
 /** @type {import('@astrojs/starlight/expressive-code').StarlightExpressiveCodeOptions} */
 export default {
@@ -6,5 +7,5 @@ export default {
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.type === 'dark' ? '[data-theme$="dark"]' : ':root',
-  plugins: [pluginTwoslash({ includeJsDoc: false })],
+  plugins: [pluginCodeCut(), pluginTwoslash({ includeJsDoc: false })],
 };

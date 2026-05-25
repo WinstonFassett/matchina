@@ -8,6 +8,7 @@ import { transformerTwoslash } from "@shikijs/twoslash";
 import { codeToHtml } from "shiki";
 import "@shikijs/twoslash/style-rich.css";
 import "./style-rich.css";
+import { applyCut } from "../lib/code-cut.mjs";
 
 export const theme = "material-theme-ocean";
 
@@ -39,16 +40,6 @@ if (twoslash && ["ts", "tsx"].includes(lang)) {
 //   });
 // }
 
-function applyCut(s: string) {
-  // Twoslash directives: `---cut---` and `---cut-before---` hide everything above;
-  // `---cut-after---` hides everything below. Supports sandwich form.
-  let out = s;
-  const before = out.split(/\/\/ \-\-\-cut(?:-before)?\-\-\-\s*/);
-  if (before.length > 1) out = before.pop() ?? "";
-  const after = out.split(/\/\/ \-\-\-cut-after\-\-\-\s*/);
-  if (after.length > 1) out = after.shift() ?? "";
-  return out;
-}
 function mapPaths(s: string) {
   // return s.replace(/import \* as (\w+) from "(\w+)"/g, 'import $1 from "$2"')
   return s.replace(/\.\.\/src/g, "matchina");
