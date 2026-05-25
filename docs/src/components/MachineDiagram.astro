@@ -45,14 +45,22 @@ const svg = layoutToSvg(layout, { value: activeValue });
 
 <div class={`machine-diagram relative h-full w-full ${className}`}>
   <slot name="header" />
-  <div class="machine-diagram-svg absolute inset-0" set:html={svg} />
+  <div class="machine-diagram-svg absolute inset-0" set:html={svg} style={`--svg-w:${layout.width}px;--svg-h:${layout.height}px`} />
   <slot name="footer" />
   <slot />
 </div>
 
 <style>
+  /* Center the SVG and cap it at its natural content size (mirrors SvgInspector pre-interaction). */
+  .machine-diagram-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .machine-diagram-svg :global(svg) {
     width: 100%;
     height: 100%;
+    max-width: var(--svg-w);
+    max-height: var(--svg-h);
   }
 </style>
