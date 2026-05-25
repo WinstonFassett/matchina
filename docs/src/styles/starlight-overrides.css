@@ -436,14 +436,13 @@ a.action.secondary {
 .lifetree .halt-cond {
   display: block;
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--sl-color-gray-3);
   margin-top: 2px;
-  white-space: nowrap;
 }
 .lifetree .halt-cond code {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   background: transparent;
   border: 0;
   padding: 0 1px;
@@ -451,13 +450,101 @@ a.action.secondary {
   font-weight: 500;
 }
 
+/* ---------- Lifecycle tree-table → card list on narrow viewports ---------- */
 @media (max-width: 50rem) {
-  .lifetree .halt-cond {
+  .lifetree,
+  .lifetree thead,
+  .lifetree tbody,
+  .lifetree tr,
+  .lifetree td {
     display: block;
-    margin-left: 0;
-    margin-top: 2px;
-    white-space: normal;
+    width: auto;
   }
+  .lifetree { border: 0; margin: 1rem 0 0.5rem; }
+  .lifetree thead { display: none; }
+
+  .lifetree tbody tr {
+    position: relative;
+    padding: 10px 12px 10px 18px;
+    border-top: 1px solid var(--sl-color-hairline);
+    margin-left: 0;
+  }
+  .lifetree tbody tr:last-child { border-bottom: 1px solid var(--sl-color-hairline); }
+  .lifetree tbody tr:hover { background: var(--sl-color-bg-hover); }
+
+  /* Depth bar: 2px accent stripe at left edge, opacity per depth. Indent card by depth. */
+  .lifetree tbody tr::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--accent);
+    opacity: 0;
+  }
+  .lifetree tbody tr:has(td[data-depth="0"]) { margin-left: 0; }
+  .lifetree tbody tr:has(td[data-depth="1"]) { margin-left: 14px; }
+  .lifetree tbody tr:has(td[data-depth="2"]) { margin-left: 28px; }
+  .lifetree tbody tr:has(td[data-depth="3"]) { margin-left: 42px; }
+  .lifetree tbody tr:has(td[data-depth="0"])::before { opacity: 0.35; }
+  .lifetree tbody tr:has(td[data-depth="1"])::before { opacity: 0.55; }
+  .lifetree tbody tr:has(td[data-depth="2"])::before { opacity: 0.75; }
+  .lifetree tbody tr:has(td[data-depth="3"])::before { opacity: 1; }
+
+  /* Reset cell styling — cells are now stacked rows inside the card */
+  .lifetree tbody td,
+  .lifetree tbody td:first-child,
+  .lifetree tbody td:last-child {
+    padding: 0;
+    min-width: 0;
+    white-space: normal;
+    text-align: left;
+    font-size: 14px;
+    color: var(--sl-color-gray-2);
+  }
+
+  /* Hook signature — top of card, slightly larger */
+  .lifetree tbody td:first-child {
+    margin-bottom: 4px;
+  }
+  .lifetree tbody td:first-child code { font-size: 14px; }
+
+  /* Returns cell becomes a small meta pill below description */
+  .lifetree tbody td:last-child {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--sl-color-gray-3);
+  }
+  .lifetree tbody td:last-child code {
+    font-size: 11px;
+    background: var(--sl-color-bg-inline-code);
+    border: 1px solid var(--sl-color-hairline);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* Halt note lives inside description cell — keep as block, dim, with accent bullet */
+  .lifetree .halt-cond {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--sl-color-gray-3);
+    padding-left: 10px;
+    position: relative;
+  }
+  .lifetree .halt-cond::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* Row tag (OPTIONAL pill) sits inline next to hook signature */
+  .lifetree .row-tag { vertical-align: 1px; }
 }
 
 .lifecycle-legend {

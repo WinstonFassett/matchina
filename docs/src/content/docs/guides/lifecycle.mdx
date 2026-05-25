@@ -5,7 +5,9 @@ description: Machine transition lifecycle
 
 # Transition Flow: Lifecycle Hooks
 
-All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods. The same patterns work across a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/). The tree below traces a single call to `machine.send(type, ...params)`.
+All machine types — [FactoryMachine](/matchina/guides/machines), [StateMachine](/matchina/guides/state-machine-interface), [StoreMachine](/matchina/reference/interfaces/storemachine/) — share the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle). The tree below traces a single call through `machine.send(type, ...params)`, optionally entered via a typed [api wrapper](/matchina/guides/machine-enhancers).
+
+
 
 <table class="lifetree not-content">
   <thead>
@@ -13,7 +15,7 @@ All machine types implement the same generic [EventLifecycle](/matchina/referenc
   </thead>
   <tbody>
     <tr><td data-depth="0"><a href="#0-api-type-params-optional"><code>{'api[type](...params)'}</code></a><span class="row-tag">optional</span></td><td>Model may call <code>machine.send(type, ...params)</code>.</td><td><code>void</code></td></tr>
-    <tr><td data-depth="0"><a href="#1-send"><code>{'send(type, ...params)'}</code></a></td><td>Where does the event enter the machine?</td><td><code>void</code></td></tr>
+    <tr><td data-depth="0"><a href="#1-send"><code>{'send(type, ...params)'}</code></a></td><td>Resolve the event and transition</td><td><code>void</code></td></tr>
     <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit(ev)</code></a></td><td>Resolve the change event with its <code>to</code> state.<span class="halt-cond">return <code>undefined</code> to exit</span></td><td><code>{'E | undefined'}</code></td></tr>
     <tr><td data-depth="1"><a href="#3-transition"><code>transition(ev)</code></a></td><td>Run the transition lifecycle pipeline.</td><td><code>{'E | undefined'}</code></td></tr>
     <tr><td data-depth="2"><a href="#4-guard"><code>guard(ev)</code></a></td><td>Is the change allowed?<span class="halt-cond">return <code>false</code> to halt</span></td><td><code>boolean</code></td></tr>
@@ -33,7 +35,7 @@ All machine types implement the same generic [EventLifecycle](/matchina/referenc
 
 ### 0. `api[type](...params)` (optional)
 
-A model layer over the machine. `api[type](...params)` may call `machine.send(type, ...params)`. Optional — it keeps callers out of the event-data layer.
+A strongly-typed app surface over the machine. Matchina ships factories (see [Machine Enhancers](/matchina/guides/machine-enhancers)) for generating these wrappers — `api.checkout(item)` instead of `send("checkout", item)`. They delegate to `machine.send` and otherwise stay out of the lifecycle. Hooks remain the conventional way to extend a machine; wrapper APIs are an additional extension point when you want one.
 
 ### 1. `send`
 
