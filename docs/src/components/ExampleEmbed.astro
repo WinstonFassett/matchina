@@ -113,7 +113,7 @@ const uid = `embed-${id}-${Math.random().toString(36).slice(2, 8)}`;
     )}
 
     <div class="example-embed-panel example-embed-panel--preview" data-panel="preview">
-      <ExamplePreview id={id} precomputedLayout={precomputedLayout} client:only="react" />
+      <ExamplePreview id={id} precomputedLayout={precomputedLayout} client:load />
     </div>
 
     {!previewOnly && (

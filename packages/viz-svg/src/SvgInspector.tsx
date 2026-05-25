@@ -312,6 +312,10 @@ export const SvgInspector = React.memo(function SvgInspector({
   const [layout, setLayout] = useState<SvgLayout | null>(precomputedLayout ?? null);
   const [pan, setPan] = useState({ x: 20, y: 20 });
   const [zoom, setZoom] = useState(1);
+  // `interacted` flips true on the first wheel/drag/fit. Until then we render via
+  // SVG's native viewBox so the diagram is centered and scaled to fit without any
+  // JS-driven post-mount fit — making the SSR'd initial frame correct on first paint.
+  const [interacted, setInteracted] = useState(false);
   const dragRef = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -329,7 +333,12 @@ export const SvgInspector = React.memo(function SvgInspector({
     ) {
       return;
     }
-    runElkLayout(shape, options ?? {}).then(setLayout).catch(console.error);
+    runElkLayout(shape, options ?? {}).then((l) => {
+      setLayout(l);
+      // When layout changes after the user has already started interacting,
+      // re-fit so the new graph isn't off-screen.
+      if (interacted) fitToContainer(l);
+    }).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shape, optionsKey]);
 
@@ -341,11 +350,16 @@ export const SvgInspector = React.memo(function SvgInspector({
     setPan(p);
   }
 
-  // Auto-fit whenever a new layout arrives
-  useEffect(() => {
-    if (layout) fitToContainer(layout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout]);
+  /**
+   * Compute the effective pan+zoom that viewBox would produce, then seed state with
+   * those values and flip into imperative-transform mode. This avoids a visual jump
+   * when the user first interacts: the imperative transform matches what viewBox was
+   * already showing.
+   */
+  function leaveViewBoxMode(l: SvgLayout) {
+    fitToContainer(l);
+    setInteracted(true);
+  }
 
   // Derive active paths from the current state value (dot-separated fullKey)
   const activePath = useMemo(() => (value ? value.split('.') : []), [value]);
@@ -374,11 +388,13 @@ export const SvgInspector = React.memo(function SvgInspector({
 
   function onWheel(e: React.WheelEvent) {
     e.preventDefault();
+    if (!interacted && layout) leaveViewBoxMode(layout);
     setZoom(z => Math.min(2.5, Math.max(0.3, z * (e.deltaY > 0 ? 0.92 : 1.08))));
   }
 
   function onMouseDown(e: React.MouseEvent) {
     if (e.button !== 0) return;
+    if (!interacted && layout) leaveViewBoxMode(layout);
     dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
   }
   function onMouseMove(e: React.MouseEvent) {
@@ -447,6 +463,10 @@ export const SvgInspector = React.memo(function SvgInspector({
       <svg
         width="100%" height="100%"
         style={{ display: 'block' }}
+        {...(!interacted && {
+          viewBox: `0 0 ${width} ${height}`,
+          preserveAspectRatio: 'xMidYMid meet',
+        })}
       >
         <defs>
           <marker id="matchina-svg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -457,7 +477,7 @@ export const SvgInspector = React.memo(function SvgInspector({
           </marker>
         </defs>
 
-        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+        <g transform={interacted ? `translate(${pan.x}, ${pan.y}) scale(${zoom})` : undefined}>
           {/* Compound containers rendered first (lowest z) */}
           {compounds.map(node => (
             <NodeShape
@@ -521,9 +541,15 @@ export const SvgInspector = React.memo(function SvgInspector({
         border: `1px solid ${V.ctrlBorder}`,
         padding: 4, borderRadius: 8,
       }}>
-        <button onClick={() => layout && fitToContainer(layout)} style={ctrlBtn}>Fit</button>
-        <button onClick={() => setZoom(z => Math.min(2.5, z * 1.15))} style={ctrlBtn}>+</button>
-        <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
+        <button onClick={() => layout && leaveViewBoxMode(layout)} style={ctrlBtn}>Fit</button>
+        <button onClick={() => {
+          if (!interacted && layout) leaveViewBoxMode(layout);
+          setZoom(z => Math.min(2.5, z * 1.15));
+        }} style={ctrlBtn}>+</button>
+        <button onClick={() => {
+          if (!interacted && layout) leaveViewBoxMode(layout);
+          setZoom(z => Math.max(0.3, z * 0.87));
+        }} style={ctrlBtn}>−</button>
         <span style={{
           fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
           color: V.ctrlText,
