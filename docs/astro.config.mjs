@@ -95,7 +95,7 @@ export default defineConfig({
                     { label: "React", link: "/guides/react" },
                   ],
                 },
-                typeDocSidebarGroup,
+                ...(process.env.ENABLE_TYPEDOC ? [typeDocSidebarGroup] : []),
               ],
             },
             {
@@ -165,7 +165,7 @@ export default defineConfig({
             },
           },
         ),
-        ...(process.env.SKIP_TYPEDOC ? [] : [starlightTypeDoc({
+        ...(process.env.ENABLE_TYPEDOC ? [starlightTypeDoc({
           watch: true,
           sidebar: {
             label: "Reference",
@@ -233,7 +233,7 @@ export default defineConfig({
             theme: "starlight-typedoc-custom",
             // "excludeNotDocumented": true
           },
-        })]),
+        })] : []),
       ],
       components: {
         ThemeProvider: './src/components/starlight/ThemeProvider.astro',

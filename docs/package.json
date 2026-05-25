@@ -3,14 +3,14 @@
   "type": "module",
   "version": "0.1.0",
   "scripts": {
-    "postinstall": "npm run build:typedoc-plugin",
+    "postinstall": "[ \"$ENABLE_TYPEDOC\" = \"1\" ] && npm run build:typedoc-plugin || true",
     "dev": "portless matchina-docs astro dev",
     "dev:pdf": "npx starlight-to-pdf http://localhost:4321",
     "start": "portless matchina-docs astro dev",
     "check": "astro check",
     "build:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs",
     "watch:typedoc-plugin": "node scripts/build-typedoc-plugin.mjs --watch",
-    "prebuild": "[ \"$SKIP_TYPEDOC\" = \"1\" ] || npm run build:typedoc-plugin",
+    "prebuild": "[ \"$ENABLE_TYPEDOC\" = \"1\" ] && npm run build:typedoc-plugin || true",
     "build": "rm -rf dist && astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
