@@ -380,6 +380,18 @@ a.action.secondary {
 .lifetree tbody td[data-depth="1"] { padding-left: 36px; }
 .lifetree tbody td[data-depth="2"] { padding-left: 60px; }
 .lifetree tbody td[data-depth="3"] { padding-left: 84px; }
+.lifetree tbody td[data-depth="4"] { padding-left: 108px; }
+.lifetree .row-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+  border: 1px solid var(--sl-color-hairline);
+  padding: 1px 6px;
+  margin-left: 8px;
+  vertical-align: 2px;
+}
 
 .lifetree tbody td:first-child a {
   text-decoration: none;
@@ -398,6 +410,23 @@ a.action.secondary {
   color: inherit;
   font-weight: 500;
 }
+.lifetree tbody td:last-child {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--sl-color-gray-3);
+  white-space: nowrap;
+  text-align: right;
+  padding-left: 16px;
+}
+.lifetree tbody td:last-child code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-weight: 400;
+}
 .lifetree .halt-mark {
   color: var(--accent);
   font-weight: 600;
@@ -405,15 +434,16 @@ a.action.secondary {
   font-family: var(--font-mono);
 }
 .lifetree .halt-cond {
+  display: block;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--sl-color-gray-3);
-  margin-left: 10px;
+  margin-top: 2px;
   white-space: nowrap;
 }
 .lifetree .halt-cond code {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 11px;
   background: transparent;
   border: 0;
   padding: 0 1px;

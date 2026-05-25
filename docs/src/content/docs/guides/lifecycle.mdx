@@ -5,31 +5,35 @@ description: Machine transition lifecycle
 
 # Transition Flow: Lifecycle Hooks
 
-All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods. The same patterns work across a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/). The tree below traces a single call to `machine.send(type, ...params)`. Hooks marked with `*` can halt propagation.
+All machine types implement the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle) and hook methods. The same patterns work across a [FactoryMachine](/matchina/guides/machines), a [StateMachine](/matchina/guides/state-machine-interface), or a [StoreMachine](/matchina/reference/interfaces/storemachine/). The tree below traces a single call to `machine.send(type, ...params)`.
 
 <table class="lifetree not-content">
   <thead>
-    <tr><th>Hook</th><th>Description</th></tr>
+    <tr><th>Hook</th><th>Description</th><th>Returns</th></tr>
   </thead>
   <tbody>
-    <tr><td data-depth="0"><a href="#1-send"><code>send</code></a></td><td>Where does the event enter?</td></tr>
-    <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit</code></a><span class="halt-mark">{'*'}</span></td><td>Which state should we move to? <span class="halt-cond">no match — exit</span></td></tr>
-    <tr><td data-depth="1"><a href="#3-transition"><code>transition</code></a></td><td>Run the lifecycle pipeline.</td></tr>
-    <tr><td data-depth="2"><a href="#4-guard"><code>guard</code></a><span class="halt-mark">{'*'}</span></td><td>Is the transition allowed? <span class="halt-cond">return <code>false</code> to halt</span></td></tr>
-    <tr><td data-depth="2"><a href="#5-handle"><code>handle</code></a><span class="halt-mark">{'*'}</span></td><td>How should the event be processed? <span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
-    <tr><td data-depth="2"><a href="#6-before"><code>before</code></a><span class="halt-mark">{'*'}</span></td><td>Last chance to abort or rewrite. <span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
-    <tr><td data-depth="2"><a href="#7-update"><code>update</code></a></td><td>Apply the new state.</td></tr>
-    <tr><td data-depth="2"><a href="#8-effect"><code>effect</code></a></td><td>Run side effects.</td></tr>
-    <tr><td data-depth="3"><a href="#9-leave"><code>leave</code></a></td><td>What runs as we exit the old state?</td></tr>
-    <tr><td data-depth="3"><a href="#10-enter"><code>enter</code></a></td><td>What runs as we land in the new state?</td></tr>
-    <tr><td data-depth="2"><a href="#11-notify"><code>notify</code></a></td><td>Tell subscribers the change happened.</td></tr>
-    <tr><td data-depth="2"><a href="#12-after"><code>after</code></a></td><td>Final hook — transition is done.</td></tr>
+    <tr><td data-depth="0"><a href="#0-api-type-params-optional"><code>{'api[type](...params)'}</code></a><span class="row-tag">optional</span></td><td>Model may call <code>machine.send(type, ...params)</code>.</td><td><code>void</code></td></tr>
+    <tr><td data-depth="0"><a href="#1-send"><code>{'send(type, ...params)'}</code></a></td><td>Where does the event enter the machine?</td><td><code>void</code></td></tr>
+    <tr><td data-depth="1"><a href="#2-resolveexit"><code>resolveExit(ev)</code></a></td><td>Which state should we move to?</td><td><code>{'E | undefined'}</code><span class="halt-cond">no match — exit</span></td></tr>
+    <tr><td data-depth="1"><a href="#3-transition"><code>transition(ev)</code></a></td><td>Run the transition lifecycle pipeline.</td><td><code>{'E | undefined'}</code></td></tr>
+    <tr><td data-depth="2"><a href="#4-guard"><code>guard(ev)</code></a></td><td>Is the change allowed?</td><td><code>boolean</code><span class="halt-cond">return <code>false</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#5-handle"><code>handle(ev)</code></a></td><td>Map trigger event to change event.</td><td><code>{'E | undefined'}</code><span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#6-before"><code>before(ev)</code></a></td><td>Last chance to abort or rewrite.</td><td><code>{'E | undefined'}</code><span class="halt-cond">return <code>undefined</code> to halt</span></td></tr>
+    <tr><td data-depth="2"><a href="#7-update"><code>update(ev)</code></a></td><td>Apply the new state.</td><td><code>void</code></td></tr>
+    <tr><td data-depth="2"><a href="#8-effect"><code>effect(ev)</code></a></td><td>Run side effects.</td><td><code>void</code></td></tr>
+    <tr><td data-depth="3"><a href="#9-leave"><code>leave(ev)</code></a></td><td>What happens as we exit the old state?</td><td><code>void</code></td></tr>
+    <tr><td data-depth="3"><a href="#10-enter"><code>enter(ev)</code></a></td><td>What happens as we land in the new state?</td><td><code>void</code></td></tr>
+    <tr><td data-depth="2"><a href="#11-notify"><code>notify(ev)</code></a></td><td>Tell subscribers what happened.</td><td><code>void</code></td></tr>
+    <tr><td data-depth="2"><a href="#12-after"><code>after(ev)</code></a></td><td>Final hook — transition is done.</td><td><code>void</code></td></tr>
   </tbody>
 </table>
 
-<p class="lifecycle-legend"><span class="halt-mark">{'*'}</span> can halt propagation — remaining steps are skipped.</p>
 
 ## Step-by-step
+
+### 0. `api[type](...params)` (optional)
+
+A model layer over the machine. `api[type](...params)` may call `machine.send(type, ...params)`. Optional — it keeps callers out of the event-data layer.
 
 ### 1. `send`
 
