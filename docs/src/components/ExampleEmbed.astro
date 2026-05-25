@@ -7,9 +7,15 @@ interface Props {
   id: string;
   /** Link to the full standalone viewer */
   viewerLink?: boolean;
+  /**
+   * Hide the Preview/Code tab bar and render only the preview.
+   * Use when the article narrates code separately via <ExampleCode>,
+   * so the same source isn't shown twice.
+   */
+  previewOnly?: boolean;
 }
 
-const { id, viewerLink = true } = Astro.props;
+const { id, viewerLink = true, previewOnly = false } = Astro.props as Props;
 
 const meta = getExample(id);
 const sourceFiles = meta ? await meta.getSourceFiles() : [];
@@ -31,20 +37,34 @@ function getLang(filename: string): string {
 )}
 
 {meta && (
-  <div class="example-embed not-content">
-    <div class="example-embed-tabs-bar" role="tablist">
-      {viewerLink && (
+  <div class="example-embed not-content" data-preview-only={previewOnly ? "" : undefined}>
+    {!previewOnly && (
+      <div class="example-embed-tabs-bar" role="tablist">
+        {viewerLink && (
+          <a
+            href={`/matchina/examples/${id}`}
+            class="example-embed-viewer-link"
+            title="Open in standalone viewer"
+          >
+            open in viewer →
+          </a>
+        )}
+        <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview" style="margin-left: auto">Preview</button>
+        <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
+      </div>
+    )}
+    {previewOnly && viewerLink && (
+      <div class="example-embed-tabs-bar" role="tablist">
         <a
           href={`/matchina/examples/${id}`}
           class="example-embed-viewer-link"
           title="Open in standalone viewer"
+          style="margin-left: auto"
         >
           open in viewer →
         </a>
-      )}
-      <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview" style="margin-left: auto">Preview</button>
-      <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
-    </div>
+      </div>
+    )}
 
     <div class="example-embed-panel" id={`embed-preview-${id}`}>
       <div class="skeleton" aria-hidden="true">
@@ -57,20 +77,22 @@ function getLang(filename: string): string {
       <ExamplePreview id={id} client:only="react" />
     </div>
 
-    <div class="example-embed-panel is-hidden" id={`embed-code-${id}`}>
-      {sourceFiles.length === 1 && (
-        <Code code={sourceFiles[0].code} lang={getLang(sourceFiles[0].name)} />
-      )}
-      {sourceFiles.length > 1 && (
-        <Tabs>
-          {sourceFiles.map((f) => (
-            <TabItem label={f.name}>
-              <Code code={f.code} lang={getLang(f.name)} />
-            </TabItem>
-          ))}
-        </Tabs>
-      )}
-    </div>
+    {!previewOnly && (
+      <div class="example-embed-panel is-hidden" id={`embed-code-${id}`}>
+        {sourceFiles.length === 1 && (
+          <Code code={sourceFiles[0].code} lang={getLang(sourceFiles[0].name)} />
+        )}
+        {sourceFiles.length > 1 && (
+          <Tabs>
+            {sourceFiles.map((f) => (
+              <TabItem label={f.name}>
+                <Code code={f.code} lang={getLang(f.name)} />
+              </TabItem>
+            ))}
+          </Tabs>
+        )}
+      </div>
+    )}
   </div>
 )}
 

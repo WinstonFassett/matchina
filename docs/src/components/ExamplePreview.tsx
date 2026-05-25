@@ -1,5 +1,5 @@
 import { getExample } from "../examples";
-import { useEffect, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
 import type { FactoryMachine, StoreMachine } from "matchina";
 import { MachineVisualizer } from "./MachineVisualizer";
 import { StoreVisualizer } from "./StoreVisualizer";
@@ -20,6 +20,11 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
   const [machine, setMachine] = useState<FactoryMachine<any> | StoreMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Incrementing version forces machine recreation — AppViews that need a "reset"
+  // (e.g. promise machines, where Resolved/Rejected are terminal) bind this to a button.
+  const [version, setVersion] = useState(0);
+
+  const onReset = useCallback(() => setVersion((v) => v + 1), []);
 
   useEffect(() => {
     if (!meta) { setError(`Example "${id}" not found`); return; }
@@ -31,7 +36,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
         .then((mod) => setAppView(() => mod.default))
         .catch(() => {});
     }
-  }, [id, meta]);
+  }, [id, meta, version]);
 
   // Hide skeleton once machine is committed to DOM
   useEffect(() => {
@@ -44,7 +49,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
 
   if (appOnly && AppView) {
     const propName = meta?.kind === "store" ? "store" : "machine";
-    return <AppView {...{ [propName]: machine }} />;
+    return <AppView {...{ [propName]: machine }} onReset={onReset} />;
   }
 
   if (meta?.kind === "store") {
@@ -66,6 +71,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
       showRawState={false}
       layout={hideAppPane ? "stacked" : "split"}
       interactive={true}
+      appViewProps={{ onReset }}
       {...(resolvedViz !== undefined && { defaultViz: resolvedViz })}
       {...(showPicker !== undefined && { showPicker })}
       {...(defaultSvgDirection !== undefined && { defaultSvgDirection })}

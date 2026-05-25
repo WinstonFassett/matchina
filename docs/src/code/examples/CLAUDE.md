@@ -50,13 +50,16 @@ Registry auto-discovers files matching `docs/src/examples/*.example.ts`. Adding 
 import ExampleEmbed from "@components/ExampleEmbed.astro";
 import ExampleCode from "@components/ExampleCode.astro";
 
-<ExampleEmbed id="<id>" />
+<ExampleEmbed id="<id>" />                    {/* preview + code tabs (self-contained) */}
+<ExampleEmbed id="<id>" previewOnly />        {/* preview only — when narrating code inline */}
 
-<ExampleCode id="<id>" file="machine.ts" />  {/* single file */}
+<ExampleCode id="<id>" file="machine.ts" />   {/* single file */}
 <ExampleCode id="<id>" />                     {/* all files as tabs */}
 ```
 
 `<ExampleEmbed>` gives you: tab bar (Preview/Code), skeleton, "open in viewer →" link to `/matchina/examples/<id>`, and (for factory machines) the visualizer picker.
+
+**When to use `previewOnly`**: any time the article also walks through the source with `<ExampleCode>`. Otherwise the same code shows twice — once in the embed's Code tab, once below. Rule of thumb: standalone-feeling page = full embed; narrated tutorial = `previewOnly` + targeted `<ExampleCode file="…" />`.
 
 Do **not** import `example.tsx` directly. Do **not** hand-roll a `<div className="bg-slate-800 ...">` wrapper. Do **not** call `<MachineVisualizer />` from MDX.
 

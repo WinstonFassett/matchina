@@ -43,7 +43,10 @@ export interface MachineVisualizerProps {
 
   // Additional
   className?: string;
-  
+
+  /** Extra props forwarded to AppView (e.g. onReset for promise machines). */
+  appViewProps?: Record<string, unknown>;
+
   // Legacy/example props (ignored but accepted for compatibility)
   exampleName?: string;
   preset?: string;
@@ -66,6 +69,7 @@ export function MachineVisualizer({
   title,
   className = "",
   defaultSvgDirection = 'DOWN',
+  appViewProps,
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 
@@ -198,7 +202,7 @@ export function MachineVisualizer({
         {/* App View */}
         <div data-testid="app-container" className={appContainerClasses}>
           {AppView ? (
-            <AppView machine={machine} />
+            <AppView machine={machine} {...(appViewProps ?? {})} />
           ) : (
             <DefaultAppView
               activeStatePath={activeStatePath}

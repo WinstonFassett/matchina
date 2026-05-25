@@ -1,7 +1,7 @@
 import { MachineVisualizer } from "./MachineVisualizer";
 import { StoreVisualizer } from "./StoreVisualizer";
 import { getExample } from "../examples";
-import { useEffect, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
 import type { FactoryMachine, StoreMachine } from "matchina";
 
 interface Props {
@@ -13,6 +13,8 @@ export function ExamplePageViewer({ exampleId }: Props) {
   const [machine, setMachine] = useState<FactoryMachine<any> | StoreMachine<any> | null>(null);
   const [AppView, setAppView] = useState<ComponentType<any> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
+  const onReset = useCallback(() => setVersion((v) => v + 1), []);
 
   useEffect(() => {
     if (!meta) {
@@ -28,7 +30,7 @@ export function ExamplePageViewer({ exampleId }: Props) {
         .then((mod) => setAppView(() => mod.default))
         .catch(() => {});
     }
-  }, [exampleId, meta]);
+  }, [exampleId, meta, version]);
 
   useEffect(() => {
     if (!machine) return;
@@ -55,6 +57,7 @@ export function ExamplePageViewer({ exampleId }: Props) {
       showRawState={false}
       layout="split"
       interactive={true}
+      appViewProps={{ onReset }}
       showPicker={import.meta.env.DEV && !meta?.hideVizPicker}
       {...(meta?.defaultViz !== undefined && { defaultViz: meta.defaultViz })}
     />
