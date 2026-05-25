@@ -369,7 +369,6 @@ a.action.secondary {
   vertical-align: baseline;
   line-height: 1.5;
 }
-.lifetree tbody tr:hover { background: var(--sl-color-bg-hover); }
 .lifetree tbody td:first-child {
   white-space: nowrap;
   text-align: left;
@@ -470,7 +469,6 @@ a.action.secondary {
     margin-left: 0;
   }
   .lifetree tbody tr:last-child { border-bottom: 1px solid var(--sl-color-hairline); }
-  .lifetree tbody tr:hover { background: var(--sl-color-bg-hover); }
 
   /* Depth bar: 2px accent stripe at left edge, opacity per depth. Indent card by depth. */
   .lifetree tbody tr::before {
@@ -545,20 +543,6 @@ a.action.secondary {
 
   /* Row tag (OPTIONAL pill) sits inline next to hook signature */
   .lifetree .row-tag { vertical-align: 1px; }
-
-  /* Full-row clickable on mobile cards: stretch the hook anchor over the row */
-  .lifetree tbody td:first-child a::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-  }
-  .lifetree tbody td:first-child a { position: static; }
-  /* Keep nested links (none today, but future-proof) clickable above the overlay */
-  .lifetree tbody td:not(:first-child) a {
-    position: relative;
-    z-index: 2;
-  }
 }
 
 .lifecycle-legend {
