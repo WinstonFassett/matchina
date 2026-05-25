@@ -287,7 +287,6 @@ export interface SvgInspectorProps {
   precomputedLayout?: SvgLayout;
 }
 
-const FIT_PADDING = 32;
 const MAX_FIT_ZOOM = 1.0;
 
 function computeFit(
@@ -296,8 +295,8 @@ function computeFit(
   containerW: number,
   containerH: number,
 ): { zoom: number; pan: { x: number; y: number } } {
-  const scaleX = (containerW - FIT_PADDING * 2) / contentW;
-  const scaleY = (containerH - FIT_PADDING * 2) / contentH;
+  const scaleX = containerW / contentW;
+  const scaleY = containerH / contentH;
   const zoom = Math.min(scaleX, scaleY, MAX_FIT_ZOOM);
   const pan = {
     x: (containerW - contentW * zoom) / 2,
@@ -356,18 +355,19 @@ export const SvgInspector = React.memo(function SvgInspector({
   }
 
   /**
-   * Compute the effective pan+zoom that viewBox `xMidYMid meet` is currently producing,
+   * Compute the effective pan+zoom that the pre-interaction viewBox is currently producing,
    * then seed state with those values and flip into imperative-transform mode. This
    * keeps the diagram visually identical across the viewBox→transform handoff: same
-   * scale, same center. Unlike `fitToContainer`, this uses no padding and no zoom cap,
-   * because viewBox doesn't apply either.
+   * scale, same center. The MAX_FIT_ZOOM cap matches the viewBox path below, which
+   * expands the viewBox to container dimensions when content is smaller than the
+   * container so small diagrams render at 1x rather than ballooning to fill.
    */
   function leaveViewBoxMode(l: SvgLayout) {
     const el = containerRef.current;
     if (!el) { setInteracted(true); return; }
     const scaleX = el.clientWidth / l.width;
     const scaleY = el.clientHeight / l.height;
-    const z = Math.min(scaleX, scaleY);
+    const z = Math.min(scaleX, scaleY, MAX_FIT_ZOOM);
     const p = {
       x: (el.clientWidth - l.width * z) / 2,
       y: (el.clientHeight - l.height * z) / 2,
@@ -469,6 +469,14 @@ export const SvgInspector = React.memo(function SvgInspector({
         cursor: 'grab',
         background: V.bg,
         backgroundImage: `radial-gradient(ellipse 80% 60% at 70% 0%, color-mix(in srgb, ${V.accent} 5%, transparent), transparent 60%)`,
+        // Pre-interaction we let the SVG act as a flex item so its maxWidth/maxHeight
+        // (set to content dimensions) caps it at 1x and centers it. Post-interaction
+        // the inner <g transform> controls placement, so we revert to block layout.
+        ...(!interacted && {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }),
       }}
       onWheel={onWheel}
       onMouseDown={onMouseDown}
@@ -477,8 +485,20 @@ export const SvgInspector = React.memo(function SvgInspector({
       onMouseLeave={onMouseUp}
     >
       <svg
-        width="100%" height="100%"
-        style={{ display: 'block' }}
+        {...(interacted && { width: '100%', height: '100%' })}
+        style={{
+          display: 'block',
+          // Pre-interaction: cap intrinsic size at the content's natural dimensions so
+          // small diagrams sit at 1x (centered by the parent flex container) instead of
+          // ballooning to fill via viewBox. Larger diagrams still shrink to fit via the
+          // viewBox + `meet` because we still allow width/height to expand to 100%.
+          ...(!interacted && {
+            width: '100%',
+            height: '100%',
+            maxWidth: width,
+            maxHeight: height,
+          }),
+        }}
         {...(!interacted && {
           viewBox: `0 0 ${width} ${height}`,
           preserveAspectRatio: 'xMidYMid meet',
