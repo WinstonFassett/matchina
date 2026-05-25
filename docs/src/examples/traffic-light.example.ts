@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createTrafficLightMachine } from "../code/examples/traffic-light/machine";
+import { TrafficLightView } from "../code/examples/traffic-light/TrafficLightView";
 import machineRaw from "../code/examples/traffic-light/machine.ts?raw";
 import viewRaw from "../code/examples/traffic-light/TrafficLightView.tsx?raw";
 import indexRaw from "../code/examples/traffic-light/index.tsx?raw";
@@ -11,8 +13,8 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "multi-state"],
   order: 3,
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/traffic-light/machine").then((m) => ({ default: m.createTrafficLightMachine })),
-  getAppView: () => import("../code/examples/traffic-light/TrafficLightView").then((m) => ({ default: m.TrafficLightView })),
+  machineFactory: createTrafficLightMachine,
+  AppView: TrafficLightView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "TrafficLightView.tsx", code: viewRaw },

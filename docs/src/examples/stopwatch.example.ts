@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createStopwatchMachine } from "../code/examples/stopwatch/machine";
+import { StopwatchView } from "../code/examples/stopwatch/StopwatchView";
 import machineRaw from "../code/examples/stopwatch/machine.ts?raw";
 import viewRaw from "../code/examples/stopwatch/StopwatchView.tsx?raw";
 import indexRaw from "../code/examples/stopwatch/index.tsx?raw";
@@ -11,8 +13,8 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "timers"],
   order: 1,
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/stopwatch/machine").then((m) => ({ default: m.createStopwatchMachine })),
-  getAppView: () => import("../code/examples/stopwatch/StopwatchView").then((m) => ({ default: m.StopwatchView })),
+  machineFactory: createStopwatchMachine,
+  AppView: StopwatchView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "StopwatchView.tsx", code: viewRaw },

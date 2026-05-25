@@ -3,11 +3,8 @@ title: Store Machine
 description: Event-driven state management for single values with type-safe actions
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import CodeTabs from "@components/CodeTabs.astro";
-import storeCode from "@code/examples/store-counter/store.ts?raw";
-import viewCode from "@code/examples/store-counter/StoreCounterView.tsx?raw";
-import Example from "@code/examples/store-counter/example";
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
 
 ## What is a Store Machine?
 
@@ -26,18 +23,13 @@ A **Store Machine** is a lightweight, event-driven store for managing a single v
 
 ## Creating a Store Machine
 
-```ts
-import { createStoreMachine } from "matchina";
-
-const counter = createStoreMachine(0, {
-  increment: (amt = 1) => (change) => change.from + amt,
-  decrement: (amt = 1) => (change) => change.from - amt,
-  set: (value: number) => value,
-  reset: () => 0,
-});
-```
+<ExampleCode id="store-counter" file="store.ts" />
 
 The first argument is the **initial value**, and the second is a record of **actions**.
+
+## Interactive Example
+
+<ExampleEmbed id="store-counter" previewOnly />
 
 ## Action Types
 
@@ -81,18 +73,9 @@ const value = counter.getState();     // Current value
 const change = counter.getChange();   // Last change event
 ```
 
-## Interactive Example
+## View
 
-<div className="not-content">
-  <Example client:only="react" />
-</div>
-
-<CodeTabs
-  files={[
-    { name: "store.ts", code: storeCode },
-    { name: "StoreCounterView.tsx", code: viewCode },
-  ]}
-/>
+<ExampleCode id="store-counter" file="StoreCounterView.tsx" />
 
 ## Using with Immer
 

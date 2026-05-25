@@ -304,10 +304,14 @@ export default defineConfig({
       // Always use 'node' condition to resolve to source .ts files via path mappings
       // This works for both dev and production since we don't pre-build packages
       conditions: ["node"],
-      // Deduplicate React to prevent dual-instance errors. The workspace root has
-      // React 18; docs has React 19. Vite deduplication forces all imports to
-      // resolve to the same copy, preventing useContext/useState from failing.
+      // Deduplicate React so workspace viz-* packages and docs/src share one copy.
       dedupe: ["react", "react-dom"],
+    },
+    ssr: {
+      // Bundle workspace packages through Vite's resolver during SSR so dedupe
+      // applies. Without this, Vite externalizes them and Node's resolver can
+      // pick up a second React instance during SSR → useState null at runtime.
+      noExternal: [/^@matchina\/viz-/, "matchina"],
     },
   },
 });

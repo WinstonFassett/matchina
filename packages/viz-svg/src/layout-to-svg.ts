@@ -112,7 +112,7 @@ function edgeSvg(edge: SvgEdge, isOutgoing: boolean, labelT: number): string {
 export interface LayoutToSvgOptions {
   /** Current active state value (dot-separated full key). */
   value?: string;
-  /** Padding in px to inset content from the viewBox. Default 32. */
+  /** @deprecated No longer used; the SVG is sized to exact content dimensions. */
   padding?: number;
 }
 
@@ -122,7 +122,8 @@ export interface LayoutToSvgOptions {
  * with a viewBox so it scales to its container via `width="100%" height="100%"`.
  */
 export function layoutToSvg(layout: SvgLayout, opts: LayoutToSvgOptions = {}): string {
-  const { value = '', padding = 32 } = opts;
+  const { value = '' } = opts;
+  const padding = 0;
 
   const activePath = value ? value.split('.') : [];
   const activeLeafId = value;

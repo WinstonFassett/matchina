@@ -2,212 +2,75 @@
 title: Promise Machines
 description: Handle asynchronous operations with type-safe promise state machines
 ---
-import { Code } from "@astrojs/starlight/components";
 
-import code from "@code/examples/usage-promise-machine-hooks.ts?raw";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import PromiseMachineDiagram from "@components/PromiseMachineDiagram.astro";
+import ExampleEmbed from "@components/ExampleEmbed.astro";
+import ExampleCode from "@components/ExampleCode.astro";
 
-## What are Promise Machines?
+A **promise machine** wraps an async function and tracks its lifecycle as four discrete states. You get loading / success / error states for free — no flags to juggle, no stale data on the next request, full type inference on the result and error.
 
-Promise Machines provide a type-safe way to manage asynchronous operations with state machines. They automatically track the lifecycle of promises, handling success and error cases with appropriate typing.
+## The four states
 
-<PromiseMachineDiagram />
+Every promise machine starts in `Idle` and moves through this graph:
 
-## Promise Machine States
+- **Idle** — before you call `execute`
+- **Pending** — call in flight; state carries the `promise` and the `params` you called it with
+- **Resolved** — call succeeded; state carries `result`
+- **Rejected** — call failed; state carries `error`
 
-Promise machines have four built-in states:
+Calling `execute` again returns the machine to `Pending` and the cycle repeats.
 
-1. **Idle** - The initial state before the promise is executed
-2. **Pending** - The promise is in flight (contains `promise` and `params`)
-3. **Resolved** - The promise completed successfully (contains `result`)
-4. **Rejected** - The promise failed (contains `error`)
+## Creating one
 
-## Creating a Promise Machine
-
-Create a promise machine by wrapping any async function:
+Pass any async function. The return type and parameter types propagate everywhere — `state.data` on `Resolved` is typed, `params` on `Pending` is typed.
 
 ```ts
-const promiseToAdd = (a: number, b: number) =>
-  new Promise<number>((resolve) => setTimeout(() => resolve(a + b), 500));
-const adder = createPromiseMachine(promiseToAdd);
-```
+import { createPromiseMachine } from "matchina";
 
-## Using Promise Machines
-
-### 1. Executing the Promise
-
-Call the `execute` method with parameters and await the result:
-
-```ts
-// Trigger addition and await result
-await adder.execute(2, 3);
-
-// Alternative: Await promise from state (if currently pending)
-const state = adder.getState();
-if (state.is("Pending")) await state.data.promise;
-```
-
-### 2. Checking State
-
-Access the current state with type-safe properties:
-
-```ts
-const state = adder.getState();
-
-// Pattern match on state for messaging
-const message = adder.getState().match({
-  Idle: () => "Ready to add.",
-  Pending: (params) => `Adding: ${params}`,
-  Resolved: (result) => `Result: ${result}`,
-  Rejected: (error) => `Error: ${error}`,
+const fetcher = createPromiseMachine(async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
 });
 ```
 
-{/* ### 3. Pattern Matching
+## Driving it
 
-Use pattern matching for exhaustive state handling:
+```ts
+// Kick off the call
+await fetcher.execute("/api/user");
 
-````ts
-const ui = fetcher.getState().match({
-  Idle: () => "Ready to fetch data",
-  Pending: ({params}) => `Loading data from ${params[0]}...`,
-  Resolved: (data) => `Data loaded: ${JSON.stringify(data)}`,
-  Rejected: (error) => `Error: ${error.message}`
+// Or fire-and-forget — read state later
+fetcher.execute("/api/user");
+
+// Pattern-match the current state
+const view = fetcher.getState().match({
+  Idle: () => "Click load to fetch",
+  Pending: ({ params }) => `Loading ${params[0]}…`,
+  Resolved: (data) => `Got: ${JSON.stringify(data)}`,
+  Rejected: (error) => `Failed: ${error.message}`,
 });
-``` */}
+```
 
-{/* ## Adding Lifecycle Hooks
+`match` is exhaustive — TypeScript will complain if you miss a state, and the value in each branch is narrowed to that state's data.
 
-Promise machines support all standard lifecycle hooks:
+## Interactive Example
 
-```ts
-import {
-  createPromiseMachine,
-  setup,
-  effect,
-  guard,
-  enter,
-  leave
-} from "matchina";
+A simple fetcher hitting a public API. Click **Fetch** to walk it through `Idle → Pending → Resolved`. The graph on the left highlights the current state in real time.
 
-// Create a promise machine
-const adder = createPromiseMachine(
-  (a: number, b: number) => new Promise<number>(
-    resolve => setTimeout(() => resolve(a + b), 500)
-  )
-);
+<ExampleEmbed id="promise-machine-fetcher" previewOnly />
 
-// Add lifecycle hooks
-setup(adder)(
-  // Guard to validate parameters
-  guard(ev => {
-    if (ev.type !== "executing") return true;
-    const [a, b] = ev.params[1];
-    return a >= 0 && b >= 0; // Only allow non-negative numbers
-  }),
+<ExampleCode id="promise-machine-fetcher" file="machine.ts" />
 
-  // Log when entering pending state
-  enter(ev => {
-    if (ev.to.is("Pending")) {
-      console.log("Started calculation:", ev.to.data.params);
-    }
-  }),
+## When you need more
 
-  // Log when leaving pending state
-  leave(ev => {
-    if (ev.from.is("Pending")) {
-      console.log("Leaving pending state");
-    }
-  }),
+The basic shape covers most cases. For production data fetching you usually want cancellation, retries, and timeouts on top. The advanced fetcher shows one way to layer those without losing type safety:
 
-  // Log when promise resolves
-  effect(ev => {
-    if (ev.type === "resolve") {
-      console.log("Promise resolved with:", ev.to.data);
-    }
-  })
-);
-``` */}
+<ExampleEmbed id="fetcher-advanced" />
 
-{/* ## Complete Example
+It uses the same `createPromiseMachine` underneath plus lifecycle hooks to manage `AbortController`s and a retry counter. Read the source to see the composition pattern — it's not magic, just a few well-placed `effect` calls.
 
-Here's a complete example with hooks and error handling:
+## Next steps
 
-<Code lang={"js"} code={code} /> */}
-{/*
-## Real-world Data Fetching Example
-
-Here's a more practical example of a type-safe data fetching machine:
-
-```ts
-import { createPromiseMachine, setup, effect } from "matchina";
-
-// Define User type
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-// Create a typed fetcher
-const userFetcher = createPromiseMachine(
-  async (userId: string): Promise<User> => {
-    const response = await fetch(`/reference/users/${userId}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user: ${response.statusText}`);
-    }
-    return response.json();
-  }
-);
-
-// Add hooks
-setup(userFetcher)(
-  // Cache user data
-  effect(ev => {
-    if (ev.type === "resolve") {
-      // TypeScript knows ev.to.data is User
-      localStorage.setItem(`user-${ev.to.data.id}`, JSON.stringify(ev.to.data));
-    }
-  })
-);
-
-// Usage in a React component
-function UserProfile({ userId }: { userId: string }) {
-  const [state, setState] = useState(userFetcher.getState());
-
-  useEffect(() => {
-    // Subscribe to state changes
-    const unsubscribe = userFetcher.subscribe(setState);
-
-    // Load user if not already loading or loaded
-    if (state.is("Idle")) {
-      userFetcher.execute(userId);
-    }
-
-    return unsubscribe;
-  }, [userId]);
-
-  // Render based on state
-  return state.match({
-    Idle: () => <div>Ready to load user</div>,
-    Pending: () => <div>Loading user...</div>,
-    Resolved: (user) => (
-      <div>
-        <h1>{user.name}</h1>
-        <p>Email: {user.email}</p>
-      </div>
-    ),
-    Rejected: (error) => <div>Error: {error.message}</div>
-  });
-}
-``` */}
-
-## Next Steps
-
-Now that you understand Promise Machines, explore these related guides:
-
-- [Lifecycle & Hooks](/matchina/lifecycle/) - Add more advanced hooks for state changes
-- [Factory Machines](/matchina/machines/) - Create regular state machines
-- [React Integration](/matchina/react/) - Use promise machines in React
-````
+- [Lifecycle & Hooks](/matchina/guides/lifecycle/) — react to state transitions
+- [React Integration](/matchina/guides/react/) — `useMachine` and rendering patterns
+- [State Machines](/matchina/guides/state-machines/) — when you need richer than four states

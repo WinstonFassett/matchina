@@ -3,12 +3,17 @@ import CodeBlock from "./CodeBlock.astro";
 import MachineDiagram from "./MachineDiagram.astro";
 import { HeroFetcherDiagram } from "./HeroFetcherDiagram";
 import { createLandingFetcherMachine } from "@code/examples/landing-fetcher/machine";
+import { runElkLayout } from "@matchina/viz-svg";
 import { getExample } from "../examples";
 
 const id = "landing-fetcher";
 const meta = getExample(id);
 const sourceFiles = meta ? await meta.getSourceFiles() : [];
 const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? "";
+
+const _heroMachine = createLandingFetcherMachine();
+const _heroShape = (_heroMachine as any).shape?.getState();
+const heroLayout = await runElkLayout(_heroShape, { direction: "DOWN" });
 ---
 
 <div id="hero-card" class="not-content mt-5 grid grid-cols-1 border border-border bg-card lg:grid-cols-2">
@@ -21,7 +26,7 @@ const machineSource = sourceFiles.find((f) => f.name === "machine.ts")?.code ?? 
       <div class="hero-ssr-svg absolute inset-0">
         <MachineDiagram machine={createLandingFetcherMachine} options={{ direction: "DOWN" }} />
       </div>
-      <HeroFetcherDiagram client:load />
+      <HeroFetcherDiagram client:load precomputedLayout={heroLayout} />
     </div>
   </div>
 

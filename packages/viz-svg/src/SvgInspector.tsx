@@ -258,14 +258,19 @@ function EdgeShape({ edge, isOutgoing, onFire, labelT = 0.5 }: {
 }
 
 const ctrlBtn: React.CSSProperties = {
-  background: V.ctrlBg,
-  border: `1px solid ${V.ctrlBorder}`,
+  background: 'transparent',
+  border: 'none',
   color: V.ctrlText,
-  padding: '5px 11px',
-  borderRadius: 6,
+  width: 24,
+  height: 24,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
-  fontSize: 11,
+  fontSize: 12,
+  lineHeight: 1,
   cursor: 'pointer',
+  padding: 0,
 };
 
 export interface SvgInspectorProps {
@@ -274,9 +279,14 @@ export interface SvgInspectorProps {
   onFire?: (event: string) => void;
   options?: ElkLayoutOptions;
   interactive?: boolean;
+  /**
+   * Pre-computed layout (e.g. from runElkLayout in an Astro frontmatter, serialized to JSON).
+   * When supplied, the inspector renders synchronously from this layout — no "computing layout…"
+   * placeholder on first paint. ELK still re-runs in the background when `options` changes after mount.
+   */
+  precomputedLayout?: SvgLayout;
 }
 
-const FIT_PADDING = 32;
 const MAX_FIT_ZOOM = 1.0;
 
 function computeFit(
@@ -285,8 +295,8 @@ function computeFit(
   containerW: number,
   containerH: number,
 ): { zoom: number; pan: { x: number; y: number } } {
-  const scaleX = (containerW - FIT_PADDING * 2) / contentW;
-  const scaleY = (containerH - FIT_PADDING * 2) / contentH;
+  const scaleX = containerW / contentW;
+  const scaleY = containerH / contentH;
   const zoom = Math.min(scaleX, scaleY, MAX_FIT_ZOOM);
   const pan = {
     x: (containerW - contentW * zoom) / 2,
@@ -301,18 +311,38 @@ export const SvgInspector = React.memo(function SvgInspector({
   onFire,
   options,
   interactive = true,
+  precomputedLayout,
 }: SvgInspectorProps) {
-  const [layout, setLayout] = useState<SvgLayout | null>(null);
+  const [layout, setLayout] = useState<SvgLayout | null>(precomputedLayout ?? null);
   const [pan, setPan] = useState({ x: 20, y: 20 });
   const [zoom, setZoom] = useState(1);
+  // `interacted` flips true on the first wheel/drag/fit. Until then we render via
+  // SVG's native viewBox so the diagram is centered and scaled to fit without any
+  // JS-driven post-mount fit — making the SSR'd initial frame correct on first paint.
+  const [interacted, setInteracted] = useState(false);
   const dragRef = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Stable options key — re-layout only when options actually change
   const optionsKey = JSON.stringify(options ?? {});
+  const initialOptionsKey = useRef(optionsKey);
+  const initialShapeRef = useRef(shape);
 
   useEffect(() => {
-    runElkLayout(shape, options ?? {}).then(setLayout).catch(console.error);
+    // Skip the initial ELK run when we already have a precomputed layout for the same inputs.
+    if (
+      precomputedLayout &&
+      shape === initialShapeRef.current &&
+      optionsKey === initialOptionsKey.current
+    ) {
+      return;
+    }
+    runElkLayout(shape, options ?? {}).then((l) => {
+      setLayout(l);
+      // When layout changes after the user has already started interacting,
+      // re-fit so the new graph isn't off-screen.
+      if (interacted) fitToContainer(l);
+    }).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shape, optionsKey]);
 
@@ -324,11 +354,28 @@ export const SvgInspector = React.memo(function SvgInspector({
     setPan(p);
   }
 
-  // Auto-fit whenever a new layout arrives
-  useEffect(() => {
-    if (layout) fitToContainer(layout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout]);
+  /**
+   * Compute the effective pan+zoom that the pre-interaction viewBox is currently producing,
+   * then seed state with those values and flip into imperative-transform mode. This
+   * keeps the diagram visually identical across the viewBox→transform handoff: same
+   * scale, same center. The MAX_FIT_ZOOM cap matches the viewBox path below, which
+   * expands the viewBox to container dimensions when content is smaller than the
+   * container so small diagrams render at 1x rather than ballooning to fill.
+   */
+  function leaveViewBoxMode(l: SvgLayout) {
+    const el = containerRef.current;
+    if (!el) { setInteracted(true); return; }
+    const scaleX = el.clientWidth / l.width;
+    const scaleY = el.clientHeight / l.height;
+    const z = Math.min(scaleX, scaleY, MAX_FIT_ZOOM);
+    const p = {
+      x: (el.clientWidth - l.width * z) / 2,
+      y: (el.clientHeight - l.height * z) / 2,
+    };
+    setZoom(z);
+    setPan(p);
+    setInteracted(true);
+  }
 
   // Derive active paths from the current state value (dot-separated fullKey)
   const activePath = useMemo(() => (value ? value.split('.') : []), [value]);
@@ -357,11 +404,13 @@ export const SvgInspector = React.memo(function SvgInspector({
 
   function onWheel(e: React.WheelEvent) {
     e.preventDefault();
+    if (!interacted && layout) leaveViewBoxMode(layout);
     setZoom(z => Math.min(2.5, Math.max(0.3, z * (e.deltaY > 0 ? 0.92 : 1.08))));
   }
 
   function onMouseDown(e: React.MouseEvent) {
     if (e.button !== 0) return;
+    if (!interacted && layout) leaveViewBoxMode(layout);
     dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
   }
   function onMouseMove(e: React.MouseEvent) {
@@ -420,6 +469,14 @@ export const SvgInspector = React.memo(function SvgInspector({
         cursor: 'grab',
         background: V.bg,
         backgroundImage: `radial-gradient(ellipse 80% 60% at 70% 0%, color-mix(in srgb, ${V.accent} 5%, transparent), transparent 60%)`,
+        // Pre-interaction we let the SVG act as a flex item so its maxWidth/maxHeight
+        // (set to content dimensions) caps it at 1x and centers it. Post-interaction
+        // the inner <g transform> controls placement, so we revert to block layout.
+        ...(!interacted && {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }),
       }}
       onWheel={onWheel}
       onMouseDown={onMouseDown}
@@ -428,8 +485,24 @@ export const SvgInspector = React.memo(function SvgInspector({
       onMouseLeave={onMouseUp}
     >
       <svg
-        width="100%" height="100%"
-        style={{ display: 'block' }}
+        {...(interacted && { width: '100%', height: '100%' })}
+        style={{
+          display: 'block',
+          // Pre-interaction: cap intrinsic size at the content's natural dimensions so
+          // small diagrams sit at 1x (centered by the parent flex container) instead of
+          // ballooning to fill via viewBox. Larger diagrams still shrink to fit via the
+          // viewBox + `meet` because we still allow width/height to expand to 100%.
+          ...(!interacted && {
+            width: '100%',
+            height: '100%',
+            maxWidth: width,
+            maxHeight: height,
+          }),
+        }}
+        {...(!interacted && {
+          viewBox: `0 0 ${width} ${height}`,
+          preserveAspectRatio: 'xMidYMid meet',
+        })}
       >
         <defs>
           <marker id="matchina-svg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -440,7 +513,7 @@ export const SvgInspector = React.memo(function SvgInspector({
           </marker>
         </defs>
 
-        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+        <g transform={interacted ? `translate(${pan.x}, ${pan.y}) scale(${zoom})` : undefined}>
           {/* Compound containers rendered first (lowest z) */}
           {compounds.map(node => (
             <NodeShape
@@ -499,21 +572,36 @@ export const SvgInspector = React.memo(function SvgInspector({
 
       <div style={{
         position: 'absolute', bottom: 14, right: 14,
-        display: 'flex', gap: 4,
+        display: 'flex', flexDirection: 'column',
         background: V.ctrlBg,
         border: `1px solid ${V.ctrlBorder}`,
-        padding: 4, borderRadius: 8,
+        borderRadius: 'var(--matchina-viz-radius, 2px)',
+        overflow: 'hidden',
       }}>
-        <button onClick={() => layout && fitToContainer(layout)} style={ctrlBtn}>Fit</button>
-        <button onClick={() => setZoom(z => Math.min(2.5, z * 1.15))} style={ctrlBtn}>+</button>
-        <button onClick={() => setZoom(z => Math.max(0.3, z * 0.87))} style={ctrlBtn}>−</button>
-        <span style={{
-          fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
-          color: V.ctrlText,
-          padding: '0 6px', fontSize: 11, lineHeight: '28px',
-        }}>
-          {Math.round(zoom * 100)}%
-        </span>
+        <button
+          aria-label="Zoom in"
+          title="Zoom in"
+          onClick={() => {
+            if (!interacted && layout) leaveViewBoxMode(layout);
+            setZoom(z => Math.min(2.5, z * 1.15));
+          }}
+          style={ctrlBtn}
+        >+</button>
+        <button
+          aria-label="Zoom out"
+          title="Zoom out"
+          onClick={() => {
+            if (!interacted && layout) leaveViewBoxMode(layout);
+            setZoom(z => Math.max(0.3, z * 0.87));
+          }}
+          style={{ ...ctrlBtn, borderTop: `1px solid ${V.ctrlBorder}` }}
+        >−</button>
+        <button
+          aria-label="Fit view"
+          title="Fit view"
+          onClick={() => layout && leaveViewBoxMode(layout)}
+          style={{ ...ctrlBtn, borderTop: `1px solid ${V.ctrlBorder}` }}
+        >⛶</button>
       </div>
     </div>
   );

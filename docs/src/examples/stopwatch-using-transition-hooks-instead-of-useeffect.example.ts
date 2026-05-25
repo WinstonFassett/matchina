@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createStopwatch } from "../code/examples/stopwatch-using-react-state-using-transitionhooks/machine";
+import { Stopwatch } from "../code/examples/stopwatch-using-react-state-using-transitionhooks/index";
 import machineRaw from "../code/examples/stopwatch-using-react-state-using-transitionhooks/machine.ts?raw";
 import viewRaw from "../code/examples/stopwatch-using-react-state-using-transitionhooks/StopwatchView.tsx?raw";
 import useStopwatchRaw from "../code/examples/stopwatch-using-react-state-using-transitionhooks/useStopwatch.ts?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   tags: ["transition-hooks", "react-state"],
   order: 8,
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/stopwatch-using-react-state-using-transitionhooks/machine").then((m) => ({ default: m.createStopwatch })),
-  getAppView: () => import("../code/examples/stopwatch-using-react-state-using-transitionhooks/index").then((m) => ({ default: m.Stopwatch })),
+  machineFactory: createStopwatch,
+  AppView: Stopwatch,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "useStopwatch.ts", code: useStopwatchRaw },

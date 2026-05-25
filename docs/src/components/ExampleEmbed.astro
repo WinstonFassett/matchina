@@ -2,17 +2,45 @@
 import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
 import { ExamplePreview } from "./ExamplePreview";
 import { getExample } from "../examples";
+import { runElkLayout, type SvgLayout } from "@matchina/viz-svg";
 
 interface Props {
   id: string;
   /** Link to the full standalone viewer */
   viewerLink?: boolean;
+  /**
+   * Hide the Preview/Code tab bar and render only the preview.
+   * Use when the article narrates code separately via <ExampleCode>,
+   * so the same source isn't shown twice.
+   */
+  previewOnly?: boolean;
 }
 
-const { id, viewerLink = true } = Astro.props;
+const { id, viewerLink = true, previewOnly = false } = Astro.props as Props;
 
 const meta = getExample(id);
 const sourceFiles = meta ? await meta.getSourceFiles() : [];
+
+// Compute the SVG layout at build time so the React tree can SSR the diagram
+// — no skeleton flash, no "computing layout…" placeholder on first paint.
+// Keep options in sync with MachineVisualizer's defaults (direction: DOWN, etc.)
+// so the post-mount effect doesn't trigger a re-layout with different params.
+let precomputedLayout: SvgLayout | undefined;
+if (meta && meta.kind !== "store") {
+  try {
+    const m = meta.machineFactory();
+    const shape = (m as any).shape?.getState?.();
+    if (shape) {
+      precomputedLayout = await runElkLayout(shape, {
+        direction: "DOWN",
+        nodeSpacing: 40,
+        layerSpacing: 60,
+      });
+    }
+  } catch (err) {
+    console.warn(`[ExampleEmbed] precompute layout failed for "${id}":`, err);
+  }
+}
 
 function getLang(filename: string): string {
   const ext = filename.split(".").pop();
@@ -24,6 +52,9 @@ function getLang(filename: string): string {
     default: return "plaintext";
   }
 }
+
+// Per-instance unique id so multiple embeds on a page don't share radio groups.
+const uid = `embed-${id}-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 {!meta && (
@@ -31,46 +62,76 @@ function getLang(filename: string): string {
 )}
 
 {meta && (
-  <div class="example-embed not-content">
-    <div class="example-embed-tabs-bar" role="tablist">
-      {viewerLink && (
+  <div class="example-embed not-content" data-preview-only={previewOnly ? "" : undefined}>
+    {!previewOnly && (
+      <>
+        {/* No-JS progressive tabs: radio inputs drive panel visibility via :has(input:checked) */}
+        <input type="radio" name={uid} id={`${uid}-preview`} class="example-embed-radio" checked />
+        <input type="radio" name={uid} id={`${uid}-code`} class="example-embed-radio" />
+
+        <div class="example-embed-tabs-bar" role="tablist">
+          {viewerLink && (
+            <a
+              href={`/matchina/examples/${id}`}
+              class="example-embed-viewer-link"
+              title="Open in standalone viewer"
+            >
+              open in viewer →
+            </a>
+          )}
+          <label
+            for={`${uid}-preview`}
+            class="example-embed-tab"
+            data-tab="preview"
+            role="tab"
+            style="margin-left: auto"
+          >
+            Preview
+          </label>
+          <label
+            for={`${uid}-code`}
+            class="example-embed-tab"
+            data-tab="code"
+            role="tab"
+          >
+            Code
+          </label>
+        </div>
+      </>
+    )}
+    {previewOnly && viewerLink && (
+      <div class="example-embed-tabs-bar" role="tablist">
         <a
           href={`/matchina/examples/${id}`}
           class="example-embed-viewer-link"
           title="Open in standalone viewer"
+          style="margin-left: auto"
         >
           open in viewer →
         </a>
-      )}
-      <button class="example-embed-tab is-active" role="tab" aria-selected="true" data-tab="preview" style="margin-left: auto">Preview</button>
-      <button class="example-embed-tab" role="tab" aria-selected="false" data-tab="code">Code</button>
-    </div>
-
-    <div class="example-embed-panel" id={`embed-preview-${id}`}>
-      <div class="skeleton" aria-hidden="true">
-        <div class="skeleton-picker-row"></div>
-        <div class="skeleton-body">
-          <div class="skeleton-pane"></div>
-          {meta.getAppView && <div class="skeleton-pane"></div>}
-        </div>
       </div>
-      <ExamplePreview id={id} client:only="react" />
+    )}
+
+    <div class="example-embed-panel example-embed-panel--preview" data-panel="preview">
+      <ExamplePreview id={id} precomputedLayout={precomputedLayout} client:load />
     </div>
 
-    <div class="example-embed-panel is-hidden" id={`embed-code-${id}`}>
-      {sourceFiles.length === 1 && (
-        <Code code={sourceFiles[0].code} lang={getLang(sourceFiles[0].name)} />
-      )}
-      {sourceFiles.length > 1 && (
-        <Tabs>
-          {sourceFiles.map((f) => (
-            <TabItem label={f.name}>
-              <Code code={f.code} lang={getLang(f.name)} />
-            </TabItem>
-          ))}
-        </Tabs>
-      )}
-    </div>
+    {!previewOnly && (
+      <div class="example-embed-panel example-embed-panel--code" data-panel="code">
+        {sourceFiles.length === 1 && (
+          <Code code={sourceFiles[0].code} lang={getLang(sourceFiles[0].name)} />
+        )}
+        {sourceFiles.length > 1 && (
+          <Tabs>
+            {sourceFiles.map((f) => (
+              <TabItem label={f.name}>
+                <Code code={f.code} lang={getLang(f.name)} />
+              </TabItem>
+            ))}
+          </Tabs>
+        )}
+      </div>
+    )}
   </div>
 )}
 
@@ -78,6 +139,15 @@ function getLang(filename: string): string {
   .example-embed {
     border: 1px solid hsl(var(--border));
     margin: 1.5rem 0;
+  }
+
+  /* Hide the radio inputs that drive tab state */
+  .example-embed-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .example-embed-tabs-bar {
@@ -102,11 +172,22 @@ function getLang(filename: string): string {
     margin-bottom: -1px;
     transition: color 0.15s, border-color 0.15s;
     text-transform: uppercase;
+    user-select: none;
   }
   .example-embed-tab:hover { color: hsl(var(--foreground)); }
-  .example-embed-tab.is-active {
+
+  /* Active tab styling via :has() — only matches when the corresponding radio is checked */
+  .example-embed:has(.example-embed-radio:nth-of-type(1):checked) [data-tab="preview"],
+  .example-embed:has(.example-embed-radio:nth-of-type(2):checked) [data-tab="code"] {
     color: hsl(var(--foreground));
     border-bottom-color: hsl(var(--foreground));
+  }
+
+  /* Focus ring for keyboard navigation */
+  .example-embed:has(.example-embed-radio:nth-of-type(1):focus-visible) [data-tab="preview"],
+  .example-embed:has(.example-embed-radio:nth-of-type(2):focus-visible) [data-tab="code"] {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   .example-embed-viewer-link {
@@ -122,62 +203,15 @@ function getLang(filename: string): string {
 
   .example-embed-panel {
     padding: 1.25rem;
-    display: flex;
+    display: none;
     flex-direction: column;
     height: 500px;
     overflow: auto;
   }
-  .example-embed-panel.is-hidden { display: none; }
-
-  /* Skeleton — static, matches MachineVisualizer layout, hidden once React mounts */
-  .skeleton {
+  /* Show the panel whose radio is checked. preview-only embeds (no radios) fall back to showing preview. */
+  .example-embed:has(.example-embed-radio:nth-of-type(1):checked) [data-panel="preview"],
+  .example-embed:has(.example-embed-radio:nth-of-type(2):checked) [data-panel="code"],
+  .example-embed[data-preview-only] [data-panel="preview"] {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.25rem;
-  }
-  .example-embed-panel[data-loaded] .skeleton { display: none; }
-
-  .skeleton-picker-row {
-    height: 44px;
-    border-radius: 6px;
-    background: var(--muted);
-    animation: sk-pulse 1.6s ease-in-out infinite;
-  }
-  .skeleton-body {
-    display: flex;
-    gap: 1rem;
-    height: 400px;
-  }
-  .skeleton-pane {
-    flex: 1;
-    border-radius: 6px;
-    background: var(--muted);
-    animation: sk-pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes sk-pulse {
-    0%, 100% { opacity: 0.45; }
-    50% { opacity: 0.9; }
   }
 </style>
-
-<script>
-  document.querySelectorAll<HTMLElement>('.example-embed').forEach((embed) => {
-    const tabs = embed.querySelectorAll<HTMLButtonElement>('.example-embed-tab');
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        tabs.forEach((t) => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
-        tab.classList.add('is-active');
-        tab.setAttribute('aria-selected', 'true');
-        const target = tab.dataset.tab;
-        embed.querySelectorAll<HTMLElement>('.example-embed-panel').forEach((panel) => {
-          const isPreview = panel.id.startsWith('embed-preview-');
-          const isCode = panel.id.startsWith('embed-code-');
-          panel.classList.toggle('is-hidden',
-            (target === 'preview' && isCode) || (target === 'code' && isPreview)
-          );
-        });
-      });
-    });
-  });
-</script>

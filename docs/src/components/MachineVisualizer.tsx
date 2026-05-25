@@ -8,7 +8,7 @@ import { eventApi } from "matchina";
 import { useMachine } from "matchina/react";
 import { BlockInspector } from "@matchina/viz-react";
 import { HSMReactFlowInspector } from "@matchina/viz-reactflow";
-import { SvgInspector, type ElkLayoutOptions } from "@matchina/viz-svg";
+import { SvgInspector, type ElkLayoutOptions, type SvgLayout } from "@matchina/viz-svg";
 import { useMemo, useState, type ComponentType } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { getActiveStatePath } from "../code/examples/lib/matchina-machine-to-xstate-definition";
@@ -43,7 +43,13 @@ export interface MachineVisualizerProps {
 
   // Additional
   className?: string;
-  
+
+  /** Extra props forwarded to AppView (e.g. onReset for promise machines). */
+  appViewProps?: Record<string, unknown>;
+
+  /** Pre-computed ELK layout (from Astro frontmatter) — enables SSR of the SVG diagram. */
+  precomputedLayout?: SvgLayout;
+
   // Legacy/example props (ignored but accepted for compatibility)
   exampleName?: string;
   preset?: string;
@@ -66,6 +72,8 @@ export function MachineVisualizer({
   title,
   className = "",
   defaultSvgDirection = 'DOWN',
+  appViewProps,
+  precomputedLayout,
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
 
@@ -192,13 +200,14 @@ export function MachineVisualizer({
             interactive,
             svgLayoutOptions,
             showPicker: effectiveShowPicker,
+            precomputedLayout,
           })}
         </div>
 
         {/* App View */}
         <div data-testid="app-container" className={appContainerClasses}>
           {AppView ? (
-            <AppView machine={machine} />
+            <AppView machine={machine} {...(appViewProps ?? {})} />
           ) : (
             <DefaultAppView
               activeStatePath={activeStatePath}
@@ -236,6 +245,7 @@ function renderVisualizer({
   interactive,
   svgLayoutOptions,
   showPicker,
+  precomputedLayout,
 }: {
   type: VisualizerType;
   machine: FactoryMachine<any>;
@@ -245,6 +255,7 @@ function renderVisualizer({
   interactive: boolean;
   svgLayoutOptions: ElkLayoutOptions;
   showPicker: boolean;
+  precomputedLayout?: SvgLayout;
 }) {
   const commonClasses =
     "w-full h-full border border-border overflow-auto";
@@ -279,6 +290,7 @@ function renderVisualizer({
             onFire={(event) => machine.send(event)}
             options={svgLayoutOptions}
             interactive={interactive}
+            precomputedLayout={precomputedLayout}
           />
         </div>
       );

@@ -68,37 +68,26 @@ try {
   }
 }
 
-// Define transition schemas for validation
-const transitions = {
-  start: z.function({ input: z.tuple([z.number()]) }),
-  success: z.function({ input: z.tuple([]) }),
-  error: z.function({ input: z.tuple([z.string()]) }),
-  retry: z.function({ input: z.tuple([]) }),
-};
-
-// Create machine with validated transitions
-const validatedMachine = matchina(
+// Note: wrapping matchina transitions with z.function().implement() is not
+// currently supported — Zod's wrapped function type does not satisfy
+// FactoryMachineTransition. Use matchina's built-in type safety instead,
+// and call Zod validation inside the state factory functions (see zodStates above).
+const _validatedMachine = matchina(
   zodStates,
   {
-    Idle: {
-      start: transitions.start.implement((progress: number) =>
-        zodStates.Loading(progress)
-      ),
-    },
+    Idle: { start: (progress: number) => zodStates.Loading(progress) },
     Loading: {
-      success: transitions.success.implement(() => zodStates.Idle()),
-      error: transitions.error.implement((message: string) => zodStates.Error(message)),
+      success: () => zodStates.Idle(),
+      error: (message: string) => zodStates.Error(message),
     },
-    Error: {
-      retry: transitions.retry.implement(() => zodStates.Idle()),
-    },
+    Error: { retry: () => zodStates.Idle() },
   },
   manualStates.Idle()
 );
 
 // Usage with full type safety and runtime validation:
-validatedMachine.start(0.5); // Valid
-// validatedMachine.start("invalid"); // Runtime error: Expected number, received string
-validatedMachine.error("An error occurred"); // Valid
-validatedMachine.success(); // Valid
-validatedMachine.retry(); // Valid
+_validatedMachine.start(0.5); // Valid
+// _validatedMachine.start("invalid"); // Error: Argument of type 'string' is not assignable to parameter of type 'number'
+_validatedMachine.error("An error occurred"); // Valid
+_validatedMachine.success(); // Valid
+_validatedMachine.retry(); // Valid

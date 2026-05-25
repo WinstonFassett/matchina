@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createRPSMachine } from "../code/examples/rock-paper-scissors/machine";
+import { RPSAppView } from "../code/examples/rock-paper-scissors/RPSAppView";
 import machineRaw from "../code/examples/rock-paper-scissors/machine.ts?raw";
 import statesRaw from "../code/examples/rock-paper-scissors/states.ts?raw";
 import storeRaw from "../code/examples/rock-paper-scissors/store.ts?raw";
@@ -13,8 +15,8 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "game", "store"],
   order: 4,
   docSlug: "learn/examples/rock-paper-scissors",
-  getMachine: () => import("../code/examples/rock-paper-scissors/machine").then((m) => ({ default: m.createRPSMachine })),
-  getAppView: () => import("../code/examples/rock-paper-scissors/RPSAppView").then((m) => ({ default: m.RPSAppView })),
+  machineFactory: createRPSMachine,
+  AppView: RPSAppView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "states.ts", code: statesRaw },

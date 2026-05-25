@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createStopwatchMachine } from "../code/examples/stopwatch-using-external-react-state-and-state-effects/machine";
+import { Stopwatch } from "../code/examples/stopwatch-using-external-react-state-and-state-effects/index";
 import machineRaw from "../code/examples/stopwatch-using-external-react-state-and-state-effects/machine.ts?raw";
 import viewRaw from "../code/examples/stopwatch-using-external-react-state-and-state-effects/StopwatchView.tsx?raw";
 import useStopwatchRaw from "../code/examples/stopwatch-using-external-react-state-and-state-effects/useStopwatch.ts?raw";
@@ -12,8 +14,8 @@ const meta: ExampleMeta = {
   tags: ["state-effects", "react-state"],
   order: 6,
   defaultViz: "reactflow",
-  getMachine: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/machine").then((m) => ({ default: () => m.createStopwatchMachine(0, () => {}) })),
-  getAppView: () => import("../code/examples/stopwatch-using-external-react-state-and-state-effects/index").then((m) => ({ default: m.Stopwatch })),
+  machineFactory: () => createStopwatchMachine(0, () => {}),
+  AppView: Stopwatch,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "useStopwatch.ts", code: useStopwatchRaw },

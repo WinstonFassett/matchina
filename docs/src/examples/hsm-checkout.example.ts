@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createCheckoutMachine } from "../code/examples/hsm-checkout/machine";
+import { CheckoutViewNested } from "../code/examples/hsm-checkout/CheckoutViewNested";
 import machineRaw from "../code/examples/hsm-checkout/machine.ts?raw";
 import flatMachineRaw from "../code/examples/hsm-checkout/machine-flat.ts?raw";
 import nestedViewRaw from "../code/examples/hsm-checkout/CheckoutViewNested.tsx?raw";
@@ -13,8 +15,8 @@ const meta: ExampleMeta = {
   tags: ["hsm", "hierarchical", "multi-step", "submachine"],
   order: 3,
   docSlug: "learn/examples/hsm-checkout",
-  getMachine: () => import("../code/examples/hsm-checkout/machine").then((m) => ({ default: m.createCheckoutMachine })),
-  getAppView: () => import("../code/examples/hsm-checkout/CheckoutViewNested").then((m) => ({ default: m.CheckoutViewNested })),
+  machineFactory: createCheckoutMachine,
+  AppView: CheckoutViewNested,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "machine-flat.ts", code: flatMachineRaw },

@@ -1,10 +1,14 @@
 import { useEffect, useMemo } from "react";
 import { useMachine } from "matchina/react";
-import { SvgInspector } from "@matchina/viz-svg";
+import { SvgInspector, type SvgLayout } from "@matchina/viz-svg";
 import { createLandingFetcherMachine } from "@code/examples/landing-fetcher/machine";
 import { getActiveStatePath } from "@code/examples/lib/matchina-machine-to-xstate-definition";
 
-export function HeroFetcherDiagram() {
+interface Props {
+  precomputedLayout?: SvgLayout;
+}
+
+export function HeroFetcherDiagram({ precomputedLayout }: Props) {
   const machine = useMemo(createLandingFetcherMachine, []);
   useMachine(machine);
   useEffect(() => {
@@ -22,6 +26,7 @@ export function HeroFetcherDiagram() {
       value={value}
       onFire={(event) => (machine as any).send(event)}
       options={{ direction: "DOWN" }}
+      precomputedLayout={precomputedLayout}
       interactive
     />
   );

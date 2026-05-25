@@ -1,4 +1,6 @@
 import type { ExampleMeta } from "./types";
+import { createCheckoutMachine } from "../code/examples/checkout/machine";
+import { CheckoutView } from "../code/examples/checkout/CheckoutView";
 import machineRaw from "../code/examples/checkout/machine.ts?raw";
 import statesRaw from "../code/examples/checkout/states.ts?raw";
 import typesRaw from "../code/examples/checkout/types.ts?raw";
@@ -14,8 +16,8 @@ const meta: ExampleMeta = {
   tags: ["createMachine", "multi-step", "forms"],
   order: 2,
   docSlug: "learn/examples/checkout",
-  getMachine: () => import("../code/examples/checkout/machine").then((m) => ({ default: m.createCheckoutMachine })),
-  getAppView: () => import("../code/examples/checkout/CheckoutView").then((m) => ({ default: m.CheckoutView })),
+  machineFactory: createCheckoutMachine,
+  AppView: CheckoutView,
   getSourceFiles: async () => [
     { name: "machine.ts", code: machineRaw },
     { name: "states.ts", code: statesRaw },

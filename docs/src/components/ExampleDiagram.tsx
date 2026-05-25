@@ -1,29 +1,26 @@
 import { getExample } from "../examples";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { FactoryMachine } from "matchina";
 import { MachineVisualizer } from "./MachineVisualizer";
 import type { VisualizerType } from "./VizPicker";
+import type { SvgLayout } from "@matchina/viz-svg";
 
 interface Props {
   id: string;
   viz?: VisualizerType;
   interactive?: boolean;
+  precomputedLayout?: SvgLayout;
 }
 
-export function ExampleDiagram({ id, viz = "reactflow", interactive = false }: Props) {
+export function ExampleDiagram({ id, viz = "reactflow", interactive = false, precomputedLayout }: Props) {
   const meta = getExample(id);
-  const [machine, setMachine] = useState<FactoryMachine<any> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const machine = useMemo(
+    () => (meta ? (meta.machineFactory() as FactoryMachine<any>) : null),
+    [meta]
+  );
 
-  useEffect(() => {
-    if (!meta) { setError(`Example "${id}" not found`); return; }
-    meta.getMachine()
-      .then((mod) => setMachine(mod.default()))
-      .catch((e) => setError(String(e)));
-  }, [id, meta]);
-
-  if (error) return <div className="p-4 text-red-500 font-mono text-sm">{error}</div>;
-  if (!machine) return <div className="p-4 text-muted-foreground font-mono text-sm">Loading…</div>;
+  if (!meta) return <div className="p-4 text-red-500 font-mono text-sm">Example "{id}" not found</div>;
+  if (!machine) return null;
 
   return (
     <MachineVisualizer
@@ -33,6 +30,7 @@ export function ExampleDiagram({ id, viz = "reactflow", interactive = false }: P
       layout="stacked"
       interactive={interactive}
       showRawState={false}
+      precomputedLayout={precomputedLayout}
     />
   );
 }
