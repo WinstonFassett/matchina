@@ -23,18 +23,13 @@ A **Store Machine** is a lightweight, event-driven store for managing a single v
 
 ## Creating a Store Machine
 
-```ts
-import { createStoreMachine } from "matchina";
-
-const counter = createStoreMachine(0, {
-  increment: (amt = 1) => (change) => change.from + amt,
-  decrement: (amt = 1) => (change) => change.from - amt,
-  set: (value: number) => value,
-  reset: () => 0,
-});
-```
+<ExampleCode id="store-counter" file="store.ts" />
 
 The first argument is the **initial value**, and the second is a record of **actions**.
+
+## Interactive Example
+
+<ExampleEmbed id="store-counter" />
 
 ## Action Types
 
@@ -78,11 +73,9 @@ const value = counter.getState();     // Current value
 const change = counter.getChange();   // Last change event
 ```
 
-## Interactive Example
+## View
 
-<ExampleEmbed id="store-counter" />
-
-<ExampleCode id="store-counter" />
+<ExampleCode id="store-counter" file="StoreCounterView.tsx" />
 
 ## Using with Immer
 

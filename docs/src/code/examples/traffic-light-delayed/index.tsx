@@ -1,18 +1,23 @@
+import { useMachine } from "matchina/react";
+import { useMemo } from "react";
 import { createTrafficLight } from "./machine";
 
-const trafficLight = createTrafficLight();
+type TrafficLightMachine = ReturnType<typeof createTrafficLight>;
 
-export const TrafficLight = () => {
-  const state = trafficLight.getState();
+export const TrafficLight = ({ machine }: { machine?: TrafficLightMachine } = {}) => {
+  const fallback = useMemo(() => createTrafficLight(), []);
+  const light = machine ?? fallback;
+  useMachine(light);
+  const state = light.getState();
   return (
     <button
       title="Click to Change"
-      className={`rounded ${trafficLight.getState().match({
+      className={`rounded px-3 py-2 text-white ${state.match({
         Red: () => "bg-red-500",
         Yellow: () => "bg-yellow-500",
         Green: () => "bg-green-500",
       })}`}
-      onClick={() => trafficLight.next()}
+      onClick={() => light.next()}
     >
       {state.key} {state.data}
     </button>
