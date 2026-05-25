@@ -5,7 +5,9 @@ description: Machine transition lifecycle
 
 # Transition Flow: Lifecycle Hooks
 
-All machine types — [FactoryMachine](/matchina/guides/machines), [StateMachine](/matchina/guides/state-machine-interface), [StoreMachine](/matchina/reference/interfaces/storemachine/) — share the same generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle). The tree below traces a single call through `machine.send(type, ...params)`, optionally entered via a typed [api wrapper](/matchina/guides/machine-enhancers).
+Every machine in matchina runs the same transition pipeline. [FactoryMachine](/matchina/guides/machines), [StateMachine](/matchina/guides/state-machine-interface), and [StoreMachine](/matchina/reference/interfaces/storemachine/) all share one generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle), so once you know the steps for one, you know them for all three.
+
+The table below walks a single call through `machine.send(type, ...params)` from entry to completion. If you're using a typed [api wrapper](/matchina/guides/machine-enhancers), that's where things start; otherwise, step 1 is the first frame.
 
 
 
@@ -35,11 +37,11 @@ All machine types — [FactoryMachine](/matchina/guides/machines), [StateMachine
 
 ### 0. `api[type](...params)` (optional)
 
-A strongly-typed app surface over the machine. Matchina ships factories (see [Machine Enhancers](/matchina/guides/machine-enhancers)) for generating these wrappers — `api.checkout(item)` instead of `send("checkout", item)`. They delegate to `machine.send` and otherwise stay out of the lifecycle. Hooks remain the conventional way to extend a machine; wrapper APIs are an additional extension point when you want one.
+A typed surface over the machine, so your call sites read like `api.checkout(item)` instead of `send("checkout", item)`. Matchina ships factories for generating these wrappers (see [Machine Enhancers](/matchina/guides/machine-enhancers)). They delegate straight to `machine.send` and don't participate in the lifecycle themselves. Hooks are still the usual way to extend a machine; wrappers are there when you want the ergonomics.
 
 ### 1. `send`
 
-Where the event enters the machine. `machine.send(type, ...params)` resolves the change event and starts the transition pipeline.
+This is where the event enters the machine. `machine.send(type, ...params)` resolves the change event, then kicks off the transition pipeline.
 
 ```ts
 send(type, ...params) {
@@ -48,60 +50,66 @@ send(type, ...params) {
 }
 ```
 
-If a generated API method is present (e.g. `api.doSomething(a, b)`), it is the first frame and delegates to `send`.
+If a generated API method like `api.doSomething(a, b)` is present, it sits one frame above and forwards into `send`.
 
 ### 2. `resolveExit`
 
-Resolves the `to` state for the event `{ type, from, to? }` — looks up the transition handler for the current state and event type and returns the resolved `to` state.
+Looks up the transition handler for the current state and event type, then returns the resolved `to` state on the event `{ type, from, to? }`.
 
-- Return `null` or `undefined` to exit before the lifecycle pipeline runs.
+- Return `null` or `undefined` and the pipeline never starts. No hooks run.
 
 ### 3. `transition`
 
-The lifecycle pipeline. Each step below runs in order against the resolved event; `guard`, `handle`, and `before` can each halt propagation.
+The pipeline itself. The steps below run in order against the resolved event. Three of them (`guard`, `handle`, `before`) can short-circuit the rest.
 
 ### 4. `guard`
 
-Is the transition allowed?
+Should this transition be allowed at all?
 
-- If `false`, the pipeline exits.
+- Return `false` and the pipeline exits. Nothing changes.
 
 ### 5. `handle`
 
-First opportunity to process or rewrite the event.
+First place you can inspect or rewrite the event before it commits.
 
-- If returns `undefined`, the pipeline exits.
+- Return `undefined` and the pipeline exits.
 
 ### 6. `before`
 
-Final hook before the state change is applied. Can still rewrite the event.
+Last chance to abort or rewrite the event. After this, the state change is real.
 
-- If returns `undefined`, the pipeline exits.
+- Return `undefined` and the pipeline exits.
 
 ### 7. `update`
 
-Applies the new state.
+Commits the new state. From here on, hooks are observing, not deciding.
 
 ### 8. `effect`
 
-Runs side effects. By default, this calls `leave` then `enter`.
+Runs side effects for the transition. By default this calls `leave` then `enter`.
 
 ### 9. `leave`
 
-Called as the previous state is exited.
+Fires as the previous state is exited. Good place for cleanup tied to the old state.
 
 ### 10. `enter`
 
-Called as the new state is entered.
+Fires as the new state is entered. Good place for setup tied to the new state.
 
 ### 11. `notify`
 
-Notifies subscribers of the change.
+Tells subscribers the transition happened.
 
 ### 12. `after`
 
-Final hook after the transition completes.
+Final hook. The transition is fully done; this is where anything that needs to run "once everything settled" goes.
 
 ## Early exits
 
-`resolveExit` returning no match, `guard` returning `false`, or `handle`/`before` returning `undefined` will stop the flow. No further steps run.
+Three things can stop the flow before `update` runs:
+
+- `resolveExit` finds no matching transition (returns `null` or `undefined`)
+- `guard` returns `false`
+- `handle` or `before` returns `undefined`
+
+When any of those happen, no later steps run and no state change occurs.
