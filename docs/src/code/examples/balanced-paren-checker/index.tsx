@@ -1,8 +1,5 @@
 import { MachineVisualizer } from "@components/MachineVisualizer";
-import { eventApi } from "matchina";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MermaidInspectorWithSettings } from "@matchina/viz-mermaid";
-import { buildVisualizerTree } from "../lib/matchina-machine-to-xstate-definition";
 import { balancedParenthesesChecker } from "./machine";
 
 export function BalancedParenthesesDemo() {
@@ -44,20 +41,13 @@ export function BalancedParentheses() {
     }
   }, [inputDebounced]);
 
-  // With assignEventApi, the machine methods are directly on the object
   const state = checker.getState();
-  const actions = useMemo(() => eventApi(checker, state.key), [checker, state]);
   return (
     <div>
       <textarea value={input} onChange={(ev) => setInput(ev.target.value)} />
       <p>Current State: {state.key}</p>
       {checker.text && <pre>Pending validation:{checker.text}</pre>}
       {state.is("Open") && <pre>Expecting {state.data.pair[1]}</pre>}
-      <MermaidInspectorWithSettings
-        config={buildVisualizerTree(checker)}
-        stateKey={state.key}
-        actions={actions}
-      />
     </div>
   );
 }

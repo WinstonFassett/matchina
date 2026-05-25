@@ -1,11 +1,11 @@
 ---
-import { MermaidInspector } from "@matchina/viz-mermaid";
-import { buildVisualizerTree } from "@code/examples/lib/matchina-machine-to-xstate-definition";
-import { eventApi, createPromiseMachine, delay, type FactoryMachine } from "matchina";
+import MachineDiagram from "@components/MachineDiagram.astro";
+import { createPromiseMachine, delay } from "matchina";
 
-const machine = createPromiseMachine(async (_message: string) => await delay(1000))
-const config = buildVisualizerTree(machine as FactoryMachine<any>)
-const actions = eventApi(machine)
+const make = () =>
+  createPromiseMachine(async (_message: string) => await delay(1000));
 ---
 
-<MermaidInspector shape={config} currentStateKey={machine.getState().key} actions={actions} interactive={true} diagramType="statechart" client:only="react" />
+<div class="h-64 w-full">
+  <MachineDiagram machine={make} />
+</div>

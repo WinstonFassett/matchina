@@ -25,27 +25,10 @@ export const SELECTORS = {
 
 // Visualizer mappings by preset
 export const VISUALIZERS = {
-  hierarchical: [
-    "sketch",
-    "reactflow",
-    "mermaid-statechart",
-    "mermaid-flowchart",
-  ],
-  complex: [
-    "reactflow",
-    "forcegraph",
-    "mermaid-statechart",
-    "mermaid-flowchart",
-    "sketch",
-  ],
-  simple: ["mermaid-statechart", "mermaid-flowchart", "sketch"],
-  minimal: [
-    "reactflow",
-    "forcegraph",
-    "mermaid-statechart",
-    "mermaid-flowchart",
-    "sketch",
-  ],
+  hierarchical: ["sketch", "reactflow", "svg"],
+  complex: ["reactflow", "sketch", "svg"],
+  simple: ["sketch", "svg"],
+  minimal: ["reactflow", "sketch", "svg"],
 } as const;
 
 // Example configurations

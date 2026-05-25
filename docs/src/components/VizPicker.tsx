@@ -3,13 +3,7 @@
  * Provides a dropdown with a flat list of all available visualizer permutations
  */
 
-export type VisualizerType =
-  | "reactflow"
-  | "sketch"
-  | "svg"
-  // | "forcegraph"
-  // | "mermaid-statechart"
-  // | "mermaid-flowchart";
+export type VisualizerType = "reactflow" | "sketch" | "svg";
 
 export interface VisualizerOption {
   value: VisualizerType;
@@ -20,9 +14,6 @@ export const VISUALIZERS: readonly VisualizerOption[] = [
   { value: "reactflow", label: "ReactFlow" },
   { value: "sketch", label: "Blocks" },
   { value: "svg", label: "SVG" },
-  // { value: "forcegraph", label: "ForceGraph (Deprecated)" },
-  // { value: "mermaid-statechart", label: "Mermaid - Statechart" },
-  // { value: "mermaid-flowchart", label: "Mermaid - Flowchart" },
 ] as const;
 
 export interface VizPickerProps {
