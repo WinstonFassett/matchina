@@ -258,14 +258,19 @@ function EdgeShape({ edge, isOutgoing, onFire, labelT = 0.5 }: {
 }
 
 const ctrlBtn: React.CSSProperties = {
-  background: V.ctrlBg,
-  border: `1px solid ${V.ctrlBorder}`,
+  background: 'transparent',
+  border: 'none',
   color: V.ctrlText,
-  padding: '5px 11px',
-  borderRadius: 6,
+  width: 24,
+  height: 24,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
-  fontSize: 11,
+  fontSize: 12,
+  lineHeight: 1,
   cursor: 'pointer',
+  padding: 0,
 };
 
 export interface SvgInspectorProps {
@@ -547,27 +552,36 @@ export const SvgInspector = React.memo(function SvgInspector({
 
       <div style={{
         position: 'absolute', bottom: 14, right: 14,
-        display: 'flex', gap: 4,
+        display: 'flex', flexDirection: 'column',
         background: V.ctrlBg,
         border: `1px solid ${V.ctrlBorder}`,
-        padding: 4, borderRadius: 8,
+        borderRadius: 'var(--radius, 6px)',
+        overflow: 'hidden',
       }}>
-        <button onClick={() => layout && leaveViewBoxMode(layout)} style={ctrlBtn}>Fit</button>
-        <button onClick={() => {
-          if (!interacted && layout) leaveViewBoxMode(layout);
-          setZoom(z => Math.min(2.5, z * 1.15));
-        }} style={ctrlBtn}>+</button>
-        <button onClick={() => {
-          if (!interacted && layout) leaveViewBoxMode(layout);
-          setZoom(z => Math.max(0.3, z * 0.87));
-        }} style={ctrlBtn}>−</button>
-        <span style={{
-          fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
-          color: V.ctrlText,
-          padding: '0 6px', fontSize: 11, lineHeight: '28px',
-        }}>
-          {Math.round(zoom * 100)}%
-        </span>
+        <button
+          aria-label="Zoom in"
+          title="Zoom in"
+          onClick={() => {
+            if (!interacted && layout) leaveViewBoxMode(layout);
+            setZoom(z => Math.min(2.5, z * 1.15));
+          }}
+          style={ctrlBtn}
+        >+</button>
+        <button
+          aria-label="Zoom out"
+          title="Zoom out"
+          onClick={() => {
+            if (!interacted && layout) leaveViewBoxMode(layout);
+            setZoom(z => Math.max(0.3, z * 0.87));
+          }}
+          style={{ ...ctrlBtn, borderTop: `1px solid ${V.ctrlBorder}` }}
+        >−</button>
+        <button
+          aria-label="Fit view"
+          title="Fit view"
+          onClick={() => layout && leaveViewBoxMode(layout)}
+          style={{ ...ctrlBtn, borderTop: `1px solid ${V.ctrlBorder}` }}
+        >⛶</button>
       </div>
     </div>
   );
