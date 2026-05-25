@@ -351,13 +351,24 @@ export const SvgInspector = React.memo(function SvgInspector({
   }
 
   /**
-   * Compute the effective pan+zoom that viewBox would produce, then seed state with
-   * those values and flip into imperative-transform mode. This avoids a visual jump
-   * when the user first interacts: the imperative transform matches what viewBox was
-   * already showing.
+   * Compute the effective pan+zoom that viewBox `xMidYMid meet` is currently producing,
+   * then seed state with those values and flip into imperative-transform mode. This
+   * keeps the diagram visually identical across the viewBox→transform handoff: same
+   * scale, same center. Unlike `fitToContainer`, this uses no padding and no zoom cap,
+   * because viewBox doesn't apply either.
    */
   function leaveViewBoxMode(l: SvgLayout) {
-    fitToContainer(l);
+    const el = containerRef.current;
+    if (!el) { setInteracted(true); return; }
+    const scaleX = el.clientWidth / l.width;
+    const scaleY = el.clientHeight / l.height;
+    const z = Math.min(scaleX, scaleY);
+    const p = {
+      x: (el.clientWidth - l.width * z) / 2,
+      y: (el.clientHeight - l.height * z) / 2,
+    };
+    setZoom(z);
+    setPan(p);
     setInteracted(true);
   }
 
