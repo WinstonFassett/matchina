@@ -45,6 +45,7 @@ test/**/*.webp
 test/**/*.svg
 
 dogfood-screenshots/
+dogfood-output/
 *.png
 *.jpg
 *.jpeg
