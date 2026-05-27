@@ -45,7 +45,7 @@ export function VizPicker({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <label className="text-sm font-medium text-foreground">
+      <label className="hidden sm:inline text-sm font-medium text-foreground">
         Visualizer:
       </label>
       <select

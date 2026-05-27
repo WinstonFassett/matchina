@@ -76,6 +76,7 @@ export function MachineVisualizer({
   precomputedLayout,
 }: MachineVisualizerProps) {
   const [currentViz, setCurrentViz] = useState<VisualizerType>(defaultViz);
+  const [mobileLayoutOpen, setMobileLayoutOpen] = useState(false);
 
   // SVG layout knobs
   const [svgDirection, setSvgDirection] = useState<'RIGHT' | 'DOWN'>(defaultSvgDirection);
@@ -140,22 +141,83 @@ export function MachineVisualizer({
       {/* Controls header */}
       {effectiveShowPicker && (
         <div
-          className="flex flex-wrap items-center gap-3 p-3 bg-muted/40 border border-border shrink-0"
+          className="flex flex-col bg-muted/40 border border-border shrink-0"
           data-testid="visualizer-controls"
         >
-          <VizPicker
-            value={currentViz}
-            onChange={setCurrentViz}
-            availableViz={availableViz}
-          />
-          {currentViz === "svg" && (
-            <div className="flex items-center gap-3 border-l border-border pl-3" data-testid="svg-layout-controls">
+          {/* First row: always a single line at any width */}
+          <div className="flex items-center gap-2 p-2 sm:gap-3 sm:p-3">
+            <VizPicker
+              value={currentViz}
+              onChange={setCurrentViz}
+              availableViz={availableViz}
+            />
+            {currentViz === "svg" && (
+              /* Mobile-only disclosure toggle. Hidden ≥sm because the inner row is always visible there. */
+              <button
+                type="button"
+                onClick={() => setMobileLayoutOpen(v => !v)}
+                aria-expanded={mobileLayoutOpen}
+                aria-controls="svg-layout-controls-mobile"
+                className="sm:hidden ml-auto px-2 py-1 text-sm font-medium text-foreground border border-border bg-background min-h-11 flex items-center gap-1 whitespace-nowrap"
+              >
+                Layout
+                <span aria-hidden="true" className={`text-xs opacity-60 transition-transform ${mobileLayoutOpen ? 'rotate-180' : ''}`}>▾</span>
+              </button>
+            )}
+            {currentViz === "svg" && (
+              /* Desktop layout controls: always visible ≥sm, hidden on mobile */
+              <div
+                data-testid="svg-layout-controls"
+                className="hidden sm:flex flex-wrap items-center gap-3 border-l border-border pl-3"
+              >
+                <label className="text-sm font-medium text-foreground">Direction:</label>
+                <select
+                  value={svgDirection}
+                  onChange={(e) => setSvgDirection(e.target.value as 'RIGHT' | 'DOWN')}
+                  className="px-2 py-1 text-sm border border-border bg-background text-foreground min-h-9"
+                  data-testid="svg-direction"
+                >
+                  <option value="RIGHT">Right</option>
+                  <option value="DOWN">Down</option>
+                </select>
+                <label className="text-sm font-medium text-foreground">Node gap:</label>
+                <input
+                  type="number"
+                  min={10}
+                  max={200}
+                  step={10}
+                  value={svgNodeSpacing}
+                  onChange={(e) => setSvgNodeSpacing(Number(e.target.value))}
+                  className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground min-h-9"
+                  data-testid="svg-node-spacing"
+                />
+                <label className="text-sm font-medium text-foreground">Layer gap:</label>
+                <input
+                  type="number"
+                  min={10}
+                  max={300}
+                  step={10}
+                  value={svgLayerSpacing}
+                  onChange={(e) => setSvgLayerSpacing(Number(e.target.value))}
+                  className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground min-h-9"
+                  data-testid="svg-layer-spacing"
+                />
+              </div>
+            )}
+          </div>
+          {/* Mobile layout disclosure panel — expands below first row when open */}
+          {currentViz === "svg" && mobileLayoutOpen && (
+            <div
+              id="svg-layout-controls-mobile"
+              data-testid="svg-layout-controls-mobile"
+              className="sm:hidden flex flex-wrap items-center gap-2 px-2 pb-2 border-t border-border pt-2"
+            >
               <label className="text-sm font-medium text-foreground">Direction:</label>
               <select
                 value={svgDirection}
                 onChange={(e) => setSvgDirection(e.target.value as 'RIGHT' | 'DOWN')}
-                className="px-2 py-1 text-sm border border-border bg-background text-foreground"
-                data-testid="svg-direction"
+                className="px-2 py-1 text-sm border border-border bg-background text-foreground min-h-11"
+                data-testid="svg-direction-mobile"
               >
                 <option value="RIGHT">Right</option>
                 <option value="DOWN">Down</option>
@@ -168,8 +230,8 @@ export function MachineVisualizer({
                 step={10}
                 value={svgNodeSpacing}
                 onChange={(e) => setSvgNodeSpacing(Number(e.target.value))}
-                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground"
-                data-testid="svg-node-spacing"
+                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground min-h-11"
+                data-testid="svg-node-spacing-mobile"
               />
               <label className="text-sm font-medium text-foreground">Layer gap:</label>
               <input
@@ -179,8 +241,8 @@ export function MachineVisualizer({
                 step={10}
                 value={svgLayerSpacing}
                 onChange={(e) => setSvgLayerSpacing(Number(e.target.value))}
-                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground"
-                data-testid="svg-layer-spacing"
+                className="w-16 px-2 py-1 text-sm border border-border bg-background text-foreground min-h-11"
+                data-testid="svg-layer-spacing-mobile"
               />
             </div>
           )}
