@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.0-alpha.0
+
+[compare changes](https://github.com/WinstonFassett/matchina/compare/v0.1.1...v0.3.0-alpha.0)
+
+### 🚀 Enhancements
+
+- Netlify deployment preview ([#5](https://github.com/WinstonFassett/matchina/pull/5))
+- Implement live TypeScript development workflow with unbuild --stub ([d5901da0f](https://github.com/WinstonFassett/matchina/commit/d5901da0f))
+- **docs:** Server-render hero diagram with composable <MachineDiagram> ([e6014bdc6](https://github.com/WinstonFassett/matchina/commit/e6014bdc6))
+- Enhance matchina function with subscription support ([e5d4f2ab7](https://github.com/WinstonFassett/matchina/commit/e5d4f2ab7))
+- Add createStore function for simplified store setup with subscription support ([aa908faff](https://github.com/WinstonFassett/matchina/commit/aa908faff))
+
+### 🩹 Fixes
+
+- Correct guide and example links in documentation ([b4b315a7c](https://github.com/WinstonFassett/matchina/commit/b4b315a7c))
+- GitHub repo link ([6e262cea6](https://github.com/WinstonFassett/matchina/commit/6e262cea6))
+- Build lib before building docs ([1ffeb7f38](https://github.com/WinstonFassett/matchina/commit/1ffeb7f38))
+- Add missing Tailwind Vite plugin to enable CSS utilities ([#21](https://github.com/WinstonFassett/matchina/pull/21))
+- Resolve TypeDoc build warnings and duplicate content conflicts ([#30](https://github.com/WinstonFassett/matchina/pull/30))
+- Resolve Astro Invalid URL error in Netlify builds ([#36](https://github.com/WinstonFassett/matchina/pull/36))
+- **docs:** Rebuild home hero with composable diagram + sandwich-cut code ([c2b13fd58](https://github.com/WinstonFassett/matchina/commit/c2b13fd58))
+- **ci:** Set node-version 22 in withastro/action for Astro 6 compat ([b751bcd2f](https://github.com/WinstonFassett/matchina/commit/b751bcd2f))
+- **ci:** Actually respect SKIP_TYPEDOC env var in build scripts ([bb498c5ba](https://github.com/WinstonFassett/matchina/commit/bb498c5ba))
+- **ci:** Remove duplicate typedoc-plugin build from build script ([77c9fbee4](https://github.com/WinstonFassett/matchina/commit/77c9fbee4))
+- **docs:** Mobile nav, spacing, padding, and layout fixes ([d02a37026](https://github.com/WinstonFassett/matchina/commit/d02a37026))
+- **docs:** Correct no-JS rendering — dark theme tokens and twoslash popups ([d6d720837](https://github.com/WinstonFassett/matchina/commit/d6d720837))
+- **docs:** Mobile hero overlap, menu button, install strip, diagram flash ([d49eb23d9](https://github.com/WinstonFassett/matchina/commit/d49eb23d9))
+- **docs:** Clip example embed code panel overflow ([5510cb35d](https://github.com/WinstonFassett/matchina/commit/5510cb35d))
+- **docs:** Equalize MachineVisualizer split row heights ([db745030d](https://github.com/WinstonFassett/matchina/commit/db745030d))
+- **docs:** Hide Show State Data toggle when state has no data ([2971d5d49](https://github.com/WinstonFassett/matchina/commit/2971d5d49))
+- **docs:** Apply twoslash cut directive to plain fenced code blocks ([287c7317a](https://github.com/WinstonFassett/matchina/commit/287c7317a))
+- Update postinstall and prebuild scripts to conditionally run typedoc-plugin ([bce40ef57](https://github.com/WinstonFassett/matchina/commit/bce40ef57))
+- Cast Astro.props to Props interface for type safety ([c98c86273](https://github.com/WinstonFassett/matchina/commit/c98c86273))
+- **viz-svg:** Match viewBox math when leaving viewBox mode ([07acc4c10](https://github.com/WinstonFassett/matchina/commit/07acc4c10))
+- **viz:** Route viz radius through --matchina-viz-radius token ([5a74f2299](https://github.com/WinstonFassett/matchina/commit/5a74f2299))
+- **docs,viz:** Dedupe React across workspace; widen viz peerDeps to ^19 ([672897974](https://github.com/WinstonFassett/matchina/commit/672897974))
+- **viz-svg:** Cap fit zoom at 1x so small diagrams don't balloon ([b5e98caa3](https://github.com/WinstonFassett/matchina/commit/b5e98caa3))
+- **docs,viz-svg:** Eliminate layout jump on hero + align SSR/React diagram sizing ([6910df27d](https://github.com/WinstonFassett/matchina/commit/6910df27d))
+- **docs:** Repair build under npm — Zod v4 compat + d.ts path resolution ([131d60c85](https://github.com/WinstonFassett/matchina/commit/131d60c85))
+- Update zod peer dependency to support version 4 and add optional dependencies ([f06418c03](https://github.com/WinstonFassett/matchina/commit/f06418c03))
+
+### 📖 Documentation
+
+- Store Machine Guide ([#15](https://github.com/WinstonFassett/matchina/pull/15))
+- Update AGENTS.md with ticket field guidance ([#33](https://github.com/WinstonFassett/matchina/pull/33))
+- **lifecycle:** Mobile card layout + halt notes back in description ([2d1522612](https://github.com/WinstonFassett/matchina/commit/2d1522612))
+- **lifecycle:** Humanize prose voice in guide ([a58bffc45](https://github.com/WinstonFassett/matchina/commit/a58bffc45))
+- **lifecycle:** Frame send as the pure machine mutation entry point ([bc6cfaf6e](https://github.com/WinstonFassett/matchina/commit/bc6cfaf6e))
+- **lifecycle:** Fix step-0 anchor + full-row tap target on mobile ([d7e4462ed](https://github.com/WinstonFassett/matchina/commit/d7e4462ed))
+- **lifecycle:** Single title + drop row-hover that implied full-row clickability ([913c63783](https://github.com/WinstonFassett/matchina/commit/913c63783))
+- **examples:** Bring store-counter onto idiomatic example pattern ([6d852d21d](https://github.com/WinstonFassett/matchina/commit/6d852d21d))
+- **examples:** Register orphaned examples + tighten store-machine guide ([6ef0c1f04](https://github.com/WinstonFassett/matchina/commit/6ef0c1f04))
+- **examples:** PreviewOnly prop, promise reset, rewrite promises guide ([dd9aa13a2](https://github.com/WinstonFassett/matchina/commit/dd9aa13a2))
+- **examples:** Sync example registry + progressive tabs + precomputed SVG layout ([b96ca73c1](https://github.com/WinstonFassett/matchina/commit/b96ca73c1))
+- **examples:** SSR ExamplePreview/PageViewer + viewBox-fit before first interaction ([afd1eb4d1](https://github.com/WinstonFassett/matchina/commit/afd1eb4d1))
+
+### 🏡 Chore
+
+- Update lockfile ([06c480664](https://github.com/WinstonFassett/matchina/commit/06c480664))
+- Remove console.log statements from test files and source code ([#32](https://github.com/WinstonFassett/matchina/pull/32))
+- **docs:** Decouple docs from viz-mermaid ([b6cb486a5](https://github.com/WinstonFassett/matchina/commit/b6cb486a5))
+
+### ✅ Tests
+
+- Update snapshots for error format changes ([0f7734f5a](https://github.com/WinstonFassett/matchina/commit/0f7734f5a))
+
+### ❤️ Contributors
+
+- Winston Fassett <dev@winstonfassett.com>
+
 ## v0.2.0
 
 [compare changes](https://github.com/WinstonFassett/matchina/compare/v0.1.1...v0.2.0)
