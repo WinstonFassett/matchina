@@ -3,8 +3,10 @@ import {
   ExtractStoreParams,
   CurriedTransition,
   DirectTransition,
+  storeApi,
 } from "./store-machine-api";
 import { brandStoreMachine } from "./store-brand";
+import { withSubscribe } from "./extras/with-subscribe";
 
 export interface StoreMachine<
   T,
@@ -157,3 +159,32 @@ function resolveTransitionResult<T>(
 }
 
 export { storeApi, addStoreApi } from "./store-machine-api";
+
+/**
+ * Convenience wrapper around {@link createStoreMachine} that includes:
+ * - Action methods on the root (e.g. `store.increment(1)` instead of `store.dispatch("increment", 1)`)
+ * - A `subscribe(fn)` method via {@link withSubscribe}
+ *
+ * Use when you want the "batteries-included" store for one-liner setup
+ * (CDN artifacts, demos, app code). Use {@link createStoreMachine} directly
+ * when you want the bare primitive and will compose the rest yourself.
+ *
+ * @example
+ * ```ts
+ * const counter = createStore(0, {
+ *   increment: (n = 1) => (ch) => ch.from + n,
+ *   reset: () => 0,
+ * });
+ * counter.subscribe(ev => console.log(ev.from, "→", ev.to));
+ * counter.increment();      // direct method
+ * counter.increment(5);
+ * counter.reset();
+ * ```
+ */
+export function createStore<
+  T,
+  TR extends StoreTransitionRecord<T> = StoreTransitionRecord<T>,
+>(initialValue: T, transitions: TR) {
+  const machine = withSubscribe(createStoreMachine(initialValue, transitions));
+  return Object.assign(machine, storeApi(machine));
+}
