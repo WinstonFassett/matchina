@@ -49,13 +49,13 @@
     </div>
 
     <script type="module">
-        const { createMachine, defineStates, withSubscribe, createStoreMachine, assignEventApi } =
-            await import('https://esm.sh/matchina@0.2.3-alpha.1?bundle&exports=createMachine,createStoreMachine,defineStates,withSubscribe,assignEventApi');
+        const { matchina, defineStates, createStore } =
+            await import('https://esm.sh/matchina@0.3.0-alpha.0?bundle&exports=matchina,createStore,defineStates');
         const { reactive, html } = await import('https://esm.sh/@arrow-js/core@1.0.6');
 
         // --- Traffic light: matchina drives reactive state -----------------
         const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
-        const traffic = assignEventApi(createMachine(
+        const traffic = matchina(
             states,
             {
                 Red:    { next: 'Green',  reset: 'Red' },
@@ -63,8 +63,7 @@
                 Yellow: { next: 'Red',    reset: 'Red' },
             },
             'Red'
-        ));
-        withSubscribe(traffic);
+        );
 
         const tl = reactive({ state: traffic.getState().key, log: 'Waiting for events...' });
         traffic.subscribe(ev => {
@@ -73,7 +72,7 @@
         });
 
         html`
-            <h2>Traffic Light (createMachine)</h2>
+            <h2>Traffic Light (matchina)</h2>
             <div class="traffic-housing">
                 <div class="${() => `light ${tl.state === 'Red'    ? 'red'    : 'off'}`}"></div>
                 <div class="${() => `light ${tl.state === 'Yellow' ? 'yellow' : 'off'}`}"></div>
@@ -87,14 +86,13 @@
             <div class="log">${() => tl.log}</div>
         `(document.getElementById('tl-card'));
 
-        // --- Counter: store machine drives reactive state ------------------
-        const counter = createStoreMachine(0, {
+        // --- Counter: store drives reactive state ------------------
+        const counter = createStore(0, {
             increment: (amt = 1) => (ch) => ch.from + amt,
             decrement: (amt = 1) => (ch) => ch.from - amt,
             set: (value) => value,
             reset: () => 0,
         });
-        withSubscribe(counter);
 
         const cnt = reactive({ value: counter.getState(), log: 'Waiting for events...' });
         counter.subscribe(ev => {
@@ -106,14 +104,14 @@
             <h2>Counter Store</h2>
             <div class="counter-display">${() => cnt.value}</div>
             <div class="buttons">
-                <button class="btn-primary" @click="${() => counter.dispatch('decrement', 5)}">-5</button>
-                <button class="btn-primary" @click="${() => counter.dispatch('decrement')}">-1</button>
-                <button class="btn-primary" @click="${() => counter.dispatch('increment')}">+1</button>
-                <button class="btn-primary" @click="${() => counter.dispatch('increment', 5)}">+5</button>
+                <button class="btn-primary" @click="${() => counter.decrement(5)}">-5</button>
+                <button class="btn-primary" @click="${() => counter.decrement()}">-1</button>
+                <button class="btn-primary" @click="${() => counter.increment()}">+1</button>
+                <button class="btn-primary" @click="${() => counter.increment(5)}">+5</button>
             </div>
             <div class="buttons">
-                <button class="btn-secondary btn-small" @click="${() => counter.dispatch('set', 100)}">Set 100</button>
-                <button class="btn-secondary btn-small" @click="${() => counter.dispatch('reset')}">Reset</button>
+                <button class="btn-secondary btn-small" @click="${() => counter.set(100)}">Set 100</button>
+                <button class="btn-secondary btn-small" @click="${() => counter.reset()}">Reset</button>
             </div>
             <div class="log">${() => cnt.log}</div>
         `(document.getElementById('cnt-card'));

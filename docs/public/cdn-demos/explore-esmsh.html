@@ -40,11 +40,11 @@
 <body>
     <div class="container">
         <h1>🎬 Matchina via esm.sh (tree-shaken)</h1>
-        <div class="source-note">esm.sh/matchina@0.2.3-alpha.1?bundle&amp;exports=… &middot; ~6.5 KB raw / ~2.7 KB gzip</div>
+        <div class="source-note">esm.sh/matchina@0.3.0-alpha.0?bundle&amp;exports=… &middot; ~6.6 KB raw / ~2.8 KB gzip</div>
 
         <div class="grid">
             <div class="card">
-                <h2>Traffic Light (createMachine)</h2>
+                <h2>Traffic Light (matchina)</h2>
                 <div class="traffic-housing">
                     <div class="light off" id="red"></div>
                     <div class="light off" id="yellow"></div>
@@ -77,11 +77,11 @@
     </div>
 
     <script type="module">
-        const ESM_URL = 'https://esm.sh/matchina@0.2.3-alpha.1?bundle&exports=createMachine,createStoreMachine,defineStates,withSubscribe,assignEventApi';
-        const { createMachine, defineStates, withSubscribe, createStoreMachine, assignEventApi } = await import(ESM_URL);
+        const ESM_URL = 'https://esm.sh/matchina@0.3.0-alpha.0?bundle&exports=matchina,createStore,defineStates';
+        const { matchina, defineStates, createStore } = await import(ESM_URL);
 
         const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
-        const traffic = assignEventApi(createMachine(
+        const traffic = matchina(
             states,
             {
                 Red:    { next: 'Green',  reset: 'Red' },
@@ -89,8 +89,7 @@
                 Yellow: { next: 'Red',    reset: 'Red' },
             },
             'Red'
-        ));
-        withSubscribe(traffic);
+        );
 
         const tlState = document.getElementById('tl-state');
         const tlLog = document.getElementById('tl-log');
@@ -110,13 +109,12 @@
         document.getElementById('tl-next').onclick  = () => traffic.next();
         document.getElementById('tl-reset').onclick = () => traffic.reset();
 
-        const counter = createStoreMachine(0, {
+        const counter = createStore(0, {
             increment: (amt = 1) => (ch) => ch.from + amt,
             decrement: (amt = 1) => (ch) => ch.from - amt,
             set: (value) => value,
             reset: () => 0,
         });
-        withSubscribe(counter);
         const cntValue = document.getElementById('counter-value');
         const cntLog = document.getElementById('cnt-log');
         counter.subscribe(ev => {
@@ -124,12 +122,12 @@
             cntLog.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${ev.from} → ${ev.to}</div>`;
         });
         cntValue.textContent = counter.getState();
-        document.getElementById('cnt-inc').onclick   = () => counter.dispatch('increment');
-        document.getElementById('cnt-dec').onclick   = () => counter.dispatch('decrement');
-        document.getElementById('cnt-inc-5').onclick = () => counter.dispatch('increment', 5);
-        document.getElementById('cnt-dec-5').onclick = () => counter.dispatch('decrement', 5);
-        document.getElementById('cnt-set').onclick   = () => counter.dispatch('set', 100);
-        document.getElementById('cnt-reset').onclick = () => counter.dispatch('reset');
+        document.getElementById('cnt-inc').onclick   = () => counter.increment();
+        document.getElementById('cnt-dec').onclick   = () => counter.decrement();
+        document.getElementById('cnt-inc-5').onclick = () => counter.increment(5);
+        document.getElementById('cnt-dec-5').onclick = () => counter.decrement(5);
+        document.getElementById('cnt-set').onclick   = () => counter.set(100);
+        document.getElementById('cnt-reset').onclick = () => counter.reset();
 
         window.traffic = traffic;
         window.counter = counter;
