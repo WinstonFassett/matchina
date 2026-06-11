@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchina via esm.sh (tree-shaken)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #e2e8f0; text-align: center; margin-bottom: 8px; font-size: 2rem; }
+        .source-note { color: #94a3b8; text-align: center; margin-bottom: 32px; font-family: monospace; font-size: 0.85rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        h2 { color: #1e293b; margin-bottom: 16px; font-size: 1.25rem; }
+        .traffic-housing { display: flex; flex-direction: column; gap: 8px; padding: 20px; background: #1e293b; border-radius: 12px; border: 2px solid #334155; width: fit-content; margin: 20px auto; }
+        .light { width: 60px; height: 60px; border-radius: 50%; transition: all 0.3s; }
+        .light.off { background: #334155; }
+        .light.red { background: #ef4444; box-shadow: 0 0 20px #ef4444; }
+        .light.yellow { background: #eab308; box-shadow: 0 0 20px #eab308; }
+        .light.green { background: #22c55e; box-shadow: 0 0 20px #22c55e; }
+        .state-label { font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; color: #1e293b; font-weight: 600; text-align: center; margin: 16px 0; font-size: 0.9rem; }
+        .counter-display { font-size: 4rem; text-align: center; font-weight: bold; color: #6366f1; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+        .btn-primary { background: #6366f1; color: white; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-secondary { background: #ec4899; color: white; }
+        .btn-secondary:hover { background: #db2777; }
+        .btn-small { font-size: 0.75rem; padding: 6px 12px; }
+        .log { background: #1e293b; color: #10b981; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; height: 60px; overflow-y: auto; line-height: 1.4; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Matchina via esm.sh (tree-shaken)</h1>
+        <div class="source-note">esm.sh/matchina@0.2.3-alpha.1?bundle&amp;exports=… &middot; ~6.5 KB raw / ~2.7 KB gzip</div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Traffic Light (createMachine)</h2>
+                <div class="traffic-housing">
+                    <div class="light off" id="red"></div>
+                    <div class="light off" id="yellow"></div>
+                    <div class="light off" id="green"></div>
+                </div>
+                <div class="state-label" id="tl-state">Red</div>
+                <div class="buttons">
+                    <button class="btn-primary" id="tl-next">Next Signal</button>
+                    <button class="btn-secondary btn-small" id="tl-reset">Reset</button>
+                </div>
+                <div class="log" id="tl-log">Waiting for events...</div>
+            </div>
+
+            <div class="card">
+                <h2>Counter Store</h2>
+                <div class="counter-display" id="counter-value">0</div>
+                <div class="buttons">
+                    <button class="btn-primary" id="cnt-dec-5">-5</button>
+                    <button class="btn-primary" id="cnt-dec">-1</button>
+                    <button class="btn-primary" id="cnt-inc">+1</button>
+                    <button class="btn-primary" id="cnt-inc-5">+5</button>
+                </div>
+                <div class="buttons">
+                    <button class="btn-secondary btn-small" id="cnt-set">Set 100</button>
+                    <button class="btn-secondary btn-small" id="cnt-reset">Reset</button>
+                </div>
+                <div class="log" id="cnt-log">Waiting for events...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const ESM_URL = 'https://esm.sh/matchina@0.2.3-alpha.1?bundle&exports=createMachine,createStoreMachine,defineStates,withSubscribe,assignEventApi';
+        const { createMachine, defineStates, withSubscribe, createStoreMachine, assignEventApi } = await import(ESM_URL);
+
+        const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = assignEventApi(createMachine(
+            states,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        ));
+        withSubscribe(traffic);
+
+        const tlState = document.getElementById('tl-state');
+        const tlLog = document.getElementById('tl-log');
+        const lights = { Red: document.getElementById('red'), Yellow: document.getElementById('yellow'), Green: document.getElementById('green') };
+        function paintTraffic() {
+            const key = traffic.getState().key;
+            tlState.textContent = key;
+            for (const k of Object.keys(lights)) {
+                lights[k].className = `light ${k === key ? k.toLowerCase() : 'off'}`;
+            }
+        }
+        traffic.subscribe(ev => {
+            paintTraffic();
+            tlLog.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${ev.from.key} → ${ev.to.key}</div>`;
+        });
+        paintTraffic();
+        document.getElementById('tl-next').onclick  = () => traffic.next();
+        document.getElementById('tl-reset').onclick = () => traffic.reset();
+
+        const counter = createStoreMachine(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+        withSubscribe(counter);
+        const cntValue = document.getElementById('counter-value');
+        const cntLog = document.getElementById('cnt-log');
+        counter.subscribe(ev => {
+            cntValue.textContent = counter.getState();
+            cntLog.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${ev.from} → ${ev.to}</div>`;
+        });
+        cntValue.textContent = counter.getState();
+        document.getElementById('cnt-inc').onclick   = () => counter.dispatch('increment');
+        document.getElementById('cnt-dec').onclick   = () => counter.dispatch('decrement');
+        document.getElementById('cnt-inc-5').onclick = () => counter.dispatch('increment', 5);
+        document.getElementById('cnt-dec-5').onclick = () => counter.dispatch('decrement', 5);
+        document.getElementById('cnt-set').onclick   = () => counter.dispatch('set', 100);
+        document.getElementById('cnt-reset').onclick = () => counter.dispatch('reset');
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</body>
+</html>
