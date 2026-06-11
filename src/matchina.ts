@@ -1,4 +1,5 @@
 import { assignEventApi } from "./extras/zen";
+import { withSubscribe } from "./extras/with-subscribe";
 import { createMachine } from "./factory-machine";
 import {
   FactoryMachineContext,
@@ -63,5 +64,6 @@ export function matchina<
   transitions: TC,
   init: KeysWithZeroRequiredArgs<FC["states"]> | FactoryKeyedState<FC["states"]>
 ) {
-  return assignEventApi(createMachine(states, transitions, init));
+  const machine = createMachine(states, transitions, init);
+  return withSubscribe(assignEventApi(machine));
 }
