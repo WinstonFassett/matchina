@@ -92,9 +92,9 @@ export default defineConfig({
                 {
                   label: "Frontend Integration",
                   items: [
+                    { label: "Overview", link: "/guides/integration-patterns" },
                     { label: "React", link: "/guides/react" },
-                    { label: "Integration patterns", link: "/guides/integration-patterns" },
-                    { label: "HTML Starters", link: "/guides/html-starters" },
+                    { label: "HTML Artifacts", link: "/guides/html-starters" },
                   ],
                 },
                 ...(process.env.ENABLE_TYPEDOC ? [typeDocSidebarGroup] : []),

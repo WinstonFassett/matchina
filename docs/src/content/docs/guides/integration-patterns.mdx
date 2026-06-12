@@ -1,13 +1,15 @@
 ---
-title: Integration patterns
-description: How matchina bridges to reactive view libraries — three patterns that cover the common cases.
+title: Frontend Integration Overview
+description: How matchina bridges to reactive view libraries. Three patterns cover the common cases.
 ---
 
-Matchina doesn't render anything. To get it onto a page you bridge `subscribe` to whatever the view library uses to track state. Across the libraries surveyed in [HTML Starters](/matchina/guides/html-starters), the bridge falls into three shapes.
+Matchina runs state machines. Rendering is your view library's job. The bridge between them takes one of three shapes depending on what reactive primitive you have on hand.
 
-## Signal-style — `useMatchina` helper
+For build-step React projects, see [React](/matchina/guides/react). For no-build HTML pages (AI-generated artifacts, demos, MDX embeds, progressive enhancement), see [HTML Artifacts](/matchina/guides/html-starters).
 
-For libraries with a reactive primitive (`signal`, `ref`, `state`), the bridge is a four-line helper that mirrors matchina state into the primitive:
+## Signal-style: `useMatchina` helper
+
+If your view library exposes a reactive primitive (`signal`, `ref`, `state`), write a four-line helper that mirrors matchina state into the primitive:
 
 ```js
 const useMatchina = (m) => {
@@ -17,11 +19,11 @@ const useMatchina = (m) => {
 };
 ```
 
-Used by **VanJS, Preact (signals), Solid, Vue 3**.
+VanJS, Preact (signals), Solid, and Vue 3 all use this shape.
 
-## Scope-style — mutate-on-subscribe
+## Scope-style: mutate on subscribe
 
-For libraries where the reactive unit is a plain-object scope (petite-vue, Alpine.js), no helper is needed — the subscribe callback mutates scope keys directly:
+If the reactive unit is a plain-object scope (petite-vue, Alpine), skip the helper. The subscribe callback writes directly to scope keys:
 
 ```js
 mounted() {
@@ -31,6 +33,6 @@ mounted() {
 }
 ```
 
-## Controller-style — base class
+## Controller-style: base class
 
-For Hotwire/Stimulus, one reusable base controller wires `subscribe` to `render(state)`. Both factory machines and `storeApi(store)` expose transitions as methods, so the action dispatcher just calls `this.api[action](...args)`. The base class is ~20 lines, then each controller is short.
+For Hotwire/Stimulus, write one reusable base controller that wires `subscribe` to `render(state)`. Factory machines and `storeApi(store)` both expose transitions as methods, so the action dispatcher just calls `this.api[action](...args)`. The base class is about 20 lines. Each controller after that is short.
