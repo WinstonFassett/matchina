@@ -14,12 +14,12 @@ interface Row {
 }
 
 const rows: Row[] = [
-  { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  paint: "yes",   shape: "Controller",      notes: "Initial values hand-authored into HTML; controllers attach on connect" },
-  { name: "esm.sh Artifact",       slug: "standalone-esmsh",      size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Initial values hand-authored into HTML; JS wires interactions" },
+  { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  paint: "yes",   shape: "Controller",      notes: "HTML has initial values; controllers attach on connect" },
+  { name: "esm.sh Artifact",       slug: "standalone-esmsh",      size: "—",       paint: "yes",   shape: "Vanilla",         notes: "HTML has initial values; JS wires interactions" },
   { name: "jsDelivr Artifact",     slug: "standalone-jsdelivr",   size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Same as esm.sh via jsDelivr +esm" },
-  { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   paint: "maybe", shape: "Attribute",       notes: "Demo uses v-cloak + bindings; could be hand-authored to paint" },
-  { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  paint: "maybe", shape: "Attribute",       notes: "Demo uses x-cloak + bindings; could be hand-authored to paint" },
-  { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  paint: "maybe", shape: "Attribute",       notes: "Demo uses v-cloak + bindings; could be hand-authored to paint" },
+  { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; Alpine bindings overlay on mount" },
+  { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; v-scope mounts on top" },
+  { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; Vue replaces them reactively on mount" },
   { name: "VanJS Artifact",        slug: "standalone-van",        size: "~1.5 KB", paint: "no",    shape: "Declarative DOM", notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
   { name: "Solid Artifact",        slug: "standalone-solid",      size: "~7 KB",   paint: "no",    shape: "Fine-grained",    notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
   { name: "Preact Artifact",       slug: "standalone-preact",     size: "~10 KB",  paint: "no",    shape: "JSX-ish (htm)",   notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
@@ -27,7 +27,7 @@ const rows: Row[] = [
 ];
 
 const paintLabel: Record<Paint, string> = {
-  yes: "Hand-authored",
+  yes: "Yes",
   maybe: "Possible (not done)",
   no: "Not in this pattern",
 };
