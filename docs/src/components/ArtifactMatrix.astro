@@ -1,0 +1,172 @@
+---
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const link = (slug: string) => `${base}/cdn-demos/${slug}/`;
+
+type Progressive = "yes" | "maybe" | "no";
+
+interface Row {
+  name: string;
+  slug: string;
+  size: string;
+  progressive: Progressive;
+  shape: string;
+  notes: string;
+}
+
+const rows: Row[] = [
+  { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  progressive: "yes", shape: "Controller",      notes: "HTML has initial values; controllers attach on connect" },
+  { name: "Vanilla Artifact",      slug: "standalone-esmsh",      size: "—",       progressive: "yes", shape: "Vanilla",         notes: "Matchina alone, no view library; HTML is the card" },
+  { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Alpine bindings overlay on mount" },
+  { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; v-scope mounts on top" },
+  { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Vue replaces them reactively on mount" },
+  { name: "React Artifact",        slug: "standalone-react",      size: "~45 KB",  progressive: "no",  shape: "TSX (no build)",  notes: "esm.sh/tsx compiles TSX on load; React mounts into empty <article>" },
+  { name: "VanJS Artifact",        slug: "standalone-van",        size: "~1.5 KB", progressive: "no",  shape: "Declarative DOM", notes: "Empty <article>; JS builds the card" },
+  { name: "Solid Artifact",        slug: "standalone-solid",      size: "~7 KB",   progressive: "no",  shape: "Fine-grained",    notes: "Empty <article>; JS builds the card" },
+  { name: "Preact Artifact",       slug: "standalone-preact",     size: "~10 KB",  progressive: "no",  shape: "JSX-ish (htm)",   notes: "Empty <article>; JS builds the card" },
+  { name: "ArrowJS Artifact",      slug: "standalone-arrow",      size: "~3 KB",   progressive: "no",  shape: "Tagged template", notes: "Empty <article>; JS builds the card" },
+];
+
+const progressiveLabel: Record<Progressive, string> = {
+  yes: "Yes",
+  maybe: "Partial",
+  no: "No",
+};
+---
+
+<div class="artifact-matrix not-content">
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Size (gz)</th>
+        <th>Progressive</th>
+        <th>Authoring shape</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr class={`prog-${r.progressive}`}>
+          <td><a href={link(r.slug)}><strong>{r.name}</strong></a></td>
+          <td class="num">{r.size}</td>
+          <td>
+            <span class={`pill pill-${r.progressive}`}>{progressiveLabel[r.progressive]}</span>
+          </td>
+          <td>{r.shape}</td>
+          <td class="notes">{r.notes}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <ul class="matrix-cards">
+    {rows.map((r) => (
+      <li class={`card prog-${r.progressive}`}>
+        <a class="card-title" href={link(r.slug)}>{r.name}</a>
+        <div class="card-meta">
+          <span class={`pill pill-${r.progressive}`}>{progressiveLabel[r.progressive]}</span>
+          <span class="size">{r.size}</span>
+          <span class="shape">{r.shape}</span>
+        </div>
+        <p class="card-notes">{r.notes}</p>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .artifact-matrix { container-type: inline-size; margin: 1.5rem 0; }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .matrix-table th,
+  .matrix-table td {
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    vertical-align: top;
+  }
+  .matrix-table th {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sl-color-gray-3, var(--sl-color-text));
+  }
+  .matrix-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .matrix-table td.notes { color: var(--sl-color-gray-3, var(--sl-color-text)); }
+  .matrix-table a {
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  .matrix-table a:hover { text-decoration-thickness: 2px; }
+
+  .matrix-cards { display: none; list-style: none; padding: 0; margin: 0; }
+  .matrix-cards .card {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
+    padding: 0.75rem 0.9rem;
+    margin: 0 0 0.6rem;
+    background: var(--sl-color-bg);
+  }
+  .matrix-cards .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  .matrix-cards .card-title:hover { text-decoration-thickness: 2px; }
+  .matrix-cards .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    align-items: center;
+    margin: 0.4rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-3, var(--sl-color-text));
+  }
+  .matrix-cards .card-meta .size { font-variant-numeric: tabular-nums; }
+  .matrix-cards .card-notes {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--sl-color-gray-3, var(--sl-color-text));
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    border: 1px solid currentColor;
+  }
+  .pill-yes   { color: #137a3b; }
+  .pill-maybe { color: #8a5a00; }
+  .pill-no    { color: #a32b2b; }
+  [data-theme$="dark"] .pill-yes   { color: #6fd49a; }
+  [data-theme$="dark"] .pill-maybe { color: #e0b76a; }
+  [data-theme$="dark"] .pill-no    { color: #ef8a8a; }
+
+  /* Container-query swap: table on wide, cards on narrow. */
+  @container (max-width: 640px) {
+    .matrix-table { display: none; }
+    .matrix-cards { display: block; }
+  }
+  /* Fallback for browsers without container queries. */
+  @supports not (container-type: inline-size) {
+    @media (max-width: 640px) {
+      .matrix-table { display: none; }
+      .matrix-cards { display: block; }
+    }
+  }
+</style>

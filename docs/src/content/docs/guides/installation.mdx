@@ -71,28 +71,9 @@ jsDelivr's `+esm` endpoint also bundles into a single file, but doesn't take a t
 
 [Open the live demo →](/matchina/cdn-demos/standalone-jsdelivr/)
 
-### With a view framework
+### With a view library
 
-matchina handles state transitions; it doesn't render anything. Pair it with any reactive view library that's also CDN-friendly. The bridge is one line: `machine.subscribe(ev => { viewState.x = ev.to.key })`.
-
-[ArrowJS](https://arrow-js.com/) is one good fit (no-build, tagged template literals, small). [Live demo →](/matchina/cdn-demos/standalone-arrow/)
-
-```html
-<script type="module">
-  const { matchina, defineStates } = await import(
-    'https://esm.sh/matchina?bundle&exports=matchina,defineStates'
-  );
-  const { reactive, html } = await import('https://esm.sh/@arrow-js/core');
-
-  const traffic = matchina(/* ... */);
-  const view = reactive({ state: traffic.getState().key });
-  traffic.subscribe(ev => { view.state = ev.to.key; });
-
-  html`<div>${() => view.state}</div>`(document.body);
-</script>
-```
-
-Other reactive libs that work the same way: lit-html, Petite Vue, Solid, Preact signals.
+Matchina runs state machines. Rendering is your view library's job. To pair it with a reactive view library over CDN (VanJS, Preact, Solid, Vue, petite-vue, Stimulus), see [HTML Artifacts](/matchina/guides/html-starters) for the patterns, a side-by-side comparison, and heuristics.
 
 ## Footprint comparison
 

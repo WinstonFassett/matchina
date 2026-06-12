@@ -38,7 +38,7 @@ const counterMachine = createMachine(
         (ev) => {
           console.log("Incrementing counter...", ev, amount);
           return counterStates.Active(
-            produce<CounterState>(ev.from.data, (draft) => {
+            produce<CounterState>(ev.from.data, (draft: CounterState) => {
               draft.count += amount;
               draft.history.push(draft.count);
               draft.metadata.lastUpdated = new Date();
@@ -118,7 +118,7 @@ const todoMachine = createMachine(
     List: {
       addTodo: (text) => (ev) => {
         return todoStates.List(
-          produce<TodoState>(ev.from.data, (draft) => {
+          produce<TodoState>(ev.from.data, (draft: TodoState) => {
             const newTodo = {
               id: Date.now().toString(),
               text,
@@ -135,8 +135,8 @@ const todoMachine = createMachine(
 
       toggleTodo: (id) => (ev) => {
         return todoStates.List(
-          produce<TodoState>(ev.from.data, (draft) => {
-            const todo = draft.todos.find((t) => t.id === id);
+          produce<TodoState>(ev.from.data, (draft: TodoState) => {
+            const todo = draft.todos.find((t: Todo) => t.id === id);
             if (todo) {
               todo.completed = !todo.completed;
               todo.updatedAt = new Date();
@@ -156,8 +156,8 @@ const todoMachine = createMachine(
 
       addTag: (id, tag) => (ev) => {
         return todoStates.List(
-          produce<TodoState>(ev.from.data, (draft) => {
-            const todo = draft.todos.find((t) => t.id === id);
+          produce<TodoState>(ev.from.data, (draft: TodoState) => {
+            const todo = draft.todos.find((t: Todo) => t.id === id);
             if (todo && !todo.tags.includes(tag)) {
               todo.tags.push(tag);
               todo.updatedAt = new Date();
@@ -168,7 +168,7 @@ const todoMachine = createMachine(
 
       setFilter: (filter) => (ev) => {
         return todoStates.List(
-          produce<TodoState>(ev.from.data, (draft) => {
+          produce<TodoState>(ev.from.data, (draft: TodoState) => {
             draft.filter = filter;
           })
         );
@@ -176,8 +176,8 @@ const todoMachine = createMachine(
 
       clearCompleted: () => (ev) => {
         return todoStates.List(
-          produce<TodoState>(ev.from.data, (draft) => {
-            draft.todos = draft.todos.filter((t) => !t.completed);
+          produce<TodoState>(ev.from.data, (draft: TodoState) => {
+            draft.todos = draft.todos.filter((t: Todo) => !t.completed);
             draft.stats.completed = 0;
             draft.stats.total = draft.stats.active;
           })

@@ -1,0 +1,25 @@
+---
+title: HTML Artifacts
+description: Pair matchina with no-build reactive view libraries for single-file HTML artifacts.
+---
+
+import ArtifactMatrix from "../../../components/ArtifactMatrix.astro";
+
+A single HTML file that loads matchina and a view library from a CDN. JSX works too via `esm.sh/tsx` (see the React Artifact below); for a build-step React project, the [React](/matchina/guides/react) page covers the usual hooks pattern. For adapter patterns across libraries, see [Frontend Integration Overview](/matchina/guides/integration-patterns).
+
+## Imports
+
+Demos load from **esm.sh**. For other CDNs, see [Use from a CDN](/matchina/guides/installation#use-from-a-cdn).
+
+## Progressive Enhancement
+
+:::tip[Try it with JS off]
+Disable JS and open each demo. The **Progressive** column says what you'll see.
+:::
+
+<ArtifactMatrix />
+
+## Considerations
+
+- **Static HTML.** Need the card to render before JS runs? Stimulus, Vanilla, Alpine, petite-vue, Vue 3.
+- **Footprint.** ~1.5 KB (VanJS) to ~40 KB (Vue 3).

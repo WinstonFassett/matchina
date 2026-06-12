@@ -1,0 +1,124 @@
+---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
+import { matchinaVersion } from "@/lib/matchina-version";
+const reactVersion = "18";
+const sourceNote = `matchina@${matchinaVersion} + react@${reactVersion} via esm.sh/tsx · TSX with no build step`;
+const importmap = {
+    imports: {
+        "react": `https://esm.sh/react@${reactVersion}`,
+        "react/": `https://esm.sh/react@${reactVersion}/`,
+        "react/jsx-runtime": `https://esm.sh/react@${reactVersion}/jsx-runtime`,
+        "react-dom": `https://esm.sh/react-dom@${reactVersion}`,
+        "react-dom/": `https://esm.sh/react-dom@${reactVersion}/`,
+        "react-dom/client": `https://esm.sh/react-dom@${reactVersion}/client`,
+        "matchina": `https://esm.sh/matchina@${matchinaVersion}?bundle`,
+        "matchina/react": `https://esm.sh/matchina@${matchinaVersion}/react?deps=react@${reactVersion}`,
+    },
+};
+
+// TSX source — kept as a string so Astro/TS doesn't try to parse it.
+// esm.sh/tsx will compile this on load and run the result as a module.
+const tsxSource = String.raw`
+import { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { matchina, defineStates, createStore, storeApi } from 'matchina';
+import { useMachine } from 'matchina/react';
+
+const trafficStates = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+const traffic = matchina(
+    trafficStates,
+    {
+        Red:    { next: 'Green',  reset: 'Red' },
+        Green:  { next: 'Yellow', reset: 'Red' },
+        Yellow: { next: 'Red',    reset: 'Red' },
+    },
+    'Red'
+);
+
+function TrafficCard() {
+    useMachine(traffic);
+    const [log, setLog] = useState('waiting…');
+    const key = traffic.getState().key;
+    const onClick = (action: 'next' | 'reset') => {
+        const from = traffic.getState().key;
+        (traffic as any)[action]();
+        const to = traffic.getState().key;
+        setLog(from + ' → ' + to);
+    };
+    return (
+        <>
+            <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + react</span></div>
+            <div class="card-stage">
+                <div class="traffic">
+                    <div class="light" data-color="Red"    data-active={key === 'Red'}></div>
+                    <div class="light" data-color="Yellow" data-active={key === 'Yellow'}></div>
+                    <div class="light" data-color="Green"  data-active={key === 'Green'}></div>
+                </div>
+            </div>
+            <p class="state-line">state <code>{key}</code></p>
+            <div class="row">
+                <button onClick={() => onClick('next')}>Next →</button>
+                <button class="secondary" onClick={() => onClick('reset')}>Reset</button>
+            </div>
+            <footer><span class="log">{log}</span></footer>
+        </>
+    );
+}
+createRoot(document.getElementById('tl-card')!).render(<TrafficCard />);
+
+const counter = createStore(0, {
+    increment: (amt = 1) => (ch) => ch.from + amt,
+    decrement: (amt = 1) => (ch) => ch.from - amt,
+    set: (value: number) => value,
+    reset: () => 0,
+});
+const api = storeApi(counter);
+
+function CounterCard() {
+    useMachine(counter);
+    const [log, setLog] = useState('waiting…');
+    const value = counter.getState();
+    const call = (fn: Function, ...args: any[]) => {
+        const from = counter.getState();
+        fn(...args);
+        const to = counter.getState();
+        setLog(from + ' → ' + to);
+    };
+    return (
+        <>
+            <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + react</span></div>
+            <div class="card-stage"><p class="count">{value}</p></div>
+            <div class="row">
+                <button class="secondary" onClick={() => call(api.decrement, 5)}>−5</button>
+                <button class="secondary" onClick={() => call(api.decrement)}>−1</button>
+                <button onClick={() => call(api.increment)}>+1</button>
+                <button onClick={() => call(api.increment, 5)}>+5</button>
+            </div>
+            <div class="row">
+                <button class="outline" onClick={() => call(api.set, 100)}>Set 100</button>
+                <button class="outline" onClick={() => call(api.reset)}>Reset</button>
+            </div>
+            <footer><span class="log">{log}</span></footer>
+        </>
+    );
+}
+createRoot(document.getElementById('cnt-card')!).render(<CounterCard />);
+`;
+---
+<CdnDemoLayout
+    title="Matchina + React (no build)"
+    eyebrow="Matchina · CDN demo · React"
+    headline="React TSX with no build, powered by"
+    headlineAccent="esm.sh/tsx"
+    sourceNote={sourceNote}
+>
+    <script slot="head" is:inline type="importmap" set:html={JSON.stringify(importmap)} />
+    {/* esm.sh/tsx finds <script type="text/tsx"> blocks and runs them as
+        modules. The src loader must be type="module" — it uses import.meta.url. */}
+    <script slot="head" is:inline type="module" src="https://esm.sh/tsx"></script>
+
+    <article class="card" id="tl-card"></article>
+    <article class="card" id="cnt-card"></article>
+
+    <script slot="scripts" is:inline type="text/tsx" set:html={tsxSource} />
+</CdnDemoLayout>

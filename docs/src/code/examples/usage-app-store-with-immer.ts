@@ -93,24 +93,24 @@ const initialState: AppState = {
 const store = createStoreMachine(initialState, {
   // User-related transitions
   updateUserName: (name: string) =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.user.name = name;
     }),
 
   setTheme: (theme: "light" | "dark") =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.user.preferences.theme = theme;
     }),
 
   toggleNotifications: () =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.user.preferences.notifications =
         !draft.user.preferences.notifications;
     }),
 
   // Todo-related transitions
   addTodo: (text: string) =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       const newTodo = {
         id: Date.now().toString(),
         text,
@@ -122,8 +122,8 @@ const store = createStoreMachine(initialState, {
     }),
 
   toggleTodo: (id: string) =>
-    mutate((draft) => {
-      const todo = draft.todos.items.find((item) => item.id === id);
+    mutate((draft: AppState) => {
+      const todo = draft.todos.items.find((item: { id: string }) => item.id === id);
       if (todo) {
         todo.completed = !todo.completed;
         // Stats are updated in effects
@@ -131,8 +131,8 @@ const store = createStoreMachine(initialState, {
     }),
 
   addTodoTag: (id: string, tag: string) =>
-    mutate((draft) => {
-      const todo = draft.todos.items.find((item) => item.id === id);
+    mutate((draft: AppState) => {
+      const todo = draft.todos.items.find((item: { id: string; tags: string[] }) => item.id === id);
       if (todo && !todo.tags.includes(tag)) {
         todo.tags.push(tag);
       }
@@ -140,24 +140,24 @@ const store = createStoreMachine(initialState, {
 
   // UI-related transitions
   toggleSidebar: () =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.ui.sidebar.open = !draft.ui.sidebar.open;
     }),
 
   resizeSidebar: (width: number) =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.ui.sidebar.width = width;
     }),
 
   openModal: (type: string, data: any = null) =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.ui.modal.open = true;
       draft.ui.modal.type = type;
       draft.ui.modal.data = data;
     }),
 
   closeModal: () =>
-    mutate((draft) => {
+    mutate((draft: AppState) => {
       draft.ui.modal.open = false;
       draft.ui.modal.type = null;
       draft.ui.modal.data = null;

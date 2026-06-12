@@ -2,21 +2,21 @@
 import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
 import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
 const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates,storeApi");
-const petiteVueUrl = "https://esm.sh/petite-vue@0.4.1";
-const sourceNote = `matchina@${matchinaVersion} + petite-vue@0.4 · ~6 KB · attribute-driven, mounts onto existing HTML`;
+const alpineUrl = "https://esm.sh/alpinejs@3.14.1";
+const sourceNote = `matchina@${matchinaVersion} + alpinejs@3.14 · ~15 KB · attribute-driven, mounts onto existing HTML`;
 ---
 <CdnDemoLayout
-    title="Matchina + petite-vue"
-    eyebrow="Matchina · CDN demo · petite-vue"
-    headline="Progressive enhancement with"
-    headlineAccent="petite-vue"
+    title="Matchina + Alpine.js"
+    eyebrow="Matchina · CDN demo · Alpine.js"
+    headline="Attribute-driven reactivity with"
+    headlineAccent="Alpine.js"
     sourceNote={sourceNote}
 >
-    {/* Static HTML paints the starting state — Red light active, "Red" label,
-        "waiting…" log. petite-vue's v-scope mounts on top and binds reactively. */}
+    {/* Initial values are inlined so the card paints with JS off. Alpine
+        attaches reactive bindings on mount and replaces them in place. */}
     <Fragment set:html={`
-    <article class="card" id="tl-card" v-scope="trafficScope()" @vue:mounted="mounted">
-        <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + petite-vue</span></div>
+    <article class="card" x-data="trafficScope()" x-init="init()">
+        <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + alpine</span></div>
         <div class="card-stage">
             <div class="traffic">
                 <div class="light" data-color="Red"    data-active="true"  :data-active="state === 'Red'"></div>
@@ -24,17 +24,17 @@ const sourceNote = `matchina@${matchinaVersion} + petite-vue@0.4 · ~6 KB · att
                 <div class="light" data-color="Green"  data-active="false" :data-active="state === 'Green'"></div>
             </div>
         </div>
-        <p class="state-line">state <code v-text="state">Red</code></p>
+        <p class="state-line">state <code x-text="state">Red</code></p>
         <div class="row">
             <button @click="machine.next()">Next →</button>
             <button class="secondary" @click="machine.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log">waiting…</span></footer>
+        <footer><span class="log" x-text="log">waiting…</span></footer>
     </article>
 
-    <article class="card" id="cnt-card" v-scope="counterScope()" @vue:mounted="mounted">
-        <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + petite-vue</span></div>
-        <div class="card-stage"><p class="count" v-text="value">0</p></div>
+    <article class="card" x-data="counterScope()" x-init="init()">
+        <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + alpine</span></div>
+        <div class="card-stage"><p class="count" x-text="value">0</p></div>
         <div class="row">
             <button class="secondary" @click="api.decrement(5)">−5</button>
             <button class="secondary" @click="api.decrement()">−1</button>
@@ -45,19 +45,19 @@ const sourceNote = `matchina@${matchinaVersion} + petite-vue@0.4 · ~6 KB · att
             <button class="outline" @click="api.set(100)">Set 100</button>
             <button class="outline" @click="api.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log">waiting…</span></footer>
+        <footer><span class="log" x-text="log">waiting…</span></footer>
     </article>
     `} />
 
-    <script slot="scripts" type="module" define:vars={{ matchinaUrl, petiteVueUrl }}>
+    <script slot="scripts" type="module" define:vars={{ matchinaUrl, alpineUrl }}>
         const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
-        const { createApp } = await import(petiteVueUrl);
+        const Alpine = (await import(alpineUrl)).default;
 
         // ── Integration ────────────────────────────────────────────
-        // petite-vue's reactive scope is created from a plain object.
-        // Wire matchina's subscribe to mutate that object's keys —
-        // petite-vue picks up the change and re-renders bound nodes.
-        // No `useMatchina` helper needed; the scope IS the mirror.
+        // Alpine's reactive scope is a plain object returned from x-data.
+        // Wire matchina's subscribe to mutate scope keys — Alpine picks
+        // up the change via its reactivity proxy. No helper needed; the
+        // scope IS the mirror. Same shape as petite-vue.
         // ────────────────────────────────────────────────────────────
 
         const trafficStates = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
@@ -79,34 +79,30 @@ const sourceNote = `matchina@${matchinaVersion} + petite-vue@0.4 · ~6 KB · att
         });
         const api = storeApi(counter);
 
-        createApp({
-            trafficScope() {
-                return {
-                    machine: traffic,
-                    state: traffic.getState().key,
-                    log: 'waiting…',
-                    mounted() {
-                        traffic.subscribe(ev => {
-                            this.state = ev.to.key;
-                            this.log = `${ev.from.key} → ${ev.to.key}`;
-                        });
-                    },
-                };
+        window.trafficScope = () => ({
+            machine: traffic,
+            state: traffic.getState().key,
+            log: 'waiting…',
+            init() {
+                traffic.subscribe(ev => {
+                    this.state = ev.to.key;
+                    this.log = `${ev.from.key} → ${ev.to.key}`;
+                });
             },
-            counterScope() {
-                return {
-                    api,
-                    value: counter.getState(),
-                    log: 'waiting…',
-                    mounted() {
-                        counter.subscribe(ev => {
-                            this.value = ev.to;
-                            this.log = `${ev.from} → ${ev.to}`;
-                        });
-                    },
-                };
+        });
+        window.counterScope = () => ({
+            api,
+            value: counter.getState(),
+            log: 'waiting…',
+            init() {
+                counter.subscribe(ev => {
+                    this.value = ev.to;
+                    this.log = `${ev.from} → ${ev.to}`;
+                });
             },
-        }).mount();
+        });
+
+        Alpine.start();
 
         window.traffic = traffic;
         window.counter = counter;

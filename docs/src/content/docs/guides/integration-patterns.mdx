@@ -1,0 +1,36 @@
+---
+title: Frontend Integration Overview
+description: How matchina adapts to reactive view libraries. Three patterns cover the common cases.
+---
+
+Matchina doesn't render. Pick an adapter based on what your view library exposes.
+
+For React with a build step, see [React](/matchina/guides/react). For no-build HTML pages, see [HTML Artifacts](/matchina/guides/html-starters).
+
+## Signal-style: `useMatchina` helper
+
+A reactive primitive (`signal`, `ref`, `state`) — VanJS, Preact signals, Solid, Vue 3:
+
+```js
+const useMatchina = (m) => {
+  const s = signal(m.getState());          // or ref / van.state / etc.
+  m.subscribe(() => { s.value = m.getState(); });
+  return s;
+};
+```
+
+## Scope-style: mutate on subscribe
+
+A plain-object scope (petite-vue, Alpine) — no helper needed; the callback writes scope keys:
+
+```js
+mounted() {
+  this.machine.subscribe(ev => {
+    this.state = ev.to.key;
+  });
+}
+```
+
+## Controller-style: base class
+
+For Hotwire/Stimulus, one base controller wires `subscribe` to `render(state)`. Factory machines and `storeApi(store)` expose transitions as methods, so the dispatcher is `this.api[action](...args)`. ~20 lines once; per-controller code stays short.

@@ -12,27 +12,30 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
     headlineAccent="Vue 3"
     sourceNote={sourceNote}
 >
+    {/* Server-rendered HTML — Red light is already painted. Vue mounts
+        on load and replaces these initial values reactively; the page
+        never flashes blank. */}
     <Fragment set:html={`
-    <article class="card" id="tl-card" v-cloak>
+    <article class="card" id="tl-card">
         <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + vue</span></div>
         <div class="card-stage">
             <div class="traffic">
-                <div class="light" data-color="Red"    :data-active="state.key === 'Red'"></div>
-                <div class="light" data-color="Yellow" :data-active="state.key === 'Yellow'"></div>
-                <div class="light" data-color="Green"  :data-active="state.key === 'Green'"></div>
+                <div class="light" data-color="Red"    data-active="true"  :data-active="state.key === 'Red'"></div>
+                <div class="light" data-color="Yellow" data-active="false" :data-active="state.key === 'Yellow'"></div>
+                <div class="light" data-color="Green"  data-active="false" :data-active="state.key === 'Green'"></div>
             </div>
         </div>
-        <p class="state-line">state <code v-text="state.key"></code></p>
+        <p class="state-line">state <code v-text="state.key">Red</code></p>
         <div class="row">
             <button @click="machine.next()">Next →</button>
             <button class="secondary" @click="machine.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log"></span></footer>
+        <footer><span class="log" v-text="log">waiting…</span></footer>
     </article>
 
-    <article class="card" id="cnt-card" v-cloak>
+    <article class="card" id="cnt-card">
         <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + vue</span></div>
-        <div class="card-stage"><p class="count" v-text="value"></p></div>
+        <div class="card-stage"><p class="count" v-text="value">0</p></div>
         <div class="row">
             <button class="secondary" @click="api.decrement(5)">−5</button>
             <button class="secondary" @click="api.decrement()">−1</button>
@@ -43,7 +46,7 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
             <button class="outline" @click="api.set(100)">Set 100</button>
             <button class="outline" @click="api.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log"></span></footer>
+        <footer><span class="log" v-text="log">waiting…</span></footer>
     </article>
     `} />
 

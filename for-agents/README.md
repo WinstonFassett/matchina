@@ -54,10 +54,6 @@ Critical examples must work:
 - rock-paper-scissors ✓
 
 ## Notes
-- All agents automatically work in backlog task context
-- TodoWrite items become acceptance criteria
-- Completed todos mark ACs as done
-- File changes tracked against active task
 - **Multi-agent context**: Check `local/` for active work, ignore `local/archive/`
 # E2E Testing for Agents
 

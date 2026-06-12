@@ -115,7 +115,7 @@ const initialState: TodoStore = {
 const todoStore = createStoreMachine(initialState, {
   // Core mutations - focused only on state changes
   addTodo: (text: string) =>
-    mutate((draft) => {
+    mutate((draft: TodoStore) => {
       draft.todos.push({
         id: Date.now().toString(),
         text,
@@ -126,8 +126,8 @@ const todoStore = createStoreMachine(initialState, {
     }),
 
   toggleTodo: (id: string) =>
-    mutate((draft) => {
-      const todo = draft.todos.find((todo) => todo.id === id);
+    mutate((draft: TodoStore) => {
+      const todo = draft.todos.find((todo: Todo) => todo.id === id);
       if (todo) {
         todo.completed = !todo.completed;
         draft.lastUpdated = Date.now();
@@ -135,8 +135,8 @@ const todoStore = createStoreMachine(initialState, {
     }),
 
   removeTodo: (id: string) =>
-    mutate((draft) => {
-      const index = draft.todos.findIndex((todo) => todo.id === id);
+    mutate((draft: TodoStore) => {
+      const index = draft.todos.findIndex((todo: Todo) => todo.id === id);
       if (index !== -1) {
         draft.todos.splice(index, 1);
         draft.lastUpdated = Date.now();
@@ -144,8 +144,8 @@ const todoStore = createStoreMachine(initialState, {
     }),
 
   updateTodoText: (id: string, text: string) =>
-    mutate((draft) => {
-      const todo = draft.todos.find((todo) => todo.id === id);
+    mutate((draft: TodoStore) => {
+      const todo = draft.todos.find((todo: Todo) => todo.id === id);
       if (todo) {
         todo.text = text;
         draft.lastUpdated = Date.now();
@@ -153,13 +153,13 @@ const todoStore = createStoreMachine(initialState, {
     }),
 
   setFilter: (filter: TodoStore["filter"]) =>
-    mutate((draft) => {
+    mutate((draft: TodoStore) => {
       draft.filter = filter;
     }),
 
   clearCompleted: () =>
-    mutate((draft) => {
-      draft.todos = draft.todos.filter((todo) => !todo.completed);
+    mutate((draft: TodoStore) => {
+      draft.todos = draft.todos.filter((todo: Todo) => !todo.completed);
       draft.lastUpdated = Date.now();
     }),
 });
