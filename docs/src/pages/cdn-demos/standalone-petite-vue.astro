@@ -1,0 +1,112 @@
+---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
+import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
+const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates,storeApi");
+const petiteVueUrl = "https://esm.sh/petite-vue@0.4.1";
+const sourceNote = `matchina@${matchinaVersion} + petite-vue@0.4 · ~6 KB · attribute-driven, mounts onto existing HTML`;
+---
+<CdnDemoLayout
+    title="Matchina + petite-vue"
+    eyebrow="Matchina · CDN demo · petite-vue"
+    headline="Progressive enhancement with"
+    headlineAccent="petite-vue"
+    sourceNote={sourceNote}
+>
+    <Fragment set:html={`
+    <article class="card" id="tl-card" v-scope="trafficScope()" @vue:mounted="mounted" v-cloak>
+        <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + petite-vue</span></div>
+        <div class="card-stage">
+            <div class="traffic">
+                <div class="light" data-color="Red"    :data-active="state === 'Red'"></div>
+                <div class="light" data-color="Yellow" :data-active="state === 'Yellow'"></div>
+                <div class="light" data-color="Green"  :data-active="state === 'Green'"></div>
+            </div>
+        </div>
+        <p class="state-line">state <code v-text="state"></code></p>
+        <div class="row">
+            <button @click="machine.next()">Next →</button>
+            <button class="secondary" @click="machine.reset()">Reset</button>
+        </div>
+        <footer><span class="log" v-text="log"></span></footer>
+    </article>
+
+    <article class="card" id="cnt-card" v-scope="counterScope()" @vue:mounted="mounted" v-cloak>
+        <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + petite-vue</span></div>
+        <div class="card-stage"><p class="count" v-text="value"></p></div>
+        <div class="row">
+            <button class="secondary" @click="api.decrement(5)">−5</button>
+            <button class="secondary" @click="api.decrement()">−1</button>
+            <button @click="api.increment()">+1</button>
+            <button @click="api.increment(5)">+5</button>
+        </div>
+        <div class="row">
+            <button class="outline" @click="api.set(100)">Set 100</button>
+            <button class="outline" @click="api.reset()">Reset</button>
+        </div>
+        <footer><span class="log" v-text="log"></span></footer>
+    </article>
+    `} />
+
+    <script slot="scripts" type="module" define:vars={{ matchinaUrl, petiteVueUrl }}>
+        const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
+        const { createApp } = await import(petiteVueUrl);
+
+        // ── Integration ────────────────────────────────────────────
+        // petite-vue's reactive scope is created from a plain object.
+        // Wire matchina's subscribe to mutate that object's keys —
+        // petite-vue picks up the change and re-renders bound nodes.
+        // No `useMatchina` helper needed; the scope IS the mirror.
+        // ────────────────────────────────────────────────────────────
+
+        const trafficStates = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = matchina(
+            trafficStates,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        );
+
+        const counter = createStore(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+        const api = storeApi(counter);
+
+        createApp({
+            trafficScope() {
+                return {
+                    machine: traffic,
+                    state: traffic.getState().key,
+                    log: 'waiting…',
+                    mounted() {
+                        traffic.subscribe(ev => {
+                            this.state = ev.to.key;
+                            this.log = `${ev.from.key} → ${ev.to.key}`;
+                        });
+                    },
+                };
+            },
+            counterScope() {
+                return {
+                    api,
+                    value: counter.getState(),
+                    log: 'waiting…',
+                    mounted() {
+                        counter.subscribe(ev => {
+                            this.value = ev.to;
+                            this.log = `${ev.from} → ${ev.to}`;
+                        });
+                    },
+                };
+            },
+        }).mount();
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</CdnDemoLayout>

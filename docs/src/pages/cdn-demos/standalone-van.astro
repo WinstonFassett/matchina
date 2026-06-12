@@ -1,0 +1,98 @@
+---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
+import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
+const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates,storeApi");
+const vanUrl = "https://esm.sh/vanjs-core@1.5.5";
+const sourceNote = `matchina@${matchinaVersion} + vanjs-core@1.5.5 · ~1.5 KB van + ~3 KB matchina`;
+---
+<CdnDemoLayout
+    title="Matchina + VanJS"
+    eyebrow="Matchina · CDN demo · VanJS"
+    headline="Reactive DOM with"
+    headlineAccent="VanJS"
+    sourceNote={sourceNote}
+>
+    <article class="card" id="tl-card"></article>
+    <article class="card" id="cnt-card"></article>
+
+    <script slot="scripts" type="module" define:vars={{ matchinaUrl, vanUrl }}>
+        const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
+        const { default: van } = await import(vanUrl);
+        const { div, p, span, code, footer, button } = van.tags;
+
+        // ── Integration ────────────────────────────────────────────
+        // matchina's `subscribe` fires after the lifecycle's `notify` phase,
+        // by which point `getState()` already returns the new value.
+        // We mirror that into a van.state — VanJS re-renders DOM bound
+        // to functions that read `state.val`.
+        const useMatchina = (m) => {
+            const s = van.state(m.getState());
+            m.subscribe(() => { s.val = m.getState(); });
+            return s;
+        };
+        // ────────────────────────────────────────────────────────────
+
+        // Traffic light
+        const trafficStates = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = matchina(
+            trafficStates,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        );
+        const tlState = useMatchina(traffic);
+        const tlLog = van.state('waiting…');
+        traffic.subscribe(ev => { tlLog.val = `${ev.from.key} → ${ev.to.key}`; });
+
+        const light = (color) => div({
+            class: () => `light ${tlState.val.key === color ? color.toLowerCase() : ''}`
+        });
+
+        van.add(document.getElementById('tl-card'),
+            div({ class: 'card-eyebrow' }, span({}, 'fig.01 — Traffic light'), span({ class: 'meta' }, 'matchina + van')),
+            div({ class: 'card-stage' },
+                div({ class: 'traffic' }, light('Red'), light('Yellow'), light('Green'))
+            ),
+            p({ class: 'state-line' }, 'state ', code({}, () => tlState.val.key)),
+            div({ class: 'row' },
+                button({ onclick: () => traffic.next() }, 'Next →'),
+                button({ class: 'secondary', onclick: () => traffic.reset() }, 'Reset'),
+            ),
+            footer({}, span({ class: 'log' }, () => tlLog.val)),
+        );
+
+        // Counter — using storeApi for typed dispatchers
+        const counter = createStore(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+        const api = storeApi(counter);
+        const cnt = useMatchina(counter);
+        const cntLog = van.state('waiting…');
+        counter.subscribe(ev => { cntLog.val = `${ev.from} → ${ev.to}`; });
+
+        van.add(document.getElementById('cnt-card'),
+            div({ class: 'card-eyebrow' }, span({}, 'fig.02 — Counter store'), span({ class: 'meta' }, 'createStore + van')),
+            div({ class: 'card-stage' }, p({ class: 'count' }, () => cnt.val)),
+            div({ class: 'row' },
+                button({ class: 'secondary', onclick: () => api.decrement(5) }, '−5'),
+                button({ class: 'secondary', onclick: () => api.decrement() }, '−1'),
+                button({ onclick: () => api.increment() }, '+1'),
+                button({ onclick: () => api.increment(5) }, '+5'),
+            ),
+            div({ class: 'row' },
+                button({ class: 'outline', onclick: () => api.set(100) }, 'Set 100'),
+                button({ class: 'outline', onclick: () => api.reset() }, 'Reset'),
+            ),
+            footer({}, span({ class: 'log' }, () => cntLog.val)),
+        );
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</CdnDemoLayout>

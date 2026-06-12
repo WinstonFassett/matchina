@@ -1,0 +1,104 @@
+---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
+import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
+const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates,storeApi");
+const solidUrl = "https://esm.sh/solid-js@1.9.3";
+const solidWebUrl = "https://esm.sh/solid-js@1.9.3/web";
+const solidHtmlUrl = "https://esm.sh/solid-js@1.9.3/html";
+const sourceNote = `matchina@${matchinaVersion} + solid-js@1.9 (html + web) · fine-grained reactivity, no JSX build`;
+---
+<CdnDemoLayout
+    title="Matchina + Solid"
+    eyebrow="Matchina · CDN demo · Solid"
+    headline="Fine-grained reactivity with"
+    headlineAccent="Solid"
+    sourceNote={sourceNote}
+>
+    <article class="card" id="tl-card"></article>
+    <article class="card" id="cnt-card"></article>
+
+    <script slot="scripts" type="module" define:vars={{ matchinaUrl, solidUrl, solidWebUrl, solidHtmlUrl }}>
+        const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
+        const { createSignal } = await import(solidUrl);
+        const { render } = await import(solidWebUrl);
+        const { default: html } = await import(solidHtmlUrl);
+
+        // ── Integration ────────────────────────────────────────────
+        // Solid signals are [get, set] tuples backed by fine-grained
+        // tracking. Mirror matchina's state into a signal in `subscribe`
+        // — Solid only re-runs the exact expressions that read the
+        // getter, not whole components. matchina's notify-phase
+        // subscribe pairs cleanly with this granularity.
+        const useMatchina = (m) => {
+            const [get, set] = createSignal(m.getState());
+            m.subscribe(() => set(() => m.getState()));
+            return get;
+        };
+        // ────────────────────────────────────────────────────────────
+
+        // Traffic light
+        const trafficStates = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = matchina(
+            trafficStates,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        );
+        const tlState = useMatchina(traffic);
+        const [tlLog, setTlLog] = createSignal('waiting…');
+        traffic.subscribe(ev => setTlLog(`${ev.from.key} → ${ev.to.key}`));
+
+        const TrafficCard = () => html`
+            <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + solid</span></div>
+            <div class="card-stage">
+                <div class="traffic">
+                    <div class=${() => `light ${tlState().key === 'Red' ? 'red' : ''}`}></div>
+                    <div class=${() => `light ${tlState().key === 'Yellow' ? 'yellow' : ''}`}></div>
+                    <div class=${() => `light ${tlState().key === 'Green' ? 'green' : ''}`}></div>
+                </div>
+            </div>
+            <p class="state-line">state <code>${() => tlState().key}</code></p>
+            <div class="row">
+                <button onClick=${() => traffic.next()}>Next →</button>
+                <button class="secondary" onClick=${() => traffic.reset()}>Reset</button>
+            </div>
+            <footer><span class="log">${tlLog}</span></footer>
+        `;
+        render(TrafficCard, document.getElementById('tl-card'));
+
+        // Counter
+        const counter = createStore(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+        const api = storeApi(counter);
+        const cnt = useMatchina(counter);
+        const [cntLog, setCntLog] = createSignal('waiting…');
+        counter.subscribe(ev => setCntLog(`${ev.from} → ${ev.to}`));
+
+        const CounterCard = () => html`
+            <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + solid</span></div>
+            <div class="card-stage"><p class="count">${cnt}</p></div>
+            <div class="row">
+                <button class="secondary" onClick=${() => api.decrement(5)}>−5</button>
+                <button class="secondary" onClick=${() => api.decrement()}>−1</button>
+                <button onClick=${() => api.increment()}>+1</button>
+                <button onClick=${() => api.increment(5)}>+5</button>
+            </div>
+            <div class="row">
+                <button class="outline" onClick=${() => api.set(100)}>Set 100</button>
+                <button class="outline" onClick=${() => api.reset()}>Reset</button>
+            </div>
+            <footer><span class="log">${cntLog}</span></footer>
+        `;
+        render(CounterCard, document.getElementById('cnt-card'));
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</CdnDemoLayout>

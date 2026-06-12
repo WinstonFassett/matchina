@@ -53,7 +53,7 @@ esm.sh bundles the entry into one file and lets you tree-shake to only the expor
 </script>
 ```
 
-[Open the live demo →](/matchina/cdn-demos/explore-esmsh/)
+[Open the live demo →](/matchina/cdn-demos/standalone-esmsh/)
 
 ### Simpler: jsDelivr `+esm`
 
@@ -69,13 +69,13 @@ jsDelivr's `+esm` endpoint also bundles into a single file, but doesn't take a t
 </script>
 ```
 
-[Open the live demo →](/matchina/cdn-demos/explore-jsdelivr/)
+[Open the live demo →](/matchina/cdn-demos/standalone-jsdelivr/)
 
 ### With a view framework
 
 matchina handles state transitions; it doesn't render anything. Pair it with any reactive view library that's also CDN-friendly. The bridge is one line: `machine.subscribe(ev => { viewState.x = ev.to.key })`.
 
-[ArrowJS](https://arrow-js.com/) is one good fit (no-build, tagged template literals, small). [Live demo →](/matchina/cdn-demos/explore-arrow/)
+[ArrowJS](https://arrow-js.com/) is one good fit (no-build, tagged template literals, small). [Live demo →](/matchina/cdn-demos/standalone-arrow/)
 
 ```html
 <script type="module">
