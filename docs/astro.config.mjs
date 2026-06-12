@@ -94,7 +94,8 @@ export default defineConfig({
                   items: [
                     { label: "Overview", link: "/guides/integration-patterns" },
                     { label: "React", link: "/guides/react" },
-                    { label: "HTML Artifacts", link: "/guides/html-starters" },
+                    { label: "Integration patterns", link: "/guides/integration-patterns" },
+                    { label: "HTML Starters", link: "/guides/html-starters" },
                   ],
                 },
                 ...(process.env.ENABLE_TYPEDOC ? [typeDocSidebarGroup] : []),

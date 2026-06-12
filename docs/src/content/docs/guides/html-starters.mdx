@@ -1,25 +1,52 @@
 ---
-title: HTML Artifacts
-description: Pair matchina with no-build reactive view libraries for single-file HTML artifacts.
+title: HTML Starters
+description: Pairing matchina with no-build reactive view libraries — patterns, comparison, and recommendations for HTML artifacts and standalone pages.
 ---
 
-import ArtifactMatrix from "../../../components/ArtifactMatrix.astro";
+import { Code } from "@astrojs/starlight/components";
 
-A single HTML file that loads matchina and a view library from a CDN. JSX works too via `esm.sh/tsx` (see the React Artifact below); for a build-step React project, the [React](/matchina/guides/react) page covers the usual hooks pattern. For adapter patterns across libraries, see [Frontend Integration Overview](/matchina/guides/integration-patterns).
+Matchina handles state transitions; it doesn't render anything. For build-step React projects, see [React](/matchina/guides/react). This page covers the other case: a single HTML file loading matchina and a view library from a CDN, no bundler involved — ideal for AI-generated artifacts, demos, MDX embeds, and progressive enhancement.
 
-## Imports
+The [Installation](/matchina/guides/installation) page covers loading matchina itself from a CDN. This page is about what to pair it with.
 
-Demos load from **esm.sh**. For other CDNs, see [Use from a CDN](/matchina/guides/installation#use-from-a-cdn).
+## Recommendations
 
-## Progressive Enhancement
+The two factors that matter most for HTML artifacts are **clean initial paint** and **code elegance**. Used idiomatically, only one library here delivers both:
 
-:::tip[Try it with JS off]
-Disable JS and open each demo. The **Progressive** column says what you'll see.
-:::
+- [**Stimulus**](/matchina/cdn-demos/standalone-stimulus/) — ~10 KB. Hotwire's idiomatic pattern *is* server-rendered HTML with controllers attaching behavior on connect, so there's no flash — the page paints the real content immediately. A reusable `MatchinaController` base (~20 LOC, written once) keeps per-controller code short.
 
-<ArtifactMatrix />
+Everything else, in its idiomatic shape, mounts the whole card from JS — meaning the user sees an empty (or hidden) card until scripts download, parse, and mount. The demos below show each library's idiomatic pairing with matchina, useful as a reference for what the integration shape looks like in each ecosystem — not as picks for instant-paint artifacts.
 
-## Considerations
+## Other libraries surveyed
 
-- **Static HTML.** Need the card to render before JS runs? Stimulus, Vanilla, Alpine, petite-vue, Vue 3.
-- **Footprint.** ~1.5 KB (VanJS) to ~40 KB (Vue 3).
+**Card mounted entirely from JS** — the HTML is an empty `<article>`; the framework builds the contents
+
+- [VanJS](/matchina/cdn-demos/standalone-van/) — ~1.5 KB. Smallest reactive option; reads like declarative DOM.
+- [Solid](/matchina/cdn-demos/standalone-solid/) — ~7 KB. Fine-grained reactivity; idiomatic.
+- [Preact + signals + htm](/matchina/cdn-demos/standalone-preact/) — ~10 KB. JSX-ish components in a tenth the size of React.
+- [ArrowJS](/matchina/cdn-demos/standalone-arrow/) — ~3 KB. Tagged-template reactive; tiny and terse.
+
+**Card markup in HTML, hidden until mount** — `v-cloak` / `x-cloak` hides the card until bindings resolve, so the user doesn't briefly see unresolved expressions
+
+- [petite-vue](/matchina/cdn-demos/standalone-petite-vue/) — ~6 KB. Attribute-driven progressive enhancement on existing HTML.
+- [Alpine.js](/matchina/cdn-demos/standalone-alpine/) — ~15 KB. Same attribute-driven shape as petite-vue with broader ecosystem and tooling.
+- [Vue 3](/matchina/cdn-demos/standalone-vue/) — ~40 KB. Full Vue runtime, same pattern.
+
+**Baselines (no view library)**
+
+- [esm.sh tree-shaken](/matchina/cdn-demos/standalone-esmsh/) and [jsDelivr `+esm`](/matchina/cdn-demos/standalone-jsdelivr/) — imperative DOM. Footprint reference for what matchina alone costs.
+
+### At a glance
+
+| Demo | View lib (gz) | Demo card on first paint |
+|---|---:|---|
+| Stimulus | ~10 KB | **fully rendered, real values** |
+| VanJS | **~1.5 KB** | empty `<article>`, built from JS |
+| Solid | ~7 KB | empty `<article>`, built from JS |
+| Preact + signals | ~10 KB | empty `<article>`, built from JS |
+| ArrowJS | ~3 KB | empty `<article>`, built from JS |
+| petite-vue | ~6 KB | full markup, hidden until mount |
+| Alpine.js | ~15 KB | full markup, hidden until mount |
+| Vue 3 | ~40 KB | full markup, hidden until mount |
+
+Demo source files are all ~100 LOC — see each demo for specifics. For how matchina bridges to each library's reactivity model, see [Integration patterns](/matchina/guides/integration-patterns).
