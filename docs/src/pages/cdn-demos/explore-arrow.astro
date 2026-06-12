@@ -1,0 +1,109 @@
+---
+import { cdnUrls } from "@/lib/matchina-version";
+const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates");
+const arrowUrl = "https://esm.sh/@arrow-js/core@1.0.6";
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchina + ArrowJS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style is:global>
+        .traffic { display: inline-flex; flex-direction: column; gap: 0.5rem; padding: 1rem; background: #1e293b; border-radius: 0.5rem; }
+        .light { width: 3rem; height: 3rem; border-radius: 50%; background: #334155; transition: background 0.2s, box-shadow 0.2s; }
+        .light.red { background: #ef4444; box-shadow: 0 0 1rem #ef4444; }
+        .light.yellow { background: #eab308; box-shadow: 0 0 1rem #eab308; }
+        .light.green { background: #22c55e; box-shadow: 0 0 1rem #22c55e; }
+        .count { font-size: 3rem; font-variant-numeric: tabular-nums; text-align: center; margin: 0.5rem 0; }
+        .log { font-family: monospace; font-size: 0.85rem; min-height: 1.5em; opacity: 0.7; }
+        .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <hgroup>
+            <h1>Matchina + ArrowJS</h1>
+            <p>matchina state machine drives Arrow reactive rendering · both via esm.sh</p>
+        </hgroup>
+        <p><small>Styled with <a href="https://picocss.com/" target="_blank" rel="noopener">Pico.css v2</a> (classless) from jsDelivr</small></p>
+
+        <div class="grid">
+            <article id="tl-card"></article>
+            <article id="cnt-card"></article>
+        </div>
+    </main>
+
+    <script type="module" define:vars={{ matchinaUrl, arrowUrl }}>
+        const { matchina, defineStates, createStore } = await import(matchinaUrl);
+        const { reactive, html } = await import(arrowUrl);
+
+        // --- Traffic light: matchina drives reactive state -----------------
+        const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = matchina(
+            states,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        );
+
+        const tl = reactive({ state: traffic.getState().key, log: 'waiting…' });
+        traffic.subscribe(ev => {
+            tl.state = ev.to.key;
+            tl.log = `${ev.from.key} → ${ev.to.key}`;
+        });
+
+        html`
+            <header><strong>Traffic Light</strong></header>
+            <div class="traffic">
+                <div class="${() => `light ${tl.state === 'Red'    ? 'red'    : ''}`}"></div>
+                <div class="${() => `light ${tl.state === 'Yellow' ? 'yellow' : ''}`}"></div>
+                <div class="${() => `light ${tl.state === 'Green'  ? 'green'  : ''}`}"></div>
+            </div>
+            <p><code>${() => tl.state}</code></p>
+            <div class="row">
+                <button @click="${() => traffic.next()}">Next</button>
+                <button class="secondary" @click="${() => traffic.reset()}">Reset</button>
+            </div>
+            <footer><small class="log">${() => tl.log}</small></footer>
+        `(document.getElementById('tl-card'));
+
+        // --- Counter: store drives reactive state ------------------
+        const counter = createStore(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+
+        const cnt = reactive({ value: counter.getState(), log: 'waiting…' });
+        counter.subscribe(ev => {
+            cnt.value = counter.getState();
+            cnt.log = `${ev.from} → ${ev.to}`;
+        });
+
+        html`
+            <header><strong>Counter Store</strong></header>
+            <p class="count">${() => cnt.value}</p>
+            <div class="row">
+                <button class="secondary" @click="${() => counter.decrement(5)}">−5</button>
+                <button class="secondary" @click="${() => counter.decrement()}">−1</button>
+                <button @click="${() => counter.increment()}">+1</button>
+                <button @click="${() => counter.increment(5)}">+5</button>
+            </div>
+            <div class="row">
+                <button class="outline" @click="${() => counter.set(100)}">Set 100</button>
+                <button class="outline" @click="${() => counter.reset()}">Reset</button>
+            </div>
+            <footer><small class="log">${() => cnt.log}</small></footer>
+        `(document.getElementById('cnt-card'));
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+---
+import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
+const jsdelivrUrl = cdnUrls.jsdelivr;
+const sourceNote = `cdn.jsdelivr.net/npm/matchina@${matchinaVersion}/+esm · one request, full bundle`;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchina via jsDelivr +esm</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style is:global>
+        .traffic { display: inline-flex; flex-direction: column; gap: 0.5rem; padding: 1rem; background: #1e293b; border-radius: 0.5rem; }
+        .light { width: 3rem; height: 3rem; border-radius: 50%; background: #334155; transition: background 0.2s, box-shadow 0.2s; }
+        .light.red { background: #ef4444; box-shadow: 0 0 1rem #ef4444; }
+        .light.yellow { background: #eab308; box-shadow: 0 0 1rem #eab308; }
+        .light.green { background: #22c55e; box-shadow: 0 0 1rem #22c55e; }
+        .count { font-size: 3rem; font-variant-numeric: tabular-nums; text-align: center; margin: 0.5rem 0; }
+        .log { font-family: monospace; font-size: 0.85rem; min-height: 1.5em; opacity: 0.7; }
+        .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <hgroup>
+            <h1>Matchina via jsDelivr +esm</h1>
+            <p>{sourceNote}</p>
+        </hgroup>
+        <p><small>Styled with <a href="https://picocss.com/" target="_blank" rel="noopener">Pico.css v2</a> (classless) from jsDelivr</small></p>
+
+        <div class="grid">
+            <article>
+                <header><strong>Traffic Light</strong></header>
+                <div class="traffic">
+                    <div class="light" id="red"></div>
+                    <div class="light" id="yellow"></div>
+                    <div class="light" id="green"></div>
+                </div>
+                <p><code id="tl-state">Red</code></p>
+                <div class="row">
+                    <button id="tl-next">Next</button>
+                    <button id="tl-reset" class="secondary">Reset</button>
+                </div>
+                <footer><small class="log" id="tl-log">waiting…</small></footer>
+            </article>
+
+            <article>
+                <header><strong>Counter Store</strong></header>
+                <p class="count" id="counter-value">0</p>
+                <div class="row">
+                    <button id="cnt-dec-5" class="secondary">−5</button>
+                    <button id="cnt-dec" class="secondary">−1</button>
+                    <button id="cnt-inc">+1</button>
+                    <button id="cnt-inc-5">+5</button>
+                </div>
+                <div class="row">
+                    <button id="cnt-set" class="outline">Set 100</button>
+                    <button id="cnt-reset" class="outline">Reset</button>
+                </div>
+                <footer><small class="log" id="cnt-log">waiting…</small></footer>
+            </article>
+        </div>
+    </main>
+
+    <script type="module" define:vars={{ jsdelivrUrl }}>
+        const { matchina, defineStates, createStore } = await import(jsdelivrUrl);
+
+        const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
+        const traffic = matchina(
+            states,
+            {
+                Red:    { next: 'Green',  reset: 'Red' },
+                Green:  { next: 'Yellow', reset: 'Red' },
+                Yellow: { next: 'Red',    reset: 'Red' },
+            },
+            'Red'
+        );
+
+        const tlState = document.getElementById('tl-state');
+        const tlLog = document.getElementById('tl-log');
+        const lights = { Red: document.getElementById('red'), Yellow: document.getElementById('yellow'), Green: document.getElementById('green') };
+        function paintTraffic() {
+            const key = traffic.getState().key;
+            tlState.textContent = key;
+            for (const k of Object.keys(lights)) {
+                lights[k].className = `light ${k === key ? k.toLowerCase() : ''}`;
+            }
+        }
+        traffic.subscribe(ev => {
+            paintTraffic();
+            tlLog.textContent = `${ev.from.key} → ${ev.to.key}`;
+        });
+        paintTraffic();
+        document.getElementById('tl-next').onclick  = () => traffic.next();
+        document.getElementById('tl-reset').onclick = () => traffic.reset();
+
+        const counter = createStore(0, {
+            increment: (amt = 1) => (ch) => ch.from + amt,
+            decrement: (amt = 1) => (ch) => ch.from - amt,
+            set: (value) => value,
+            reset: () => 0,
+        });
+        const cntValue = document.getElementById('counter-value');
+        const cntLog = document.getElementById('cnt-log');
+        counter.subscribe(ev => {
+            cntValue.textContent = counter.getState();
+            cntLog.textContent = `${ev.from} → ${ev.to}`;
+        });
+        cntValue.textContent = counter.getState();
+        document.getElementById('cnt-inc').onclick   = () => counter.increment();
+        document.getElementById('cnt-dec').onclick   = () => counter.decrement();
+        document.getElementById('cnt-inc-5').onclick = () => counter.increment(5);
+        document.getElementById('cnt-dec-5').onclick = () => counter.decrement(5);
+        document.getElementById('cnt-set').onclick   = () => counter.set(100);
+        document.getElementById('cnt-reset').onclick = () => counter.reset();
+
+        window.traffic = traffic;
+        window.counter = counter;
+    </script>
+</body>
+</html>
