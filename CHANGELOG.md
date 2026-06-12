@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.0
+
+[compare changes](https://github.com/WinstonFassett/matchina/compare/v0.3.0-alpha.0...v0.3.0)
+
+### 📖 Documentation
+
+- **cdn:** Add standalone CDN demo pages ([be30dbd87](https://github.com/WinstonFassett/matchina/commit/be30dbd87))
+- **cdn:** Bump demos to matchina@0.3.0-alpha.0 + new API ([8a3c06eab](https://github.com/WinstonFassett/matchina/commit/8a3c06eab))
+- **guides:** Expand installation with CDN / no-build options ([8317cb056](https://github.com/WinstonFassett/matchina/commit/8317cb056))
+- **quickstart:** Reorder install / code / preview ([aee6fc532](https://github.com/WinstonFassett/matchina/commit/aee6fc532))
+- **cdn:** Port demos to astro pages, note Pico.css styling ([972379338](https://github.com/WinstonFassett/matchina/commit/972379338))
+- **cdn:** Switch demos to Open Props + shared demo.css ([69b46c519](https://github.com/WinstonFassett/matchina/commit/69b46c519))
+- **cdn:** Drop Open Props, go vanilla CSS ([ba636b75d](https://github.com/WinstonFassett/matchina/commit/ba636b75d))
+- **cdn:** Add VanJS/Preact/Solid/Vue/petite-vue/Stimulus standalone demos ([cdb010419](https://github.com/WinstonFassett/matchina/commit/cdb010419))
+
+### ❤️ Contributors
+
+- Winston Fassett <dev@winstonfassett.com>
+
 ## v0.3.0-alpha.0
 
 [compare changes](https://github.com/WinstonFassett/matchina/compare/v0.1.1...v0.3.0-alpha.0)
