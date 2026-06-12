@@ -7,7 +7,7 @@ import ArtifactMatrix from "../../../components/ArtifactMatrix.astro";
 
 Matchina runs state machines. Rendering is your view library's job. For build-step React projects, see [React](/matchina/guides/react). This page covers the other case: a single HTML file that loads matchina and a view library from a CDN, no bundler involved. Good for AI-generated artifacts, demos, MDX embeds, and progressive enhancement.
 
-The [Installation](/matchina/guides/installation) page covers loading matchina itself from a CDN. This page is about what to pair it with. CDN choice is orthogonal: any artifact can load matchina (and its view lib) from esm.sh, jsDelivr, or unpkg. Pick whichever URL shape you prefer.
+Every demo on this page loads matchina (and its view library) from **esm.sh** by default, for minimal dependencies and tree-shaking. The same code works through jsDelivr `+esm` or other ESM-friendly CDNs with no other changes — see [Installation](/matchina/guides/installation#use-from-a-cdn) for the tradeoffs and a [jsDelivr variant](/matchina/cdn-demos/standalone-jsdelivr/) of the vanilla demo.
 
 ## Comparison
 
@@ -19,14 +19,14 @@ Disable JavaScript in your browser before opening each demo to see what actually
 
 **Static HTML in demo** is a property of how each demo is written, not a library capability:
 
-- **Yes** (Stimulus, esm.sh, jsDelivr, Alpine, petite-vue, Vue 3): the demo's static HTML contains initial values for the visible state. JS off shows a styled card with the starting label and lights. Buttons are dead, but the card reads as content. For the three attribute-driven ones, this means hand-authoring `data-active="true"` on the active light and inlining text fallbacks inside `v-text` / `x-text` bindings — patterns the library overlays reactively on mount.
+- **Yes** (Stimulus, Vanilla, Alpine, petite-vue, Vue 3): the demo's static HTML contains initial values for the visible state. JS off shows a styled card with the starting label and lights. Buttons are dead, but the card reads as content. For the three attribute-driven ones, this means hand-authoring `data-active="true"` on the active light and inlining text fallbacks inside `v-text` / `x-text` bindings, patterns the library overlays reactively on mount.
 - **Not in this pattern** (VanJS, Solid, Preact, ArrowJS): the mount target is an empty `<article>` and JS constructs everything. JS off shows nothing. Adapting these to host static HTML means reworking the integration, not just editing markup.
 
 ## Considerations
 
 A few heuristics for picking an artifact pairing:
 
-- **Static HTML.** If the artifact gets statically rendered, embedded, or AI-generated and read before JS runs, you want initial values in the markup. Six of the demos ship that way. The bottom four can't without rewriting the integration.
+- **Static HTML.** If the artifact gets statically rendered, embedded, or AI-generated and read before JS runs, you want initial values in the markup. Five of the demos ship that way. The bottom four can't without rewriting the integration.
 - **Footprint.** For embeds, KBs add up. VanJS (~1.5 KB) and ArrowJS (~3 KB) sit at the floor. Vue 3 (~40 KB) sits at the ceiling.
 - **Authoring shape.** Attribute-driven (Alpine, petite-vue) reads like HTML with sprinkles. JSX-ish (`htm` + Preact) reads like React. Declarative DOM (VanJS) reads like plain JS. Pick whatever your likely editor will recognize on sight.
 - **Idiomatic pairing.** Each demo uses its library the way that community uses it. If you adapt the pattern, expect to re-learn the bridge.
