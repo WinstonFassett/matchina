@@ -8,30 +8,22 @@ import machineCode from "@code/examples/traffic-light/machine.ts?raw";
 import viewCode from "@code/examples/traffic-light/TrafficLightView.tsx?raw";
 import indexCode from "@code/examples/traffic-light/index.tsx?raw";
 import CodeTabs from "@components/CodeTabs.astro";
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-import Installation from "./installation.mdx";
+import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
 
-{/* Matchina is a TypeScript library for building type-safe state machines with clear transition definitions. It provides:
+## Install
 
-- **Type-safe state transitions**: Define exactly which state can transition to which other states
-- **State-specific data**: Each state can have its own typed data structure
-- **Simple API**: Create and interact with state machines through a clean, intuitive API
-- **TypeScript integration**: Full type safety and
-  IDE autocompletion */}
+<Tabs syncKey="pkg">
+  <TabItem label="npm"><Code code="npm install matchina" lang="sh" /></TabItem>
+  <TabItem label="pnpm"><Code code="pnpm add matchina" lang="sh" /></TabItem>
+  <TabItem label="yarn"><Code code="yarn add matchina" lang="sh" /></TabItem>
+  <TabItem label="bun"><Code code="bun add matchina" lang="sh" /></TabItem>
+</Tabs>
 
-## Installation
+See [Installation](/matchina/guides/installation) for CDN usage and no-build options.
 
-<Installation />
+## Example: Traffic Light
 
-## Interactive Example: Traffic Light
-
-Here's a simple traffic light state machine that demonstrates Matchina's core concepts:
-
-<div className="not-content">
-  <TrafficLightExample client:only="react" />
-</div>
-
-## Source Code
+A simple traffic light state machine that demonstrates Matchina's core concepts:
 
 <CodeTabs
   files={[
@@ -40,6 +32,12 @@ Here's a simple traffic light state machine that demonstrates Matchina's core co
     { name: "index.tsx", code: indexCode },
   ]}
 />
+
+### Preview
+
+<div className="not-content">
+  <TrafficLightExample client:only="react" />
+</div>
 
 For a detailed walkthrough and explanation, see the [Traffic Light Example](/matchina/examples/traffic-light).
 
