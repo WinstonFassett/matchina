@@ -37,9 +37,10 @@
 
 * { box-sizing: border-box; }
 
-/* Hide Vue/petite-vue scopes until they mount — prevents flash of
-   raw `{{ ... }}` template syntax and unbound `:attrs`. */
-[v-cloak] { visibility: hidden; }
+/* Hide Vue/petite-vue/Alpine scopes until they mount — prevents flash
+   of unbound `:attrs` and pre-mount text values. */
+[v-cloak],
+[x-cloak] { visibility: hidden; }
 
 body {
     margin: 0;

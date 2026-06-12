@@ -1,0 +1,36 @@
+---
+title: Integration patterns
+description: How matchina bridges to reactive view libraries — three patterns that cover the common cases.
+---
+
+Matchina doesn't render anything. To get it onto a page you bridge `subscribe` to whatever the view library uses to track state. Across the libraries surveyed in [HTML Starters](/matchina/guides/html-starters), the bridge falls into three shapes.
+
+## Signal-style — `useMatchina` helper
+
+For libraries with a reactive primitive (`signal`, `ref`, `state`), the bridge is a four-line helper that mirrors matchina state into the primitive:
+
+```js
+const useMatchina = (m) => {
+  const s = signal(m.getState());          // or ref / van.state / etc.
+  m.subscribe(() => { s.value = m.getState(); });
+  return s;
+};
+```
+
+Used by **VanJS, Preact (signals), Solid, Vue 3**.
+
+## Scope-style — mutate-on-subscribe
+
+For libraries where the reactive unit is a plain-object scope (petite-vue, Alpine.js), no helper is needed — the subscribe callback mutates scope keys directly:
+
+```js
+mounted() {
+  this.machine.subscribe(ev => {
+    this.state = ev.to.key;
+  });
+}
+```
+
+## Controller-style — base class
+
+For Hotwire/Stimulus, one reusable base controller wires `subscribe` to `render(state)`. Both factory machines and `storeApi(store)` expose transitions as methods, so the action dispatcher just calls `this.api[action](...args)`. The base class is ~20 lines, then each controller is short.
