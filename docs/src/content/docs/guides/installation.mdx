@@ -1,9 +1,13 @@
 ---
 title: Install Matchina
-description: Get started with Matchina
+description: Add matchina to a project — via npm, or directly from a CDN with no build step
 ---
 
-import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
+import { Tabs, TabItem, Code, Aside } from "@astrojs/starlight/components";
+
+There are two ways to use matchina: install it from npm into a bundled project, or load it from a CDN with no build step. The latter is well-suited to demos, learning, AI-generated artifacts, and anywhere a build pipeline is overkill.
+
+## Install from npm
 
 <Tabs syncKey="pkg">
   <TabItem label="npm"><Code code="npm install matchina" lang="sh" /></TabItem>
@@ -11,3 +15,101 @@ import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
   <TabItem label="yarn"><Code code="yarn add matchina" lang="sh" /></TabItem>
   <TabItem label="bun"><Code code="bun add matchina" lang="sh" /></TabItem>
 </Tabs>
+
+Then import as usual:
+
+```ts
+import { matchina, createStore, defineStates } from "matchina";
+```
+
+## Use from a CDN
+
+You can load matchina directly from a CDN inside a `<script type="module">` — no package manager, no bundler, no build step.
+
+There are three reasonable approaches, in order from smallest footprint to simplest URL.
+
+### Recommended: esm.sh tree-shaken
+
+esm.sh bundles the entry into one file and lets you tree-shake to only the exports you actually use via the `?exports=` query parameter. For the typical "machine + store + subscribe" footprint, this comes in around **2.8 KB gzipped**.
+
+```html
+<script type="module">
+  const { matchina, createStore, defineStates } = await import(
+    'https://esm.sh/matchina@0.3.0-alpha.0?bundle&exports=matchina,createStore,defineStates'
+  );
+
+  const traffic = matchina(
+    defineStates({ Red: undefined, Yellow: undefined, Green: undefined }),
+    {
+      Red:    { next: 'Green',  reset: 'Red' },
+      Green:  { next: 'Yellow', reset: 'Red' },
+      Yellow: { next: 'Red',    reset: 'Red' },
+    },
+    'Red'
+  );
+
+  traffic.subscribe(ev => console.log(ev.from.key, '→', ev.to.key));
+  traffic.next();
+</script>
+```
+
+[Open the live demo →](/matchina/cdn-demos/explore-esmsh.html)
+
+### Simpler: jsDelivr `+esm`
+
+jsDelivr's `+esm` endpoint also bundles into a single file, but doesn't take a tree-shake hint — you get the full library (~5 KB gzipped). The URL is shorter and there's no `?exports=` list to maintain.
+
+```html
+<script type="module">
+  const { matchina, createStore, defineStates } = await import(
+    'https://cdn.jsdelivr.net/npm/matchina@0.3.0-alpha.0/+esm'
+  );
+
+  // ... same machine code as above
+</script>
+```
+
+[Open the live demo →](/matchina/cdn-demos/explore-jsdelivr.html)
+
+### With a view framework
+
+matchina handles state transitions; it doesn't render anything. Pair it with any reactive view library that's also CDN-friendly. The bridge is one line: `machine.subscribe(ev => { viewState.x = ev.to.key })`.
+
+[ArrowJS](https://arrow-js.com/) is one good fit (no-build, tagged template literals, small). [Live demo →](/matchina/cdn-demos/explore-arrow.html)
+
+```html
+<script type="module">
+  const { matchina, defineStates } = await import(
+    'https://esm.sh/matchina@0.3.0-alpha.0?bundle&exports=matchina,defineStates'
+  );
+  const { reactive, html } = await import('https://esm.sh/@arrow-js/core@1.0.6');
+
+  const traffic = matchina(/* ... */);
+  const view = reactive({ state: traffic.getState().key });
+  traffic.subscribe(ev => { view.state = ev.to.key; });
+
+  html`<div>${() => view.state}</div>`(document.body);
+</script>
+```
+
+Other reactive libs that work the same way: lit-html, Petite Vue, Solid, Preact signals.
+
+## Footprint comparison
+
+Measured against `matchina@0.3.0-alpha.0` for `{ matchina, createStore, defineStates }`:
+
+| Approach | Raw | Gzipped | Requests |
+|---|---:|---:|---:|
+| esm.sh `?bundle&exports=…` | 6.6 KB | **2.8 KB** | 2 |
+| jsDelivr `+esm` | 14 KB | **5.0 KB** | 1 |
+| unpkg (raw `dist/`) | n/a | n/a | **37+** |
+
+unpkg serves the published files verbatim, which for matchina is a re-export shim that fans out into ~37 chained requests — don't use it.
+
+## Version pinning
+
+The examples above pin to `matchina@0.3.0-alpha.0`. Unpinned URLs (e.g. `https://esm.sh/matchina`) resolve to npm's `latest` dist-tag, which currently points at an older release. Pin to a specific version until you're ready to track `latest` deliberately.
+
+<Aside type="caution">
+  Don't pin to a dist-tag like `@alpha` in published artifacts — a future alpha could change the API or shape without notice. Pin to a concrete version.
+</Aside>
