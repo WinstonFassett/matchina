@@ -19,6 +19,7 @@ const rows: Row[] = [
   { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Alpine bindings overlay on mount" },
   { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; v-scope mounts on top" },
   { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Vue replaces them reactively on mount" },
+  { name: "React Artifact",        slug: "standalone-react",      size: "~45 KB",  progressive: "no",  shape: "TSX (no build)",  notes: "esm.sh/tsx compiles TSX on load; React mounts into empty <article>" },
   { name: "VanJS Artifact",        slug: "standalone-van",        size: "~1.5 KB", progressive: "no",  shape: "Declarative DOM", notes: "Empty <article>; JS builds the card" },
   { name: "Solid Artifact",        slug: "standalone-solid",      size: "~7 KB",   progressive: "no",  shape: "Fine-grained",    notes: "Empty <article>; JS builds the card" },
   { name: "Preact Artifact",       slug: "standalone-preact",     size: "~10 KB",  progressive: "no",  shape: "JSX-ish (htm)",   notes: "Empty <article>; JS builds the card" },
