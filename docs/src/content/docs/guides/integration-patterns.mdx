@@ -1,15 +1,15 @@
 ---
 title: Frontend Integration Overview
-description: How matchina bridges to reactive view libraries. Three patterns cover the common cases.
+description: How matchina adapts to reactive view libraries. Three patterns cover the common cases.
 ---
 
-Matchina runs state machines. Rendering is your view library's job. The bridge between them takes one of three shapes depending on what reactive primitive you have on hand.
+Matchina doesn't render. Pick an adapter based on what your view library exposes.
 
-For build-step React projects, see [React](/matchina/guides/react). For no-build HTML pages (AI-generated artifacts, demos, MDX embeds, progressive enhancement), see [HTML Artifacts](/matchina/guides/html-starters).
+For React with a build step, see [React](/matchina/guides/react). For no-build HTML pages, see [HTML Artifacts](/matchina/guides/html-starters).
 
 ## Signal-style: `useMatchina` helper
 
-If your view library exposes a reactive primitive (`signal`, `ref`, `state`), write a four-line helper that mirrors matchina state into the primitive:
+A reactive primitive (`signal`, `ref`, `state`) — VanJS, Preact signals, Solid, Vue 3:
 
 ```js
 const useMatchina = (m) => {
@@ -19,11 +19,9 @@ const useMatchina = (m) => {
 };
 ```
 
-VanJS, Preact (signals), Solid, and Vue 3 all use this shape.
-
 ## Scope-style: mutate on subscribe
 
-If the reactive unit is a plain-object scope (petite-vue, Alpine), skip the helper. The subscribe callback writes directly to scope keys:
+A plain-object scope (petite-vue, Alpine) — no helper needed; the callback writes scope keys:
 
 ```js
 mounted() {
@@ -35,4 +33,4 @@ mounted() {
 
 ## Controller-style: base class
 
-For Hotwire/Stimulus, write one reusable base controller that wires `subscribe` to `render(state)`. Factory machines and `storeApi(store)` both expose transitions as methods, so the action dispatcher just calls `this.api[action](...args)`. The base class is about 20 lines. Each controller after that is short.
+For Hotwire/Stimulus, one base controller wires `subscribe` to `render(state)`. Factory machines and `storeApi(store)` expose transitions as methods, so the dispatcher is `this.api[action](...args)`. ~20 lines once; per-controller code stays short.
