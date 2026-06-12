@@ -15,8 +15,7 @@ interface Row {
 
 const rows: Row[] = [
   { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  paint: "yes",   shape: "Controller",      notes: "HTML has initial values; controllers attach on connect" },
-  { name: "esm.sh Artifact",       slug: "standalone-esmsh",      size: "—",       paint: "yes",   shape: "Vanilla",         notes: "HTML has initial values; JS wires interactions" },
-  { name: "jsDelivr Artifact",     slug: "standalone-jsdelivr",   size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Same as esm.sh via jsDelivr +esm" },
+  { name: "Vanilla Artifact",      slug: "standalone-esmsh",      size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Matchina alone, no view library; HTML is the card" },
   { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; Alpine bindings overlay on mount" },
   { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; v-scope mounts on top" },
   { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  paint: "yes",   shape: "Attribute",       notes: "HTML has initial values; Vue replaces them reactively on mount" },
