@@ -12,27 +12,29 @@ const sourceNote = `matchina@${matchinaVersion} + alpinejs@3.14 · ~15 KB · att
     headlineAccent="Alpine.js"
     sourceNote={sourceNote}
 >
+    {/* Initial values are inlined so the card paints with JS off. Alpine
+        attaches reactive bindings on mount and replaces them in place. */}
     <Fragment set:html={`
-    <article class="card" x-data="trafficScope()" x-init="init()" x-cloak>
+    <article class="card" x-data="trafficScope()" x-init="init()">
         <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + alpine</span></div>
         <div class="card-stage">
             <div class="traffic">
-                <div class="light" data-color="Red"    :data-active="state === 'Red'"></div>
-                <div class="light" data-color="Yellow" :data-active="state === 'Yellow'"></div>
-                <div class="light" data-color="Green"  :data-active="state === 'Green'"></div>
+                <div class="light" data-color="Red"    data-active="true"  :data-active="state === 'Red'"></div>
+                <div class="light" data-color="Yellow" data-active="false" :data-active="state === 'Yellow'"></div>
+                <div class="light" data-color="Green"  data-active="false" :data-active="state === 'Green'"></div>
             </div>
         </div>
-        <p class="state-line">state <code x-text="state"></code></p>
+        <p class="state-line">state <code x-text="state">Red</code></p>
         <div class="row">
             <button @click="machine.next()">Next →</button>
             <button class="secondary" @click="machine.reset()">Reset</button>
         </div>
-        <footer><span class="log" x-text="log"></span></footer>
+        <footer><span class="log" x-text="log">waiting…</span></footer>
     </article>
 
-    <article class="card" x-data="counterScope()" x-init="init()" x-cloak>
+    <article class="card" x-data="counterScope()" x-init="init()">
         <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + alpine</span></div>
-        <div class="card-stage"><p class="count" x-text="value"></p></div>
+        <div class="card-stage"><p class="count" x-text="value">0</p></div>
         <div class="row">
             <button class="secondary" @click="api.decrement(5)">−5</button>
             <button class="secondary" @click="api.decrement()">−1</button>
@@ -43,7 +45,7 @@ const sourceNote = `matchina@${matchinaVersion} + alpinejs@3.14 · ~15 KB · att
             <button class="outline" @click="api.set(100)">Set 100</button>
             <button class="outline" @click="api.reset()">Reset</button>
         </div>
-        <footer><span class="log" x-text="log"></span></footer>
+        <footer><span class="log" x-text="log">waiting…</span></footer>
     </article>
     `} />
 

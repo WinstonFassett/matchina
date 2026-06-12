@@ -17,17 +17,16 @@ Disable JavaScript in your browser before opening each demo to see what actually
 
 <ArtifactMatrix />
 
-**Static HTML in demo** describes what the *demo author* wrote into the page, not what the library forces:
+**Static HTML in demo** is a property of how each demo is written, not a library capability:
 
-- **Hand-authored** (Stimulus, esm.sh, jsDelivr): the demo's static HTML contains initial values for the visible state. JS off shows a styled card with the starting label and lights. Buttons are dead, but the card reads as content.
-- **Possible (not done)** (Alpine, petite-vue, Vue 3): the library *can* progressively enhance hand-authored HTML, but these demos use `{{ }}` bindings throughout and hide them with `v-cloak` / `x-cloak`. JS off shows a blank card. Edit the HTML to inline initial values and you'd get the same result as the "Hand-authored" row.
+- **Yes** (Stimulus, esm.sh, jsDelivr, Alpine, petite-vue, Vue 3): the demo's static HTML contains initial values for the visible state. JS off shows a styled card with the starting label and lights. Buttons are dead, but the card reads as content. For the three attribute-driven ones, this means hand-authoring `data-active="true"` on the active light and inlining text fallbacks inside `v-text` / `x-text` bindings — patterns the library overlays reactively on mount.
 - **Not in this pattern** (VanJS, Solid, Preact, ArrowJS): the mount target is an empty `<article>` and JS constructs everything. JS off shows nothing. Adapting these to host static HTML means reworking the integration, not just editing markup.
 
 ## Considerations
 
 A few heuristics for picking an artifact pairing:
 
-- **Static HTML.** If the artifact gets statically rendered, embedded, or AI-generated and read before JS runs, you want initial values in the markup. The three "Hand-authored" rows ship that way. Alpine, petite-vue, and Vue 3 can do the same with markup edits. The bottom four can't without rewriting the integration.
+- **Static HTML.** If the artifact gets statically rendered, embedded, or AI-generated and read before JS runs, you want initial values in the markup. Six of the demos ship that way. The bottom four can't without rewriting the integration.
 - **Footprint.** For embeds, KBs add up. VanJS (~1.5 KB) and ArrowJS (~3 KB) sit at the floor. Vue 3 (~40 KB) sits at the ceiling.
 - **Authoring shape.** Attribute-driven (Alpine, petite-vue) reads like HTML with sprinkles. JSX-ish (`htm` + Preact) reads like React. Declarative DOM (VanJS) reads like plain JS. Pick whatever your likely editor will recognize on sight.
 - **Idiomatic pairing.** Each demo uses its library the way that community uses it. If you adapt the pattern, expect to re-learn the bridge.
