@@ -2,34 +2,34 @@
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const link = (slug: string) => `${base}/cdn-demos/${slug}/`;
 
-type Progressive = "yes" | "maybe" | "no";
+type Paint = "yes" | "maybe" | "no";
 
 interface Row {
   name: string;
   slug: string;
   size: string;
-  progressive: Progressive;
+  paint: Paint;
   shape: string;
   notes: string;
 }
 
 const rows: Row[] = [
-  { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  progressive: "yes", shape: "Controller",      notes: "HTML has initial values; controllers attach on connect" },
-  { name: "Vanilla Artifact",      slug: "standalone-esmsh",      size: "—",       progressive: "yes", shape: "Vanilla",         notes: "Matchina alone, no view library; HTML is the card" },
-  { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Alpine bindings overlay on mount" },
-  { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; v-scope mounts on top" },
-  { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  progressive: "yes", shape: "Attribute",       notes: "HTML has initial values; Vue replaces them reactively on mount" },
-  { name: "React Artifact",        slug: "standalone-react",      size: "~45 KB",  progressive: "no",  shape: "TSX (no build)",  notes: "esm.sh/tsx compiles TSX on load; React mounts into empty <article>" },
-  { name: "VanJS Artifact",        slug: "standalone-van",        size: "~1.5 KB", progressive: "no",  shape: "Declarative DOM", notes: "Empty <article>; JS builds the card" },
-  { name: "Solid Artifact",        slug: "standalone-solid",      size: "~7 KB",   progressive: "no",  shape: "Fine-grained",    notes: "Empty <article>; JS builds the card" },
-  { name: "Preact Artifact",       slug: "standalone-preact",     size: "~10 KB",  progressive: "no",  shape: "JSX-ish (htm)",   notes: "Empty <article>; JS builds the card" },
-  { name: "ArrowJS Artifact",      slug: "standalone-arrow",      size: "~3 KB",   progressive: "no",  shape: "Tagged template", notes: "Empty <article>; JS builds the card" },
+  { name: "Stimulus Artifact",     slug: "standalone-stimulus",   size: "~10 KB",  paint: "yes",   shape: "Controller",      notes: "Initial values hand-authored into HTML; controllers attach on connect" },
+  { name: "esm.sh Artifact",       slug: "standalone-esmsh",      size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Initial values hand-authored into HTML; JS wires interactions" },
+  { name: "jsDelivr Artifact",     slug: "standalone-jsdelivr",   size: "—",       paint: "yes",   shape: "Vanilla",         notes: "Same as esm.sh via jsDelivr +esm" },
+  { name: "petite-vue Artifact",   slug: "standalone-petite-vue", size: "~6 KB",   paint: "maybe", shape: "Attribute",       notes: "Demo uses v-cloak + bindings; could be hand-authored to paint" },
+  { name: "Alpine Artifact",       slug: "standalone-alpine",     size: "~15 KB",  paint: "maybe", shape: "Attribute",       notes: "Demo uses x-cloak + bindings; could be hand-authored to paint" },
+  { name: "Vue 3 Artifact",        slug: "standalone-vue",        size: "~40 KB",  paint: "maybe", shape: "Attribute",       notes: "Demo uses v-cloak + bindings; could be hand-authored to paint" },
+  { name: "VanJS Artifact",        slug: "standalone-van",        size: "~1.5 KB", paint: "no",    shape: "Declarative DOM", notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
+  { name: "Solid Artifact",        slug: "standalone-solid",      size: "~7 KB",   paint: "no",    shape: "Fine-grained",    notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
+  { name: "Preact Artifact",       slug: "standalone-preact",     size: "~10 KB",  paint: "no",    shape: "JSX-ish (htm)",   notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
+  { name: "ArrowJS Artifact",      slug: "standalone-arrow",      size: "~3 KB",   paint: "no",    shape: "Tagged template", notes: "Empty <article>; JS builds it. Pattern can't host static HTML" },
 ];
 
-const progressiveLabel: Record<Progressive, string> = {
-  yes: "Yes",
-  maybe: "Partial",
-  no: "No",
+const paintLabel: Record<Paint, string> = {
+  yes: "Hand-authored",
+  maybe: "Possible (not done)",
+  no: "Not in this pattern",
 };
 ---
 
@@ -39,18 +39,18 @@ const progressiveLabel: Record<Progressive, string> = {
       <tr>
         <th>Artifact</th>
         <th>Size (gz)</th>
-        <th>Progressive</th>
+        <th>Static HTML in demo</th>
         <th>Authoring shape</th>
         <th>Notes</th>
       </tr>
     </thead>
     <tbody>
       {rows.map((r) => (
-        <tr class={`prog-${r.progressive}`}>
+        <tr class={`paint-${r.paint}`}>
           <td><a href={link(r.slug)}><strong>{r.name}</strong></a></td>
           <td class="num">{r.size}</td>
           <td>
-            <span class={`pill pill-${r.progressive}`}>{progressiveLabel[r.progressive]}</span>
+            <span class={`pill pill-${r.paint}`}>{paintLabel[r.paint]}</span>
           </td>
           <td>{r.shape}</td>
           <td class="notes">{r.notes}</td>
@@ -61,10 +61,10 @@ const progressiveLabel: Record<Progressive, string> = {
 
   <ul class="matrix-cards">
     {rows.map((r) => (
-      <li class={`card prog-${r.progressive}`}>
+      <li class={`card paint-${r.paint}`}>
         <a class="card-title" href={link(r.slug)}>{r.name}</a>
         <div class="card-meta">
-          <span class={`pill pill-${r.progressive}`}>{progressiveLabel[r.progressive]}</span>
+          <span class={`pill pill-${r.paint}`}>{paintLabel[r.paint]}</span>
           <span class="size">{r.size}</span>
           <span class="shape">{r.shape}</span>
         </div>
