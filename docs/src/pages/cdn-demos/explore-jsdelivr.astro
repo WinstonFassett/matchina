@@ -1,69 +1,52 @@
 ---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
 import { matchinaVersion, cdnUrls } from "@/lib/matchina-version";
 const jsdelivrUrl = cdnUrls.jsdelivr;
 const sourceNote = `cdn.jsdelivr.net/npm/matchina@${matchinaVersion}/+esm · one request, full bundle`;
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matchina via jsDelivr +esm</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <style is:global>
-        .traffic { display: inline-flex; flex-direction: column; gap: 0.5rem; padding: 1rem; background: #1e293b; border-radius: 0.5rem; }
-        .light { width: 3rem; height: 3rem; border-radius: 50%; background: #334155; transition: background 0.2s, box-shadow 0.2s; }
-        .light.red { background: #ef4444; box-shadow: 0 0 1rem #ef4444; }
-        .light.yellow { background: #eab308; box-shadow: 0 0 1rem #eab308; }
-        .light.green { background: #22c55e; box-shadow: 0 0 1rem #22c55e; }
-        .count { font-size: 3rem; font-variant-numeric: tabular-nums; text-align: center; margin: 0.5rem 0; }
-        .log { font-family: monospace; font-size: 0.85rem; min-height: 1.5em; opacity: 0.7; }
-        .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    </style>
-</head>
-<body>
-    <main class="container">
-        <hgroup>
-            <h1>Matchina via jsDelivr +esm</h1>
-            <p>{sourceNote}</p>
-        </hgroup>
-        <p><small>Styled with <a href="https://picocss.com/" target="_blank" rel="noopener">Pico.css v2</a> (classless) from jsDelivr</small></p>
-
-        <div class="grid">
-            <article>
-                <header><strong>Traffic Light</strong></header>
-                <div class="traffic">
-                    <div class="light" id="red"></div>
-                    <div class="light" id="yellow"></div>
-                    <div class="light" id="green"></div>
-                </div>
-                <p><code id="tl-state">Red</code></p>
-                <div class="row">
-                    <button id="tl-next">Next</button>
-                    <button id="tl-reset" class="secondary">Reset</button>
-                </div>
-                <footer><small class="log" id="tl-log">waiting…</small></footer>
-            </article>
-
-            <article>
-                <header><strong>Counter Store</strong></header>
-                <p class="count" id="counter-value">0</p>
-                <div class="row">
-                    <button id="cnt-dec-5" class="secondary">−5</button>
-                    <button id="cnt-dec" class="secondary">−1</button>
-                    <button id="cnt-inc">+1</button>
-                    <button id="cnt-inc-5">+5</button>
-                </div>
-                <div class="row">
-                    <button id="cnt-set" class="outline">Set 100</button>
-                    <button id="cnt-reset" class="outline">Reset</button>
-                </div>
-                <footer><small class="log" id="cnt-log">waiting…</small></footer>
-            </article>
+<CdnDemoLayout
+    title="Matchina via jsDelivr +esm"
+    eyebrow="Matchina · CDN demo · jsDelivr"
+    headline="One request from"
+    headlineAccent="jsDelivr"
+    sourceNote={sourceNote}
+>
+    <article class="card">
+        <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina</span></div>
+        <div class="card-stage">
+            <div class="traffic">
+                <div class="light" id="red"></div>
+                <div class="light" id="yellow"></div>
+                <div class="light" id="green"></div>
+            </div>
         </div>
-    </main>
+        <p class="state-line">state <code id="tl-state">Red</code></p>
+        <div class="row">
+            <button id="tl-next">Next →</button>
+            <button id="tl-reset" class="secondary">Reset</button>
+        </div>
+        <footer><span class="log" id="tl-log">waiting…</span></footer>
+    </article>
 
-    <script type="module" define:vars={{ jsdelivrUrl }}>
+    <article class="card">
+        <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore</span></div>
+        <div class="card-stage">
+            <p class="count" id="counter-value">0</p>
+        </div>
+        <div class="row">
+            <button id="cnt-dec-5" class="secondary">−5</button>
+            <button id="cnt-dec" class="secondary">−1</button>
+            <button id="cnt-inc">+1</button>
+            <button id="cnt-inc-5">+5</button>
+        </div>
+        <div class="row">
+            <button id="cnt-set" class="outline">Set 100</button>
+            <button id="cnt-reset" class="outline">Reset</button>
+        </div>
+        <footer><span class="log" id="cnt-log">waiting…</span></footer>
+    </article>
+
+    <script slot="scripts" type="module" define:vars={{ jsdelivrUrl }}>
         const { matchina, defineStates, createStore } = await import(jsdelivrUrl);
 
         const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
@@ -118,5 +101,4 @@ const sourceNote = `cdn.jsdelivr.net/npm/matchina@${matchinaVersion}/+esm · one
         window.traffic = traffic;
         window.counter = counter;
     </script>
-</body>
-</html>
+</CdnDemoLayout>

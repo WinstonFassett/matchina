@@ -1,0 +1,259 @@
+/* Matchina CDN demos — Editorial token overrides on Open Props.
+   Linked from each demo page, also linkable from any HTML artifact:
+     <link rel="stylesheet" href="https://unpkg.com/open-props">
+     <link rel="stylesheet" href="https://unpkg.com/open-props/normalize.min.css">
+     <link rel="stylesheet" href="/cdn-demos/demo.css">
+*/
+
+:root {
+    --font-sans: "Geist", system-ui, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, monospace;
+    --font-serif: "Source Serif 4", Georgia, serif;
+    --surface-1: #f6f5f1;
+    --surface-2: #ffffff;
+    --surface-3: #faf9f6;
+    --surface-4: #ecebe4;
+    --text-1: #15130f;
+    --text-2: #6a665d;
+    --text-3: #a09b91;
+    --hairline: #e3e0d8;
+    --accent: #15130f;
+    --accent-ink: #f6f5f1;
+    --fog: #8ab4d8;
+    --traffic-red: #b3332e;
+    --traffic-yellow: #c9961a;
+    --traffic-green: #2f7a3a;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface-1: #0e0e0f;
+        --surface-2: #141416;
+        --surface-3: #1a1a1c;
+        --surface-4: #212124;
+        --text-1: #ececec;
+        --text-2: #8a8a90;
+        --text-3: #56565c;
+        --hairline: #262628;
+        --accent: #8ab4d8;
+        --accent-ink: #0e0e0f;
+        --traffic-red: #e68a8a;
+        --traffic-yellow: #e6b86a;
+        --traffic-green: #8fd1a3;
+    }
+    html { color-scheme: dark; }
+}
+
+body {
+    background: var(--surface-1);
+    color: var(--text-1);
+    font-family: var(--font-sans);
+    padding-block: var(--size-8);
+}
+
+a {
+    color: var(--text-1);
+    text-underline-offset: 3px;
+}
+
+.container {
+    max-width: 56rem;
+    margin-inline: auto;
+    padding-inline: var(--size-5);
+}
+
+h1 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+h1 em {
+    font-style: italic;
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 var(--size-3);
+}
+
+.subtitle {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-2);
+    margin: var(--size-2) 0 0;
+    word-break: break-all;
+}
+
+.credit {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: var(--size-5) 0 var(--size-7);
+    border-top: 1px solid var(--hairline);
+    padding-top: var(--size-3);
+}
+
+.credit a {
+    color: var(--text-2);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.grid {
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    border: 1px solid var(--hairline);
+    margin-top: var(--size-6);
+}
+
+.card {
+    padding: var(--size-5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--size-4);
+    background: var(--surface-2);
+}
+
+.card + .card { border-left: 1px solid var(--hairline); }
+
+@media (max-width: 44rem) {
+    .card + .card { border-left: 0; border-top: 1px solid var(--hairline); }
+}
+
+.card-eyebrow {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--size-4);
+    border-bottom: 1px solid var(--hairline);
+}
+
+.card-eyebrow .meta { color: var(--text-3); }
+
+.card-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 9rem;
+}
+
+.card footer {
+    width: 100%;
+    padding-top: var(--size-3);
+    border-top: 1px solid var(--hairline);
+}
+
+.traffic {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--size-2);
+    padding: var(--size-3);
+    background: var(--surface-3);
+    border: 1px solid var(--hairline);
+}
+
+.light {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--surface-4);
+    transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.light.red    { background: var(--traffic-red); }
+.light.yellow { background: var(--traffic-yellow); }
+.light.green  { background: var(--traffic-green); }
+
+.state-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-2);
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--size-2);
+    margin: 0;
+}
+
+.state-line code {
+    font-family: var(--font-mono);
+    background: transparent;
+    color: var(--text-1);
+    font-weight: 500;
+    padding: 0;
+}
+
+.count {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+    line-height: 1;
+    color: var(--text-1);
+}
+
+.log {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    min-height: 1.4em;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+}
+
+.row {
+    display: flex;
+    gap: var(--size-2);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 0;
+    border: 1px solid var(--text-1);
+    background: var(--text-1);
+    color: var(--surface-1);
+    cursor: pointer;
+    transition: background 120ms, color 120ms;
+}
+
+button:hover { background: transparent; color: var(--text-1); }
+
+button.secondary { background: transparent; color: var(--text-1); }
+button.secondary:hover { background: var(--surface-4); }
+
+button.outline {
+    background: transparent;
+    color: var(--text-2);
+    border-color: var(--hairline);
+}
+button.outline:hover { color: var(--text-1); border-color: var(--text-2); }

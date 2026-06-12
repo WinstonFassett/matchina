@@ -1,45 +1,23 @@
 ---
+import CdnDemoLayout from "@/layouts/CdnDemoLayout.astro";
 import { cdnUrls } from "@/lib/matchina-version";
 const matchinaUrl = cdnUrls.esm("matchina,createStore,defineStates");
 const arrowUrl = "https://esm.sh/@arrow-js/core@1.0.6";
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matchina + ArrowJS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <style is:global>
-        .traffic { display: inline-flex; flex-direction: column; gap: 0.5rem; padding: 1rem; background: #1e293b; border-radius: 0.5rem; }
-        .light { width: 3rem; height: 3rem; border-radius: 50%; background: #334155; transition: background 0.2s, box-shadow 0.2s; }
-        .light.red { background: #ef4444; box-shadow: 0 0 1rem #ef4444; }
-        .light.yellow { background: #eab308; box-shadow: 0 0 1rem #eab308; }
-        .light.green { background: #22c55e; box-shadow: 0 0 1rem #22c55e; }
-        .count { font-size: 3rem; font-variant-numeric: tabular-nums; text-align: center; margin: 0.5rem 0; }
-        .log { font-family: monospace; font-size: 0.85rem; min-height: 1.5em; opacity: 0.7; }
-        .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    </style>
-</head>
-<body>
-    <main class="container">
-        <hgroup>
-            <h1>Matchina + ArrowJS</h1>
-            <p>matchina state machine drives Arrow reactive rendering · both via esm.sh</p>
-        </hgroup>
-        <p><small>Styled with <a href="https://picocss.com/" target="_blank" rel="noopener">Pico.css v2</a> (classless) from jsDelivr</small></p>
+<CdnDemoLayout
+    title="Matchina + ArrowJS"
+    eyebrow="Matchina · CDN demo · ArrowJS"
+    headline="Reactive rendering with"
+    headlineAccent="ArrowJS"
+    sourceNote="matchina state machine drives Arrow reactive rendering · both via esm.sh"
+>
+    <article class="card" id="tl-card"></article>
+    <article class="card" id="cnt-card"></article>
 
-        <div class="grid">
-            <article id="tl-card"></article>
-            <article id="cnt-card"></article>
-        </div>
-    </main>
-
-    <script type="module" define:vars={{ matchinaUrl, arrowUrl }}>
+    <script slot="scripts" type="module" define:vars={{ matchinaUrl, arrowUrl }}>
         const { matchina, defineStates, createStore } = await import(matchinaUrl);
         const { reactive, html } = await import(arrowUrl);
 
-        // --- Traffic light: matchina drives reactive state -----------------
         const states = defineStates({ Red: undefined, Yellow: undefined, Green: undefined });
         const traffic = matchina(
             states,
@@ -58,21 +36,22 @@ const arrowUrl = "https://esm.sh/@arrow-js/core@1.0.6";
         });
 
         html`
-            <header><strong>Traffic Light</strong></header>
-            <div class="traffic">
-                <div class="${() => `light ${tl.state === 'Red'    ? 'red'    : ''}`}"></div>
-                <div class="${() => `light ${tl.state === 'Yellow' ? 'yellow' : ''}`}"></div>
-                <div class="${() => `light ${tl.state === 'Green'  ? 'green'  : ''}`}"></div>
+            <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + arrow</span></div>
+            <div class="card-stage">
+                <div class="traffic">
+                    <div class="${() => `light ${tl.state === 'Red'    ? 'red'    : ''}`}"></div>
+                    <div class="${() => `light ${tl.state === 'Yellow' ? 'yellow' : ''}`}"></div>
+                    <div class="${() => `light ${tl.state === 'Green'  ? 'green'  : ''}`}"></div>
+                </div>
             </div>
-            <p><code>${() => tl.state}</code></p>
+            <p class="state-line">state <code>${() => tl.state}</code></p>
             <div class="row">
-                <button @click="${() => traffic.next()}">Next</button>
+                <button @click="${() => traffic.next()}">Next →</button>
                 <button class="secondary" @click="${() => traffic.reset()}">Reset</button>
             </div>
-            <footer><small class="log">${() => tl.log}</small></footer>
+            <footer><span class="log">${() => tl.log}</span></footer>
         `(document.getElementById('tl-card'));
 
-        // --- Counter: store drives reactive state ------------------
         const counter = createStore(0, {
             increment: (amt = 1) => (ch) => ch.from + amt,
             decrement: (amt = 1) => (ch) => ch.from - amt,
@@ -87,8 +66,10 @@ const arrowUrl = "https://esm.sh/@arrow-js/core@1.0.6";
         });
 
         html`
-            <header><strong>Counter Store</strong></header>
-            <p class="count">${() => cnt.value}</p>
+            <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + arrow</span></div>
+            <div class="card-stage">
+                <p class="count">${() => cnt.value}</p>
+            </div>
             <div class="row">
                 <button class="secondary" @click="${() => counter.decrement(5)}">−5</button>
                 <button class="secondary" @click="${() => counter.decrement()}">−1</button>
@@ -99,11 +80,10 @@ const arrowUrl = "https://esm.sh/@arrow-js/core@1.0.6";
                 <button class="outline" @click="${() => counter.set(100)}">Set 100</button>
                 <button class="outline" @click="${() => counter.reset()}">Reset</button>
             </div>
-            <footer><small class="log">${() => cnt.log}</small></footer>
+            <footer><span class="log">${() => cnt.log}</span></footer>
         `(document.getElementById('cnt-card'));
 
         window.traffic = traffic;
         window.counter = counter;
     </script>
-</body>
-</html>
+</CdnDemoLayout>
