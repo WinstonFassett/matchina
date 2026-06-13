@@ -20,12 +20,12 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
         <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + vue</span></div>
         <div class="card-stage">
             <div class="traffic">
-                <div class="light" data-color="Red"    :data-active="isRed"></div>
-                <div class="light" data-color="Yellow" :data-active="isYellow"></div>
-                <div class="light" data-color="Green"  :data-active="isGreen"></div>
+                <div class="light" data-color="Red"    :data-active="state.is('Red')"></div>
+                <div class="light" data-color="Yellow" :data-active="state.is('Yellow')"></div>
+                <div class="light" data-color="Green"  :data-active="state.is('Green')"></div>
             </div>
         </div>
-        <p class="state-line">state <code>{{ stateKey }}</code></p>
+        <p class="state-line">state <code>{{ state.key }}</code></p>
         <div class="row">
             <button @click="machine.next()">Next →</button>
             <button class="secondary" @click="machine.reset()">Reset</button>
@@ -52,7 +52,7 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
 
     <script slot="scripts" type="module" define:vars={{ matchinaUrl, vueUrl }}>
         const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
-        const { createApp, ref, computed } = await import(vueUrl);
+        const { createApp, ref } = await import(vueUrl);
 
         // ── Integration ────────────────────────────────────────────
         // Vue's `ref` is subscribe-able external state. matchina's
@@ -81,16 +81,7 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
         traffic.subscribe(ev => { tlLog.value = `${ev.from.key} → ${ev.to.key}`; });
         createApp({
             setup() {
-                const state = useMatchina(traffic);
-                const stateKey = computed(() => state.value.key);
-                return {
-                    machine: traffic,
-                    stateKey,
-                    isRed: computed(() => stateKey.value === 'Red'),
-                    isYellow: computed(() => stateKey.value === 'Yellow'),
-                    isGreen: computed(() => stateKey.value === 'Green'),
-                    log: tlLog,
-                };
+                return { machine: traffic, state: useMatchina(traffic), log: tlLog };
             }
         }).mount('#tl-card');
 
