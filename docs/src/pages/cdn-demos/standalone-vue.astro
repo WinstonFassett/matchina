@@ -20,22 +20,22 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
         <div class="card-eyebrow"><span>fig.01 — Traffic light</span><span class="meta">matchina + vue</span></div>
         <div class="card-stage">
             <div class="traffic">
-                <div class="light" data-color="Red"    data-active="true"  :data-active="state.key === 'Red'"></div>
-                <div class="light" data-color="Yellow" data-active="false" :data-active="state.key === 'Yellow'"></div>
-                <div class="light" data-color="Green"  data-active="false" :data-active="state.key === 'Green'"></div>
+                <div class="light" data-color="Red"    data-active="true"  :data-active="isRed"></div>
+                <div class="light" data-color="Yellow" data-active="false" :data-active="isYellow"></div>
+                <div class="light" data-color="Green"  data-active="false" :data-active="isGreen"></div>
             </div>
         </div>
-        <p class="state-line">state <code v-text="state.key">Red</code></p>
+        <p class="state-line">state <code>{{ stateKey }}</code></p>
         <div class="row">
             <button @click="machine.next()">Next →</button>
             <button class="secondary" @click="machine.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log">waiting…</span></footer>
+        <footer><span class="log">{{ log }}</span></footer>
     </article>
 
     <article class="card" id="cnt-card">
         <div class="card-eyebrow"><span>fig.02 — Counter store</span><span class="meta">createStore + vue</span></div>
-        <div class="card-stage"><p class="count" v-text="value">0</p></div>
+        <div class="card-stage"><p class="count">{{ value }}</p></div>
         <div class="row">
             <button class="secondary" @click="api.decrement(5)">−5</button>
             <button class="secondary" @click="api.decrement()">−1</button>
@@ -46,13 +46,13 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
             <button class="outline" @click="api.set(100)">Set 100</button>
             <button class="outline" @click="api.reset()">Reset</button>
         </div>
-        <footer><span class="log" v-text="log">waiting…</span></footer>
+        <footer><span class="log">{{ log }}</span></footer>
     </article>
     `} />
 
     <script slot="scripts" type="module" define:vars={{ matchinaUrl, vueUrl }}>
         const { matchina, defineStates, createStore, storeApi } = await import(matchinaUrl);
-        const { createApp, ref } = await import(vueUrl);
+        const { createApp, ref, computed } = await import(vueUrl);
 
         // ── Integration ────────────────────────────────────────────
         // Vue's `ref` is subscribe-able external state. matchina's
@@ -81,7 +81,16 @@ const sourceNote = `matchina@${matchinaVersion} + vue@3.5 · attribute-driven bi
         traffic.subscribe(ev => { tlLog.value = `${ev.from.key} → ${ev.to.key}`; });
         createApp({
             setup() {
-                return { machine: traffic, state: useMatchina(traffic), log: tlLog };
+                const state = useMatchina(traffic);
+                const stateKey = computed(() => state.value.key);
+                return {
+                    machine: traffic,
+                    stateKey,
+                    isRed: computed(() => stateKey.value === 'Red'),
+                    isYellow: computed(() => stateKey.value === 'Yellow'),
+                    isGreen: computed(() => stateKey.value === 'Green'),
+                    log: tlLog,
+                };
             }
         }).mount('#tl-card');
 
