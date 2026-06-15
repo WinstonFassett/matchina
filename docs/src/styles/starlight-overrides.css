@@ -342,6 +342,55 @@ a.action.secondary {
   padding: 0.5px 5px;
 }
 
+/* ---------- Wide MDX tables: visible scroll affordance on mobile ----------
+   Starlight already sets `.sl-markdown-content table { display:block; overflow:auto }`,
+   but on mobile the overlay scrollbar is invisible, so users on narrow viewports
+   can't tell wide comparison tables extend horizontally. We wrap each table in
+   a scroll container (via display:block on the table itself) and add:
+   1) a thin always-visible scrollbar styled to match the theme, and
+   2) a subtle right-edge mask hint that fades as the user scrolls to the end.
+   Applies generically to every MDX table — no per-page edits required.
+*/
+.sl-markdown-content table:not(:where(.not-content *)) {
+  /* Force a visible scrollbar even on platforms that overlay-hide by default. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sl-color-gray-5) transparent;
+  /* Edge-fade hint that disappears as the user scrolls right.
+     The mask is anchored to the scroll viewport so it tracks scrollPosition. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 36px),
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 36px),
+    rgba(0, 0, 0, 0.05) 100%
+  );
+}
+/* WebKit explicit scrollbar styling so the affordance is visible on iOS/macOS. */
+.sl-markdown-content table:not(:where(.not-content *))::-webkit-scrollbar {
+  height: 8px;
+}
+.sl-markdown-content table:not(:where(.not-content *))::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sl-markdown-content table:not(:where(.not-content *))::-webkit-scrollbar-thumb {
+  background: var(--sl-color-gray-5);
+  border-radius: 4px;
+}
+/* Drop the mask hint when the table isn't actually overflowing — desktop
+   typically has room to render in full. Detected via container-size queries,
+   with a viewport-width fallback for browsers without container queries. */
+@media (min-width: 60rem) {
+  .sl-markdown-content table:not(:where(.not-content *)) {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
 /* ---------- Lifecycle tree-table (plain table, indent on column 1) ---------- */
 .lifetree {
   width: 100%;

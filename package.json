@@ -102,6 +102,7 @@
     "test:e2e:file": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "screenshots:dark": "npx tsx scripts/dark-screenshots.ts",
+    "dogfood:docs": "npx tsx scripts/dogfood-docs.ts",
     "screenshots": "node scripts/screenshot-viewer.js",
     "screenshots:gallery": "node scripts/screenshot-gallery.js",
     "screenshots:html": "node scripts/html-report.js",

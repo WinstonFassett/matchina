@@ -261,13 +261,16 @@ const ctrlBtn: React.CSSProperties = {
   background: 'transparent',
   border: 'none',
   color: V.ctrlText,
-  width: 24,
-  height: 24,
+  // 44×44 meets a11y touch-target minimum on coarse pointers; on fine pointers
+  // (mouse) the visual hit area is still adequate. Keeps the corner control
+  // stack compact while remaining tappable on mobile.
+  width: 44,
+  height: 44,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontFamily: "var(--matchina-viz-font, 'JetBrains Mono', monospace)",
-  fontSize: 12,
+  fontSize: 14,
   lineHeight: 1,
   cursor: 'pointer',
   padding: 0,
