@@ -148,7 +148,7 @@ export async function runElkLayout(
   // Root states: those without a parent
   const rootKeys: string[] = [];
   for (const [fullKey, parentKey] of shape.hierarchy) {
-    if (parentKey === undefined) rootKeys.push(fullKey);
+    if (parentKey === undefined && fullKey !== '') rootKeys.push(fullKey);
   }
 
   const rootChildren = rootKeys.map(key =>
