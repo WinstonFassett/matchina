@@ -1,0 +1,74 @@
+# @matchina/viz-svg
+
+SVG state machine visualizer for Matchina, powered by ELK auto-layout.
+
+## Install
+
+```sh
+npm install @matchina/viz-svg
+# peer deps: matchina, react, react-dom
+```
+
+## Usage
+
+```tsx
+import { SvgInspector } from '@matchina/viz-svg';
+
+<SvgInspector
+  shape={machine.shape}
+  value={state.value}
+  onFire={(event) => machine.send(event)}
+/>
+```
+
+Give the container a fixed size — the component fills `100% × 100%`. Pan/zoom via mouse wheel and drag; click outgoing edges to fire events.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `shape` | `MachineShape` | required | Machine shape from `matchina` |
+| `value` | `string` | required | Current state value |
+| `onFire` | `(event: string) => void` | — | Called when an outgoing edge is clicked |
+| `options` | `ElkLayoutOptions` | — | Layout options (direction, spacing, edge routing) |
+| `interactive` | `boolean` | `true` | Enable edge click events |
+| `precomputedLayout` | `SvgLayout` | — | Skip initial ELK run (useful for SSR) |
+
+### `ElkLayoutOptions`
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `direction` | `'DOWN'` | `'RIGHT'` or `'DOWN'` |
+| `edgeRouting` | `'ORTHOGONAL'` | `'ORTHOGONAL'` or `'POLYLINE'` |
+| `nodeSpacing` | `40` | Spacing between sibling nodes |
+| `layerSpacing` | `nodeSpacing + 20` | Spacing between layers |
+
+## Theming
+
+Override CSS variables on any ancestor element:
+
+| Variable | Default |
+|----------|---------|
+| `--matchina-viz-accent` | `#2dd4bf` |
+| `--matchina-viz-bg` | `#0a0f17` |
+| `--matchina-viz-node` | `rgba(28,38,54,0.95)` |
+| `--matchina-viz-node-active` | `rgba(20,90,82,0.85)` |
+| `--matchina-viz-border` | `rgba(148,163,184,0.25)` |
+| `--matchina-viz-text` | `rgba(226,232,240,0.92)` |
+| `--matchina-viz-edge` | `rgba(100,116,139,0.55)` |
+| `--matchina-viz-font` | `'JetBrains Mono', monospace` |
+
+## SSR / Pre-computed layouts
+
+```ts
+import { runElkLayout } from '@matchina/viz-svg';
+
+// At build time (Node.js / Astro frontmatter):
+const layout = await runElkLayout(machine.shape, { direction: 'RIGHT' });
+```
+
+Pass `precomputedLayout` to render synchronously on first paint without a "computing layout…" placeholder.
+
+## Low-level exports
+
+`runElkLayout(shape, options)` → `Promise<SvgLayout>` — run ELK and get flat absolute-positioned node/edge arrays directly.
