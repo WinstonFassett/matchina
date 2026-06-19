@@ -63,7 +63,7 @@ export function MachineVisualizer({
   AppView,
   defaultViz = "svg",
   availableViz,
-  showPicker = true,
+  showPicker = import.meta.env.DEV,
   layout = "split",
   vizPosition = "left",
   minVizHeight = 400,

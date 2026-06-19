@@ -63,7 +63,7 @@ export function ExamplePreview({ id, appOnly = false, defaultViz, showPicker, hi
       appViewProps={{ onReset }}
       precomputedLayout={precomputedLayout}
       {...(resolvedViz !== undefined && { defaultViz: resolvedViz })}
-      {...(showPicker !== undefined && { showPicker })}
+      showPicker={showPicker ?? (import.meta.env.DEV && !meta.hideVizPicker)}
       {...(defaultSvgDirection !== undefined && { defaultSvgDirection })}
     />
   );
