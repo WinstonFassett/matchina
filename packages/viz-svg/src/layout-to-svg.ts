@@ -2,8 +2,8 @@
 // Mirrors the rendering logic of SvgInspector.tsx, but emits a string instead of React elements.
 // Use this for build-time SSR (e.g. from Astro frontmatter) where no React runtime is needed.
 
-import type { SvgLayout, SvgNode, SvgEdge } from './elk-layout.js';
-import { buildCurvedPath, pathAtT } from './svg-path.js';
+import type { SvgLayout, SvgNode, SvgEdge } from './elk-layout';
+import { buildCurvedPath, pathAtT } from './svg-path';
 
 // CSS variable names with their default values (dark teal theme).
 // Match SvgInspector.tsx.

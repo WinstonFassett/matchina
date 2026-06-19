@@ -7,12 +7,6 @@ export default defineBuildConfig({
       outDir: "./dist",
       builder: 'mkdist',
       format: "esm",
-    },
-    {
-      input: "./src/",
-      outDir: "./dist",
-      builder: 'mkdist',
-      format: "cjs",
     }
   ],
   declaration: true,

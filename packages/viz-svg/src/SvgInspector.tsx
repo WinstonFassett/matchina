@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MachineShape } from 'matchina';
-import { runElkLayout } from './elk-layout.js';
-import type { ElkLayoutOptions, SvgEdge, SvgLayout, SvgNode } from './elk-layout.js';
-import { buildCurvedPath, pathAtT } from './svg-path.js';
+import { runElkLayout } from './elk-layout';
+import type { ElkLayoutOptions, SvgEdge, SvgLayout, SvgNode } from './elk-layout';
+import { buildCurvedPath, pathAtT } from './svg-path';
 
 // CSS variable names with their default values (dark teal theme).
 // Consumers can override any of these on a parent element.
