@@ -23,7 +23,7 @@ const { title, eyebrow, headline, headlineAccent, sourceNote } = Astro.props;
 <body>
     <main class="container">
         <p class="eyebrow">{eyebrow}</p>
-        <h1>{headline} {headlineAccent && <em>{headlineAccent}</em>}</h1>
+        <h1>{headlineAccent && <><em>{headlineAccent}</em>{" "}</>}{headline}</h1>
         <p class="subtitle">{sourceNote}</p>
 
         <div class="grid">
