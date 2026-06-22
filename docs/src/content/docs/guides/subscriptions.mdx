@@ -1,22 +1,141 @@
 ---
 title: Subscriptions
-description: Observe state changes in your state machines
+description: Observe state changes in your state machines without affecting them
 ---
 
-## Advanced Pattern: State Change Subscriptions
+Subscriptions let you react to state changes passively — observing without triggering transitions. Every Matchina machine type supports `subscribe`.
 
-For observing state changes without affecting them, you can use `subscribe`:
+## What is a subscription?
+
+`subscribe(fn)` registers a callback that fires after every state change. It returns an unsubscribe function you call when the observer is no longer needed.
 
 ```ts
-// Subscribe to all state changes
-const unsubscribe = counter.subscribe((state) => {
-  console.log(`State changed to: ${state.key}`);
+const unsubscribe = machine.subscribe((state) => {
+  console.log('State changed:', state);
+});
 
-  if (state.is("Counting")) {
-    console.log(`Current count: ${state.data.count}`);
+// Later:
+unsubscribe();
+```
+
+The callback receives the new state (for factory machines) or the change event (for store machines).
+
+## Factory machine subscriptions
+
+For factory machines, the callback receives the new state object with `.key`, `.data`, and `.is()`.
+
+```ts
+import { createMachine } from 'matchina';
+
+const traffic = createMachine({
+  Red: { go: 'Green' },
+  Green: { stop: 'Red', slow: 'Yellow' },
+  Yellow: { stop: 'Red' },
+});
+
+const unsubscribe = traffic.subscribe((state) => {
+  console.log(`Light changed to: ${state.key}`);
+
+  if (state.is('Green')) {
+    console.log('Go!');
   }
 });
 
-// Later, when no longer needed:
+traffic.send('go');   // logs: "Light changed to: Green", "Go!"
+traffic.send('slow'); // logs: "Light changed to: Yellow"
+
 unsubscribe();
 ```
+
+## Store machine subscriptions
+
+For store machines created with `createStore`, `subscribe` is built in. The callback receives a change event with `from`, `to`, `type`, and `params`.
+
+```ts
+import { createStore } from 'matchina';
+
+const counter = createStore(0, {
+  increment: (n = 1) => (ch) => ch.from + n,
+  reset: () => 0,
+});
+
+const unsubscribe = counter.subscribe((ev) => {
+  console.log(`${ev.type}: ${ev.from} → ${ev.to}`);
+});
+
+counter.increment();    // logs: "increment: 0 → 1"
+counter.increment(4);   // logs: "increment: 1 → 5"
+counter.reset();        // logs: "reset: 5 → 0"
+
+unsubscribe();
+```
+
+If you used `createStoreMachine` directly (the bare primitive), add `subscribe` via `withSubscribe`:
+
+```ts
+import { createStoreMachine, withSubscribe } from 'matchina';
+
+const machine = withSubscribe(createStoreMachine(0, { increment: () => (ch) => ch.from + 1 }));
+const unsub = machine.subscribe(ev => console.log(ev));
+```
+
+## Multiple subscribers
+
+You can register as many subscribers as you need. Each gets its own unsubscribe handle.
+
+```ts
+const unsubA = store.subscribe(ev => syncToLocalStorage(ev.to));
+const unsubB = store.subscribe(ev => updateAnalytics(ev.type));
+
+// Remove just one:
+unsubA();
+```
+
+## Subscribe vs lifecycle hooks
+
+Both `subscribe` and [lifecycle hooks](/matchina/guides/lifecycle/) let you react to state changes. The difference is scope and intent:
+
+| | `subscribe` | Lifecycle hooks (`effect`, `when`) |
+|---|---|---|
+| Fires after every change | ✓ | ✓ |
+| Can filter by event type | Manual (`if ev.type === ...`) | `when(predicate, fn)` |
+| Composable / declarative | ✗ | ✓ |
+| Returns unsubscribe fn | ✓ | Managed by `setup` |
+| External integrations | ✓ | ✓ |
+
+Use `subscribe` for straightforward integrations: syncing to external stores (React `useSyncExternalStore`), logging, or analytics. Use lifecycle hooks when you want a declarative, composable description of side effects that lives alongside the machine definition.
+
+## React integration
+
+`subscribe` maps directly to React's `useSyncExternalStore`:
+
+```tsx
+import { useSyncExternalStore } from 'react';
+import { createStore } from 'matchina';
+
+const counter = createStore(0, {
+  increment: () => (ch) => ch.from + 1,
+  decrement: () => (ch) => ch.from - 1,
+});
+
+function Counter() {
+  const count = useSyncExternalStore(
+    (callback) => counter.subscribe(() => callback()),
+    () => counter.getState(),
+  );
+
+  return (
+    <div>
+      <span>{count}</span>
+      <button onClick={() => counter.increment()}>+</button>
+      <button onClick={() => counter.decrement()}>−</button>
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+- [Lifecycle & Hooks](/matchina/guides/lifecycle/) - Declarative side-effect management
+- [Effects](/matchina/guides/effects/) - Composable effect helpers
+- [Store Machine](/matchina/guides/store-machine/) - Full store machine reference
