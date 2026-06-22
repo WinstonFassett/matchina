@@ -168,8 +168,42 @@ function Counter({ store }) {
 | Pattern matching | N/A | `state.match({...})` |
 | Use case | App state, forms, counters | Workflows, async flows, UI modes |
 
+## `createStore` — batteries-included shorthand
+
+`createStore` is a convenience wrapper around `createStoreMachine` that adds two things:
+
+- **Direct action methods** on the store object (`store.increment(1)` instead of `store.dispatch("increment", 1)`)
+- **`subscribe(fn)`** — a standard subscribe/unsubscribe pattern via `withSubscribe`
+
+```ts
+import { createStore } from 'matchina';
+
+const counter = createStore(0, {
+  increment: (n = 1) => (ch) => ch.from + n,
+  reset: () => 0,
+});
+
+counter.subscribe(ev => console.log(ev.from, "→", ev.to));
+
+counter.increment();      // direct method, no dispatch
+counter.increment(5);
+counter.reset();
+```
+
+### When to use each
+
+| | `createStore` | `createStoreMachine` |
+|---|---|---|
+| Direct action methods | ✓ | ✗ |
+| Built-in `subscribe(fn)` | ✓ | ✗ |
+| `dispatch(action, ...params)` | ✓ | ✓ |
+| Bare primitive for manual composition | ✗ | ✓ |
+
+Use `createStore` for app code, CDN artifacts, demos, and one-liner setups where you want the convenience API out of the box. Use `createStoreMachine` directly when you want the primitive and will compose `subscribe`, action methods, or other wrappers yourself.
+
 ## Next Steps
 
 - [Lifecycle & Hooks](/matchina/guides/lifecycle/) - Add side effects to your store
 - [Effects](/matchina/guides/effects/) - Declarative effect management
+- [Subscriptions](/matchina/guides/subscriptions/) - Observe state changes across machines
 - [Factory Machines](/matchina/guides/machines/) - For discrete state management
