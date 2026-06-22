@@ -3,7 +3,7 @@ title: Transition Flow - Lifecycle Hooks
 description: Machine transition lifecycle
 ---
 
-Every machine in matchina runs the same transition pipeline. [FactoryMachine](/matchina/guides/machines), [StateMachine](/matchina/guides/state-machine-interface), and [StoreMachine](/matchina/reference/interfaces/storemachine/) all share one generic [EventLifecycle](/matchina/reference/interfaces/eventlifecycle), so once you know the steps for one, you know them for all three.
+Every machine in matchina runs the same transition pipeline. [FactoryMachine](/matchina/guides/machines), [StateMachine](/matchina/guides/state-machine-interface), and `StoreMachine` all share one generic `EventLifecycle`, so once you know the steps for one, you know them for all three.
 
 The table below walks a single call through `machine.send(type, ...params)` from entry to completion. If you're using a typed [api wrapper](/matchina/guides/machine-enhancers), that's where things start; otherwise, step 1 is the first frame.
 

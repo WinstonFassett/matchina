@@ -17,7 +17,7 @@ In Matchina, keyed object states are elegant strongly-typed building blocks that
 
 ### Keyed State Values
 
-[KeyedState](/matchina/reference/interfaces/keyedstate/) is the foundational state type in Matchina. It only has a `key` property, which is used to identify the state. From here, you can build more complex state types by adding more properties.
+`KeyedState` is the foundational state type in Matchina. It only has a `key` property, which is used to identify the state. From here, you can build more complex state types by adding more properties.
 
 ```ts
 export interface KeyedState {
@@ -27,7 +27,7 @@ export interface KeyedState {
 
 ### Factory States
 
-Matchina provides [`defineStates`](/matchina/reference/functions/definestates/) to create a [StateMatchboxFactory](/matchina/reference/type-aliases/statematchboxfactory/). These state factories create [StateMatchbox](matchina/reference/interfaces/statematchbox/) instances as type-safe tagged unions.
+Matchina provides `defineStates` to create a `StateMatchboxFactory`. These state factories create `StateMatchbox` instances as type-safe tagged unions.
 
 This means each state:
 - Has a unique key (tag)
